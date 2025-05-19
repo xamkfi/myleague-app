@@ -146,7 +146,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// <param name="newDateTime">The new date and time</param>
     /// <param name="newVenue">The new venue (optional)</param>
     /// <exception cref="InvalidOperationException">Thrown when the match status doesn't allow rescheduling</exception>
-    public void Reschedule(DateTime newDateTime, string newVenue = null)
+    public void Reschedule(DateTime newDateTime, string? newVenue = null)
     {
         if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
             throw new InvalidOperationException($"Cannot reschedule a match with status {Status}.");
@@ -187,7 +187,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         if (Status != FloorballMatchStatus.Scheduled)
             throw new InvalidOperationException($"Cannot start a match with status {Status}.");
         
-        if (!_officialIds.Any())
+        if (_officialIds.Count == 0)
             throw new InvalidOperationException("Cannot start a match without officials.");
         
         var statusChangedEvent = new FloorballMatchStatusChangedEvent(
@@ -430,7 +430,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies a match started event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private void Apply(FloorballMatchStartedEvent @event)
+    private static void Apply(FloorballMatchStartedEvent @event)
     {
         // No additional state changes beyond the status change
     }
@@ -459,15 +459,15 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         if (@event.TeamId == HomeTeamId)
         {
             HomeScore++;
-            
-            var currentPeriodScore = _periodScores[@event.PeriodNumber];
+
+            (int HomeScore, int AwayScore) currentPeriodScore = _periodScores[@event.PeriodNumber];
             _periodScores[@event.PeriodNumber] = (currentPeriodScore.HomeScore + 1, currentPeriodScore.AwayScore);
         }
         else if (@event.TeamId == AwayTeamId)
         {
             AwayScore++;
             
-            var currentPeriodScore = _periodScores[@event.PeriodNumber];
+            (int HomeScore, int AwayScore) currentPeriodScore = _periodScores[@event.PeriodNumber];
             _periodScores[@event.PeriodNumber] = (currentPeriodScore.HomeScore, currentPeriodScore.AwayScore + 1);
         }
     }
@@ -536,7 +536,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies a match completed event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private void Apply(FloorballMatchCompletedEvent @event)
+    private static void Apply(FloorballMatchCompletedEvent @event)
     {
         // The status change is handled by the status changed event
         // This event just contains the final score which we already track

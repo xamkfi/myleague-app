@@ -19,11 +19,6 @@ public class GoalEventValue : MatchEventBaseValue
     public Guid? AssistingPlayerId { get; private set; }
     
     /// <summary>
-    /// Gets the goal type ID
-    /// </summary>
-    public int? GoalTypeId { get; private set; }
-    
-    /// <summary>
     /// Private constructor for EF Core
     /// </summary>
     private GoalEventValue() : base()
@@ -48,12 +43,10 @@ public class GoalEventValue : MatchEventBaseValue
         Guid? assistingPlayerId,
         int periodNumber,
         int timeInSeconds,
-        int? goalTypeId = null,
         string? description = null) 
         : base(matchId, teamId, periodNumber, timeInSeconds, description)
     {
         ScoringPlayerId = scoringPlayerId;
         AssistingPlayerId = assistingPlayerId;
-        GoalTypeId = goalTypeId;
     }
 } 

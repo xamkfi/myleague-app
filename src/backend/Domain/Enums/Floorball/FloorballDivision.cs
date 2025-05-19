@@ -6,6 +6,11 @@ namespace Domain.Enums.Floorball;
 public enum FloorballDivision
 {
     /// <summary>
+    /// No specific division assigned
+    /// </summary>
+    None = 0,
+
+    /// <summary>
     /// Professional top-tier division
     /// </summary>
     Premier = 1,

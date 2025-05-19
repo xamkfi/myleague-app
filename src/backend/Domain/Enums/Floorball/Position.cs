@@ -6,6 +6,11 @@ namespace Domain.Enums.Floorball;
 public enum Position
 {
     /// <summary>
+    /// No specific position assigned
+    /// </summary>
+    None = 0,
+
+    /// <summary>
     /// Goalie position
     /// </summary>
     Goalie = 1,

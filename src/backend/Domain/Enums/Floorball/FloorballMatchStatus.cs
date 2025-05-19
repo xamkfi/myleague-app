@@ -6,6 +6,11 @@ namespace Domain.Enums.Floorball;
 public enum FloorballMatchStatus
 {
     /// <summary>
+    /// No status assigned
+    /// </summary>
+    None = 0,
+
+    /// <summary>
     /// Match is scheduled but has not started
     /// </summary>
     Scheduled = 1,

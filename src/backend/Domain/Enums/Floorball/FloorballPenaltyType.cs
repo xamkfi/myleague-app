@@ -6,6 +6,11 @@ namespace Domain.Enums.Floorball;
 public enum FloorballPenaltyType
 {
     /// <summary>
+    /// No penalty assigned
+    /// </summary>
+    None = 0,
+
+    /// <summary>
     /// 2-minute minor penalty
     /// </summary>
     Minor = 1,

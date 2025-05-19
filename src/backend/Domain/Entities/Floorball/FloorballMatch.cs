@@ -2,13 +2,15 @@ using Domain.Enums;
 using Domain.Enums.Floorball;
 using Domain.ValueObjects.Floorball;
 using System.Collections.Generic;
+using Domain.EventSourcing;
+using Domain.DomainEvents.Floorball;
 
 namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a floorball match
 /// </summary>
-public class FloorballMatch
+public class FloorballMatch : AggregateRoot
 {
     /// <summary>
     /// Gets the unique identifier of the match
@@ -53,7 +55,7 @@ public class FloorballMatch
     /// <summary>
     /// Gets the venue where the match will be played
     /// </summary>
-    public string Venue { get; private set; }
+    public string? Venue { get; private set; }
     
     /// <summary>
     /// Gets the current status of the match
@@ -145,15 +147,14 @@ public class FloorballMatch
         FloorballTeam homeTeam,
         FloorballTeam awayTeam,
         DateTime scheduledDateTime,
-        string venue)
+        string? venue)
     {
         ArgumentNullException.ThrowIfNull(season);
         ArgumentNullException.ThrowIfNull(homeTeam);
         ArgumentNullException.ThrowIfNull(awayTeam);
+
         if (homeTeam == awayTeam)
             throw new ArgumentException("Home team and away team cannot be the same team.");
-        if (string.IsNullOrWhiteSpace(venue))
-            throw new ArgumentException("Venue cannot be null or empty.", nameof(venue));
 
         Id = Guid.NewGuid();
         Season = season;
@@ -191,38 +192,28 @@ public class FloorballMatch
     }
 
     /// <summary>
-    /// Records that the match went to overtime
-    /// </summary>
-    public void RecordOvertime()
-    {
-        WentToOvertime = true;
-    }
-
-    /// <summary>
-    /// Records that the match went to shootout
-    /// </summary>
-    public void RecordShootout()
-    {
-        WentToShootout = true;
-    }
-
-    /// <summary>
     /// Reschedules the match
     /// </summary>
     /// <param name="newDateTime">The new date and time</param>
     /// <param name="newVenue">The new venue (optional)</param>
     /// <exception cref="InvalidOperationException">Thrown when the match status doesn't allow rescheduling</exception>
-    public void Reschedule(DateTime newDateTime, string newVenue = null)
+    public void Reschedule(DateTime newDateTime, string? newVenue = null)
     {
         if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
             throw new InvalidOperationException($"Cannot reschedule a match with status {Status}.");
 
+        DateTime oldDateTime = ScheduledDateTime;
+        string oldVenue = Venue ?? string.Empty;
+        
         ScheduledDateTime = newDateTime;
         
         if (!string.IsNullOrWhiteSpace(newVenue))
             Venue = newVenue;
 
         Status = FloorballMatchStatus.Scheduled;
+        
+        // Add domain event
+        AddDomainEvent(new FloorballMatchRescheduledEvent(Id, oldDateTime, newDateTime, oldVenue, Venue ?? string.Empty));
     }
 
     /// <summary>
@@ -234,7 +225,11 @@ public class FloorballMatch
         if (Status != FloorballMatchStatus.Scheduled)
             throw new InvalidOperationException($"Cannot postpone a match with status {Status}.");
 
+        FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Postponed;
+        
+        // Add domain event
+        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
     }
 
     /// <summary>
@@ -246,10 +241,15 @@ public class FloorballMatch
         if (Status != FloorballMatchStatus.Scheduled)
             throw new InvalidOperationException($"Cannot start a match with status {Status}.");
         
-        if (!_officials.Any())
+        if (_officials.Count == 0)
             throw new InvalidOperationException("Cannot start a match without officials.");
 
+        FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.InProgress;
+        
+        // Add domain events
+        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
+        AddDomainEvent(new FloorballMatchStartedEvent(Id, DateTime.UtcNow));
     }
 
     /// <summary>
@@ -269,17 +269,14 @@ public class FloorballMatch
         FloorballPlayer assistingPlayer,
         int periodNumber,
         int timeInSeconds,
-        string description = null,
+        string? description = null,
         int? goalType = null)
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot record a goal when match status is {Status}.");
         
-        if (scoringTeam == null)
-            throw new ArgumentNullException(nameof(scoringTeam));
-        
-        if (scoringPlayer == null)
-            throw new ArgumentNullException(nameof(scoringPlayer));
+        ArgumentNullException.ThrowIfNull(scoringTeam);
+        ArgumentNullException.ThrowIfNull(scoringPlayer);
         
         if (periodNumber < 1 || periodNumber > 5) // Regular periods (1-3), Overtime (4), Shootout (5)
             throw new ArgumentOutOfRangeException(nameof(periodNumber), "Period number must be between 1 and 5.");
@@ -338,6 +335,17 @@ public class FloorballMatch
                 periodScore.IncrementAwayScore();
             }
         }
+        
+        // Add domain event
+        AddDomainEvent(new FloorballGoalScoredEvent(
+            Id,
+            scoringTeam.Id,
+            scoringPlayer.Id,
+            periodNumber,
+            timeInSeconds,
+            WentToOvertime,
+            false, // Is shootout goal
+            assistingPlayer?.Id));
     }
 
     /// <summary>
@@ -377,10 +385,17 @@ public class FloorballMatch
             timeInSeconds,
             description ?? string.Empty);
         _events.Add(penaltyEvent);
-        if (player != null)
-        {
-            // Application service layer logic
-        }
+        
+        // Add domain event
+        AddDomainEvent(new FloorballPenaltyAssignedEvent(
+            Id,
+            team.Id,
+            player?.Id,
+            penaltyType,
+            minutes,
+            periodNumber,
+            timeInSeconds,
+            description ?? string.Empty));
     }
 
     /// <summary>
@@ -391,8 +406,7 @@ public class FloorballMatch
     /// <exception cref="InvalidOperationException">Thrown when the match is not in a state that allows adding officials</exception>
     public void AddOfficial(FloorballReferee referee)
     {
-        if (referee == null)
-            throw new ArgumentNullException(nameof(referee));
+        ArgumentNullException.ThrowIfNull(referee);
         
         if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
             throw new InvalidOperationException($"Cannot add officials to a match with status {Status}.");
@@ -401,6 +415,31 @@ public class FloorballMatch
             return;
             
         _officials.Add(referee);
+        
+        // Add domain event
+        AddDomainEvent(new FloorballOfficialAssignedEvent(Id, referee.Id));
+    }
+
+    /// <summary>
+    /// Records that the match went to overtime
+    /// </summary>
+    public void RecordOvertime()
+    {
+        WentToOvertime = true;
+        
+        // Add domain event
+        AddDomainEvent(new FloorballMatchOvertimeStartedEvent(Id));
+    }
+
+    /// <summary>
+    /// Records that the match went to shootout
+    /// </summary>
+    public void RecordShootout()
+    {
+        WentToShootout = true;
+        
+        // Add domain event
+        AddDomainEvent(new FloorballMatchShootoutStartedEvent(Id));
     }
 
     /// <summary>
@@ -412,6 +451,7 @@ public class FloorballMatch
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot complete a match with status {Status}.");
         
+        FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Completed;
         
         // Record that the match has been officiated by all referees
@@ -419,6 +459,10 @@ public class FloorballMatch
         {
             referee.RecordMatchOfficiated();
         }
+        
+        // Add domain events
+        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
+        AddDomainEvent(new FloorballMatchCompletedEvent(Id, HomeScore, AwayScore, WentToOvertime, WentToShootout));
     }
 
     /// <summary>
@@ -430,6 +474,10 @@ public class FloorballMatch
         if (Status == FloorballMatchStatus.Completed)
             throw new InvalidOperationException("Cannot cancel a completed match.");
             
+        FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Cancelled;
+        
+        // Add domain event
+        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
     }
 } 
