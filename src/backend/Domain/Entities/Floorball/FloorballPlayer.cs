@@ -54,13 +54,14 @@ public class FloorballPlayer : Person
         FloorballPosition preferredPosition = FloorballPosition.Forward)
         : base(firstName, lastName, birthDate)
     {
+        ArgumentNullException.ThrowIfNull(firstName);
+        ArgumentNullException.ThrowIfNull(lastName);
         if (string.IsNullOrWhiteSpace(firstName))
             throw new ArgumentException("First name cannot be null or empty.", nameof(firstName));
         if (string.IsNullOrWhiteSpace(lastName))
             throw new ArgumentException("Last name cannot be null or empty.", nameof(lastName));
         if (birthDate > DateTime.UtcNow)
             throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
-
         IsActive = true;
         PreferredPosition = preferredPosition;
         CareerGoals = 0;

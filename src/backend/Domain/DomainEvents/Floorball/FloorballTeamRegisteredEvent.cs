@@ -54,10 +54,7 @@ public class FloorballTeamRegisteredEvent : IDomainEvent
     /// <param name="team">The team that was registered</param>
     public FloorballTeamRegisteredEvent(FloorballTeam team)
     {
-        if (team == null)
-        {
-            throw new ArgumentNullException(nameof(team));
-        }
+        ArgumentNullException.ThrowIfNull(team);
 
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;
@@ -68,4 +65,4 @@ public class FloorballTeamRegisteredEvent : IDomainEvent
         Division = team.Division;
         HomeArena = team.HomeArena;
     }
-} 
+}

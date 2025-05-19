@@ -81,11 +81,11 @@ public class FloorballSeason : AggregateRoot
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballSeason(string name, FloorballDivision division, DateTime startDate, DateTime endDate)
     {
+        ArgumentNullException.ThrowIfNull(name);
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Season name cannot be null or empty.", nameof(name));
         if (endDate <= startDate)
             throw new ArgumentException("End date must be after start date.", nameof(endDate));
-
         Id = Guid.NewGuid();
         Name = name;
         Division = division;
@@ -146,11 +146,8 @@ public class FloorballSeason : AggregateRoot
     {
         if (IsCompleted)
             throw new InvalidOperationException("Cannot update a completed season.");
-        
-        // Check if all teams in the season match the new division
-        if (_teams.Any() && _teams.Any(t => t.Division != division))
+        if (_teams.Count > 0 && _teams.Any(t => t.Division != division))
             throw new InvalidOperationException("Cannot change division because some teams in this season belong to a different division.");
-        
         Division = division;
     }
 
@@ -191,15 +188,13 @@ public class FloorballSeason : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the season is completed or the team's division doesn't match</exception>
     public void AddTeam(FloorballTeam team)
     {
-        if (team == null)
-            throw new ArgumentNullException(nameof(team));
+        ArgumentNullException.ThrowIfNull(team);
         if (IsCompleted)
             throw new InvalidOperationException("Cannot add a team to a completed season.");
         if (team.Division != Division)
             throw new InvalidOperationException($"Team division {team.Division} does not match season division {Division}.");
         if (_teams.Contains(team))
             return;
-
         _teams.Add(team);
     }
 
@@ -211,15 +206,11 @@ public class FloorballSeason : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the season is completed</exception>
     public void RemoveTeam(FloorballTeam team)
     {
-        if (team == null)
-            throw new ArgumentNullException(nameof(team));
+        ArgumentNullException.ThrowIfNull(team);
         if (IsCompleted)
             throw new InvalidOperationException("Cannot remove a team from a completed season.");
-        
-        // Check if team is part of any matches
-        if (_matches.Any(m => m.HomeTeam == team || m.AwayTeam == team))
+        if (_matches.Count > 0 && _matches.Any(m => m.HomeTeam == team || m.AwayTeam == team))
             throw new InvalidOperationException("Cannot remove team that is part of scheduled matches.");
-        
         _teams.Remove(team);
     }
 
@@ -231,15 +222,13 @@ public class FloorballSeason : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the season is completed</exception>
     public void AddMatch(FloorballMatch match)
     {
-        if (match == null)
-            throw new ArgumentNullException(nameof(match));
+        ArgumentNullException.ThrowIfNull(match);
         if (IsCompleted)
             throw new InvalidOperationException("Cannot add a match to a completed season.");
         if (!_teams.Contains(match.HomeTeam) || !_teams.Contains(match.AwayTeam))
             throw new InvalidOperationException("Both teams must be participating in this season.");
         if (_matches.Contains(match))
             return;
-
         _matches.Add(match);
     }
 } 

@@ -40,7 +40,7 @@ public class FloorballTeam : AggregateRoot
     /// <summary>
     /// Gets whether the team has any active members
     /// </summary>
-    public bool HasActiveMembers => _roster.Any(p => p.IsActive);
+    public bool HasActiveMembers => _roster.Count > 0 && _roster.Any(p => p.IsActive);
     
     /// <summary>
     /// Gets the team's home arena
@@ -84,15 +84,16 @@ public class FloorballTeam : AggregateRoot
         string primaryJerseyColor,
         string? secondaryJerseyColor = null)
     {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(club);
+        ArgumentNullException.ThrowIfNull(homeArena);
+        ArgumentNullException.ThrowIfNull(primaryJerseyColor);
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Team name cannot be null or empty.", nameof(name));
-        if (club == null)
-            throw new ArgumentNullException(nameof(club));
         if (string.IsNullOrWhiteSpace(homeArena))
             throw new ArgumentException("Home arena cannot be null or empty.", nameof(homeArena));
         if (string.IsNullOrWhiteSpace(primaryJerseyColor))
             throw new ArgumentException("Primary jersey color cannot be null or empty.", nameof(primaryJerseyColor));
-
         Id = Guid.NewGuid();
         Name = name;
         Division = division;
@@ -161,15 +162,11 @@ public class FloorballTeam : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the player is already in the roster</exception>
     public void AddPlayer(FloorballPlayer player, FloorballPosition position, int? jerseyNumber = null)
     {
-        if (player == null)
-            throw new ArgumentNullException(nameof(player));
-
-        if (_roster.Any(p => p.PlayerId == player.Id))
+        ArgumentNullException.ThrowIfNull(player);
+        if (_roster.Count > 0 && _roster.Any(p => p.PlayerId == player.Id))
             throw new InvalidOperationException($"Player with ID {player.Id} is already in the roster.");
-            
-        if (jerseyNumber.HasValue && _roster.Any(p => p.JerseyNumber == jerseyNumber))
+        if (jerseyNumber.HasValue && _roster.Count > 0 && _roster.Any(p => p.JerseyNumber == jerseyNumber))
             throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
-
         var teamPlayer = new FloorballTeamPlayer(Id, player.Id, position, jerseyNumber);
         _roster.Add(teamPlayer);
     }
@@ -181,7 +178,7 @@ public class FloorballTeam : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the player is not found</exception>
     public void RemovePlayer(Guid playerId)
     {
-        var teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
+        FloorballTeamPlayer? teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
         if (teamPlayer == null)
             throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
 
@@ -196,7 +193,7 @@ public class FloorballTeam : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the player is not found</exception>
     public void UpdatePlayerPosition(Guid playerId, FloorballPosition newPosition)
     {
-        var teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
+        FloorballTeamPlayer? teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
         if (teamPlayer == null)
             throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
 
@@ -211,7 +208,7 @@ public class FloorballTeam : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the player is not found or the jersey number is already taken</exception>
     public void UpdatePlayerJerseyNumber(Guid playerId, int? jerseyNumber)
     {
-        var teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
+        FloorballTeamPlayer? teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
         if (teamPlayer == null)
             throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
 

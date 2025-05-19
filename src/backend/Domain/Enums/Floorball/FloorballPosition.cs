@@ -6,6 +6,11 @@ namespace Domain.Enums.Floorball;
 public enum FloorballPosition
 {
     /// <summary>
+    /// No specific position assigned
+    /// </summary>
+    None = 0,
+
+    /// <summary>
     /// Forward/striker position
     /// </summary>
     Forward = 1,

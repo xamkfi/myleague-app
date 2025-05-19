@@ -54,6 +54,8 @@ public class FloorballReferee : Person
         DateTime licenseExpiryDate)
         : base(firstName, lastName, birthDate)
     {
+        ArgumentNullException.ThrowIfNull(firstName);
+        ArgumentNullException.ThrowIfNull(lastName);
         if (string.IsNullOrWhiteSpace(firstName))
             throw new ArgumentException("First name cannot be null or empty.", nameof(firstName));
         if (string.IsNullOrWhiteSpace(lastName))
@@ -64,7 +66,6 @@ public class FloorballReferee : Person
             throw new ArgumentException("License issue date cannot be in the future.", nameof(licenseIssueDate));
         if (licenseExpiryDate <= licenseIssueDate)
             throw new ArgumentException("License expiry date must be after the issue date.", nameof(licenseExpiryDate));
-
         IsActive = true;
         LicenseIssueDate = licenseIssueDate;
         LicenseExpiryDate = licenseExpiryDate;

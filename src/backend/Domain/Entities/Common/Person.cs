@@ -15,12 +15,12 @@ public abstract class Person : AggregateRoot
     /// <summary>
     /// Gets the first name of the person
     /// </summary>
-    public required string FirstName { get; private set; }
+    public string FirstName { get; private set; }
 
     /// <summary>
     /// Gets the last name of the person
     /// </summary>
-    public required string LastName { get; private set; }
+    public string LastName { get; private set; }
 
     /// <summary>
     /// Gets the birth date of the person
@@ -33,13 +33,17 @@ public abstract class Person : AggregateRoot
     protected Person()
     {
         Id = Guid.NewGuid();
+        FirstName = string.Empty;
+        LastName = string.Empty;
     }
 
     protected Person(string firstName, string lastName, DateTime birthDate)
     {
+        ArgumentNullException.ThrowIfNull(firstName);
+        ArgumentNullException.ThrowIfNull(lastName);
         Id = Guid.NewGuid();
-        FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
-        LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
+        FirstName = firstName;
+        LastName = lastName;
         BirthDate = birthDate;
     }
 
@@ -50,7 +54,9 @@ public abstract class Person : AggregateRoot
     /// <param name="lastName">The new last name</param>
     public void UpdateBasicInfo(string firstName, string lastName)
     {
-        FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
-        LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
+        ArgumentNullException.ThrowIfNull(firstName);
+        ArgumentNullException.ThrowIfNull(lastName);
+        FirstName = firstName;
+        LastName = lastName;
     }
 } 

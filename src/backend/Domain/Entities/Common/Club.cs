@@ -87,17 +87,14 @@ public class Club : AggregateRoot
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(city);
         ArgumentNullException.ThrowIfNull(country);
-
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Club name cannot be empty.", nameof(name));
         if (string.IsNullOrWhiteSpace(city))
             throw new ArgumentException("City cannot be empty.", nameof(city));
         if (string.IsNullOrWhiteSpace(country))
             throw new ArgumentException("Country cannot be empty.", nameof(country));
-
         if (foundingDate.HasValue && foundingDate.Value > DateTime.UtcNow)
             throw new ArgumentException("Founding date cannot be in the future.", nameof(foundingDate));
-
         Id = Guid.NewGuid();
         Name = name;
         City = city;
@@ -117,10 +114,8 @@ public class Club : AggregateRoot
     public void UpdateName(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Club name cannot be empty.", nameof(name));
-
         Name = name;
     }
 
@@ -136,14 +131,12 @@ public class Club : AggregateRoot
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(city);
         ArgumentNullException.ThrowIfNull(country);
-
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Club name cannot be empty.", nameof(name));
         if (string.IsNullOrWhiteSpace(city))
             throw new ArgumentException("City cannot be empty.", nameof(city));
         if (string.IsNullOrWhiteSpace(country))
             throw new ArgumentException("Country cannot be empty.", nameof(country));
-
         Name = name;
         City = city;
         Country = country;
@@ -181,7 +174,6 @@ public class Club : AggregateRoot
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(homeArena);
         ArgumentNullException.ThrowIfNull(primaryJerseyColor);
-
         var team = new FloorballTeam(name, division, this, homeArena, primaryJerseyColor, secondaryJerseyColor);
         _floorballTeams.Add(team);
         return team;

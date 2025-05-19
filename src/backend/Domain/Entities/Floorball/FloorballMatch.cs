@@ -124,6 +124,10 @@ public class FloorballMatch
         _events = new List<FloorballMatchEventBase>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
+        Season = null!; // EF Core will set this
+        HomeTeam = null!;
+        AwayTeam = null!;
+        Venue = string.Empty;
     }
 
     /// <summary>
@@ -143,12 +147,9 @@ public class FloorballMatch
         DateTime scheduledDateTime,
         string venue)
     {
-        if (season == null)
-            throw new ArgumentNullException(nameof(season));
-        if (homeTeam == null)
-            throw new ArgumentNullException(nameof(homeTeam));
-        if (awayTeam == null)
-            throw new ArgumentNullException(nameof(awayTeam));
+        ArgumentNullException.ThrowIfNull(season);
+        ArgumentNullException.ThrowIfNull(homeTeam);
+        ArgumentNullException.ThrowIfNull(awayTeam);
         if (homeTeam == awayTeam)
             throw new ArgumentException("Home team and away team cannot be the same team.");
         if (string.IsNullOrWhiteSpace(venue))
@@ -171,8 +172,6 @@ public class FloorballMatch
         _events = new List<FloorballMatchEventBase>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
-        
-        // Initialize period scores for standard 3 periods in floorball
         for (int i = 1; i <= 3; i++)
         {
             _periodScores.Add(new FloorballPeriodScore(i, 0, 0));
@@ -186,9 +185,7 @@ public class FloorballMatch
     /// <exception cref="ArgumentNullException">Thrown when the season is null</exception>
     public void SetSeason(FloorballSeason season)
     {
-        if (season == null)
-            throw new ArgumentNullException(nameof(season));
-
+        ArgumentNullException.ThrowIfNull(season);
         Season = season;
         SeasonId = season.Id;
     }
@@ -360,20 +357,16 @@ public class FloorballMatch
         int minutes,
         int periodNumber,
         int timeInSeconds,
-        string description = null)
+        string description = "")
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot record a penalty for a match with status {Status}.");
-        
         if (periodNumber < 1 || periodNumber > _periodScores.Count)
             throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {_periodScores.Count}.");
-        
-        if (timeInSeconds < 0 || timeInSeconds > 1200) // 20 minutes = 1200 seconds
+        if (timeInSeconds < 0 || timeInSeconds > 1200)
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
-            
         if (minutes <= 0)
             throw new ArgumentOutOfRangeException(nameof(minutes), "Penalty minutes must be positive.");
-
         var penaltyEvent = new FloorballPenaltyEvent(
             Id,
             team.Id,
@@ -382,15 +375,11 @@ public class FloorballMatch
             minutes,
             periodNumber,
             timeInSeconds,
-            description);
-            
+            description ?? string.Empty);
         _events.Add(penaltyEvent);
-        
-        // Update player statistics if applicable
         if (player != null)
         {
-            // Assuming FloorballTeamPlayer tracks penalty minutes
-            // This would need to be handled by the application service layer
+            // Application service layer logic
         }
     }
 

@@ -99,8 +99,6 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         {
             _periodScores[i] = (0, 0);
         }
-
-        // Initialize non-nullable properties with default values
         Venue = string.Empty;
     }
     
@@ -124,12 +122,9 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     {
         if (homeTeamId == awayTeamId)
             throw new ArgumentException("Home team and away team cannot be the same.");
-        
         if (string.IsNullOrWhiteSpace(venue))
             throw new ArgumentException("Venue cannot be null or empty.", nameof(venue));
-        
         var match = new EventSourcedFloorballMatch();
-        
         var createdEvent = new FloorballMatchCreatedEvent(
             id,
             seasonId,
@@ -137,7 +132,6 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             awayTeamId,
             scheduledDateTime,
             venue);
-        
         match.ApplyEvent(createdEvent);
         return match;
     }
@@ -223,26 +217,20 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// <param name="goalTypeId">The type of goal</param>
     /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
     public void RecordGoal(
-        Guid scoringTeamId, 
-        Guid? scoringPlayerId, 
-        Guid? assistingPlayerId,
+        Guid scoringTeamId,
+        Guid scoringPlayerId,
         int periodNumber,
         int timeInSeconds,
-        string description = null,
-        int? goalTypeId = null)
+        Guid? assistingPlayerId = null)
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot record a goal for a match with status {Status}.");
-        
-        if (periodNumber < 1 || periodNumber > _periodScores.Count)
+        if (_periodScores.Count == 0 || periodNumber < 1 || periodNumber > _periodScores.Count)
             throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {_periodScores.Count}.");
-        
-        if (timeInSeconds < 0 || timeInSeconds > 1200) // 20 minutes = 1200 seconds
+        if (timeInSeconds < 0 || timeInSeconds > 1200)
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
-        
         if (scoringTeamId != HomeTeamId && scoringTeamId != AwayTeamId)
             throw new ArgumentException("Scoring team must be either the home team or the away team.", nameof(scoringTeamId));
-        
         var goalScoredEvent = new FloorballGoalScoredEvent(
             Id,
             scoringTeamId,
@@ -250,9 +238,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             periodNumber,
             timeInSeconds,
             WentToOvertime,
-            false, // Not a penalty shot
+            false,
             assistingPlayerId);
-            
         ApplyEvent(goalScoredEvent);
     }
 
@@ -274,23 +261,18 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         int minutes,
         int periodNumber,
         int timeInSeconds,
-        string description = null)
+        string? description = null)
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot record a penalty for a match with status {Status}.");
-        
-        if (periodNumber < 1 || periodNumber > _periodScores.Count)
+        if (_periodScores.Count == 0 || periodNumber < 1 || periodNumber > _periodScores.Count)
             throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {_periodScores.Count}.");
-        
-        if (timeInSeconds < 0 || timeInSeconds > 1200) // 20 minutes = 1200 seconds
+        if (timeInSeconds < 0 || timeInSeconds > 1200)
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
-            
         if (minutes <= 0)
             throw new ArgumentOutOfRangeException(nameof(minutes), "Penalty minutes must be positive.");
-        
         if (teamId != HomeTeamId && teamId != AwayTeamId)
             throw new ArgumentException("Team must be either the home team or the away team.", nameof(teamId));
-        
         var penaltyAssignedEvent = new FloorballPenaltyAssignedEvent(
             Id,
             teamId,
@@ -299,8 +281,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             minutes,
             periodNumber,
             timeInSeconds,
-            description);
-            
+            description ?? string.Empty);
         ApplyEvent(penaltyAssignedEvent);
     }
 

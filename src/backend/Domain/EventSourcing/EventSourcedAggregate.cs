@@ -1,3 +1,4 @@
+using System.Reflection;
 using Domain.DomainEvents;
 
 namespace Domain.EventSourcing;
@@ -41,7 +42,7 @@ public abstract class EventSourcedAggregate
     private void ApplyChange(IDomainEvent @event, bool isNew)
     {
         // Use reflection to call the Apply method that matches the event type
-        var method = this.GetType()
+        MethodInfo? method = this.GetType()
             .GetMethods(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
             .Where(m => m.Name == "Apply")
             .Where(m => m.GetParameters().Length == 1)
@@ -68,7 +69,7 @@ public abstract class EventSourcedAggregate
     /// <param name="history">The history of events</param>
     public void LoadFromHistory(IEnumerable<IDomainEvent> history)
     {
-        foreach (var @event in history)
+        foreach (IDomainEvent @event in history)
         {
             ApplyChange(@event, false);
         }
