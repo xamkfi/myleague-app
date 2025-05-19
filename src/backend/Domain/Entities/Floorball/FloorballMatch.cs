@@ -325,7 +325,7 @@ public class FloorballMatch
         {
             HomeScore++;
             // Update the period score for the current period
-            var periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
+            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
             if (periodScore != null)
             {
                 periodScore.IncrementHomeScore();
@@ -335,7 +335,7 @@ public class FloorballMatch
         {
             AwayScore++;
             // Update the period score for the current period
-            var periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
+            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
             if (periodScore != null)
             {
                 periodScore.IncrementAwayScore();
@@ -426,7 +426,7 @@ public class FloorballMatch
         Status = FloorballMatchStatus.Completed;
         
         // Record that the match has been officiated by all referees
-        foreach (var referee in _officials)
+        foreach (FloorballReferee referee in _officials)
         {
             referee.RecordMatchOfficiated();
         }

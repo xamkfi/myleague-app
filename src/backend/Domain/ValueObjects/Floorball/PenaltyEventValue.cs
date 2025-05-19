@@ -49,7 +49,7 @@ public class PenaltyEventValue : MatchEventBaseValue
         int durationInMinutes,
         int periodNumber,
         int timeInSeconds,
-        string description = null) 
+        string? description = null) 
         : base(matchId, teamId, periodNumber, timeInSeconds, description)
     {
         if (durationInMinutes <= 0)

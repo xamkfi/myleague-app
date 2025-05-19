@@ -87,6 +87,11 @@ public class FloorballMatchCreatedEvent : IDomainEvent
         FloorballTeam homeTeam,
         FloorballTeam awayTeam)
     {
+        ArgumentNullException.ThrowIfNull(match);
+        ArgumentNullException.ThrowIfNull(season);
+        ArgumentNullException.ThrowIfNull(homeTeam);
+        ArgumentNullException.ThrowIfNull(awayTeam);
+
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;
         MatchId = match.Id;

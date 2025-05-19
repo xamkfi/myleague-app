@@ -17,7 +17,7 @@ public class Club : AggregateRoot
     /// <summary>
     /// Gets the name of the club
     /// </summary>
-    public string Name { get; private set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// Gets the founding date of the club
@@ -27,27 +27,27 @@ public class Club : AggregateRoot
     /// <summary>
     /// Gets the city where the club is based
     /// </summary>
-    public string City { get; private set; }
+    public required string City { get; set; }
 
     /// <summary>
     /// Gets the country where the club is based
     /// </summary>
-    public string Country { get; private set; }
+    public required string Country { get; set; }
     
     /// <summary>
     /// Gets the club's official website URL
     /// </summary>
-    public string WebsiteUrl { get; private set; }
+    public required Uri WebsiteUrl { get; set; }
     
     /// <summary>
     /// Gets the club's logo URL
     /// </summary>
-    public string LogoUrl { get; private set; }
+    public required Uri LogoUrl { get; set; }
     
     /// <summary>
     /// Gets the primary contact email for the club
     /// </summary>
-    public string ContactEmail { get; private set; }
+    public required string ContactEmail { get; set; }
     
     /// <summary>
     /// Gets the floorball teams associated with this club
@@ -77,31 +77,36 @@ public class Club : AggregateRoot
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public Club(
         string name,
-        string? city = null,
-        string? country = null,
+        string city,
+        string country,
         DateTime? foundingDate = null,
-        string? websiteUrl = null,
-        string? logoUrl = null,
+        Uri? websiteUrl = null,
+        Uri? logoUrl = null,
         string? contactEmail = null)
     {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(city);
+        ArgumentNullException.ThrowIfNull(country);
+
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Club name cannot be null or empty.", nameof(name));
+            throw new ArgumentException("Club name cannot be empty.", nameof(name));
+        if (string.IsNullOrWhiteSpace(city))
+            throw new ArgumentException("City cannot be empty.", nameof(city));
+        if (string.IsNullOrWhiteSpace(country))
+            throw new ArgumentException("Country cannot be empty.", nameof(country));
 
         if (foundingDate.HasValue && foundingDate.Value > DateTime.UtcNow)
             throw new ArgumentException("Founding date cannot be in the future.", nameof(foundingDate));
 
         Id = Guid.NewGuid();
         Name = name;
-        City = city ?? string.Empty;
-        Country = country ?? string.Empty;
+        City = city;
+        Country = country;
         FoundingDate = foundingDate ?? DateTime.UtcNow;
-        WebsiteUrl = websiteUrl ?? string.Empty;
-        LogoUrl = logoUrl ?? string.Empty;
-        ContactEmail = contactEmail ?? string.Empty;
-        _floorballTeams = new List<FloorballTeam>
-        {
-            // Example initialization if needed
-        };
+        WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
+        LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
+        ContactEmail = contactEmail ?? "contact@example.com";
+        _floorballTeams = new List<FloorballTeam>();
     }
 
     /// <summary>
@@ -111,8 +116,10 @@ public class Club : AggregateRoot
     /// <exception cref="ArgumentException">Thrown when the name is invalid</exception>
     public void UpdateName(string name)
     {
+        ArgumentNullException.ThrowIfNull(name);
+
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Club name cannot be null or empty.", nameof(name));
+            throw new ArgumentException("Club name cannot be empty.", nameof(name));
 
         Name = name;
     }
@@ -126,12 +133,20 @@ public class Club : AggregateRoot
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public void UpdateBasicInfo(string name, string city, string country)
     {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(city);
+        ArgumentNullException.ThrowIfNull(country);
+
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Club name cannot be null or empty.", nameof(name));
+            throw new ArgumentException("Club name cannot be empty.", nameof(name));
+        if (string.IsNullOrWhiteSpace(city))
+            throw new ArgumentException("City cannot be empty.", nameof(city));
+        if (string.IsNullOrWhiteSpace(country))
+            throw new ArgumentException("Country cannot be empty.", nameof(country));
 
         Name = name;
-        City = city ?? string.Empty;
-        Country = country ?? string.Empty;
+        City = city;
+        Country = country;
     }
     
     /// <summary>
@@ -140,11 +155,11 @@ public class Club : AggregateRoot
     /// <param name="websiteUrl">The new website URL</param>
     /// <param name="logoUrl">The new logo URL</param>
     /// <param name="contactEmail">The new contact email</param>
-    public void UpdateOnlinePresence(string websiteUrl, string logoUrl, string contactEmail)
+    public void UpdateOnlinePresence(Uri? websiteUrl, Uri? logoUrl, string? contactEmail)
     {
-        WebsiteUrl = websiteUrl ?? string.Empty;
-        LogoUrl = logoUrl ?? string.Empty;
-        ContactEmail = contactEmail ?? string.Empty;
+        WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
+        LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
+        ContactEmail = contactEmail ?? "contact@example.com";
     }
 
     /// <summary>
@@ -161,8 +176,12 @@ public class Club : AggregateRoot
         FloorballDivision division, 
         string homeArena,
         string primaryJerseyColor,
-        string secondaryJerseyColor = null)
+        string? secondaryJerseyColor = null)
     {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(homeArena);
+        ArgumentNullException.ThrowIfNull(primaryJerseyColor);
+
         var team = new FloorballTeam(name, division, this, homeArena, primaryJerseyColor, secondaryJerseyColor);
         _floorballTeams.Add(team);
         return team;

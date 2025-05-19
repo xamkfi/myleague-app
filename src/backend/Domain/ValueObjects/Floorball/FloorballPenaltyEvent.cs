@@ -50,7 +50,7 @@ public class FloorballPenaltyEvent : FloorballMatchEventBase
         int penaltyMinutes,
         int periodNumber,
         int timeInSeconds,
-        string description = null) 
+        string? description = null) 
         : base(matchId, teamId, periodNumber, timeInSeconds, description)
     {
         PlayerId = playerId;

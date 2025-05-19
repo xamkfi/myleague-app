@@ -82,7 +82,7 @@ public class FloorballTeam : AggregateRoot
         Club club,
         string homeArena,
         string primaryJerseyColor,
-        string secondaryJerseyColor = null)
+        string? secondaryJerseyColor = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Team name cannot be null or empty.", nameof(name));

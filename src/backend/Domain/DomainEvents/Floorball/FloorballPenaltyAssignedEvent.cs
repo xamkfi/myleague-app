@@ -77,7 +77,7 @@ public class FloorballPenaltyAssignedEvent : IDomainEvent
         int minutes,
         int periodNumber,
         int timeInSeconds,
-        string description = null)
+        string? description = null)
     {
         if (periodNumber < 1)
         {

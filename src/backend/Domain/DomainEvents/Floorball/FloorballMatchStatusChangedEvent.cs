@@ -60,6 +60,8 @@ public class FloorballMatchStatusChangedEvent : IDomainEvent
         FloorballMatch match,
         FloorballMatchStatus previousStatus)
     {
+        ArgumentNullException.ThrowIfNull(match);
+
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;
         MatchId = match.Id;

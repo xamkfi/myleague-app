@@ -35,7 +35,7 @@ public abstract class FloorballMatchEventBase
     /// <summary>
     /// Gets the description of the event
     /// </summary>
-    public string Description { get; protected set; }
+    public string? Description { get; protected set; }
     
     /// <summary>
     /// Protected constructor for EF Core and derived classes
@@ -58,7 +58,7 @@ public abstract class FloorballMatchEventBase
         Guid teamId,
         int periodNumber,
         int timeInSeconds,
-        string description = null)
+        string? description = null)
     {
         Id = Guid.NewGuid();
         MatchId = matchId;

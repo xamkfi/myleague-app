@@ -49,7 +49,7 @@ public class GoalEventValue : MatchEventBaseValue
         int periodNumber,
         int timeInSeconds,
         int? goalTypeId = null,
-        string description = null) 
+        string? description = null) 
         : base(matchId, teamId, periodNumber, timeInSeconds, description)
     {
         ScoringPlayerId = scoringPlayerId;

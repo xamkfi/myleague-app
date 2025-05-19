@@ -15,12 +15,12 @@ public abstract class Person : AggregateRoot
     /// <summary>
     /// Gets the first name of the person
     /// </summary>
-    public string FirstName { get; private set; }
+    public required string FirstName { get; private set; }
 
     /// <summary>
     /// Gets the last name of the person
     /// </summary>
-    public string LastName { get; private set; }
+    public required string LastName { get; private set; }
 
     /// <summary>
     /// Gets the birth date of the person
