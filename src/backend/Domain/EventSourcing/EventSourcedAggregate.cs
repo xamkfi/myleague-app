@@ -69,6 +69,8 @@ public abstract class EventSourcedAggregate
     /// <param name="history">The history of events</param>
     public void LoadFromHistory(IEnumerable<IDomainEvent> history)
     {
+        ArgumentNullException.ThrowIfNull(history);
+
         foreach (IDomainEvent @event in history)
         {
             ApplyChange(@event, false);
