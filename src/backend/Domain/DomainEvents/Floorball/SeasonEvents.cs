@@ -1,6 +1,6 @@
-using Domain2.DomainEvents;
+using Domain.DomainEvents;
 
-namespace Domain2.DomainEvents.Floorball;
+namespace Domain.DomainEvents.Floorball;
 
 /// <summary>
 /// Event raised when a season is activated

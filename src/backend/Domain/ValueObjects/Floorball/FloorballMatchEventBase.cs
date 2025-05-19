@@ -1,6 +1,6 @@
 using System;
 
-namespace Domain2.ValueObjects.Floorball;
+namespace Domain.ValueObjects.Floorball;
 
 /// <summary>
 /// Base abstract class for all floorball match events

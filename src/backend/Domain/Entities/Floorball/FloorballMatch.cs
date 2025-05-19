@@ -1,9 +1,9 @@
-using Domain2.Enums;
-using Domain2.Enums.Floorball;
-using Domain2.ValueObjects.Floorball;
+using Domain.Enums;
+using Domain.Enums.Floorball;
+using Domain.ValueObjects.Floorball;
 using System.Collections.Generic;
 
-namespace Domain2.Entities.Floorball;
+namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a floorball match

@@ -1,4 +1,4 @@
-namespace Domain2.DomainEvents.Floorball;
+namespace Domain.DomainEvents.Floorball;
 
 /// <summary>
 /// Event raised when a floorball match goes to overtime

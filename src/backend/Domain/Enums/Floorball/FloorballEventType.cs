@@ -1,4 +1,4 @@
-namespace Domain2.Enums.Floorball;
+namespace Domain.Enums.Floorball;
 
 /// <summary>
 /// Types of events that can occur in a floorball match

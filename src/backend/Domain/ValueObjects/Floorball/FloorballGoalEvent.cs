@@ -1,7 +1,7 @@
 using System;
-using Domain2.Enums;
+using Domain.Enums;
 
-namespace Domain2.ValueObjects.Floorball;
+namespace Domain.ValueObjects.Floorball;
 
 /// <summary>
 /// Represents a goal scored during a floorball match

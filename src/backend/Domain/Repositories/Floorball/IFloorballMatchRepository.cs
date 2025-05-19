@@ -1,7 +1,7 @@
-using Domain2.Entities.Floorball;
-using Domain2.Enums.Floorball;
+using Domain.Entities.Floorball;
+using Domain.Enums.Floorball;
 
-namespace Domain2.Repositories.Floorball;
+namespace Domain.Repositories.Floorball;
 
 /// <summary>
 /// Repository for managing floorball matches

@@ -1,8 +1,8 @@
-using Domain2.DomainEvents;
-using Domain2.Entities.Floorball;
-using Domain2.EventSourcing;
+using Domain.DomainEvents;
+using Domain.Entities.Floorball;
+using Domain.EventSourcing;
 
-namespace Domain2.Repositories.Floorball;
+namespace Domain.Repositories.Floorball;
 
 /// <summary>
 /// Repository for managing event-sourced floorball matches

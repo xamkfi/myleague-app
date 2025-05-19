@@ -1,6 +1,6 @@
-using Domain2.Entities.Floorball;
+using Domain.Entities.Floorball;
 
-namespace Domain2.DomainEvents.Floorball;
+namespace Domain.DomainEvents.Floorball;
 
 /// <summary>
 /// Event raised when a period ends in a floorball match

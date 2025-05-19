@@ -1,6 +1,6 @@
 using System;
 
-namespace Domain2.ValueObjects.Floorball;
+namespace Domain.ValueObjects.Floorball;
 
 /// <summary>
 /// Represents the score of a period in a floorball match

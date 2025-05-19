@@ -1,6 +1,6 @@
-using Domain2.DomainEvents;
+using Domain.DomainEvents;
 
-namespace Domain2.EventSourcing;
+namespace Domain.EventSourcing;
 
 /// <summary>
 /// Base class for all aggregate roots in the domain model

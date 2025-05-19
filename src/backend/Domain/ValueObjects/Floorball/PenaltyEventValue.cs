@@ -1,7 +1,7 @@
 using System;
-using Domain2.Enums.Floorball;
+using Domain.Enums.Floorball;
 
-namespace Domain2.ValueObjects.Floorball;
+namespace Domain.ValueObjects.Floorball;
 
 /// <summary>
 /// Represents a penalty given during a floorball match

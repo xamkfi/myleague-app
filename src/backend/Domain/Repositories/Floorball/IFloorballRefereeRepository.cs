@@ -1,6 +1,6 @@
-using Domain2.Entities.Floorball;
+using Domain.Entities.Floorball;
 
-namespace Domain2.Repositories.Floorball;
+namespace Domain.Repositories.Floorball;
 
 /// <summary>
 /// Repository for managing floorball referees

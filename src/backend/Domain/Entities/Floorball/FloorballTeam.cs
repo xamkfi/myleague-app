@@ -1,10 +1,10 @@
-using Domain2.Enums.Floorball;
-using Domain2.ValueObjects.Floorball;
-using Domain2.Entities;
-using Domain2.EventSourcing;
-using Domain2.Entities.Common;
+using Domain.Enums.Floorball;
+using Domain.ValueObjects.Floorball;
+using Domain.Entities;
+using Domain.EventSourcing;
+using Domain.Entities.Common;
 
-namespace Domain2.Entities.Floorball;
+namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a floorball team within a club

@@ -1,6 +1,6 @@
-using Domain2.DomainEvents;
+using Domain.DomainEvents;
 
-namespace Domain2.EventSourcing;
+namespace Domain.EventSourcing;
 
 /// <summary>
 /// Interface for event store implementations

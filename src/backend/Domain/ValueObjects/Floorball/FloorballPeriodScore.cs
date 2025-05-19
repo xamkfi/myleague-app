@@ -1,4 +1,4 @@
-namespace Domain2.ValueObjects.Floorball;
+namespace Domain.ValueObjects.Floorball;
 
 /// <summary>
 /// Represents the score for a single period in a floorball match

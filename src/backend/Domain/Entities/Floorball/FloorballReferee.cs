@@ -1,7 +1,7 @@
-using Domain2.Entities;
-using Domain2.Entities.Common;
+using Domain.Entities;
+using Domain.Entities.Common;
 
-namespace Domain2.Entities.Floorball;
+namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a floorball referee in the system

@@ -1,7 +1,7 @@
-using Domain2.Enums.Floorball;
-using Domain2.EventSourcing;
+using Domain.Enums.Floorball;
+using Domain.EventSourcing;
 
-namespace Domain2.Entities.Floorball;
+namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a floorball season

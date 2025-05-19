@@ -1,6 +1,6 @@
-using Domain2.EventSourcing;
+using Domain.EventSourcing;
 
-namespace Domain2.Entities.Common;
+namespace Domain.Entities.Common;
 
 /// <summary>
 /// Represents a person in the system, serving as a base class for players and referees

@@ -1,4 +1,4 @@
-namespace Domain2.DomainEvents;
+namespace Domain.DomainEvents;
 
 /// <summary>
 /// Base interface for all domain events
@@ -14,4 +14,4 @@ public interface IDomainEvent
     /// Gets the date and time when the event occurred
     /// </summary>
     DateTime OccurredOn { get; }
-} 
+}

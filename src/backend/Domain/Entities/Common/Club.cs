@@ -1,8 +1,8 @@
-using Domain2.Entities.Floorball;
-using Domain2.Enums.Floorball;
-using Domain2.EventSourcing;
+using Domain.Entities.Floorball;
+using Domain.Enums.Floorball;
+using Domain.EventSourcing;
 
-namespace Domain2.Entities.Common;
+namespace Domain.Entities.Common;
 
 /// <summary>
 /// Represents a sports club that can have multiple floorball teams
