@@ -1,0 +1,66 @@
+rules:
+  - pattern: "**/*.cs"
+    language: csharp
+    description: |
+      Enforce Clean Architecture and Microsoft C# conventions for the MyLeague sports management system.
+    instructions:
+      - Avoid using 'var' unless the type is immediately obvious (follow .editorconfig rules)
+      - Use PascalCase for class names, method names, and public members
+      - Use camelCase for method parameters and local variables
+      - All public methods and classes must include XML documentation
+      - Avoid large methods: refactor if longer than 30 lines
+      - Use early returns to reduce nesting
+      - Group related files into logical namespaces/folders (e.g., Domain, Application, Infrastructure, API)
+      - Domain layer should not depend on Infrastructure or Application
+      - Use dependency injection instead of static helpers
+      - Prefer async methods for I/O operations
+      - Use interfaces for repository and service abstractions (e.g., IMatchRepository)
+      - Avoid logic in controllers—delegate to application or domain services
+      - Place DTOs and models in separate folders from domain entities
+      - Limit the number of responsibilities per class (SRP)
+
+  - pattern: "**/*Tests.cs"
+    language: csharp
+    description: |
+      Best practices for unit and integration test files in MyLeague.
+    instructions:
+      - Test methods should use descriptive names (e.g., MatchService_ShouldCalculateScoreCorrectly)
+      - Follow Arrange-Act-Assert pattern
+      - Avoid testing private methods directly
+      - Keep test methods small and focused
+      - Mock dependencies instead of using real infrastructure
+      - Use xUnit for testing (or NUnit if chosen, but consistently)
+      - Prefer FluentAssertions for assertions
+
+  - pattern: "**/Domain/**/*.cs"
+    language: csharp
+    description: |
+      Domain-driven design (DDD) guidance for MyLeague's domain layer.
+    instructions:
+      - Entities should encapsulate behavior, not just data
+      - Use value objects where appropriate (e.g., Score, PlayerNumber)
+      - Use private setters and methods to enforce invariants
+      - Domain events should represent meaningful events (e.g., MatchEndedEvent)
+      - Avoid injecting services into entities—use domain services for complex logic
+      - Keep aggregate roots small and consistent
+      - Avoid circular references in aggregates
+
+  - pattern: "**/Infrastructure/**/*.cs"
+    language: csharp
+    description: |
+      Infrastructure concerns like persistence, external APIs, and messaging.
+    instructions:
+      - Do not place business logic here
+      - Repositories should be clean wrappers around EF Core or other persistence tech
+      - Log meaningful errors and propagate only necessary exceptions
+      - Use strongly typed configuration access (IOptions<T>)
+
+  - pattern: "**/*.csproj"
+    language: xml
+    description: |
+      Project structure consistency
+    instructions:
+      - Keep project references clean and only reference necessary layers (no reverse references)
+      - Place EF Core migrations only in Infrastructure
+      - Use consistent naming for test projects (e.g., MyLeague.Tests.Unit)
+
