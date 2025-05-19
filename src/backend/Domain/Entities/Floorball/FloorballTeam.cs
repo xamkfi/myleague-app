@@ -64,6 +64,11 @@ public class FloorballTeam : AggregateRoot
     {
         Id = Guid.NewGuid();
         _roster = new List<FloorballTeamPlayer>();
+        Name = string.Empty;
+        Club = null!; // Marked as non-nullable, but initialized to null for EF Core
+        HomeArena = string.Empty; // Default to an empty string
+        PrimaryJerseyColor = string.Empty; // Default to an empty string
+        SecondaryJerseyColor = string.Empty; // Default to an empty string
     }
 
     /// <summary>
