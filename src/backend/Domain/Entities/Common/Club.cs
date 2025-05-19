@@ -76,17 +76,17 @@ public class Club : AggregateRoot
     /// <param name="contactEmail">The primary contact email for the club</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public Club(
-        string name, 
-        string city = null, 
-        string country = null, 
+        string name,
+        string? city = null,
+        string? country = null,
         DateTime? foundingDate = null,
-        string websiteUrl = null,
-        string logoUrl = null,
-        string contactEmail = null)
+        string? websiteUrl = null,
+        string? logoUrl = null,
+        string? contactEmail = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Club name cannot be null or empty.", nameof(name));
-        
+
         if (foundingDate.HasValue && foundingDate.Value > DateTime.UtcNow)
             throw new ArgumentException("Founding date cannot be in the future.", nameof(foundingDate));
 
@@ -98,7 +98,10 @@ public class Club : AggregateRoot
         WebsiteUrl = websiteUrl ?? string.Empty;
         LogoUrl = logoUrl ?? string.Empty;
         ContactEmail = contactEmail ?? string.Empty;
-        _floorballTeams = new List<FloorballTeam>();
+        _floorballTeams = new List<FloorballTeam>
+        {
+            // Example initialization if needed
+        };
     }
 
     /// <summary>
@@ -173,7 +176,7 @@ public class Club : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the team has active members</exception>
     public bool RemoveFloorballTeam(Guid teamId)
     {
-        var team = _floorballTeams.FirstOrDefault(t => t.Id == teamId);
+        FloorballTeam? team = _floorballTeams.FirstOrDefault(t => t.Id == teamId);
         if (team == null)
             return false;
         
