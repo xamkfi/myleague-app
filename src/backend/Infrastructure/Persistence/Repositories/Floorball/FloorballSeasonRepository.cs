@@ -3,6 +3,7 @@ using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence;
+using MyLeague.Infrastructure.Persistence.Contexts;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 {
@@ -24,12 +25,12 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// </summary>
         /// <param name="id">The season ID</param>
         /// <returns>The season if found, null otherwise</returns>
-        public override async Task<FloorballSeason> GetByIdAsync(Guid id)
+        public override async Task<FloorballSeason?> GetByIdAsync(Guid id)
         {
             return await _entities
                 .Include(s => s.Teams)
                 .Include(s => s.Matches)
-                .FirstOrDefaultAsync(s => s.Id == id);
+                .FirstOrDefaultAsync(s => s.Id == id) ?? throw new KeyNotFoundException($"Season with ID {id} not found.");
         }
 
         /// <summary>
@@ -105,7 +106,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             DateTime now = DateTime.UtcNow;
             
             // First try to find an active season
-            FloorballSeason activeSeason = await _entities
+            FloorballSeason? activeSeason = await _entities
                 .Include(s => s.Teams)
                 .Where(s => s.Division == division && s.IsActive)
                 .FirstOrDefaultAsync();
@@ -114,11 +115,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 return activeSeason;
                 
             // If no active season, try to find a future season
-            return await _entities
+            FloorballSeason? futureSeason = await _entities
                 .Include(s => s.Teams)
                 .Where(s => s.Division == division && s.StartDate > now && !s.IsCompleted)
                 .OrderBy(s => s.StartDate)
                 .FirstOrDefaultAsync();
+                
+            return futureSeason ?? throw new KeyNotFoundException($"No current or upcoming season found for division {division}.");
         }
 
         /// <summary>
@@ -127,7 +130,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <param name="id">The ID of the season to delete</param>
         public async Task DeleteAsync(Guid id)
         {
-            FloorballSeason season = await _entities.FindAsync(id);
+            FloorballSeason? season = await _entities.FindAsync(id);
             if (season != null)
             {
                 await DeleteAsync(season);

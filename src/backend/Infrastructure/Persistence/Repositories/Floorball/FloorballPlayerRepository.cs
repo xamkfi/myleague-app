@@ -3,6 +3,7 @@ using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence;
+using MyLeague.Infrastructure.Persistence.Contexts;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 {
@@ -24,7 +25,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// </summary>
         /// <param name="id">The player ID</param>
         /// <returns>The player if found, null otherwise</returns>
-        public override async Task<FloorballPlayer> GetByIdAsync(Guid id)
+        public override async Task<FloorballPlayer?> GetByIdAsync(Guid id)
         {
             return await _entities
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -48,7 +49,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<IEnumerable<FloorballPlayer>> GetByTeamIdAsync(Guid teamId)
         {
             // Get the team and its roster
-            FloorballTeam team = await _dbContext.FloorballTeams
+            FloorballTeam? team = await _dbContext.FloorballTeams
                 .Include(t => t.Roster)
                 .FirstOrDefaultAsync(t => t.Id == teamId);
 
@@ -110,7 +111,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             {
                 int goalCount = matches
                     .SelectMany(m => m.GoalEvents)
-                    .Count(g => g.ScoringPlayerId == player.Id);
+                    .Count(g => g.ScoringPlayerId.HasValue && g.ScoringPlayerId.Value == player.Id);
                 
                 playerGoals[player.Id] = goalCount;
             }
@@ -153,7 +154,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             {
                 int assistCount = matches
                     .SelectMany(m => m.GoalEvents)
-                    .Count(g => g.AssistingPlayerId == player.Id);
+                    .Count(g => g.AssistingPlayerId.HasValue && g.AssistingPlayerId.Value == player.Id);
                 
                 playerAssists[player.Id] = assistCount;
             }
@@ -170,7 +171,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <param name="id">The ID of the player to delete</param>
         public async Task DeleteAsync(Guid id)
         {
-            FloorballPlayer player = await _entities.FindAsync(id);
+            FloorballPlayer? player = await _entities.FindAsync(id);
             if (player != null)
             {
                 await DeleteAsync(player);
@@ -184,6 +185,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <returns>A collection of floorball players matching the search term</returns>
         public async Task<IEnumerable<FloorballPlayer>> SearchByNameAsync(string searchTerm)
         {
+            if (string.IsNullOrEmpty(searchTerm))
+                return await GetAllAsync();
+                
             return await _entities
                 .Where(p => p.FirstName.Contains(searchTerm) || 
                             p.LastName.Contains(searchTerm))

@@ -3,6 +3,7 @@ using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence;
+using MyLeague.Infrastructure.Persistence.Contexts;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 {
@@ -24,14 +25,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// </summary>
         /// <param name="id">The match ID</param>
         /// <returns>The match if found, null otherwise</returns>
-        public override async Task<FloorballMatch> GetByIdAsync(Guid id)
+        public override async Task<FloorballMatch?> GetByIdAsync(Guid id)
         {
             return await _entities
                 .Include(m => m.Season)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id) ?? throw new KeyNotFoundException($"Match with ID {id} not found.");
         }
 
         /// <summary>
@@ -179,7 +180,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(m => m.Season)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
-                .Where(m => m.Venue.Contains(venue))
+                .Where(m => m.Venue!.Contains(venue))
                 .OrderBy(m => m.ScheduledDateTime)
                 .ToListAsync();
         }
@@ -188,7 +189,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// Adds a new floorball match
         /// </summary>
         /// <param name="match">The match to add</param>
-        public async Task AddAsync(FloorballMatch match)
+        public override async Task AddAsync(FloorballMatch match)
         {
             await _entities.AddAsync(match);
             await _dbContext.SaveChangesAsync();
@@ -198,7 +199,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// Updates an existing floorball match
         /// </summary>
         /// <param name="match">The match to update</param>
-        public async Task UpdateAsync(FloorballMatch match)
+        public override async Task UpdateAsync(FloorballMatch match)
         {
             _dbContext.Entry(match).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync();
@@ -210,7 +211,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <param name="id">The ID of the match to delete</param>
         public async Task DeleteAsync(Guid id)
         {
-            FloorballMatch match = await _entities.FindAsync(id);
+            FloorballMatch? match = await _entities.FindAsync(id);
             if (match != null)
             {
                 await DeleteAsync(match);
