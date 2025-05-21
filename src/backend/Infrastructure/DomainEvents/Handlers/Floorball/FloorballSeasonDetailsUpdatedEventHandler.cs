@@ -1,0 +1,58 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Domain.DomainEvents.Floorball;
+using Domain.Entities.Floorball;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using MyLeague.Infrastructure.Persistence.Contexts;
+using MyLeague.Infrastructure.SignalR;
+
+namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
+{
+    /// <summary>
+    /// Handles FloorballSeasonDetailsUpdatedEvent by notifying SignalR clients with season detail update information.
+    /// </summary>
+    public class FloorballSeasonDetailsUpdatedEventHandler : SignalRDomainEventHandler<FloorballSeasonDetailsUpdatedEvent>
+    {
+        private readonly ApplicationDbContext _dbContext;
+
+        /// <summary>
+        /// Initializes a new instance of the FloorballSeasonDetailsUpdatedEventHandler class
+        /// </summary>
+        /// <param name="dbContext">The database context</param>
+        /// <param name="notifier">The domain event notifier</param>
+        /// <param name="logger">The logger</param>
+        public FloorballSeasonDetailsUpdatedEventHandler(
+            ApplicationDbContext dbContext,
+            DomainEventNotifier notifier,
+            ILogger<FloorballSeasonDetailsUpdatedEventHandler> logger)
+            : base(notifier, logger)
+        {
+            _dbContext = dbContext;
+        }
+
+        /// <summary>
+        /// Processes the FloorballSeasonDetailsUpdatedEvent before notification
+        /// </summary>
+        /// <param name="domainEvent">The domain event to process</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        protected override async Task ProcessEventAsync(FloorballSeasonDetailsUpdatedEvent domainEvent)
+        {
+            FloorballSeason? season = await _dbContext.FloorballSeasons
+                .FirstOrDefaultAsync(s => s.Id == domainEvent.SeasonId);
+
+            if (season == null)
+            {
+                _logger.LogWarning("Floorball season with ID {SeasonId} not found for SeasonDetailsUpdated event.", domainEvent.SeasonId);
+                return;
+            }
+
+            object payload = new { SeasonId = season.Id, Name = domainEvent.Name, UpdatedOn = domainEvent.OccurredOn };
+
+            _logger.LogInformation("Season details updated for season {SeasonId}: {Name}", season.Id, domainEvent.Name);
+
+            await NotifyAsync("FloorballSeasonDetailsUpdated", payload);
+        }
+    }
+}
