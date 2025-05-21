@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.DTOs.Notifications;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.SignalR;
+using MyLeague.Infrastructure.SignalR.Sports.Floorball;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,7 +40,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>A tuple containing the event name and notification payload</returns>
         protected override async Task<(string EventName, object? Notification)> BuildNotificationAsync(
-            FloorballPlayerAddedToTeamEvent domainEvent, 
+            FloorballPlayerAddedToTeamEvent domainEvent,
             CancellationToken cancellationToken = default)
         {
             FloorballPlayer? player = await _dbContext.FloorballPlayers
@@ -49,30 +50,29 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
             FloorballTeam? team = await _dbContext.FloorballTeams
                 .FirstOrDefaultAsync(t => t.Id == domainEvent.TeamId, cancellationToken);
 
-            if (player == null)
+            if (player == null || team == null)
             {
-                _logger.LogWarning("Floorball player with ID {PlayerId} not found for PlayerAddedToTeam event.", domainEvent.PlayerId);
-                return ("FloorballPlayerAddedToTeam", null);
+                _logger.LogWarning(
+                    "Floorball player with ID {PlayerId} or team with ID {TeamId} not found for PlayerAddedToTeam event.",
+                    domainEvent.PlayerId, domainEvent.TeamId);
+                return (FloorballNotificationEvents.PlayerAddedToTeam, null);
             }
 
-            string teamName = team?.Name ?? "Unknown Team";
-            string playerName = player.Person?.FullName ?? "Unknown";
+            string playerName = player.Person?.FullName ?? "Unknown Player";
+            string teamName = team.Name ?? "Unknown Team";
 
-            FloorballPlayerAddedToTeamNotification notification = new FloorballPlayerAddedToTeamNotification
+            FloorballPlayerAddedToTeamNotification notification = new()
             {
-                PlayerId = domainEvent.PlayerId,
-                TeamId = domainEvent.TeamId,
+                PlayerId = player.Id,
+                TeamId = team.Id,
                 PlayerName = playerName,
                 TeamName = teamName,
-                JerseyNumber = domainEvent.JerseyNumber,
-                Position = domainEvent.Position.ToString(),
                 AddedOn = domainEvent.OccurredOn
             };
 
-            _logger.LogInformation("Player {PlayerName} added to team {TeamName} with jersey #{JerseyNumber}", 
-                playerName, teamName, domainEvent.JerseyNumber);
+            _logger.LogInformation("Player {PlayerName} added to team {TeamName}", playerName, teamName);
 
-            return ("FloorballPlayerAddedToTeam", notification);
+            return (FloorballNotificationEvents.PlayerAddedToTeam, notification);
         }
     }
 } 
