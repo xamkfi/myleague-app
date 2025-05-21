@@ -99,6 +99,6 @@ public class FloorballMatchCreatedEvent : IDomainEvent
         HomeTeamId = homeTeam.Id;
         AwayTeamId = awayTeam.Id;
         ScheduledDateTime = match.ScheduledDateTime;
-        Venue = match.Venue;
+        Venue = match.Venue ?? "";
     }
 } 
