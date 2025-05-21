@@ -18,5 +18,13 @@ namespace MyLeague.Infrastructure.SignalR.Sports.Floorball
         public const string PlayerRemovedFromTeam = "FloorballPlayerRemovedFromTeam";
         public const string SeasonCompleted = "FloorballSeasonCompleted";
         public const string SeasonDetailsUpdated = "FloorballSeasonDetailsUpdated";
+        public const string SeasonDivisionUpdated = "FloorballSeasonDivisionUpdated";
+        public const string SeasonDeactivated = "FloorballSeasonDeactivated";
+        public const string TeamRemoved = "FloorballTeamRemoved";
+        public const string TeamAddedToSeason = "FloorballTeamAddedToSeason";
+        public const string TeamRemovedFromSeason = "FloorballTeamRemovedFromSeason";
+        public const string SeasonDateRangeUpdated = "FloorballSeasonDateRangeUpdated";
+        public const string SeasonActivated = "FloorballSeasonActivated";
+        public const string PlayerStatUpdated = "FloorballPlayerStatUpdated";
     }
 } 

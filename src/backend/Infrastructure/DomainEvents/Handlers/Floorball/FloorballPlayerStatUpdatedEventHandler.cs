@@ -2,15 +2,19 @@ using Domain.DomainEvents.Floorball;
 using Domain.Entities.Floorball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MyLeague.Infrastructure.DTOs.Notifications;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.SignalR;
+using MyLeague.Infrastructure.SignalR.Sports.Floorball;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
     /// <summary>
     /// Handles FloorballPlayerStatUpdatedEvent by notifying SignalR clients with player stat updates.
     /// </summary>
-    public class FloorballPlayerStatUpdatedEventHandler : SignalRDomainEventHandler<FloorballPlayerStatUpdatedEvent>
+    public class FloorballPlayerStatUpdatedEventHandler : NotificationDomainEventHandler<FloorballPlayerStatUpdatedEvent>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -18,35 +22,38 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// Initializes a new instance of the FloorballPlayerStatUpdatedEventHandler class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        /// <param name="notifier">The domain event notifier</param>
+        /// <param name="notificationSender">The notification sender</param>
         /// <param name="logger">The logger</param>
         public FloorballPlayerStatUpdatedEventHandler(
             ApplicationDbContext dbContext,
-            DomainEventNotifier notifier,
+            INotificationSender notificationSender,
             ILogger<FloorballPlayerStatUpdatedEventHandler> logger)
-            : base(notifier, logger)
+            : base(notificationSender, logger)
         {
             _dbContext = dbContext;
         }
 
         /// <summary>
-        /// Processes the FloorballPlayerStatUpdatedEvent before notification
+        /// Builds the notification payload from the domain event
         /// </summary>
-        /// <param name="domainEvent">The domain event to process</param>
-        /// <returns>A task representing the asynchronous operation</returns>
-        protected override async Task ProcessEventAsync(FloorballPlayerStatUpdatedEvent domainEvent)
+        /// <param name="domainEvent">The domain event</param>
+        /// <param name="cancellationToken">Optional cancellation token</param>
+        /// <returns>A tuple containing the event name and notification payload</returns>
+        protected override async Task<(string EventName, object? Notification)> BuildNotificationAsync(
+            FloorballPlayerStatUpdatedEvent domainEvent,
+            CancellationToken cancellationToken = default)
         {
             FloorballPlayer? player = await _dbContext.FloorballPlayers
                 .Include(p => p.Person)
-                .FirstOrDefaultAsync(p => p.Id == domainEvent.PlayerId);
+                .FirstOrDefaultAsync(p => p.Id == domainEvent.PlayerId, cancellationToken);
 
             if (player == null)
             {
                 _logger.LogWarning("Floorball player with ID {PlayerId} not found for PlayerStatUpdated event.", domainEvent.PlayerId);
-                return;
+                return (FloorballNotificationEvents.PlayerStatUpdated, null);
             }
 
-            object payload = new
+            FloorballPlayerStatUpdatedNotification notification = new()
             {
                 PlayerId = domainEvent.PlayerId,
                 PlayerName = player.Person?.FullName ?? "Unknown",
@@ -55,7 +62,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 
             _logger.LogInformation("Player stats updated for player {PlayerId}", domainEvent.PlayerId);
 
-            await NotifyAsync("FloorballPlayerStatUpdated", payload);
+            return (FloorballNotificationEvents.PlayerStatUpdated, notification);
         }
     }
 } 

@@ -2,15 +2,19 @@ using Domain.DomainEvents.Floorball;
 using Domain.Entities.Floorball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MyLeague.Infrastructure.DTOs.Notifications;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.SignalR;
+using MyLeague.Infrastructure.SignalR.Sports.Floorball;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
     /// <summary>
     /// Handles FloorballSeasonDivisionUpdatedEvent by notifying SignalR clients with division update details.
     /// </summary>
-    public class FloorballSeasonDivisionUpdatedEventHandler : SignalRDomainEventHandler<FloorballSeasonDivisionUpdatedEvent>
+    public class FloorballSeasonDivisionUpdatedEventHandler : NotificationDomainEventHandler<FloorballSeasonDivisionUpdatedEvent>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -18,43 +22,46 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// Initializes a new instance of the FloorballSeasonDivisionUpdatedEventHandler class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        /// <param name="notifier">The domain event notifier</param>
+        /// <param name="notificationSender">The notification sender</param>
         /// <param name="logger">The logger</param>
         public FloorballSeasonDivisionUpdatedEventHandler(
             ApplicationDbContext dbContext,
-            DomainEventNotifier notifier,
+            INotificationSender notificationSender,
             ILogger<FloorballSeasonDivisionUpdatedEventHandler> logger)
-            : base(notifier, logger)
+            : base(notificationSender, logger)
         {
             _dbContext = dbContext;
         }
 
         /// <summary>
-        /// Processes the FloorballSeasonDivisionUpdatedEvent before notification
+        /// Builds the notification payload from the domain event
         /// </summary>
-        /// <param name="domainEvent">The domain event to process</param>
-        /// <returns>A task representing the asynchronous operation</returns>
-        protected override async Task ProcessEventAsync(FloorballSeasonDivisionUpdatedEvent domainEvent)
+        /// <param name="domainEvent">The domain event</param>
+        /// <param name="cancellationToken">Optional cancellation token</param>
+        /// <returns>A tuple containing the event name and notification payload</returns>
+        protected override async Task<(string EventName, object? Notification)> BuildNotificationAsync(
+            FloorballSeasonDivisionUpdatedEvent domainEvent,
+            CancellationToken cancellationToken = default)
         {
             FloorballSeason? season = await _dbContext.FloorballSeasons
-                .FirstOrDefaultAsync(s => s.Id == domainEvent.SeasonId);
+                .FirstOrDefaultAsync(s => s.Id == domainEvent.SeasonId, cancellationToken);
 
             if (season == null)
             {
                 _logger.LogWarning("Floorball season with ID {SeasonId} not found for SeasonDivisionUpdated event.", domainEvent.SeasonId);
-                return;
+                return (FloorballNotificationEvents.SeasonDivisionUpdated, null);
             }
 
-            object payload = new
+            FloorballSeasonDivisionUpdatedNotification notification = new()
             {
                 SeasonId = season.Id,
-                Division = domainEvent.Division,
+                Division = domainEvent.Division.ToString(),
                 UpdatedOn = domainEvent.OccurredOn
             };
 
             _logger.LogInformation("Season division updated for season {SeasonId}: {Division}", season.Id, domainEvent.Division);
 
-            await NotifyAsync("FloorballSeasonDivisionUpdated", payload);
+            return (FloorballNotificationEvents.SeasonDivisionUpdated, notification);
         }
     }
 } 
