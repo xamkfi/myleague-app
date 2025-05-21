@@ -10,8 +10,6 @@ A physical person in the system. A Person can have multiple roles (Player, Refer
 ### Club
 An organization that manages and sponsors floorball teams. A Club typically has multiple teams, possibly in different divisions.
 
-### ClubMember
-Represents a Person's membership in a Club. A Person can be a member of multiple Clubs with different roles.
 
 ### FloorballTeam
 A floorball team belonging to a Club, competing in a specific Division. Has a roster of players.
