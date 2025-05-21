@@ -8,16 +8,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories
     /// Base repository providing common functionality for all repositories
     /// </summary>
     /// <typeparam name="TEntity">The entity type</typeparam>
-    public abstract class RepositoryBase<TEntity> where TEntity : class
+    /// <typeparam name="TContext">The DbContext type</typeparam>
+    public abstract class RepositoryBase<TEntity, TContext> where TEntity : class where TContext : DbContext
     {
-        protected readonly ApplicationDbContext _dbContext;
+        protected readonly TContext _dbContext;
         protected readonly DbSet<TEntity> _entities;
 
         /// <summary>
         /// Initializes a new instance of the RepositoryBase class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        protected RepositoryBase(ApplicationDbContext dbContext)
+        protected RepositoryBase(TContext dbContext)
         {
             _dbContext = dbContext;
             _entities = dbContext.Set<TEntity>();

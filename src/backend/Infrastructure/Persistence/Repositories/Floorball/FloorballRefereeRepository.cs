@@ -9,13 +9,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
     /// <summary>
     /// Implementation of the floorball referee repository
     /// </summary>
-    public class FloorballRefereeRepository : RepositoryBase<FloorballReferee>, IFloorballRefereeRepository
+    public class FloorballRefereeRepository : RepositoryBase<FloorballReferee, FloorballDbContext>, IFloorballRefereeRepository
     {
         /// <summary>
         /// Initializes a new instance of the FloorballRefereeRepository class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        public FloorballRefereeRepository(ApplicationDbContext dbContext) : base(dbContext)
+        public FloorballRefereeRepository(FloorballDbContext dbContext) : base(dbContext)
         {
         }
 
@@ -112,6 +112,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             return referees
                 .OrderByDescending(r => refereesMatchCount.GetValueOrDefault(r.Id, 0))
                 .Take(count);
+        }
+
+        /// <summary>
+        /// Adds a new floorball referee
+        /// </summary>
+        /// <param name="referee">The referee to add</param>
+        public override async Task AddAsync(FloorballReferee referee)
+        {
+            await base.AddAsync(referee);
+        }
+
+        /// <summary>
+        /// Updates an existing floorball referee
+        /// </summary>
+        /// <param name="referee">The referee to update</param>
+        public override async Task UpdateAsync(FloorballReferee referee)
+        {
+            await base.UpdateAsync(referee);
         }
 
         /// <summary>

@@ -9,13 +9,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
     /// <summary>
     /// Implementation of the floorball team repository
     /// </summary>
-    public class FloorballTeamRepository : RepositoryBase<FloorballTeam>, IFloorballTeamRepository
+    public class FloorballTeamRepository : RepositoryBase<FloorballTeam, FloorballDbContext>, IFloorballTeamRepository
     {
         /// <summary>
         /// Initializes a new instance of the FloorballTeamRepository class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        public FloorballTeamRepository(ApplicationDbContext dbContext) : base(dbContext)
+        public FloorballTeamRepository(FloorballDbContext dbContext) : base(dbContext)
         {
         }
 
@@ -30,6 +30,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(t => t.Club)
                 .Include(t => t.Roster)
                 .FirstOrDefaultAsync(t => t.Id == id);
+        }
+
+        /// <summary>
+        /// Gets all floorball teams
+        /// </summary>
+        /// <returns>A collection of all floorball teams</returns>
+        public override async Task<IEnumerable<FloorballTeam>> GetAllAsync()
+        {
+            return await _entities
+                .Include(t => t.Club)
+                .ToListAsync();
         }
 
         /// <summary>
@@ -143,6 +154,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             return teamList
                 .OrderByDescending(t => teamPoints.GetValueOrDefault(t.Id, 0))
                 .ThenByDescending(t => teamGoalDifference.GetValueOrDefault(t.Id, 0));
+        }
+
+        /// <summary>
+        /// Adds a new floorball team
+        /// </summary>
+        /// <param name="team">The team to add</param>
+        public override async Task AddAsync(FloorballTeam team)
+        {
+            await base.AddAsync(team);
+        }
+
+        /// <summary>
+        /// Updates an existing floorball team
+        /// </summary>
+        /// <param name="team">The team to update</param>
+        public override async Task UpdateAsync(FloorballTeam team)
+        {
+            await base.UpdateAsync(team);
         }
 
         /// <summary>

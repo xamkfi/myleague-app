@@ -24,11 +24,24 @@ namespace MyLeague.Infrastructure.DependencyInjections
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            // Add database context
+            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? 
+                "Host=localhost;Database=myleague;Username=postgres;Password=postgres";
+
+            // Add database contexts
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(
-                    configuration.GetConnectionString("DefaultConnection"),
+                    connectionString,
                     b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+
+            services.AddDbContext<CommonDbContext>(options =>
+                options.UseNpgsql(
+                    connectionString,
+                    b => b.MigrationsAssembly(typeof(CommonDbContext).Assembly.FullName)));
+
+            services.AddDbContext<FloorballDbContext>(options =>
+                options.UseNpgsql(
+                    connectionString,
+                    b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
 
             // Add repositories
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();

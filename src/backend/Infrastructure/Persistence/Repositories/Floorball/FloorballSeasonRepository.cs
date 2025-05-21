@@ -10,13 +10,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
     /// <summary>
     /// Implementation of the floorball season repository
     /// </summary>
-    public class FloorballSeasonRepository : RepositoryBase<FloorballSeason>, IFloorballSeasonRepository
+    public class FloorballSeasonRepository : RepositoryBase<FloorballSeason, FloorballDbContext>, IFloorballSeasonRepository
     {
         /// <summary>
         /// Initializes a new instance of the FloorballSeasonRepository class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        public FloorballSeasonRepository(ApplicationDbContext dbContext) : base(dbContext)
+        public FloorballSeasonRepository(FloorballDbContext dbContext) : base(dbContext)
         {
         }
 
@@ -31,6 +31,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(s => s.Teams)
                 .Include(s => s.Matches)
                 .FirstOrDefaultAsync(s => s.Id == id) ?? throw new KeyNotFoundException($"Season with ID {id} not found.");
+        }
+
+        /// <summary>
+        /// Gets all floorball seasons
+        /// </summary>
+        /// <returns>A collection of all floorball seasons</returns>
+        public override async Task<IEnumerable<FloorballSeason>> GetAllAsync()
+        {
+            return await _entities
+                .Include(s => s.Teams)
+                .ToListAsync();
         }
 
         /// <summary>
@@ -122,6 +133,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .FirstOrDefaultAsync();
                 
             return futureSeason ?? throw new KeyNotFoundException($"No current or upcoming season found for division {division}.");
+        }
+
+        /// <summary>
+        /// Adds a new floorball season
+        /// </summary>
+        /// <param name="season">The season to add</param>
+        public override async Task AddAsync(FloorballSeason season)
+        {
+            await base.AddAsync(season);
+        }
+
+        /// <summary>
+        /// Updates an existing floorball season
+        /// </summary>
+        /// <param name="season">The season to update</param>
+        public override async Task UpdateAsync(FloorballSeason season)
+        {
+            await base.UpdateAsync(season);
         }
 
         /// <summary>

@@ -6,18 +6,8 @@ namespace Domain.DomainEvents.Common;
 /// <summary>
 /// Event raised when a person is registered
 /// </summary>
-public class PersonRegisteredEvent : IDomainEvent
+public class PersonRegisteredEvent : CommonDomainEvent
 {
-    /// <summary>
-    /// Gets the unique identifier of the event
-    /// </summary>
-    public Guid Id { get; }
-
-    /// <summary>
-    /// Gets the date and time when the event occurred
-    /// </summary>
-    public DateTime OccurredOn { get; }
-
     /// <summary>
     /// Gets the ID of the person
     /// </summary>
@@ -65,8 +55,6 @@ public class PersonRegisteredEvent : IDomainEvent
         Address? address = null,
         ContactInfo? contactInfo = null)
     {
-        Id = Guid.NewGuid();
-        OccurredOn = DateTime.UtcNow;
         PersonId = personId;
         FirstName = firstName;
         LastName = lastName;

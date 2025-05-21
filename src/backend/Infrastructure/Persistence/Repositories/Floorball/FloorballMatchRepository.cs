@@ -10,13 +10,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
     /// <summary>
     /// Implementation of the floorball match repository
     /// </summary>
-    public class FloorballMatchRepository : RepositoryBase<FloorballMatch>, IFloorballMatchRepository
+    public class FloorballMatchRepository : RepositoryBase<FloorballMatch, FloorballDbContext>, IFloorballMatchRepository
     {
         /// <summary>
         /// Initializes a new instance of the FloorballMatchRepository class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        public FloorballMatchRepository(ApplicationDbContext dbContext) : base(dbContext)
+        public FloorballMatchRepository(FloorballDbContext dbContext) : base(dbContext)
         {
         }
 

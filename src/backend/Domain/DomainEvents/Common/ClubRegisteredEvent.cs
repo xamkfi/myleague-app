@@ -5,18 +5,8 @@ namespace Domain.DomainEvents.Common;
 /// <summary>
 /// Event raised when a club is registered
 /// </summary>
-public class ClubRegisteredEvent : IDomainEvent
+public class ClubRegisteredEvent : CommonDomainEvent
 {
-    /// <summary>
-    /// Gets the unique identifier of the event
-    /// </summary>
-    public Guid Id { get; }
-
-    /// <summary>
-    /// Gets the date and time when the event occurred
-    /// </summary>
-    public DateTime OccurredOn { get; }
-
     /// <summary>
     /// Gets the ID of the club
     /// </summary>
@@ -52,8 +42,6 @@ public class ClubRegisteredEvent : IDomainEvent
     /// <param name="foundingDate">The founding date of the club</param>
     public ClubRegisteredEvent(Guid clubId, string name, string city, string country, DateTime foundingDate)
     {
-        Id = Guid.NewGuid();
-        OccurredOn = DateTime.UtcNow;
         ClubId = clubId;
         Name = name;
         City = city;
