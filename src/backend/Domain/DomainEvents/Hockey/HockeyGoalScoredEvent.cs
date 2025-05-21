@@ -1,13 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
+﻿
 namespace Domain.DomainEvents.Hockey
 {
     /// <summary>
@@ -20,11 +11,29 @@ namespace Domain.DomainEvents.Hockey
         /// </summary>
         public Guid Id { get; }
 
+        /// <summary>
+        /// Gets the date and time when the event occurred
+        /// </summary>
         public DateTime OccurredOn { get; }
+
+        /// <summary>
+        /// Gets the ID of the match
+        /// </summary>
         public Guid MatchId { get; }
 
+        /// <summary>
+        /// Gets the ID of the team that scored
+        /// </summary>
         public Guid TeamId { get; }
+
+        /// <summary>
+        /// Gets the ID of the player who score
+        /// </summary>
         public Guid? PlayerId { get; }
+
+        /// <summary>
+        /// Gets the period number when the goal was scored
+        /// </summary>
         public int PeriodNumber { get; }
 
         /// <summary>
