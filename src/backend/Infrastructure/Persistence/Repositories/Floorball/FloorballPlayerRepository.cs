@@ -75,7 +75,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<IEnumerable<FloorballPlayer>> GetActiveByPositionAsync(FloorballPosition position)
         {
             return await _entities
-                .Where(p => p.PreferredPosition == position && p.IsActive)
+                .Where(p => p.Position.PrimaryPosition == position && p.IsActive)
                 .ToListAsync();
         }
 
@@ -189,8 +189,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 return await GetAllAsync();
                 
             return await _entities
-                .Where(p => p.FirstName.Contains(searchTerm) || 
-                            p.LastName.Contains(searchTerm))
+                .Include(p => p.Person)
+                .Where(p => p.Person.FirstName.Contains(searchTerm) || 
+                           p.Person.LastName.Contains(searchTerm))
                 .ToListAsync();
         }
 

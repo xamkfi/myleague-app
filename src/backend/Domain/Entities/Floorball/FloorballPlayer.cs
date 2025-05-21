@@ -4,6 +4,7 @@ using Domain.Entities.Common;
 using Domain.EventSourcing;
 using Domain.ValueObjects.Floorball;
 using Domain.DomainEvents.Floorball;
+using Domain.ValueObjects.Common;
 
 namespace Domain.Entities.Floorball;
 
@@ -21,6 +22,11 @@ public class FloorballPlayer : AggregateRoot
     /// Gets the ID of the person this player profile belongs to (FK)
     /// </summary>
     public Guid PersonId { get; private set; }
+    
+    /// <summary>
+    /// Gets the person this player profile belongs to
+    /// </summary>
+    public Person Person { get; private set; }
     
     /// <summary>
     /// Gets whether the floorball player is currently active
@@ -45,10 +51,11 @@ public class FloorballPlayer : AggregateRoot
     /// <summary>
     /// Private constructor for EF Core
     /// </summary>
-    private FloorballPlayer() 
+    private FloorballPlayer()
     {
         Id = Guid.NewGuid();
         PersonId = Guid.Empty;
+        Person = null!; // Explicitly mark as non-nullable to satisfy the compiler
         IsActive = true;
         Position = new Position(FloorballPosition.None);
         CareerGoals = 0;
@@ -69,6 +76,7 @@ public class FloorballPlayer : AggregateRoot
         ArgumentNullException.ThrowIfNull(position);
             
         Id = Guid.NewGuid();
+        Person = null!; // Explicitly mark as non-nullable to satisfy the compiler
         PersonId = personId;
         IsActive = true;
         Position = position;

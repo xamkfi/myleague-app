@@ -1,6 +1,7 @@
 using Domain.Entities;
 using Domain.Entities.Common;
 using Domain.EventSourcing;
+using Domain.ValueObjects.Common;
 
 namespace Domain.Entities.Floorball;
 
@@ -18,6 +19,11 @@ public class FloorballReferee : AggregateRoot
     /// Gets the ID of the person this referee profile belongs to (FK)
     /// </summary>
     public Guid PersonId { get; private set; }
+    
+    /// <summary>
+    /// Gets the person this referee profile belongs to
+    /// </summary>
+    public Person Person { get; private set; }
     
     /// <summary>
     /// Gets whether the referee is currently active
@@ -45,6 +51,7 @@ public class FloorballReferee : AggregateRoot
     private FloorballReferee()
     {
         Id = Guid.NewGuid();
+        Person = null!; // Explicitly mark as non-nullable to satisfy the compiler
         PersonId = Guid.Empty;
         IsActive = true;
         MatchesOfficiated = 0;
@@ -72,6 +79,7 @@ public class FloorballReferee : AggregateRoot
             throw new ArgumentException("License expiry date must be after the issue date.", nameof(licenseExpiryDate));
         
         Id = Guid.NewGuid();
+        Person = null!; // Explicitly mark as non-nullable to satisfy the compiler
         PersonId = personId;
         IsActive = true;
         LicenseIssueDate = licenseIssueDate;

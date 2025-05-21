@@ -135,8 +135,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<IEnumerable<FloorballReferee>> SearchByNameAsync(string searchTerm)
         {
             return await _entities
-                .Where(r => r.FirstName.Contains(searchTerm) || 
-                           r.LastName.Contains(searchTerm))
+                .Include(r => r.Person)
+                .Where(r => r.Person.FirstName.Contains(searchTerm) || 
+                           r.Person.LastName.Contains(searchTerm))
                 .ToListAsync();
         }
 

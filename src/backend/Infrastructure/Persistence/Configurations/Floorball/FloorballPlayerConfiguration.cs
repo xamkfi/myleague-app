@@ -15,14 +15,31 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
         /// <param name="builder">The entity type builder.</param>
         public void Configure(EntityTypeBuilder<FloorballPlayer> builder)
         {
-            // FloorballPlayer inherits from Person, so primary key is configured there
-            
+            builder.HasKey(p => p.Id);
+
+            builder.Property(p => p.PersonId)
+                .IsRequired();
+
+            builder.HasOne(p => p.Person)
+                .WithMany()
+                .HasForeignKey(p => p.PersonId)
+                .IsRequired();
+
             builder.Property(p => p.IsActive)
                 .IsRequired();
 
-            builder.Property(p => p.PreferredPosition)
-                .IsRequired()
-                .HasConversion<string>();
+            builder.OwnsOne(p => p.Position, positionBuilder =>
+            {
+                positionBuilder.Property(p => p.PrimaryPosition)
+                    .IsRequired()
+                    .HasConversion<string>();
+
+                positionBuilder.Property(p => p.SecondaryPosition)
+                    .HasConversion<string>();
+
+                positionBuilder.Property(p => p.CanPlayAsGoalkeeper)
+                    .IsRequired();
+            });
 
             builder.Property(p => p.CareerGoals)
                 .IsRequired();

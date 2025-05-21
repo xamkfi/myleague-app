@@ -15,6 +15,16 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
         /// <param name="builder">The entity type builder.</param>
         public void Configure(EntityTypeBuilder<FloorballReferee> builder)
         {
+            builder.HasKey(r => r.Id);
+
+            builder.Property(r => r.PersonId)
+                .IsRequired();
+
+            builder.HasOne(r => r.Person)
+                .WithMany()
+                .HasForeignKey(r => r.PersonId)
+                .IsRequired();
+
             builder.Property(r => r.IsActive)
                 .IsRequired();
 
