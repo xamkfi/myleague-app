@@ -2,15 +2,19 @@ using Domain.DomainEvents.Floorball;
 using Domain.Entities.Floorball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MyLeague.Infrastructure.DTOs.Notifications;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.SignalR;
+using MyLeague.Infrastructure.SignalR.Sports.Floorball;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
     /// <summary>
     /// Handles FloorballPlayerRegisteredEvent by notifying SignalR clients with player registration details.
     /// </summary>
-    public class FloorballPlayerRegisteredEventHandler : SignalRDomainEventHandler<FloorballPlayerRegisteredEvent>
+    public class FloorballPlayerRegisteredEventHandler : NotificationDomainEventHandler<FloorballPlayerRegisteredEvent>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -18,47 +22,49 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// Initializes a new instance of the FloorballPlayerRegisteredEventHandler class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        /// <param name="notifier">The domain event notifier</param>
+        /// <param name="notificationSender">The notification sender</param>
         /// <param name="logger">The logger</param>
         public FloorballPlayerRegisteredEventHandler(
             ApplicationDbContext dbContext,
-            DomainEventNotifier notifier,
+            INotificationSender notificationSender,
             ILogger<FloorballPlayerRegisteredEventHandler> logger)
-            : base(notifier, logger)
+            : base(notificationSender, logger)
         {
             _dbContext = dbContext;
         }
 
         /// <summary>
-        /// Processes the FloorballPlayerRegisteredEvent before notification
+        /// Builds the notification payload from the domain event
         /// </summary>
-        /// <param name="domainEvent">The domain event to process</param>
-        /// <returns>A task representing the asynchronous operation</returns>
-        protected override async Task ProcessEventAsync(FloorballPlayerRegisteredEvent domainEvent)
+        /// <param name="domainEvent">The domain event</param>
+        /// <param name="cancellationToken">Optional cancellation token</param>
+        /// <returns>A tuple containing the event name and notification payload</returns>
+        protected override async Task<(string EventName, object? Notification)> BuildNotificationAsync(
+            FloorballPlayerRegisteredEvent domainEvent,
+            CancellationToken cancellationToken = default)
         {
             FloorballPlayer? player = await _dbContext.FloorballPlayers
                 .Include(p => p.Person)
-                .FirstOrDefaultAsync(p => p.Id == domainEvent.PlayerId);
+                .FirstOrDefaultAsync(p => p.Id == domainEvent.PlayerId, cancellationToken);
 
             if (player == null)
             {
                 _logger.LogWarning("Floorball player with ID {PlayerId} not found for PlayerRegistered event.", domainEvent.PlayerId);
-                return;
+                return (FloorballNotificationEvents.PlayerRegistered, null);
             }
 
-            object payload = new
+            FloorballPlayerRegisteredNotification notification = new()
             {
                 PlayerId = player.Id,
                 PlayerName = player.Person?.FullName ?? "Unknown",
-                Position = player.Position.ToString(),
-                // JerseyNumber removed as it doesn't exist in FloorballPlayer
+                Position = player.Position?.ToString() ?? "Unknown",
                 PersonId = player.PersonId,
                 RegistrationTime = domainEvent.OccurredOn
             };
 
             _logger.LogInformation("Player registered: {PlayerName}", player.Person?.FullName ?? "Unknown");
 
-            await NotifyAsync("FloorballPlayerRegistered", payload);
+            return (FloorballNotificationEvents.PlayerRegistered, notification);
         }
     }
 } 
