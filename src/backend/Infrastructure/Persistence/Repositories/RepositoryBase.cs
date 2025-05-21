@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using MyLeague.Infrastructure.Persistence;
+using MyLeague.Infrastructure.Persistence.Contexts;
 using System.Linq.Expressions;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories

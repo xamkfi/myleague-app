@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MyLeague.Infrastructure.Persistence;
+using MyLeague.Infrastructure.Persistence.Contexts;
 
-namespace MyLeague.Infrastructure
+namespace MyLeague.Infrastructure.DependencyInjections
 {
     /// <summary>
     /// Contains extension methods for configuring infrastructure services.

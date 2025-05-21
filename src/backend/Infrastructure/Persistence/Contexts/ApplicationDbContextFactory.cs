@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 
-namespace MyLeague.Infrastructure.Persistence
+namespace MyLeague.Infrastructure.Persistence.Contexts
 {
     /// <summary>
     /// A factory for creating derived DbContext instances at design time.

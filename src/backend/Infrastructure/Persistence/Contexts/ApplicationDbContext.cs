@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 
-namespace MyLeague.Infrastructure.Persistence
+namespace MyLeague.Infrastructure.Persistence.Contexts
 {
     /// <summary>
     /// Main database context for the MyLeague application.
