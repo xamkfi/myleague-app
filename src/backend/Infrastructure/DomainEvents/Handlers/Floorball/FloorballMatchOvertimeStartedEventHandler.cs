@@ -8,11 +8,11 @@ using MyLeague.Infrastructure.SignalR;
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
     /// <summary>
-    /// Handles FloorballMatchOvertimeStartedEvent by notifying SignalR clients with overtime details.
+    /// Handles FloorballMatchOvertimeStartedEvent by notifying SignalR clients when a match enters overtime.
     /// </summary>
     public class FloorballMatchOvertimeStartedEventHandler : SignalRDomainEventHandler<FloorballMatchOvertimeStartedEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly FloorballDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the FloorballMatchOvertimeStartedEventHandler class
@@ -21,7 +21,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="notifier">The domain event notifier</param>
         /// <param name="logger">The logger</param>
         public FloorballMatchOvertimeStartedEventHandler(
-            ApplicationDbContext dbContext,
+            FloorballDbContext dbContext,
             DomainEventNotifier notifier,
             ILogger<FloorballMatchOvertimeStartedEventHandler> logger)
             : base(notifier, logger)
@@ -43,7 +43,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 
             if (match == null)
             {
-                _logger.LogWarning("Floorball match with ID {MatchId} not found for OvertimeStarted event.", domainEvent.MatchId);
+                _logger.LogWarning("Floorball match with ID {MatchId} not found for OvertimeStarted event", domainEvent.MatchId);
                 return;
             }
 
@@ -52,14 +52,16 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 
             object payload = new
             {
-                MatchId = domainEvent.MatchId,
-                StartTime = domainEvent.OccurredOn,
-                HomeTeam = new { Id = match.HomeTeam?.Id, Name = homeTeamName },
-                AwayTeam = new { Id = match.AwayTeam?.Id, Name = awayTeamName }
+                MatchId = match.Id,
+                HomeTeamName = homeTeamName,
+                AwayTeamName = awayTeamName,
+                HomeScore = match.HomeScore,
+                AwayScore = match.AwayScore,
+                StartedAt = domainEvent.OccurredOn
             };
 
-            _logger.LogInformation("Overtime started in match between {HomeTeam} and {AwayTeam}", homeTeamName, awayTeamName);
-
+            _logger.LogInformation("Overtime started for match between {HomeTeam} and {AwayTeam}", homeTeamName, awayTeamName);
+            
             await NotifyAsync("FloorballMatchOvertimeStarted", payload);
         }
     }

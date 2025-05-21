@@ -8,11 +8,11 @@ using MyLeague.Infrastructure.SignalR;
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
     /// <summary>
-    /// Handles FloorballMatchShootoutStartedEvent by notifying SignalR clients with shootout details.
+    /// Handles FloorballMatchShootoutStartedEvent by notifying SignalR clients when a match enters shootout.
     /// </summary>
     public class FloorballMatchShootoutStartedEventHandler : SignalRDomainEventHandler<FloorballMatchShootoutStartedEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly FloorballDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the FloorballMatchShootoutStartedEventHandler class
@@ -21,7 +21,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="notifier">The domain event notifier</param>
         /// <param name="logger">The logger</param>
         public FloorballMatchShootoutStartedEventHandler(
-            ApplicationDbContext dbContext,
+            FloorballDbContext dbContext,
             DomainEventNotifier notifier,
             ILogger<FloorballMatchShootoutStartedEventHandler> logger)
             : base(notifier, logger)
