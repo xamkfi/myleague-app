@@ -61,7 +61,6 @@ public class Club : AggregateRoot
     private Club()
     {
         Id = Guid.NewGuid();
-        _floorballTeams = new List<FloorballTeam>();
     }
 
     /// <summary>
@@ -103,7 +102,6 @@ public class Club : AggregateRoot
         WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
         LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
         ContactEmail = contactEmail ?? "contact@example.com";
-        _floorballTeams = new List<FloorballTeam>();
     }
 
     /// <summary>
