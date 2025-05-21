@@ -16,12 +16,12 @@ public class FloorballReferee : Person
     /// <summary>
     /// Gets the date when the referee's license was issued
     /// </summary>
-    public DateTime LicenseIssueDate { get; private set; }
+    public DateTime? LicenseIssueDate { get; private set; }
     
     /// <summary>
     /// Gets the date when the referee's license expires
     /// </summary>
-    public DateTime LicenseExpiryDate { get; private set; }
+    public DateTime? LicenseExpiryDate { get; private set; }
     
     /// <summary>
     /// Gets the number of floorball matches officiated by this referee
