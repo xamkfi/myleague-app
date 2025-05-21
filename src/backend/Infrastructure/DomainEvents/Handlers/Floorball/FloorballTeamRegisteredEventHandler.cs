@@ -59,3 +59,4 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         }
     }
 } 
+

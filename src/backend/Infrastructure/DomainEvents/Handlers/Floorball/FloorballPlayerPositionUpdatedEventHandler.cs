@@ -16,7 +16,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
     /// </summary>
     public class FloorballPlayerPositionUpdatedEventHandler : NotificationDomainEventHandler<FloorballPlayerPositionUpdatedEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly FloorballDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the FloorballPlayerPositionUpdatedEventHandler class
@@ -25,7 +25,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="notificationSender">The notification sender</param>
         /// <param name="logger">The logger</param>
         public FloorballPlayerPositionUpdatedEventHandler(
-            ApplicationDbContext dbContext,
+            FloorballDbContext dbContext,
             INotificationSender notificationSender,
             ILogger<FloorballPlayerPositionUpdatedEventHandler> logger)
             : base(notificationSender, logger)
@@ -68,3 +68,4 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         }
     }
 } 
+

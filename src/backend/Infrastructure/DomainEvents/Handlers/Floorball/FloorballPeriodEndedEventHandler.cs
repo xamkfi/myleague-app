@@ -12,7 +12,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
     /// </summary>
     public class FloorballPeriodEndedEventHandler : SignalRDomainEventHandler<FloorballPeriodEndedEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly FloorballDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the FloorballPeriodEndedEventHandler class
@@ -21,7 +21,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="notifier">The domain event notifier</param>
         /// <param name="logger">The logger</param>
         public FloorballPeriodEndedEventHandler(
-            ApplicationDbContext dbContext,
+            FloorballDbContext dbContext,
             DomainEventNotifier notifier,
             ILogger<FloorballPeriodEndedEventHandler> logger)
             : base(notifier, logger)

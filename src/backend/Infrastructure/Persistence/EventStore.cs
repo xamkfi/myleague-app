@@ -18,7 +18,6 @@ namespace MyLeague.Infrastructure.Persistence
     {
         private readonly FloorballDbContext _floorballDbContext;
         private readonly CommonDbContext _commonDbContext;
-        private readonly ApplicationDbContext _applicationDbContext;
         private readonly ILogger<EventStore> _logger;
 
         /// <summary>
@@ -26,17 +25,14 @@ namespace MyLeague.Infrastructure.Persistence
         /// </summary>
         /// <param name="floorballDbContext">The floorball database context</param>
         /// <param name="commonDbContext">The common database context</param>
-        /// <param name="applicationDbContext">The application database context</param>
         /// <param name="logger">The logger</param>
         public EventStore(
             FloorballDbContext floorballDbContext, 
             CommonDbContext commonDbContext,
-            ApplicationDbContext applicationDbContext,
             ILogger<EventStore> logger)
         {
             _floorballDbContext = floorballDbContext;
             _commonDbContext = commonDbContext;
-            _applicationDbContext = applicationDbContext;
             _logger = logger;
         }
 
@@ -85,9 +81,8 @@ namespace MyLeague.Infrastructure.Persistence
             // Try to get events from all contexts and combine them
             IEnumerable<IDomainEvent> floorballEvents = await GetEventsFromContext(_floorballDbContext, aggregateId, cancellationToken);
             IEnumerable<IDomainEvent> commonEvents = await GetEventsFromContext(_commonDbContext, aggregateId, cancellationToken);
-            IEnumerable<IDomainEvent> appEvents = await GetEventsFromContext(_applicationDbContext, aggregateId, cancellationToken);
 
-            var allEvents = floorballEvents.Concat(commonEvents).Concat(appEvents)
+            var allEvents = floorballEvents.Concat(commonEvents)
                 .OrderBy(e => EF.Property<int>(e, "Version"))
                 .ToList();
 
@@ -117,10 +112,9 @@ namespace MyLeague.Infrastructure.Persistence
             // Get max version from each context
             int floorballVersion = await GetAggregateVersionFromContext(_floorballDbContext, aggregateId, cancellationToken);
             int commonVersion = await GetAggregateVersionFromContext(_commonDbContext, aggregateId, cancellationToken);
-            int appVersion = await GetAggregateVersionFromContext(_applicationDbContext, aggregateId, cancellationToken);
 
             // Return the highest version
-            return Math.Max(Math.Max(floorballVersion, commonVersion), appVersion);
+            return Math.Max(floorballVersion, commonVersion);
         }
 
         private async Task<int> GetAggregateVersionFromContext(DbContext context, Guid aggregateId, CancellationToken cancellationToken)
@@ -144,7 +138,7 @@ namespace MyLeague.Infrastructure.Persistence
         private DbContext GetContextForEvents(IEnumerable<IDomainEvent> events)
         {
             if (!events.Any())
-                return _applicationDbContext;
+                return _commonDbContext;
 
             IDomainEvent firstEvent = events.First();
             
@@ -154,7 +148,7 @@ namespace MyLeague.Infrastructure.Persistence
             if (firstEvent is CommonDomainEvent)
                 return _commonDbContext;
             
-            return _applicationDbContext;
+            return _commonDbContext; // Default to common context
         }
     }
 } 
