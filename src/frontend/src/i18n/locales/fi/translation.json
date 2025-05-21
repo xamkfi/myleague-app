@@ -1,0 +1,25 @@
+{
+  "nav": {
+    "news": "Uutiset",
+    "rules": "Säännöt",
+    "mahl": "MAHL",
+    "ageGroups": "Ikäryhmät",
+    "register": "Ilmoittaudu",
+    "tournaments": "Turnaukset",
+    "sports": "Lajit"
+  },
+  "hero": {
+    "title": "KESÄKAUSI ON TÄÄLLÄ",
+    "buttonText": "TUTUSTU KESÄN TAPAHTUMIIN"
+  },
+  "sidebar": {
+    "nextMatch": "SEURAAVA PELI",
+    "standings": "SARJATAULUKKO",
+    "stats": "TILASTOT"
+  },
+  "language": {
+    "en": "Englanti",
+    "fi": "Suomi",
+    "switchLanguage": "Vaihda kieli"
+  }
+} 

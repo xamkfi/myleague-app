@@ -1,0 +1,25 @@
+.mahl-container {
+  max-width: 800px;
+}
+
+.mahl-section {
+  margin-bottom: 2.5rem;
+}
+
+.mahl-section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.mahl-section h3 {
+  font-size: 1.3rem;
+  margin: 1.5rem 0 0.5rem;
+  color: #444;
+}
+
+.mahl-section p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+} 

@@ -1,0 +1,24 @@
+.news-container {
+  max-width: 800px;
+}
+
+.news-item {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #eee;
+}
+
+.news-item:last-child {
+  border-bottom: none;
+}
+
+.news-item h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.news-date {
+  color: #777;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+} 

@@ -1,0 +1,81 @@
+.match-sidebar {
+  background-color: #ccc;
+  padding: 1.5rem;
+  width: 280px;
+  color: #333;
+  height: 100%;
+}
+
+.sidebar-title, .standings-title, .stats-title {
+  text-align: center;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.match-date {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.teams-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.team-logo, .placeholder-logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background-color: #999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.vs-text {
+  font-size: 0.8rem;
+}
+
+.standings-table, .stats-table {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.standings-row, .stat-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.position {
+  width: 30px;
+  text-align: right;
+  padding-right: 0.5rem;
+}
+
+.team-indicator {
+  width: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.team-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #999;
+}
+
+.team-name, .player-name {
+  flex: 1;
+  padding-left: 0.5rem;
+}
+
+.team-points, .stat-value {
+  text-align: right;
+  font-weight: 500;
+} 
