@@ -12,7 +12,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Common
     /// </summary>
     public class ClubInfoUpdatedEventHandler : SignalRDomainEventHandler<ClubInfoUpdatedEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly CommonDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the ClubInfoUpdatedEventHandler class
@@ -21,7 +21,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Common
         /// <param name="notifier">The domain event notifier</param>
         /// <param name="logger">The logger</param>
         public ClubInfoUpdatedEventHandler(
-            ApplicationDbContext dbContext,
+            CommonDbContext dbContext,
             DomainEventNotifier notifier,
             ILogger<ClubInfoUpdatedEventHandler> logger)
             : base(notifier, logger)
@@ -45,7 +45,12 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Common
                 return;
             }
 
-                        object payload = new            {                ClubId = club.Id,                Name = club.Name,                LogoUrl = club.LogoUrl,                UpdatedOn = domainEvent.OccurredOn            };
+            object payload = new { 
+                ClubId = club.Id, 
+                Name = club.Name, 
+                LogoUrl = club.LogoUrl, 
+                UpdatedOn = domainEvent.OccurredOn 
+            };
 
             _logger.LogInformation("Club information updated: {Name}", club.Name);
 

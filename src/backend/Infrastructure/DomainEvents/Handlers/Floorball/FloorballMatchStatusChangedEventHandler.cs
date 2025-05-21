@@ -8,11 +8,11 @@ using MyLeague.Infrastructure.SignalR;
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
     /// <summary>
-    /// Handles FloorballMatchStatusChangedEvent by notifying SignalR clients with match status changes.
+    /// Handles FloorballMatchStatusChangedEvent by notifying SignalR clients when a match status is changed.
     /// </summary>
     public class FloorballMatchStatusChangedEventHandler : SignalRDomainEventHandler<FloorballMatchStatusChangedEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly FloorballDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the FloorballMatchStatusChangedEventHandler class
@@ -21,7 +21,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="notifier">The domain event notifier</param>
         /// <param name="logger">The logger</param>
         public FloorballMatchStatusChangedEventHandler(
-            ApplicationDbContext dbContext,
+            FloorballDbContext dbContext,
             DomainEventNotifier notifier,
             ILogger<FloorballMatchStatusChangedEventHandler> logger)
             : base(notifier, logger)

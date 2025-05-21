@@ -8,11 +8,11 @@ using MyLeague.Infrastructure.SignalR;
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
     /// <summary>
-    /// Handles FloorballTeamRegisteredEvent by notifying SignalR clients with team registration details.
+    /// Handles FloorballTeamRegisteredEvent by notifying SignalR clients when a team is registered.
     /// </summary>
     public class FloorballTeamRegisteredEventHandler : SignalRDomainEventHandler<FloorballTeamRegisteredEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly FloorballDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the FloorballTeamRegisteredEventHandler class
@@ -21,7 +21,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="notifier">The domain event notifier</param>
         /// <param name="logger">The logger</param>
         public FloorballTeamRegisteredEventHandler(
-            ApplicationDbContext dbContext,
+            FloorballDbContext dbContext,
             DomainEventNotifier notifier,
             ILogger<FloorballTeamRegisteredEventHandler> logger)
             : base(notifier, logger)

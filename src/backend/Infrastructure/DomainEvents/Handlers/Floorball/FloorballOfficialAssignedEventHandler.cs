@@ -17,7 +17,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
     /// </summary>
     public class FloorballOfficialAssignedEventHandler : NotificationDomainEventHandler<FloorballOfficialAssignedEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly FloorballDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the FloorballOfficialAssignedEventHandler class
@@ -26,7 +26,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="notificationSender">The notification sender</param>
         /// <param name="logger">The logger</param>
         public FloorballOfficialAssignedEventHandler(
-            ApplicationDbContext dbContext,
+            FloorballDbContext dbContext,
             INotificationSender notificationSender,
             ILogger<FloorballOfficialAssignedEventHandler> logger)
             : base(notificationSender, logger)

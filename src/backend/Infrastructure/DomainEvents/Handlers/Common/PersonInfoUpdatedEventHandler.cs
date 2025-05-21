@@ -15,7 +15,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Common
     /// </summary>
     public class PersonInfoUpdatedEventHandler : SignalRDomainEventHandler<PersonInfoUpdatedEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly CommonDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the PersonInfoUpdatedEventHandler class
@@ -24,7 +24,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Common
         /// <param name="notifier">The domain event notifier</param>
         /// <param name="logger">The logger</param>
         public PersonInfoUpdatedEventHandler(
-            ApplicationDbContext dbContext,
+            CommonDbContext dbContext,
             DomainEventNotifier notifier,
             ILogger<PersonInfoUpdatedEventHandler> logger)
             : base(notifier, logger)

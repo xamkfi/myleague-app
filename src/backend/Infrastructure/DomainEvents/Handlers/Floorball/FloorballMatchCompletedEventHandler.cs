@@ -16,7 +16,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
     /// </summary>
     public class FloorballMatchCompletedEventHandler : NotificationDomainEventHandler<FloorballMatchCompletedEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly FloorballDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the FloorballMatchCompletedEventHandler class
@@ -25,7 +25,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="notificationSender">The notification sender</param>
         /// <param name="logger">The logger</param>
         public FloorballMatchCompletedEventHandler(
-            ApplicationDbContext dbContext,
+            FloorballDbContext dbContext,
             INotificationSender notificationSender,
             ILogger<FloorballMatchCompletedEventHandler> logger)
             : base(notificationSender, logger)

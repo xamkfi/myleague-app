@@ -2,57 +2,51 @@ using Domain.DomainEvents.Floorball;
 using Domain.Entities.Floorball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MyLeague.Infrastructure.DTOs.Notifications;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.SignalR;
-using MyLeague.Infrastructure.SignalR.Sports.Floorball;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
     /// <summary>
-    /// Handles FloorballSeasonActivatedEvent by notifying SignalR clients with season details.
+    /// Handles FloorballSeasonActivatedEvent by notifying SignalR clients when a season is activated.
     /// </summary>
-    public class FloorballSeasonActivatedEventHandler : NotificationDomainEventHandler<FloorballSeasonActivatedEvent>
+    public class FloorballSeasonActivatedEventHandler : SignalRDomainEventHandler<FloorballSeasonActivatedEvent>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly FloorballDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the FloorballSeasonActivatedEventHandler class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        /// <param name="notificationSender">The notification sender</param>
+        /// <param name="notifier">The domain event notifier</param>
         /// <param name="logger">The logger</param>
         public FloorballSeasonActivatedEventHandler(
-            ApplicationDbContext dbContext,
-            INotificationSender notificationSender,
+            FloorballDbContext dbContext,
+            DomainEventNotifier notifier,
             ILogger<FloorballSeasonActivatedEventHandler> logger)
-            : base(notificationSender, logger)
+            : base(notifier, logger)
         {
             _dbContext = dbContext;
         }
 
         /// <summary>
-        /// Builds the notification payload from the domain event
+        /// Processes the FloorballSeasonActivatedEvent before notification
         /// </summary>
-        /// <param name="domainEvent">The domain event</param>
-        /// <param name="cancellationToken">Optional cancellation token</param>
-        /// <returns>A tuple containing the event name and notification payload</returns>
-        protected override async Task<(string EventName, object? Notification)> BuildNotificationAsync(
-            FloorballSeasonActivatedEvent domainEvent,
-            CancellationToken cancellationToken = default)
+        /// <param name="domainEvent">The domain event to process</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        protected override async Task ProcessEventAsync(FloorballSeasonActivatedEvent domainEvent)
         {
             FloorballSeason? season = await _dbContext.FloorballSeasons
-                .FirstOrDefaultAsync(s => s.Id == domainEvent.SeasonId, cancellationToken);
+                .FirstOrDefaultAsync(s => s.Id == domainEvent.SeasonId);
 
             if (season == null)
             {
                 _logger.LogWarning("Floorball season with ID {SeasonId} not found for SeasonActivated event.", domainEvent.SeasonId);
-                return (FloorballNotificationEvents.SeasonActivated, null);
+                return;
             }
 
-            FloorballSeasonActivatedNotification notification = new()
+            object payload = new
             {
                 SeasonId = season.Id,
                 Name = season.Name ?? "Unknown Season",
@@ -61,7 +55,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 
             _logger.LogInformation("Season activated: {SeasonName}", season.Name);
 
-            return (FloorballNotificationEvents.SeasonActivated, notification);
+            await NotifyAsync("SeasonActivated", payload);
         }
     }
 } 
