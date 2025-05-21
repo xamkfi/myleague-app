@@ -56,6 +56,11 @@ public class Club : AggregateRoot
     /// </summary>
     public IReadOnlyCollection<FloorballTeam> FloorballTeams => _floorballTeams.AsReadOnly();
     private readonly List<FloorballTeam> _floorballTeams = new();
+
+    /// <summary>
+    /// Gets the hockey teams associated with this club
+    /// </summary>
+    public IReadOnlyCollection<HockeyTeam> hockeyTeams => _hockeyTeams.AsReadOnly();
     private readonly List<HockeyTeam> _hockeyTeams = new();
 
     /// <summary>
