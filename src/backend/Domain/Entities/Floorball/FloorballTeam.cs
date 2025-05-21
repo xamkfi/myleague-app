@@ -3,6 +3,7 @@ using Domain.ValueObjects.Floorball;
 using Domain.Entities;
 using Domain.EventSourcing;
 using Domain.Entities.Common;
+using Domain.DomainEvents.Floorball;
 
 namespace Domain.Entities.Floorball;
 
@@ -106,6 +107,15 @@ public class FloorballTeam : AggregateRoot
         HomeArena = homeArena;
         PrimaryJerseyColor = primaryJerseyColor;
         SecondaryJerseyColor = secondaryJerseyColor ?? string.Empty;
+        
+        AddDomainEvent(new FloorballTeamRegisteredEvent(
+            Id, 
+            name, 
+            division, 
+            club.Id, 
+            homeArena, 
+            primaryJerseyColor, 
+            secondaryJerseyColor));
     }
 
     /// <summary>
@@ -174,6 +184,13 @@ public class FloorballTeam : AggregateRoot
             throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
         var teamPlayer = new FloorballTeamPlayer(Id, player.Id, position, jerseyNumber);
         _roster.Add(teamPlayer);
+        
+        // Create and add a domain event for player addition
+        AddDomainEvent(new FloorballPlayerAddedToTeamEvent(
+            Id,
+            player.Id,
+            position,
+            jerseyNumber));
     }
 
     /// <summary>
@@ -188,6 +205,11 @@ public class FloorballTeam : AggregateRoot
             throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
 
         _roster.Remove(teamPlayer);
+        
+        // Create and add a domain event for player removal
+        AddDomainEvent(new FloorballPlayerRemovedFromTeamEvent(
+            Id,
+            playerId));
     }
 
     /// <summary>

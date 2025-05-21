@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Entities.Common;
 using Domain.EventSourcing;
 using Domain.ValueObjects.Floorball;
+using Domain.DomainEvents.Floorball;
 
 namespace Domain.Entities.Floorball;
 
@@ -73,6 +74,8 @@ public class FloorballPlayer : AggregateRoot
         Position = position;
         CareerGoals = 0;
         CareerAssists = 0;
+        
+        AddDomainEvent(new FloorballPlayerRegisteredEvent(Id, personId, position));
     }
 
     /// <summary>
@@ -92,6 +95,8 @@ public class FloorballPlayer : AggregateRoot
     {
         ArgumentNullException.ThrowIfNull(position);
         Position = position;
+        
+        AddDomainEvent(new FloorballPlayerPositionUpdatedEvent(Id, position));
     }
     
     /// <summary>
@@ -100,6 +105,8 @@ public class FloorballPlayer : AggregateRoot
     public void RecordGoal()
     {
         CareerGoals++;
+        
+        AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.Goal));
     }
     
     /// <summary>
@@ -108,5 +115,7 @@ public class FloorballPlayer : AggregateRoot
     public void RecordAssist()
     {
         CareerAssists++;
+        
+        AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.Assist));
     }
 } 

@@ -1,5 +1,6 @@
 using Domain.EventSourcing;
 using Domain.ValueObjects.Common;
+using Domain.DomainEvents.Common;
 
 namespace Domain.Entities.Common;
 
@@ -53,25 +54,38 @@ public class Person : AggregateRoot
         LastName = string.Empty;
     }
 
-    public Person(string firstName, string lastName, DateTime birthDate, 
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Person"/> class with the specified details.
+    /// </summary>
+    /// <param name="firstName">The first name of the person.</param>
+    /// <param name="lastName">The last name of the person.</param>
+    /// <param name="birthDate">The birth date of the person.</param>
+    /// <param name="address">The address of the person (optional).</param>
+    /// <param name="contactInfo">The contact information of the person (optional).</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="firstName"/> or <paramref name="lastName"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="firstName"/> or <paramref name="lastName"/> is empty or whitespace, or if <paramref name="birthDate"/> is in the future.</exception>
+    public Person(string firstName, string lastName, DateTime birthDate,
         Address? address = null, ContactInfo? contactInfo = null)
     {
         ArgumentNullException.ThrowIfNull(firstName);
         ArgumentNullException.ThrowIfNull(lastName);
-        
+
         if (string.IsNullOrWhiteSpace(firstName))
             throw new ArgumentException("First name cannot be null or empty.", nameof(firstName));
         if (string.IsNullOrWhiteSpace(lastName))
             throw new ArgumentException("Last name cannot be null or empty.", nameof(lastName));
         if (birthDate > DateTime.UtcNow)
             throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
-            
+
         Id = Guid.NewGuid();
         FirstName = firstName;
         LastName = lastName;
         BirthDate = birthDate;
         Address = address;
         ContactInfo = contactInfo;
+
+        AddDomainEvent(new PersonRegisteredEvent(Id, firstName, lastName, birthDate, address, contactInfo));
     }
 
     /// <summary>
@@ -91,6 +105,8 @@ public class Person : AggregateRoot
             
         FirstName = firstName;
         LastName = lastName;
+
+        AddDomainEvent(new PersonInfoUpdatedEvent(Id, firstName, lastName));
     }
     
     /// <summary>
