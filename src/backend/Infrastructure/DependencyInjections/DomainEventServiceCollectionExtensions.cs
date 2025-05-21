@@ -28,6 +28,9 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddSignalR();
             services.AddScoped<DomainEventNotifier>();
             
+            // Register notification services
+            services.AddScoped<INotificationSender, SignalRNotificationSender>();
+            
             // Register domain event handlers
             // Find and register all classes that implement IDomainEventHandler<T>
             Assembly assembly = typeof(DomainEventServiceCollectionExtensions).Assembly;

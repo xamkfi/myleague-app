@@ -1,6 +1,7 @@
 using Domain.DomainEvents;
 using Domain.EventSourcing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Newtonsoft.Json;
@@ -41,11 +42,24 @@ namespace MyLeague.Infrastructure.Persistence
                 throw new DbUpdateConcurrencyException($"Concurrency conflict. Expected version {expectedVersion} but found {currentVersion}");
             }
 
-            // Save each event
+            int version = currentVersion;
+
+            // Add each event to DbContext
             foreach (IDomainEvent @event in events)
             {
-                await _dbContext.SaveChangesAsync(cancellationToken);
+                version++;
+                
+                // Set the aggregate ID and version properties
+                EntityEntry<IDomainEvent> entry = _dbContext.Entry(@event);
+                entry.Property("AggregateId").CurrentValue = aggregateId;
+                entry.Property("Version").CurrentValue = version;
+                
+                // Add the event to the context
+                _dbContext.Add(@event);
             }
+
+            // Save all events in a single transaction
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Saved {Count} events for aggregate {AggregateId}", events.Count(), aggregateId);
         }
