@@ -1,11 +1,12 @@
 using Domain.EventSourcing;
+using Domain.ValueObjects.Common;
 
 namespace Domain.Entities.Common;
 
 /// <summary>
-/// Represents a person in the system, serving as a base class for players and referees
+/// Represents a person in the system
 /// </summary>
-public abstract class Person : AggregateRoot
+public class Person : AggregateRoot
 {
     /// <summary>
     /// Gets the unique identifier of the person
@@ -26,6 +27,21 @@ public abstract class Person : AggregateRoot
     /// Gets the birth date of the person
     /// </summary>
     public DateTime BirthDate { get; private set; }
+    
+    /// <summary>
+    /// Gets the address of the person
+    /// </summary>
+    public Address? Address { get; private set; }
+    
+    /// <summary>
+    /// Gets the contact information of the person
+    /// </summary>
+    public ContactInfo? ContactInfo { get; private set; }
+    
+    /// <summary>
+    /// Gets the full name of the person (first + last)
+    /// </summary>
+    public string FullName => $"{FirstName} {LastName}";
 
     /// <summary>
     /// Protected constructor for EF Core
@@ -37,14 +53,25 @@ public abstract class Person : AggregateRoot
         LastName = string.Empty;
     }
 
-    protected Person(string firstName, string lastName, DateTime birthDate)
+    public Person(string firstName, string lastName, DateTime birthDate, 
+        Address? address = null, ContactInfo? contactInfo = null)
     {
         ArgumentNullException.ThrowIfNull(firstName);
         ArgumentNullException.ThrowIfNull(lastName);
+        
+        if (string.IsNullOrWhiteSpace(firstName))
+            throw new ArgumentException("First name cannot be null or empty.", nameof(firstName));
+        if (string.IsNullOrWhiteSpace(lastName))
+            throw new ArgumentException("Last name cannot be null or empty.", nameof(lastName));
+        if (birthDate > DateTime.UtcNow)
+            throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
+            
         Id = Guid.NewGuid();
         FirstName = firstName;
         LastName = lastName;
         BirthDate = birthDate;
+        Address = address;
+        ContactInfo = contactInfo;
     }
 
     /// <summary>
@@ -56,7 +83,29 @@ public abstract class Person : AggregateRoot
     {
         ArgumentNullException.ThrowIfNull(firstName);
         ArgumentNullException.ThrowIfNull(lastName);
+        
+        if (string.IsNullOrWhiteSpace(firstName))
+            throw new ArgumentException("First name cannot be null or empty.", nameof(firstName));
+        if (string.IsNullOrWhiteSpace(lastName))
+            throw new ArgumentException("Last name cannot be null or empty.", nameof(lastName));
+            
         FirstName = firstName;
         LastName = lastName;
+    }
+    
+    /// <summary>
+    /// Updates the person's address
+    /// </summary>
+    public void UpdateAddress(Address? address)
+    {
+        Address = address;
+    }
+    
+    /// <summary>
+    /// Updates the person's contact information
+    /// </summary>
+    public void UpdateContactInfo(ContactInfo? contactInfo)
+    {
+        ContactInfo = contactInfo;
     }
 } 

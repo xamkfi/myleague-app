@@ -1,23 +1,35 @@
 using Domain.Enums.Floorball;
 using Domain.Entities;
 using Domain.Entities.Common;
+using Domain.EventSourcing;
+using Domain.ValueObjects.Floorball;
 
 namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a floorball player in the system
 /// </summary>
-public class FloorballPlayer : Person
+public class FloorballPlayer : AggregateRoot
 {
+    /// <summary>
+    /// Gets the unique identifier of the player
+    /// </summary>
+    public Guid Id { get; private set; }
+    
+    /// <summary>
+    /// Gets the ID of the person this player profile belongs to (FK)
+    /// </summary>
+    public Guid PersonId { get; private set; }
+    
     /// <summary>
     /// Gets whether the floorball player is currently active
     /// </summary>
     public bool IsActive { get; private set; }
     
     /// <summary>
-    /// Gets the player's preferred floorball position
+    /// Gets the player's position information
     /// </summary>
-    public FloorballPosition PreferredPosition { get; private set; }
+    public Position Position { get; private set; }
     
     /// <summary>
     /// Gets the player's total career goals in floorball
@@ -32,9 +44,12 @@ public class FloorballPlayer : Person
     /// <summary>
     /// Private constructor for EF Core
     /// </summary>
-    private FloorballPlayer() : base()
+    private FloorballPlayer() 
     {
+        Id = Guid.NewGuid();
+        PersonId = Guid.Empty;
         IsActive = true;
+        Position = new Position(FloorballPosition.None);
         CareerGoals = 0;
         CareerAssists = 0;
     }
@@ -42,28 +57,20 @@ public class FloorballPlayer : Person
     /// <summary>
     /// Initializes a new instance of the FloorballPlayer class
     /// </summary>
-    /// <param name="firstName">The player's first name</param>
-    /// <param name="lastName">The player's last name</param>
-    /// <param name="birthDate">The player's birth date</param>
-    /// <param name="preferredPosition">The player's preferred position</param>
+    /// <param name="personId">The ID of the person this player profile belongs to</param>
+    /// <param name="position">The player's position information</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
-    public FloorballPlayer(
-        string firstName, 
-        string lastName, 
-        DateTime birthDate,
-        FloorballPosition preferredPosition = FloorballPosition.Forward)
-        : base(firstName, lastName, birthDate)
+    public FloorballPlayer(Guid personId, Position position)
     {
-        ArgumentNullException.ThrowIfNull(firstName);
-        ArgumentNullException.ThrowIfNull(lastName);
-        if (string.IsNullOrWhiteSpace(firstName))
-            throw new ArgumentException("First name cannot be null or empty.", nameof(firstName));
-        if (string.IsNullOrWhiteSpace(lastName))
-            throw new ArgumentException("Last name cannot be null or empty.", nameof(lastName));
-        if (birthDate > DateTime.UtcNow)
-            throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
+        if (personId == Guid.Empty)
+            throw new ArgumentException("Person ID cannot be empty.", nameof(personId));
+        
+        ArgumentNullException.ThrowIfNull(position);
+            
+        Id = Guid.NewGuid();
+        PersonId = personId;
         IsActive = true;
-        PreferredPosition = preferredPosition;
+        Position = position;
         CareerGoals = 0;
         CareerAssists = 0;
     }
@@ -78,12 +85,13 @@ public class FloorballPlayer : Person
     }
     
     /// <summary>
-    /// Updates the player's preferred position
+    /// Updates the player's position
     /// </summary>
-    /// <param name="position">The new preferred position</param>
-    public void UpdatePreferredPosition(FloorballPosition position)
+    /// <param name="position">The new position</param>
+    public void UpdatePosition(Position position)
     {
-        PreferredPosition = position;
+        ArgumentNullException.ThrowIfNull(position);
+        Position = position;
     }
     
     /// <summary>
