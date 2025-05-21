@@ -53,6 +53,32 @@ namespace MyLeague.Infrastructure.SignalR
         }
 
         /// <summary>
+        /// Notifies clients of a custom event with the specified payload
+        /// </summary>
+        /// <param name="eventName">The name of the event</param>
+        /// <param name="payload">The payload to send</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task NotifyAsync(string eventName, object payload)
+        {
+            try
+            {
+                string payloadJson = JsonSerializer.Serialize(payload);
+                
+                _logger.LogInformation("Notifying clients of custom event {EventName}", eventName);
+                
+                // Notify all clients of the event
+                await _hubContext.Clients.All.SendAsync("DomainEvent", eventName, payloadJson);
+                
+                // Notify clients in the group for this specific event type
+                await _hubContext.Clients.Group(eventName).SendAsync("DomainEvent", eventName, payloadJson);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error notifying clients of custom event {EventName}", eventName);
+            }
+        }
+
+        /// <summary>
         /// Subscribes a client to a specific event type
         /// </summary>
         /// <param name="connectionId">The connection ID</param>

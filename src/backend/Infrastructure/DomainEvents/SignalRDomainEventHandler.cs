@@ -11,7 +11,7 @@ namespace MyLeague.Infrastructure.DomainEvents
     public abstract class SignalRDomainEventHandler<TEvent> : IDomainEventHandler<TEvent> where TEvent : IDomainEvent
     {
         private readonly DomainEventNotifier _notifier;
-        private readonly ILogger<SignalRDomainEventHandler<TEvent>> _logger;
+        protected readonly ILogger<SignalRDomainEventHandler<TEvent>> _logger;
 
         /// <summary>
         /// Initializes a new instance of the SignalRDomainEventHandler class
@@ -48,6 +48,17 @@ namespace MyLeague.Infrastructure.DomainEvents
         {
             // Default implementation does no additional processing
             return Task.CompletedTask;
+        }
+        
+        /// <summary>
+        /// Notifies clients with a custom event name and payload
+        /// </summary>
+        /// <param name="eventName">The name of the event to broadcast</param>
+        /// <param name="payload">The payload to send to clients</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        protected Task NotifyAsync(string eventName, object payload)
+        {
+            return _notifier.NotifyAsync(eventName, payload);
         }
     }
 } 

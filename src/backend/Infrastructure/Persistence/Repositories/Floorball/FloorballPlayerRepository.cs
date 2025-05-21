@@ -96,7 +96,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             List<Guid> playerIds = matches
                 .SelectMany(m => m.GoalEvents)
                 .Where(g => g.ScoringPlayerId.HasValue)
-                .Select(g => g.ScoringPlayerId.Value)
+                .Select(g => g.ScoringPlayerId!.Value)
                 .Distinct()
                 .ToList();
 
@@ -139,7 +139,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             List<Guid> playerIds = matches
                 .SelectMany(m => m.GoalEvents)
                 .Where(g => g.AssistingPlayerId.HasValue)
-                .Select(g => g.AssistingPlayerId.Value)
+                .Select(g => g.AssistingPlayerId!.Value)
                 .Distinct()
                 .ToList();
 
