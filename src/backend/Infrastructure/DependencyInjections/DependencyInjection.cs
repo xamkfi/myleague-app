@@ -1,30 +1,50 @@
+using Domain.Repositories.Floorball;
+using Domain.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MyLeague.Infrastructure.Persistence;
 using MyLeague.Infrastructure.Persistence.Contexts;
+using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
     /// <summary>
-    /// Contains extension methods for configuring infrastructure services.
+    /// Static class for registering infrastructure services
     /// </summary>
     public static class DependencyInjection
     {
         /// <summary>
-        /// Adds infrastructure services to the specified <see cref="IServiceCollection"/>.
+        /// Adds infrastructure services to the specified IServiceCollection
         /// </summary>
-        /// <param name="services">The service collection to add services to.</param>
-        /// <param name="configuration">The configuration instance.</param>
-        /// <returns>The same service collection so that multiple calls can be chained.</returns>
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        /// <param name="services">The IServiceCollection to add services to</param>
+        /// <param name="configuration">The configuration</param>
+        /// <returns>The IServiceCollection so that additional calls can be chained</returns>
+        public static IServiceCollection AddInfrastructure(
+            this IServiceCollection services,
+            IConfiguration configuration)
         {
-            // Register DbContext
+            // Add database context
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(
                     configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
-            
+
+            // Add repositories
+            services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
+            services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
+            services.AddScoped<IFloorballRefereeRepository, FloorballRefereeRepository>();
+            services.AddScoped<IFloorballMatchRepository, FloorballMatchRepository>();
+            services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
+            services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
+
+            // Add event sourcing
+            services.AddScoped<IEventStore, EventStore>();
+
+            // Add domain events
+            services.AddDomainEvents();
+
             return services;
         }
     }
-} 
+}
