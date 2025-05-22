@@ -6,29 +6,29 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Application.UseCases.Clubs;
+namespace Application.Handlers.Clubs;
 
 /// <summary>
-/// Use case for retrieving all clubs
+/// Handler for retrieving all clubs
 /// </summary>
-public class GetAllClubsUseCase
+public class GetAllClubsHandler
 {
     private readonly IClubRepository _clubRepository;
-    private readonly ILogger<GetAllClubsUseCase> _logger;
+    private readonly ILogger<GetAllClubsHandler> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the GetAllClubsUseCase class
+    /// Initializes a new instance of the GetAllClubsHandler class
     /// </summary>
     /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
-    public GetAllClubsUseCase(IClubRepository clubRepository, ILogger<GetAllClubsUseCase> logger)
+    public GetAllClubsHandler(IClubRepository clubRepository, ILogger<GetAllClubsHandler> logger)
     {
         _clubRepository = clubRepository;
         _logger = logger;
     }
 
     /// <summary>
-    /// Executes the use case to retrieve all clubs
+    /// Executes the handler to retrieve all clubs
     /// </summary>
     /// <returns>A collection of all clubs as DTOs</returns>
     public async Task<IEnumerable<ClubDto>> ExecuteAsync()

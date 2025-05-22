@@ -7,29 +7,29 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace Application.UseCases.Clubs;
+namespace Application.Handlers.Clubs;
 
 /// <summary>
-/// Use case for creating a new club
+/// Handler for creating a new club
 /// </summary>
-public class CreateClubUseCase
+public class CreateClubHandler
 {
     private readonly IClubRepository _clubRepository;
-    private readonly ILogger<CreateClubUseCase> _logger;
+    private readonly ILogger<CreateClubHandler> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the CreateClubUseCase class
+    /// Initializes a new instance of the CreateClubHandler class
     /// </summary>
     /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
-    public CreateClubUseCase(IClubRepository clubRepository, ILogger<CreateClubUseCase> logger)
+    public CreateClubHandler(IClubRepository clubRepository, ILogger<CreateClubHandler> logger)
     {
         _clubRepository = clubRepository;
         _logger = logger;
     }
 
     /// <summary>
-    /// Executes the use case to create a new club
+    /// Executes the handler to create a new club
     /// </summary>
     /// <param name="command">The command containing club information</param>
     /// <returns>The newly created club as a DTO</returns>
@@ -55,4 +55,4 @@ public class CreateClubUseCase
 
         return ClubMapper.ToDto(club);
     }
-}
+} 

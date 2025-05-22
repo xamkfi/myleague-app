@@ -7,29 +7,29 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace Application.UseCases.Clubs;
+namespace Application.Handlers.Clubs;
 
 /// <summary>
-/// Use case for updating an existing club
+/// Handler for updating an existing club
 /// </summary>
-public class UpdateClubUseCase
+public class UpdateClubHandler
 {
     private readonly IClubRepository _clubRepository;
-    private readonly ILogger<UpdateClubUseCase> _logger;
+    private readonly ILogger<UpdateClubHandler> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the UpdateClubUseCase class
+    /// Initializes a new instance of the UpdateClubHandler class
     /// </summary>
     /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
-    public UpdateClubUseCase(IClubRepository clubRepository, ILogger<UpdateClubUseCase> logger)
+    public UpdateClubHandler(IClubRepository clubRepository, ILogger<UpdateClubHandler> logger)
     {
         _clubRepository = clubRepository;
         _logger = logger;
     }
 
     /// <summary>
-    /// Executes the use case to update an existing club
+    /// Executes the handler to update an existing club
     /// </summary>
     /// <param name="command">The command containing updated club information</param>
     /// <returns>The updated club as a DTO if found, null otherwise</returns>

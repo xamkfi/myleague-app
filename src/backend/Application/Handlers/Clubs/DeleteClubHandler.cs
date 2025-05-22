@@ -4,29 +4,29 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace Application.UseCases.Clubs;
+namespace Application.Handlers.Clubs;
 
 /// <summary>
-/// Use case for deleting a club
+/// Handler for deleting a club
 /// </summary>
-public class DeleteClubUseCase
+public class DeleteClubHandler
 {
     private readonly IClubRepository _clubRepository;
-    private readonly ILogger<DeleteClubUseCase> _logger;
+    private readonly ILogger<DeleteClubHandler> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the DeleteClubUseCase class
+    /// Initializes a new instance of the DeleteClubHandler class
     /// </summary>
     /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
-    public DeleteClubUseCase(IClubRepository clubRepository, ILogger<DeleteClubUseCase> logger)
+    public DeleteClubHandler(IClubRepository clubRepository, ILogger<DeleteClubHandler> logger)
     {
         _clubRepository = clubRepository;
         _logger = logger;
     }
 
     /// <summary>
-    /// Executes the use case to delete a club
+    /// Executes the handler to delete a club
     /// </summary>
     /// <param name="command">The command containing the ID of the club to delete</param>
     /// <returns>True if the club was deleted, false if it wasn't found</returns>

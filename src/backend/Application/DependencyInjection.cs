@@ -1,4 +1,3 @@
-using Application.UseCases.Clubs;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -15,12 +14,8 @@ public static class DependencyInjection
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        // Register Club use cases
-        services.AddScoped<GetAllClubsUseCase>();
-        services.AddScoped<GetClubByIdUseCase>();
-        services.AddScoped<CreateClubUseCase>();
-        services.AddScoped<UpdateClubUseCase>();
-        services.AddScoped<DeleteClubUseCase>();
+        //TODO: Register Club nandlers
+       
         
         return services;
     }

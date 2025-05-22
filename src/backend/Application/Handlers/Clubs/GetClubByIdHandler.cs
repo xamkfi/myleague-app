@@ -7,29 +7,29 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace Application.UseCases.Clubs;
+namespace Application.Handlers.Clubs;
 
 /// <summary>
-/// Use case for retrieving a club by its ID
+/// Handler for retrieving a club by its ID
 /// </summary>
-public class GetClubByIdUseCase
+public class GetClubByIdHandler
 {
     private readonly IClubRepository _clubRepository;
-    private readonly ILogger<GetClubByIdUseCase> _logger;
+    private readonly ILogger<GetClubByIdHandler> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the GetClubByIdUseCase class
+    /// Initializes a new instance of the GetClubByIdHandler class
     /// </summary>
     /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
-    public GetClubByIdUseCase(IClubRepository clubRepository, ILogger<GetClubByIdUseCase> logger)
+    public GetClubByIdHandler(IClubRepository clubRepository, ILogger<GetClubByIdHandler> logger)
     {
         _clubRepository = clubRepository;
         _logger = logger;
     }
 
     /// <summary>
-    /// Executes the use case to retrieve a club by its ID
+    /// Executes the handler to retrieve a club by its ID
     /// </summary>
     /// <param name="query">The query containing the club ID</param>
     /// <returns>The club as DTO if found, null otherwise</returns>
