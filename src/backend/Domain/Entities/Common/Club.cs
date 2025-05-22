@@ -6,127 +6,259 @@ using Domain.Enums.Floorball;
 using Domain.Enums.Hockey;
 using Domain.EventSourcing;
 
-public class Club : AggregateRoot
+namespace Domain.Entities.Common
 {
-    public Guid Id { get; private set; }
-    public string Name { get; private set; }
-    public DateTime FoundingDate { get; private set; }
-    public string City { get; private set; }
-    public string Country { get; private set; }
-    public Uri WebsiteUrl { get; private set; }
-    public Uri LogoUrl { get; private set; }
-    public string ContactEmail { get; private set; }
-
-    private readonly List<FloorballTeam> _floorballTeams = new();
-    private readonly List<HockeyTeam> _hockeyTeams = new();
-
-    public IReadOnlyList<FloorballTeam> FloorballTeams => _floorballTeams;
-    public IReadOnlyList<HockeyTeam> HockeyTeams => _hockeyTeams;
-
-    private Club() { }
-
-    public Club(
-        string name,
-        string city,
-        string country,
-        DateTime? foundingDate = null,
-        Uri? websiteUrl = null,
-        Uri? logoUrl = null,
-        string? contactEmail = null)
+    /// <summary>
+    /// Represents a sports club that can have both floorball and hockey teams.
+    /// </summary>
+    public class Club : AggregateRoot
     {
-        ValidateRequired(name, nameof(name));
-        ValidateRequired(city, nameof(city));
-        ValidateRequired(country, nameof(country));
+        /// <summary>
+        /// Gets the unique identifier of the club.
+        /// </summary>
+        public Guid Id { get; private set; }
 
-        Id = Guid.NewGuid();
-        Name = name;
-        City = city;
-        Country = country;
-        FoundingDate = foundingDate ?? DateTime.UtcNow;
-        WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
-        LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
-        ContactEmail = contactEmail ?? "contact@example.com";
+        /// <summary>
+        /// Gets the name of the club.
+        /// </summary>
+        public string Name { get; private set; }
 
-        AddDomainEvent(new ClubRegisteredEvent(Id, Name, City, Country, FoundingDate));
-    }
+        /// <summary>
+        /// Gets the founding date of the club.
+        /// </summary>
+        public DateTime FoundingDate { get; private set; }
 
-    public void UpdateBasicInfo(string name, string city, string country)
-    {
-        ValidateRequired(name, nameof(name));
-        ValidateRequired(city, nameof(city));
-        ValidateRequired(country, nameof(country));
+        /// <summary>
+        /// Gets the city where the club is located.
+        /// </summary>
+        public string City { get; private set; }
 
-        Name = name;
-        City = city;
-        Country = country;
+        /// <summary>
+        /// Gets the country where the club is located.
+        /// </summary>
+        public string Country { get; private set; }
 
-        AddDomainEvent(new ClubInfoUpdatedEvent(Id, Name, City, Country));
-    }
+        /// <summary>
+        /// Gets the website URL of the club.
+        /// </summary>
+        public Uri WebsiteUrl { get; private set; }
 
-    public void UpdateOnlinePresence(Uri? websiteUrl, Uri? logoUrl, string? contactEmail)
-    {
-        WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
-        LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
-        ContactEmail = contactEmail ?? "contact@example.com";
-    }
+        /// <summary>
+        /// Gets the logo URL of the club.
+        /// </summary>
+        public Uri LogoUrl { get; private set; }
 
-    public FloorballTeam AddFloorballTeam(string name, FloorballDivision division, string homeArena, string primaryJerseyColor, string? secondaryColor = null)
-    {
-        ValidateRequired(name, nameof(name));
-        ValidateRequired(homeArena, nameof(homeArena));
-        ValidateRequired(primaryJerseyColor, nameof(primaryJerseyColor));
+        /// <summary>
+        /// Gets the contact email address of the club.
+        /// </summary>
+        public string ContactEmail { get; private set; }
 
-        var team = new FloorballTeam(name, division, this, homeArena, primaryJerseyColor, secondaryColor);
-        _floorballTeams.Add(team);
-        return team;
-    }
+        private readonly List<FloorballTeam> _floorballTeams = new();
+        private readonly List<HockeyTeam> _hockeyTeams = new();
 
-    public bool RemoveFloorballTeam(Guid teamId)
-    {
-        FloorballTeam? team = _floorballTeams.FirstOrDefault(t => t.Id == teamId);
-        if (team == null) return false;
+        /// <summary>
+        /// Gets the list of floorball teams associated with the club.
+        /// </summary>
+        public IReadOnlyList<FloorballTeam> FloorballTeams => _floorballTeams;
 
-        if (team.HasActiveMembers)
-            throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
+        /// <summary>
+        /// Gets the list of hockey teams associated with the club.
+        /// </summary>
+        public IReadOnlyList<HockeyTeam> HockeyTeams => _hockeyTeams;
 
-        _floorballTeams.Remove(team);
-        AddDomainEvent(new FloorballTeamRemovedEvent(Id, teamId));
-        return true;
-    }
+        /// <summary>
+        /// Private constructor for ORM and serialization.
+        /// </summary>
+        private Club()
+        {
+            Name = string.Empty;
+            City = string.Empty;
+            Country = string.Empty;
+            WebsiteUrl = new Uri("https://example.com");
+            LogoUrl = new Uri("https://example.com/logo.png");
+            ContactEmail = "contact@example.com";
+        }
 
-    public IEnumerable<FloorballTeam> GetFloorballTeamsByDivision(FloorballDivision division) =>
-        _floorballTeams.Where(t => t.Division == division);
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Club"/> class.
+        /// </summary>
+        /// <param name="name">The name of the club.</param>
+        /// <param name="city">The city where the club is located.</param>
+        /// <param name="country">The country where the club is located.</param>
+        /// <param name="foundingDate">The founding date of the club (optional).</param>
+        /// <param name="websiteUrl">The website URL of the club (optional).</param>
+        /// <param name="logoUrl">The logo URL of the club (optional).</param>
+        /// <param name="contactEmail">The contact email address of the club (optional).</param>
+        /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
+        /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
+        public Club(
+            string name,
+            string city,
+            string country,
+            DateTime? foundingDate = null,
+            Uri? websiteUrl = null,
+            Uri? logoUrl = null,
+            string? contactEmail = null)
+        {
+            ValidateRequired(name, nameof(name));
+            ValidateRequired(city, nameof(city));
+            ValidateRequired(country, nameof(country));
 
-    public HockeyTeam AddHockeyTeam(string name, HockeyDivision division, string homeArena, string primaryJerseyColor, string? secondaryColor = null)
-    {
-        ValidateRequired(name, nameof(name));
-        ValidateRequired(homeArena, nameof(homeArena));
-        ValidateRequired(primaryJerseyColor, nameof(primaryJerseyColor));
+            Id = Guid.NewGuid();
+            Name = name;
+            City = city;
+            Country = country;
+            FoundingDate = foundingDate ?? DateTime.UtcNow;
+            WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
+            LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
+            ContactEmail = contactEmail ?? "contact@example.com";
 
-        HockeyTeam team = new HockeyTeam(name, division, this, homeArena, primaryJerseyColor, secondaryColor);
-        _hockeyTeams.Add(team);
-        return team;
-    }
+            AddDomainEvent(new ClubRegisteredEvent(Id, Name, City, Country, FoundingDate));
+        }
 
-    public bool RemoveHockeyTeam(Guid teamId)
-    {
-        HockeyTeam? team = _hockeyTeams.FirstOrDefault(t => t.Id == teamId);
-        if (team == null) return false;
+        /// <summary>
+        /// Updates the basic information of the club.
+        /// </summary>
+        /// <param name="name">The new name of the club.</param>
+        /// <param name="city">The new city of the club.</param>
+        /// <param name="country">The new country of the club.</param>
+        /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
+        /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
+        public void UpdateBasicInfo(string name, string city, string country)
+        {
+            ValidateRequired(name, nameof(name));
+            ValidateRequired(city, nameof(city));
+            ValidateRequired(country, nameof(country));
 
-        if (team.HasActiveMembers)
-            throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
+            Name = name;
+            City = city;
+            Country = country;
 
-        _hockeyTeams.Remove(team);
-        return true;
-    }
+            AddDomainEvent(new ClubInfoUpdatedEvent(Id, Name, City, Country));
+        }
 
-    public IEnumerable<HockeyTeam> GetHockeyTeamsByDivision(HockeyDivision division) =>
-        _hockeyTeams.Where(t => t.Division == division);
+        /// <summary>
+        /// Updates the online presence information of the club.
+        /// </summary>
+        /// <param name="websiteUrl">The new website URL (optional).</param>
+        /// <param name="logoUrl">The new logo URL (optional).</param>
+        /// <param name="contactEmail">The new contact email address (optional).</param>
+        public void UpdateOnlinePresence(Uri? websiteUrl, Uri? logoUrl, string? contactEmail)
+        {
+            WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
+            LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
+            ContactEmail = contactEmail ?? "contact@example.com";
+        }
 
-    private static void ValidateRequired(string? value, string paramName)
-    {
-        ArgumentNullException.ThrowIfNull(value, paramName);
-        if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException($"{paramName} cannot be empty.", paramName);
+        /// <summary>
+        /// Adds a new floorball team to the club.
+        /// </summary>
+        /// <param name="name">The name of the team.</param>
+        /// <param name="division">The division of the team.</param>
+        /// <param name="homeArena">The home arena of the team.</param>
+        /// <param name="primaryJerseyColor">The primary jersey color of the team.</param>
+        /// <param name="secondaryColor">The secondary jersey color of the team (optional).</param>
+        /// <returns>The created <see cref="FloorballTeam"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
+        /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
+        public FloorballTeam AddFloorballTeam(string name, FloorballDivision division, string homeArena, string primaryJerseyColor, string? secondaryColor = null)
+        {
+            ValidateRequired(name, nameof(name));
+            ValidateRequired(homeArena, nameof(homeArena));
+            ValidateRequired(primaryJerseyColor, nameof(primaryJerseyColor));
+
+            var team = new FloorballTeam(name, division, this, homeArena, primaryJerseyColor, secondaryColor);
+            _floorballTeams.Add(team);
+            return team;
+        }
+
+        /// <summary>
+        /// Removes a floorball team from the club by its identifier.
+        /// </summary>
+        /// <param name="teamId">The unique identifier of the team to remove.</param>
+        /// <returns><c>true</c> if the team was removed; otherwise, <c>false</c>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the team has active members.</exception>
+        public bool RemoveFloorballTeam(Guid teamId)
+        {
+            FloorballTeam? team = _floorballTeams.FirstOrDefault(t => t.Id == teamId);
+            if (team == null) return false;
+
+            if (team.HasActiveMembers)
+                throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
+
+            _floorballTeams.Remove(team);
+            AddDomainEvent(new FloorballTeamRemovedEvent(Id, teamId));
+            return true;
+        }
+
+        /// <summary>
+        /// Gets all floorball teams in the specified division.
+        /// </summary>
+        /// <param name="division">The division to filter by.</param>
+        /// <returns>An enumerable of <see cref="FloorballTeam"/> in the specified division.</returns>
+        public IEnumerable<FloorballTeam> GetFloorballTeamsByDivision(FloorballDivision division) =>
+            _floorballTeams.Where(t => t.Division == division);
+
+        /// <summary>
+        /// Adds a new hockey team to the club.
+        /// </summary>
+        /// <param name="name">The name of the team.</param>
+        /// <param name="division">The division of the team.</param>
+        /// <param name="homeArena">The home arena of the team.</param>
+        /// <param name="primaryJerseyColor">The primary jersey color of the team.</param>
+        /// <param name="secondaryColor">The secondary jersey color of the team (optional).</param>
+        /// <returns>The created <see cref="HockeyTeam"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
+        /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
+        public HockeyTeam AddHockeyTeam(string name, HockeyDivision division, string homeArena, string primaryJerseyColor, string? secondaryColor = null)
+        {
+            ValidateRequired(name, nameof(name));
+            ValidateRequired(homeArena, nameof(homeArena));
+            ValidateRequired(primaryJerseyColor, nameof(primaryJerseyColor));
+
+            HockeyTeam team = new HockeyTeam(name, division, this, homeArena, primaryJerseyColor, secondaryColor);
+            _hockeyTeams.Add(team);
+            return team;
+        }
+
+        /// <summary>
+        /// Removes a hockey team from the club by its identifier.
+        /// </summary>
+        /// <param name="teamId">The unique identifier of the team to remove.</param>
+        /// <returns><c>true</c> if the team was removed; otherwise, <c>false</c>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the team has active members.</exception>
+        public bool RemoveHockeyTeam(Guid teamId)
+        {
+            HockeyTeam? team = _hockeyTeams.FirstOrDefault(t => t.Id == teamId);
+            if (team == null) return false;
+
+            if (team.HasActiveMembers)
+                throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
+
+            _hockeyTeams.Remove(team);
+            return true;
+        }
+
+        /// <summary>
+        /// Gets all hockey teams in the specified division.
+        /// </summary>
+        /// <param name="division">The division to filter by.</param>
+        /// <returns>An enumerable of <see cref="HockeyTeam"/> in the specified division.</returns>
+        public IEnumerable<HockeyTeam> GetHockeyTeamsByDivision(HockeyDivision division) =>
+            _hockeyTeams.Where(t => t.Division == division);
+
+        /// <summary>
+        /// Validates that a required string parameter is not null, empty, or whitespace.
+        /// </summary>
+        /// <param name="value">The value to validate.</param>
+        /// <param name="paramName">The name of the parameter.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the value is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the value is empty or whitespace.</exception>
+        private static void ValidateRequired(string? value, string paramName)
+        {
+            ArgumentNullException.ThrowIfNull(value, paramName);
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentException($"{paramName} cannot be empty.", paramName);
+        }
     }
 }

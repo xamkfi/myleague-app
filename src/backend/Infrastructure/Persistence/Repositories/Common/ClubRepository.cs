@@ -85,7 +85,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// Adds a new club
         /// </summary>
         /// <param name="club">The club to add</param>
-        public async Task AddAsync(Club club)
+        public async override Task AddAsync(Club club)
         {
             await _entities.AddAsync(club);
             await _dbContext.SaveChangesAsync();
@@ -95,7 +95,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// Updates an existing club
         /// </summary>
         /// <param name="club">The club to update</param>
-        public async Task UpdateAsync(Club club)
+        public override async Task UpdateAsync(Club club)
         {
             _entities.Update(club);
             await _dbContext.SaveChangesAsync();

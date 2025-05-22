@@ -1,6 +1,11 @@
+using Application.DTOs;
+using Application.DTOs.Common;
+using Application.Mappings;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace Application.UseCases.Clubs;
 
@@ -27,23 +32,12 @@ public class UpdateClubUseCase
     /// Executes the use case to update an existing club
     /// </summary>
     /// <param name="clubId">The ID of the club to update</param>
-    /// <param name="name">The new name of the club</param>
-    /// <param name="city">The new city where the club is based</param>
-    /// <param name="country">The new country where the club is based</param>
-    /// <param name="websiteUrl">The club's new official website URL</param>
-    /// <param name="logoUrl">The club's new logo URL</param>
-    /// <param name="contactEmail">The new primary contact email for the club</param>
-    /// <returns>The updated club if found, null otherwise</returns>
+    /// <param name="request">The request containing updated club information</param>
+    /// <returns>The updated club as a DTO if found, null otherwise</returns>
     /// <exception cref="ArgumentException">Thrown when the clubId is empty</exception>
+    /// <exception cref="ArgumentNullException">Thrown when request is null</exception>
     /// <exception cref="InvalidOperationException">Thrown when a club with the same name already exists</exception>
-    public async Task<Club?> ExecuteAsync(
-        Guid clubId,
-        string name,
-        string city,
-        string country,
-        Uri? websiteUrl = null,
-        Uri? logoUrl = null,
-        string? contactEmail = null)
+    public async Task<ClubDto?> ExecuteAsync(Guid clubId, UpdateClubRequest request)
     {
         if (clubId == Guid.Empty)
         {
@@ -51,7 +45,12 @@ public class UpdateClubUseCase
             throw new ArgumentException("Club ID cannot be empty", nameof(clubId));
         }
 
-        var club = await _clubRepository.GetByIdAsync(clubId);
+        if (request == null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        Club? club = await _clubRepository.GetByIdAsync(clubId);
         if (club == null)
         {
             _logger.LogWarning("Club with ID {ClubId} not found", clubId);
@@ -59,21 +58,18 @@ public class UpdateClubUseCase
         }
 
         // Check if name is being changed and if the new name is already taken
-        if (club.Name != name && await _clubRepository.ExistsByNameAsync(name))
+        if (club.Name != request.Name && await _clubRepository.ExistsByNameAsync(request.Name))
         {
-            _logger.LogError("A club with the name {ClubName} already exists", name);
-            throw new InvalidOperationException($"A club with the name '{name}' already exists.");
+            _logger.LogError("A club with the name {ClubName} already exists", request.Name);
+            throw new InvalidOperationException($"A club with the name '{request.Name}' already exists.");
         }
 
-        // Update basic info
-        club.UpdateBasicInfo(name, city, country);
-        
-        // Update online presence
-        club.UpdateOnlinePresence(websiteUrl, logoUrl, contactEmail);
+        // Update club from request
+        ClubMapper.UpdateFromRequest(club, request);
 
         _logger.LogInformation("Updating club with ID: {ClubId}", clubId);
         await _clubRepository.UpdateAsync(club);
 
-        return club;
+        return ClubMapper.ToDto(club);
     }
 } 

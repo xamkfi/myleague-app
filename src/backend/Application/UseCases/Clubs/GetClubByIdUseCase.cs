@@ -1,6 +1,10 @@
+using Application.DTOs.Common;
+using Application.Mappings;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace Application.UseCases.Clubs;
 
@@ -27,9 +31,9 @@ public class GetClubByIdUseCase
     /// Executes the use case to retrieve a club by its ID
     /// </summary>
     /// <param name="clubId">The ID of the club to retrieve</param>
-    /// <returns>The club if found, null otherwise</returns>
+    /// <returns>The club as DTO if found, null otherwise</returns>
     /// <exception cref="ArgumentException">Thrown when the clubId is empty</exception>
-    public async Task<Club?> ExecuteAsync(Guid clubId)
+    public async Task<ClubDto?> ExecuteAsync(Guid clubId)
     {
         if (clubId == Guid.Empty)
         {
@@ -38,6 +42,7 @@ public class GetClubByIdUseCase
         }
 
         _logger.LogInformation("Retrieving club with ID: {ClubId}", clubId);
-        return await _clubRepository.GetByIdAsync(clubId);
+        Club? club = await _clubRepository.GetByIdAsync(clubId);
+        return club != null ? ClubMapper.ToDto(club) : null;
     }
 } 

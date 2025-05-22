@@ -1,6 +1,10 @@
+using Application.DTOs.Common;
+using Application.Mappings;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Application.UseCases.Clubs;
 
@@ -26,10 +30,11 @@ public class GetAllClubsUseCase
     /// <summary>
     /// Executes the use case to retrieve all clubs
     /// </summary>
-    /// <returns>A collection of all clubs</returns>
-    public async Task<IEnumerable<Club>> ExecuteAsync()
+    /// <returns>A collection of all clubs as DTOs</returns>
+    public async Task<IEnumerable<ClubDto>> ExecuteAsync()
     {
         _logger.LogInformation("Retrieving all clubs");
-        return await _clubRepository.GetAllAsync();
+        IEnumerable<Club> clubs = await _clubRepository.GetAllAsync();
+        return ClubMapper.ToDtos(clubs);
     }
 } 
