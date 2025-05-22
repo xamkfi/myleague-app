@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Application.Mappings;
+namespace Application.Mappings.Common;
 
 /// <summary>
 /// Mapper class for Club entity and related DTOs

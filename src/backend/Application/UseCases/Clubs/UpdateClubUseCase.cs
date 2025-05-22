@@ -1,6 +1,6 @@
 using Application.DTOs;
 using Application.DTOs.Common;
-using Application.Mappings;
+using Application.Mappings.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
@@ -31,29 +31,28 @@ public class UpdateClubUseCase
     /// <summary>
     /// Executes the use case to update an existing club
     /// </summary>
-    /// <param name="clubId">The ID of the club to update</param>
     /// <param name="request">The request containing updated club information</param>
     /// <returns>The updated club as a DTO if found, null otherwise</returns>
-    /// <exception cref="ArgumentException">Thrown when the clubId is empty</exception>
     /// <exception cref="ArgumentNullException">Thrown when request is null</exception>
+    /// <exception cref="ArgumentException">Thrown when the clubId is empty</exception>
     /// <exception cref="InvalidOperationException">Thrown when a club with the same name already exists</exception>
-    public async Task<ClubDto?> ExecuteAsync(Guid clubId, UpdateClubRequest request)
+    public async Task<ClubDto?> ExecuteAsync(UpdateClubRequest request)
     {
-        if (clubId == Guid.Empty)
-        {
-            _logger.LogError("Club ID cannot be empty");
-            throw new ArgumentException("Club ID cannot be empty", nameof(clubId));
-        }
-
         if (request == null)
         {
             throw new ArgumentNullException(nameof(request));
         }
 
-        Club? club = await _clubRepository.GetByIdAsync(clubId);
+        if (request.ClubId == Guid.Empty)
+        {
+            _logger.LogError("Club ID cannot be empty");
+            throw new ArgumentException("Club ID cannot be empty", nameof(request.ClubId));
+        }
+
+        Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
         if (club == null)
         {
-            _logger.LogWarning("Club with ID {ClubId} not found", clubId);
+            _logger.LogWarning("Club with ID {ClubId} not found", request.ClubId);
             return null;
         }
 
@@ -67,7 +66,7 @@ public class UpdateClubUseCase
         // Update club from request
         ClubMapper.UpdateFromRequest(club, request);
 
-        _logger.LogInformation("Updating club with ID: {ClubId}", clubId);
+        _logger.LogInformation("Updating club with ID: {ClubId}", request.ClubId);
         await _clubRepository.UpdateAsync(club);
 
         return ClubMapper.ToDto(club);

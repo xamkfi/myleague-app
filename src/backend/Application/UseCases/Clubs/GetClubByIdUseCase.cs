@@ -1,5 +1,5 @@
 using Application.DTOs.Common;
-using Application.Mappings;
+using Application.Mappings.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
@@ -30,19 +30,25 @@ public class GetClubByIdUseCase
     /// <summary>
     /// Executes the use case to retrieve a club by its ID
     /// </summary>
-    /// <param name="clubId">The ID of the club to retrieve</param>
+    /// <param name="request">The request containing the club ID</param>
     /// <returns>The club as DTO if found, null otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when request is null</exception>
     /// <exception cref="ArgumentException">Thrown when the clubId is empty</exception>
-    public async Task<ClubDto?> ExecuteAsync(Guid clubId)
+    public async Task<ClubDto?> ExecuteAsync(GetClubByIdRequest request)
     {
-        if (clubId == Guid.Empty)
+        if (request == null)
         {
-            _logger.LogError("Club ID cannot be empty");
-            throw new ArgumentException("Club ID cannot be empty", nameof(clubId));
+            throw new ArgumentNullException(nameof(request));
         }
 
-        _logger.LogInformation("Retrieving club with ID: {ClubId}", clubId);
-        Club? club = await _clubRepository.GetByIdAsync(clubId);
+        if (request.ClubId == Guid.Empty)
+        {
+            _logger.LogError("Club ID cannot be empty");
+            throw new ArgumentException("Club ID cannot be empty", nameof(request.ClubId));
+        }
+
+        _logger.LogInformation("Retrieving club with ID: {ClubId}", request.ClubId);
+        Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
         return club != null ? ClubMapper.ToDto(club) : null;
     }
 } 

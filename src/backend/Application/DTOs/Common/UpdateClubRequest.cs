@@ -8,6 +8,11 @@ namespace Application.DTOs.Common;
 public record UpdateClubRequest
 {
     /// <summary>
+    /// Gets or sets the ID of the club to update
+    /// </summary>
+    public Guid ClubId { get; init; }
+
+    /// <summary>
     /// Gets or sets the name of the club
     /// </summary>
     public string Name { get; init; } = string.Empty;

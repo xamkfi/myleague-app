@@ -1,5 +1,5 @@
 using Application.DTOs.Common;
-using Application.Mappings;
+using Application.Mappings.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;

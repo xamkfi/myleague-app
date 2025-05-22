@@ -1,3 +1,4 @@
+using Application.DTOs.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
 using System;
@@ -27,26 +28,32 @@ public class DeleteClubUseCase
     /// <summary>
     /// Executes the use case to delete a club
     /// </summary>
-    /// <param name="clubId">The ID of the club to delete</param>
+    /// <param name="request">The request containing the ID of the club to delete</param>
     /// <returns>True if the club was deleted, false if it wasn't found</returns>
+    /// <exception cref="ArgumentNullException">Thrown when request is null</exception>
     /// <exception cref="ArgumentException">Thrown when the clubId is empty</exception>
-    public async Task<bool> ExecuteAsync(Guid clubId)
+    public async Task<bool> ExecuteAsync(DeleteClubRequest request)
     {
-        if (clubId == Guid.Empty)
+        if (request == null)
         {
-            _logger.LogError("Club ID cannot be empty");
-            throw new ArgumentException("Club ID cannot be empty", nameof(clubId));
+            throw new ArgumentNullException(nameof(request));
         }
 
-        bool exists = await _clubRepository.ExistsAsync(clubId);
+        if (request.ClubId == Guid.Empty)
+        {
+            _logger.LogError("Club ID cannot be empty");
+            throw new ArgumentException("Club ID cannot be empty", nameof(request.ClubId));
+        }
+
+        bool exists = await _clubRepository.ExistsAsync(request.ClubId);
         if (!exists)
         {
-            _logger.LogWarning("Club with ID {ClubId} not found", clubId);
+            _logger.LogWarning("Club with ID {ClubId} not found", request.ClubId);
             return false;
         }
 
-        _logger.LogInformation("Deleting club with ID: {ClubId}", clubId);
-        await _clubRepository.DeleteAsync(clubId);
+        _logger.LogInformation("Deleting club with ID: {ClubId}", request.ClubId);
+        await _clubRepository.DeleteAsync(request.ClubId);
         return true;
     }
 } 
