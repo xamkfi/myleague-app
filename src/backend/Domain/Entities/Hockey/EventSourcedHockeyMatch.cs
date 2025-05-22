@@ -403,7 +403,7 @@ namespace Domain.Entities.Hockey
             HomeTeamId = @event.HomeTeamId;
             AwayTeamId = @event.AwayTeamId;
             ScheduledDateTime = @event.ScheduledDateTime;
-            Venue = @event.Venue;
+            Venue = @event.Venue ?? "No venue assigned";
             Status = HockeyMatchStatus.Scheduled;
             HomeScore = 0;
             AwayScore = 0;
@@ -454,7 +454,8 @@ namespace Domain.Entities.Hockey
               @event.TimeInSeconds,
               false, // Goal type ID not in the event, defaulting to false
               false,
-              @event.AssisterId// Description not in the event, defaulting to false
+              @event.PrimaryAssisterId, // Description not in the event, defaulting to false
+              @event.SecondaryAssisterId // Description not in the event, defaulting to false
           );
 
             _goalEvents.Add(goalEvent);

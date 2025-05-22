@@ -3,6 +3,7 @@ using Domain.ValueObjects.Hockey;
 using Domain.Entities;
 using Domain.EventSourcing;
 using Domain.Entities.Common;
+using Domain.DomainEvents.Hockey;
 
 namespace Domain.Entities.Hockey;
 
@@ -174,6 +175,12 @@ public class HockeyTeam : AggregateRoot
             throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
         var teamPlayer = new HockeyTeamPlayer(Id, player.Id, position, jerseyNumber);
         _roster.Add(teamPlayer);
+
+        AddDomainEvent(new HockeyPlayerAddedToTeamEvent(
+            Id,
+            player.Id,
+            position,
+            jerseyNumber));
     }
 
     /// <summary>
@@ -188,6 +195,10 @@ public class HockeyTeam : AggregateRoot
             throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
 
         _roster.Remove(teamPlayer);
+
+        AddDomainEvent(new HockeyPlayerRemovedFromTeamEvent(
+            Id,
+            playerId));
     }
 
     /// <summary>

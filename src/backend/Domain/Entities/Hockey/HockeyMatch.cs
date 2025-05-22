@@ -266,7 +266,8 @@ public class HockeyMatch : AggregateRoot
     public void RecordGoal(
         HockeyTeam scoringTeam,
         HockeyPlayer scoringPlayer,
-        HockeyPlayer assistingPlayer,
+        HockeyPlayer primaryAssistingPlayer,
+        HockeyPlayer secondaryAssistingPlayer,
         int periodNumber,
         int timeInSeconds,
         string? description = null,
@@ -293,12 +294,20 @@ public class HockeyMatch : AggregateRoot
         if (!playerOnTeam)
             throw new ArgumentException("Scoring player is not on the scoring team's roster.", nameof(scoringPlayer));
 
-        // Check if the assisting player is on the scoring team's roster
-        if (assistingPlayer != null)
+        // Check if the primary assisting player is on the scoring team's roster
+        if (primaryAssistingPlayer != null)
         {
-            bool assistingPlayerOnTeam = scoringTeam.Roster.Any(tp => tp.PlayerId == assistingPlayer.Id);
+            bool assistingPlayerOnTeam = scoringTeam.Roster.Any(tp => tp.PlayerId == primaryAssistingPlayer.Id);
             if (!assistingPlayerOnTeam)
-                throw new ArgumentException("Assisting player is not on the scoring team's roster.", nameof(assistingPlayer));
+                throw new ArgumentException("Assisting player is not on the scoring team's roster.", nameof(primaryAssistingPlayer));
+        }
+
+        //Check if the secondary assisting player is on the scoring team's roster
+        if (secondaryAssistingPlayer != null)
+        {
+            bool assistingPlayerOnTeam = scoringTeam.Roster.Any(tp => tp.PlayerId == secondaryAssistingPlayer.Id);
+            if (!assistingPlayerOnTeam)
+                throw new ArgumentException("Assisting player is not on the scoring team's roster.", nameof(secondaryAssistingPlayer));
         }
 
         // Record the goal event
@@ -306,7 +315,8 @@ public class HockeyMatch : AggregateRoot
             Id,
             scoringTeam.Id,
             scoringPlayer.Id,
-            assistingPlayer?.Id,
+            primaryAssistingPlayer?.Id,
+            secondaryAssistingPlayer?.Id,
             periodNumber,
             timeInSeconds,
             goalType,
@@ -345,7 +355,8 @@ public class HockeyMatch : AggregateRoot
             timeInSeconds,
             WentToOvertime,
             false, // Is shootout goal
-            assistingPlayer?.Id));
+            primaryAssistingPlayer?.Id,
+            secondaryAssistingPlayer?.Id));
     }
 
     /// <summary>
@@ -367,6 +378,8 @@ public class HockeyMatch : AggregateRoot
         int timeInSeconds,
         string description = "")
     {
+        ArgumentNullException.ThrowIfNull(team);
+        ArgumentNullException.ThrowIfNull(player);
         if (Status != HockeyMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot record a penalty for a match with status {Status}.");
         if (periodNumber < 1 || periodNumber > _periodScores.Count)
@@ -375,6 +388,7 @@ public class HockeyMatch : AggregateRoot
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
         if (minutes <= 0)
             throw new ArgumentOutOfRangeException(nameof(minutes), "Penalty minutes must be positive.");
+
         var penaltyEvent = new HockeyPenaltyEvent(
             Id,
             team.Id,

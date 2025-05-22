@@ -52,9 +52,14 @@ namespace Domain.DomainEvents.Hockey
         public bool IsPenaltyShot { get; }
 
         /// <summary>
-        /// Gets the ID of the player who assisted (if any)
+        /// Gets the ID of the primary player who assisted (if any)
         /// </summary>
-        public Guid? AssisterId { get; }
+        public Guid? PrimaryAssisterId { get; }
+
+        /// <summary>
+        /// Gets the ID of the secondary player who assisted (if any)
+        /// </summary>
+        public Guid? SecondaryAssisterId { get; }
 
         /// <summary>
         /// Initializes a new instance of the FloorballGoalScoredEvent class
@@ -66,7 +71,8 @@ namespace Domain.DomainEvents.Hockey
         /// <param name="timeInSeconds">The time in seconds when the goal was scored in the period</param>
         /// <param name="isOvertime">Whether the goal was scored in overtime</param>
         /// <param name="isPenaltyShot">Whether the goal was scored from a penalty shot</param>
-        /// <param name="assisterId">The ID of the player who assisted (optional)</param>
+        /// <param name="primaryAssisterId">The ID of the primary player who assisted (optional)</param>
+        /// <param name="secondaryAssisterId">The ID of the secondary player who assisted (optional)</param>
         public HockeyGoalScoredEvent(
             Guid matchId,
             Guid teamId,
@@ -75,7 +81,8 @@ namespace Domain.DomainEvents.Hockey
             int timeInSeconds,
             bool isOvertime = false,
             bool isPenaltyShot = false,
-            Guid? assisterId = null)
+            Guid? primaryAssisterId = null,
+            Guid? secondaryAssisterId = null)
         {
             if (periodNumber < 1)
             {
@@ -96,7 +103,8 @@ namespace Domain.DomainEvents.Hockey
             TimeInSeconds = timeInSeconds;
             IsOvertime = isOvertime;
             IsPenaltyShot = isPenaltyShot;
-            AssisterId = assisterId;
+            PrimaryAssisterId = primaryAssisterId;
+            SecondaryAssisterId = secondaryAssisterId;
         }
     }
 }
