@@ -3,6 +3,8 @@ using Domain.Enums.Floorball;
 using Domain.EventSourcing;
 using Domain.DomainEvents.Common;
 using Domain.DomainEvents.Floorball;
+using Domain.Entities.Hockey;
+using Domain.Enums.Hockey;
 
 namespace Domain.Entities.Common;
 
@@ -56,6 +58,12 @@ public class Club : AggregateRoot
     /// </summary>
     public IReadOnlyCollection<FloorballTeam> FloorballTeams => _floorballTeams.AsReadOnly();
     private readonly List<FloorballTeam> _floorballTeams = new();
+
+    /// <summary>
+    /// Gets the hockey teams associated with this club
+    /// </summary>
+    public IReadOnlyCollection<HockeyTeam> hockeyTeams => _hockeyTeams.AsReadOnly();
+    private readonly List<HockeyTeam> _hockeyTeams = new();
 
     /// <summary>
     /// Private constructor for EF Core
@@ -216,5 +224,57 @@ public class Club : AggregateRoot
     public IEnumerable<FloorballTeam> GetFloorballTeamsByDivision(FloorballDivision division)
     {
         return _floorballTeams.Where(t => t.Division == division);
+    }
+
+    /// <summary>
+    /// Adds a new Hockey team to the club
+    /// </summary>
+    /// <param name="name">The name of the team</param>
+    /// <param name="division">The division level of the team</param>
+    /// <param name="homeArena">The team's home arena</param>
+    /// <param name="primaryJerseyColor">The team's primary jersey color</param>
+    /// <param name="secondaryJerseyColor">The team's secondary jersey color</param>
+    /// <returns>The newly created hockey team</returns>
+    public HockeyTeam AddHockeyTeam(
+        string name,
+        HockeyDivision division,
+        string homeArena,
+        string primaryJerseyColor,
+        string? secondaryJerseyColor = null)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(homeArena);
+        ArgumentNullException.ThrowIfNull(primaryJerseyColor);
+        var team = new HockeyTeam(name, division, this, homeArena, primaryJerseyColor, secondaryJerseyColor);
+        _hockeyTeams.Add(team);
+        return team;
+    }
+
+    /// <summary>
+    /// Removes a hockey team from the club
+    /// </summary>
+    /// <param name="teamId">The ID of the team to remove</param>
+    /// <returns>True if the team was removed, false if the team was not found</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the team has active members</exception>
+    public bool RemoveHockeyTeam(Guid teamId)
+    {
+        HockeyTeam? team = _hockeyTeams.FirstOrDefault(t => t.Id == teamId);
+        if (team == null)
+            return false;
+
+        if (team.HasActiveMembers)
+            throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
+
+        return _hockeyTeams.Remove(team);
+    }
+
+    /// <summary>
+    /// Gets hockey teams by division
+    /// </summary>
+    /// <param name="division">The division to filter by</param>
+    /// <returns>Teams in the specified division</returns>
+    public IEnumerable<HockeyTeam> GetHockeyTeamsByDivision(HockeyDivision division)
+    {
+        return _hockeyTeams.Where(t => t.Division == division);
     }
 } 
