@@ -1,37 +1,36 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Domain.DomainEvents;
+using Domain.DomainEvents.Common;
+using Domain.DomainEvents.Floorball;
 using Domain.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.Persistence.Contexts;
-using Newtonsoft.Json;
-using System.Text;
-using Domain.DomainEvents.Common;
-using Domain.DomainEvents.Floorball;
 
-namespace MyLeague.Infrastructure.Persistence
+namespace MyLeague.Infrastructure.Persistence.EventStores
 {
     /// <summary>
-    /// EventStore implementation for storing and retrieving domain events
+    /// Common-specific EventStore implementation for storing and retrieving domain events
     /// </summary>
-    public class EventStore : IEventStore
+    public class CommonEventStore : IEventStore
     {
-        private readonly FloorballDbContext _floorballDbContext;
         private readonly CommonDbContext _commonDbContext;
-        private readonly ILogger<EventStore> _logger;
+        private readonly ILogger<CommonEventStore> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the EventStore class
+        /// Initializes a new instance of the CommonEventStore class
         /// </summary>
-        /// <param name="floorballDbContext">The floorball database context</param>
         /// <param name="commonDbContext">The common database context</param>
         /// <param name="logger">The logger</param>
-        public EventStore(
-            FloorballDbContext floorballDbContext, 
+        public CommonEventStore(
             CommonDbContext commonDbContext,
-            ILogger<EventStore> logger)
+            ILogger<CommonEventStore> logger)
         {
-            _floorballDbContext = floorballDbContext;
             _commonDbContext = commonDbContext;
             _logger = logger;
         }
@@ -39,9 +38,6 @@ namespace MyLeague.Infrastructure.Persistence
         /// <inheritdoc />
         public async Task SaveEventsAsync(Guid aggregateId, IEnumerable<IDomainEvent> events, int expectedVersion, CancellationToken cancellationToken = default)
         {
-            // Get the appropriate context based on the first event type
-            DbContext context = GetContextForEvents(events);
-
             // Get current version from database
             int currentVersion = await GetAggregateVersionAsync(aggregateId, cancellationToken);
 
@@ -61,16 +57,16 @@ namespace MyLeague.Infrastructure.Persistence
                 version++;
                 
                 // Set the aggregate ID and version properties
-                EntityEntry<IDomainEvent> entry = context.Entry(@event);
+                EntityEntry<IDomainEvent> entry = _commonDbContext.Entry(@event);
                 entry.Property("AggregateId").CurrentValue = aggregateId;
                 entry.Property("Version").CurrentValue = version;
                 
                 // Add the event to the context
-                context.Add(@event);
+                _commonDbContext.Add(@event);
             }
 
             // Save all events in a single transaction
-            await context.SaveChangesAsync(cancellationToken);
+            await _commonDbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Saved {Count} events for aggregate {AggregateId}", events.Count(), aggregateId);
         }
@@ -78,30 +74,20 @@ namespace MyLeague.Infrastructure.Persistence
         /// <inheritdoc />
         public async Task<IEnumerable<IDomainEvent>> GetEventsAsync(Guid aggregateId, CancellationToken cancellationToken = default)
         {
-            // Try to get events from all contexts and combine them
-            IEnumerable<IDomainEvent> floorballEvents = await GetEventsFromContext(_floorballDbContext, aggregateId, cancellationToken);
-            IEnumerable<IDomainEvent> commonEvents = await GetEventsFromContext(_commonDbContext, aggregateId, cancellationToken);
-
-            var allEvents = floorballEvents.Concat(commonEvents)
-                .OrderBy(e => EF.Property<int>(e, "Version"))
-                .ToList();
-
-            _logger.LogInformation("Retrieved {Count} events for aggregate {AggregateId}", allEvents.Count, aggregateId);
-            return allEvents;
-        }
-
-        private async Task<IEnumerable<IDomainEvent>> GetEventsFromContext(DbContext context, Guid aggregateId, CancellationToken cancellationToken)
-        {
             try
             {
-                return await context.Set<IDomainEvent>()
+                List<IDomainEvent> events = await _commonDbContext.Set<IDomainEvent>()
                     .AsNoTracking()
                     .Where(e => EF.Property<Guid>(e, "AggregateId") == aggregateId)
+                    .OrderBy(e => EF.Property<int>(e, "Version"))
                     .ToListAsync(cancellationToken);
+
+                _logger.LogInformation("Retrieved {Count} events for aggregate {AggregateId}", events.Count, aggregateId);
+                return events;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving events from context {ContextName}", context.GetType().Name);
+                _logger.LogError(ex, "Error retrieving events for aggregate {AggregateId}", aggregateId);
                 return Enumerable.Empty<IDomainEvent>();
             }
         }
@@ -109,19 +95,9 @@ namespace MyLeague.Infrastructure.Persistence
         /// <inheritdoc />
         public async Task<int> GetAggregateVersionAsync(Guid aggregateId, CancellationToken cancellationToken = default)
         {
-            // Get max version from each context
-            int floorballVersion = await GetAggregateVersionFromContext(_floorballDbContext, aggregateId, cancellationToken);
-            int commonVersion = await GetAggregateVersionFromContext(_commonDbContext, aggregateId, cancellationToken);
-
-            // Return the highest version
-            return Math.Max(floorballVersion, commonVersion);
-        }
-
-        private async Task<int> GetAggregateVersionFromContext(DbContext context, Guid aggregateId, CancellationToken cancellationToken)
-        {
             try
             {
-                return await context.Set<IDomainEvent>()
+                return await _commonDbContext.Set<IDomainEvent>()
                     .AsNoTracking()
                     .Where(e => EF.Property<Guid>(e, "AggregateId") == aggregateId)
                     .Select(e => EF.Property<int>(e, "Version"))
@@ -130,25 +106,9 @@ namespace MyLeague.Infrastructure.Persistence
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting aggregate version from context {ContextName}", context.GetType().Name);
+                _logger.LogError(ex, "Error getting aggregate version for {AggregateId}", aggregateId);
                 return -1;
             }
-        }
-
-        private DbContext GetContextForEvents(IEnumerable<IDomainEvent> events)
-        {
-            if (!events.Any())
-                return _commonDbContext;
-
-            IDomainEvent firstEvent = events.First();
-            
-            if (firstEvent is FloorballDomainEvent)
-                return _floorballDbContext;
-            
-            if (firstEvent is CommonDomainEvent)
-                return _commonDbContext;
-            
-            return _commonDbContext; // Default to common context
         }
     }
 } 

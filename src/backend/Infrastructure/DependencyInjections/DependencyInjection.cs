@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyLeague.Infrastructure.Persistence;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
+using MyLeague.Infrastructure.Persistence.EventStores;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -46,7 +47,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
 
             // Add event sourcing
-            services.AddScoped<IEventStore, EventStore>();
+            services.AddScoped<IEventStore, FloorballEventStore>();
+            services.AddScoped<IEventStore, CommonEventStore>();
 
             // Add domain events
             services.AddDomainEvents();
