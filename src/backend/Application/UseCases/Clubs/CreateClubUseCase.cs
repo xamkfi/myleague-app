@@ -1,4 +1,4 @@
-using Application.DTOs;
+using Application.Commands.Clubs;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
 using Domain.Entities.Common;
@@ -31,24 +31,24 @@ public class CreateClubUseCase
     /// <summary>
     /// Executes the use case to create a new club
     /// </summary>
-    /// <param name="request">The request containing club information</param>
+    /// <param name="command">The command containing club information</param>
     /// <returns>The newly created club as a DTO</returns>
     /// <exception cref="InvalidOperationException">Thrown when a club with the same name already exists</exception>
-    /// <exception cref="ArgumentNullException">Thrown when request is null</exception>
-    public async Task<ClubDto> ExecuteAsync(CreateClubRequest request)
+    /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
+    public async Task<ClubDto> ExecuteAsync(CreateClubCommand command)
     {
-        if (request == null)
+        if (command == null)
         {
-            throw new ArgumentNullException(nameof(request));
+            throw new ArgumentNullException(nameof(command));
         }
 
-        if (await _clubRepository.ExistsByNameAsync(request.Name))
+        if (await _clubRepository.ExistsByNameAsync(command.Name))
         {
-            _logger.LogError("A club with the name {ClubName} already exists", request.Name);
-            throw new InvalidOperationException($"A club with the name '{request.Name}' already exists.");
+            _logger.LogError("A club with the name {ClubName} already exists", command.Name);
+            throw new InvalidOperationException($"A club with the name '{command.Name}' already exists.");
         }
 
-        Club club = ClubMapper.ToEntity(request);
+        Club club = ClubMapper.ToEntity(command);
 
         _logger.LogInformation("Creating new club: {ClubName}", club.Name);
         await _clubRepository.AddAsync(club);

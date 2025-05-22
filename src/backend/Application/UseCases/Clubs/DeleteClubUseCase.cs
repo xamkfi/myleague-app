@@ -1,4 +1,4 @@
-using Application.DTOs.Common;
+using Application.Commands.Clubs;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
 using System;
@@ -28,32 +28,32 @@ public class DeleteClubUseCase
     /// <summary>
     /// Executes the use case to delete a club
     /// </summary>
-    /// <param name="request">The request containing the ID of the club to delete</param>
+    /// <param name="command">The command containing the ID of the club to delete</param>
     /// <returns>True if the club was deleted, false if it wasn't found</returns>
-    /// <exception cref="ArgumentNullException">Thrown when request is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
     /// <exception cref="ArgumentException">Thrown when the clubId is empty</exception>
-    public async Task<bool> ExecuteAsync(DeleteClubRequest request)
+    public async Task<bool> ExecuteAsync(DeleteClubCommand command)
     {
-        if (request == null)
+        if (command == null)
         {
-            throw new ArgumentNullException(nameof(request));
+            throw new ArgumentNullException(nameof(command));
         }
 
-        if (request.ClubId == Guid.Empty)
+        if (command.ClubId == Guid.Empty)
         {
             _logger.LogError("Club ID cannot be empty");
-            throw new ArgumentException("Club ID cannot be empty", nameof(request.ClubId));
+            throw new ArgumentException("Club ID cannot be empty", nameof(command.ClubId));
         }
 
-        bool exists = await _clubRepository.ExistsAsync(request.ClubId);
+        bool exists = await _clubRepository.ExistsAsync(command.ClubId);
         if (!exists)
         {
-            _logger.LogWarning("Club with ID {ClubId} not found", request.ClubId);
+            _logger.LogWarning("Club with ID {ClubId} not found", command.ClubId);
             return false;
         }
 
-        _logger.LogInformation("Deleting club with ID: {ClubId}", request.ClubId);
-        await _clubRepository.DeleteAsync(request.ClubId);
+        _logger.LogInformation("Deleting club with ID: {ClubId}", command.ClubId);
+        await _clubRepository.DeleteAsync(command.ClubId);
         return true;
     }
 } 

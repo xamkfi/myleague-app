@@ -1,3 +1,4 @@
+using Application.Commands.Clubs;
 using Application.DTOs.Common;
 using Domain.Entities.Common;
 using System;
@@ -22,17 +23,16 @@ public static class ClubMapper
         if (club == null)
             throw new ArgumentNullException(nameof(club));
 
-        return new ClubDto
-        {
-            Id = club.Id,
-            Name = club.Name,
-            FoundingDate = club.FoundingDate,
-            City = club.City,
-            Country = club.Country,
-            WebsiteUrl = club.WebsiteUrl?.ToString() ?? string.Empty,
-            LogoUrl = club.LogoUrl?.ToString() ?? string.Empty,
-            ContactEmail = club.ContactEmail
-        };
+        return new ClubDto(
+            club.Id,
+            club.Name,
+            club.FoundingDate,
+            club.City,
+            club.Country,
+            club.WebsiteUrl?.ToString() ?? string.Empty,
+            club.LogoUrl?.ToString() ?? string.Empty,
+            club.ContactEmail
+        );
     }
 
     /// <summary>
@@ -50,49 +50,49 @@ public static class ClubMapper
     }
 
     /// <summary>
-    /// Maps a CreateClubRequest to a Club entity
+    /// Maps a CreateClubCommand to a Club entity
     /// </summary>
-    /// <param name="request">The CreateClubRequest to map</param>
+    /// <param name="command">The CreateClubCommand to map</param>
     /// <returns>A new Club entity</returns>
-    /// <exception cref="ArgumentNullException">Thrown if request is null</exception>
-    public static Club ToEntity(CreateClubRequest request)
+    /// <exception cref="ArgumentNullException">Thrown if command is null</exception>
+    public static Club ToEntity(CreateClubCommand command)
     {
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
+        if (command == null)
+            throw new ArgumentNullException(nameof(command));
 
-        Uri? websiteUri = !string.IsNullOrEmpty(request.WebsiteUrl) ? new Uri(request.WebsiteUrl) : null;
-        Uri? logoUri = !string.IsNullOrEmpty(request.LogoUrl) ? new Uri(request.LogoUrl) : null;
+        Uri? websiteUri = !string.IsNullOrEmpty(command.WebsiteUrl) ? new Uri(command.WebsiteUrl) : null;
+        Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;
 
         return new Club(
-            request.Name,
-            request.City,
-            request.Country,
-            request.FoundingDate,
+            command.Name,
+            command.City,
+            command.Country,
+            command.FoundingDate,
             websiteUri,
             logoUri,
-            request.ContactEmail
+            command.ContactEmail
         );
     }
 
     /// <summary>
-    /// Updates a Club entity with values from an UpdateClubRequest
+    /// Updates a Club entity with values from an UpdateClubCommand
     /// </summary>
     /// <param name="club">The Club entity to update</param>
-    /// <param name="request">The UpdateClubRequest containing updated values</param>
-    /// <exception cref="ArgumentNullException">Thrown if club or request is null</exception>
-    public static void UpdateFromRequest(Club club, UpdateClubRequest request)
+    /// <param name="command">The UpdateClubCommand containing updated values</param>
+    /// <exception cref="ArgumentNullException">Thrown if club or command is null</exception>
+    public static void UpdateFromCommand(Club club, UpdateClubCommand command)
     {
         if (club == null)
             throw new ArgumentNullException(nameof(club));
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
+        if (command == null)
+            throw new ArgumentNullException(nameof(command));
 
         // Update basic info
-        club.UpdateBasicInfo(request.Name, request.City, request.Country);
+        club.UpdateBasicInfo(command.Name, command.City, command.Country);
 
         // Update online presence
-        Uri? websiteUri = !string.IsNullOrEmpty(request.WebsiteUrl) ? new Uri(request.WebsiteUrl) : null;
-        Uri? logoUri = !string.IsNullOrEmpty(request.LogoUrl) ? new Uri(request.LogoUrl) : null;
-        club.UpdateOnlinePresence(websiteUri, logoUri, request.ContactEmail);
+        Uri? websiteUri = !string.IsNullOrEmpty(command.WebsiteUrl) ? new Uri(command.WebsiteUrl) : null;
+        Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;
+        club.UpdateOnlinePresence(websiteUri, logoUri, command.ContactEmail);
     }
 } 
