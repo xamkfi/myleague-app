@@ -307,6 +307,7 @@ public class HockeyMatch : AggregateRoot
             scoringTeam.Id,
             scoringPlayer.Id,
             assistingPlayer?.Id,
+            secondaryAssistingPlayerId: null,
             periodNumber,
             timeInSeconds,
             goalType,
@@ -375,6 +376,9 @@ public class HockeyMatch : AggregateRoot
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
         if (minutes <= 0)
             throw new ArgumentOutOfRangeException(nameof(minutes), "Penalty minutes must be positive.");
+
+        ArgumentNullException.ThrowIfNull(team);
+
         var penaltyEvent = new HockeyPenaltyEvent(
             Id,
             team.Id,

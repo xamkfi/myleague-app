@@ -403,7 +403,7 @@ namespace Domain.Entities.Hockey
             HomeTeamId = @event.HomeTeamId;
             AwayTeamId = @event.AwayTeamId;
             ScheduledDateTime = @event.ScheduledDateTime;
-            Venue = @event.Venue;
+            Venue = @event.Venue != null ? @event.Venue : "";
             Status = HockeyMatchStatus.Scheduled;
             HomeScore = 0;
             AwayScore = 0;
