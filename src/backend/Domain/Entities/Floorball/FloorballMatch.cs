@@ -375,6 +375,9 @@ public class FloorballMatch : AggregateRoot
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
         if (minutes <= 0)
             throw new ArgumentOutOfRangeException(nameof(minutes), "Penalty minutes must be positive.");
+        if(team == null)
+            throw new ArgumentNullException(nameof(team), "Team cannot be null.");
+
         var penaltyEvent = new FloorballPenaltyEvent(
             Id,
             team.Id,

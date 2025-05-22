@@ -13,14 +13,14 @@ public interface IFloorballTeamRepository
     /// </summary>
     /// <param name="id">The team ID</param>
     /// <returns>The team if found, null otherwise</returns>
-    Task<FloorballTeam> GetByIdAsync(Guid id);
+    Task<FloorballTeam?> GetByIdAsync(Guid id);
     
     /// <summary>
     /// Gets a floorball team by name
     /// </summary>
     /// <param name="name">The team name</param>
     /// <returns>The team if found, null otherwise</returns>
-    Task<FloorballTeam> GetByNameAsync(string name);
+    Task<FloorballTeam?> GetByNameAsync(string name);
     
     /// <summary>
     /// Gets all floorball teams
@@ -33,7 +33,7 @@ public interface IFloorballTeamRepository
     /// </summary>
     /// <param name="clubId">The club ID</param>
     /// <returns>A collection of floorball teams belonging to the club</returns>
-    Task<IEnumerable<FloorballTeam>> GetByClubIdAsync(Guid clubId);
+    Task<IEnumerable<FloorballTeam?>> GetByClubIdAsync(Guid clubId);
     
     /// <summary>
     /// Gets floorball teams by division
