@@ -1,6 +1,8 @@
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using Domain.EventSourcing;
+using Domain.DomainEvents.Common;
+using Domain.DomainEvents.Floorball;
 using Domain.Entities.Hockey;
 using Domain.Enums.Hockey;
 
@@ -69,8 +71,6 @@ public class Club : AggregateRoot
     private Club()
     {
         Id = Guid.NewGuid();
-        _floorballTeams = new List<FloorballTeam>();
-        _hockeyTeams = new List<HockeyTeam>();
     }
 
     /// <summary>
@@ -112,8 +112,8 @@ public class Club : AggregateRoot
         WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
         LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
         ContactEmail = contactEmail ?? "contact@example.com";
-        _floorballTeams = new List<FloorballTeam>();
-        _hockeyTeams = new List<HockeyTeam>();
+        
+        AddDomainEvent(new ClubRegisteredEvent(Id, name, city, country, FoundingDate));
     }
 
     /// <summary>
@@ -150,6 +150,8 @@ public class Club : AggregateRoot
         Name = name;
         City = city;
         Country = country;
+        
+        AddDomainEvent(new ClubInfoUpdatedEvent(Id, name, city, country));
     }
     
     /// <summary>
@@ -186,6 +188,7 @@ public class Club : AggregateRoot
         ArgumentNullException.ThrowIfNull(primaryJerseyColor);
         var team = new FloorballTeam(name, division, this, homeArena, primaryJerseyColor, secondaryJerseyColor);
         _floorballTeams.Add(team);
+        
         return team;
     }
 
@@ -204,7 +207,13 @@ public class Club : AggregateRoot
         if (team.HasActiveMembers)
             throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
         
-        return _floorballTeams.Remove(team);
+        bool removed = _floorballTeams.Remove(team);
+        if (removed)
+        {
+            AddDomainEvent(new FloorballTeamRemovedEvent(Id, teamId));
+        }
+        
+        return removed;
     }
 
     /// <summary>

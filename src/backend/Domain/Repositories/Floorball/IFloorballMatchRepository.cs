@@ -13,7 +13,7 @@ public interface IFloorballMatchRepository
     /// </summary>
     /// <param name="id">The match ID</param>
     /// <returns>The match if found, null otherwise</returns>
-    Task<FloorballMatch> GetByIdAsync(Guid id);
+    Task<FloorballMatch?> GetByIdAsync(Guid id);
     
     /// <summary>
     /// Gets all floorball matches
