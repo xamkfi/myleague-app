@@ -4,7 +4,6 @@ using Application.Handlers.Clubs;
 using Application.Commands.Clubs;
 using Application.Queries.Clubs;
 using Application.DTOs.Common;
-using Application.Behaviors;
 using MediatR;
 using FluentValidation;
 
@@ -29,12 +28,6 @@ public static class DependencyInjection
         
         // Register FluentValidation
         services.AddValidatorsFromAssembly(assembly);
-        
-        // Register pipeline behaviors
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-        
-        // Note: Application services removed - using handlers directly is simpler for CRUD operations
-        // Add services back when you need complex business workflows
         
         return services;
     }
