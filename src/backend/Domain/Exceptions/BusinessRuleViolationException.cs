@@ -1,9 +1,9 @@
-namespace Application.Exceptions;
+namespace Domain.Exceptions;
 
 /// <summary>
-/// Exception thrown when a business rule is violated
+/// Exception thrown when a business rule is violated in the domain
 /// </summary>
-public class BusinessRuleViolationException : Exception
+public class BusinessRuleViolationException : DomainException
 {
     public BusinessRuleViolationException(string message) : base(message)
     {
