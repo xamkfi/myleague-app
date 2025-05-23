@@ -1,4 +1,4 @@
-import type { Match, StandingsRow, TeamStat } from '../types';
+import type { Match, StandingsRow, TeamStat } from '../types/league.types';
 
 // Mock data for development
 const mockMatch: Match = {
@@ -25,21 +25,21 @@ const mockTeamStats: TeamStat[] = [
 ];
 
 // API service functions (simulated)
-export const getNextMatch = async (): Promise<Match> => {
+export const getNextMatchApi = async (): Promise<Match> => {
   // Simulating API call with a delay
   return new Promise((resolve) => {
     setTimeout(() => resolve(mockMatch), 500);
   });
 };
 
-export const getStandings = async (): Promise<StandingsRow[]> => {
+export const getStandingsApi = async (): Promise<StandingsRow[]> => {
   // Simulating API call with a delay
   return new Promise((resolve) => {
     setTimeout(() => resolve(mockStandings), 500);
   });
 };
 
-export const getTeamStats = async (): Promise<TeamStat[]> => {
+export const getTeamStatsApi = async (): Promise<TeamStat[]> => {
   // Simulating API call with a delay
   return new Promise((resolve) => {
     setTimeout(() => resolve(mockTeamStats), 500);

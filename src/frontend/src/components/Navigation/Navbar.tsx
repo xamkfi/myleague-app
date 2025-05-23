@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle';
-import './Navbar.css';
+import './Navbar.scss';
 
 interface NavbarProps {
   onLogin?: () => void;
@@ -51,7 +51,7 @@ function Navbar({ onLogin }: NavbarProps) {
         <div className="navbar-language">
           <LanguageToggle />
         </div>
-        <button className="login-button" onClick={onLogin}>
+        <button className="button button-primary" onClick={onLogin}>
           Somelinkit
         </button>
       </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { routes } from './router/routes';
-import './index.css';
+import './App.scss';
 
 // Initialize i18n
 import './i18n/i18n';

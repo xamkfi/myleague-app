@@ -1,0 +1,26 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+@use '../../styles/common' as *;
+
+.hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  width: 100%;
+  background-color: $color-background-light;
+
+  .content-container {
+    text-align: center;
+    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+
+    .title-xl {
+      margin-bottom: map.get($spacing, 'lg');
+    }
+
+    .button {
+      font-size: map.get($font-sizes, 'lg');
+      padding: map.get($spacing, 'base') map.get($spacing, 'xl');
+    }
+  }
+} 

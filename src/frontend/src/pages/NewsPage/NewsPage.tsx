@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate';
-import './NewsPage.css';
+import './NewsPage.scss';
 
 function NewsPage() {
   const { t } = useTranslation();

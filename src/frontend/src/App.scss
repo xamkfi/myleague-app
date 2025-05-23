@@ -1,21 +1,25 @@
+@import './styles/variables';
+
 #root {
-  max-width: 1280px;
+  max-width: var(--max-width-container);
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--spacing-lg);
   text-align: center;
 }
 
 .logo {
   height: 6em;
-  padding: 1.5em;
+  padding: var(--spacing-md);
   will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  transition: var(--transition-filter);
+
+  &:hover {
+    filter: drop-shadow(0 0 2em #646cffaa);
+  }
+
+  &.react:hover {
+    filter: drop-shadow(0 0 2em #61dafbaa);
+  }
 }
 
 @keyframes logo-spin {
@@ -38,5 +42,5 @@
 }
 
 .read-the-docs {
-  color: #888;
-}
+  color: var(--color-text-muted);
+} 

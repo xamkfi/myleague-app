@@ -1,0 +1,151 @@
+/**
+ * Common CSS Styles
+ * 
+ * This file contains reusable styles that can be composed into components.
+ * Instead of writing component-specific styles, prefer using and combining these common styles.
+ */
+
+@import './variables.css';
+
+/* Layout containers
+ * Use these classes for consistent layout structures:
+ * - full-width-section: Full browser width sections
+ * - centered-section: Vertically and horizontally centered content
+ * - content-container: Centered, width-constrained content
+ * - page-container: Full-height page wrapper
+ * - page-content: Main content area with standard padding
+ */
+.full-width-section {
+  width: 100%;
+  position: relative;
+}
+
+.centered-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content-container {
+  text-align: center;
+  max-width: var(--max-width-container);
+  margin: 0 auto;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-content {
+  flex: 1;
+  padding: var(--spacing-lg);
+  max-width: var(--max-width-page);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Typography
+ * Standard text styles for consistent typography:
+ * - title-xl: Extra large titles (hero sections)
+ * - title-lg: Large titles (page headers)
+ * - text-body: Standard body text
+ * - text-muted: Secondary, less emphasized text
+ * - text-center: Center-aligned text
+ */
+.title-xl {
+  font-size: var(--font-size-xxl);
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+.title-lg {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text-primary);
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: var(--spacing-xs);
+}
+
+.text-body {
+  line-height: var(--line-height-relaxed);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Buttons
+ * Standard button styles:
+ * - button: Base button styles
+ * - button-primary: Main call-to-action buttons
+ */
+.button {
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background-color var(--transition-default);
+}
+
+.button-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-base);
+}
+
+.button-primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Background styles
+ * Common background utilities
+ */
+.bg-light {
+  background-color: var(--color-background-light);
+}
+
+/* Tables and Lists
+ * Reusable table and list structures:
+ * - table-container: Standard table wrapper
+ * - table-row: Flexbox-based table row
+ */
+.table-container {
+  width: 100%;
+  margin-bottom: var(--spacing-lg);
+}
+
+.table-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Common elements
+ * Reusable UI elements:
+ * - circle-icon: Circular icon or avatar placeholder
+ */
+.circle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--border-radius-full);
+  background-color: var(--color-placeholder);
+}
+
+/* Sidebar
+ * Standard sidebar container style
+ */
+.sidebar {
+  background-color: var(--color-sidebar);
+  padding: var(--spacing-md);
+  width: var(--sidebar-width);
+  color: var(--color-text-primary);
+  height: 100%;
+} 

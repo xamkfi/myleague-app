@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getNextMatch, getStandings, getTeamStats } from '../api/matchService';
-import type { Match, StandingsRow, TeamStat } from '../types';
+import { getNextMatchApi, getStandingsApi, getTeamStatsApi } from '../api/matchService';
+import type { Match, StandingsRow, TeamStat } from '../types/league.types';
 
 interface MatchData {
   match: Match | null;
@@ -23,9 +23,9 @@ export function useMatchData(): MatchData {
         setLoading(true);
         // Fetch all data in parallel
         const [matchData, standingsData, statsData] = await Promise.all([
-          getNextMatch(),
-          getStandings(),
-          getTeamStats()
+          getNextMatchApi(),
+          getStandingsApi(),
+          getTeamStatsApi()
         ]);
 
         setMatch(matchData);

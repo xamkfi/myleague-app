@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate';
-import './RulesPage.css';
+import './RulesPage.scss';
 
 function RulesPage() {
   const { t } = useTranslation();

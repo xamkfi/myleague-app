@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate';
-import './MAHLPage.css';
+import './MAHLPage.scss';
 
 function MAHLPage() {
   const { t } = useTranslation();

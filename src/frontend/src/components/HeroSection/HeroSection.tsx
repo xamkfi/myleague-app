@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import './HeroSection.css';
+import './HeroSection.scss';
 
 interface HeroSectionProps {
   title?: string;
@@ -17,9 +17,9 @@ function HeroSection({
   
   return (
     <div className="hero-section">
-      <div className="hero-content">
-        <h1 className="hero-title">{title || t('hero.title')}</h1>
-        <button className="hero-button" onClick={onButtonClick}>
+      <div className="content-container">
+        <h1 className="title-xl">{title || t('hero.title')}</h1>
+        <button className="button button-primary" onClick={onButtonClick}>
           {buttonText || t('hero.buttonText')}
         </button>
       </div>

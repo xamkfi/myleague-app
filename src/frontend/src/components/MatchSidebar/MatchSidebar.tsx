@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import './MatchSidebar.css';
+import './MatchSidebar.scss';
 
 interface TeamProps {
   name: string;

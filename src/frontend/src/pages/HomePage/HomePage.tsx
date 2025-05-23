@@ -2,7 +2,7 @@ import React from 'react';
 import Navbar from '../../components/Navigation/Navbar';
 import HeroSection from '../../components/HeroSection/HeroSection';
 import MatchSidebar from '../../components/MatchSidebar/MatchSidebar';
-import './HomePage.css';
+import './HomePage.scss';
 
 const mockStandings = {
   rows: [

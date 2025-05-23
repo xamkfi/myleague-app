@@ -1,0 +1,80 @@
+/**
+ * Global SCSS Variables
+ * 
+ * This file contains all global SCSS variables used throughout the application.
+ * Always use these variables instead of hardcoded values to maintain consistency.
+ */
+
+// Colors
+$color-primary: #444;
+$color-primary-dark: #333;
+$color-text-primary: #222;
+$color-background-light: #f1f1f1;
+$color-white: #fff;
+$color-navbar: #252525;
+$color-button-secondary: #666;
+$color-text-muted: #888;
+$color-border: #ddd;
+$color-sidebar: #ccc;
+$color-placeholder: #999;
+
+// Typography
+$font-sizes: (
+  'xs': 0.6rem,
+  'sm': 0.9rem,
+  'base': 1rem,
+  'md': 1.2rem,
+  'lg': 1.5rem,
+  'xl': 2.5rem,
+  'xxl': 4rem
+);
+
+$font-weights: (
+  'medium': 500,
+  'bold': 600
+);
+
+$letter-spacing-wide: 4px;
+$line-height-relaxed: 1.6;
+
+// Spacing
+$spacing: (
+  'xxs': 0.25rem,
+  'xs': 0.5rem,
+  'sm': 0.75rem,
+  'base': 1rem,
+  'md': 1.5rem,
+  'lg': 2rem,
+  'xl': 4rem
+);
+
+// Layout
+$navbar-height: 80px;
+$max-width-container: 1280px;
+$max-width-page: 1200px;
+$sidebar-width: 280px;
+$border-radius: (
+  'sm': 4px,
+  'full': 50%
+);
+
+// Transitions
+$transition-default: 0.3s ease;
+$transition-filter: filter 300ms;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin container {
+  width: 100%;
+  max-width: $max-width-container;
+  margin: 0 auto;
+}
+
+@mixin transition($property: all) {
+  transition: $property $transition-default;
+} 

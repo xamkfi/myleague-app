@@ -1,0 +1,35 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+@use '../../styles/common' as *;
+
+.news {
+  &-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &-item {
+    width: 100%;
+    margin-bottom: map.get($spacing, 'lg');
+    padding-bottom: map.get($spacing, 'lg');
+    border-bottom: 1px solid $color-border;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    h2 {
+      font-size: map.get($font-sizes, 'xl');
+      margin-bottom: map.get($spacing, 'xs');
+      color: $color-text-primary;
+    }
+  }
+
+  &-date {
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'base');
+  }
+} 

@@ -1,0 +1,128 @@
+/**
+ * Common SCSS Styles
+ * 
+ * This file contains reusable styles that can be composed into components.
+ * Instead of writing component-specific styles, prefer using and combining these common styles.
+ */
+
+@use 'sass:map';
+@use './variables' as *;
+
+// Layout containers
+.full-width-section {
+  width: 100%;
+  position: relative;
+}
+
+.centered-section {
+  @include flex-center;
+}
+
+.content-container {
+  @include container;
+  text-align: center;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-content {
+  flex: 1;
+  padding: map.get($spacing, 'lg');
+  max-width: $max-width-page;
+  margin: 0 auto;
+  width: 100%;
+}
+
+// Typography
+.title {
+  &-xl {
+    font-size: map.get($font-sizes, 'xxl');
+    margin-bottom: map.get($spacing, 'md');
+    color: $color-text-primary;
+    font-weight: map.get($font-weights, 'bold');
+    text-transform: uppercase;
+  }
+
+  &-lg {
+    font-size: map.get($font-sizes, 'xl');
+    margin-bottom: map.get($spacing, 'lg');
+    color: $color-text-primary;
+    border-bottom: 2px solid $color-border;
+    padding-bottom: map.get($spacing, 'xs');
+  }
+}
+
+.text {
+  &-body {
+    line-height: $line-height-relaxed;
+  }
+
+  &-muted {
+    color: $color-text-muted;
+  }
+
+  &-center {
+    text-align: center;
+  }
+}
+
+// Buttons
+.button {
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  @include transition(background-color);
+
+  &-primary {
+    background-color: $color-primary;
+    color: $color-white;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
+    font-size: map.get($font-sizes, 'base');
+
+    &:hover {
+      background-color: $color-primary-dark;
+    }
+  }
+}
+
+// Background styles
+.bg {
+  &-light {
+    background-color: $color-background-light;
+  }
+}
+
+// Tables and Lists
+.table {
+  &-container {
+    width: 100%;
+    margin-bottom: map.get($spacing, 'lg');
+  }
+
+  &-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: map.get($spacing, 'xs');
+  }
+}
+
+// Common elements
+.circle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: map.get($border-radius, 'full');
+  background-color: $color-placeholder;
+}
+
+// Sidebar
+.sidebar {
+  background-color: $color-sidebar;
+  padding: map.get($spacing, 'md');
+  width: $sidebar-width;
+  color: $color-text-primary;
+  height: 100%;
+} 
