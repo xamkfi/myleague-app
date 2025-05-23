@@ -4,6 +4,7 @@ using Application.Handlers.Clubs;
 using Application.Commands.Clubs;
 using Application.Queries.Clubs;
 using Application.DTOs.Common;
+using Application.Behaviors;
 using MediatR;
 using FluentValidation;
 
@@ -23,8 +24,14 @@ public static class DependencyInjection
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
         
-        // Register MediatR
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
+        // Register MediatR with pipeline behaviors
+        services.AddMediatR(cfg => 
+        {
+            cfg.RegisterServicesFromAssembly(assembly);
+            
+            // Add pipeline behaviors - order matters!
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        });
         
         // Register FluentValidation
         services.AddValidatorsFromAssembly(assembly);
