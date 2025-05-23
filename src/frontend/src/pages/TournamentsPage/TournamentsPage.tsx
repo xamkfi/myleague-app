@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import PageTemplate from '../../components/PageTemplate';
+import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './TournamentsPage.css';
 
 function TournamentsPage() {
