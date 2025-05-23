@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate';
 import './TournamentsPage.css';
 
-const TournamentsPage: React.FC = () => {
+function TournamentsPage() {
   const { t } = useTranslation();
   
   const tournaments = [
@@ -68,6 +68,6 @@ const TournamentsPage: React.FC = () => {
       </div>
     </PageTemplate>
   );
-};
+}
 
 export default TournamentsPage; 

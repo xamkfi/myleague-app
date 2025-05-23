@@ -21,7 +21,7 @@ const mockTeamStats = [
   { teamName: 'Joukkue 2', playerName: '', value: 3 }
 ];
 
-const HomePage: React.FC = () => {
+function HomePage() {
   const handleLogin = () => {
     console.log('Login button clicked');
   };
@@ -53,6 +53,6 @@ const HomePage: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default HomePage; 

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate';
 import './SportsPage.css';
 
-const SportsPage: React.FC = () => {
+function SportsPage() {
   const { t } = useTranslation();
   
   const sports = [
@@ -55,6 +55,6 @@ const SportsPage: React.FC = () => {
       </div>
     </PageTemplate>
   );
-};
+}
 
 export default SportsPage; 

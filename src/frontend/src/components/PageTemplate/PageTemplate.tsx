@@ -8,7 +8,7 @@ interface PageTemplateProps {
   children?: ReactNode;
 }
 
-const PageTemplate: React.FC<PageTemplateProps> = ({ title, children }) => {
+function PageTemplate({ title, children }: PageTemplateProps) {
   return (
     <div className="page-container">
       <Navbar />
@@ -22,6 +22,6 @@ const PageTemplate: React.FC<PageTemplateProps> = ({ title, children }) => {
       </div>
     </div>
   );
-};
+}
 
 export default PageTemplate; 

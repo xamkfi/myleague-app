@@ -8,7 +8,7 @@ interface NavbarProps {
   onLogin?: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
+function Navbar({ onLogin }: NavbarProps) {
   const { t } = useTranslation();
   
   return (
@@ -57,6 +57,6 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
       </div>
     </nav>
   );
-};
+}
 
 export default Navbar; 

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate';
 import './MAHLPage.css';
 
-const MAHLPage: React.FC = () => {
+function MAHLPage() {
   const { t } = useTranslation();
   
   return (
@@ -24,6 +24,6 @@ const MAHLPage: React.FC = () => {
       </div>
     </PageTemplate>
   );
-};
+}
 
 export default MAHLPage; 

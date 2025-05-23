@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate';
 import './NewsPage.css';
 
-const NewsPage: React.FC = () => {
+function NewsPage() {
   const { t } = useTranslation();
   
   return (
@@ -22,6 +22,6 @@ const NewsPage: React.FC = () => {
       </div>
     </PageTemplate>
   );
-};
+}
 
 export default NewsPage; 

@@ -8,11 +8,11 @@ interface HeroSectionProps {
   onButtonClick?: () => void;
 }
 
-const HeroSection: React.FC<HeroSectionProps> = ({ 
+function HeroSection({ 
   title,
   buttonText,
   onButtonClick 
-}) => {
+}: HeroSectionProps) {
   const { t } = useTranslation();
   
   return (
@@ -25,6 +25,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       </div>
     </div>
   );
-};
+}
 
 export default HeroSection; 

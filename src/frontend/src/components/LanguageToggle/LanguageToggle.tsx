@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import './LanguageToggle.css';
 
-const LanguageToggle: React.FC = () => {
+function LanguageToggle() {
   const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   
@@ -42,6 +42,6 @@ const LanguageToggle: React.FC = () => {
       )}
     </div>
   );
-};
+}
 
 export default LanguageToggle; 

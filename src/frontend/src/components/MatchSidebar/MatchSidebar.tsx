@@ -29,7 +29,7 @@ interface MatchSidebarProps {
   teamStats: Array<{teamName: string, playerName: string, value: number}>;
 }
 
-const MatchSidebar: React.FC<MatchSidebarProps> = ({ match, standings, teamStats }) => {
+function MatchSidebar({ match, standings, teamStats }: MatchSidebarProps) {
   const { t } = useTranslation();
   
   return (
@@ -95,6 +95,6 @@ const MatchSidebar: React.FC<MatchSidebarProps> = ({ match, standings, teamStats
       </div>
     </div>
   );
-};
+}
 
 export default MatchSidebar; 

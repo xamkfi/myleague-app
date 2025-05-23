@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate';
 import './AgeGroupsPage.css';
 
-const AgeGroupsPage: React.FC = () => {
+function AgeGroupsPage() {
   const { t } = useTranslation();
   
   const ageGroups = [
@@ -31,6 +31,6 @@ const AgeGroupsPage: React.FC = () => {
       </div>
     </PageTemplate>
   );
-};
+}
 
 export default AgeGroupsPage; 

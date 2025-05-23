@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate';
 import './RegisterPage.css';
 
-const RegisterPage: React.FC = () => {
+function RegisterPage() {
   const { t } = useTranslation();
   const [formSubmitted, setFormSubmitted] = useState(false);
   
@@ -75,6 +75,6 @@ const RegisterPage: React.FC = () => {
       </div>
     </PageTemplate>
   );
-};
+}
 
 export default RegisterPage; 

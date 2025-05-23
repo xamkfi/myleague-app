@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate';
 import './RulesPage.css';
 
-const RulesPage: React.FC = () => {
+function RulesPage() {
   const { t } = useTranslation();
   
   return (
@@ -33,6 +33,6 @@ const RulesPage: React.FC = () => {
       </div>
     </PageTemplate>
   );
-};
+}
 
 export default RulesPage; 
