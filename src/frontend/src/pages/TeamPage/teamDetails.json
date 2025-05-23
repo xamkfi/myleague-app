@@ -1,0 +1,192 @@
+{
+    "teamDetails": {
+      "id": 1,
+      "name": "HJK",
+      "fullName": "Helsingin Jalkapalloklubi",
+      "logo": "https://kodinhoitajapaivaksi.fi/wp-content/uploads/2024/04/hjk-logo-png-transparent.png",
+      "sportType": "Jalkapallo",
+      "homeVenue": "Bolt Arena",
+      "founded": 1907,
+      "squad": [
+        {
+          "id": 1,
+          "name": "Jesse Öst",
+          "jerseyNumber": 1,
+          "position": "Goalkeeper",
+          "isActive": true,
+          "stats": {
+            "appearances": 15,
+            "cleanSheets": 6,
+            "goalsConceded": 12
+          }
+        },
+        {
+          "id": 2,
+          "name": "Tuomas Ollila",
+          "jerseyNumber": 2,
+          "position": "Defender",
+          "isActive": true,
+          "stats": {
+            "appearances": 14,
+            "goals": 1,
+            "assists": 3
+          }
+        },
+        {
+          "id": 3,
+          "name": "Miro Tenho",
+          "jerseyNumber": 4,
+          "position": "Defender",
+          "isActive": true,
+          "stats": {
+            "appearances": 15,
+            "goals": 2,
+            "assists": 1
+          }
+        },
+        {
+          "id": 4,
+          "name": "Daniel O'Shaughnessy",
+          "jerseyNumber": 5,
+          "position": "Defender",
+          "isActive": true,
+          "stats": {
+            "appearances": 13,
+            "goals": 3,
+            "assists": 0
+          }
+        },
+        {
+          "id": 5,
+          "name": "Santeri Hostikka",
+          "jerseyNumber": 6,
+          "position": "Defender",
+          "isActive": true,
+          "stats": {
+            "appearances": 12,
+            "goals": 0,
+            "assists": 4
+          }
+        },
+        {
+          "id": 6,
+          "name": "Lucas Lingman",
+          "jerseyNumber": 8,
+          "position": "Midfielder",
+          "isActive": true,
+          "stats": {
+            "appearances": 15,
+            "goals": 4,
+            "assists": 6
+          }
+        },
+        {
+          "id": 7,
+          "name": "Atomu Tanaka",
+          "jerseyNumber": 10,
+          "position": "Midfielder",
+          "isActive": true,
+          "stats": {
+            "appearances": 14,
+            "goals": 5,
+            "assists": 7
+          }
+        },
+        {
+          "id": 8,
+          "name": "Matti Peltola",
+          "jerseyNumber": 14,
+          "position": "Midfielder",
+          "isActive": true,
+          "stats": {
+            "appearances": 13,
+            "goals": 2,
+            "assists": 3
+          }
+        },
+        {
+          "id": 9,
+          "name": "Bojan Radulović",
+          "jerseyNumber": 9,
+          "position": "Forward",
+          "isActive": true,
+          "stats": {
+            "appearances": 15,
+            "goals": 12,
+            "assists": 2
+          }
+        },
+        {
+          "id": 10,
+          "name": "Roope Riski",
+          "jerseyNumber": 11,
+          "position": "Forward",
+          "isActive": true,
+          "stats": {
+            "appearances": 14,
+            "goals": 8,
+            "assists": 4
+          }
+        },
+        {
+          "id": 11,
+          "name": "David Browne",
+          "jerseyNumber": 7,
+          "position": "Forward",
+          "isActive": true,
+          "stats": {
+            "appearances": 12,
+            "goals": 6,
+            "assists": 5
+          }
+        }
+      ],
+      "recentMatches": [
+        {
+          "id": 1,
+          "date": "2024-03-20",
+          "opponent": "KuPS",
+          "isHome": true,
+          "result": "W",
+          "score": {
+            "home": 2,
+            "away": 1
+          }
+        }
+      ],
+      "leaguePosition": {
+        "position": 1,
+        "played": 15,
+        "won": 10,
+        "drawn": 3,
+        "lost": 2,
+        "points": 33
+      },
+    "upcomingMatches": [
+      {
+        "id": 2,
+        "date": "2024-06-01",
+        "opponent": "FC Honka",
+        "isHome": false,
+        "kickoff": "18:30",
+        "venue": "Tapiolan Urheilupuisto"
+      },
+      {
+        "id": 3,
+        "date": "2024-06-08",
+        "opponent": "SJK",
+        "isHome": true,
+        "kickoff": "17:00",
+        "venue": "Bolt Arena"
+      },
+      {
+        "id": 4,
+        "date": "2024-06-15",
+        "opponent": "Inter Turku",
+        "isHome": false,
+        "kickoff": "19:00",
+        "venue": "Veritas Stadion"
+      }
+    ]
+    }
+  }

@@ -8,6 +8,7 @@ import AgeGroupsPage from '../pages/AgeGroupsPage';
 import RegisterPage from '../pages/RegisterPage';
 import TournamentsPage from '../pages/TournamentsPage';
 import SportsPage from '../pages/SportsPage';
+import TeamPage from '../pages/TeamPage/TeamPage';
 
 export const routes: RouteObject[] = [
   {
@@ -41,5 +42,9 @@ export const routes: RouteObject[] = [
   {
     path: '/lajit',
     element: <SportsPage />
+  },
+  {
+    path: '/team',
+    element: <TeamPage />
   }
 ]; 
