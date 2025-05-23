@@ -1,280 +1,264 @@
-using Domain.Entities.Floorball;
-using Domain.Enums.Floorball;
-using Domain.EventSourcing;
 using Domain.DomainEvents.Common;
 using Domain.DomainEvents.Floorball;
+using Domain.Entities.Floorball;
 using Domain.Entities.Hockey;
+using Domain.Enums.Floorball;
 using Domain.Enums.Hockey;
+using Domain.EventSourcing;
 
-namespace Domain.Entities.Common;
-
-/// <summary>
-/// Represents a sports club that can have multiple floorball teams
-/// </summary>
-public class Club : AggregateRoot
+namespace Domain.Entities.Common
 {
     /// <summary>
-    /// Gets the unique identifier of the club
+    /// Represents a sports club that can have both floorball and hockey teams.
     /// </summary>
-    public Guid Id { get; private set; }
-
-    /// <summary>
-    /// Gets the name of the club
-    /// </summary>
-    public required string Name { get; set; }
-
-    /// <summary>
-    /// Gets the founding date of the club
-    /// </summary>
-    public DateTime FoundingDate { get; private set; }
-
-    /// <summary>
-    /// Gets the city where the club is based
-    /// </summary>
-    public required string City { get; set; }
-
-    /// <summary>
-    /// Gets the country where the club is based
-    /// </summary>
-    public required string Country { get; set; }
-    
-    /// <summary>
-    /// Gets the club's official website URL
-    /// </summary>
-    public required Uri WebsiteUrl { get; set; }
-    
-    /// <summary>
-    /// Gets the club's logo URL
-    /// </summary>
-    public required Uri LogoUrl { get; set; }
-    
-    /// <summary>
-    /// Gets the primary contact email for the club
-    /// </summary>
-    public required string ContactEmail { get; set; }
-    
-    /// <summary>
-    /// Gets the floorball teams associated with this club
-    /// </summary>
-    public IReadOnlyCollection<FloorballTeam> FloorballTeams => _floorballTeams.AsReadOnly();
-    private readonly List<FloorballTeam> _floorballTeams = new();
-
-    /// <summary>
-    /// Gets the hockey teams associated with this club
-    /// </summary>
-    public IReadOnlyCollection<HockeyTeam> hockeyTeams => _hockeyTeams.AsReadOnly();
-    private readonly List<HockeyTeam> _hockeyTeams = new();
-
-    /// <summary>
-    /// Private constructor for EF Core
-    /// </summary>
-    private Club()
+    public class Club : AggregateRoot
     {
-        Id = Guid.NewGuid();
-    }
+        /// <summary>
+        /// Gets the unique identifier of the club.
+        /// </summary>
+        public Guid Id { get; private set; }
 
-    /// <summary>
-    /// Initializes a new instance of the Club class
-    /// </summary>
-    /// <param name="name">The name of the club</param>
-    /// <param name="city">The city where the club is based</param>
-    /// <param name="country">The country where the club is based</param>
-    /// <param name="foundingDate">The founding date of the club</param>
-    /// <param name="websiteUrl">The club's official website URL</param>
-    /// <param name="logoUrl">The club's logo URL</param>
-    /// <param name="contactEmail">The primary contact email for the club</param>
-    /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
-    public Club(
-        string name,
-        string city,
-        string country,
-        DateTime? foundingDate = null,
-        Uri? websiteUrl = null,
-        Uri? logoUrl = null,
-        string? contactEmail = null)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        ArgumentNullException.ThrowIfNull(city);
-        ArgumentNullException.ThrowIfNull(country);
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Club name cannot be empty.", nameof(name));
-        if (string.IsNullOrWhiteSpace(city))
-            throw new ArgumentException("City cannot be empty.", nameof(city));
-        if (string.IsNullOrWhiteSpace(country))
-            throw new ArgumentException("Country cannot be empty.", nameof(country));
-        if (foundingDate.HasValue && foundingDate.Value > DateTime.UtcNow)
-            throw new ArgumentException("Founding date cannot be in the future.", nameof(foundingDate));
-        Id = Guid.NewGuid();
-        Name = name;
-        City = city;
-        Country = country;
-        FoundingDate = foundingDate ?? DateTime.UtcNow;
-        WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
-        LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
-        ContactEmail = contactEmail ?? "contact@example.com";
-        
-        AddDomainEvent(new ClubRegisteredEvent(Id, name, city, country, FoundingDate));
-    }
+        /// <summary>
+        /// Gets the name of the club.
+        /// </summary>
+        public string Name { get; private set; }
 
-    /// <summary>
-    /// Updates the club's name
-    /// </summary>
-    /// <param name="name">The new name</param>
-    /// <exception cref="ArgumentException">Thrown when the name is invalid</exception>
-    public void UpdateName(string name)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Club name cannot be empty.", nameof(name));
-        Name = name;
-    }
+        /// <summary>
+        /// Gets the founding date of the club.
+        /// </summary>
+        public DateTime FoundingDate { get; private set; }
 
-    /// <summary>
-    /// Updates the club's basic information
-    /// </summary>
-    /// <param name="name">The new name of the club</param>
-    /// <param name="city">The new city where the club is based</param>
-    /// <param name="country">The new country where the club is based</param>
-    /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
-    public void UpdateBasicInfo(string name, string city, string country)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        ArgumentNullException.ThrowIfNull(city);
-        ArgumentNullException.ThrowIfNull(country);
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Club name cannot be empty.", nameof(name));
-        if (string.IsNullOrWhiteSpace(city))
-            throw new ArgumentException("City cannot be empty.", nameof(city));
-        if (string.IsNullOrWhiteSpace(country))
-            throw new ArgumentException("Country cannot be empty.", nameof(country));
-        Name = name;
-        City = city;
-        Country = country;
-        
-        AddDomainEvent(new ClubInfoUpdatedEvent(Id, name, city, country));
-    }
-    
-    /// <summary>
-    /// Updates the club's online presence information
-    /// </summary>
-    /// <param name="websiteUrl">The new website URL</param>
-    /// <param name="logoUrl">The new logo URL</param>
-    /// <param name="contactEmail">The new contact email</param>
-    public void UpdateOnlinePresence(Uri? websiteUrl, Uri? logoUrl, string? contactEmail)
-    {
-        WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
-        LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
-        ContactEmail = contactEmail ?? "contact@example.com";
-    }
+        /// <summary>
+        /// Gets the city where the club is located.
+        /// </summary>
+        public string City { get; private set; }
 
-    /// <summary>
-    /// Adds a new floorball team to the club
-    /// </summary>
-    /// <param name="name">The name of the team</param>
-    /// <param name="division">The division level of the team</param>
-    /// <param name="homeArena">The team's home arena</param>
-    /// <param name="primaryJerseyColor">The team's primary jersey color</param>
-    /// <param name="secondaryJerseyColor">The team's secondary jersey color</param>
-    /// <returns>The newly created floorball team</returns>
-    public FloorballTeam AddFloorballTeam(
-        string name, 
-        FloorballDivision division, 
-        string homeArena,
-        string primaryJerseyColor,
-        string? secondaryJerseyColor = null)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        ArgumentNullException.ThrowIfNull(homeArena);
-        ArgumentNullException.ThrowIfNull(primaryJerseyColor);
-        var team = new FloorballTeam(name, division, this, homeArena, primaryJerseyColor, secondaryJerseyColor);
-        _floorballTeams.Add(team);
-        
-        return team;
-    }
+        /// <summary>
+        /// Gets the country where the club is located.
+        /// </summary>
+        public string Country { get; private set; }
 
-    /// <summary>
-    /// Removes a floorball team from the club
-    /// </summary>
-    /// <param name="teamId">The ID of the team to remove</param>
-    /// <returns>True if the team was removed, false if the team was not found</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the team has active members</exception>
-    public bool RemoveFloorballTeam(Guid teamId)
-    {
-        FloorballTeam? team = _floorballTeams.FirstOrDefault(t => t.Id == teamId);
-        if (team == null)
-            return false;
-        
-        if (team.HasActiveMembers)
-            throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
-        
-        bool removed = _floorballTeams.Remove(team);
-        if (removed)
+        /// <summary>
+        /// Gets the website URL of the club.
+        /// </summary>
+        public Uri WebsiteUrl { get; private set; }
+
+        /// <summary>
+        /// Gets the logo URL of the club.
+        /// </summary>
+        public Uri LogoUrl { get; private set; }
+
+        /// <summary>
+        /// Gets the contact email address of the club.
+        /// </summary>
+        public string ContactEmail { get; private set; }
+
+        private readonly List<FloorballTeam> _floorballTeams = new();
+        private readonly List<HockeyTeam> _hockeyTeams = new();
+
+        /// <summary>
+        /// Gets the list of floorball teams associated with the club.
+        /// </summary>
+        public IReadOnlyList<FloorballTeam> FloorballTeams => _floorballTeams;
+
+        /// <summary>
+        /// Gets the list of hockey teams associated with the club.
+        /// </summary>
+        public IReadOnlyList<HockeyTeam> HockeyTeams => _hockeyTeams;
+
+        /// <summary>
+        /// Private constructor for ORM and serialization.
+        /// </summary>
+        private Club()
         {
-            AddDomainEvent(new FloorballTeamRemovedEvent(Id, teamId));
+            Name = string.Empty;
+            City = string.Empty;
+            Country = string.Empty;
+            WebsiteUrl = new Uri("https://example.com");
+            LogoUrl = new Uri("https://example.com/logo.png");
+            ContactEmail = "contact@example.com";
         }
-        
-        return removed;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Club"/> class.
+        /// </summary>
+        /// <param name="name">The name of the club.</param>
+        /// <param name="city">The city where the club is located.</param>
+        /// <param name="country">The country where the club is located.</param>
+        /// <param name="foundingDate">The founding date of the club (optional).</param>
+        /// <param name="websiteUrl">The website URL of the club (optional).</param>
+        /// <param name="logoUrl">The logo URL of the club (optional).</param>
+        /// <param name="contactEmail">The contact email address of the club (optional).</param>
+        /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
+        /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
+        public Club(
+            string name,
+            string city,
+            string country,
+            DateTime? foundingDate = null,
+            Uri? websiteUrl = null,
+            Uri? logoUrl = null,
+            string? contactEmail = null)
+        {
+            ValidateRequired(name, nameof(name));
+            ValidateRequired(city, nameof(city));
+            ValidateRequired(country, nameof(country));
+
+            Id = Guid.NewGuid();
+            Name = name;
+            City = city;
+            Country = country;
+            FoundingDate = foundingDate ?? DateTime.UtcNow;
+            WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
+            LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
+            ContactEmail = contactEmail ?? "contact@example.com";
+
+            AddDomainEvent(new ClubRegisteredEvent(Id, Name, City, Country, FoundingDate));
+        }
+
+        /// <summary>
+        /// Updates the basic information of the club.
+        /// </summary>
+        /// <param name="name">The new name of the club.</param>
+        /// <param name="city">The new city of the club.</param>
+        /// <param name="country">The new country of the club.</param>
+        /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
+        /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
+        public void UpdateBasicInfo(string name, string city, string country)
+        {
+            ValidateRequired(name, nameof(name));
+            ValidateRequired(city, nameof(city));
+            ValidateRequired(country, nameof(country));
+
+            Name = name;
+            City = city;
+            Country = country;
+
+            AddDomainEvent(new ClubInfoUpdatedEvent(Id, Name, City, Country));
+        }
+
+        /// <summary>
+        /// Updates the online presence information of the club.
+        /// </summary>
+        /// <param name="websiteUrl">The new website URL (optional).</param>
+        /// <param name="logoUrl">The new logo URL (optional).</param>
+        /// <param name="contactEmail">The new contact email address (optional).</param>
+        public void UpdateOnlinePresence(Uri? websiteUrl, Uri? logoUrl, string? contactEmail)
+        {
+            WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
+            LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
+            ContactEmail = contactEmail ?? "contact@example.com";
+        }
+
+        /// <summary>
+        /// Adds a new floorball team to the club.
+        /// </summary>
+        /// <param name="name">The name of the team.</param>
+        /// <param name="division">The division of the team.</param>
+        /// <param name="homeArena">The home arena of the team.</param>
+        /// <param name="primaryJerseyColor">The primary jersey color of the team.</param>
+        /// <param name="secondaryColor">The secondary jersey color of the team (optional).</param>
+        /// <returns>The created <see cref="FloorballTeam"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
+        /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
+        public FloorballTeam AddFloorballTeam(string name, FloorballDivision division, string homeArena, string primaryJerseyColor, string? secondaryColor = null)
+        {
+            ValidateRequired(name, nameof(name));
+            ValidateRequired(homeArena, nameof(homeArena));
+            ValidateRequired(primaryJerseyColor, nameof(primaryJerseyColor));
+
+            var team = new FloorballTeam(name, division, this, homeArena, primaryJerseyColor, secondaryColor);
+            _floorballTeams.Add(team);
+            return team;
+        }
+
+        /// <summary>
+        /// Removes a floorball team from the club by its identifier.
+        /// </summary>
+        /// <param name="teamId">The unique identifier of the team to remove.</param>
+        /// <returns><c>true</c> if the team was removed; otherwise, <c>false</c>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the team has active members.</exception>
+        public bool RemoveFloorballTeam(Guid teamId)
+        {
+            FloorballTeam? team = _floorballTeams.FirstOrDefault(t => t.Id == teamId);
+            if (team == null) return false;
+
+            if (team.HasActiveMembers)
+                throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
+
+            _floorballTeams.Remove(team);
+            AddDomainEvent(new FloorballTeamRemovedEvent(Id, teamId));
+            return true;
+        }
+
+        /// <summary>
+        /// Gets all floorball teams in the specified division.
+        /// </summary>
+        /// <param name="division">The division to filter by.</param>
+        /// <returns>An enumerable of <see cref="FloorballTeam"/> in the specified division.</returns>
+        public IEnumerable<FloorballTeam> GetFloorballTeamsByDivision(FloorballDivision division) =>
+            _floorballTeams.Where(t => t.Division == division);
+
+        /// <summary>
+        /// Adds a new hockey team to the club.
+        /// </summary>
+        /// <param name="name">The name of the team.</param>
+        /// <param name="division">The division of the team.</param>
+        /// <param name="homeArena">The home arena of the team.</param>
+        /// <param name="primaryJerseyColor">The primary jersey color of the team.</param>
+        /// <param name="secondaryColor">The secondary jersey color of the team (optional).</param>
+        /// <returns>The created <see cref="HockeyTeam"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
+        /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
+        public HockeyTeam AddHockeyTeam(string name, HockeyDivision division, string homeArena, string primaryJerseyColor, string? secondaryColor = null)
+        {
+            ValidateRequired(name, nameof(name));
+            ValidateRequired(homeArena, nameof(homeArena));
+            ValidateRequired(primaryJerseyColor, nameof(primaryJerseyColor));
+
+            HockeyTeam team = new HockeyTeam(name, division, this, homeArena, primaryJerseyColor, secondaryColor);
+            _hockeyTeams.Add(team);
+            return team;
+        }
+
+        /// <summary>
+        /// Removes a hockey team from the club by its identifier.
+        /// </summary>
+        /// <param name="teamId">The unique identifier of the team to remove.</param>
+        /// <returns><c>true</c> if the team was removed; otherwise, <c>false</c>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the team has active members.</exception>
+        public bool RemoveHockeyTeam(Guid teamId)
+        {
+            HockeyTeam? team = _hockeyTeams.FirstOrDefault(t => t.Id == teamId);
+            if (team == null) return false;
+
+            if (team.HasActiveMembers)
+                throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
+
+            _hockeyTeams.Remove(team);
+            return true;
+        }
+
+        /// <summary>
+        /// Gets all hockey teams in the specified division.
+        /// </summary>
+        /// <param name="division">The division to filter by.</param>
+        /// <returns>An enumerable of <see cref="HockeyTeam"/> in the specified division.</returns>
+        public IEnumerable<HockeyTeam> GetHockeyTeamsByDivision(HockeyDivision division) =>
+            _hockeyTeams.Where(t => t.Division == division);
+
+        /// <summary>
+        /// Validates that a required string parameter is not null, empty, or whitespace.
+        /// </summary>
+        /// <param name="value">The value to validate.</param>
+        /// <param name="paramName">The name of the parameter.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the value is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the value is empty or whitespace.</exception>
+        private static void ValidateRequired(string? value, string paramName)
+        {
+            ArgumentNullException.ThrowIfNull(value, paramName);
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentException($"{paramName} cannot be empty.", paramName);
+        }
     }
-
-    /// <summary>
-    /// Gets floorball teams by division
-    /// </summary>
-    /// <param name="division">The division to filter by</param>
-    /// <returns>Teams in the specified division</returns>
-    public IEnumerable<FloorballTeam> GetFloorballTeamsByDivision(FloorballDivision division)
-    {
-        return _floorballTeams.Where(t => t.Division == division);
-    }
-
-    /// <summary>
-    /// Adds a new Hockey team to the club
-    /// </summary>
-    /// <param name="name">The name of the team</param>
-    /// <param name="division">The division level of the team</param>
-    /// <param name="homeArena">The team's home arena</param>
-    /// <param name="primaryJerseyColor">The team's primary jersey color</param>
-    /// <param name="secondaryJerseyColor">The team's secondary jersey color</param>
-    /// <returns>The newly created hockey team</returns>
-    public HockeyTeam AddHockeyTeam(
-        string name,
-        HockeyDivision division,
-        string homeArena,
-        string primaryJerseyColor,
-        string? secondaryJerseyColor = null)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        ArgumentNullException.ThrowIfNull(homeArena);
-        ArgumentNullException.ThrowIfNull(primaryJerseyColor);
-        var team = new HockeyTeam(name, division, this, homeArena, primaryJerseyColor, secondaryJerseyColor);
-        _hockeyTeams.Add(team);
-        return team;
-    }
-
-    /// <summary>
-    /// Removes a hockey team from the club
-    /// </summary>
-    /// <param name="teamId">The ID of the team to remove</param>
-    /// <returns>True if the team was removed, false if the team was not found</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the team has active members</exception>
-    public bool RemoveHockeyTeam(Guid teamId)
-    {
-        HockeyTeam? team = _hockeyTeams.FirstOrDefault(t => t.Id == teamId);
-        if (team == null)
-            return false;
-
-        if (team.HasActiveMembers)
-            throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
-
-        return _hockeyTeams.Remove(team);
-    }
-
-    /// <summary>
-    /// Gets hockey teams by division
-    /// </summary>
-    /// <param name="division">The division to filter by</param>
-    /// <returns>Teams in the specified division</returns>
-    public IEnumerable<HockeyTeam> GetHockeyTeamsByDivision(HockeyDivision division)
-    {
-        return _hockeyTeams.Where(t => t.Division == division);
-    }
-} 
+}

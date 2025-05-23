@@ -1,4 +1,5 @@
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Common;
 using Domain.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyLeague.Infrastructure.Persistence;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
+using MyLeague.Infrastructure.Persistence.Repositories.Common;
 using MyLeague.Infrastructure.Persistence.EventStores;
 
 namespace MyLeague.Infrastructure.DependencyInjections
@@ -39,6 +41,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
 
             // Add repositories
+            services.AddScoped<IClubRepository, ClubRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
             services.AddScoped<IFloorballRefereeRepository, FloorballRefereeRepository>();
