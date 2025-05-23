@@ -1,6 +1,7 @@
 using System;
 using MediatR;
 using Application.DTOs.Common;
+using Application.Common;
 
 namespace Application.Commands.Clubs;
 
@@ -15,4 +16,4 @@ public record UpdateClubCommand(
     DateTime FoundingDate,
     string WebsiteUrl = "",
     string LogoUrl = "",
-    string ContactEmail = "") : IRequest<ClubDto>; 
+    string ContactEmail = "") : IRequest<Result<ClubDto>>; 

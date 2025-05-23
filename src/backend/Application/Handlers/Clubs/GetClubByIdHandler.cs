@@ -1,6 +1,7 @@
+using Application.Queries.Clubs;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
-using Application.Queries.Clubs;
+using Application.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ namespace Application.Handlers.Clubs;
 /// <summary>
 /// Handler for retrieving a club by its ID
 /// </summary>
-public class GetClubByIdHandler : IRequestHandler<GetClubByIdQuery, ClubDto>
+public class GetClubByIdHandler : IRequestHandler<GetClubByIdQuery, Result<ClubDto>>
 {
     private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetClubByIdHandler> _logger;
@@ -35,32 +36,29 @@ public class GetClubByIdHandler : IRequestHandler<GetClubByIdQuery, ClubDto>
     /// </summary>
     /// <param name="request">The query containing the club ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The club as DTO if found</returns>
-    /// <exception cref="ArgumentNullException">Thrown when query is null</exception>
-    /// <exception cref="ArgumentException">Thrown when the clubId is empty</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the club is not found</exception>
-    public async Task<ClubDto> Handle(GetClubByIdQuery request, CancellationToken cancellationToken)
+    /// <returns>The club as a DTO wrapped in a Result, or a not found result</returns>
+    public async Task<Result<ClubDto>> Handle(GetClubByIdQuery request, CancellationToken cancellationToken)
     {
-        if (request == null)
+        try
         {
-            throw new ArgumentNullException(nameof(request));
-        }
+            _logger.LogInformation("Retrieving club with ID: {ClubId}", request.ClubId);
+            
+            Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
+            if (club == null)
+            {
+                _logger.LogWarning("Club with ID {ClubId} not found", request.ClubId);
+                return Result<ClubDto>.NotFound("Club", request.ClubId);
+            }
 
-        if (request.ClubId == Guid.Empty)
+            ClubDto clubDto = ClubMapper.ToDto(club);
+            _logger.LogInformation("Successfully retrieved club: {ClubId} - {ClubName}", club.Id, club.Name);
+
+            return Result<ClubDto>.Success(clubDto);
+        }
+        catch (Exception ex)
         {
-            _logger.LogError("Club ID cannot be empty");
-            throw new ArgumentException("Club ID cannot be empty", nameof(request.ClubId));
+            _logger.LogError(ex, "Error occurred while retrieving club: {ClubId}", request.ClubId);
+            return Result<ClubDto>.Failure("An error occurred while retrieving the club.");
         }
-
-        _logger.LogInformation("Retrieving club with ID: {ClubId}", request.ClubId);
-        Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
-        
-        if (club == null)
-        {
-            _logger.LogWarning("Club with ID {ClubId} not found", request.ClubId);
-            throw new InvalidOperationException($"Club with ID '{request.ClubId}' not found.");
-        }
-
-        return ClubMapper.ToDto(club);
     }
 } 
