@@ -1,7 +1,9 @@
 using Application.Commands.Clubs;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
+using MediatR;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Application.Handlers.Clubs;
@@ -9,7 +11,7 @@ namespace Application.Handlers.Clubs;
 /// <summary>
 /// Handler for deleting a club
 /// </summary>
-public class DeleteClubHandler
+public class DeleteClubHandler : IRequestHandler<DeleteClubCommand>
 {
     private readonly IClubRepository _clubRepository;
     private readonly ILogger<DeleteClubHandler> _logger;
@@ -26,34 +28,35 @@ public class DeleteClubHandler
     }
 
     /// <summary>
-    /// Executes the handler to delete a club
+    /// Handles the DeleteClubCommand request
     /// </summary>
-    /// <param name="command">The command containing the ID of the club to delete</param>
-    /// <returns>True if the club was deleted, false if it wasn't found</returns>
+    /// <param name="request">The command containing the ID of the club to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A completed task</returns>
     /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
     /// <exception cref="ArgumentException">Thrown when the clubId is empty</exception>
-    public async Task<bool> ExecuteAsync(DeleteClubCommand command)
+    /// <exception cref="InvalidOperationException">Thrown when the club is not found</exception>
+    public async Task Handle(DeleteClubCommand request, CancellationToken cancellationToken)
     {
-        if (command == null)
+        if (request == null)
         {
-            throw new ArgumentNullException(nameof(command));
+            throw new ArgumentNullException(nameof(request));
         }
 
-        if (command.ClubId == Guid.Empty)
+        if (request.ClubId == Guid.Empty)
         {
             _logger.LogError("Club ID cannot be empty");
-            throw new ArgumentException("Club ID cannot be empty", nameof(command.ClubId));
+            throw new ArgumentException("Club ID cannot be empty", nameof(request.ClubId));
         }
 
-        bool exists = await _clubRepository.ExistsAsync(command.ClubId);
+        bool exists = await _clubRepository.ExistsAsync(request.ClubId);
         if (!exists)
         {
-            _logger.LogWarning("Club with ID {ClubId} not found", command.ClubId);
-            return false;
+            _logger.LogWarning("Club with ID {ClubId} not found", request.ClubId);
+            throw new InvalidOperationException($"Club with ID '{request.ClubId}' not found.");
         }
 
-        _logger.LogInformation("Deleting club with ID: {ClubId}", command.ClubId);
-        await _clubRepository.DeleteAsync(command.ClubId);
-        return true;
+        _logger.LogInformation("Deleting club with ID: {ClubId}", request.ClubId);
+        await _clubRepository.DeleteAsync(request.ClubId);
     }
 } 

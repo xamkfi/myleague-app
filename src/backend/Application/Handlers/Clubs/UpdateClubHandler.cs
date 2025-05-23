@@ -4,7 +4,9 @@ using Application.Mappings.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
+using MediatR;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Application.Handlers.Clubs;
@@ -12,7 +14,7 @@ namespace Application.Handlers.Clubs;
 /// <summary>
 /// Handler for updating an existing club
 /// </summary>
-public class UpdateClubHandler
+public class UpdateClubHandler : IRequestHandler<UpdateClubCommand, ClubDto>
 {
     private readonly IClubRepository _clubRepository;
     private readonly ILogger<UpdateClubHandler> _logger;
@@ -29,44 +31,45 @@ public class UpdateClubHandler
     }
 
     /// <summary>
-    /// Executes the handler to update an existing club
+    /// Handles the UpdateClubCommand request
     /// </summary>
-    /// <param name="command">The command containing updated club information</param>
+    /// <param name="request">The command containing updated club information</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated club as a DTO if found, null otherwise</returns>
     /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
     /// <exception cref="ArgumentException">Thrown when the clubId is empty</exception>
     /// <exception cref="InvalidOperationException">Thrown when a club with the same name already exists</exception>
-    public async Task<ClubDto?> ExecuteAsync(UpdateClubCommand command)
+    public async Task<ClubDto> Handle(UpdateClubCommand request, CancellationToken cancellationToken)
     {
-        if (command == null)
+        if (request == null)
         {
-            throw new ArgumentNullException(nameof(command));
+            throw new ArgumentNullException(nameof(request));
         }
 
-        if (command.ClubId == Guid.Empty)
+        if (request.ClubId == Guid.Empty)
         {
             _logger.LogError("Club ID cannot be empty");
-            throw new ArgumentException("Club ID cannot be empty", nameof(command.ClubId));
+            throw new ArgumentException("Club ID cannot be empty", nameof(request.ClubId));
         }
 
-        Club? club = await _clubRepository.GetByIdAsync(command.ClubId);
+        Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
         if (club == null)
         {
-            _logger.LogWarning("Club with ID {ClubId} not found", command.ClubId);
-            return null;
+            _logger.LogWarning("Club with ID {ClubId} not found", request.ClubId);
+            throw new InvalidOperationException($"Club with ID '{request.ClubId}' not found.");
         }
 
         // Check if name is being changed and if the new name is already taken
-        if (club.Name != command.Name && await _clubRepository.ExistsByNameAsync(command.Name))
+        if (club.Name != request.Name && await _clubRepository.ExistsByNameAsync(request.Name))
         {
-            _logger.LogError("A club with the name {ClubName} already exists", command.Name);
-            throw new InvalidOperationException($"A club with the name '{command.Name}' already exists.");
+            _logger.LogError("A club with the name {ClubName} already exists", request.Name);
+            throw new InvalidOperationException($"A club with the name '{request.Name}' already exists.");
         }
 
         // Update club from command
-        ClubMapper.UpdateFromCommand(club, command);
+        ClubMapper.UpdateFromCommand(club, request);
 
-        _logger.LogInformation("Updating club with ID: {ClubId}", command.ClubId);
+        _logger.LogInformation("Updating club with ID: {ClubId}", request.ClubId);
         await _clubRepository.UpdateAsync(club);
 
         return ClubMapper.ToDto(club);

@@ -4,7 +4,9 @@ using Application.Mappings.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
+using MediatR;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Application.Handlers.Clubs;
@@ -12,7 +14,7 @@ namespace Application.Handlers.Clubs;
 /// <summary>
 /// Handler for creating a new club
 /// </summary>
-public class CreateClubHandler
+public class CreateClubHandler : IRequestHandler<CreateClubCommand, ClubDto>
 {
     private readonly IClubRepository _clubRepository;
     private readonly ILogger<CreateClubHandler> _logger;
@@ -29,26 +31,27 @@ public class CreateClubHandler
     }
 
     /// <summary>
-    /// Executes the handler to create a new club
+    /// Handles the CreateClubCommand request
     /// </summary>
-    /// <param name="command">The command containing club information</param>
+    /// <param name="request">The command containing club information</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The newly created club as a DTO</returns>
     /// <exception cref="InvalidOperationException">Thrown when a club with the same name already exists</exception>
     /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
-    public async Task<ClubDto> ExecuteAsync(CreateClubCommand command)
+    public async Task<ClubDto> Handle(CreateClubCommand request, CancellationToken cancellationToken)
     {
-        if (command == null)
+        if (request == null)
         {
-            throw new ArgumentNullException(nameof(command));
+            throw new ArgumentNullException(nameof(request));
         }
 
-        if (await _clubRepository.ExistsByNameAsync(command.Name))
+        if (await _clubRepository.ExistsByNameAsync(request.Name))
         {
-            _logger.LogError("A club with the name {ClubName} already exists", command.Name);
-            throw new InvalidOperationException($"A club with the name '{command.Name}' already exists.");
+            _logger.LogError("A club with the name {ClubName} already exists", request.Name);
+            throw new InvalidOperationException($"A club with the name '{request.Name}' already exists.");
         }
 
-        Club club = ClubMapper.ToEntity(command);
+        Club club = ClubMapper.ToEntity(request);
 
         _logger.LogInformation("Creating new club: {ClubName}", club.Name);
         await _clubRepository.AddAsync(club);
