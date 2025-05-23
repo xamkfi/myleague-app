@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import PageTemplate from '../../components/PageTemplate';
+import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './RegisterPage.css';
 
 function RegisterPage() {
