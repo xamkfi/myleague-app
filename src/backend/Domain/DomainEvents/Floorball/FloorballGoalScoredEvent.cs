@@ -5,18 +5,8 @@ namespace Domain.DomainEvents.Floorball;
 /// <summary>
 /// Event raised when a goal is scored in a floorball match
 /// </summary>
-public class FloorballGoalScoredEvent : IDomainEvent
+public class FloorballGoalScoredEvent : FloorballDomainEvent
 {
-    /// <summary>
-    /// Gets the unique identifier of the event
-    /// </summary>
-    public Guid Id { get; }
-
-    /// <summary>
-    /// Gets the date and time when the event occurred
-    /// </summary>
-    public DateTime OccurredOn { get; }
-
     /// <summary>
     /// Gets the ID of the match
     /// </summary>
@@ -88,8 +78,6 @@ public class FloorballGoalScoredEvent : IDomainEvent
             throw new ArgumentException("Time must be between 0 and 1200 seconds", nameof(timeInSeconds));
         }
 
-        Id = Guid.NewGuid();
-        OccurredOn = DateTime.UtcNow;
         MatchId = matchId;
         TeamId = teamId;
         PlayerId = playerId;

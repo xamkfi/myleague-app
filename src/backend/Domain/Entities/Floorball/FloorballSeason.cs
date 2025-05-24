@@ -1,5 +1,6 @@
 using Domain.Enums.Floorball;
 using Domain.EventSourcing;
+using Domain.DomainEvents.Floorball;
 
 namespace Domain.Entities.Floorball;
 
@@ -95,6 +96,8 @@ public class FloorballSeason : AggregateRoot
         IsCompleted = false;
         _teams = new List<FloorballTeam>();
         _matches = new List<FloorballMatch>();
+        
+        AddDomainEvent(new FloorballSeasonCreatedEvent(Id, name, division, startDate, endDate));
     }
 
     /// <summary>
@@ -117,6 +120,8 @@ public class FloorballSeason : AggregateRoot
         Name = name;
         StartDate = startDate;
         EndDate = endDate;
+        
+        AddDomainEvent(new FloorballSeasonDetailsUpdatedEvent(Id, name, startDate, endDate));
     }
 
     /// <summary>
@@ -135,6 +140,8 @@ public class FloorballSeason : AggregateRoot
 
         StartDate = startDate;
         EndDate = endDate;
+        
+        AddDomainEvent(new FloorballSeasonDateRangeUpdatedEvent(Id, startDate, endDate));
     }
 
     /// <summary>
@@ -149,6 +156,8 @@ public class FloorballSeason : AggregateRoot
         if (_teams.Count > 0 && _teams.Any(t => t.Division != division))
             throw new InvalidOperationException("Cannot change division because some teams in this season belong to a different division.");
         Division = division;
+        
+        AddDomainEvent(new FloorballSeasonDivisionUpdatedEvent(Id, division));
     }
 
     /// <summary>
@@ -161,6 +170,7 @@ public class FloorballSeason : AggregateRoot
             throw new InvalidOperationException("Cannot activate a completed season.");
 
         IsActive = true;
+        AddDomainEvent(new FloorballSeasonActivatedEvent(Id));
     }
 
     /// <summary>
@@ -169,6 +179,7 @@ public class FloorballSeason : AggregateRoot
     public void Deactivate()
     {
         IsActive = false;
+        AddDomainEvent(new FloorballSeasonDeactivatedEvent(Id));
     }
 
     /// <summary>
@@ -178,6 +189,7 @@ public class FloorballSeason : AggregateRoot
     {
         IsActive = false;
         IsCompleted = true;
+        AddDomainEvent(new FloorballSeasonCompletedEvent(Id));
     }
 
     /// <summary>
@@ -196,6 +208,7 @@ public class FloorballSeason : AggregateRoot
         if (_teams.Contains(team))
             return;
         _teams.Add(team);
+        AddDomainEvent(new FloorballTeamAddedToSeasonEvent(Id, team.Id));
     }
 
     /// <summary>
@@ -212,6 +225,7 @@ public class FloorballSeason : AggregateRoot
         if (_matches.Count > 0 && _matches.Any(m => m.HomeTeam == team || m.AwayTeam == team))
             throw new InvalidOperationException("Cannot remove team that is part of scheduled matches.");
         _teams.Remove(team);
+        AddDomainEvent(new FloorballTeamRemovedFromSeasonEvent(Id, team.Id));
     }
 
     /// <summary>
@@ -230,5 +244,7 @@ public class FloorballSeason : AggregateRoot
         if (_matches.Contains(match))
             return;
         _matches.Add(match);
+        
+        AddDomainEvent(new FloorballMatchAddedToSeasonEvent(Id, match.Id, match.HomeTeamId, match.AwayTeamId));
     }
 } 

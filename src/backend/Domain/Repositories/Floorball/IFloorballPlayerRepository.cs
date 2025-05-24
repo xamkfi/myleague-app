@@ -13,7 +13,7 @@ public interface IFloorballPlayerRepository
     /// </summary>
     /// <param name="id">The player ID</param>
     /// <returns>The player if found, null otherwise</returns>
-    Task<FloorballPlayer> GetByIdAsync(Guid id);
+    Task<FloorballPlayer?> GetByIdAsync(Guid id);
     
     /// <summary>
     /// Gets all floorball players

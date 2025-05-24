@@ -12,7 +12,7 @@ public interface IFloorballRefereeRepository
     /// </summary>
     /// <param name="id">The referee ID</param>
     /// <returns>The referee if found, null otherwise</returns>
-    Task<FloorballReferee> GetByIdAsync(Guid id);
+    Task<FloorballReferee?> GetByIdAsync(Guid id);
     
     /// <summary>
     /// Gets all floorball referees
