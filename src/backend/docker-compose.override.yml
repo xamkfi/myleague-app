@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # MyLeague API - Development overrides for Visual Studio
+  api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=myleague;Username=postgres;Password=postgres
+      # Override Serilog for development
+      - Serilog__WriteTo__2__Name=Seq
+      - Serilog__WriteTo__2__Args__serverUrl=http://seq:5341
+      - Serilog__WriteTo__2__Args__apiKey=
+    ports:
+      - "8080:80"
+    volumes:
+      - ./logs:/app/logs:delegated  
+    depends_on:
+      postgres:
+        condition: service_healthy
+      seq:
+        condition: service_started 
