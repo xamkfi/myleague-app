@@ -2,7 +2,7 @@
   "profiles": {
     "WebAPI": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
@@ -10,7 +10,7 @@
     },
     "Docker Compose": {
       "commandName": "DockerCompose",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "http://localhost:8080",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

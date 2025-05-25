@@ -1,5 +1,4 @@
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 
 namespace WebAPI.Extensions;
@@ -10,40 +9,49 @@ namespace WebAPI.Extensions;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Add Swagger configuration
+    /// Add OpenAPI and Scalar configuration
     /// </summary>
-    public static IServiceCollection AddSwaggerConfiguration(this IServiceCollection services)
+    public static IServiceCollection AddOpenApiConfiguration(this IServiceCollection services)
     {
-        services.AddSwaggerGen(c =>
+        services.AddOpenApi(options =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo
+            var info = new OpenApiInfo
             {
                 Title = "MyLeague Club API",
                 Version = "v1",
-                Description = "API for MyLeague application",
+                Description = "API for MyLeague application with comprehensive documentation",
                 Contact = new OpenApiContact
                 {
                     Name = "MyLeague Team",
                     Email = "support@myleague.com"
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "MIT License",
+                    Url = new Uri("https://opensource.org/licenses/MIT")
                 }
+            };
+
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                document.Info = info;
+                return Task.CompletedTask;
             });
 
-            // Include XML comments
-            string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            if (File.Exists(xmlPath))
+            // Add security scheme for future JWT implementation
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
             {
-                c.IncludeXmlComments(xmlPath);
-            }
-
-            // Add security definition if needed in the future
-            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer"
+                document.Components ??= new OpenApiComponents();
+                document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT"
+                };
+                return Task.CompletedTask;
             });
         });
 
