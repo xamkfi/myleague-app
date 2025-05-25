@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "9nJF+7o5p3drYb5CDCOVSvMBg+Ny/znnb5HyLJPbmZs=",
+  "Source": "SignalRTest.ChatService",
+  "BasePath": "_content/SignalRTest.ChatService",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
