@@ -11,12 +11,14 @@
     "Docker Compose": {
       "commandName": "DockerCompose",
       "launchBrowser": true,
-      "launchUrl": "{Scheme}://localhost:{ServicePort}",
+      "launchUrl": "http://localhost:8080",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "publishAllPorts": true,
-      "useSSL": false
+      "publishAllPorts": false,
+      "useSSL": false,
+      "composeLaunchServiceName": "webapi",
+      "DockerComposeAction": "UpBuild"
     }
   }
 }

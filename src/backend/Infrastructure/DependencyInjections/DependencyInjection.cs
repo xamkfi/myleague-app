@@ -27,7 +27,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            string connectionString = configuration.GetConnectionString("DefaultConnection") ??                 "Host=postgres;Database=myleague;Username=postgres;Password=postgres";
+            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? "Host=postgres;Database=myleague;Username=postgres;Password=postgres";
 
             services.AddDbContext<CommonDbContext>(options =>
                 options.UseNpgsql(
@@ -38,6 +38,19 @@ namespace MyLeague.Infrastructure.DependencyInjections
                 options.UseNpgsql(
                     connectionString,
                     b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
+
+            // Auto-apply migrations
+            using (ServiceProvider serviceProvider = services.BuildServiceProvider())
+            {
+                using (IServiceScope scope = serviceProvider.CreateScope())
+                {
+                    CommonDbContext commonDbContext = scope.ServiceProvider.GetRequiredService<CommonDbContext>();
+                    commonDbContext.Database.Migrate();
+
+                    FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
+                    floorballDbContext.Database.Migrate();
+                }
+            }
 
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();

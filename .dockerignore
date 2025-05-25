@@ -1,3 +1,4 @@
+**/.classpath
 **/.dockerignore
 **/.env
 **/.git
@@ -22,5 +23,8 @@
 **/values.dev.yaml
 LICENSE
 README.md
-logs/
-**/logs/ 
+!**/.gitignore
+!.git/HEAD
+!.git/config
+!.git/packed-refs
+!.git/refs/heads/**
