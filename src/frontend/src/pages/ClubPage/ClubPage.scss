@@ -1,0 +1,142 @@
+.club-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .club-info {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    h2 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 0.5rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        margin: 0.75rem 0;
+        
+        a {
+          color: #0066cc;
+          text-decoration: none;
+          
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+
+  .teams-section {
+    h2 {
+      color: #333;
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+}
+
+.team-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  .team-name {
+    margin: 0 0 1rem 0;
+    color: #333;
+    font-size: 1.5rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
+  }
+
+  .team-info {
+    p {
+      margin: 0.5rem 0;
+    }
+  }
+
+  .squad-section {
+    margin: 1.5rem 0;
+
+    h4 {
+      color: #555;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .squad-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .player-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+
+    .jersey-number {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      background: #333;
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+
+    .player-name {
+      grid-column: 2;
+      grid-row: 1;
+      font-weight: bold;
+    }
+
+    .player-position {
+      grid-column: 2;
+      grid-row: 2;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  }
+
+  .training-schedule {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+
+    h4 {
+      color: #555;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      margin: 0.25rem 0;
+    }
+  }
+} 

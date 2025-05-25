@@ -1,0 +1,262 @@
+{
+  "clubs": [
+    {
+      "clubInfo": {
+        "name": "FC United Stars",
+        "established": 1925,
+        "location": "Manchester, UK",
+        "homeStadium": "Star Arena",
+        "stadiumCapacity": 35000,
+        "clubColors": ["Blue", "White"],
+        "website": "www.fcunitedstars.com",
+        "contactEmail": "info@fcunitedstars.com"
+      },
+      "teams": {
+        "primary": {
+          "teamName": "FC United Stars First Team",
+          "division": "Premier League",
+          "headCoach": "James Wilson",
+          "assistantCoach": "Michael Thompson",
+          "squad": [
+            {
+              "id": "P001",
+              "name": "David Foster",
+              "position": "Goalkeeper",
+              "age": 28,
+              "nationality": "England",
+              "jerseyNumber": 1
+            },
+            {
+              "id": "P002",
+              "name": "Carlos Silva",
+              "position": "Defender",
+              "age": 26,
+              "nationality": "Brazil",
+              "jerseyNumber": 4
+            },
+            {
+              "id": "P003",
+              "name": "Marcus Wright",
+              "position": "Midfielder",
+              "age": 24,
+              "nationality": "England",
+              "jerseyNumber": 8
+            }
+          ],
+          "trainingSchedule": {
+            "weekdays": ["Monday", "Tuesday", "Thursday", "Friday"],
+            "time": "10:00 - 12:30"
+          }
+        },
+        "secondary": {
+          "teamName": "FC United Stars Reserves",
+          "division": "Reserve League",
+          "headCoach": "Peter Roberts",
+          "assistantCoach": "Steve Brown",
+          "squad": [
+            {
+              "id": "S001",
+              "name": "Tom Harris",
+              "position": "Goalkeeper",
+              "age": 21,
+              "nationality": "England",
+              "jerseyNumber": 1
+            },
+            {
+              "id": "S002",
+              "name": "Jack Wilson",
+              "position": "Defender",
+              "age": 20,
+              "nationality": "Wales",
+              "jerseyNumber": 5
+            }
+          ],
+          "trainingSchedule": {
+            "weekdays": ["Monday", "Wednesday", "Friday"],
+            "time": "14:00 - 16:30"
+          }
+        },
+        "junior": {
+          "teamName": "FC United Stars U18",
+          "division": "Youth League",
+          "headCoach": "Andrew Davies",
+          "assistantCoach": "Mark Johnson",
+          "ageGroup": "Under 18",
+          "squad": [
+            {
+              "id": "J001",
+              "name": "Ryan Cooper",
+              "position": "Forward",
+              "age": 17,
+              "nationality": "England",
+              "jerseyNumber": 9
+            },
+            {
+              "id": "J002",
+              "name": "Luke Bennett",
+              "position": "Midfielder",
+              "age": 16,
+              "nationality": "Scotland",
+              "jerseyNumber": 10
+            }
+          ],
+          "trainingSchedule": {
+            "weekdays": ["Tuesday", "Thursday", "Saturday"],
+            "time": "16:00 - 18:00"
+          },
+          "academyProgram": {
+            "educationPartner": "Manchester Sports College",
+            "trainingFacilities": "Youth Development Center",
+            "parentalSupport": true
+          }
+        }
+      },
+      "facilities": {
+        "trainingGrounds": [
+          "Main Training Complex",
+          "Youth Academy Grounds",
+          "Indoor Training Facility"
+        ],
+        "medicalFacilities": {
+          "mainClinic": "Star Medical Center",
+          "physiotherapyRoom": true,
+          "rehabilitationCenter": true
+        },
+        "gym": {
+          "location": "Star Arena Complex",
+          "equipment": ["Weights", "Cardio Machines", "Recovery Area"],
+          "personalTrainers": 4
+        }
+      }
+    },
+    {
+      "clubInfo": {
+        "name": "Athletic City FC",
+        "established": 1932,
+        "location": "Liverpool, UK",
+        "homeStadium": "Victory Ground",
+        "stadiumCapacity": 42000,
+        "clubColors": ["Red", "Black"],
+        "website": "www.athleticcityfc.com",
+        "contactEmail": "info@athleticcityfc.com"
+      },
+      "teams": {
+        "primary": {
+          "teamName": "Athletic City First Team",
+          "division": "Premier League",
+          "headCoach": "Roberto Martinez",
+          "assistantCoach": "John Anderson",
+          "squad": [
+            {
+              "id": "AC001",
+              "name": "Manuel Santos",
+              "position": "Goalkeeper",
+              "age": 29,
+              "nationality": "Spain",
+              "jerseyNumber": 1
+            },
+            {
+              "id": "AC002",
+              "name": "Henrik Larsson",
+              "position": "Striker",
+              "age": 25,
+              "nationality": "Sweden",
+              "jerseyNumber": 9
+            },
+            {
+              "id": "AC003",
+              "name": "Frank Turner",
+              "position": "Midfielder",
+              "age": 27,
+              "nationality": "England",
+              "jerseyNumber": 8
+            }
+          ],
+          "trainingSchedule": {
+            "weekdays": ["Monday", "Wednesday", "Thursday", "Friday"],
+            "time": "09:30 - 12:00"
+          }
+        },
+        "secondary": {
+          "teamName": "Athletic City Reserves",
+          "division": "Reserve League",
+          "headCoach": "Paul Thompson",
+          "assistantCoach": "Mark Williams",
+          "squad": [
+            {
+              "id": "ACR001",
+              "name": "James Murphy",
+              "position": "Defender",
+              "age": 22,
+              "nationality": "Ireland",
+              "jerseyNumber": 4
+            },
+            {
+              "id": "ACR002",
+              "name": "Alex Peterson",
+              "position": "Forward",
+              "age": 19,
+              "nationality": "England",
+              "jerseyNumber": 11
+            }
+          ],
+          "trainingSchedule": {
+            "weekdays": ["Tuesday", "Thursday", "Friday"],
+            "time": "14:30 - 17:00"
+          }
+        },
+        "junior": {
+          "teamName": "Athletic City U18",
+          "division": "Youth Premier League",
+          "headCoach": "Steven Richards",
+          "assistantCoach": "David Cooper",
+          "ageGroup": "Under 18",
+          "squad": [
+            {
+              "id": "ACJ001",
+              "name": "Tommy Wilson",
+              "position": "Midfielder",
+              "age": 17,
+              "nationality": "England",
+              "jerseyNumber": 10
+            },
+            {
+              "id": "ACJ002",
+              "name": "Leo Garcia",
+              "position": "Forward",
+              "age": 16,
+              "nationality": "Spain",
+              "jerseyNumber": 7
+            }
+          ],
+          "trainingSchedule": {
+            "weekdays": ["Monday", "Wednesday", "Saturday"],
+            "time": "15:30 - 17:30"
+          },
+          "academyProgram": {
+            "educationPartner": "Liverpool Sports Academy",
+            "trainingFacilities": "City Youth Complex",
+            "parentalSupport": true
+          }
+        }
+      },
+      "facilities": {
+        "trainingGrounds": [
+          "City Training Center",
+          "Youth Development Pitch",
+          "All-Weather Training Facility"
+        ],
+        "medicalFacilities": {
+          "mainClinic": "Athletic Medical Hub",
+          "physiotherapyRoom": true,
+          "rehabilitationCenter": true
+        },
+        "gym": {
+          "location": "Victory Ground Complex",
+          "equipment": ["Performance Lab", "Recovery Suite", "Strength Zone"],
+          "personalTrainers": 5
+        }
+      }
+    }
+  ]
+} 
