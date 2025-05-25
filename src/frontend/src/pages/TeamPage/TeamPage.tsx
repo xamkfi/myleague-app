@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import teamData from './teamDetails.json'
 import { useNavigate } from 'react-router-dom';
-import PageTemplate from '../../components/PageTemplate';
+import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import { useTranslation } from 'react-i18next';
 
 export default function TeamPage() {
     
     const { t } = useTranslation(); 
     const { teamDetails } = teamData;
-    const [activeTab, setActiveTab] = useState('SQUAD');
+    const [activeTab, setActiveTab] = useState('MATCHES');
     const navigate = useNavigate();
 
     return (
@@ -16,18 +16,13 @@ export default function TeamPage() {
         <div className="w-full mx-auto">
             <div className="bg-white rounded-lg p-4 shadow-sm">
                 {/* Team Header */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 mb-6 pl-2">
                     <div className="relative">
                         <img 
                             src={teamDetails.logo} 
                             alt={`${teamDetails.name} logo`} 
                             className="w-20 h-20 object-contain"
                         />
-                        <button className="absolute -top-2 -right-2 text-gray-400 hover:text-yellow-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                            </svg>
-                        </button>
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold">{teamDetails.name}</h1>
@@ -83,6 +78,12 @@ export default function TeamPage() {
                             MATCHES
                         </button>
                         <button 
+                            className={`pb-2 font-medium ${activeTab === 'RESULTS' ? 'text-pink-500 border-b-2 border-pink-500' : 'text-gray-500'}`}
+                            onClick={() => setActiveTab('RESULTS')}
+                        >
+                            RESULTS
+                        </button>
+                        <button 
                             className={`pb-2 font-medium ${activeTab === 'SQUAD' ? 'text-pink-500 border-b-2 border-pink-500' : 'text-gray-500'}`}
                             onClick={() => setActiveTab('SQUAD')}
                         >
@@ -117,8 +118,8 @@ export default function TeamPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {teamDetails.squad.map(player => (
-                                    <tr key={player.id} className="border-b hover:bg-gray-50">
+                                {teamDetails.squad.map((player, index)=> (
+                                    <tr key={player.id} className={`border-b hover:bg-gray-50 ${index % 2 == 0 ? "bg-cyan-50": ""}`}>
                                         <td className="py-3 px-2 font-semibold">{player.jerseyNumber}</td>
                                         <td className="py-3">
                                             <div className="font-medium cursor-pointer hover:text-gray-500" onClick={() => navigate(`/player/${player.id}`)}>{player.name}</div>
@@ -130,15 +131,65 @@ export default function TeamPage() {
                                     </tr>
                                 ))}
                             </tbody>
+                            <thead>
+                                <tr className="border-b text-left text-gray-500 text-sm">
+                                    <th className="py-2 text-center">Coach</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <tr className="border-b hover:bg-gray-50">
+                                <td className="py-3 text-center">Valmentaja </td>
+                            </tr>
+                            </tbody>
+
                         </table>
                     </div>
                 )}
 
                 {activeTab === 'MATCHES' && (
                     <div>
+
+                        <h3 className="font-semibold text-gray-700 mb-3">Upcoming Matches</h3>
+                        {teamDetails.upcomingMatches.map(match => (
+                            <div key={match.id} className="border rounded-lg mb-3 overflow-hidden cursor-pointer hover:text-gray-500">
+                                <div className="bg-gray-50 px-3 py-2 text-sm text-gray-600 border-b">
+                                    {match.date}
+                                </div>
+                                <div className="p-3">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                            {match.isHome ? (
+                                                <>
+                                                    <span className="font-medium">{teamDetails.name}</span>
+                                                    <span>vs</span>
+                                                    <span>{match.opponent}</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span>{match.opponent}</span>
+                                                    <span>vs</span>
+                                                    <span className="font-medium">{teamDetails.name}</span>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center gap-3">
+                                        <span>{match.kickoff} - {match.venue}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        {teamDetails.recentMatches.length === 0 && (
+                            <div className="text-center py-4 text-gray-500">No recent matches</div>
+                        )}
+                    </div>
+                )}
+                {activeTab === "RESULTS" && (
+                    <div>
                         <h3 className="font-semibold text-gray-700 mb-3">Recent Matches</h3>
                         {teamDetails.recentMatches.map(match => (
-                            <div key={match.id} className="border rounded-lg mb-3 overflow-hidden">
+                            <div key={match.id} className="border rounded-lg mb-3 overflow-hidden cursor-pointer hover:text-gray-500">
                                 <div className="bg-gray-50 px-3 py-2 text-sm text-gray-600 border-b">
                                     {match.date}
                                 </div>
@@ -177,43 +228,8 @@ export default function TeamPage() {
                                 </div>
                             </div>
                         ))}
-                        <h3 className="font-semibold text-gray-700 mb-3">Upcoming Matches</h3>
-                        {teamDetails.upcomingMatches.map(match => (
-                            <div key={match.id} className="border rounded-lg mb-3 overflow-hidden">
-                                <div className="bg-gray-50 px-3 py-2 text-sm text-gray-600 border-b">
-                                    {match.date}
-                                </div>
-                                <div className="p-3">
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-2">
-                                            {match.isHome ? (
-                                                <>
-                                                    <span className="font-medium">{teamDetails.name}</span>
-                                                    <span>vs</span>
-                                                    <span>{match.opponent}</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <span>{match.opponent}</span>
-                                                    <span>vs</span>
-                                                    <span className="font-medium">{teamDetails.name}</span>
-                                                </>
-                                            )}
-                                        </div>
-
-                                        <div className="flex items-center gap-3">
-                                        <span>{match.kickoff} - {match.venue}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        {teamDetails.recentMatches.length === 0 && (
-                            <div className="text-center py-4 text-gray-500">No recent matches</div>
-                        )}
                     </div>
                 )}
-
                 {activeTab === 'STATS' && (
                     <div>
                         <div className="grid grid-cols-2 gap-4">

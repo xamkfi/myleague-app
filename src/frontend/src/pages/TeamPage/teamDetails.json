@@ -144,7 +144,7 @@
       "recentMatches": [
         {
           "id": 1,
-          "date": "2024-03-20",
+          "date": "20.3.2024",
           "opponent": "KuPS",
           "isHome": true,
           "result": "W",
@@ -165,7 +165,7 @@
     "upcomingMatches": [
       {
         "id": 2,
-        "date": "2024-06-01",
+        "date": "1.6.2024",
         "opponent": "FC Honka",
         "isHome": false,
         "kickoff": "18:30",
@@ -173,7 +173,7 @@
       },
       {
         "id": 3,
-        "date": "2024-06-08",
+        "date": "8.6.2024",
         "opponent": "SJK",
         "isHome": true,
         "kickoff": "17:00",
@@ -181,7 +181,7 @@
       },
       {
         "id": 4,
-        "date": "2024-06-15",
+        "date": "15.6.2024",
         "opponent": "Inter Turku",
         "isHome": false,
         "kickoff": "19:00",
