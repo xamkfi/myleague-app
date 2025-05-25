@@ -84,7 +84,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         public async override Task AddAsync(Club club)
         {
             await _entities.AddAsync(club);
-            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -94,7 +93,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         public override async Task UpdateAsync(Club club)
         {
             _entities.Update(club);
-            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -107,7 +105,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             if (club != null)
             {
                 _entities.Remove(club);
-                await _dbContext.SaveChangesAsync();
             }
         }
 

@@ -14,6 +14,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
     public class FloorballDbContext : DbContext
     {
         private readonly IDomainEventDispatcher? _dispatcher;
+        private bool _isDispatchingEvents = false;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="FloorballDbContext"/> class.
@@ -64,12 +65,31 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// <returns>The number of state entries written to the database.</returns>
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            if (_dispatcher != null)
+            // Prevent infinite recursion when called from SaveChangesWithEventsAsync
+            if (_isDispatchingEvents || _dispatcher == null)
             {
-                return await this.SaveChangesWithEventsAsync(_dispatcher);
+                return await base.SaveChangesAsync(cancellationToken);
             }
 
-            return await base.SaveChangesAsync(cancellationToken);
+            return await this.SaveChangesWithEventsAsync(_dispatcher, cancellationToken);
+        }
+
+        /// <summary>
+        /// Saves changes without dispatching domain events (used internally to prevent recursion).
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>The number of state entries written to the database</returns>
+        internal async Task<int> SaveChangesWithoutEventsAsync(CancellationToken cancellationToken = default)
+        {
+            _isDispatchingEvents = true;
+            try
+            {
+                return await base.SaveChangesAsync(cancellationToken);
+            }
+            finally
+            {
+                _isDispatchingEvents = false;
+            }
         }
 
         /// <summary>

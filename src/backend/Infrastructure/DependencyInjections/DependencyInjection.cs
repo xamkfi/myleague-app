@@ -9,6 +9,7 @@ using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
 using MyLeague.Infrastructure.Persistence.Repositories.Common;
 using MyLeague.Infrastructure.Persistence.EventStores;
+using MyLeague.Infrastructure.Persistence.UnitOfWork;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -60,6 +61,9 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballMatchRepository, FloorballMatchRepository>();
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
             services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
+
+            // Add unit of work
+            services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
 
             // Add event sourcing
             services.AddScoped<IEventStore, FloorballEventStore>();
