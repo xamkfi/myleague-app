@@ -48,11 +48,9 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
                 .IsRequired()
                 .HasMaxLength(255);
 
-            // Configure the relationship with FloorballTeams
-            builder.HasMany(c => c.FloorballTeams)
-                .WithOne()
-                .HasForeignKey("ClubId")
-                .OnDelete(DeleteBehavior.Cascade);
+            // Ignore navigation properties to prevent cross-context entity discovery
+            builder.Ignore(c => c.FloorballTeams);
+            builder.Ignore(c => c.HockeyTeams);
         }
     }
 } 

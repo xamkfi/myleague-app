@@ -3,6 +3,7 @@ using Domain.Entities.Floorball;
 using Domain.DomainEvents;
 using MyLeague.Infrastructure.DomainEvents;
 using MyLeague.Infrastructure.Persistence.Extensions;
+using MyLeague.Infrastructure.Persistence.Configurations.Floorball;
 using System.Reflection;
 
 namespace MyLeague.Infrastructure.Persistence.Contexts
@@ -79,8 +80,13 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         {
             base.OnModelCreating(modelBuilder);
 
-            // Apply configurations from the Configurations namespace
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            // Apply only Floorball configurations to avoid cross-context conflicts
+            modelBuilder.ApplyConfiguration(new FloorballPlayerConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballTeamConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballMatchConfiguration());
+            modelBuilder.ApplyConfiguration(new EventSourcedFloorballMatchConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballSeasonConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballRefereeConfiguration());
         }
     }
 } 

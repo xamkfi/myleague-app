@@ -18,8 +18,20 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// <returns>An instance of FloorballDbContext.</returns>
         public FloorballDbContext CreateDbContext(string[] args)
         {
+            // Navigate to the parent directory (src/backend) where appsettings.json is located
+            string basePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..");
+            if (!File.Exists(Path.Combine(basePath, "appsettings.json")))
+            {
+                // Fallback: try different path combinations
+                basePath = Directory.GetCurrentDirectory();
+                while (!File.Exists(Path.Combine(basePath, "appsettings.json")) && Directory.GetParent(basePath) != null)
+                {
+                    basePath = Directory.GetParent(basePath)!.FullName;
+                }
+            }
+
             IConfigurationRoot configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(basePath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development"}.json", optional: true)
                 .AddEnvironmentVariables()

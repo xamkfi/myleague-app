@@ -27,8 +27,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? 
-                "Host=localhost;Database=myleague;Username=postgres;Password=postgres";
+            string connectionString = configuration.GetConnectionString("DefaultConnection") ??                 "Host=postgres;Database=myleague;Username=postgres;Password=postgres";
 
             services.AddDbContext<CommonDbContext>(options =>
                 options.UseNpgsql(

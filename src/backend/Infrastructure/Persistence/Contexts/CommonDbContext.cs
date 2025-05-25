@@ -3,6 +3,7 @@ using Domain.Entities.Common;
 using Domain.DomainEvents;
 using MyLeague.Infrastructure.DomainEvents;
 using MyLeague.Infrastructure.Persistence.Extensions;
+using MyLeague.Infrastructure.Persistence.Configurations.Common;
 using System.Reflection;
 
 namespace MyLeague.Infrastructure.Persistence.Contexts
@@ -59,8 +60,9 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         {
             base.OnModelCreating(modelBuilder);
 
-            // Apply configurations from the Configurations namespace
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            // Apply only Common configurations to avoid cross-context conflicts
+            modelBuilder.ApplyConfiguration(new PersonConfiguration());
+            modelBuilder.ApplyConfiguration(new ClubConfiguration());
         }
     }
 } 
