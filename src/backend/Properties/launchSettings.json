@@ -1,22 +1,22 @@
 {
   "profiles": {
     "Compose Up": {
-      "commandName": "DockerCompose",
-      "composeLaunchAction": "LaunchBrowser",
-      "composeLaunchUrl": "http://localhost:8080",
-      "composeLaunchServiceName": "api"
+        "commandName": "DockerCompose",
+        "composeLaunchAction": "LaunchBrowser",
+        "composeLaunchUrl": "http://localhost:8080/scalar/v1",
+        "composeLaunchServiceName": "api"
     },
     "Compose Up - Debug": {
-      "commandName": "DockerCompose",
-      "composeLaunchAction": "LaunchBrowser",
-      "composeLaunchUrl": "http://localhost:8080",
-      "composeLaunchServiceName": "api",
-      "composeProfile": {
-        "includes": [
-          "docker-compose.yml",
-          "docker-compose.override.yml"
-        ]
-      }
+        "commandName": "DockerCompose",
+        "composeLaunchAction": "LaunchBrowser",
+        "composeLaunchUrl": "http://localhost:8080/scalar/v1",
+        "composeLaunchServiceName": "api",
+        "composeProfile": {
+            "includes": [
+                "docker-compose.yml",
+                "docker-compose.override.yml"
+            ]
+        }
     }
   }
 } 

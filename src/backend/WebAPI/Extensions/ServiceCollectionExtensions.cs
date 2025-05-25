@@ -1,5 +1,4 @@
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 
 namespace WebAPI.Extensions;
@@ -10,40 +9,26 @@ namespace WebAPI.Extensions;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Add Swagger configuration
+    /// Add OpenAPI configuration for Scalar
     /// </summary>
-    public static IServiceCollection AddSwaggerConfiguration(this IServiceCollection services)
+    public static IServiceCollection AddOpenApiConfiguration(this IServiceCollection services)
     {
-        services.AddSwaggerGen(c =>
+        services.AddOpenApi(options =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
             {
-                Title = "MyLeague Club API",
-                Version = "v1",
-                Description = "API for MyLeague application",
-                Contact = new OpenApiContact
+                document.Info = new OpenApiInfo
                 {
-                    Name = "MyLeague Team",
-                    Email = "support@myleague.com"
-                }
-            });
-
-            // Include XML comments
-            string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            if (File.Exists(xmlPath))
-            {
-                c.IncludeXmlComments(xmlPath);
-            }
-
-            // Add security definition if needed in the future
-            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer"
+                    Title = "MyLeague Club API",
+                    Version = "v1",
+                    Description = "API for MyLeague application",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "MyLeague Team",
+                        Email = "support@myleague.com"
+                    }
+                };
+                return Task.CompletedTask;
             });
         });
 

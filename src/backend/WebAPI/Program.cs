@@ -4,6 +4,7 @@ using WebAPI.Middlewares;
 using WebAPI.Extensions;
 using Serilog;
 using FluentValidation.AspNetCore;
+using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +19,8 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation()
     .AddFluentValidationClientsideAdapters();
 
-// Add API Explorer services for Swagger
-builder.Services.AddEndpointsApiExplorer();
-
-// Add Swagger configuration using extension method
-builder.Services.AddSwaggerConfiguration();
+// Add OpenAPI configuration for Scalar
+builder.Services.AddOpenApiConfiguration();
 
 // Add CORS configuration using extension method
 builder.Services.AddCorsConfiguration();
@@ -41,11 +39,12 @@ WebApplication app = builder.Build();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    app.MapOpenApi();
+    app.MapScalarApiReference(options =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyLeague Club API v1");
-        c.RoutePrefix = string.Empty; // Set Swagger UI at app's root
+        options.Title = "MyLeague Club API";
+        options.Theme = ScalarTheme.BluePlanet;
+        options.DefaultHttpClient = new(ScalarTarget.CSharp, ScalarClient.HttpClient);
     });
 }
 

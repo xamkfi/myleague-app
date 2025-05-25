@@ -9,16 +9,16 @@
       "applicationUrl": "https://localhost:65532;http://localhost:65533"
     },
     "Docker Compose": {
-      "commandName": "DockerCompose",
-      "launchBrowser": true,
-      "launchUrl": "http://localhost:8080",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "publishAllPorts": false,
-      "useSSL": false,
-      "composeLaunchServiceName": "webapi",
-      "DockerComposeAction": "UpBuild"
+        "commandName": "DockerCompose",
+        "launchBrowser": true,
+        "launchUrl": "http://localhost:8080/scalar/v1",
+        "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "publishAllPorts": false,
+        "useSSL": false,
+        "composeLaunchServiceName": "webapi",
+        "DockerComposeAction": "UpBuild"
     }
   }
 }
