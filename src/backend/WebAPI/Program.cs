@@ -1,7 +1,7 @@
 using Application.DependencyInjections;
 using MyLeague.Infrastructure.DependencyInjections;
 using WebAPI.Middlewares;
-using WebAPI.Extensions;
+using WebAPI.DependencyInjections;
 using Serilog;
 using FluentValidation.AspNetCore;
 using Scalar.AspNetCore;
