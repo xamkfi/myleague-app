@@ -26,7 +26,7 @@ public class UpdateClubCommandValidator : AbstractValidator<UpdateClubCommand>
             .MaximumLength(50).WithMessage("Country cannot exceed 50 characters");
 
         RuleFor(x => x.FoundingDate)
-            .LessThanOrEqualTo(DateTime.Now).WithMessage("Founding date cannot be in the future");
+            .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Founding date cannot be in the future");
 
         RuleFor(x => x.WebsiteUrl)
             .Must(BeValidUrl).When(x => !string.IsNullOrEmpty(x.WebsiteUrl))
