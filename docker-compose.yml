@@ -43,6 +43,19 @@ services:
     networks:
       - myleague-network
 
+  frontend:
+    build:
+      context: src/frontend
+      dockerfile: Dockerfile
+    container_name: myleague-frontend
+    ports:
+      - '3000:3000'
+    depends_on:
+      - webapi
+    networks:
+      - myleague-network
+
+
 volumes:
   postgres_data:
   seq_data:
