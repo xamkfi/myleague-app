@@ -25,7 +25,7 @@ interface TeamCardProps {
   ageGroup?: string;
 }
 
-const TeamCard: React.FC<TeamCardProps> = ({
+const TeamCard = ({
   teamName,
   division,
   headCoach,
@@ -33,7 +33,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
   squad,
   trainingSchedule,
   ageGroup
-}) => (
+}: TeamCardProps) => (
   <div className="team-card">
     <h3 className="team-name">{teamName}</h3>
     <div className="team-info">
