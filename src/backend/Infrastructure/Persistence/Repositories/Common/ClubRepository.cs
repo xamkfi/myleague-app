@@ -90,9 +90,10 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// Updates an existing club
         /// </summary>
         /// <param name="club">The club to update</param>
-        public override async Task UpdateAsync(Club club)
+        public override Task UpdateAsync(Club club)
         {
             _entities.Update(club);
+            return Task.CompletedTask;
         }
 
         /// <summary>
