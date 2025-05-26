@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import LanguageToggle from '../LanguageToggle/LanguageToggle';
+import LanguageToggle from '../LanguageToggle';
+import clubData from '../../sampledata/club_data.json';
+import { slugify } from '../../utils/helpers';
 import './Navbar.scss';
 
 interface NavbarProps {
@@ -10,7 +12,26 @@ interface NavbarProps {
 
 function Navbar({ onLogin }: NavbarProps) {
   const { t } = useTranslation();
-  
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setActiveDropdown(null);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleDropdownClick = (dropdownName: string) => {
+    setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-brand">
@@ -44,6 +65,25 @@ function Navbar({ onLogin }: NavbarProps) {
           <li className="navbar-item dropdown">
             <Link to="/lajit">{t('nav.sports')}</Link>
             <span className="dropdown-icon">▼</span>
+          </li>
+          <li 
+            ref={dropdownRef}
+            className={`navbar-item dropdown ${activeDropdown === 'clubs' ? 'active' : ''}`}
+            onClick={() => handleDropdownClick('clubs')}
+          >
+            <span className="dropdown-label">{t('nav.clubs')}</span>
+            <span className="dropdown-icon">▼</span>
+            {activeDropdown === 'clubs' && (
+              <ul className="dropdown-menu">
+                {clubData.clubs.map((club) => (
+                  <li key={club.clubInfo.name}>
+                    <Link to={`/club/${slugify(club.clubInfo.name)}`}>
+                      {club.clubInfo.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
         </ul>
       </div>
