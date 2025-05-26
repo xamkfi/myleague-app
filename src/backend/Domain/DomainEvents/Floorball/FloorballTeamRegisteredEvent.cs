@@ -1,5 +1,6 @@
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
+using Domain.DomainEvents;
 
 namespace Domain.DomainEvents.Floorball;
 
@@ -29,19 +30,14 @@ public class FloorballTeamRegisteredEvent : IDomainEvent
     public string TeamName { get; }
 
     /// <summary>
-    /// Gets the ID of the club
-    /// </summary>
-    public Guid ClubId { get; }
-
-    /// <summary>
-    /// Gets the name of the club
-    /// </summary>
-    public string ClubName { get; }
-
-    /// <summary>
     /// Gets the division of the team
     /// </summary>
     public FloorballDivision Division { get; }
+
+    /// <summary>
+    /// Gets the ID of the club the team belongs to
+    /// </summary>
+    public Guid ClubId { get; }
 
     /// <summary>
     /// Gets the home arena of the team
@@ -49,20 +45,42 @@ public class FloorballTeamRegisteredEvent : IDomainEvent
     public string HomeArena { get; }
 
     /// <summary>
+    /// Gets the primary jersey color of the team
+    /// </summary>
+    public string PrimaryJerseyColor { get; }
+
+    /// <summary>
+    /// Gets the secondary jersey color of the team
+    /// </summary>
+    public string? SecondaryJerseyColor { get; }
+
+    /// <summary>
     /// Initializes a new instance of the FloorballTeamRegisteredEvent class
     /// </summary>
-    /// <param name="team">The team that was registered</param>
-    public FloorballTeamRegisteredEvent(FloorballTeam team)
+    /// <param name="teamId">The ID of the team</param>
+    /// <param name="teamName">The name of the team</param>
+    /// <param name="division">The division of the team</param>
+    /// <param name="clubId">The ID of the club the team belongs to</param>
+    /// <param name="homeArena">The home arena of the team</param>
+    /// <param name="primaryJerseyColor">The primary jersey color of the team</param>
+    /// <param name="secondaryJerseyColor">The secondary jersey color of the team</param>
+    public FloorballTeamRegisteredEvent(
+        Guid teamId, 
+        string teamName, 
+        FloorballDivision division, 
+        Guid clubId, 
+        string homeArena, 
+        string primaryJerseyColor, 
+        string? secondaryJerseyColor)
     {
-        ArgumentNullException.ThrowIfNull(team);
-
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;
-        TeamId = team.Id;
-        TeamName = team.Name;
-        ClubId = team.Club.Id;
-        ClubName = team.Club.Name;
-        Division = team.Division;
-        HomeArena = team.HomeArena;
+        TeamId = teamId;
+        TeamName = teamName;
+        Division = division;
+        ClubId = clubId;
+        HomeArena = homeArena;
+        PrimaryJerseyColor = primaryJerseyColor;
+        SecondaryJerseyColor = secondaryJerseyColor;
     }
 }
