@@ -1,0 +1,20 @@
+services:
+  webapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      # Database connection
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=myleague;Username=postgres;Password=postgres
+      # Serilog configuration for Seq
+      - Serilog__WriteTo__2__Name=Seq
+      - Serilog__WriteTo__2__Args__serverUrl=http://seq:80
+      - Serilog__WriteTo__2__Args__apiKey=
+    ports:
+      - "8080:8080"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      # Mount logs directory
+      - ./src/backend/WebAPI/logs:/app/logs
+    networks:
+      - myleague-network

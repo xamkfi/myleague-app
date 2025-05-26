@@ -20,10 +20,8 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(p => p.PersonId)
                 .IsRequired();
 
-            builder.HasOne(p => p.Person)
-                .WithMany()
-                .HasForeignKey(p => p.PersonId)
-                .IsRequired();
+            // Ignore Person navigation property to prevent cross-context entity discovery
+            builder.Ignore(p => p.Person);
 
             builder.Property(p => p.IsActive)
                 .IsRequired();

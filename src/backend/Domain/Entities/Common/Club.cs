@@ -151,6 +151,15 @@ namespace Domain.Entities.Common
         }
 
         /// <summary>
+        /// Updates the founding date of the club.
+        /// </summary>
+        /// <param name="foundingDate">The new founding date of the club.</param>
+        public void UpdateFoundingDate(DateTime foundingDate)
+        {
+            FoundingDate = foundingDate;
+        }
+
+        /// <summary>
         /// Adds a new floorball team to the club.
         /// </summary>
         /// <param name="name">The name of the team.</param>

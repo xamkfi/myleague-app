@@ -33,8 +33,6 @@ public static class DependencyInjection
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         });
         
-        // Register FluentValidation
-        services.AddValidatorsFromAssembly(assembly);
         
         return services;
     }

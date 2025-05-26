@@ -15,16 +15,19 @@ namespace Application.Handlers.Clubs;
 public class DeleteClubHandler : IRequestHandler<DeleteClubCommand, Result>
 {
     private readonly IClubRepository _clubRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DeleteClubHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the DeleteClubHandler class
     /// </summary>
     /// <param name="clubRepository">The club repository</param>
+    /// <param name="unitOfWork">The unit of work</param>
     /// <param name="logger">The logger</param>
-    public DeleteClubHandler(IClubRepository clubRepository, ILogger<DeleteClubHandler> logger)
+    public DeleteClubHandler(IClubRepository clubRepository, IUnitOfWork unitOfWork, ILogger<DeleteClubHandler> logger)
     {
         _clubRepository = clubRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -48,6 +51,9 @@ public class DeleteClubHandler : IRequestHandler<DeleteClubCommand, Result>
 
             _logger.LogInformation("Deleting club with ID: {ClubId}", request.ClubId);
             await _clubRepository.DeleteAsync(request.ClubId);
+            
+            // Save changes explicitly to trigger domain events
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Successfully deleted club with ID: {ClubId}", request.ClubId);
             return Result.Success();

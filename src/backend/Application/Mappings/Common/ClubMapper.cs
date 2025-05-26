@@ -63,11 +63,20 @@ public static class ClubMapper
         Uri? websiteUri = !string.IsNullOrEmpty(command.WebsiteUrl) ? new Uri(command.WebsiteUrl) : null;
         Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;
 
+        // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
+        DateTime foundingDateUtc = command.FoundingDate.Kind switch
+        {
+            DateTimeKind.Utc => command.FoundingDate,
+            DateTimeKind.Local => command.FoundingDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.FoundingDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.FoundingDate, DateTimeKind.Utc)
+        };
+
         return new Club(
             command.Name,
             command.City,
             command.Country,
-            command.FoundingDate,
+            foundingDateUtc,
             websiteUri,
             logoUri,
             command.ContactEmail
@@ -89,6 +98,16 @@ public static class ClubMapper
 
         // Update basic info
         club.UpdateBasicInfo(command.Name, command.City, command.Country);
+
+        // Update founding date with UTC conversion
+        DateTime foundingDateUtc = command.FoundingDate.Kind switch
+        {
+            DateTimeKind.Utc => command.FoundingDate,
+            DateTimeKind.Local => command.FoundingDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.FoundingDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.FoundingDate, DateTimeKind.Utc)
+        };
+        club.UpdateFoundingDate(foundingDateUtc);
 
         // Update online presence
         Uri? websiteUri = !string.IsNullOrEmpty(command.WebsiteUrl) ? new Uri(command.WebsiteUrl) : null;

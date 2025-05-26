@@ -6,12 +6,39 @@ ASP.NET Core 9.0 Web API for managing football clubs in the MyLeague application
 ## Features
 - ✅ **CRUD Operations** for Clubs
 - ✅ **MediatR Integration** for commands and queries
-- ✅ **Swagger Documentation** with OpenAPI specs
+- ✅ **Scalar API Documentation** with modern OpenAPI interface
 - ✅ **Global Exception Handling** with structured error responses
 - ✅ **Request Validation** with FluentValidation
 - ✅ **Structured Logging** with Serilog
 - ✅ **CORS Support** for cross-origin requests
 - ✅ **Health Checks** endpoint
+
+## API Documentation
+
+This API uses **Scalar** for modern, interactive API documentation. Scalar provides a beautiful and user-friendly interface for exploring and testing the API.
+
+### Accessing Documentation
+- **Scalar UI**: `/scalar/v1` (development environment)
+- **OpenAPI JSON**: `/swagger/v1/swagger.json`
+
+### Features of Scalar Documentation
+- 🎨 **Modern UI** with beautiful design and dark/light themes
+- 🔍 **Interactive Testing** - test endpoints directly from the documentation
+- 📝 **Code Examples** - automatic generation of HTTP client code in multiple languages
+- 🔐 **Authentication Support** - built-in support for Bearer tokens and other auth methods
+- 📱 **Responsive Design** - works perfectly on desktop and mobile devices
+
+### Updating Documentation
+The API documentation is automatically generated from:
+- Controller actions and their attributes
+- XML documentation comments (when `GenerateDocumentationFile` is enabled)
+- Data annotations on models
+- OpenAPI configuration in `ServiceCollectionExtensions.cs`
+
+To enhance documentation:
+1. Add XML comments to your controllers and models
+2. Use data annotations for validation and documentation
+3. Update the OpenAPI configuration in `Extensions/ServiceCollectionExtensions.cs`
 
 ## API Endpoints
 
@@ -27,7 +54,8 @@ DELETE /api/clubs/{id}         # Delete club
 ### System
 ```
 GET    /health                 # Health check endpoint
-GET    /swagger                # API documentation (dev environment)
+GET    /scalar/v1              # API documentation (dev environment)
+GET    /swagger/v1/swagger.json # OpenAPI JSON specification
 ```
 
 ## Getting Started
@@ -64,9 +92,9 @@ dotnet run --environment Development
 ```
 
 The API will be available at:
-- **HTTPS**: https://localhost:7001
-- **HTTP**: http://localhost:5001
-- **Swagger UI**: https://localhost:7001 (development only)
+- **HTTPS**: https://localhost:65532
+- **HTTP**: http://localhost:65533
+- **API Documentation**: https://localhost:65532/scalar/v1 (development only)
 
 ## Request/Response Format
 

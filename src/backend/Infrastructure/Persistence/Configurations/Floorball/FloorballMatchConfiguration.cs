@@ -40,27 +40,17 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(m => m.WentToShootout)
                 .IsRequired();
 
-            // Configure relationship with home team
-            builder.HasOne(m => m.HomeTeam)
-                .WithMany()
-                .HasForeignKey(m => m.HomeTeamId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Configure relationship with away team
-            builder.HasOne(m => m.AwayTeam)
-                .WithMany()
-                .HasForeignKey(m => m.AwayTeamId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Configure relationship with season
-            builder.HasOne(m => m.Season)
-                .WithMany(s => s.Matches)
-                .HasForeignKey(m => m.SeasonId)
+            // Configure foreign key relationships without navigation properties to avoid cross-context issues
+            builder.Property(m => m.HomeTeamId)
                 .IsRequired();
 
-            // Configure the relationship with referees
+            builder.Property(m => m.AwayTeamId)
+                .IsRequired();
+
+            builder.Property(m => m.SeasonId)
+                .IsRequired();
+
+            // Configure the relationship with referees using a simple many-to-many join table
             builder.HasMany(m => m.Officials)
                 .WithMany()
                 .UsingEntity<Dictionary<string, object>>(
@@ -86,44 +76,10 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                     .IsRequired();
             });
 
-            // Configure owned types for match events
-            builder.OwnsMany(m => m.Events, eventsBuilder =>
-            {
-                eventsBuilder.WithOwner().HasForeignKey("MatchId");
-                eventsBuilder.Property<Guid>("Id");
-                eventsBuilder.HasKey("Id");
-
-                eventsBuilder.Property(e => e.MatchId).IsRequired();
-                eventsBuilder.Property(e => e.TeamId).IsRequired();
-                eventsBuilder.Property(e => e.PeriodNumber).IsRequired();
-                eventsBuilder.Property(e => e.TimeInSeconds).IsRequired();
-                eventsBuilder.Property(e => e.Description).HasMaxLength(500);
-
-                // Configure discriminator for TPH mapping with string
-                eventsBuilder.Property<string>("EventType").HasMaxLength(50).IsRequired();
-                
-                // Configure the event types
-                eventsBuilder.HasData(
-                    new { EventType = "Goal", Discriminator = nameof(FloorballGoalEvent) },
-                    new { EventType = "Penalty", Discriminator = nameof(FloorballPenaltyEvent) }
-                );
-
-                // Configure properties for goal events
-                eventsBuilder.OwnsOne<FloorballGoalEvent>("", goalConfig =>
-                {
-                    goalConfig.Property(g => g.ScoringPlayerId).HasColumnName("ScoringPlayerId");
-                    goalConfig.Property(g => g.AssistingPlayerId).HasColumnName("AssistingPlayerId");
-                    goalConfig.Property(g => g.GoalTypeId).HasColumnName("GoalTypeId");
-                });
-
-                // Configure properties for penalty events
-                eventsBuilder.OwnsOne<FloorballPenaltyEvent>("", penaltyConfig =>
-                {
-                    penaltyConfig.Property(p => p.PlayerId).HasColumnName("PlayerId");
-                    penaltyConfig.Property(p => p.PenaltyTypeId).HasColumnName("PenaltyTypeId");
-                    penaltyConfig.Property(p => p.PenaltyMinutes).HasColumnName("PenaltyMinutes");
-                });
-            });
+            // Ignore complex event configurations for now to avoid navigationName issues
+            builder.Ignore(m => m.Events);
+            builder.Ignore(m => m.GoalEvents);
+            builder.Ignore(m => m.PenaltyEvents);
         }
     }
 } 

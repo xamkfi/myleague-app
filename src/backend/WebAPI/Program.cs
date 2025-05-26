@@ -4,6 +4,7 @@ using WebAPI.Middlewares;
 using WebAPI.Extensions;
 using Serilog;
 using FluentValidation.AspNetCore;
+using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +19,11 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation()
     .AddFluentValidationClientsideAdapters();
 
-// Add API Explorer services for Swagger
+// Add API Explorer services for OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 
-// Add Swagger configuration using extension method
-builder.Services.AddSwaggerConfiguration();
+// Add OpenAPI and Scalar configuration using extension method
+builder.Services.AddOpenApiConfiguration();
 
 // Add CORS configuration using extension method
 builder.Services.AddCorsConfiguration();
@@ -41,11 +42,16 @@ WebApplication app = builder.Build();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    // Map OpenAPI endpoint at the traditional Swagger location for compatibility
+    app.MapOpenApi("/swagger/v1/swagger.json");
+    
+    // Configure Scalar UI
+    app.MapScalarApiReference(options =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyLeague Club API v1");
-        c.RoutePrefix = string.Empty; // Set Swagger UI at app's root
+        options.WithTitle("MyLeague Club API Documentation")
+               .WithTheme(ScalarTheme.Purple)
+               .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+               .WithOpenApiRoutePattern("/swagger/v1/swagger.json");
     });
 }
 
@@ -66,5 +72,7 @@ app.MapHealthChecks("/health");
 
 // Log application startup
 app.Logger.LogInformation("MyLeague Club API started successfully");
+app.Logger.LogInformation("API Documentation available at: /scalar/v1");
+app.Logger.LogInformation("OpenAPI JSON available at: /swagger/v1/swagger.json");
 
 app.Run(); 
