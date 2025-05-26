@@ -1,0 +1,80 @@
+/**
+ * Global CSS Variables
+ * 
+ * This file contains all global CSS variables used throughout the application.
+ * Always use these variables instead of hardcoded values to maintain consistency.
+ */
+
+:root {
+  /* Colors - Use semantic naming for better understanding
+   * Primary: Main brand colors
+   * Text: Different text color variations
+   * Background: Background color variations
+   * UI: Colors for specific UI elements
+   */
+  --color-primary: #444;
+  --color-primary-dark: #333;
+  --color-text-primary: #222;
+  --color-background-light: #f1f1f1;
+  --color-white: #fff;
+  --color-navbar: #252525;
+  --color-button-secondary: #666;
+  --color-text-muted: #888;
+  --color-border: #ddd;
+  --color-sidebar: #ccc;
+  --color-placeholder: #999;
+
+  /* Typography - Consistent scale for font sizes
+   * xs: 0.6rem (smallest text, like superscript)
+   * sm: 0.9rem (small text, captions)
+   * base: 1rem (default body text)
+   * md: 1.2rem (slightly emphasized text)
+   * lg: 1.5rem (subheadings)
+   * xl: 2.5rem (headings)
+   * xxl: 4rem (hero text)
+   */
+  --font-size-xs: 0.6rem;
+  --font-size-sm: 0.9rem;
+  --font-size-base: 1rem;
+  --font-size-md: 1.2rem;
+  --font-size-lg: 1.5rem;
+  --font-size-xl: 2.5rem;
+  --font-size-xxl: 4rem;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
+  --letter-spacing-wide: 4px;
+  --line-height-relaxed: 1.6;
+
+  /* Spacing - Consistent scale for margins, padding, gaps
+   * xxs: 0.25rem (4px) - Minimal spacing
+   * xs: 0.5rem (8px) - Tight spacing
+   * sm: 0.75rem (12px) - Compact spacing
+   * base: 1rem (16px) - Default spacing
+   * md: 1.5rem (24px) - Comfortable spacing
+   * lg: 2rem (32px) - Loose spacing
+   * xl: 4rem (64px) - Maximum spacing
+   */
+  --spacing-xxs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-base: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 4rem;
+
+  /* Layout - Common layout measurements
+   * Use these for consistent component sizing
+   */
+  --navbar-height: 80px;
+  --max-width-container: 1280px;
+  --max-width-page: 1200px;
+  --sidebar-width: 280px;
+  --border-radius-sm: 4px;
+  --border-radius-full: 50%;
+
+  /* Transitions - Reusable animation timings
+   * Use these for consistent animation speeds
+   */
+  --transition-default: 0.3s ease;
+  --transition-filter: filter 300ms;
+} 

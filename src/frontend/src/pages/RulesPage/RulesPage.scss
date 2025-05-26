@@ -1,0 +1,38 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+@use '../../styles/common' as *;
+
+.rules {
+  &-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.rule {
+  &-section {
+    width: 100%;
+    margin-bottom: map.get($spacing, 'xl');
+
+    h2 {
+      font-size: map.get($font-sizes, 'xl');
+      margin-bottom: map.get($spacing, 'base');
+      border-bottom: 1px solid $color-border;
+      padding-bottom: map.get($spacing, 'xs');
+      color: $color-text-primary;
+    }
+
+    h3 {
+      font-size: map.get($font-sizes, 'lg');
+      margin: map.get($spacing, 'lg') 0 map.get($spacing, 'xs');
+      color: $color-text-primary;
+    }
+
+    p {
+      margin-bottom: map.get($spacing, 'base');
+      line-height: $line-height-relaxed;
+    }
+  }
+} 
