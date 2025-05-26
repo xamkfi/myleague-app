@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Commands.Person;
+using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
 using Application.Handlers.Clubs;
@@ -13,7 +13,7 @@ using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Person
+namespace Application.Handlers.Persons
 {
     /// <summary>
     /// Handler for creating a new person

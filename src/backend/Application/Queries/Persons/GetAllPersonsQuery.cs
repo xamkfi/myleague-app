@@ -7,11 +7,8 @@ using Application.Common;
 using Application.DTOs.Common;
 using MediatR;
 
-namespace Application.Queries.Person;
+namespace Application.Queries.Persons;
 /// <summary>
-/// Query for retrieving a person by its ID
+/// Query for retrieving all clubs
 /// </summary>
-public record GetPersonByIdQuery(Guid PersonId) : IRequest<Result<PersonDto>>;
-    
-    
-
+public record GetAllPersonsQuery() : IRequest<Result<IEnumerable<PersonDto>>>;

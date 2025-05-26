@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Commands.Person;
+using Application.Commands.Persons;
 using Application.DTOs.Common;
 using Domain.Entities.Common;
 using Domain.ValueObjects.Common;

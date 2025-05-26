@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Commands.Clubs;
-using Application.Commands.Person;
+using Application.Commands.Persons;
 using Application.Common;
 using Application.Handlers.Clubs;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Person
+namespace Application.Handlers.Persons
 {
     public class DeletePersonHandler : IRequestHandler<DeletePersonCommand, Result>
     {

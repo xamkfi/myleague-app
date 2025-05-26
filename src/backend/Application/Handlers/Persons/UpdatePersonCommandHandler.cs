@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Commands.Person;
+using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
 using Application.Handlers.Clubs;
@@ -13,7 +13,7 @@ using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Person
+namespace Application.Handlers.Persons
 {
     /// <summary>
     /// Handler for updating an existing person
@@ -48,7 +48,7 @@ namespace Application.Handlers.Person
             try
             {
                 // Find the existing club
-                Person existingPerson = await _personRepository.GetByIdAsync(request.Id);
+                Person? existingPerson = await _personRepository.GetByIdAsync(request.Id);
                 if(existingPerson == null)
                 {
                     _logger.LogWarning("Attempt to update non-existent person with ID: {PersonId}", request.Id);

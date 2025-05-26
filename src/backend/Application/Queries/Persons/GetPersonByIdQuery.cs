@@ -7,12 +7,11 @@ using Application.Common;
 using Application.DTOs.Common;
 using MediatR;
 
-namespace Application.Queries.Person;
-
+namespace Application.Queries.Persons;
 /// <summary>
-/// Query for retrieving a person by its firstName or lastName
+/// Query for retrieving a person by its ID
 /// </summary>
-public record SearchPersonByNameQuery(string name) : IRequest<Result<PersonDto>>;
+public record GetPersonByIdQuery(Guid PersonId) : IRequest<Result<PersonDto>>;
     
-   
+    
 

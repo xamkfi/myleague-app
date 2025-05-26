@@ -1,4 +1,4 @@
-using Application.Queries.Person;
+using Application.Queries.Persons;
 using FluentValidation;
 
 namespace Application.Validators.Queries.Person

@@ -1,5 +1,5 @@
 using System;
-using Application.Commands.Person;
+using Application.Commands.Persons;
 using FluentValidation;
 
 namespace Application.Validators.Commands.Person

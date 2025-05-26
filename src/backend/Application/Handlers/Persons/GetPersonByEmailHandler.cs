@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using Application.Common;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
-using Application.Queries.Person;
+using Application.Queries.Persons;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Person
+namespace Application.Handlers.Persons
 {
     public class GetPersonByEmailHandler : IRequestHandler<GetPersonByEmailQuery, Result<PersonDto>>
     {
@@ -42,7 +42,7 @@ namespace Application.Handlers.Person
             {
                 _logger.LogInformation("Retrieving person with email: {Email}", request.email);
 
-                Person person = await _personRepository.GetByEmailAsync(request.email);
+                Person? person = await _personRepository.GetByEmailAsync(request.email);
                 if(person == null)
                 {
                     _logger.LogWarning("Club with ID {ClubId} not found", request.email);

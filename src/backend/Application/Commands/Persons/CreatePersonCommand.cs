@@ -7,17 +7,16 @@ using Application.Common;
 using Application.DTOs.Common;
 using MediatR;
 
-namespace Application.Commands.Person;
+namespace Application.Commands.Persons;
 
 /// <summary>
-/// Command for updating an existing Person
+/// Command for creating a new person
 /// </summary>
-public record UpdatePersonCommand(
-    Guid Id,
+public record CreatePersonCommand(
     string FirstName,
     string LastName,
     DateTime BirthDate,
-    AddressDto Address,
-    ContactInfoDto ContactInfo) : IRequest<Result<PersonDto>>;
+    AddressDto? Address,
+    ContactInfoDto? ContactInfo) : IRequest<Result<PersonDto>>;
 
 

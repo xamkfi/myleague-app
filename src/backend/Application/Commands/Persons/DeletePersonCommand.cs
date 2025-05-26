@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Application.Common;
 using MediatR;
 
-namespace Application.Commands.Person;
+namespace Application.Commands.Persons;
 
 /// <summary>
 /// Command for deleting a Person

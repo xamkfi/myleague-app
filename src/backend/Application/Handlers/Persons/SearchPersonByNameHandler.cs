@@ -3,16 +3,17 @@ using Application.Common;
 using Application.DTOs.Common;
 using Application.Handlers.Clubs;
 using Application.Mappings.Common;
-using Application.Queries.Person;
+using Application.Queries.Persons;
+using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Person
+namespace Application.Handlers.Persons
 {
-    public class SearchPersonByNameHandler : IRequestHandler<SearchPersonByNameQuery, Result<PersonDto>>
+    public class SearchPersonByNameHandler : IRequestHandler<SearchPersonByNameQuery, Result<IEnumerable<PersonDto>>>
     {
-        private readonly IClubRepository _clubRepository;
+        private readonly IPersonRepository _personRepository;
         private readonly ILogger<GetClubByIdHandler> _logger;
 
         /// <summary>
@@ -20,9 +21,9 @@ namespace Application.Handlers.Person
         /// </summary>
         /// <param name="clubRepository">The club repository</param>
         /// <param name="logger">The logger</param>
-        public SearchPersonByNameHandler(IClubRepository clubRepository, ILogger<GetClubByIdHandler> logger)
+        public SearchPersonByNameHandler(IPersonRepository personRepository, ILogger<GetClubByIdHandler> logger)
         {
-            _clubRepository = clubRepository;
+            _personRepository = personRepository;
             _logger = logger;
         }
 
@@ -32,25 +33,25 @@ namespace Application.Handlers.Person
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Result<PersonDto>> Handle(SearchPersonByNameQuery request, CancellationToken cancellationToken)
+        public async Task<Result<IEnumerable<PersonDto>>> Handle(SearchPersonByNameQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                Person person = await _clubRepository.SearchByNameAsync(request.name);
-                if(person == null)
+                IEnumerable<Person> persons = await _personRepository.SearchByNameAsync(request.name);
+                if(!persons.Any())
                 {
                     _logger.LogWarning("Person with name {search} not found", request.name);
-                    return Result<PersonDto>.NotFound("Person", request.name);
+                    return Result<IEnumerable<PersonDto>>.NotFound("Person", request.name);
                 }
 
-                PersonDto personDto = PersonMapper.ToDto(person);
+                IEnumerable<PersonDto> personDtos = PersonMapper.ToDtos(persons);
 
-                return Result<PersonDto>.Success(personDto);
+                return Result<IEnumerable<PersonDto>>.Success(personDtos);
             }
             catch(Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while searching person by: {name}", request.name);
-                return Result<PersonDto>.Failure("An error occurred while retrieving the person.");
+                return Result<IEnumerable<PersonDto>>.Failure("An error occurred while retrieving the person.");
             }
         }
 

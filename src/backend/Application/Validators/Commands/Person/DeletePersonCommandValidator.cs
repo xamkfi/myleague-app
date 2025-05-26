@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Commands.Clubs;
-using Application.Commands.Person;
+using Application.Commands.Persons;
 using FluentValidation;
 
 namespace Application.Validators.Commands.Person

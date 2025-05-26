@@ -7,12 +7,13 @@ using Application.Common;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
 using Application.Queries.Clubs;
-using Application.Queries.Person;
+using Application.Queries.Persons;
+using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Person
+namespace Application.Handlers.Persons
 {
     public class GetAllPersonsHandler : IRequestHandler<GetAllPersonsQuery, Result<IEnumerable<PersonDto>>>
     {

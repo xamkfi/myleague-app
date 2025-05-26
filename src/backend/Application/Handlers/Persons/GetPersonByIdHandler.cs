@@ -1,13 +1,13 @@
 ﻿using Application.Common;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
-using Application.Queries.Person;
+using Application.Queries.Persons;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Domain.Entities.Common;
 
-namespace Application.Handlers.Person
+namespace Application.Handlers.Persons
 {
     /// <summary>
     /// Handler for retrieving a Person by its ID
@@ -40,7 +40,7 @@ namespace Application.Handlers.Person
             {
                 _logger.LogInformation("Retrieving Person with ID: {PersonId}", request.PersonId);
 
-                Person person = await _personRepository.GetByIdAsync(request.PersonId);
+                Person? person = await _personRepository.GetByIdAsync(request.PersonId);
                 if (person == null)
                 {
                     _logger.LogWarning("Person with ID {PersonId} not found", request.PersonId);
@@ -48,7 +48,7 @@ namespace Application.Handlers.Person
                 }
 
                 PersonDto personDto = PersonMapper.ToDto(person);
-                _logger.LogInformation("Successfully retrieved Person: {PersonId}", person.PersonId);
+                _logger.LogInformation("Successfully retrieved Person: {PersonId}", person.Id);
 
                 return Result<PersonDto>.Success(personDto);
             }
