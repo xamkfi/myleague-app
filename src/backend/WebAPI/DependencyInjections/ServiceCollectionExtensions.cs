@@ -1,7 +1,7 @@
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
-namespace WebAPI.Extensions;
+namespace WebAPI.DependencyInjections;
 
 /// <summary>
 /// Extension methods for IServiceCollection
