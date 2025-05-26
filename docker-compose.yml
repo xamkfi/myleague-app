@@ -48,8 +48,11 @@ services:
       context: src/frontend
       dockerfile: Dockerfile
     container_name: myleague-frontend
+    volumes:
+      - ./src/frontend:/app
+      - /app/node_modules
     ports:
-      - '3000:3000'
+      - '5173:5173'
     depends_on:
       - webapi
     networks:
