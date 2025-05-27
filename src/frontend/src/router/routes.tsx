@@ -44,7 +44,7 @@ export const routes: RouteObject[] = [
     element: <SportsPage />
   },
   {
-    path: '/club/:slug',
+    path: '/club/:id',
     element: <ClubPage />
   }
 ]; 

@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle/LanguageToggle';
-import clubData from '../../sampledata/club_data.json';
-import { slugify } from '../../utils/helpers';
+import type { Club } from '../../api/clubService';
+import { getClubs } from '../../api/clubService';
 import './Navbar.scss';
 
 interface NavbarProps {
@@ -13,7 +13,25 @@ interface NavbarProps {
 function Navbar({ onLogin }: NavbarProps) {
   const { t } = useTranslation();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        setLoading(true);
+        const clubsData = await getClubs();
+        setClubs(clubsData);
+      } catch (error) {
+        console.error('Failed to fetch clubs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClubs();
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -75,13 +93,17 @@ function Navbar({ onLogin }: NavbarProps) {
             <span className="dropdown-icon">▼</span>
             {activeDropdown === 'clubs' && (
               <ul className="dropdown-menu">
-                {clubData.clubs.map((club) => (
-                  <li key={club.clubInfo.name}>
-                    <Link to={`/club/${slugify(club.clubInfo.name)}`}>
-                      {club.clubInfo.name}
-                    </Link>
-                  </li>
-                ))}
+                {loading ? (
+                  <li className="loading">Loading clubs...</li>
+                ) : (
+                  clubs.map((club) => (
+                    <li key={club.id}>
+                      <Link to={`/club/${club.id}`}>
+                        {club.name}
+                      </Link>
+                    </li>
+                  ))
+                )}
               </ul>
             )}
           </li>
