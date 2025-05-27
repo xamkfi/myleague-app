@@ -1,13 +1,15 @@
 import React from 'react';
 import type { RouteObject } from 'react-router-dom';
-import HomePage from '../pages/HomePage/HomePage';
-import NewsPage from '../pages/NewsPage/NewsPage';
-import RulesPage from '../pages/RulesPage/RulesPage';
-import MAHLPage from '../pages/MAHLPage/MAHLPage';
-import AgeGroupsPage from '../pages/AgeGroupsPage/AgeGroupsPage';
-import RegisterPage from '../pages/RegisterPage/RegisterPage';
-import TournamentsPage from '../pages/TournamentsPage/TournamentsPage';
-import SportsPage from '../pages/SportsPage/SportsPage';
+
+import HomePage from '../pages/HomePage';
+import NewsPage from '../pages/NewsPage';
+import RulesPage from '../pages/RulesPage';
+import MAHLPage from '../pages/MAHLPage';
+import AgeGroupsPage from '../pages/AgeGroupsPage';
+import RegisterPage from '../pages/RegisterPage';
+import TournamentsPage from '../pages/TournamentsPage';
+import SportsPage from '../pages/SportsPage';
+import ClubPage from '../pages/ClubPage';
 import PlayerPage from '../pages/PlayerPage/PlayerPage';
 
 export const routes: RouteObject[] = [
@@ -42,6 +44,10 @@ export const routes: RouteObject[] = [
   {
     path: '/lajit',
     element: <SportsPage />
+  },
+  {
+    path: '/club/:slug',
+    element: <ClubPage />
   },
   {
     path: '/pelaaja/:id',

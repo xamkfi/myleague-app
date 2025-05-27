@@ -34,4 +34,20 @@ export function truncateText(text: string, maxLength: number): string {
  */
 export function generateId(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+/**
+ * Converts a string to a URL-friendly slug
+ * @param text The string to slugify
+ * @returns The slugified string
+ */
+export function slugify(text: string): string {
+  return text
+    .toString()
+    .normalize('NFD') // split accented letters
+    .replace(/\p{Diacritic}/gu, '') // remove diacritics
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-') // replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // remove leading/trailing hyphens
 } 
