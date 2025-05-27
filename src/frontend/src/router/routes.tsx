@@ -1,5 +1,6 @@
 import React from 'react';
 import type { RouteObject } from 'react-router-dom';
+
 import HomePage from '../pages/HomePage';
 import NewsPage from '../pages/NewsPage';
 import RulesPage from '../pages/RulesPage';
@@ -9,6 +10,7 @@ import RegisterPage from '../pages/RegisterPage';
 import TournamentsPage from '../pages/TournamentsPage';
 import SportsPage from '../pages/SportsPage';
 import ClubPage from '../pages/ClubPage';
+import PlayerPage from '../pages/PlayerPage/PlayerPage';
 
 export const routes: RouteObject[] = [
   {
@@ -46,5 +48,9 @@ export const routes: RouteObject[] = [
   {
     path: '/club/:slug',
     element: <ClubPage />
+  },
+  {
+    path: '/pelaaja/:id',
+    element: <PlayerPage />
   }
 ]; 

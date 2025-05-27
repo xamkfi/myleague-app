@@ -1,0 +1,242 @@
+{
+    "Teams": [
+        {
+            "Id": 1,
+            "Name": "Fc Ankkalinna",
+            "Players": {
+                "Goalkeepers": [
+                    {
+                        "Id":1,
+                        "Number":23,
+                        "Name": "Veli Ponteva",
+                        "Age": 25,
+                        "MatchesPlayed": 5,
+                        "SavePercentage": 89,
+                        "GoalsAgainstAverage": 3.1,
+                        "ShutOuts": 0
+                    },
+                    {
+                        "Id":2,
+                        "Number":23,
+                        "Name": "Kroisos Pennonen",
+                        "Age": 58,
+                        "MatchesPlayed": 4,
+                        "SavePercentage": 70,
+                        "GoalsAgainstAverage": 3.1,
+                        "ShutOuts": 0
+                    }
+                ],
+                "Fieldplayers":[
+                    {
+                        "Id": 4,
+                        "Number":30,
+                        "Name": "Aku Ankka",
+                        "Age": 27,
+                        "MatchesPlayed": 8,
+                        "GoalsScored": 10,
+                        "Assists": 4,
+                        "Points": 14
+                    },
+                    {
+                        "Id": 5,
+                        "Number":30,
+                        "Name": "Iines Ankka",
+                        "Age": 26,
+                        "MatchesPlayed": 7,
+                        "GoalsScored": 11,
+                        "Assists": 3,
+                        "Points": 14
+                    },
+                    {
+                        "Id": 6,
+                        "Number":30,
+                        "Name": "Mikki Hiiri",
+                        "Age": 30,
+                        "MatchesPlayed": 9,
+                        "GoalsScored": 10,
+                        "Assists": 5,
+                        "Points": 15
+                    }
+                ],
+                "Coach": [
+                    {
+                        "Id": 7,
+                        "Name": "Roope Ankka",
+                        "Age": 50
+                    }
+                ]
+            }
+        },
+        {
+            "Id": 2,
+            "Name": "Iso Paha Susi",
+            "Players": {
+                "Goalkeepers": [
+                    {
+                        "Id": 8,
+                        "Number": 1,
+                        "Name": "Huima Huuhkaja",
+                        "Age": 32,
+                        "MatchesPlayed": 4,
+                        "SavePercentage": 85,
+                        "GoalsAgainstAverage": 2.8,
+                        "ShutOuts": 1
+                    }
+                ],
+                "Fieldplayers": [
+                    {
+                        "Id": 9,
+                        "Number": 7,
+                        "Name": "Samu Susi",
+                        "Age": 29,
+                        "MatchesPlayed": 5,
+                        "GoalsScored": 7,
+                        "Assists": 2,
+                        "Points": 9
+                    },
+                    {
+                        "Id": 10,
+                        "Number": 15,
+                        "Name": "Ville Viisas",
+                        "Age": 31,
+                        "MatchesPlayed": 5,
+                        "GoalsScored": 4,
+                        "Assists": 5,
+                        "Points": 9
+                    },
+                    {
+                        "Id": 11,
+                        "Number": 23,
+                        "Name": "Kaarlo Karhu",
+                        "Age": 27,
+                        "MatchesPlayed": 5,
+                        "GoalsScored": 2,
+                        "Assists": 1,
+                        "Points": 3
+                    }
+                ],
+                "Coach": [
+                    {
+                        "Id": 12,
+                        "Name": "Herra Hakkarainen",
+                        "Age": 45
+                    }
+                ]
+            }
+        },
+        {
+            "Id": 3,
+            "Name": "VuorenPeikot",
+            "Players": {
+                "Goalkeepers": [
+                    {
+                        "Id": 13,
+                        "Number": 30,
+                        "Name": "Kivi Kallio",
+                        "Age": 28,
+                        "MatchesPlayed": 5,
+                        "SavePercentage": 92,
+                        "GoalsAgainstAverage": 2.4,
+                        "ShutOuts": 2
+                    }
+                ],
+                "Fieldplayers": [
+                    {
+                        "Id": 14,
+                        "Number": 5,
+                        "Name": "Taavi Tuhkimo",
+                        "Age": 24,
+                        "MatchesPlayed": 5,
+                        "GoalsScored": 8,
+                        "Assists": 6,
+                        "Points": 14
+                    },
+                    {
+                        "Id": 15,
+                        "Number": 17,
+                        "Name": "Vesa Vuorenpeikko",
+                        "Age": 33,
+                        "MatchesPlayed": 5,
+                        "GoalsScored": 5,
+                        "Assists": 7,
+                        "Points": 12
+                    },
+                    {
+                        "Id": 16,
+                        "Number": 21,
+                        "Name": "Matti Mäenalla",
+                        "Age": 26,
+                        "MatchesPlayed": 5,
+                        "GoalsScored": 4,
+                        "Assists": 3,
+                        "Points": 7
+                    }
+                ],
+                "Coach": [
+                    {
+                        "Id": 17,
+                        "Name": "Otso Oksanen",
+                        "Age": 52
+                    }
+                ]
+            }
+        },
+        {
+            "Id": 4,
+            "Name": "NapalmiNallet",
+            "Players": {
+                "Goalkeepers": [
+                    {
+                        "Id": 18,
+                        "Number": 33,
+                        "Name": "Nalle Palomies",
+                        "Age": 29,
+                        "MatchesPlayed": 4,
+                        "SavePercentage": 82,
+                        "GoalsAgainstAverage": 3.5,
+                        "ShutOuts": 0
+                    }
+                ],
+                "Fieldplayers": [
+                    {
+                        "Id": 19,
+                        "Number": 10,
+                        "Name": "Pyry Pöntinen",
+                        "Age": 25,
+                        "MatchesPlayed": 4,
+                        "GoalsScored": 3,
+                        "Assists": 2,
+                        "Points": 5
+                    },
+                    {
+                        "Id": 20,
+                        "Number": 19,
+                        "Name": "Nuutti Nalle",
+                        "Age": 30,
+                        "MatchesPlayed": 4,
+                        "GoalsScored": 2,
+                        "Assists": 4,
+                        "Points": 6
+                    },
+                    {
+                        "Id": 21,
+                        "Number": 28,
+                        "Name": "Hannu Hunaja",
+                        "Age": 27,
+                        "MatchesPlayed": 4,
+                        "GoalsScored": 3,
+                        "Assists": 1,
+                        "Points": 4
+                    }
+                ],
+                "Coach": [
+                    {
+                        "Id": 22,
+                        "Name": "Peetu Pesonen",
+                        "Age": 48
+                    }
+                ]
+            }
+        }
+    ]
+}

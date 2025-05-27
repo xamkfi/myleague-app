@@ -1,0 +1,110 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+@use '../../styles/common' as *;
+
+.player {
+  &-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'base');
+    border-bottom: 2px solid $color-border;
+    padding-bottom: map.get($spacing, 'base');
+    margin-bottom: map.get($spacing, 'lg');
+  }
+
+  &-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: map.get($border-radius, 'full');
+    background-color: $color-placeholder;
+  }
+
+  &-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &-name {
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+  }
+
+  &-subtitle {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
+}
+
+.stats {
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: map.get($spacing, 'base');
+    margin-bottom: map.get($spacing, 'lg');
+    width: 100%;
+  }
+
+  &-box {
+    background-color: $color-background-light;
+    padding: map.get($spacing, 'base');
+    border-radius: map.get($border-radius, 'sm');
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+  }
+
+  &-label {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
+
+  &-value {
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+  }
+}
+
+.match {
+  &-history {
+    width: 100%;
+    border-top: 2px solid $color-border;
+    padding-top: map.get($spacing, 'base');
+
+    h3 {
+      font-size: map.get($font-sizes, 'lg');
+      margin-bottom: map.get($spacing, 'base');
+      color: $color-text-primary;
+    }
+  }
+
+  &-item {
+    display: flex;
+    justify-content: space-between;
+    padding: map.get($spacing, 'xs') 0;
+    border-bottom: 1px solid $color-border;
+    font-size: map.get($font-sizes, 'base');
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.win {
+  color: green;
+  font-weight: map.get($font-weights, 'bold');
+}
+
+.loss {
+  color: red;
+  font-weight: map.get($font-weights, 'bold');
+} 
