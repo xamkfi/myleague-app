@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Application.DTOs.Common;
 
     /// <summary>
-    /// Data Transfer Object for Club entity
+    /// Data Transfer Object for Address valueobject
     /// </summary>
     public record AddressDto(
         string Street1,

@@ -13,6 +13,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Handlers.Persons
 {
+    /// <summary>
+    /// Handler for deleting a person
+    /// </summary>
     public class DeletePersonHandler : IRequestHandler<DeletePersonCommand, Result>
     {
         private readonly IPersonRepository _personRepository;

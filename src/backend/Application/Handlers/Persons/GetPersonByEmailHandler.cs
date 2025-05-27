@@ -14,6 +14,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Handlers.Persons
 {
+    /// <summary>
+    /// Handler for retrieving person by email
+    /// </summary>
     public class GetPersonByEmailHandler : IRequestHandler<GetPersonByEmailQuery, Result<PersonDto>>
     {
         private readonly IPersonRepository _personRepository;

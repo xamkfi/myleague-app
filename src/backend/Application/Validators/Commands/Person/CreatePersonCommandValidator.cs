@@ -26,6 +26,7 @@ namespace Application.Validators.Commands.Person
             RuleFor(x => x.BirthDate)
                 .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Birth date cannot be in the future");
 
+
             // Address validation (optional)
             When(x => x.Address != null, () =>
             {

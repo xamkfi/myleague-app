@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Application.DTOs.Common;
 
     /// <summary>
-    /// Data Transfer Object for Person Entity
+    /// Data Transfer Object for ContactInfo valueobject
     /// </summary>
     public record ContactInfoDto(
         string Email,

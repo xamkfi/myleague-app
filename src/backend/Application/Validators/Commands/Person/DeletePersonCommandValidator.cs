@@ -9,6 +9,9 @@ using FluentValidation;
 
 namespace Application.Validators.Commands.Person
 {
+    /// <summary>
+    /// Validator for DeletePersonCommand
+    /// </summary>
     public class DeletePersonCommandValidator : AbstractValidator<DeletePersonCommand>
     {
         public DeletePersonCommandValidator()

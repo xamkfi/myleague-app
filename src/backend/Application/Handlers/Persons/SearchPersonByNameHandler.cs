@@ -11,6 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Handlers.Persons
 {
+    /// <summary>
+    /// Handler for retrieving a person by search name
+    /// </summary>
     public class SearchPersonByNameHandler : IRequestHandler<SearchPersonByNameQuery, Result<IEnumerable<PersonDto>>>
     {
         private readonly IPersonRepository _personRepository;

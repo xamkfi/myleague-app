@@ -15,6 +15,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Handlers.Persons
 {
+    /// <summary>
+    /// Handler for retrieving all persons
+    /// </summary>
     public class GetAllPersonsHandler : IRequestHandler<GetAllPersonsQuery, Result<IEnumerable<PersonDto>>>
     {
         private readonly IPersonRepository _personRepository;
