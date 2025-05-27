@@ -9,4 +9,4 @@ RUN pnpm install
 
 COPY . .
 
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "dev", "--mode", "development"]

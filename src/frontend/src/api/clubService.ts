@@ -1,3 +1,5 @@
+import { VITE_API_URL } from "../constants/config";
+
 export interface Club {
   id: string;
   name: string;
@@ -18,8 +20,9 @@ interface ApiResponse {
 
 export const getClubs = async (): Promise<Club[]> => {
   try {
-    const response = await fetch('http://localhost:8080/api/Clubs');
+    const response = await fetch(`${VITE_API_URL}/api/Clubs`);
     const data: ApiResponse = await response.json();
+    
     
     if (!data.success) {
       throw new Error(data.message || 'Failed to fetch clubs');
