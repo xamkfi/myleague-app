@@ -10,6 +10,7 @@ import TournamentsPage from '../pages/TournamentsPage/TournamentsPage';
 import SportsPage from '../pages/SportsPage/SportsPage';
 import ClubPage from '../pages/ClubPage/ClubPage';
 
+
 export const routes: RouteObject[] = [
   {
     path: '/',
@@ -46,5 +47,9 @@ export const routes: RouteObject[] = [
   {
     path: '/club/:id',
     element: <ClubPage />
+  },
+  {
+    path: '/pelaaja/:id',
+    element: <PlayerPage />
   }
 ]; 
