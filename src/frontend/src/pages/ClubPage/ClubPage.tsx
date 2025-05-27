@@ -1,74 +1,53 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import PageTemplate from '../../components/PageTemplate';
-import clubData from '../../sampledata/club_data.json';
-import { slugify } from '../../utils/helpers';
+import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import type { Club } from '../../api/clubService';
+import { getClubs } from '../../api/clubService';
 import './ClubPage.scss';
 
-interface TeamCardProps {
-  teamName: string;
-  division: string;
-  headCoach: string;
-  assistantCoach: string;
-  squad: Array<{
-    id: string;
-    name: string;
-    position: string;
-    age: number;
-    nationality: string;
-    jerseyNumber: number;
-  }>;
-  trainingSchedule: {
-    weekdays: string[];
-    time: string;
-  };
-  ageGroup?: string;
-}
+function ClubPage() {
+  const { id } = useParams<{ id: string }>();
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const TeamCard = ({
-  teamName,
-  division,
-  headCoach,
-  assistantCoach,
-  squad,
-  trainingSchedule,
-  ageGroup
-}: TeamCardProps) => (
-  <div className="team-card">
-    <h3 className="team-name">{teamName}</h3>
-    <div className="team-info">
-      <p><strong>Division:</strong> {division}</p>
-      {ageGroup && <p><strong>Age Group:</strong> {ageGroup}</p>}
-      <p><strong>Head Coach:</strong> {headCoach}</p>
-      <p><strong>Assistant Coach:</strong> {assistantCoach}</p>
-      
-      <div className="squad-section">
-        <h4>Squad ({squad.length} players)</h4>
-        <div className="squad-grid">
-          {squad.map(player => (
-            <div key={player.id} className="player-item">
-              <span className="jersey-number">#{player.jerseyNumber}</span>
-              <span className="player-name">{player.name}</span>
-              <span className="player-position">{player.position}</span>
-            </div>
-          ))}
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        const clubsData = await getClubs();
+        setClubs(clubsData);
+        setLoading(false);
+      } catch {
+        setError('Failed to load clubs. Please try again later.');
+        setLoading(false);
+      }
+    };
+
+    fetchClubs();
+  }, []);
+
+  if (loading) {
+    return (
+      <PageTemplate title="Loading...">
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <h2>Loading club information...</h2>
         </div>
-      </div>
+      </PageTemplate>
+    );
+  }
 
-      <div className="training-schedule">
-        <h4>Training Schedule</h4>
-        <p><strong>Days:</strong> {trainingSchedule.weekdays.join(', ')}</p>
-        <p><strong>Time:</strong> {trainingSchedule.time}</p>
-      </div>
-    </div>
-  </div>
-);
+  if (error) {
+    return (
+      <PageTemplate title="Error">
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <h2>Error</h2>
+          <p>{error}</p>
+        </div>
+      </PageTemplate>
+    );
+  }
 
-const ClubPage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
-
-  // Find the club by slug
-  const club = clubData.clubs.find((club) => slugify(club.clubInfo.name) === slug);
+  const club = clubs.find((club) => club.id === id);
 
   if (!club) {
     return (
@@ -81,34 +60,34 @@ const ClubPage: React.FC = () => {
     );
   }
 
-  const { name, established, location, homeStadium, stadiumCapacity, clubColors, website, contactEmail } = club.clubInfo;
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   return (
-    <PageTemplate title={name}>
+    <PageTemplate title={club.name}>
       <div className="club-page">
         <div className="club-info">
-          <h2>{name}</h2>
+          {club.logoUrl && (
+            <div className="club-logo">
+              <img src={club.logoUrl} alt={`${club.name} logo`} />
+            </div>
+          )}
+          <h2>{club.name}</h2>
           <ul>
-            <li><strong>Established:</strong> {established}</li>
-            <li><strong>Location:</strong> {location}</li>
-            <li><strong>Home Stadium:</strong> {homeStadium} ({stadiumCapacity} seats)</li>
-            <li><strong>Club Colors:</strong> {clubColors.join(', ')}</li>
-            <li><strong>Website:</strong> <a href={`https://${website}`} target="_blank" rel="noopener noreferrer">{website}</a></li>
-            <li><strong>Contact Email:</strong> <a href={`mailto:${contactEmail}`}>{contactEmail}</a></li>
+            <li><strong>Founded:</strong> {formatDate(club.foundingDate)}</li>
+            <li><strong>Location:</strong> {club.city}, {club.country}</li>
+            <li><strong>Website:</strong> <a href={club.websiteUrl} target="_blank" rel="noopener noreferrer">{club.websiteUrl}</a></li>
+            <li><strong>Contact:</strong> <a href={`mailto:${club.contactEmail}`}>{club.contactEmail}</a></li>
           </ul>
-        </div>
-
-        <div className="teams-section">
-          <h2>Teams</h2>
-          <div className="teams-grid">
-            <TeamCard {...club.teams.primary} />
-            <TeamCard {...club.teams.secondary} />
-            <TeamCard {...club.teams.junior} />
-          </div>
         </div>
       </div>
     </PageTemplate>
   );
-};
+}
 
 export default ClubPage; 
