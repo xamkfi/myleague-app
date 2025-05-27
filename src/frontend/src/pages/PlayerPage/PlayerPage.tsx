@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import type { Player, TeamsData, Goalkeeper, FieldPlayer } from "../../types/playerTypes";
 import teamsData from "./testdata.json";
-import styles from "./PlayerPage.module.css";
+import PageTemplate from "../../components/PageTemplate/PageTemplate";
+import './PlayerPage.scss';
 
-interface PlayerPageProps {
-  playerId: number;
-}
-
-const PlayerPage: React.FC<PlayerPageProps> = ({ playerId }) => {
+const PlayerPage = () => {
+  const { id } = useParams<{ id: string }>();
   const [player, setPlayer] = useState<Player | null>(null);
 
   //fetch(`/api/player/${playerId}`).then(...)
 
   useEffect(() => {
+    const playerId = parseInt(id || "1", 10);
     const data = teamsData as unknown as TeamsData;
     const team = data.Teams.find(t =>
       [...t.Players.Goalkeepers, ...t.Players.Fieldplayers].some(p => p.Id === playerId)
@@ -25,76 +25,78 @@ const PlayerPage: React.FC<PlayerPageProps> = ({ playerId }) => {
     if (found) {
       setPlayer({ ...found, teamName: team.Name });
     }
-  }, [playerId]);
+  }, [id]);
 
-  if (!player) return <div className={styles.container}>Ladataan...</div>;
+  if (!player) return <PageTemplate title="Pelaaja"><div>Ladataan...</div></PageTemplate>;
 
   const isGoalkeeper = (p: Player): p is Goalkeeper & { teamName?: string } =>
     "SavePercentage" in p;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.avatar}></div>
-        <div className={styles.playerInfo}>
-          <div className={styles.name}>{player.Name}</div>
-          <div className={styles.subtitle}>Joukkue: {player.teamName}</div>
-          <div className={styles.subtitle}>Ikä: {player.Age}</div>
-        </div>
-      </div>
-
-      <div className={styles.statsGrid}>
-        <div className={styles.statBox}>
-          <div className={styles.label}>Ottelut</div>
-          <div className={styles.value}>{player.MatchesPlayed}</div>
+    <PageTemplate title={player.Name}>
+      <div className="player-container">
+        <div className="player-header">
+          <div className="player-avatar"></div>
+          <div className="player-info">
+            <div className="player-name">{player.Name}</div>
+            <div className="player-subtitle">Joukkue: {player.teamName}</div>
+            <div className="player-subtitle">Ikä: {player.Age}</div>
+          </div>
         </div>
 
-        {isGoalkeeper(player) ? (
-          <>
-            <div className={styles.statBox}>
-              <div className={styles.label}>Torjuntaprosentti</div>
-              <div className={styles.value}>{player.SavePercentage}%</div>
-            </div>
-            <div className={styles.statBox}>
-              <div className={styles.label}>Päästetyt maalit / ottelu</div>
-              <div className={styles.value}>{player.GoalsAgainstAverage}</div>
-            </div>
-            <div className={styles.statBox}>
-              <div className={styles.label}>Nollapelit</div>
-              <div className={styles.value}>{player.ShutOuts}</div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className={styles.statBox}>
-              <div className={styles.label}>Maalit</div>
-              <div className={styles.value}>{(player as FieldPlayer).GoalsScored}</div>
-            </div>
-            <div className={styles.statBox}>
-              <div className={styles.label}>Syötöt</div>
-              <div className={styles.value}>{(player as FieldPlayer).Assists}</div>
-            </div>
-            <div className={styles.statBox}>
-              <div className={styles.label}>Pisteet</div>
-              <div className={styles.value}>{(player as FieldPlayer).Points}</div>
-            </div>
-          </>
-        )}
-      </div>
+        <div className="stats-grid">
+          <div className="stats-box">
+            <div className="stats-label">Ottelut</div>
+            <div className="stats-value">{player.MatchesPlayed}</div>
+          </div>
 
-      <div className={styles.matchHistory}>
-        <h3>Otteluhistoria</h3>
-        {/* Placeholder: voit lisätä backendistä tai mock-datasta myöhemmin */}
-        <div className={styles.matchItem}>
-          <span>12.05.25 FC Ankkalinna 3 - 2 Vastustaja</span>
-          <span className={styles.win}>W</span>
+          {isGoalkeeper(player) ? (
+            <>
+              <div className="stats-box">
+                <div className="stats-label">Torjuntaprosentti</div>
+                <div className="stats-value">{player.SavePercentage}%</div>
+              </div>
+              <div className="stats-box">
+                <div className="stats-label">Päästetyt maalit / ottelu</div>
+                <div className="stats-value">{player.GoalsAgainstAverage}</div>
+              </div>
+              <div className="stats-box">
+                <div className="stats-label">Nollapelit</div>
+                <div className="stats-value">{player.ShutOuts}</div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="stats-box">
+                <div className="stats-label">Maalit</div>
+                <div className="stats-value">{(player as FieldPlayer).GoalsScored}</div>
+              </div>
+              <div className="stats-box">
+                <div className="stats-label">Syötöt</div>
+                <div className="stats-value">{(player as FieldPlayer).Assists}</div>
+              </div>
+              <div className="stats-box">
+                <div className="stats-label">Pisteet</div>
+                <div className="stats-value">{(player as FieldPlayer).Points}</div>
+              </div>
+            </>
+          )}
         </div>
-        <div className={styles.matchItem}>
-          <span>10.05.25 FC Ankkalinna 1 - 4 Vastustaja</span>
-          <span className={styles.loss}>L</span>
+
+        <div className="match-history">
+          <h3>Otteluhistoria</h3>
+          {/* Placeholder: voit lisätä backendistä tai mock-datasta myöhemmin */}
+          <div className="match-item">
+            <span>12.05.25 FC Ankkalinna 3 - 2 Vastustaja</span>
+            <span className="win">W</span>
+          </div>
+          <div className="match-item">
+            <span>10.05.25 FC Ankkalinna 1 - 4 Vastustaja</span>
+            <span className="loss">L</span>
+          </div>
         </div>
       </div>
-    </div>
+    </PageTemplate>
   );
 };
 
