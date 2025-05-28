@@ -1,5 +1,4 @@
-﻿
-using Application.Common;
+﻿using Application.Common;
 using Application.DTOs.Common;
 using Application.Handlers.Clubs;
 using Application.Mappings.Common;

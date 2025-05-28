@@ -1,11 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
@@ -40,6 +33,12 @@ namespace Application.Handlers.Persons
             _logger = logger;
         }
 
+        /// <summary>
+        /// Handles the UpdatePersonBasicInfoCommand request
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<Result<PersonDto>> Handle(UpdatePersonBasicInfoCommand request, CancellationToken cancellationToken)
         {
             try

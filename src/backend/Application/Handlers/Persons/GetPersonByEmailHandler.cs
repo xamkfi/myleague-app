@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Application.Common;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
@@ -34,7 +30,7 @@ namespace Application.Handlers.Persons
         }
 
         /// <summary>
-        /// Handler for GetPersonByEmailQuery request
+        /// Handles for GetPersonByEmailQuery request
         /// </summary>
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>

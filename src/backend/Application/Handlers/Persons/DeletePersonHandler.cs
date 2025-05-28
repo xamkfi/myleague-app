@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Commands.Clubs;
 using Application.Commands.Persons;
 using Application.Common;
 using Application.Handlers.Clubs;

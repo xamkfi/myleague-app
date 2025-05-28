@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Application.Common;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
-using Application.Queries.Clubs;
 using Application.Queries.Persons;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
@@ -37,6 +33,12 @@ namespace Application.Handlers.Persons
             _logger = logger;
         }
 
+        /// <summary>
+        /// Handles the CreatePersonCommand request
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<Result<PersonDto>> Handle(CreatePersonCommand request, CancellationToken cancellationToken)
         {
             try

@@ -1,11 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
@@ -41,6 +34,12 @@ namespace Application.Handlers.Persons
             _logger = logger;
         }
 
+        /// <summary>
+        /// Handles the UpdatePersonAddresCommand request
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<Result<AddressDto>> Handle(UpdatePersonAddressCommand request, CancellationToken cancellationToken)
         {
             try
@@ -62,7 +61,7 @@ namespace Application.Handlers.Persons
                 //Create dto return
                 AddressDto? addressDto = PersonMapper.ToAddressDto(request.address);
 
-                return Result<AddressDto>.Success(addressDto);
+                return Result<AddressDto>.Success(addressDto!);
             }
             catch (Exception ex)
             {

@@ -33,11 +33,11 @@ namespace Application.Validators.Commands.Person
                     .MaximumLength(200).WithMessage("Email cannot exceed 200 characters");
 
                 RuleFor(x => x.contactInfo.Phone)
-                    .MaximumLength(20).WithMessage("Phone number cannot exceed 20 characters")
+                    .MaximumLength(50).WithMessage("Phone number cannot exceed 50 characters")
                     .When(x => !string.IsNullOrEmpty(x.contactInfo.Phone));
 
                 RuleFor(x => x.contactInfo.AlternativePhone)
-                    .MaximumLength(20).WithMessage("Alternative phone number cannot exceed 20 characters")
+                    .MaximumLength(50).WithMessage("Alternative phone number cannot exceed 50 characters")
                     .When(x => !string.IsNullOrEmpty(x.contactInfo.AlternativePhone));
             });
         }
