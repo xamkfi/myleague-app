@@ -108,7 +108,15 @@ public class Person : AggregateRoot
 
         AddDomainEvent(new PersonInfoUpdatedEvent(Id, firstName, lastName));
     }
-    
+
+    public void UpdateBirthDate(DateTime birthDate)
+    {
+        if (birthDate > DateTime.UtcNow)
+            throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
+
+        BirthDate = birthDate;
+    }
+
     /// <summary>
     /// Updates the person's address
     /// </summary>
