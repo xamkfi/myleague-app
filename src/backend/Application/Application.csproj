@@ -17,4 +17,14 @@
     <PackageReference Include="FluentValidation" Version="12.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Commands\Floorball\" />
+    <Folder Include="DTOs\Floorball\" />
+    <Folder Include="Handlers\Floorball\" />
+    <Folder Include="Mappings\Floorball\" />
+    <Folder Include="Queries\Floorball\" />
+    <Folder Include="Validators\Commands\Floorball\" />
+    <Folder Include="Validators\Queries\Floorball\" />
+  </ItemGroup>
+
 </Project> 
