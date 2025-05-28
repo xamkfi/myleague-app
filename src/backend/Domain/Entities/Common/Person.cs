@@ -44,6 +44,8 @@ public class Person : AggregateRoot
     /// </summary>
     public string FullName => $"{FirstName} {LastName}";
 
+    public bool IsRegistered { get; private set; }
+
     /// <summary>
     /// Protected constructor for EF Core
     /// </summary>
@@ -123,5 +125,10 @@ public class Person : AggregateRoot
     public void UpdateContactInfo(ContactInfo? contactInfo)
     {
         ContactInfo = contactInfo;
+    }
+
+    public void UpdateIsRegistered(bool isRegistered)
+    {
+        IsRegistered = isRegistered;
     }
 } 
