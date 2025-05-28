@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <Folder Include="Commands\Floorball\" />
-    <Folder Include="DTOs\Floorball\" />
     <Folder Include="Handlers\Floorball\" />
     <Folder Include="Mappings\Floorball\" />
     <Folder Include="Queries\Floorball\" />
