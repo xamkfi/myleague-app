@@ -20,7 +20,7 @@ interface ApiResponse {
 
 export const getClubs = async (): Promise<Club[]> => {
   try {
-    const response = await fetch(`${VITE_API_URL}/api/Clubs`);
+    const response = await fetch(`${VITE_API_URL}/Clubs`);
     const data: ApiResponse = await response.json();
     
     
