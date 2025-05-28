@@ -16,14 +16,14 @@ namespace Application.Handlers.Persons
     public class GetAllPersonsHandler : IRequestHandler<GetAllPersonsQuery, Result<IEnumerable<PersonDto>>>
     {
         private readonly IPersonRepository _personRepository;
-        private readonly ILogger _logger;
+        private readonly ILogger<GetAllPersonsHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the GetAllPersonsHandler class
         /// </summary>
         /// <param name="personRepository"></param>
         /// <param name="logger"></param>
-        public GetAllPersonsHandler(IPersonRepository personRepository, ILogger logger)
+        public GetAllPersonsHandler(IPersonRepository personRepository, ILogger<GetAllPersonsHandler> logger)
         {
             _personRepository = personRepository;
             _logger = logger;
