@@ -26,9 +26,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>The club if found, null otherwise</returns>
         public override async Task<Club?> GetByIdAsync(Guid id)
         {
+            // Note: FloorballTeams and HockeyTeams are in different DbContexts
+            // These relationships should be loaded separately by the application layer
             return await _entities
-                .Include(c => c.FloorballTeams)
-                .Include(c => c.HockeyTeams)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
@@ -40,8 +40,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         public async Task<Club?> GetByNameAsync(string name)
         {
             return await _entities
-                .Include(c => c.FloorballTeams)
-                .Include(c => c.HockeyTeams)
                 .FirstOrDefaultAsync(c => c.Name == name);
         }
 
@@ -52,8 +50,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         public override async Task<IEnumerable<Club>> GetAllAsync()
         {
             return await _entities
-                .Include(c => c.FloorballTeams)
-                .Include(c => c.HockeyTeams)
                 .ToListAsync();
         }
 
@@ -88,17 +84,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         public async override Task AddAsync(Club club)
         {
             await _entities.AddAsync(club);
-            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
         /// Updates an existing club
         /// </summary>
         /// <param name="club">The club to update</param>
-        public override async Task UpdateAsync(Club club)
+        public override Task UpdateAsync(Club club)
         {
             _entities.Update(club);
-            await _dbContext.SaveChangesAsync();
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -111,7 +106,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             if (club != null)
             {
                 _entities.Remove(club);
-                await _dbContext.SaveChangesAsync();
             }
         }
 

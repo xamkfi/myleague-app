@@ -18,16 +18,19 @@ namespace Application.Handlers.Clubs;
 public class UpdateClubHandler : IRequestHandler<UpdateClubCommand, Result<ClubDto>>
 {
     private readonly IClubRepository _clubRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateClubHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the UpdateClubHandler class
     /// </summary>
     /// <param name="clubRepository">The club repository</param>
+    /// <param name="unitOfWork">The unit of work</param>
     /// <param name="logger">The logger</param>
-    public UpdateClubHandler(IClubRepository clubRepository, ILogger<UpdateClubHandler> logger)
+    public UpdateClubHandler(IClubRepository clubRepository, IUnitOfWork unitOfWork, ILogger<UpdateClubHandler> logger)
     {
         _clubRepository = clubRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -62,6 +65,9 @@ public class UpdateClubHandler : IRequestHandler<UpdateClubCommand, Result<ClubD
             
             _logger.LogInformation("Updating club: {ClubId} - {ClubName}", existingClub.Id, existingClub.Name);
             await _clubRepository.UpdateAsync(existingClub);
+            
+            // Save changes explicitly to trigger domain events
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             ClubDto clubDto = ClubMapper.ToDto(existingClub);
             _logger.LogInformation("Successfully updated club with ID: {ClubId}", existingClub.Id);

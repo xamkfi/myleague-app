@@ -1,0 +1,91 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+@use '../../styles/common' as *;
+
+.match-sidebar {
+  composes: sidebar;
+}
+
+.sidebar {
+  &-title,
+  &-standings-title,
+  &-stats-title {
+    @extend .text-center;
+    margin-bottom: map.get($spacing, 'sm');
+    font-weight: map.get($font-weights, 'bold');
+  }
+}
+
+.match-date {
+  @extend .text-center;
+  margin-bottom: map.get($spacing, 'md');
+  font-size: map.get($font-sizes, 'sm');
+}
+
+.teams-container {
+  @include flex-center;
+  gap: map.get($spacing, 'base');
+  margin-bottom: map.get($spacing, 'lg');
+}
+
+.team {
+  &-logo,
+  &-placeholder-logo {
+    width: 70px;
+    height: 70px;
+    border-radius: map.get($border-radius, 'full');
+    background-color: $color-placeholder;
+    @include flex-center;
+  }
+
+  &-indicator {
+    width: 30px;
+    display: flex;
+    justify-content: center;
+  }
+
+  &-circle {
+    @extend .circle-icon;
+  }
+
+  &-name {
+    flex: 1;
+    padding-left: map.get($spacing, 'xs');
+  }
+
+  &-points {
+    text-align: right;
+    font-weight: map.get($font-weights, 'medium');
+  }
+}
+
+.vs-text {
+  font-size: map.get($font-sizes, 'sm');
+}
+
+.standings,
+.stats {
+  &-table {
+    @extend .table-container;
+  }
+
+  &-row {
+    @extend .table-row;
+  }
+}
+
+.position {
+  width: 30px;
+  text-align: right;
+  padding-right: map.get($spacing, 'xs');
+}
+
+.player-name {
+  flex: 1;
+  padding-left: map.get($spacing, 'xs');
+}
+
+.stat-value {
+  text-align: right;
+  font-weight: map.get($font-weights, 'medium');
+} 

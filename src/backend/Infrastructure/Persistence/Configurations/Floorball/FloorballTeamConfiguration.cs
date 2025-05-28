@@ -37,9 +37,11 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(t => t.SecondaryJerseyColor)
                 .HasMaxLength(50);
 
-            // Configure the relationship with Club
-            builder.HasOne(t => t.Club)
-                .WithMany(c => c.FloorballTeams)
+            // Ignore Club navigation property to prevent cross-context entity discovery
+            builder.Ignore(t => t.Club);
+
+            // We maintain the ClubId as a foreign key for reference
+            builder.Property("ClubId")
                 .IsRequired();
 
             // Configure the owned FloorballTeamPlayer collection

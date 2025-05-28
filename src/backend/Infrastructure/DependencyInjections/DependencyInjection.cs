@@ -9,6 +9,7 @@ using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
 using MyLeague.Infrastructure.Persistence.Repositories.Common;
 using MyLeague.Infrastructure.Persistence.EventStores;
+using MyLeague.Infrastructure.Persistence.UnitOfWork;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -27,8 +28,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? 
-                "Host=localhost;Database=myleague;Username=postgres;Password=postgres";
+            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? "Host=postgres;Database=myleague;Username=postgres;Password=postgres";
 
             services.AddDbContext<CommonDbContext>(options =>
                 options.UseNpgsql(
@@ -40,14 +40,31 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     connectionString,
                     b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
 
+            // Auto-apply migrations
+            using (ServiceProvider serviceProvider = services.BuildServiceProvider())
+            {
+                using (IServiceScope scope = serviceProvider.CreateScope())
+                {
+                    CommonDbContext commonDbContext = scope.ServiceProvider.GetRequiredService<CommonDbContext>();
+                    commonDbContext.Database.Migrate();
+
+                    FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
+                    floorballDbContext.Database.Migrate();
+                }
+            }
+
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
+            services.AddScoped<IPersonRepository, PersonRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
             services.AddScoped<IFloorballRefereeRepository, FloorballRefereeRepository>();
             services.AddScoped<IFloorballMatchRepository, FloorballMatchRepository>();
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
             services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
+
+            // Add unit of work
+            services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
 
             // Add event sourcing
             services.AddScoped<IEventStore, FloorballEventStore>();

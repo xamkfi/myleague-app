@@ -1,0 +1,26 @@
+{
+  "nav": {
+    "news": "News",
+    "rules": "Rules",
+    "mahl": "MAHL",
+    "ageGroups": "Age Groups",
+    "register": "Register",
+    "tournaments": "Tournaments",
+    "sports": "Sports",
+    "clubs": "Clubs"
+  },
+  "hero": {
+    "title": "SUMMER SEASON IS HERE",
+    "buttonText": "EXPLORE SUMMER EVENTS"
+  },
+  "sidebar": {
+    "nextMatch": "NEXT MATCH",
+    "standings": "STANDINGS",
+    "stats": "STATISTICS"
+  },
+  "language": {
+    "en": "English",
+    "fi": "Finnish",
+    "switchLanguage": "Switch language"
+  }
+} 
