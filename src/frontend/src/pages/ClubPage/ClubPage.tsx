@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import PageTemplate from '../../components/PageTemplate';
+import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import clubData from '../../sampledata/club_data.json';
 import { slugify } from '../../utils/helpers';
 import './ClubPage.scss';

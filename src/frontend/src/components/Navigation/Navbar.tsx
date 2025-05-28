@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import LanguageToggle from '../LanguageToggle';
+import LanguageToggle from '../LanguageToggle/LanguageToggle';
 import clubData from '../../sampledata/club_data.json';
 import { slugify } from '../../utils/helpers';
 import './Navbar.scss';
