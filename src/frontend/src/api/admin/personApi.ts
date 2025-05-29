@@ -1,5 +1,12 @@
 import type { Person, PersonFormData } from '../../types/admin/personTypes';
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+  errors: string[];
+}
+
 const API_BASE_URL = '/api';
 
 export const personApi = {
@@ -8,7 +15,11 @@ export const personApi = {
     if (!response.ok) {
       throw new Error('Failed to fetch persons');
     }
-    return response.json();
+    const apiResponse: ApiResponse<Person[]> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch persons');
+    }
+    return apiResponse.data;
   },
 
   getById: async (id: string): Promise<Person> => {
@@ -16,7 +27,11 @@ export const personApi = {
     if (!response.ok) {
       throw new Error('Failed to fetch person');
     }
-    return response.json();
+    const apiResponse: ApiResponse<Person> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch person');
+    }
+    return apiResponse.data;
   },
 
   create: async (data: PersonFormData): Promise<Person> => {
@@ -30,7 +45,11 @@ export const personApi = {
     if (!response.ok) {
       throw new Error('Failed to create person');
     }
-    return response.json();
+    const apiResponse: ApiResponse<Person> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to create person');
+    }
+    return apiResponse.data;
   },
 
   update: async (id: string, data: PersonFormData): Promise<Person> => {
@@ -44,7 +63,11 @@ export const personApi = {
     if (!response.ok) {
       throw new Error('Failed to update person');
     }
-    return response.json();
+    const apiResponse: ApiResponse<Person> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to update person');
+    }
+    return apiResponse.data;
   },
 
   delete: async (id: string): Promise<void> => {
@@ -53,6 +76,10 @@ export const personApi = {
     });
     if (!response.ok) {
       throw new Error('Failed to delete person');
+    }
+    const apiResponse: ApiResponse<void> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete person');
     }
   },
 }; 
