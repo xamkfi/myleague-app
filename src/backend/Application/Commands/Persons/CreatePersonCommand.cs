@@ -12,7 +12,8 @@ public record CreatePersonCommand(
     string FirstName,
     string LastName,
     DateTime BirthDate,
-    AddressDto? Address,
-    ContactInfoDto? ContactInfo) : IRequest<Result<PersonDto>>;
+    bool IsRegistered = false,
+    AddressDto? Address = null,
+    ContactInfoDto? ContactInfo = null) : IRequest<Result<PersonDto>>;
 
 

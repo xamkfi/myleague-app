@@ -180,7 +180,8 @@ namespace WebAPI.Controllers.Common
             CreatePersonCommand command = new CreatePersonCommand(
                 request.FirstName,
                 request.LastName,
-                birthDateUtc,
+                request.BirthDate,
+                request.IsRegistered,
                 request.Address,
                 request.ContactInfo);
 
@@ -219,6 +220,7 @@ namespace WebAPI.Controllers.Common
                 request.FirstName,
                 request.LastName,
                 request.BirthDate,
+                request.IsRegistered,
                 request.Address,
                 request.ContactInfo);
 
@@ -352,6 +354,40 @@ namespace WebAPI.Controllers.Common
             }
             
             return BadRequest(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Update person's registration status
+        /// </summary>
+        /// <param name="id">The person ID</param>
+        /// <param name="isRegistered">The registration status</param>
+        /// <returns></returns>
+        [HttpPatch("{id:guid}/registration")]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePersonRegistration(Guid id, [FromBody] bool isRegistered)
+        {
+            _logger.LogInformation("Updating person registration status with Id: {Id} to {IsRegistered}", id, isRegistered);
+
+            UpdatePersonRegistrationCommand command = new UpdatePersonRegistrationCommand(id, isRegistered);
+            Result<PersonDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<PersonDto>.SuccessResponse(result.Data, "Person registration status updated successfully"));
+            }
+
+            string errorMessage = result.Error ?? result.GetErrorsString();
+            
+            // Check if it's a not found error
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            }
+            
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>

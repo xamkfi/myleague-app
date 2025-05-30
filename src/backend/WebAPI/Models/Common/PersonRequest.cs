@@ -29,6 +29,11 @@ public record CreatePersonRequest
     public string BirthDate { get; init; } = string.Empty;
 
     /// <summary>
+    /// Gets whether the person is registered
+    /// </summary>
+    public bool IsRegistered { get; init; } = false;
+
+    /// <summary>
     /// Gets the address of the person (optional)
     /// </summary>
     public AddressDto? Address { get; init; }
@@ -149,6 +154,11 @@ public record UpdatePersonRequest
     /// </summary>
     [Required(ErrorMessage = "Birth date is required")]
     public DateTime BirthDate { get; init; }
+
+    /// <summary>
+    /// Gets whether the person is registered
+    /// </summary>
+    public bool IsRegistered { get; init; } = false;
 
     /// <summary>
     /// Gets the address of the person

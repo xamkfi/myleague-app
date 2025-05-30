@@ -7,11 +7,11 @@ interface ApiResponse<T> {
   errors: string[];
 }
 
-const API_BASE_URL = '/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const personApi = {
   getAll: async (): Promise<Person[]> => {
-    const response = await fetch(`${API_BASE_URL}/persons`);
+    const response = await fetch(`${API_URL}/persons`);
     if (!response.ok) {
       throw new Error('Failed to fetch persons');
     }
@@ -23,7 +23,7 @@ export const personApi = {
   },
 
   getById: async (id: string): Promise<Person> => {
-    const response = await fetch(`${API_BASE_URL}/persons/${id}`);
+    const response = await fetch(`${API_URL}/persons/${id}`);
     if (!response.ok) {
       throw new Error('Failed to fetch person');
     }
@@ -35,7 +35,7 @@ export const personApi = {
   },
 
   create: async (data: PersonFormData): Promise<Person> => {
-    const response = await fetch(`${API_BASE_URL}/persons`, {
+    const response = await fetch(`${API_URL}/persons`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export const personApi = {
   },
 
   update: async (id: string, data: PersonFormData): Promise<Person> => {
-    const response = await fetch(`${API_BASE_URL}/persons/${id}`, {
+    const response = await fetch(`${API_URL}/persons/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export const personApi = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/persons/${id}`, {
+    const response = await fetch(`${API_URL}/persons/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {
@@ -81,5 +81,23 @@ export const personApi = {
     if (!apiResponse.success) {
       throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete person');
     }
+  },
+
+  updateRegistration: async (id: string, isRegistered: boolean): Promise<Person> => {
+    const response = await fetch(`${API_URL}/persons/${id}/registration`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(isRegistered),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update registration status');
+    }
+    const apiResponse: ApiResponse<Person> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to update registration status');
+    }
+    return apiResponse.data;
   },
 }; 
