@@ -1,6 +1,7 @@
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 using Domain.Entities.Hockey;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 using Domain.Enums.Hockey;
 using Domain.DomainEvents.Common;
@@ -69,7 +70,7 @@ public class ClubDomainEventsTests
     {
         // Arrange
         Club club = new Club("Test Club", "Test City", "Test Country");
-        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue");
+        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
         club.ClearDomainEvents();
 
         // Act
@@ -94,7 +95,7 @@ public class ClubDomainEventsTests
         
         // Act
         club.UpdateBasicInfo("Updated Name", "Updated City", "Updated Country");
-        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue");
+        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
         club.RemoveFloorballTeam(team.Id);
 
         // Assert
@@ -129,7 +130,7 @@ public class ClubDomainEventsTests
         // Arrange
         Club club = new Club("Test Club", "Test City", "Test Country");
         club.UpdateBasicInfo("Updated Name", "Updated City", "Updated Country");
-        club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue");
+        club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
         
         int eventCountBeforeClear = club.DomainEvents.Count;
         string nameBeforeClear = club.Name;
@@ -155,7 +156,7 @@ public class ClubDomainEventsTests
         
         // Act
         club.UpdateBasicInfo("Updated Name", "Updated City", "Updated Country");
-        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue");
+        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
         club.RemoveFloorballTeam(team.Id);
 
         // Assert
@@ -203,7 +204,7 @@ public class ClubDomainEventsTests
         club.ClearDomainEvents();
 
         // Act
-        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue");
+        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
 
         // Assert
         // The Club itself should not raise an event for adding a team
