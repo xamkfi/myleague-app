@@ -26,7 +26,7 @@ public record CreatePersonRequest
     /// Gets the birth date of the person
     /// </summary>
     [Required(ErrorMessage = "Birth date is required")]
-    public DateTime BirthDate { get; init; }
+    public string BirthDate { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets the address of the person (optional)
