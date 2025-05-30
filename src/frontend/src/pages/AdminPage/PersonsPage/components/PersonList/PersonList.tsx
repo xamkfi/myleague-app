@@ -11,6 +11,7 @@ const PersonList = () => {
   const [persons, setPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updatingRegistration, setUpdatingRegistration] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPersons = async () => {
@@ -45,6 +46,35 @@ const PersonList = () => {
     }
   };
 
+  const handleToggleRegistration = async (id: string, currentStatus: boolean) => {
+    const action = currentStatus ? 'unregister' : 'register';
+    const confirmMessage = currentStatus 
+      ? t('admin.persons.confirmUnregister', 'Are you sure you want to unregister this person?')
+      : t('admin.persons.confirmRegister', 'Are you sure you want to register this person?');
+    
+    if (window.confirm(confirmMessage)) {
+      setUpdatingRegistration(id);
+      try {
+        const updatedPerson = await personApi.updateRegistration(id, !currentStatus);
+        setPersons(persons.map(person => 
+          person.id === id ? updatedPerson : person
+        ));
+        setError(null);
+        
+        // Show success message
+        const successMessage = !currentStatus
+          ? t('admin.persons.success.registered', 'Person registered successfully')
+          : t('admin.persons.success.unregistered', 'Person unregistered successfully');
+        console.log(successMessage); // You can replace this with a toast notification system
+      } catch (error) {
+        console.error('Failed to update registration status:', error);
+        setError(t('admin.persons.errors.updateRegistrationFailed', 'Failed to update registration status'));
+      } finally {
+        setUpdatingRegistration(null);
+      }
+    }
+  };
+
   if (loading) {
     return <div className="persons-loading">{t('admin.persons.loading', 'Loading persons...')}</div>;
   }
@@ -72,11 +102,27 @@ const PersonList = () => {
               <td>{new Date(person.birthDate).toLocaleDateString()}</td>
               <td>{person.contactInfo?.email || '-'}</td>
               <td>
-                <span className={`status-badge ${person.isRegistered ? 'registered' : 'not-registered'}`}>
-                  {person.isRegistered 
-                    ? t('admin.persons.status.registered', 'Yes')
-                    : t('admin.persons.status.notRegistered', 'No')}
-                </span>
+                <button
+                  className={`status-toggle ${person.isRegistered ? 'registered' : 'not-registered'} ${updatingRegistration === person.id ? 'updating' : ''}`}
+                  onClick={() => handleToggleRegistration(person.id, person.isRegistered)}
+                  disabled={updatingRegistration === person.id}
+                  title={t('admin.persons.actions.toggleRegistration', 'Click to toggle registration status')}
+                >
+                  {updatingRegistration === person.id ? (
+                    <span className="loading-spinner">⏳</span>
+                  ) : (
+                    <>
+                      <span className="status-icon">
+                        {person.isRegistered ? '✓' : '✗'}
+                      </span>
+                      <span className="status-text">
+                        {person.isRegistered 
+                          ? t('admin.persons.status.registered', 'Yes')
+                          : t('admin.persons.status.notRegistered', 'No')}
+                      </span>
+                    </>
+                  )}
+                </button>
               </td>
               <td>
                 <div className="action-buttons">

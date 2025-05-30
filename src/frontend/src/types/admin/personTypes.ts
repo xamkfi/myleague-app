@@ -27,6 +27,7 @@ export interface PersonFormData {
   firstName: string;
   lastName: string;
   birthDate: string;
+  isRegistered: boolean;
   address: Address;
   contactInfo: ContactInfo;
 } 

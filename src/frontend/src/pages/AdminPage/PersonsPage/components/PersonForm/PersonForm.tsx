@@ -31,6 +31,7 @@ const PersonForm = () => {
     firstName: '',
     lastName: '',
     birthDate: '',
+    isRegistered: false,
     address: {
       street1: '',
       street2: '',
@@ -52,10 +53,16 @@ const PersonForm = () => {
       try {
         setLoading(true);
         const person = await personApi.getById(id!);
+        
+        // Convert ISO date to dd-mm-yyyy
+        const date = new Date(person.birthDate);
+        const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+        
         setFormData({
           firstName: person.firstName,
           lastName: person.lastName,
-          birthDate: new Date(person.birthDate).toISOString().split('T')[0], // Convert to YYYY-MM-DD
+          birthDate: formattedDate,
+          isRegistered: person.isRegistered,
           address: person.address || {
             street1: '',
             street2: '',
@@ -85,8 +92,14 @@ const PersonForm = () => {
       return t('admin.persons.validation.birthDateRequired', 'Birth date is required');
     }
 
-    const birthDate = new Date(date);
+    // Parse dd-mm-yyyy format
+    const [day, month, year] = date.split('-').map(Number);
+    const birthDate = new Date(year, month - 1, day);
     const today = new Date();
+    
+    if (isNaN(birthDate.getTime())) {
+      return t('admin.persons.validation.invalidDate', 'Invalid date format');
+    }
     
     if (birthDate > today) {
       return t('admin.persons.validation.birthDateFuture', 'Birth date cannot be in the future');
@@ -114,14 +127,21 @@ const PersonForm = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     const [section, field] = name.split('.');
 
     // Clear field error when user starts typing
     setFieldErrors(prev => ({ ...prev, [name]: '' }));
 
+    if (type === 'checkbox') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+      return;
+    }
+
     if (name === 'birthDate') {
-      // Handle date input separately as it uses ISO format internally
       setFormData(prev => ({
         ...prev,
         birthDate: value
@@ -239,29 +259,34 @@ const PersonForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
+    
     if (!validateForm()) {
       return;
     }
 
-    setLoading(true);
-
     try {
+      setLoading(true);
+      setError(null);
+
+      // Convert dd-mm-yyyy to ISO format for API
+      const [day, month, year] = formData.birthDate.split('-').map(Number);
+      const isoDate = new Date(year, month - 1, day).toISOString();
+
+      const submitData = {
+        ...formData,
+        birthDate: isoDate
+      };
+
       if (isEditMode) {
-        await personApi.update(id!, formData);
+        await personApi.update(id!, submitData);
       } else {
-        await personApi.create(formData);
+        await personApi.create(submitData);
       }
+
       navigate('/admin/persons');
     } catch (error) {
       console.error('Failed to save person:', error);
-      setError(t(
-        isEditMode 
-          ? 'admin.persons.errors.updateFailed'
-          : 'admin.persons.errors.createFailed',
-        'Failed to save person'
-      ));
+      setError(t('admin.persons.errors.saveFailed', 'Failed to save person'));
     } finally {
       setLoading(false);
     }
@@ -323,21 +348,33 @@ const PersonForm = () => {
               {t('admin.persons.form.birthDate', 'Birth Date')} <span className="required">*</span>
             </label>
             <input
-              type="date"
+              type="text"
               id="birthDate"
               name="birthDate"
               value={formData.birthDate}
               onChange={handleInputChange}
+              placeholder="dd-mm-yyyy"
               required
-              max={new Date().toISOString().split('T')[0]}
               className={fieldErrors.birthDate ? 'error' : ''}
             />
             {fieldErrors.birthDate && (
               <div className="field-error">{fieldErrors.birthDate}</div>
             )}
             <div className="field-hint">
-              {t('admin.persons.form.dateFormat', 'Format: DD.MM.YYYY')}
+              {t('admin.persons.form.dateFormat', 'Format: dd-mm-yyyy')}
             </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="isRegistered" className="checkbox-label">
+              {t('admin.persons.form.isRegistered', 'Registered')}
+            </label>
+            <input
+              type="checkbox"
+              id="isRegistered"
+              name="isRegistered"
+              checked={formData.isRegistered}
+              onChange={handleInputChange}
+            />
           </div>
         </div>
       </div>
