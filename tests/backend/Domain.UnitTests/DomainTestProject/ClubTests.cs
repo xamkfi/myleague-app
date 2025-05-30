@@ -1,6 +1,7 @@
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 using Domain.Entities.Hockey;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 using Domain.Enums.Hockey;
 using Domain.DomainEvents.Common;
@@ -248,7 +249,7 @@ public class ClubTests
         string secondaryColor = "White";
 
         // Act
-        FloorballTeam team = club.AddFloorballTeam(teamName, division, homeArena, primaryColor, secondaryColor);
+        FloorballTeam team = club.AddFloorballTeam(teamName, division, homeArena, primaryColor, TeamCategory.Adult, secondaryColor);
 
         // Assert
         team.Should().NotBeNull();
@@ -257,8 +258,39 @@ public class ClubTests
         team.HomeArena.Should().Be(homeArena);
         team.PrimaryJerseyColor.Should().Be(primaryColor);
         team.SecondaryJerseyColor.Should().Be(secondaryColor);
+        team.TeamCategory.Should().Be(TeamCategory.Adult);
         club.FloorballTeams.Should().HaveCount(1);
         club.FloorballTeams.Should().Contain(team);
+    }
+
+    [Fact]
+    public void FloorballTeam_UpdateTeamCategory_ShouldUpdateCategory()
+    {
+        // Arrange
+        Club club = new Club("Test Club", "Test City", "Test Country");
+        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
+
+        // Act
+        team.UpdateTeamCategory(TeamCategory.Youth);
+
+        // Assert
+        team.TeamCategory.Should().Be(TeamCategory.Youth);
+    }
+
+    [Theory]
+    [InlineData(TeamCategory.Adult)]
+    [InlineData(TeamCategory.Youth)]
+    [InlineData(TeamCategory.Women)]
+    public void FloorballTeam_WithDifferentCategories_ShouldSetCorrectCategory(TeamCategory category)
+    {
+        // Arrange
+        Club club = new Club("Test Club", "Test City", "Test Country");
+
+        // Act
+        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", category);
+
+        // Assert
+        team.TeamCategory.Should().Be(category);
     }
 
     [Theory]
@@ -277,7 +309,7 @@ public class ClubTests
         Club club = new Club("Test Club", "Test City", "Test Country");
 
         // Act & Assert
-        Action action = () => club.AddFloorballTeam(name!, FloorballDivision.Premier, arena!, color!);
+        Action action = () => club.AddFloorballTeam(name!, FloorballDivision.Premier, arena!, color!, TeamCategory.Adult);
         action.Should().Throw<ArgumentException>();
     }
 
@@ -286,7 +318,7 @@ public class ClubTests
     {
         // Arrange
         Club club = new Club("Test Club", "Test City", "Test Country");
-        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue");
+        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
         club.ClearDomainEvents(); // Clear previous events
 
         // Act
@@ -320,9 +352,9 @@ public class ClubTests
     {
         // Arrange
         Club club = new Club("Test Club", "Test City", "Test Country");
-        FloorballTeam premierTeam = club.AddFloorballTeam("Premier Team", FloorballDivision.Premier, "Arena1", "Blue");
-        FloorballTeam division1Team = club.AddFloorballTeam("Division1 Team", FloorballDivision.Division1, "Arena2", "Red");
-        FloorballTeam anotherPremierTeam = club.AddFloorballTeam("Another Premier Team", FloorballDivision.Premier, "Arena3", "Green");
+        FloorballTeam premierTeam = club.AddFloorballTeam("Premier Team", FloorballDivision.Premier, "Arena1", "Blue", TeamCategory.Adult);
+        FloorballTeam division1Team = club.AddFloorballTeam("Division1 Team", FloorballDivision.Division1, "Arena2", "Red", TeamCategory.Adult);
+        FloorballTeam anotherPremierTeam = club.AddFloorballTeam("Another Premier Team", FloorballDivision.Premier, "Arena3", "Green", TeamCategory.Adult);
 
         // Act
         IEnumerable<FloorballTeam> premierTeams = club.GetFloorballTeamsByDivision(FloorballDivision.Premier);
@@ -448,7 +480,7 @@ public class ClubTests
         Club club = new Club("Multi-Sport Club", "Test City", "Test Country");
 
         // Act
-        FloorballTeam floorballTeam = club.AddFloorballTeam("FB Team", FloorballDivision.Premier, "Arena1", "Blue");
+        FloorballTeam floorballTeam = club.AddFloorballTeam("FB Team", FloorballDivision.Premier, "Arena1", "Blue", TeamCategory.Adult);
         HockeyTeam hockeyTeam = club.AddHockeyTeam("Hockey Team", HockeyDivision.Premier, "Arena2", "Red");
 
         // Assert
@@ -506,8 +538,8 @@ public class ClubTests
             new Uri("https://updated.com/logo.png"), 
             "updated@club.com");
 
-        FloorballTeam fbTeam1 = club.AddFloorballTeam("FB Team 1", FloorballDivision.Premier, "Arena1", "Blue");
-        FloorballTeam fbTeam2 = club.AddFloorballTeam("FB Team 2", FloorballDivision.Division1, "Arena2", "Red");
+        FloorballTeam fbTeam1 = club.AddFloorballTeam("FB Team 1", FloorballDivision.Premier, "Arena1", "Blue", TeamCategory.Adult);
+        FloorballTeam fbTeam2 = club.AddFloorballTeam("FB Team 2", FloorballDivision.Division1, "Arena2", "Red", TeamCategory.Adult);
         HockeyTeam hockeyTeam1 = club.AddHockeyTeam("Hockey Team 1", HockeyDivision.Premier, "Arena3", "Green");
 
         // Assert - Verify final state
