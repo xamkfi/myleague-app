@@ -180,7 +180,7 @@ namespace WebAPI.Controllers.Common
             CreatePersonCommand command = new CreatePersonCommand(
                 request.FirstName,
                 request.LastName,
-                request.BirthDate,
+                birthDateUtc,
                 request.IsRegistered,
                 request.Address,
                 request.ContactInfo);
