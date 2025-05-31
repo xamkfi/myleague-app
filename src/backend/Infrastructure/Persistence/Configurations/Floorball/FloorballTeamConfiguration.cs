@@ -41,12 +41,15 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .IsRequired()
                 .HasConversion<string>();
 
-            // Ignore Club navigation property to prevent cross-context entity discovery
-            builder.Ignore(t => t.Club);
-
             // We maintain the ClubId as a foreign key for reference
             builder.Property("ClubId")
                 .IsRequired();
+
+            // Add index on ClubId for better query performance
+            builder.HasIndex("ClubId");
+
+            // Ignore Club navigation property to prevent cross-context entity discovery
+            builder.Ignore(t => t.Club);
 
             // Configure the owned FloorballTeamPlayer collection
             builder.OwnsMany(t => t.Roster, rosterBuilder =>
@@ -81,6 +84,15 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 
                 rosterBuilder.Property(p => p.PenaltyMinutes)
                     .IsRequired();
+
+                // Add foreign key relationship to FloorballPlayer
+                rosterBuilder.HasOne<FloorballPlayer>()
+                    .WithMany()
+                    .HasForeignKey(p => p.PlayerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Add index on PlayerId for better query performance
+                rosterBuilder.HasIndex(p => p.PlayerId);
             });
         }
     }
