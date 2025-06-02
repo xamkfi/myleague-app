@@ -2,7 +2,9 @@
 
 [![.NET](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/)
 [![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-9.0-blue.svg)](https://docs.microsoft.com/en-us/aspnet/core/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://www.postgresql.org/)
+[![React](https://img.shields.io/badge/React-19.1-blue.svg)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -16,7 +18,9 @@ MyLeague is a comprehensive league management system designed for organizing and
 - ⚡ **Event Sourcing** - Complete audit trail and historical data tracking
 - 🔄 **CQRS Pattern** - Optimized command and query operations
 - 🌐 **Modern Web API** - RESTful services with interactive documentation
-- 📊 **Real-time Updates** - SignalR integration for live notifications
+- ⚛️ **React Frontend** - Modern React 19 with TypeScript and TailwindCSS
+- 🌍 **Internationalization** - Multi-language support with i18next
+- 📊 **Structured Logging** - Seq integration for log visualization and analysis
 - 🐳 **Containerized** - Full Docker support for development and deployment
 - 🧪 **Test-Driven** - Comprehensive testing strategy across all layers
 
@@ -28,7 +32,8 @@ MyLeague follows **Clean Architecture** principles with **Domain-Driven Design (
 ┌─────────────────────────────────────────────────────────────┐
 │                    Presentation Layer                       │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│  │   WebAPI    │  │  Frontend   │  │   Mobile    │          │
+│  │   WebAPI    │  │   React     │  │   Mobile    │          │
+│  │             │  │  Frontend   │  │    (TBD)    │          │
 │  └─────────────┘  └─────────────┘  └─────────────┘          │
 └─────────────────────┬───────────────────────────────────────┘
                       │
@@ -45,8 +50,8 @@ MyLeague follows **Clean Architecture** principles with **Domain-Driven Design (
 ┌─────────────────────▼───────────────────────────────────────┐
 │              Infrastructure Layer                           │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│  │ Persistence │  │   SignalR   │  │    Event    │          │
-│  │   (EF Core) │  │             │  │   Handlers  │          │
+│  │ Persistence │  │     Seq     │  │    Event    │          │
+│  │   (EF Core) │  │   Logging   │  │   Handlers  │          │
 │  └─────────────┘  └─────────────┘  └─────────────┘          │
 └─────────────────────┬───────────────────────────────────────┘
                       │
@@ -67,59 +72,86 @@ MyLeague follows **Clean Architecture** principles with **Domain-Driven Design (
 - **.NET 9.0** - Latest .NET platform with enhanced performance
 - **ASP.NET Core 9.0** - Web framework with minimal APIs
 - **Entity Framework Core 9.0** - Object-relational mapping
-- **PostgreSQL 13+** - Primary database with advanced features
-- **Redis** - Caching and session storage
-- **SignalR** - Real-time communication
+- **PostgreSQL 16** - Primary database with advanced features
+- **Seq** - Structured logging and log analysis platform
+
+### Frontend Technologies
+- **React 19.1** - Modern React with latest features
+- **TypeScript 5.8** - Type-safe JavaScript development
+- **Vite 6.3** - Fast build tool and development server
+- **TailwindCSS 4.1** - Utility-first CSS framework
+- **React Router 7.6** - Client-side routing
+- **i18next** - Internationalization framework
 
 ### Key Frameworks & Libraries
 - **MediatR 12.5** - Mediator pattern for CQRS implementation
-- **FluentValidation 12.0** - Fluent interface for validation
+- **FluentValidation 11.3** - Fluent interface for validation
 - **AutoMapper** - Object-to-object mapping
-- **Serilog** - Structured logging with multiple sinks
+- **Serilog 9.0** - Structured logging with multiple sinks
 - **xUnit** - Testing framework with comprehensive assertions
 
 ### Development Tools
 - **Docker & Docker Compose** - Containerization and orchestration
 - **Scalar** - Modern OpenAPI documentation interface
-- **Adminer** - Database administration tool
+- **Seq** - Log visualization and analysis platform
 - **Visual Studio 2022** - Primary IDE with container support
+- **pnpm** - Fast, disk space efficient package manager
 
 ## 📁 Project Structure
 
 ```
 MyLeague/
-├── src/backend/
-│   ├── Domain/                     # Core business logic and entities
-│   │   ├── Entities/               # Domain entities (Club, Team, Player, etc.)
-│   │   ├── ValueObjects/           # Immutable value objects
-│   │   ├── Enums/                  # Domain enumerations
-│   │   ├── DomainEvents/           # Domain event definitions
-│   │   ├── EventSourcing/          # Event sourcing infrastructure
-│   │   └── Repositories/           # Repository interfaces
+├── src/
+│   ├── backend/                    # .NET Backend Application
+│   │   ├── Domain/                 # Core business logic and entities
+│   │   │   ├── Entities/           # Domain entities (Club, Team, Player, etc.)
+│   │   │   ├── ValueObjects/       # Immutable value objects
+│   │   │   ├── Enums/              # Domain enumerations
+│   │   │   ├── DomainEvents/       # Domain event definitions
+│   │   │   ├── EventSourcing/      # Event sourcing infrastructure
+│   │   │   └── Repositories/       # Repository interfaces
+│   │   │
+│   │   ├── Application/            # Application business logic
+│   │   │   ├── Commands/           # Write operations (CQRS)
+│   │   │   ├── Queries/            # Read operations (CQRS)
+│   │   │   ├── Handlers/           # Command and query handlers
+│   │   │   ├── DTOs/               # Data transfer objects
+│   │   │   ├── Validators/         # Input validation rules
+│   │   │   └── Behaviors/          # Pipeline behaviors
+│   │   │
+│   │   ├── Infrastructure/         # External concerns implementation
+│   │   │   ├── Persistence/        # Database contexts and repositories
+│   │   │   ├── DomainEvents/       # Domain event handlers
+│   │   │   └── Services/           # External service integrations
+│   │   │
+│   │   └── WebAPI/                 # Presentation layer
+│   │       ├── Controllers/        # API controllers
+│   │       ├── Models/             # API-specific models
+│   │       ├── Middlewares/        # Custom middleware
+│   │       └── Extensions/         # Service configuration
 │   │
-│   ├── Application/                # Application business logic
-│   │   ├── Commands/               # Write operations (CQRS)
-│   │   ├── Queries/                # Read operations (CQRS)
-│   │   ├── Handlers/               # Command and query handlers
-│   │   ├── DTOs/                   # Data transfer objects
-│   │   ├── Validators/             # Input validation rules
-│   │   └── Behaviors/              # Pipeline behaviors
-│   │
-│   ├── Infrastructure/             # External concerns implementation
-│   │   ├── Persistence/            # Database contexts and repositories
-│   │   ├── DomainEvents/           # Domain event handlers
-│   │   ├── SignalR/                # Real-time communication
-│   │   └── Services/               # External service integrations
-│   │
-│   └── WebAPI/                     # Presentation layer
-│       ├── Controllers/            # API controllers
-│       ├── Models/                 # API-specific models
-│       ├── Middlewares/            # Custom middleware
-│       └── Extensions/             # Service configuration
+│   └── frontend/                   # React Frontend Application
+│       ├── src/                    # Source code
+│       │   ├── components/         # React components
+│       │   ├── pages/              # Page components
+│       │   ├── hooks/              # Custom React hooks
+│       │   ├── services/           # API service layer
+│       │   ├── types/              # TypeScript type definitions
+│       │   ├── utils/              # Utility functions
+│       │   └── i18n/               # Internationalization files
+│       ├── public/                 # Static assets
+│       ├── package.json            # Frontend dependencies
+│       ├── vite.config.ts          # Vite configuration
+│       ├── tsconfig.json           # TypeScript configuration
+│       └── tailwind.config.js      # TailwindCSS configuration
 │
 ├── tests/                          # Test projects
-├── docs/                           # Documentation
+│   └── backend/                    # Backend tests
+│       ├── Domain.UnitTests/       # Domain layer tests
+│       └── Application.UnitTests/  # Application layer tests
+│
 ├── docker-compose.yml              # Docker services configuration
+├── docker-compose.override.yml     # Development overrides
 ├── Dockerfile                     # Container definition
 └── README.md                      # This file
 ```
@@ -128,6 +160,7 @@ MyLeague/
 
 ### Prerequisites
 - **.NET 9.0 SDK** or later
+- **Node.js 18+** and **pnpm** for frontend development
 - **Docker Desktop** (recommended) or local PostgreSQL
 - **Visual Studio 2022 17.8+** or **Visual Studio Code**
 - **Git** for version control
@@ -152,21 +185,22 @@ MyLeague/
    ```
 
 4. **Access the Application**
-   - **API Documentation**: http://localhost/scalar/v1
-   - **Health Check**: http://localhost/health
-   - **Database Admin**: http://localhost:8080 (Adminer)
-     - System: PostgreSQL
-     - Server: db
+   - **Frontend**: http://localhost:5173
+   - **API Documentation**: http://localhost:8080/scalar/v1
+   - **API Health Check**: http://localhost:8080/health
+   - **Log Analysis (Seq)**: http://localhost:5341
+   - **Database**: localhost:5432
+     - Database: myleague
      - Username: postgres
      - Password: postgres
-     - Database: myleague
 
 ### Manual Setup (Local Development)
 
+#### Backend Setup
 1. **Setup Database**
    ```bash
    # Install PostgreSQL locally or use Docker
-   docker run --name myleague-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=myleague -p 5432:5432 -d postgres:13
+   docker run --name myleague-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=myleague -p 5432:5432 -d postgres:16
    ```
 
 2. **Configure Connection String**
@@ -182,7 +216,8 @@ MyLeague/
 3. **Run Database Migrations**
    ```bash
    cd src/backend/Infrastructure
-   dotnet ef database update
+   dotnet ef database update --context CommonDbContext
+   dotnet ef database update --context FloorballDbContext
    ```
 
 4. **Start the API**
@@ -191,9 +226,21 @@ MyLeague/
    dotnet run
    ```
 
-5. **Access the Application**
-   - **API**: https://localhost:65532
-   - **Documentation**: https://localhost:65532/scalar/v1
+#### Frontend Setup
+1. **Install Dependencies**
+   ```bash
+   cd src/frontend
+   pnpm install
+   ```
+
+2. **Start Development Server**
+   ```bash
+   pnpm dev
+   ```
+
+3. **Access the Application**
+   - **Frontend**: http://localhost:5173
+   - **API**: http://localhost:5000 (or https://localhost:5001)
 
 ## 🔌 API Endpoints
 
@@ -225,7 +272,7 @@ Each layer has comprehensive documentation with development guides:
 
 ### 🗄️ [Infrastructure Layer](src/backend/Infrastructure/README.md)
 - **Data Persistence** - Entity Framework Core with PostgreSQL
-- **Event Handling** - Domain event processing with SignalR
+- **Event Handling** - Domain event processing
 - **External Services** - Third-party integrations and APIs
 - **Development Guide**: [InfrastructureDevelopmentGuide.md](src/backend/Infrastructure/InfrastructureDevelopmentGuide.md)
 
@@ -264,7 +311,7 @@ dotnet test
 dotnet test --collect:"XPlat Code Coverage"
 
 # Run specific test project
-dotnet test tests/Domain.Tests/
+dotnet test tests/backend/Domain.UnitTests/
 ```
 
 ## 🐳 Docker Development
@@ -274,10 +321,10 @@ The application uses Docker Compose with the following services:
 
 ```yaml
 services:
-  webapi:          # ASP.NET Core Web API
-  database:        # PostgreSQL database
-  redis:           # Redis cache
-  adminer:         # Database management UI
+  webapi:          # ASP.NET Core Web API (Port 8080)
+  frontend:        # React Frontend (Port 5173)
+  postgres:        # PostgreSQL 16 Database (Port 5432)
+  seq:             # Seq Log Analysis (Port 5341)
 ```
 
 ### Development Commands
@@ -287,6 +334,7 @@ docker-compose up -d
 
 # View logs
 docker-compose logs -f webapi
+docker-compose logs -f frontend
 
 # Stop services
 docker-compose down
@@ -299,12 +347,17 @@ docker-compose down -v
 ```
 
 ### Database Management
-Access Adminer at http://localhost:8080:
-- **System**: PostgreSQL
-- **Server**: db
+Access PostgreSQL at localhost:5432:
+- **Database**: myleague
 - **Username**: postgres
 - **Password**: postgres
-- **Database**: myleague
+
+### Log Analysis
+Access Seq at http://localhost:5341 for:
+- **Real-time log viewing** - See logs as they happen
+- **Structured logging** - Filter and search by log properties
+- **Advanced queries** - Complex log analysis capabilities
+- **Performance monitoring** - Track application performance
 
 ## 🔒 Security Features
 
@@ -325,14 +378,27 @@ Access Adminer at http://localhost:8080:
 ### Current Features
 - **Async/Await** - Non-blocking I/O operations throughout
 - **Database Optimization** - Efficient Entity Framework queries
-- **Caching Strategy** - Redis-based caching for frequent operations
 - **Event Sourcing** - Optimized read models for query performance
+- **Frontend Optimization** - Vite for fast builds and hot module replacement
 
 ### Monitoring & Observability
-- **Structured Logging** - Serilog with multiple output sinks
+- **Structured Logging** - Serilog with Seq integration
 - **Health Checks** - Comprehensive application health monitoring
 - **Performance Tracking** - Request duration and resource monitoring
 - **Error Tracking** - Centralized error logging and alerting
+
+## 🌍 Internationalization
+
+The frontend supports multiple languages through i18next:
+
+### Supported Languages
+- **English** (default)
+- **Additional languages** can be easily added
+
+### Adding New Languages
+1. Create language files in `src/frontend/src/i18n/locales/`
+2. Update the i18n configuration
+3. Add language selection UI components
 
 ## 🤝 Contributing
 
@@ -364,13 +430,15 @@ Access Adminer at http://localhost:8080:
 - [x] Infrastructure with EF Core and PostgreSQL
 - [x] Application layer with CQRS
 - [x] Web API with comprehensive documentation
+- [x] React frontend with TypeScript
 - [x] Docker containerization
+- [x] Structured logging with Seq
 
 ### Phase 2: Enhanced Features 🚧
 - [ ] Authentication and authorization system
 - [ ] Advanced reporting and analytics
-- [ ] Real-time match updates via SignalR
-- [ ] Mobile API optimizations
+- [ ] Real-time match updates
+- [ ] Mobile-responsive design improvements
 - [ ] Performance monitoring dashboard
 
 ### Phase 3: Scalability & Production 📋
@@ -395,6 +463,8 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ### External Resources
 - [.NET 9.0 Documentation](https://docs.microsoft.com/en-us/dotnet/)
 - [ASP.NET Core Documentation](https://docs.microsoft.com/en-us/aspnet/core/)
+- [React Documentation](https://reactjs.org/docs/)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
 - [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/)
 - [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Domain-Driven Design](https://martinfowler.com/bliki/DomainDrivenDesign.html)

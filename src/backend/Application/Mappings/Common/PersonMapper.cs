@@ -77,8 +77,7 @@ namespace Application.Mappings.Common
             person.UpdateBasicInfo(command.FirstName, command.LastName);
             person.UpdateAddress(ToAddress(command.Address));
             person.UpdateContactInfo(ToContactInfo(command.ContactInfo));
-            // If birth date is mutable, add a method to update it in Person entity
-            // person.UpdateBirthDate(birthDateUtc);
+            person.UpdateBirthDate(birthDateUtc);
         }
 
 

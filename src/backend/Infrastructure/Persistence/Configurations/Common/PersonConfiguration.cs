@@ -28,6 +28,10 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
             builder.Property(p => p.BirthDate)
                 .IsRequired();
 
+            builder.Property(x => x.IsRegistered)
+                .HasDefaultValue(false)
+                .IsRequired();
+
             // Configure owned types for value objects
             builder.OwnsOne(p => p.Address, addressBuilder =>
             {

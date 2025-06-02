@@ -1,0 +1,96 @@
+.persons-list {
+  width: 100%;
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    overflow: hidden;
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #495057;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover {
+      background-color: #f8f9fa;
+    }
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+
+  button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+
+    &.edit-button {
+      background-color: #0d6efd;
+      color: white;
+
+      &:hover {
+        background-color: #0b5ed7;
+      }
+    }
+
+    &.delete-button {
+      background-color: #dc3545;
+      color: white;
+
+      &:hover {
+        background-color: #bb2d3b;
+      }
+    }
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  &.registered {
+    background-color: #198754;
+    color: white;
+  }
+
+  &.not-registered {
+    background-color: #6c757d;
+    color: white;
+  }
+}
+
+.persons-loading,
+.persons-error,
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.persons-error {
+  color: #dc3545;
+} 

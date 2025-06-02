@@ -2,6 +2,7 @@ using Domain.DomainEvents.Common;
 using Domain.DomainEvents.Floorball;
 using Domain.Entities.Floorball;
 using Domain.Entities.Hockey;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 using Domain.Enums.Hockey;
 using Domain.EventSourcing;
@@ -166,17 +167,18 @@ namespace Domain.Entities.Common
         /// <param name="division">The division of the team.</param>
         /// <param name="homeArena">The home arena of the team.</param>
         /// <param name="primaryJerseyColor">The primary jersey color of the team.</param>
+        /// <param name="teamCategory">The category of the team (Adult, Youth, Women).</param>
         /// <param name="secondaryColor">The secondary jersey color of the team (optional).</param>
         /// <returns>The created <see cref="FloorballTeam"/> instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
         /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
-        public FloorballTeam AddFloorballTeam(string name, FloorballDivision division, string homeArena, string primaryJerseyColor, string? secondaryColor = null)
+        public FloorballTeam AddFloorballTeam(string name, FloorballDivision division, string homeArena, string primaryJerseyColor, TeamCategory teamCategory, string? secondaryColor = null)
         {
             ValidateRequired(name, nameof(name));
             ValidateRequired(homeArena, nameof(homeArena));
             ValidateRequired(primaryJerseyColor, nameof(primaryJerseyColor));
 
-            var team = new FloorballTeam(name, division, this, homeArena, primaryJerseyColor, secondaryColor);
+            var team = new FloorballTeam(name, division, this, homeArena, primaryJerseyColor, teamCategory, secondaryColor);
             _floorballTeams.Add(team);
             return team;
         }

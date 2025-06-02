@@ -9,7 +9,10 @@ import RegisterPage from '../pages/RegisterPage/RegisterPage';
 import TournamentsPage from '../pages/TournamentsPage/TournamentsPage';
 import SportsPage from '../pages/SportsPage/SportsPage';
 import ClubPage from '../pages/ClubPage/ClubPage';
-
+import PlayerPage from '../pages/PlayerPage/PlayerPage';
+import AdminPage from '../pages/AdminPage/AdminPage';
+import PersonsPage from '../pages/AdminPage/PersonsPage/PersonsPage';
+import PersonForm from '../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm';
 
 export const routes: RouteObject[] = [
   {
@@ -51,5 +54,26 @@ export const routes: RouteObject[] = [
   {
     path: '/pelaaja/:id',
     element: <PlayerPage />
+  },
+  {
+    path: '/admin',
+    element: <AdminPage />
+  },
+  {
+    path: '/admin/persons',
+    children: [
+      {
+        index: true,
+        element: <PersonsPage />
+      },
+      {
+        path: 'new',
+        element: <PersonForm />
+      },
+      {
+        path: ':id/edit',
+        element: <PersonForm />
+      }
+    ]
   }
 ]; 
