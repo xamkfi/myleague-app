@@ -20,7 +20,6 @@
   <ItemGroup>
     <Folder Include="Handlers\Floorball\" />
     <Folder Include="Mappings\Floorball\" />
-    <Folder Include="Queries\Floorball\" />
     <Folder Include="Validators\Commands\Floorball\" />
     <Folder Include="Validators\Queries\Floorball\" />
   </ItemGroup>
