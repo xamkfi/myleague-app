@@ -77,19 +77,19 @@ jobs:
         
     - name: Test Docker Compose startup
       run: |
-        # Start services with docker-compose
-        docker-compose up -d
+        # Start services with docker compose
+        docker compose up -d
         
         # Wait for services to be ready (PostgreSQL needs time to initialize)
         echo "Waiting for services to start..."
         sleep 30
         
         # Check if API container is running
-        if docker-compose ps webapi | grep -q "Up"; then
+        if docker compose ps webapi | grep -q "Up"; then
           echo "✅ API container started successfully"
         else
           echo "❌ API container failed to start"
-          docker-compose logs webapi
+          docker compose logs webapi
           exit 1
         fi
         
@@ -100,15 +100,15 @@ jobs:
           echo "✅ API is responding (health endpoint may not exist)"
         else
           echo "⚠️  API not responding, checking logs..."
-          docker-compose logs webapi
+          docker compose logs webapi
           echo "Container status:"
-          docker-compose ps
+          docker compose ps
         fi
         
     - name: Cleanup
       if: always()
       run: |
-        docker-compose down -v
+        docker compose down -v
         docker rmi myleague-api:test || true
 
   integration-smoke-test:
