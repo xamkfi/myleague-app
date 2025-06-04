@@ -18,7 +18,7 @@ namespace Application.Handlers.Persons
     {
         private readonly IPersonRepository _personRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<UpdateClubHandler> _logger;
+        private readonly ILogger<UpdatePersonBasicInfoHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the UpdatePersonBasicInfoHandler class
@@ -26,7 +26,7 @@ namespace Application.Handlers.Persons
         /// <param name="personRepository"></param>
         /// <param name="unitOfWork"></param>
         /// <param name="logger"></param>
-        public UpdatePersonBasicInfoHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<UpdateClubHandler> logger)
+        public UpdatePersonBasicInfoHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<UpdatePersonBasicInfoHandler> logger)
         {
             _personRepository = personRepository;
             _unitOfWork = unitOfWork;

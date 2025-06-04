@@ -139,4 +139,18 @@
   padding: 2rem;
   color: #6c757d;
   font-size: 1.1rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  width: auto;
+  height: auto;
+  margin-left: 0.5rem;
+  cursor: pointer;
 } 
