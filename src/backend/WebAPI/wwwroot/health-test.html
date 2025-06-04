@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyLeague Health Check Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .health-check {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .healthy {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .unhealthy {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .degraded {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-healthy { background-color: #28a745; color: white; }
+        .status-unhealthy { background-color: #dc3545; color: white; }
+        .status-degraded { background-color: #ffc107; color: black; }
+        .details {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .tags {
+            margin-top: 5px;
+        }
+        .tag {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-right: 5px;
+        }
+        .data {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .refresh-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .refresh-btn:hover {
+            background-color: #0056b3;
+        }
+        .overall-status {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MyLeague Health Check Dashboard</h1>
+        <button class="refresh-btn" onclick="loadHealthData()">Refresh Health Status</button>
+        
+        <div id="loading" style="display: none;">Loading health data...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="overall-status" class="overall-status" style="display: none;"></div>
+        <div id="health-checks"></div>
+    </div>
+
+    <script>
+        async function loadHealthData() {
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const overallStatusDiv = document.getElementById('overall-status');
+            const healthChecksDiv = document.getElementById('health-checks');
+            
+            // Show loading
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            overallStatusDiv.style.display = 'none';
+            healthChecksDiv.innerHTML = '';
+            
+            // Try different endpoints based on current port
+            const currentPort = window.location.port;
+            const possibleEndpoints = [
+                '/health', // Relative URL (same port)
+                `http://localhost:${currentPort}/health`, // Explicit same port
+                'http://localhost:8080/health', // Docker port
+                'http://localhost:65533/health', // VS development port
+                'http://localhost:65532/health' // VS HTTPS port (if accessed via HTTP)
+            ];
+            
+            let lastError = null;
+            
+            for (const endpoint of possibleEndpoints) {
+                try {
+                    console.log(`Trying endpoint: ${endpoint}`);
+                    const response = await fetch(endpoint);
+                    
+                    if (!response.ok) {
+                        console.log(`Endpoint ${endpoint} returned ${response.status}: ${response.statusText}`);
+                        continue;
+                    }
+                    
+                    const data = await response.json();
+                    
+                    loadingDiv.style.display = 'none';
+                    
+                    // Display overall status
+                    overallStatusDiv.style.display = 'block';
+                    overallStatusDiv.className = `overall-status ${data.status.toLowerCase()}`;
+                    overallStatusDiv.innerHTML = `
+                        <span class="status-badge status-${data.status.toLowerCase()}">${data.status}</span>
+                        <div style="margin-top: 10px; font-size: 14px;">
+                            Duration: ${data.duration.toFixed(2)}ms | Checked: ${new Date(data.checkedAt).toLocaleString()}
+                        </div>
+                        <div style="margin-top: 5px; font-size: 12px; color: #666;">
+                            Endpoint: ${endpoint}
+                        </div>
+                    `;
+                    
+                    // Display individual health checks
+                    data.checks.forEach(check => {
+                        const checkDiv = document.createElement('div');
+                        checkDiv.className = `health-check ${check.status.toLowerCase()}`;
+                        
+                        let dataHtml = '';
+                        if (check.data && Object.keys(check.data).length > 0) {
+                            dataHtml = `<div class="data">${JSON.stringify(check.data, null, 2)}</div>`;
+                        }
+                        
+                        let tagsHtml = '';
+                        if (check.tags && check.tags.length > 0) {
+                            tagsHtml = `<div class="tags">${check.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>`;
+                        }
+                        
+                        checkDiv.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h3>${check.name}</h3>
+                                <span class="status-badge status-${check.status.toLowerCase()}">${check.status}</span>
+                            </div>
+                            <div class="details">
+                                <strong>Description:</strong> ${check.description || 'No description'}
+                            </div>
+                            <div class="details">
+                                <strong>Duration:</strong> ${check.duration.toFixed(2)}ms
+                            </div>
+                            ${tagsHtml}
+                            ${dataHtml}
+                        `;
+                        
+                        healthChecksDiv.appendChild(checkDiv);
+                    });
+                    
+                    return; // Success, exit the loop
+                    
+                } catch (error) {
+                    console.log(`Endpoint ${endpoint} failed:`, error);
+                    lastError = error;
+                    continue;
+                }
+            }
+            
+            // If we get here, all endpoints failed
+            loadingDiv.style.display = 'none';
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = `
+                <strong>Error loading health data</strong><br>
+                Tried endpoints: ${possibleEndpoints.join(', ')}<br>
+                Current page URL: ${window.location.href}<br>
+                Last error: ${lastError ? lastError.message : 'Unknown error'}<br><br>
+                <strong>Troubleshooting:</strong><br>
+                1. Make sure the API is running<br>
+                2. Check if you're accessing the correct port<br>
+                3. Open browser developer tools (F12) to see network errors
+            `;
+        }
+        
+        // Load health data on page load
+        document.addEventListener('DOMContentLoaded', loadHealthData);
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadHealthData, 30000);
+    </script>
+</body>
+</html> 

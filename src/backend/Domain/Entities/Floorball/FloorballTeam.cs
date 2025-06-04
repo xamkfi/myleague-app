@@ -3,6 +3,8 @@ using Domain.ValueObjects.Floorball;
 using Domain.Entities;
 using Domain.EventSourcing;
 using Domain.Entities.Common;
+using Domain.DomainEvents.Floorball;
+using Domain.Enums.Common;
 
 namespace Domain.Entities.Floorball;
 
@@ -20,7 +22,12 @@ public class FloorballTeam : AggregateRoot
     /// Gets the name of the team
     /// </summary>
     public string Name { get; private set; }
-    
+
+    /// <summary>
+    /// Gets the short name of the team, used for display purposes
+    /// </summary>
+    public string ShortName { get; private set; }
+
     /// <summary>
     /// Gets the division level of the team
     /// </summary>
@@ -30,6 +37,8 @@ public class FloorballTeam : AggregateRoot
     /// Gets the club this team belongs to
     /// </summary>
     public Club Club { get; private set; }
+
+    public TeamCategory TeamCategory { get; private set; }
 
     /// <summary>
     /// Gets the team's roster of players
@@ -69,6 +78,9 @@ public class FloorballTeam : AggregateRoot
         HomeArena = string.Empty; // Default to an empty string
         PrimaryJerseyColor = string.Empty; // Default to an empty string
         SecondaryJerseyColor = string.Empty; // Default to an empty string
+        Division = FloorballDivision.None; // Default to None division
+        ShortName = string.Empty; // Default to an empty string
+        TeamCategory = TeamCategory.Adult; // Default to Adult category
     }
 
     /// <summary>
@@ -79,7 +91,9 @@ public class FloorballTeam : AggregateRoot
     /// <param name="club">The club this team belongs to</param>
     /// <param name="homeArena">The team's home arena</param>
     /// <param name="primaryJerseyColor">The team's primary jersey color</param>
+    /// <param name="teamCategory">The category of the team (Adult, Youth, Women)</param>
     /// <param name="secondaryJerseyColor">The team's secondary jersey color (optional)</param>
+    /// <param name="shortName">The team's short name (optional)</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballTeam(
         string name, 
@@ -87,7 +101,9 @@ public class FloorballTeam : AggregateRoot
         Club club,
         string homeArena,
         string primaryJerseyColor,
-        string? secondaryJerseyColor = null)
+        TeamCategory teamCategory,
+        string? secondaryJerseyColor = null,
+        string? shortName = null)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(club);
@@ -100,12 +116,36 @@ public class FloorballTeam : AggregateRoot
         if (string.IsNullOrWhiteSpace(primaryJerseyColor))
             throw new ArgumentException("Primary jersey color cannot be null or empty.", nameof(primaryJerseyColor));
         Id = Guid.NewGuid();
+
         Name = name;
+        if(!string.IsNullOrWhiteSpace(shortName))
+        {
+            if(shortName.Length > 3)
+                throw new ArgumentException("Short name cannot exceed 3 characters.", nameof(shortName));
+
+            ShortName = shortName;
+        }
+        else
+        {
+            // Default to the first 3 characters of the name if no short name is provided
+            ShortName = name.Length > 3 ? name.Substring(0, 3).ToUpperInvariant() : name.ToUpperInvariant();
+        }
+
         Division = division;
         Club = club;
         HomeArena = homeArena;
         PrimaryJerseyColor = primaryJerseyColor;
         SecondaryJerseyColor = secondaryJerseyColor ?? string.Empty;
+        TeamCategory = teamCategory;
+        
+        AddDomainEvent(new FloorballTeamRegisteredEvent(
+            Id, 
+            name, 
+            division, 
+            club.Id, 
+            homeArena, 
+            primaryJerseyColor, 
+            secondaryJerseyColor));
     }
 
     /// <summary>
@@ -159,6 +199,15 @@ public class FloorballTeam : AggregateRoot
     }
 
     /// <summary>
+    /// Updates the team's category
+    /// </summary>
+    /// <param name="teamCategory">The new team category</param>
+    public void UpdateTeamCategory(TeamCategory teamCategory)
+    {
+        TeamCategory = teamCategory;
+    }
+
+    /// <summary>
     /// Adds a player to the team's roster
     /// </summary>
     /// <param name="player">The player to add</param>
@@ -174,6 +223,13 @@ public class FloorballTeam : AggregateRoot
             throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
         var teamPlayer = new FloorballTeamPlayer(Id, player.Id, position, jerseyNumber);
         _roster.Add(teamPlayer);
+        
+        // Create and add a domain event for player addition
+        AddDomainEvent(new FloorballPlayerAddedToTeamEvent(
+            Id,
+            player.Id,
+            position,
+            jerseyNumber));
     }
 
     /// <summary>
@@ -188,6 +244,11 @@ public class FloorballTeam : AggregateRoot
             throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
 
         _roster.Remove(teamPlayer);
+        
+        // Create and add a domain event for player removal
+        AddDomainEvent(new FloorballPlayerRemovedFromTeamEvent(
+            Id,
+            playerId));
     }
 
     /// <summary>

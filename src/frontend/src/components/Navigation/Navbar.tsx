@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle/LanguageToggle';
+import type { Club } from '../../api/clubService';
+import { getClubs } from '../../api/clubService';
 import './Navbar.scss';
 
 interface NavbarProps {
@@ -10,7 +12,44 @@ interface NavbarProps {
 
 function Navbar({ onLogin }: NavbarProps) {
   const { t } = useTranslation();
-  
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [loading, setLoading] = useState(false);
+  const dropdownRef = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        setLoading(true);
+        const clubsData = await getClubs();
+        setClubs(clubsData);
+      } catch (error) {
+        console.error('Failed to fetch clubs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClubs();
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setActiveDropdown(null);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleDropdownClick = (dropdownName: string) => {
+    setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-brand">
@@ -44,6 +83,29 @@ function Navbar({ onLogin }: NavbarProps) {
           <li className="navbar-item dropdown">
             <Link to="/lajit">{t('nav.sports')}</Link>
             <span className="dropdown-icon">▼</span>
+          </li>
+          <li 
+            ref={dropdownRef}
+            className={`navbar-item dropdown ${activeDropdown === 'clubs' ? 'active' : ''}`}
+            onClick={() => handleDropdownClick('clubs')}
+          >
+            <span className="dropdown-label">{t('nav.clubs')}</span>
+            <span className="dropdown-icon">▼</span>
+            {activeDropdown === 'clubs' && (
+              <ul className="dropdown-menu">
+                {loading ? (
+                  <li className="loading">Loading clubs...</li>
+                ) : (
+                  clubs.map((club) => (
+                    <li key={club.id}>
+                      <Link to={`/club/${club.id}`}>
+                        {club.name}
+                      </Link>
+                    </li>
+                  ))
+                )}
+              </ul>
+            )}
           </li>
         </ul>
       </div>
