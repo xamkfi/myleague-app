@@ -1,5 +1,6 @@
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 
 namespace WebAPI.DependencyInjections;
 
@@ -81,6 +82,27 @@ public static class ServiceCollectionExtensions
                       .AllowCredentials();
             });
         });
+
+        return services;
+    }
+
+    /// <summary>
+    /// Add Health Check UI configuration
+    /// </summary>
+    public static IServiceCollection AddHealthCheckUIConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHealthChecksUI(options =>
+        {
+            options.SetEvaluationTimeInSeconds(30); // Check every 30 seconds
+            options.MaximumHistoryEntriesPerEndpoint(50);
+            options.SetApiMaxActiveRequests(1);
+            options.SetMinimumSecondsBetweenFailureNotifications(60);
+
+            // Add health check endpoint from configuration
+            string healthCheckEndpoint = configuration.GetValue<string>("HealthChecks:UI:Endpoint") ?? "http://localhost:8080/health";
+            options.AddHealthCheckEndpoint("MyLeague API", healthCheckEndpoint);
+        })
+        .AddInMemoryStorage();
 
         return services;
     }

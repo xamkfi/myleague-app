@@ -1,6 +1,7 @@
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 using Domain.Entities.Hockey;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 using Domain.Enums.Hockey;
 
@@ -187,7 +188,7 @@ public class ClubEdgeCasesTests
         // Act & Assert
         foreach (FloorballDivision division in Enum.GetValues<FloorballDivision>())
         {
-            FloorballTeam team = club.AddFloorballTeam($"Team {division}", division, "Arena", "Color");
+            FloorballTeam team = club.AddFloorballTeam($"Team {division}", division, "Arena", "Color", TeamCategory.Adult);
             team.Division.Should().Be(division);
         }
 
@@ -218,7 +219,7 @@ public class ClubEdgeCasesTests
         string teamName = "Duplicate Name Team";
 
         // Act
-        FloorballTeam floorballTeam = club.AddFloorballTeam(teamName, FloorballDivision.Premier, "Arena1", "Blue");
+        FloorballTeam floorballTeam = club.AddFloorballTeam(teamName, FloorballDivision.Premier, "Arena1", "Blue", TeamCategory.Adult);
         HockeyTeam hockeyTeam = club.AddHockeyTeam(teamName, HockeyDivision.Premier, "Arena2", "Red");
 
         // Assert
@@ -238,7 +239,7 @@ public class ClubEdgeCasesTests
         // Act
         for (int i = 0; i < teamCount; i++)
         {
-            club.AddFloorballTeam($"FB Team {i}", FloorballDivision.Premier, $"Arena {i}", $"Color {i}");
+            club.AddFloorballTeam($"FB Team {i}", FloorballDivision.Premier, $"Arena {i}", $"Color {i}", TeamCategory.Adult);
             club.AddHockeyTeam($"Hockey Team {i}", HockeyDivision.Premier, $"Arena {i}", $"Color {i}");
         }
 
@@ -256,7 +257,7 @@ public class ClubEdgeCasesTests
     {
         // Arrange
         Club club = new Club("Test Club", "Test City", "Test Country");
-        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue");
+        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
         Guid teamId = team.Id;
 
         // Act
@@ -300,8 +301,8 @@ public class ClubEdgeCasesTests
     {
         // Arrange
         Club club = new Club("Test Club", "Test City", "Test Country");
-        FloorballTeam noneTeam = club.AddFloorballTeam("None Team", FloorballDivision.None, "Arena", "Color");
-        club.AddFloorballTeam("Premier Team", FloorballDivision.Premier, "Arena", "Color");
+        FloorballTeam noneTeam = club.AddFloorballTeam("None Team", FloorballDivision.None, "Arena", "Color", TeamCategory.Adult);
+        club.AddFloorballTeam("Premier Team", FloorballDivision.Premier, "Arena", "Color", TeamCategory.Adult);
 
         // Act
         IEnumerable<FloorballTeam> noneTeams = club.GetFloorballTeamsByDivision(FloorballDivision.None);
@@ -332,7 +333,7 @@ public class ClubEdgeCasesTests
     {
         // Arrange
         Club club = new Club("Test Club", "Test City", "Test Country");
-        club.AddFloorballTeam("Team 1", FloorballDivision.Premier, "Arena", "Color");
+        club.AddFloorballTeam("Team 1", FloorballDivision.Premier, "Arena", "Color", TeamCategory.Adult);
         club.AddHockeyTeam("Team 2", HockeyDivision.Division1, "Arena", "Color");
 
         // Act
@@ -360,7 +361,7 @@ public class ClubEdgeCasesTests
             club.UpdateBasicInfo($"Club {i}", $"City {i}", $"Country {i}");
             club.UpdateFoundingDate(new DateTime(2000 + i, 1, 1));
             
-            FloorballTeam fbTeam = club.AddFloorballTeam($"FB Team {i}", FloorballDivision.Premier, $"Arena {i}", "Blue");
+            FloorballTeam fbTeam = club.AddFloorballTeam($"FB Team {i}", FloorballDivision.Premier, $"Arena {i}", "Blue", TeamCategory.Adult);
             HockeyTeam hockeyTeam = club.AddHockeyTeam($"Hockey Team {i}", HockeyDivision.Premier, $"Arena {i}", "Red");
             
             if (i % 2 == 0)
@@ -411,12 +412,12 @@ public class ClubEdgeCasesTests
         // Arrange
         Club club = new Club("Test Club", "Test City", "Test Country");
         club.UpdateBasicInfo("Updated", "Updated", "Updated");
-        club.AddFloorballTeam("Team", FloorballDivision.Premier, "Arena", "Color");
+        club.AddFloorballTeam("Team", FloorballDivision.Premier, "Arena", "Color", TeamCategory.Adult);
 
         // Act
         club.ClearDomainEvents();
         club.UpdateBasicInfo("Final", "Final", "Final");
-        FloorballTeam newTeam = club.AddFloorballTeam("New Team", FloorballDivision.Division1, "New Arena", "New Color");
+        FloorballTeam newTeam = club.AddFloorballTeam("New Team", FloorballDivision.Division1, "New Arena", "New Color", TeamCategory.Adult);
 
         // Assert
         club.DomainEvents.Should().HaveCount(1); // Only the final update

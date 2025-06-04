@@ -131,10 +131,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>A collection of persons matching the search term</returns>
         public async Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm)
         {
+            string lowerSearchTerm = searchTerm.ToLower();
+
             return await _entities
-                .Where(p => p.FirstName.Contains(searchTerm) || 
-                           p.LastName.Contains(searchTerm) ||
-                           p.FullName.Contains(searchTerm))
+                .Where(p => p.FirstName.Contains(lowerSearchTerm) || 
+                           p.LastName.Contains(lowerSearchTerm) ||
+                           EF.Functions.ILike((p.FirstName + " " + p.LastName), $"%{lowerSearchTerm}%") ||
+                           EF.Functions.ILike(p.LastName + " " + p.FirstName, $"%{lowerSearchTerm}%"))
                 .ToListAsync();
         }
 

@@ -40,7 +40,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             DbContextOptionsBuilder<FloorballDbContext> builder = new DbContextOptionsBuilder<FloorballDbContext>();
             string? connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            builder.UseNpgsql(connectionString ?? "Host=localhost;Database=myleague;Username=postgres;Password=postgres");
+            builder.UseNpgsql(connectionString);
 
             return new FloorballDbContext(builder.Options);
         }

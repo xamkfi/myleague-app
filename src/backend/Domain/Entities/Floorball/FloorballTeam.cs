@@ -4,6 +4,7 @@ using Domain.Entities;
 using Domain.EventSourcing;
 using Domain.Entities.Common;
 using Domain.DomainEvents.Floorball;
+using Domain.Enums.Common;
 
 namespace Domain.Entities.Floorball;
 
@@ -36,6 +37,8 @@ public class FloorballTeam : AggregateRoot
     /// Gets the club this team belongs to
     /// </summary>
     public Club Club { get; private set; }
+
+    public TeamCategory TeamCategory { get; private set; }
 
     /// <summary>
     /// Gets the team's roster of players
@@ -77,6 +80,7 @@ public class FloorballTeam : AggregateRoot
         SecondaryJerseyColor = string.Empty; // Default to an empty string
         Division = FloorballDivision.None; // Default to None division
         ShortName = string.Empty; // Default to an empty string
+        TeamCategory = TeamCategory.Adult; // Default to Adult category
     }
 
     /// <summary>
@@ -87,7 +91,9 @@ public class FloorballTeam : AggregateRoot
     /// <param name="club">The club this team belongs to</param>
     /// <param name="homeArena">The team's home arena</param>
     /// <param name="primaryJerseyColor">The team's primary jersey color</param>
+    /// <param name="teamCategory">The category of the team (Adult, Youth, Women)</param>
     /// <param name="secondaryJerseyColor">The team's secondary jersey color (optional)</param>
+    /// <param name="shortName">The team's short name (optional)</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballTeam(
         string name, 
@@ -95,6 +101,7 @@ public class FloorballTeam : AggregateRoot
         Club club,
         string homeArena,
         string primaryJerseyColor,
+        TeamCategory teamCategory,
         string? secondaryJerseyColor = null,
         string? shortName = null)
     {
@@ -129,6 +136,7 @@ public class FloorballTeam : AggregateRoot
         HomeArena = homeArena;
         PrimaryJerseyColor = primaryJerseyColor;
         SecondaryJerseyColor = secondaryJerseyColor ?? string.Empty;
+        TeamCategory = teamCategory;
         
         AddDomainEvent(new FloorballTeamRegisteredEvent(
             Id, 
@@ -188,6 +196,15 @@ public class FloorballTeam : AggregateRoot
 
         PrimaryJerseyColor = primaryColor;
         SecondaryJerseyColor = secondaryColor ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Updates the team's category
+    /// </summary>
+    /// <param name="teamCategory">The new team category</param>
+    public void UpdateTeamCategory(TeamCategory teamCategory)
+    {
+        TeamCategory = teamCategory;
     }
 
     /// <summary>
