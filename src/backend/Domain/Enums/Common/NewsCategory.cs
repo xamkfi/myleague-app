@@ -4,6 +4,7 @@ namespace Domain.Enums.Common
 {
     public enum NewsCategory
     {
+        None = 0,
         General = 1,
         MatchReports = 2,
         LeagueNews = 3,
