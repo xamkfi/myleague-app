@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import type { Club } from '../../api/clubService';
