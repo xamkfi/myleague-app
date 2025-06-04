@@ -1,5 +1,6 @@
-using Application.Commands.Floorball;
+using Application.Commands.Floorball.Coach;
 using Application.DTOs.Floorball;
+using Application.DTOs.Common;
 using Domain.Entities.Floorball;
 using System;
 using System.Collections.Generic;
@@ -23,17 +24,26 @@ public static class FloorballCoachMapper
         if (coach == null)
             throw new ArgumentNullException(nameof(coach));
 
-        return new FloorballCoachDto
-        {
-            Id = coach.Id,
-            PersonId = coach.PersonId,
-            IsActive = coach.IsActive,
-            YearsOfExperience = coach.YearsOfExperience,
-            CertificationLevel = coach.CertificationLevel,
-            Specialization = coach.Specialization,
-            CreatedAt = coach.CreatedAt.ToUniversalTime(),
-            UpdatedAt = coach.UpdatedAt?.ToUniversalTime()
-        };
+        // TODO: In a complete implementation, PersonDto should be loaded from PersonRepository
+        // For now, providing a placeholder to resolve compilation error
+        var placeholderPerson = new PersonDto(
+            coach.PersonId,
+            "Unknown", // FirstName
+            "Unknown", // LastName
+            DateTime.MinValue, // BirthDate
+            "Unknown Unknown", // FullName
+            null, // Address
+            null  // ContactInfo
+        );
+
+        return new FloorballCoachDto(
+            coach.Id,
+            coach.PersonId,
+            placeholderPerson,
+            coach.IsActive,
+            coach.YearsOfExperience,
+            coach.CertificationLevel,
+            coach.Specialization);
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
-using Application.Commands.Floorball;
+using Application.Commands.Floorball.Referee;
 using Application.DTOs.Floorball;
+using Application.Mappings.Common;
 using Domain.Entities.Floorball;
 using System;
 using System.Collections.Generic;
@@ -23,17 +24,15 @@ public static class FloorballRefereeMapper
         if (referee == null)
             throw new ArgumentNullException(nameof(referee));
 
-        return new FloorballRefereeDto
-        {
-            Id = referee.Id,
-            PersonId = referee.PersonId,
-            IsActive = referee.IsActive,
-            LicenseIssueDate = referee.LicenseIssueDate?.ToUniversalTime(),
-            LicenseExpiryDate = referee.LicenseExpiryDate?.ToUniversalTime(),
-            MatchesOfficiated = referee.MatchesOfficiated,
-            CreatedAt = referee.CreatedAt.ToUniversalTime(),
-            UpdatedAt = referee.UpdatedAt?.ToUniversalTime()
-        };
+        return new FloorballRefereeDto(
+            referee.Id,
+            referee.PersonId,
+            PersonMapper.ToDto(referee.Person),
+            referee.IsActive,
+            referee.LicenseIssueDate?.ToUniversalTime(),
+            referee.LicenseExpiryDate?.ToUniversalTime(),
+            referee.MatchesOfficiated
+        );
     }
 
     /// <summary>
@@ -63,8 +62,8 @@ public static class FloorballRefereeMapper
 
         return new FloorballReferee(
             command.PersonId,
-            command.LicenseIssueDate?.ToUniversalTime(),
-            command.LicenseExpiryDate?.ToUniversalTime());
+            command.LicenseIssueDate.ToUniversalTime(),
+            command.LicenseExpiryDate.ToUniversalTime());
     }
 
     /// <summary>
@@ -80,11 +79,18 @@ public static class FloorballRefereeMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        // Note: The entity needs to expose methods for updating these properties
-        // For now, assuming these methods exist or will be added
+        // Update active status using the existing method
         referee.UpdateActiveStatus(command.IsActive);
-        referee.UpdateLicenseDates(
-            command.LicenseIssueDate?.ToUniversalTime(),
-            command.LicenseExpiryDate?.ToUniversalTime());
+        
+        // Update license expiry date if provided and different from current
+        if (command.LicenseExpiryDate.HasValue && command.LicenseExpiryDate.Value != referee.LicenseExpiryDate)
+        {
+            referee.UpdateLicenseExpiry(command.LicenseExpiryDate.Value);
+        }
+        
+        // Note: LicenseIssueDate and MatchesOfficiated cannot be updated directly
+        // as the entity doesn't expose methods for these operations.
+        // This follows domain-driven design principles where the issue date
+        // should not be changed after creation, and matches are recorded individually.
     }
 } 

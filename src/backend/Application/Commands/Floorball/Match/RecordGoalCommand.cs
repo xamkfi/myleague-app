@@ -19,6 +19,7 @@ namespace Application.Commands.Floorball.Match
     /// <param name="PeriodNumber"></param>
     /// <param name="TimeInSeconds"></param>
     /// <param name="Description"></param>
+    /// <param name="GoalType"></param>
     public record RecordGoalCommand(
         Guid MatchId,
         Guid ScoringTeamId,
@@ -26,5 +27,6 @@ namespace Application.Commands.Floorball.Match
         Guid? AssistingPlayerId,
         int PeriodNumber,
         int TimeInSeconds,
-        string? Description) : IRequest<Result<FloorballMatchDto>>;
+        string? Description,
+        int? GoalType = null) : IRequest<Result<FloorballMatchDto>>;
 }

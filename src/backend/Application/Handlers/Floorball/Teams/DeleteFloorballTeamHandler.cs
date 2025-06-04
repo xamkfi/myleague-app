@@ -1,4 +1,4 @@
-using Application.Commands.Floorball;
+using Application.Commands.Floorball.Team;
 using Application.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -6,6 +6,7 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Domain.Repositories.Common;
 
 namespace Application.Handlers.Floorball.Teams;
 
@@ -45,25 +46,25 @@ public class DeleteFloorballTeamHandler : IRequestHandler<DeleteFloorballTeamCom
         try
         {
             // Check if the team exists
-            bool teamExists = await _teamRepository.ExistsAsync(request.TeamId);
+            bool teamExists = await _teamRepository.ExistsAsync(request.Id);
             if (!teamExists)
             {
-                _logger.LogWarning("Attempt to delete non-existent floorball team with ID: {TeamId}", request.TeamId);
-                return Result.NotFound("FloorballTeam", request.TeamId);
+                _logger.LogWarning("Attempt to delete non-existent floorball team with ID: {TeamId}", request.Id);
+                return Result.NotFound("FloorballTeam", request.Id);
             }
 
-            _logger.LogInformation("Deleting floorball team with ID: {TeamId}", request.TeamId);
-            await _teamRepository.DeleteAsync(request.TeamId);
+            _logger.LogInformation("Deleting floorball team with ID: {TeamId}", request.Id);
+            await _teamRepository.DeleteAsync(request.Id);
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Successfully deleted floorball team with ID: {TeamId}", request.TeamId);
+            _logger.LogInformation("Successfully deleted floorball team with ID: {TeamId}", request.Id);
             return Result.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while deleting floorball team: {TeamId}", request.TeamId);
+            _logger.LogError(ex, "Error occurred while deleting floorball team: {TeamId}", request.Id);
             return Result.Failure("An error occurred while deleting the floorball team.");
         }
     }

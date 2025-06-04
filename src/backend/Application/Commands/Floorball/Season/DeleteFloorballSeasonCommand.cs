@@ -14,5 +14,5 @@ namespace Application.Commands.Floorball.Season
     /// </summary>
     /// <param name="Id"></param>
     public record DeleteFloorballSeasonCommand(
-        Guid Id) : IRequest<Result<FloorballSeasonDto>>;
+        Guid Id) : IRequest<Result>;
 }

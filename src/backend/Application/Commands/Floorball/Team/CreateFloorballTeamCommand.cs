@@ -13,14 +13,14 @@ namespace Application.Commands.Floorball.Team
     /// <summary>
     /// Command for creating a new floorball team
     /// </summary>
-    /// <param name="name"></param>
+    /// <param name="Name"></param>
     /// <param name="Division"></param>
     /// <param name="ClubId"></param>
     /// <param name="HomeArena"></param>
     /// <param name="PrimaryJerseyColor"></param>
     /// <param name="SecondaryJerseyColor"></param>
     public record CreateFloorballTeamCommand(
-        string name,
+        string Name,
         FloorballDivision Division,
         Guid ClubId,
         string HomeArena,

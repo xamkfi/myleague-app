@@ -1,4 +1,4 @@
-using Application.Commands.Floorball;
+using Application.Commands.Floorball.Season;
 using Application.DTOs.Floorball;
 using Domain.Entities.Floorball;
 using System;
@@ -23,18 +23,17 @@ public static class FloorballSeasonMapper
         if (season == null)
             throw new ArgumentNullException(nameof(season));
 
-        return new FloorballSeasonDto
-        {
-            Id = season.Id,
-            Name = season.Name,
-            StartDate = season.StartDate.ToUniversalTime(),
-            EndDate = season.EndDate.ToUniversalTime(),
-            Description = season.Description,
-            Rules = season.Rules,
-            CreatedAt = season.CreatedAt.ToUniversalTime(),
-            UpdatedAt = season.UpdatedAt?.ToUniversalTime(),
-            IsActive = season.IsActive
-        };
+        return new FloorballSeasonDto(
+            season.Id,
+            season.Name,
+            season.Division,
+            season.StartDate.ToUniversalTime(),
+            season.EndDate.ToUniversalTime(),
+            season.IsActive,
+            season.IsCompleted,
+            FloorballTeamMapper.ToDtos(season.Teams).ToList().AsReadOnly(),
+            FloorballMatchMapper.ToDtos(season.Matches).ToList().AsReadOnly()
+        );
     }
 
     /// <summary>
@@ -62,16 +61,12 @@ public static class FloorballSeasonMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        return new FloorballSeason
-        {
-            Name = command.Name,
-            StartDate = command.StartDate.ToUniversalTime(),
-            EndDate = command.EndDate.ToUniversalTime(),
-            Description = command.Description,
-            Rules = command.Rules,
-            CreatedAt = DateTime.UtcNow,
-            IsActive = true
-        };
+        return new FloorballSeason(
+            command.Name,
+            command.Division,
+            command.StartDate.ToUniversalTime(),
+            command.EndDate.ToUniversalTime()
+        );
     }
 
     /// <summary>
@@ -87,12 +82,11 @@ public static class FloorballSeasonMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        season.Name = command.Name;
-        season.StartDate = command.StartDate.ToUniversalTime();
-        season.EndDate = command.EndDate.ToUniversalTime();
-        season.Description = command.Description;
-        season.Rules = command.Rules;
-        season.IsActive = command.IsActive;
-        season.UpdatedAt = DateTime.UtcNow;
+        // Use the entity's UpdateDetails method to update name and date range
+        season.UpdateDetails(
+            command.Name,
+            command.StartDate.ToUniversalTime(),
+            command.EndDate.ToUniversalTime()
+        );
     }
 } 

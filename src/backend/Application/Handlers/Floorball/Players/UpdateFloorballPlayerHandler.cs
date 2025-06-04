@@ -1,4 +1,4 @@
-using Application.Commands.Floorball;
+using Application.Commands.Floorball.Player;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Common;
@@ -9,6 +9,7 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Domain.Repositories.Common;
 
 namespace Application.Handlers.Floorball.Players;
 
@@ -48,11 +49,11 @@ public class UpdateFloorballPlayerHandler : IRequestHandler<UpdateFloorballPlaye
         try
         {
             // Find the existing player
-            FloorballPlayer? existingPlayer = await _playerRepository.GetByIdAsync(request.PlayerId);
+            FloorballPlayer? existingPlayer = await _playerRepository.GetByIdAsync(request.Id);
             if (existingPlayer == null)
             {
-                _logger.LogWarning("Attempt to update non-existent floorball player with ID: {PlayerId}", request.PlayerId);
-                return Result<FloorballPlayerDto>.NotFound("FloorballPlayer", request.PlayerId);
+                _logger.LogWarning("Attempt to update non-existent floorball player with ID: {PlayerId}", request.Id);
+                return Result<FloorballPlayerDto>.NotFound("FloorballPlayer", request.Id);
             }
 
             // Update the player
@@ -71,7 +72,7 @@ public class UpdateFloorballPlayerHandler : IRequestHandler<UpdateFloorballPlaye
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while updating floorball player: {PlayerId}", request.PlayerId);
+            _logger.LogError(ex, "Error occurred while updating floorball player: {PlayerId}", request.Id);
             return Result<FloorballPlayerDto>.Failure("An error occurred while updating the floorball player.");
         }
     }

@@ -11,7 +11,7 @@ public class CreateFloorballTeamCommandValidator : AbstractValidator<CreateFloor
 {
     public CreateFloorballTeamCommandValidator()
     {
-        RuleFor(x => x.name)
+        RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Team name is required")
             .MaximumLength(100).WithMessage("Team name cannot exceed 100 characters");
 

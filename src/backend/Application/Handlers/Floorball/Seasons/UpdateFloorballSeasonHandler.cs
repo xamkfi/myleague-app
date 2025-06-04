@@ -9,6 +9,9 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Commands.Floorball.Season;
+using Domain.Repositories.Common;
+using System.Linq;
 
 namespace Application.Handlers.Floorball.Seasons;
 
@@ -48,18 +51,21 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
         try
         {
             // Find the existing season
-            FloorballSeason? existingSeason = await _seasonRepository.GetByIdAsync(request.SeasonId);
+            FloorballSeason? existingSeason = await _seasonRepository.GetByIdAsync(request.Id);
             if (existingSeason == null)
             {
-                _logger.LogWarning("Attempt to update non-existent floorball season with ID: {SeasonId}", request.SeasonId);
-                return Result<FloorballSeasonDto>.NotFound("FloorballSeason", request.SeasonId);
+                _logger.LogWarning("Attempt to update non-existent floorball season with ID: {SeasonId}", request.Id);
+                return Result<FloorballSeasonDto>.NotFound("FloorballSeason", request.Id);
             }
 
             // Check for overlapping seasons if dates are being updated
             if (request.StartDate != existingSeason.StartDate || request.EndDate != existingSeason.EndDate)
             {
-                bool overlappingSeasonExists = await _seasonRepository.HasOverlappingSeasonAsync(
-                    request.StartDate, request.EndDate, request.SeasonId);
+                IEnumerable<FloorballSeason> allSeasons = await _seasonRepository.GetAllAsync();
+                bool overlappingSeasonExists = allSeasons
+                    .Where(s => s.Id != request.Id) // Exclude the current season being updated
+                    .Any(s => (request.StartDate < s.EndDate && request.EndDate > s.StartDate));
+                
                 if (overlappingSeasonExists)
                 {
                     _logger.LogWarning("Attempt to update season with overlapping dates: {StartDate} - {EndDate}", 
@@ -84,7 +90,7 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while updating floorball season: {SeasonId}", request.SeasonId);
+            _logger.LogError(ex, "Error occurred while updating floorball season: {SeasonId}", request.Id);
             return Result<FloorballSeasonDto>.Failure("An error occurred while updating the floorball season.");
         }
     }

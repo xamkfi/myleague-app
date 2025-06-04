@@ -9,6 +9,7 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Queries.Floorball.Match;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -43,13 +44,13 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
     {
         try
         {
-            _logger.LogInformation("Retrieving floorball match with ID: {MatchId}", request.MatchId);
+            _logger.LogInformation("Retrieving floorball match with ID: {MatchId}", request.Id);
             
-            FloorballMatch? match = await _matchRepository.GetByIdAsync(request.MatchId);
+            FloorballMatch? match = await _matchRepository.GetByIdAsync(request.Id);
             if (match == null)
             {
-                _logger.LogWarning("Floorball match with ID {MatchId} not found", request.MatchId);
-                return Result<FloorballMatchDto>.NotFound("FloorballMatch", request.MatchId);
+                _logger.LogWarning("Floorball match with ID {MatchId} not found", request.Id);
+                return Result<FloorballMatchDto>.NotFound("FloorballMatch", request.Id);
             }
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
@@ -59,7 +60,7 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving floorball match: {MatchId}", request.MatchId);
+            _logger.LogError(ex, "Error occurred while retrieving floorball match: {MatchId}", request.Id);
             return Result<FloorballMatchDto>.Failure("An error occurred while retrieving the floorball match.");
         }
     }

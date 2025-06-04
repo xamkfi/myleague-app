@@ -1,5 +1,6 @@
-using Application.Commands.Floorball;
+using Application.Commands.Floorball.Team;
 using Application.DTOs.Floorball;
+using Application.Mappings.Common;
 using Domain.Entities.Floorball;
 using System;
 using System.Collections.Generic;
@@ -23,21 +24,24 @@ public static class FloorballTeamMapper
         if (team == null)
             throw new ArgumentNullException(nameof(team));
 
-        return new FloorballTeamDto
-        {
-            Id = team.Id,
-            Name = team.Name,
-            City = team.City,
-            HomeVenue = team.HomeVenue,
-            Founded = team.Founded,
-            Website = team.Website,
-            ContactEmail = team.ContactEmail,
-            ContactPhone = team.ContactPhone,
-            SeasonId = team.SeasonId,
-            CreatedAt = team.CreatedAt.ToUniversalTime(),
-            UpdatedAt = team.UpdatedAt?.ToUniversalTime(),
-            IsActive = team.IsActive
-        };
+        return new FloorballTeamDto(
+            team.Id,
+            team.Name,
+            team.Division,
+            ClubMapper.ToDto(team.Club),
+            team.HomeArena,
+            team.PrimaryJerseyColor,
+            team.SecondaryJerseyColor,
+            team.HasActiveMembers,
+            team.Roster.Select(player => new FloorballTeamPlayerDto(
+                team.Id,
+                player.PlayerId,
+                "", // TODO: Need player name - requires loading Player entity or separate mapping
+                player.Position,
+                player.JerseyNumber,
+                player.IsActive
+            )).ToList().AsReadOnly()
+        );
     }
 
     /// <summary>
@@ -60,24 +64,27 @@ public static class FloorballTeamMapper
     /// <param name="command">The create command</param>
     /// <returns>The new team entity</returns>
     /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
+    /// <exception cref="NotImplementedException">This method requires Club entity to be loaded separately</exception>
     public static FloorballTeam ToEntity(CreateFloorballTeamCommand command)
     {
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        return new FloorballTeam
-        {
-            Name = command.Name,
-            City = command.City,
-            HomeVenue = command.HomeVenue,
-            Founded = command.Founded,
-            Website = command.Website,
-            ContactEmail = command.ContactEmail,
-            ContactPhone = command.ContactPhone,
-            SeasonId = command.SeasonId,
-            CreatedAt = DateTime.UtcNow,
-            IsActive = true
-        };
+        // TODO: Need to load Club entity from command.ClubId
+        // This method should be updated to either:
+        // 1. Accept a Club parameter in addition to the command, or
+        // 2. Load the Club entity within this method using a repository
+        throw new NotImplementedException("This method requires a Club entity to be provided. The FloorballTeam constructor needs a Club entity, but the command only contains ClubId.");
+        
+        // When Club is available, use this constructor:
+        // return new FloorballTeam(
+        //     command.Name,
+        //     command.Division,
+        //     club, // Club entity loaded from command.ClubId
+        //     command.HomeArena,
+        //     command.PrimaryJerseyColor,
+        //     command.SecondaryJerseyColor
+        // );
     }
 
     /// <summary>
@@ -93,15 +100,10 @@ public static class FloorballTeamMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        team.Name = command.Name;
-        team.City = command.City;
-        team.HomeVenue = command.HomeVenue;
-        team.Founded = command.Founded;
-        team.Website = command.Website;
-        team.ContactEmail = command.ContactEmail;
-        team.ContactPhone = command.ContactPhone;
-        team.SeasonId = command.SeasonId;
-        team.IsActive = command.IsActive;
-        team.UpdatedAt = DateTime.UtcNow;
+        // Use the entity's public update methods
+        team.UpdateName(command.Name);
+        team.UpdateDivision(command.Division);
+        team.UpdateHomeArena(command.HomeArena);
+        team.UpdateJerseyColors(command.PrimaryJerseyColor, command.SecondaryJerseyColor!);
     }
 } 

@@ -1,5 +1,6 @@
-using Application.Commands.Floorball;
+using Application.Commands.Floorball.TeamManager;
 using Application.DTOs.Floorball;
+using Application.Mappings.Common;
 using Domain.Entities.Floorball;
 using System;
 using System.Collections.Generic;
@@ -23,16 +24,14 @@ public static class FloorballTeamManagerMapper
         if (manager == null)
             throw new ArgumentNullException(nameof(manager));
 
-        return new FloorballTeamManagerDto
-        {
-            Id = manager.Id,
-            PersonId = manager.PersonId,
-            IsActive = manager.IsActive,
-            PrimaryResponsibility = manager.PrimaryResponsibility,
-            YearsOfExperience = manager.YearsOfExperience,
-            CreatedAt = manager.CreatedAt.ToUniversalTime(),
-            UpdatedAt = manager.UpdatedAt?.ToUniversalTime()
-        };
+        return new FloorballTeamManagerDto(
+            manager.Id,
+            manager.PersonId,
+            null!, // TODO: Add Person navigation property to FloorballTeamManager entity or load Person separately
+            manager.IsActive,
+            manager.PrimaryResponsibility,
+            manager.YearsOfExperience
+        );
     }
 
     /// <summary>
@@ -62,8 +61,8 @@ public static class FloorballTeamManagerMapper
 
         return new FloorballTeamManager(
             command.PersonId,
-            command.YearsOfExperience,
-            command.PrimaryResponsibility);
+            command.PrimaryResponsibility,
+            command.YearsOfExperience);
     }
 
     /// <summary>
@@ -83,6 +82,6 @@ public static class FloorballTeamManagerMapper
         // For now, assuming these methods exist or will be added
         manager.UpdateActiveStatus(command.IsActive);
         manager.UpdateExperience(command.YearsOfExperience);
-        manager.UpdateResponsibility(command.PrimaryResponsibility);
+        manager.UpdatePrimaryResponsibility(command.PrimaryResponsibility);
     }
 } 

@@ -13,12 +13,10 @@ namespace Application.Commands.Floorball.Referee
     /// Command for creating a floorball referee
     /// </summary>
     /// <param name="PersonId"></param>
-    /// <param name="LicenseIssuedDate"></param>
+    /// <param name="LicenseIssueDate"></param>
     /// <param name="LicenseExpiryDate"></param>
-    /// <param name="MatchesOfficiated"></param>
     public record CreateFloorballRefereeCommand(
         Guid PersonId,
-        DateTime? LicenseIssuedDate,
-        DateTime? LicenseExpiryDate,
-        int MatchesOfficiated) : IRequest<Result<FloorballRefereeDto>>;
+        DateTime LicenseIssueDate,
+        DateTime LicenseExpiryDate) : IRequest<Result<FloorballRefereeDto>>;
 }

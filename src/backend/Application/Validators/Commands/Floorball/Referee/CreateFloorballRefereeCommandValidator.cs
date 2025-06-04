@@ -14,21 +14,16 @@ public class CreateFloorballRefereeCommandValidator : AbstractValidator<CreateFl
             .NotEmpty().WithMessage("Person ID is required")
             .NotEqual(Guid.Empty).WithMessage("Person ID cannot be empty");
 
-        RuleFor(x => x.LicenseIssuedDate)
-            .Must(BeValidDate).WithMessage("License issued date must be a valid date")
-            .When(x => x.LicenseIssuedDate.HasValue);
+        RuleFor(x => x.LicenseIssueDate)
+            .Must(BeValidDate).WithMessage("License issue date must be a valid date and in UTC");
 
         RuleFor(x => x.LicenseExpiryDate)
-            .Must(BeValidDate).WithMessage("License expiry date must be a valid date")
-            .GreaterThan(x => x.LicenseIssuedDate).WithMessage("License expiry date must be after issue date")
-            .When(x => x.LicenseExpiryDate.HasValue && x.LicenseIssuedDate.HasValue);
-
-        RuleFor(x => x.MatchesOfficiated)
-            .GreaterThanOrEqualTo(0).WithMessage("Matches officiated cannot be negative");
+            .Must(BeValidDate).WithMessage("License expiry date must be a valid date and in UTC")
+            .GreaterThan(x => x.LicenseIssueDate).WithMessage("License expiry date must be after issue date");
     }
 
-    private bool BeValidDate(DateTime? date)
+    private bool BeValidDate(DateTime date)
     {
-        return date.HasValue && date.Value.Kind == DateTimeKind.Utc;
+        return date.Kind == DateTimeKind.Utc && date <= DateTime.UtcNow.AddYears(10);
     }
 } 

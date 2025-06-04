@@ -9,6 +9,7 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Queries.Floorball.Team;
 
 namespace Application.Handlers.Floorball.Teams;
 
@@ -43,13 +44,13 @@ public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQ
     {
         try
         {
-            _logger.LogInformation("Retrieving floorball team with ID: {TeamId}", request.TeamId);
+            _logger.LogInformation("Retrieving floorball team with ID: {TeamId}", request.Id);
             
-            FloorballTeam? team = await _teamRepository.GetByIdAsync(request.TeamId);
+            FloorballTeam? team = await _teamRepository.GetByIdAsync(request.Id);
             if (team == null)
             {
-                _logger.LogWarning("Floorball team with ID {TeamId} not found", request.TeamId);
-                return Result<FloorballTeamDto>.NotFound("FloorballTeam", request.TeamId);
+                _logger.LogWarning("Floorball team with ID {TeamId} not found", request.Id);
+                return Result<FloorballTeamDto>.NotFound("FloorballTeam", request.Id);
             }
 
             FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team);
@@ -59,7 +60,7 @@ public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQ
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving floorball team: {TeamId}", request.TeamId);
+            _logger.LogError(ex, "Error occurred while retrieving floorball team: {TeamId}", request.Id);
             return Result<FloorballTeamDto>.Failure("An error occurred while retrieving the floorball team.");
         }
     }

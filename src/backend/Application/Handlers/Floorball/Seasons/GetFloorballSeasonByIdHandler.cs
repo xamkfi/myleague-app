@@ -9,6 +9,7 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Queries.Floorball.Season;
 
 namespace Application.Handlers.Floorball.Seasons;
 
@@ -43,13 +44,13 @@ public class GetFloorballSeasonByIdHandler : IRequestHandler<GetFloorballSeasonB
     {
         try
         {
-            _logger.LogInformation("Retrieving floorball season with ID: {SeasonId}", request.SeasonId);
+            _logger.LogInformation("Retrieving floorball season with ID: {SeasonId}", request.Id);
             
-            FloorballSeason? season = await _seasonRepository.GetByIdAsync(request.SeasonId);
+            FloorballSeason? season = await _seasonRepository.GetByIdAsync(request.Id);
             if (season == null)
             {
-                _logger.LogWarning("Floorball season with ID {SeasonId} not found", request.SeasonId);
-                return Result<FloorballSeasonDto>.NotFound("FloorballSeason", request.SeasonId);
+                _logger.LogWarning("Floorball season with ID {SeasonId} not found", request.Id);
+                return Result<FloorballSeasonDto>.NotFound("FloorballSeason", request.Id);
             }
 
             FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season);
@@ -59,7 +60,7 @@ public class GetFloorballSeasonByIdHandler : IRequestHandler<GetFloorballSeasonB
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving floorball season: {SeasonId}", request.SeasonId);
+            _logger.LogError(ex, "Error occurred while retrieving floorball season: {SeasonId}", request.Id);
             return Result<FloorballSeasonDto>.Failure("An error occurred while retrieving the floorball season.");
         }
     }

@@ -1,4 +1,3 @@
-using Application.Commands.Floorball;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Common;
@@ -9,6 +8,8 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Commands.Floorball.Match;
+using Domain.Repositories.Common;
 
 namespace Application.Handlers.Floorball.Matches;
 

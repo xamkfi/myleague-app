@@ -1,4 +1,4 @@
-using Application.Commands.Floorball;
+using Application.Commands.Floorball.Team;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Common;
@@ -9,6 +9,7 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Domain.Repositories.Common;
 
 namespace Application.Handlers.Floorball.Teams;
 
@@ -48,11 +49,11 @@ public class UpdateFloorballTeamHandler : IRequestHandler<UpdateFloorballTeamCom
         try
         {
             // Find the existing team
-            FloorballTeam? existingTeam = await _teamRepository.GetByIdAsync(request.TeamId);
+            FloorballTeam? existingTeam = await _teamRepository.GetByIdAsync(request.Id);
             if (existingTeam == null)
             {
-                _logger.LogWarning("Attempt to update non-existent floorball team with ID: {TeamId}", request.TeamId);
-                return Result<FloorballTeamDto>.NotFound("FloorballTeam", request.TeamId);
+                _logger.LogWarning("Attempt to update non-existent floorball team with ID: {TeamId}", request.Id);
+                return Result<FloorballTeamDto>.NotFound("FloorballTeam", request.Id);
             }
 
             // Update the team
@@ -71,7 +72,7 @@ public class UpdateFloorballTeamHandler : IRequestHandler<UpdateFloorballTeamCom
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while updating floorball team: {TeamId}", request.TeamId);
+            _logger.LogError(ex, "Error occurred while updating floorball team: {TeamId}", request.Id);
             return Result<FloorballTeamDto>.Failure("An error occurred while updating the floorball team.");
         }
     }

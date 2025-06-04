@@ -9,6 +9,9 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Commands.Floorball.Season;
+using Domain.Repositories.Common;
+using System.Linq;
 
 namespace Application.Handlers.Floorball.Seasons;
 
@@ -48,7 +51,10 @@ public class CreateFloorballSeasonHandler : IRequestHandler<CreateFloorballSeaso
         try
         {
             // Verify no overlapping season exists
-            bool overlappingSeasonExists = await _seasonRepository.HasOverlappingSeasonAsync(request.StartDate, request.EndDate);
+            IEnumerable<FloorballSeason> existingSeasons = await _seasonRepository.GetAllAsync();
+            bool overlappingSeasonExists = existingSeasons.Any(s => 
+                (request.StartDate < s.EndDate && request.EndDate > s.StartDate));
+            
             if (overlappingSeasonExists)
             {
                 _logger.LogWarning("Attempt to create season with overlapping dates: {StartDate} - {EndDate}", 

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Queries.Floorball.Season;
 
 namespace Application.Handlers.Floorball.Seasons;
 

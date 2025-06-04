@@ -13,5 +13,5 @@ namespace Application.Commands.Floorball.Team
     /// Command for deletin a floorball team
     /// </summary>
     /// <param name="Id"></param>
-    public record DeleteFloorballTeamCommand(Guid Id) : IRequest<Result<FloorballTeamDto>>;
+    public record DeleteFloorballTeamCommand(Guid Id) : IRequest<Result>;
 }

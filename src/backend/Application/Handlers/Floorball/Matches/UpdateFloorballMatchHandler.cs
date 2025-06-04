@@ -9,6 +9,8 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Commands.Floorball.Match;
+using Domain.Repositories.Common;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -18,7 +20,6 @@ namespace Application.Handlers.Floorball.Matches;
 public class UpdateFloorballMatchHandler : IRequestHandler<UpdateFloorballMatchCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
-    private readonly IFloorballTeamRepository _teamRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateFloorballMatchHandler> _logger;
 
@@ -26,17 +27,14 @@ public class UpdateFloorballMatchHandler : IRequestHandler<UpdateFloorballMatchC
     /// Initializes a new instance of the UpdateFloorballMatchHandler class
     /// </summary>
     /// <param name="matchRepository">The floorball match repository</param>
-    /// <param name="teamRepository">The floorball team repository</param>
     /// <param name="unitOfWork">The unit of work</param>
     /// <param name="logger">The logger</param>
     public UpdateFloorballMatchHandler(
         IFloorballMatchRepository matchRepository,
-        IFloorballTeamRepository teamRepository,
         IUnitOfWork unitOfWork,
         ILogger<UpdateFloorballMatchHandler> logger)
     {
         _matchRepository = matchRepository;
-        _teamRepository = teamRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -52,32 +50,11 @@ public class UpdateFloorballMatchHandler : IRequestHandler<UpdateFloorballMatchC
         try
         {
             // Find the existing match
-            FloorballMatch? existingMatch = await _matchRepository.GetByIdAsync(request.MatchId);
+            FloorballMatch? existingMatch = await _matchRepository.GetByIdAsync(request.Id);
             if (existingMatch == null)
             {
-                _logger.LogWarning("Attempt to update non-existent floorball match with ID: {MatchId}", request.MatchId);
-                return Result<FloorballMatchDto>.NotFound("FloorballMatch", request.MatchId);
-            }
-
-            // Verify teams exist if they are being updated
-            if (request.HomeTeamId != existingMatch.HomeTeamId)
-            {
-                bool homeTeamExists = await _teamRepository.ExistsAsync(request.HomeTeamId);
-                if (!homeTeamExists)
-                {
-                    _logger.LogWarning("Attempt to update match with non-existent home team ID: {TeamId}", request.HomeTeamId);
-                    return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.HomeTeamId);
-                }
-            }
-
-            if (request.AwayTeamId != existingMatch.AwayTeamId)
-            {
-                bool awayTeamExists = await _teamRepository.ExistsAsync(request.AwayTeamId);
-                if (!awayTeamExists)
-                {
-                    _logger.LogWarning("Attempt to update match with non-existent away team ID: {TeamId}", request.AwayTeamId);
-                    return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.AwayTeamId);
-                }
+                _logger.LogWarning("Attempt to update non-existent floorball match with ID: {MatchId}", request.Id);
+                return Result<FloorballMatchDto>.NotFound("FloorballMatch", request.Id);
             }
 
             // Update the match
@@ -96,7 +73,7 @@ public class UpdateFloorballMatchHandler : IRequestHandler<UpdateFloorballMatchC
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while updating floorball match: {MatchId}", request.MatchId);
+            _logger.LogError(ex, "Error occurred while updating floorball match: {MatchId}", request.Id);
             return Result<FloorballMatchDto>.Failure("An error occurred while updating the floorball match.");
         }
     }

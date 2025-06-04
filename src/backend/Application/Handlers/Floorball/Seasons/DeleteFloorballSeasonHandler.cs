@@ -6,6 +6,9 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Commands.Floorball.Season;
+using Domain.Repositories.Common;
+using System.Linq;
 
 namespace Application.Handlers.Floorball.Seasons;
 
@@ -49,33 +52,34 @@ public class DeleteFloorballSeasonHandler : IRequestHandler<DeleteFloorballSeaso
         try
         {
             // Check if the season exists
-            bool seasonExists = await _seasonRepository.ExistsAsync(request.SeasonId);
+            bool seasonExists = await _seasonRepository.ExistsAsync(request.Id);
             if (!seasonExists)
             {
-                _logger.LogWarning("Attempt to delete non-existent floorball season with ID: {SeasonId}", request.SeasonId);
-                return Result.NotFound("FloorballSeason", request.SeasonId);
+                _logger.LogWarning("Attempt to delete non-existent floorball season with ID: {SeasonId}", request.Id);
+                return Result.NotFound("FloorballSeason", request.Id);
             }
 
             // Check if there are any matches in this season
-            bool hasMatches = await _matchRepository.HasMatchesInSeasonAsync(request.SeasonId);
+            IEnumerable<Domain.Entities.Floorball.FloorballMatch> seasonMatches = await _matchRepository.GetBySeasonIdAsync(request.Id);
+            bool hasMatches = seasonMatches.Any();
             if (hasMatches)
             {
-                _logger.LogWarning("Attempt to delete season with existing matches: {SeasonId}", request.SeasonId);
+                _logger.LogWarning("Attempt to delete season with existing matches: {SeasonId}", request.Id);
                 return Result.Failure("Cannot delete a season that has matches. Delete the matches first.");
             }
 
-            _logger.LogInformation("Deleting floorball season with ID: {SeasonId}", request.SeasonId);
-            await _seasonRepository.DeleteAsync(request.SeasonId);
+            _logger.LogInformation("Deleting floorball season with ID: {SeasonId}", request.Id);
+            await _seasonRepository.DeleteAsync(request.Id);
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Successfully deleted floorball season with ID: {SeasonId}", request.SeasonId);
+            _logger.LogInformation("Successfully deleted floorball season with ID: {SeasonId}", request.Id);
             return Result.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while deleting floorball season: {SeasonId}", request.SeasonId);
+            _logger.LogError(ex, "Error occurred while deleting floorball season: {SeasonId}", request.Id);
             return Result.Failure("An error occurred while deleting the floorball season.");
         }
     }
