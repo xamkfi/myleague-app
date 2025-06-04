@@ -164,9 +164,11 @@ jobs:
         export ASPNETCORE_URLS="http://localhost:5000"
         
         echo "Starting API with database connection..."
+        echo "Using URL: $ASPNETCORE_URLS"
+        echo "Using DB: $ConnectionStrings__DefaultConnection"
         
-        # Start the API in background with timeout
-        timeout 60s dotnet run --configuration ${{ env.BUILD_CONFIGURATION }} --no-build &
+        # Start the API in background with timeout and no launch profile
+        timeout 60s dotnet run --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --no-launch-profile &
         API_PID=$!
         
         # Wait for API startup with better error handling
@@ -183,6 +185,9 @@ jobs:
             echo "Checking if API process is still running..."
             if ps -p $API_PID > /dev/null 2>&1; then
               echo "API process is running but not responding"
+              echo "Trying to get process information..."
+              netstat -tulpn | grep :5000 || echo "Port 5000 not listening"
+              netstat -tulpn | grep dotnet || echo "No dotnet processes listening"
             else
               echo "API process has exited"
             fi
