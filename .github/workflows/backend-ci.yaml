@@ -75,32 +75,40 @@ jobs:
       run: |
         docker build -f src/backend/WebAPI/Dockerfile -t myleague-api:test .
         
-    - name: Test container startup
+    - name: Test Docker Compose startup
       run: |
-        # Start container in background
-        docker run -d --name myleague-test -p 8080:8080 \
-          -e ASPNETCORE_ENVIRONMENT=Production \
-          -e ConnectionStrings__DefaultConnection="Host=localhost;Database=myleague;Username=test;Password=test" \
-          myleague-api:test
+        # Start services with docker-compose
+        docker-compose up -d
         
-        # Wait a moment for startup
-        sleep 10
+        # Wait for services to be ready (PostgreSQL needs time to initialize)
+        echo "Waiting for services to start..."
+        sleep 30
         
-        # Check if container is running
-        if docker ps | grep -q myleague-test; then
-          echo "✅ Container started successfully"
-          docker logs myleague-test
+        # Check if API container is running
+        if docker-compose ps webapi | grep -q "Up"; then
+          echo "✅ API container started successfully"
         else
-          echo "❌ Container failed to start"
-          docker logs myleague-test
+          echo "❌ API container failed to start"
+          docker-compose logs webapi
           exit 1
+        fi
+        
+        # Test basic API connectivity
+        if curl -f http://localhost:8080/health 2>/dev/null; then
+          echo "✅ API health check passed"
+        elif curl -f http://localhost:8080 2>/dev/null; then
+          echo "✅ API is responding (health endpoint may not exist)"
+        else
+          echo "⚠️  API not responding, checking logs..."
+          docker-compose logs webapi
+          echo "Container status:"
+          docker-compose ps
         fi
         
     - name: Cleanup
       if: always()
       run: |
-        docker stop myleague-test || true
-        docker rm myleague-test || true
+        docker-compose down -v
         docker rmi myleague-api:test || true
 
   integration-smoke-test:
@@ -132,10 +140,19 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         
+    - name: Restore dependencies
+      run: dotnet restore MyLeague.sln
+        
     - name: Build WebAPI
       run: |
         cd src/backend/WebAPI
-        dotnet build --configuration ${{ env.BUILD_CONFIGURATION }}
+        dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+        
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        echo "Waiting for PostgreSQL to be ready..."
+        timeout 60s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 2; done'
+        echo "PostgreSQL is ready!"
         
     - name: Test API startup with database
       run: |
@@ -144,26 +161,40 @@ jobs:
         # Set environment variables for test database
         export ConnectionStrings__DefaultConnection="Host=localhost;Database=myleague_test;Username=postgres;Password=postgres"
         export ASPNETCORE_ENVIRONMENT=Development
+        export ASPNETCORE_URLS="http://localhost:5000"
         
-        # Start the API in background
-        timeout 30s dotnet run --configuration ${{ env.BUILD_CONFIGURATION }} --no-build &
+        echo "Starting API with database connection..."
+        
+        # Start the API in background with timeout
+        timeout 60s dotnet run --configuration ${{ env.BUILD_CONFIGURATION }} --no-build &
         API_PID=$!
         
-        # Wait for startup
-        sleep 15
-        
-        # Test if API is responding (basic health check)
-        if curl -f http://localhost:5000/health 2>/dev/null || curl -f http://localhost:8080/health 2>/dev/null; then
-          echo "✅ API health check passed"
-        else
-          echo "⚠️  Health check endpoint not found, testing root endpoint"
-          if curl -f http://localhost:5000 2>/dev/null || curl -f http://localhost:8080 2>/dev/null; then
-            echo "✅ API is responding"
-          else
-            echo "❌ API is not responding"
+        # Wait for API startup with better error handling
+        echo "Waiting for API to start..."
+        for i in {1..30}; do
+          if curl -f -s http://localhost:5000/health >/dev/null 2>&1; then
+            echo "✅ API health check passed on attempt $i"
+            break
+          elif curl -f -s http://localhost:5000 >/dev/null 2>&1; then
+            echo "✅ API is responding on attempt $i"
+            break
+          elif [ $i -eq 30 ]; then
+            echo "❌ API failed to respond after 30 attempts"
+            echo "Checking if API process is still running..."
+            if ps -p $API_PID > /dev/null 2>&1; then
+              echo "API process is running but not responding"
+            else
+              echo "API process has exited"
+            fi
             exit 1
+          else
+            echo "Attempt $i: API not ready yet, waiting 2 seconds..."
+            sleep 2
           fi
-        fi
+        done
+        
+        echo "✅ Integration smoke test completed successfully"
         
         # Cleanup
-        kill $API_PID || true
+        kill $API_PID 2>/dev/null || true
+        wait $API_PID 2>/dev/null || true
