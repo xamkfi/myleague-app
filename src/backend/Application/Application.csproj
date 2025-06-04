@@ -18,4 +18,11 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Handlers\Floorball\" />
+    <Folder Include="Mappings\Floorball\" />
+    <Folder Include="Validators\Commands\Floorball\" />
+    <Folder Include="Validators\Queries\Floorball\" />
+  </ItemGroup>
+
 </Project> 
