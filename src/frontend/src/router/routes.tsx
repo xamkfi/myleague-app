@@ -9,6 +9,13 @@ import RegisterPage from '../pages/RegisterPage/RegisterPage';
 import TournamentsPage from '../pages/TournamentsPage/TournamentsPage';
 import SportsPage from '../pages/SportsPage/SportsPage';
 
+import ClubPage from '../pages/ClubPage/ClubPage';
+import PlayerPage from '../pages/PlayerPage/PlayerPage';
+import AdminPage from '../pages/AdminPage/AdminPage';
+import PersonsPage from '../pages/AdminPage/PersonsPage/PersonsPage';
+import PersonForm from '../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm';
+import TeamPage from '../pages/TeamPage/TeamPage';
+
 export const routes: RouteObject[] = [
   {
     path: '/',
@@ -41,5 +48,38 @@ export const routes: RouteObject[] = [
   {
     path: '/lajit',
     element: <SportsPage />
+  },
+  {
+    path: '/team',
+    element: <TeamPage/>
+  },
+  {
+    path: '/club/:id',
+    element: <ClubPage />
+  },
+  {
+    path: '/pelaaja/:id',
+    element: <PlayerPage />
+  },
+  {
+    path: '/admin',
+    element: <AdminPage />
+  },
+  {
+    path: '/admin/persons',
+    children: [
+      {
+        index: true,
+        element: <PersonsPage />
+      },
+      {
+        path: 'new',
+        element: <PersonForm />
+      },
+      {
+        path: ':id/edit',
+        element: <PersonForm />
+      }
+    ]
   }
 ]; 

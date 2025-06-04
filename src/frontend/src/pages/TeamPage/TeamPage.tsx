@@ -13,7 +13,7 @@ export default function TeamPage() {
 
     return (
         <PageTemplate title={t('nav.team')}>
-        <div className="w-full mx-auto">
+        <div className="w-full mx-auto text-left">
             <div className="bg-white rounded-lg p-4 shadow-sm">
                 {/* Team Header */}
                 <div className="flex items-center gap-4 mb-6 pl-2">
