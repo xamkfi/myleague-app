@@ -33,6 +33,7 @@ public static class FloorballPlayerMapper
             "Unknown", // LastName
             DateTime.MinValue, // BirthDate
             "Unknown Unknown", // FullName
+            false,
             null, // Address
             null  // ContactInfo
         );
