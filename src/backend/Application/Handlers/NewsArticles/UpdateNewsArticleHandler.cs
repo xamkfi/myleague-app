@@ -60,6 +60,13 @@ public class UpdateNewsArticleHandler : IRequestHandler<UpdateNewsArticleCommand
             // Check for cancellation after database read
             cancellationToken.ThrowIfCancellationRequested();
 
+            // Check if the news article is archived
+            if (existingNews.IsArchived)
+            {
+                _logger.LogWarning("Attempt to update archived news article with ID: {NewsId}", request.Id);
+                return Result<NewsArticleDto>.Failure($"Cannot update archived news article with ID '{request.Id}'.");
+            }
+
             _logger.LogInformation("Found existing news article: {Title}", existingNews.Title);
 
             // Update the entity using the mapper
