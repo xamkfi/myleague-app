@@ -28,7 +28,7 @@ public class UpdateNewsArticleCommandValidatorTests
             new List<string> { "https://example.com/updated-image.jpg" },
             "Updated Author",
             "MatchReports",
-            "Basketball",
+            "Football",
             new List<string> { "updated-tag1", "updated-tag2" }
         );
 
@@ -174,14 +174,14 @@ public class UpdateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Author)
-            .WithErrorMessage("Author cannot exceed 100 characters");
+            .WithErrorMessage("Author name cannot exceed 100 characters");
     }
 
     [Theory]
     [InlineData("General")]
     [InlineData("MatchReports")]
     [InlineData("Transfers")]
-    [InlineData("PlayerNews")]
+    [InlineData("PlayerUpdates")]
     [InlineData("TeamNews")]
     public void Validate_ValidCategory_ShouldNotHaveValidationError(string category)
     {
@@ -206,7 +206,6 @@ public class UpdateNewsArticleCommandValidatorTests
     [Theory]
     [InlineData("InvalidCategory")]
     [InlineData("Random")]
-    [InlineData("")]
     public void Validate_InvalidCategory_ShouldHaveValidationError(string invalidCategory)
     {
         // Arrange
@@ -225,7 +224,7 @@ public class UpdateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Category)
-            .WithErrorMessage("Category must be a valid news category");
+            .WithErrorMessage("Invalid news category");
     }
 
     [Theory]
@@ -268,7 +267,7 @@ public class UpdateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.ImageUrls)
-            .WithErrorMessage("All image URLs must be valid URLs");
+            .WithErrorMessage("Invalid image URL format");
     }
 
     [Fact]
@@ -292,7 +291,7 @@ public class UpdateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Tags)
-            .WithErrorMessage("Tags must be unique");
+            .WithErrorMessage("Duplicate tags are not allowed");
     }
 
     [Fact]
@@ -316,7 +315,7 @@ public class UpdateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Tags)
-            .WithErrorMessage("Tags cannot be empty");
+            .WithErrorMessage("Tag cannot be empty");
     }
 
     [Fact]

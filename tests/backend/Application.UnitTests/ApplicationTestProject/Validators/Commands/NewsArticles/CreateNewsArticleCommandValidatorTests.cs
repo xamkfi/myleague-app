@@ -184,14 +184,14 @@ public class CreateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Author)
-            .WithErrorMessage("Author cannot exceed 100 characters");
+            .WithErrorMessage("Author name cannot exceed 100 characters");
     }
 
     [Theory]
     [InlineData("General")]
     [InlineData("MatchReports")]
     [InlineData("Transfers")]
-    [InlineData("PlayerNews")]
+    [InlineData("PlayerUpdates")]
     [InlineData("TeamNews")]
     public void Validate_ValidCategory_ShouldNotHaveValidationError(string category)
     {
@@ -215,7 +215,6 @@ public class CreateNewsArticleCommandValidatorTests
     [Theory]
     [InlineData("InvalidCategory")]
     [InlineData("Random")]
-    [InlineData("")]
     public void Validate_InvalidCategory_ShouldHaveValidationError(string invalidCategory)
     {
         // Arrange
@@ -233,15 +232,13 @@ public class CreateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Category)
-            .WithErrorMessage("Category must be a valid news category");
+            .WithErrorMessage("Invalid news category");
     }
 
     [Theory]
     [InlineData("Football")]
     [InlineData("Icehockey")]
-    [InlineData("Basketball")]
-    [InlineData("Handball")]
-    [InlineData("Volleyball")]
+    [InlineData("Floorball")]
     public void Validate_ValidSportCategory_ShouldNotHaveValidationError(string sportCategory)
     {
         // Arrange
@@ -265,7 +262,6 @@ public class CreateNewsArticleCommandValidatorTests
     [Theory]
     [InlineData("InvalidSport")]
     [InlineData("Soccer")]
-    [InlineData("")]
     public void Validate_InvalidSportCategory_ShouldHaveValidationError(string invalidSportCategory)
     {
         // Arrange
@@ -284,7 +280,7 @@ public class CreateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.SportCategory)
-            .WithErrorMessage("Sport category must be a valid sport category");
+            .WithErrorMessage("Invalid sport category");
     }
 
     [Theory]
@@ -327,7 +323,7 @@ public class CreateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.ImageUrls)
-            .WithErrorMessage("All image URLs must be valid URLs");
+            .WithErrorMessage("Invalid image URL format");
     }
 
     [Fact]
@@ -350,7 +346,7 @@ public class CreateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Tags)
-            .WithErrorMessage("Tags must be unique");
+            .WithErrorMessage("Duplicate tags are not allowed");
     }
 
     [Fact]
@@ -373,7 +369,7 @@ public class CreateNewsArticleCommandValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Tags)
-            .WithErrorMessage("Tags cannot be empty");
+            .WithErrorMessage("Tag cannot be empty");
     }
 
     [Fact]

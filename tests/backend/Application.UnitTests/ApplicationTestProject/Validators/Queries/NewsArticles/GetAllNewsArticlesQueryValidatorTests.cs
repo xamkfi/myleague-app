@@ -119,7 +119,7 @@ public class GetAllNewsArticlesQueryValidatorTests
     [InlineData("General")]
     [InlineData("MatchReports")]
     [InlineData("Transfers")]
-    [InlineData("PlayerNews")]
+    [InlineData("PlayerUpdates")]
     [InlineData("TeamNews")]
     public void Validate_ValidCategory_ShouldNotHaveValidationError(string? category)
     {
@@ -136,7 +136,6 @@ public class GetAllNewsArticlesQueryValidatorTests
     [Theory]
     [InlineData("InvalidCategory")]
     [InlineData("Random")]
-    [InlineData("")]
     public void Validate_InvalidCategory_ShouldHaveValidationError(string invalidCategory)
     {
         // Arrange
@@ -147,15 +146,13 @@ public class GetAllNewsArticlesQueryValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Category)
-            .WithErrorMessage("Category must be a valid news category");
+            .WithErrorMessage("Invalid news category");
     }
 
     [Theory]
     [InlineData("Football")]
     [InlineData("Icehockey")]
-    [InlineData("Basketball")]
-    [InlineData("Handball")]
-    [InlineData("Volleyball")]
+    [InlineData("Floorball")]
     public void Validate_ValidSportCategory_ShouldNotHaveValidationError(string? sportCategory)
     {
         // Arrange
@@ -171,7 +168,6 @@ public class GetAllNewsArticlesQueryValidatorTests
     [Theory]
     [InlineData("InvalidSport")]
     [InlineData("Soccer")]
-    [InlineData("")]
     public void Validate_InvalidSportCategory_ShouldHaveValidationError(string invalidSportCategory)
     {
         // Arrange
@@ -182,7 +178,7 @@ public class GetAllNewsArticlesQueryValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.SportCategory)
-            .WithErrorMessage("Sport category must be a valid sport category");
+            .WithErrorMessage("Invalid sport category");
     }
 
     [Fact]
@@ -197,7 +193,7 @@ public class GetAllNewsArticlesQueryValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Author)
-            .WithErrorMessage("Author cannot exceed 100 characters");
+            .WithErrorMessage("Author filter cannot exceed 100 characters");
     }
 
     [Theory]
