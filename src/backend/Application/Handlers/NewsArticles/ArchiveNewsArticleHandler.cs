@@ -42,6 +42,9 @@ public class ArchiveNewsArticleHandler : IRequestHandler<ArchiveNewsArticleComma
     {
         try
         {
+            // Check for cancellation before starting
+            cancellationToken.ThrowIfCancellationRequested();
+
             _logger.LogInformation("Archiving news article with ID: {NewsId}", request.Id);
 
             // Check if the news article exists
@@ -51,6 +54,9 @@ public class ArchiveNewsArticleHandler : IRequestHandler<ArchiveNewsArticleComma
                 _logger.LogWarning("Attempt to archive non-existent news article with ID: {NewsId}", request.Id);
                 return Result<bool>.Failure($"News article with ID '{request.Id}' not found.");
             }
+
+            // Check for cancellation after database read
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Check if already archived
             if (existingNews.IsArchived)
@@ -64,8 +70,14 @@ public class ArchiveNewsArticleHandler : IRequestHandler<ArchiveNewsArticleComma
             // Archive the news article
             existingNews.Archive();
 
+            // Check for cancellation before saving
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Save the updated entity
             await _newsRepository.SaveAsync(existingNews, cancellationToken);
+            
+            // Check for cancellation before committing transaction
+            cancellationToken.ThrowIfCancellationRequested();
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -73,6 +85,11 @@ public class ArchiveNewsArticleHandler : IRequestHandler<ArchiveNewsArticleComma
             _logger.LogInformation("Successfully archived news article with ID: {NewsId}", request.Id);
 
             return Result<bool>.Success(true);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Archive operation was cancelled for news article ID: {NewsId}", request.Id);
+            throw; // Re-throw to let the framework handle it
         }
         catch (Exception ex)
         {

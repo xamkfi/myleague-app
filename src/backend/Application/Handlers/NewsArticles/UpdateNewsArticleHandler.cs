@@ -44,6 +44,9 @@ public class UpdateNewsArticleHandler : IRequestHandler<UpdateNewsArticleCommand
     {
         try
         {
+            // Check for cancellation before starting
+            cancellationToken.ThrowIfCancellationRequested();
+
             _logger.LogInformation("Updating news article with ID: {NewsId}", request.Id);
 
             // Check if the news article exists
@@ -54,13 +57,22 @@ public class UpdateNewsArticleHandler : IRequestHandler<UpdateNewsArticleCommand
                 return Result<NewsArticleDto>.Failure($"News article with ID '{request.Id}' not found.");
             }
 
+            // Check for cancellation after database read
+            cancellationToken.ThrowIfCancellationRequested();
+
             _logger.LogInformation("Found existing news article: {Title}", existingNews.Title);
 
             // Update the entity using the mapper
             NewsArticleMapper.UpdateFromCommand(existingNews, request);
 
+            // Check for cancellation before saving
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Save the updated entity
             await _newsRepository.SaveAsync(existingNews, cancellationToken);
+            
+            // Check for cancellation before committing transaction
+            cancellationToken.ThrowIfCancellationRequested();
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -71,6 +83,11 @@ public class UpdateNewsArticleHandler : IRequestHandler<UpdateNewsArticleCommand
             _logger.LogInformation("Successfully updated news article with ID: {NewsId}", request.Id);
 
             return Result<NewsArticleDto>.Success(newsDto);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("News article update was cancelled for ID: {NewsId}", request.Id);
+            throw; // Re-throw to let the framework handle it
         }
         catch (Exception ex)
         {

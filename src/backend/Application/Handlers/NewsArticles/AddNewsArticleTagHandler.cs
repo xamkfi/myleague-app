@@ -42,6 +42,9 @@ public class AddNewsArticleTagHandler : IRequestHandler<AddNewsArticleTagCommand
     {
         try
         {
+            // Check for cancellation before starting
+            cancellationToken.ThrowIfCancellationRequested();
+
             _logger.LogInformation("Adding tag '{Tag}' to news article with ID: {NewsId}", request.Tag, request.NewsId);
 
             // Validate the tag input
@@ -59,6 +62,9 @@ public class AddNewsArticleTagHandler : IRequestHandler<AddNewsArticleTagCommand
                 return Result<bool>.Failure($"News article with ID '{request.NewsId}' not found.");
             }
 
+            // Check for cancellation after database read
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Check if tag already exists
             if (existingNews.Tags.Contains(request.Tag, StringComparer.OrdinalIgnoreCase))
             {
@@ -71,8 +77,14 @@ public class AddNewsArticleTagHandler : IRequestHandler<AddNewsArticleTagCommand
             // Add the tag
             existingNews.AddTag(request.Tag);
 
+            // Check for cancellation before saving
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Save the updated entity
             await _newsRepository.SaveAsync(existingNews, cancellationToken);
+            
+            // Check for cancellation before committing transaction
+            cancellationToken.ThrowIfCancellationRequested();
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -80,6 +92,11 @@ public class AddNewsArticleTagHandler : IRequestHandler<AddNewsArticleTagCommand
             _logger.LogInformation("Successfully added tag '{Tag}' to news article with ID: {NewsId}", request.Tag, request.NewsId);
 
             return Result<bool>.Success(true);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Add tag operation was cancelled for news article ID: {NewsId}, Tag: {Tag}", request.NewsId, request.Tag);
+            throw; // Re-throw to let the framework handle it
         }
         catch (Exception ex)
         {

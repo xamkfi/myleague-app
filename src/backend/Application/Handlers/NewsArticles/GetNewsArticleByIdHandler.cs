@@ -41,9 +41,16 @@ public class GetNewsArticleByIdHandler : IRequestHandler<GetNewsArticleByIdQuery
     {
         try
         {
+            // Check for cancellation before starting
+            cancellationToken.ThrowIfCancellationRequested();
+
             _logger.LogInformation("Retrieving news article with ID: {NewsId}", request.NewsId);
 
             NewsArticle? newsArticle = await _newsRepository.GetByIdAsync(request.NewsId, cancellationToken);
+            
+            // Check for cancellation after database operation
+            cancellationToken.ThrowIfCancellationRequested();
+            
             if (newsArticle == null)
             {
                 _logger.LogWarning("News article with ID: {NewsId} not found", request.NewsId);
@@ -55,6 +62,11 @@ public class GetNewsArticleByIdHandler : IRequestHandler<GetNewsArticleByIdQuery
             _logger.LogInformation("Successfully retrieved news article: {Title}", newsArticle.Title);
 
             return Result<NewsArticleDto>.Success(newsDto);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Get news article operation was cancelled for ID: {NewsId}", request.NewsId);
+            throw; // Re-throw to let the framework handle it
         }
         catch (Exception ex)
         {

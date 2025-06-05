@@ -15,4 +15,4 @@ public record GetAllNewsArticlesQuery(
     string? Category = null,
     string? SportCategory = null,
     string? Author = null,
-    bool IncludeArchived = false) : IRequest<Result<IEnumerable<NewsArticleListDto>>>; 
+    bool IncludeArchived = false) : IRequest<Result<PagedResult<NewsArticleListDto>>>; 

@@ -9,5 +9,5 @@ namespace Application.Queries.NewsArticles;
 /// Query for retrieving recent news articles
 /// </summary>
 public record GetRecentNewsArticlesQuery(
-    int Count = 10,
+    int Count = 3,
     bool IncludeArchived = false) : IRequest<Result<IEnumerable<NewsArticleListDto>>>; 

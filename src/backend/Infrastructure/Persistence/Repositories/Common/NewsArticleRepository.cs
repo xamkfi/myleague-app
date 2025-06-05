@@ -277,6 +277,57 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
+        /// Gets the total count of news articles with filtering
+        /// </summary>
+        /// <param name="category">Optional category filter</param>
+        /// <param name="sportCategory">Optional sport category filter</param>
+        /// <param name="author">Optional author filter</param>
+        /// <param name="includeArchived">Whether to include archived articles</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Total count of matching news articles</returns>
+        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                IQueryable<NewsArticle> query = _entities;
+
+                // Apply same filters as GetAllAsync
+                if (!includeArchived)
+                {
+                    query = query.Where(n => !n.IsArchived);
+                }
+
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    if (Enum.TryParse<NewsCategory>(category, true, out NewsCategory parsedCategory))
+                    {
+                        query = query.Where(n => n.Category == parsedCategory);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(sportCategory))
+                {
+                    if (Enum.TryParse<SportsCategory>(sportCategory, true, out SportsCategory parsedSportCategory))
+                    {
+                        query = query.Where(n => n.SportCategory == parsedSportCategory);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(author))
+                {
+                    query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
+                }
+
+                return await query.CountAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while counting news articles with filters. Category: {Category}, SportCategory: {SportCategory}, Author: {Author}", category, sportCategory, author);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Gets all unique tags used in news articles
         /// </summary>
         /// <param name="cancellationToken">Cancellation token</param>

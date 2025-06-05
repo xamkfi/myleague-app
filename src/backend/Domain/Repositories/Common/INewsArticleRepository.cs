@@ -65,6 +65,17 @@ namespace Domain.Repositories.Common
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Collection of news articles</returns>
         Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the total count of news articles with filtering
+        /// </summary>
+        /// <param name="category">Optional category filter</param>
+        /// <param name="sportCategory">Optional sport category filter</param>
+        /// <param name="author">Optional author filter</param>
+        /// <param name="includeArchived">Whether to include archived articles</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Total count of matching news articles</returns>
+        Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default);
         
         /// <summary>
         /// Gets all unique tags used in news articles

@@ -44,6 +44,9 @@ public class CreateNewsArticleHandler : IRequestHandler<CreateNewsArticleCommand
     {
         try
         {
+            // Check for cancellation before starting
+            cancellationToken.ThrowIfCancellationRequested();
+
             _logger.LogInformation("Creating new news article with title: {Title}", request.Title);
 
             // Create the news entity using the mapper
@@ -51,8 +54,14 @@ public class CreateNewsArticleHandler : IRequestHandler<CreateNewsArticleCommand
 
             _logger.LogInformation("Creating news article with ID: {NewsId}", newsArticle.Id);
 
+            // Check for cancellation before database operations
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Save the entity
             await _newsRepository.SaveAsync(newsArticle, cancellationToken);
+            
+            // Check for cancellation before committing transaction
+            cancellationToken.ThrowIfCancellationRequested();
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -63,6 +72,11 @@ public class CreateNewsArticleHandler : IRequestHandler<CreateNewsArticleCommand
             _logger.LogInformation("Successfully created news article with ID: {NewsId}", newsArticle.Id);
 
             return Result<NewsArticleDto>.Success(newsDto);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("News article creation was cancelled for title: {Title}", request.Title);
+            throw; // Re-throw to let the framework handle it
         }
         catch (Exception ex)
         {
