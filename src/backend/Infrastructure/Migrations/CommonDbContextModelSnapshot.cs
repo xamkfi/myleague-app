@@ -64,7 +64,7 @@ namespace MyLeague.Infrastructure.Migrations
                     b.ToTable("Clubs");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Common.News", b =>
+            modelBuilder.Entity("Domain.Entities.Common.NewsArticle", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -79,14 +79,14 @@ namespace MyLeague.Infrastructure.Migrations
 
                     b.Property<string>("ContentHtml")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ImageUrls")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsArchived")
                         .ValueGeneratedOnAdd()
@@ -103,7 +103,7 @@ namespace MyLeague.Infrastructure.Migrations
 
                     b.Property<string>("Tags")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -111,7 +111,7 @@ namespace MyLeague.Infrastructure.Migrations
                         .HasColumnType("character varying(200)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 

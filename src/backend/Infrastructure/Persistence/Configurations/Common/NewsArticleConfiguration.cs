@@ -35,8 +35,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
 
             // ContentHtml property - required, unlimited length
             builder.Property(n => n.ContentHtml)
-                .IsRequired()
-                .HasColumnType("nvarchar(max)");
+                .IsRequired();
 
             // Summary property - optional, max 500 characters
             builder.Property(n => n.Summary)
@@ -48,12 +47,10 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
 
             // CreatedAt property - required, UTC datetime
             builder.Property(n => n.CreatedAt)
-                .IsRequired()
-                .HasColumnType("datetime2");
+                .IsRequired();
 
             // UpdatedAt property - optional, UTC datetime
-            builder.Property(n => n.UpdatedAt)
-                .HasColumnType("datetime2");
+            builder.Property(n => n.UpdatedAt);
 
             // Category property - enum stored as string
             builder.Property(n => n.Category)
@@ -78,15 +75,13 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
             builder.Property(n => n.Tags)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>())
-                .HasColumnType("nvarchar(max)");
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
 
             // ImageUrls property - JSON serialized URI collection
             builder.Property(n => n.ImageUrls)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v.Select(uri => uri.ToString()), (JsonSerializerOptions?)null),
-                    v => (JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()).Select(s => new Uri(s)).ToList())
-                .HasColumnType("nvarchar(max)");
+                    v => (JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()).Select(s => new Uri(s)).ToList());
 
             // Performance indexes
             

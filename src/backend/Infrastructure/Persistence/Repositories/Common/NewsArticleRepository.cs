@@ -2,6 +2,7 @@ using Domain.Entities.Common;
 using Domain.Enums.Common;
 using Domain.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories;
 using System.Text.Json;
@@ -13,12 +14,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
     /// </summary>
     public class NewsArticleRepository : RepositoryBase<NewsArticle, CommonDbContext>, INewsArticleRepository
     {
+        private readonly ILogger<NewsArticleRepository> _logger;
+
         /// <summary>
         /// Initializes a new instance of the NewsArticleRepository class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        public NewsArticleRepository(CommonDbContext dbContext) : base(dbContext)
+        /// <param name="logger">The logger</param>
+        public NewsArticleRepository(CommonDbContext dbContext, ILogger<NewsArticleRepository> logger) : base(dbContext)
         {
+            _logger = logger;
         }
 
         /// <summary>
@@ -41,10 +46,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>A collection of news by the specified author</returns>
         public async Task<IEnumerable<NewsArticle>> GetByAuthorAsync(string author, CancellationToken cancellationToken = default)
         {
-            return await _entities
-                .Where(n => n.Author == author)
-                .OrderByDescending(n => n.CreatedAt)
-                .ToListAsync(cancellationToken);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(author))
+                {
+                    _logger.LogWarning("GetByAuthorAsync called with null or empty author");
+                    return new List<NewsArticle>();
+                }
+
+                return await _entities
+                    .Where(n => n.Author == author)
+                    .OrderByDescending(n => n.CreatedAt)
+                    .ToListAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving news articles by author: {Author}", author);
+                throw;
+            }
         }
 
         /// <summary>
@@ -105,10 +124,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>A collection of news containing the specified tag</returns>
         public async Task<IEnumerable<NewsArticle>> GetByTagAsync(string tag, CancellationToken cancellationToken = default)
         {
-            return await _entities
-                .Where(n => EF.Functions.JsonContains(EF.Property<string>(n, "Tags"), $"\"{tag}\""))
-                .OrderByDescending(n => n.CreatedAt)
-                .ToListAsync(cancellationToken);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(tag))
+                {
+                    _logger.LogWarning("GetByTagAsync called with null or empty tag");
+                    return new List<NewsArticle>();
+                }
+
+                return await _entities
+                    .Where(n => EF.Functions.JsonContains(EF.Property<string>(n, "Tags"), $"\"{tag}\""))
+                    .OrderByDescending(n => n.CreatedAt)
+                    .ToListAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving news articles by tag: {Tag}", tag);
+                throw;
+            }
         }
 
         /// <summary>
@@ -120,17 +153,31 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>A collection of recent news</returns>
         public async Task<IEnumerable<NewsArticle>> GetRecentAsync(int count = 10, bool includeArchived = false, CancellationToken cancellationToken = default)
         {
-            IQueryable<NewsArticle> query = _entities;
-
-            if (!includeArchived)
+            try
             {
-                query = query.Where(n => !n.IsArchived);
-            }
+                if (count <= 0)
+                {
+                    _logger.LogWarning("GetRecentAsync called with invalid count: {Count}", count);
+                    return new List<NewsArticle>();
+                }
 
-            return await query
-                .OrderByDescending(n => n.CreatedAt)
-                .Take(count)
-                .ToListAsync(cancellationToken);
+                IQueryable<NewsArticle> query = _entities;
+
+                if (!includeArchived)
+                {
+                    query = query.Where(n => !n.IsArchived);
+                }
+
+                return await query
+                    .OrderByDescending(n => n.CreatedAt)
+                    .Take(count)
+                    .ToListAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving recent news articles. Count: {Count}, IncludeArchived: {IncludeArchived}", count, includeArchived);
+                throw;
+            }
         }
 
         /// <summary>
@@ -170,43 +217,63 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>Collection of news articles</returns>
         public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default)
         {
-            IQueryable<NewsArticle> query = _entities;
-
-            // Apply filters
-            if (!includeArchived)
+            try
             {
-                query = query.Where(n => !n.IsArchived);
-            }
-
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                if (Enum.TryParse<NewsCategory>(category, true, out NewsCategory parsedCategory))
+                if (page <= 0)
                 {
-                    query = query.Where(n => n.Category == parsedCategory);
+                    _logger.LogWarning("GetAllAsync called with invalid page number: {Page}", page);
+                    page = 1;
                 }
-            }
 
-            if (!string.IsNullOrWhiteSpace(sportCategory))
-            {
-                if (Enum.TryParse<SportsCategory>(sportCategory, true, out SportsCategory parsedSportCategory))
+                if (pageSize <= 0)
                 {
-                    query = query.Where(n => n.SportCategory == parsedSportCategory);
+                    _logger.LogWarning("GetAllAsync called with invalid page size: {PageSize}", pageSize);
+                    pageSize = 10;
                 }
-            }
 
-            if (!string.IsNullOrWhiteSpace(author))
+                IQueryable<NewsArticle> query = _entities;
+
+                // Apply filters
+                if (!includeArchived)
+                {
+                    query = query.Where(n => !n.IsArchived);
+                }
+
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    if (Enum.TryParse<NewsCategory>(category, true, out NewsCategory parsedCategory))
+                    {
+                        query = query.Where(n => n.Category == parsedCategory);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(sportCategory))
+                {
+                    if (Enum.TryParse<SportsCategory>(sportCategory, true, out SportsCategory parsedSportCategory))
+                    {
+                        query = query.Where(n => n.SportCategory == parsedSportCategory);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(author))
+                {
+                    query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
+                }
+
+                // Apply pagination
+                int skip = (page - 1) * pageSize;
+
+                return await query
+                    .OrderByDescending(n => n.CreatedAt)
+                    .Skip(skip)
+                    .Take(pageSize)
+                    .ToListAsync(cancellationToken);
+            }
+            catch (Exception ex)
             {
-                query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
+                _logger.LogError(ex, "Error occurred while retrieving paginated news articles. Page: {Page}, PageSize: {PageSize}", page, pageSize);
+                throw;
             }
-
-            // Apply pagination
-            int skip = (page - 1) * pageSize;
-
-            return await query
-                .OrderByDescending(n => n.CreatedAt)
-                .Skip(skip)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -261,15 +328,31 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>Task representing the async operation</returns>
         public async Task SaveAsync(NewsArticle news, CancellationToken cancellationToken = default)
         {
-            bool exists = await ExistsAsync(news.Id, cancellationToken);
-            
-            if (exists)
+            try
             {
-                _entities.Update(news);
+                if (news == null)
+                {
+                    _logger.LogError("SaveAsync called with null news article");
+                    throw new ArgumentNullException(nameof(news));
+                }
+
+                bool exists = await ExistsAsync(news.Id, cancellationToken);
+                
+                if (exists)
+                {
+                    _entities.Update(news);
+                    _logger.LogDebug("Updated existing news article with ID: {NewsId}", news.Id);
+                }
+                else
+                {
+                    await _entities.AddAsync(news, cancellationToken);
+                    _logger.LogDebug("Added new news article with ID: {NewsId}", news.Id);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await _entities.AddAsync(news, cancellationToken);
+                _logger.LogError(ex, "Error occurred while saving news article with ID: {NewsId}", news?.Id);
+                throw;
             }
         }
 
@@ -317,7 +400,22 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>Task representing the async operation</returns>
         public async Task CreateNews(NewsArticle news)
         {
-            await _entities.AddAsync(news);
+            try
+            {
+                if (news == null)
+                {
+                    _logger.LogError("CreateNews called with null news article");
+                    throw new ArgumentNullException(nameof(news));
+                }
+
+                await _entities.AddAsync(news);
+                _logger.LogDebug("Created news article with ID: {NewsId}", news.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while creating news article with ID: {NewsId}", news?.Id);
+                throw;
+            }
         }
 
         /// <summary>
@@ -327,8 +425,23 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>Task representing the async operation</returns>
         public Task UpdateNews(NewsArticle news)
         {
-            _entities.Update(news);
-            return Task.CompletedTask;
+            try
+            {
+                if (news == null)
+                {
+                    _logger.LogError("UpdateNews called with null news article");
+                    throw new ArgumentNullException(nameof(news));
+                }
+
+                _entities.Update(news);
+                _logger.LogDebug("Updated news article with ID: {NewsId}", news.Id);
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while updating news article with ID: {NewsId}", news?.Id);
+                throw;
+            }
         }
     }
 } 
