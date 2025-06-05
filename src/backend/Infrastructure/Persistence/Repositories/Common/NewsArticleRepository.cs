@@ -217,24 +217,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         public async Task<IEnumerable<string>> GetAllTagsAsync(CancellationToken cancellationToken = default)
         {
             // Get all news articles that have tags
-            var newsWithTags = await _entities
+            List<string> newsWithTags = await _entities
                 .Where(n => n.Tags.Count > 0)
                 .Select(n => EF.Property<string>(n, "Tags"))
                 .ToListAsync(cancellationToken);
 
             // Extract unique tags from JSON arrays
-            var allTags = new HashSet<string>();
+            HashSet<string> allTags = new HashSet<string>();
 
-            foreach (var tagsJson in newsWithTags)
+            foreach (string tagsJson in newsWithTags)
             {
                 if (!string.IsNullOrWhiteSpace(tagsJson))
                 {
                     try
                     {
-                        var tags = System.Text.Json.JsonSerializer.Deserialize<List<string>>(tagsJson);
+                        List<string>? tags = System.Text.Json.JsonSerializer.Deserialize<List<string>>(tagsJson);
                         if (tags != null)
                         {
-                            foreach (var tag in tags)
+                            foreach (string tag in tags)
                             {
                                 if (!string.IsNullOrWhiteSpace(tag))
                                 {
