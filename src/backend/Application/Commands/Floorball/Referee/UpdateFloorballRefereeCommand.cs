@@ -22,5 +22,5 @@ namespace Application.Commands.Floorball.Referee
         DateTime? LicenseIssueDate,
         DateTime? LicenseExpiryDate,
         int MatchesOfficiated,
-        bool IsActive) : IRequest<Result<FloorballMatchDto>>;
+        bool IsActive) : IRequest<Result<FloorballRefereeDto>>;
 }
