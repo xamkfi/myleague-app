@@ -163,6 +163,12 @@ public static class NewsArticleMapper
         // Update content
         newsArticle.UpdateContent(command.Title, command.ContentHtml, command.Summary);
 
+        // Update author if provided
+        if (command.Author != null)
+        {
+            newsArticle.UpdateAuthor(command.Author);
+        }
+
         // Update category if provided
         if (!string.IsNullOrEmpty(command.Category) && Enum.TryParse<NewsCategory>(command.Category, true, out NewsCategory category))
         {

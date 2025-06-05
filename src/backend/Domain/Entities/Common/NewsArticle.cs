@@ -123,6 +123,18 @@ namespace Domain.Entities.Common
         }
 
         /// <summary>
+        /// Updates the author of the news article and raises an author update event.
+        /// </summary>
+        /// <param name="author">The new author name.</param>
+        public void UpdateAuthor(string? author)
+        {
+            string? oldAuthor = Author;
+            Author = author;
+            UpdatedAt = DateTime.UtcNow;
+            AddDomainEvent(new NewsArticleAuthorUpdatedEvent(Id, oldAuthor, Author, UpdatedAt.Value));
+        }
+
+        /// <summary>
         /// Adds an image URL to the news article and raises an image update event.
         /// </summary>
         /// <param name="imageUrl">The URL of the image to add.</param>
