@@ -6,7 +6,7 @@ namespace Application.DTOs.Common;
 /// <summary>
 /// Data Transfer Object for News entity - simplified list view without content
 /// </summary>
-public record NewsListDto(
+public record NewsArticleListDto(
     Guid Id,
     string Title,
     string? Summary,

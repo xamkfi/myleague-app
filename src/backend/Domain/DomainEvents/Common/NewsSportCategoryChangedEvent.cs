@@ -7,7 +7,7 @@ using Domain.Enums.Common;
 
 namespace Domain.DomainEvents.Common
 {
-    public record NewsSportCategoryChangedEvent : IDomainEvent
+    public record NewsArticleSportCategoryChangedEvent : IDomainEvent
     {
         /// <summary>
         /// Gets the unique identifier of the event
@@ -46,7 +46,7 @@ namespace Domain.DomainEvents.Common
         /// <param name="oldCategory">The previous category</param>
         /// <param name="newCategory">The new category</param>
         /// <param name="updatedAt">The date and time when the category was changed</param>
-        public NewsSportCategoryChangedEvent(Guid newsId, SportsCategory? oldCategory, SportsCategory? newCategory, DateTime updatedAt)
+        public NewsArticleSportCategoryChangedEvent(Guid newsId, SportsCategory? oldCategory, SportsCategory? newCategory, DateTime updatedAt)
         {
             Id = Guid.NewGuid();
             OccurredOn = DateTime.UtcNow;

@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
+using MediatR;
+using Application.DTOs.Common;
+using Application.Common;
 
-namespace Application.DTOs.Common;
+namespace Application.Commands.NewsArticles;
 
 /// <summary>
-/// Data Transfer Object for updating existing news articles
+/// Command for updating an existing news article
 /// </summary>
-public record NewsArticleUpdateDto(
+public record UpdateNewsArticleCommand(
     Guid Id,
     string Title,
     string ContentHtml,
@@ -15,4 +18,4 @@ public record NewsArticleUpdateDto(
     string? Author = null,
     string? Category = null,
     string? SportCategory = null,
-    IReadOnlyList<string>? Tags = null); 
+    IReadOnlyList<string>? Tags = null) : IRequest<Result<NewsArticleDto>>; 

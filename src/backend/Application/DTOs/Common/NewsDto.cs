@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace Application.DTOs.Common;
 
 /// <summary>
-/// Data Transfer Object for News entity - complete article view
+/// Data Transfer Object for NewsArticle entity - complete article view
 /// </summary>
-public record NewsDto(
+public record NewsArticleDto(
     Guid Id,
     string Title,
     string ContentHtml,
