@@ -1,0 +1,72 @@
+{
+  "news": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "title": "Manchester United Signs New Star Player",
+      "contentHtml": "<p>Manchester United has officially announced the signing of <strong>Marco Silva</strong>, a 23-year-old midfielder from Barcelona.</p><p>The transfer fee is reported to be around €45 million, making it one of the biggest signings of the summer transfer window.</p><p>Silva expressed his excitement about joining the Red Devils: \"I'm thrilled to be part of this historic club and can't wait to contribute to the team's success.\"</p>",
+      "summary": "Manchester United signs 23-year-old midfielder Marco Silva from Barcelona for €45 million.",
+      "imageUrls": [
+        "https://images.squarespace-cdn.com/content/v1/54822a56e4b0b30bd821480c/4e17ec01-850d-4fda-a446-e68ff71854ba/German+Shepherds+dans+pet+care.jpeg",
+        "https://example.com/images/silva-jersey.jpg"
+      ],
+      "author": "Sarah Johnson",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T14:20:00.000Z",
+      "category": "Transfer",
+      "sportCategory": "Football",
+      "tags": [
+        "Manchester United",
+        "Transfer",
+        "Barcelona",
+        "Midfielder"
+      ],
+      "isArchived": false
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "title": "Lakers Defeat Warriors in Overtime Thriller",
+      "contentHtml": "<p>The Los Angeles Lakers secured a dramatic <strong>128-125 overtime victory</strong> over the Golden State Warriors at Crypto.com Arena last night.</p><p>LeBron James led the scoring with 35 points, 8 rebounds, and 12 assists in what many are calling one of the games of the season.</p><p>The game was tied 115-115 at the end of regulation before the Lakers pulled away in the extra period.</p><p>\"Our team showed incredible resilience tonight,\" said Lakers coach Darvin Ham after the game.</p>",
+      "summary": "Lakers beat Warriors 128-125 in overtime with LeBron James scoring 35 points.",
+      "imageUrls": [
+        "https://example.com/images/lakers-warriors-game.jpg",
+        "https://example.com/images/lebron-celebration.jpg",
+        "https://example.com/images/overtime-action.jpg"
+      ],
+      "author": "Mike Rodriguez",
+      "createdAt": "2024-01-14T22:45:00.000Z",
+      "updatedAt": null,
+      "category": "GameResult",
+      "sportCategory": "Basketball",
+      "tags": [
+        "Lakers",
+        "Warriors",
+        "LeBron James",
+        "Overtime",
+        "NBA"
+      ],
+      "isArchived": false
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "title": "Tennis Championship Postponed Due to Weather",
+      "contentHtml": "<p>The annual <strong>Spring Tennis Championship</strong> scheduled for this weekend has been postponed due to severe weather conditions.</p><p>Tournament organizers announced that heavy rainfall and strong winds are expected throughout the weekend, making it unsafe for players and spectators.</p><p>The championship will now take place on <strong>March 15-17, 2024</strong> at the same venue.</p><p>All previously purchased tickets will remain valid for the new dates. Refunds are available for those unable to attend the rescheduled event.</p>",
+      "summary": "Spring Tennis Championship postponed to March 15-17 due to severe weather conditions.",
+      "imageUrls": [
+        "https://example.com/images/tennis-court-rain.jpg"
+      ],
+      "author": "Emily Chen",
+      "createdAt": "2024-01-12T09:15:00.000Z",
+      "updatedAt": "2024-01-12T16:30:00.000Z",
+      "category": "Announcement",
+      "sportCategory": "Tennis",
+      "tags": [
+        "Tennis",
+        "Championship",
+        "Weather",
+        "Postponed",
+        "Spring Tournament"
+      ],
+      "isArchived": false
+    }
+  ]
+}

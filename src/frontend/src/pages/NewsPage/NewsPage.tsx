@@ -1,24 +1,66 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './NewsPage.scss';
+import mockData from './mockNews.json';
+import NewsCard from './components/NewsCard';
+import NewsFilter from './components/NewsFilter';
+
+interface NewsData {
+  id: string;
+  title: string;
+  contentHtml: string;
+  summary?: string;
+  imageUrls: string[]; 
+  author?: string; 
+  createdAt: string; 
+  updatedAt?: string | null; 
+  category?: string; 
+  sportCategory?: string; 
+  tags: string[];
+  isArchived: boolean;
+}
+
+interface FilterValues {
+  category: string;
+  sportCategory: string;
+  searchTerm: string;
+}
+
+
+interface NewsFilterProps {
+  categories: string[];
+  sportCategories: string[];
+  onFilterChange: (filters: FilterValues) => void;
+}
 
 function NewsPage() {
+
   const { t } = useTranslation();
+  const newsList: NewsData[] = mockData.news;
+
   
+  const [filters, setFilters] = useState<FilterValues>({
+    category: '',
+    sportCategory: '',
+    searchTerm: '',
+  });
+
+
+  useEffect(()=>{
+    //Fetch new data when categories change.
+    console.log(filters.category, filters.sportCategory, filters.searchTerm)
+  },[filters])
+
   return (
     <PageTemplate title={t('nav.news')}>
-      <div className="news-container">
-        <article className="news-item">
-          <h2>Lorem ipsum dolor sit amet</h2>
-          <p className="news-date">05.05.2023</p>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, quis aliquam nisl nunc quis nisl.</p>
-        </article>
-        <article className="news-item">
-          <h2>Consectetur adipiscing elit</h2>
-          <p className="news-date">01.05.2023</p>
-          <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante.</p>
-        </article>
+
+      <div className="space-y-10">
+        <NewsFilter onFilterChange={setFilters}/>
+
+        {newsList.map((item) => (
+          <NewsCard key={item.id} news={item}/>
+        ))}
       </div>
     </PageTemplate>
   );
