@@ -1,4 +1,3 @@
-import React from 'react';
 import type { ReactNode } from 'react';
 import Navbar from '../Navigation/Navbar';
 import './PageTemplate.scss';
