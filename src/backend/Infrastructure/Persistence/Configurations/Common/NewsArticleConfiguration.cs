@@ -33,6 +33,12 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
                 .IsRequired()
                 .HasMaxLength(200);
 
+            // MainImage property - optional, stored as string
+            builder.Property(n => n.MainImage)
+                .HasConversion(
+                    v => v != null ? v.ToString() : null,
+                    v => v != null ? new Uri(v) : null);
+
             // ContentHtml property - required, unlimited length
             builder.Property(n => n.ContentHtml)
                 .IsRequired();

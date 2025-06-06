@@ -31,4 +31,9 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\..\..\src\backend\Application\Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Performance\" />
+    <Folder Include="Repositories\" />
+  </ItemGroup>
+
 </Project> 
