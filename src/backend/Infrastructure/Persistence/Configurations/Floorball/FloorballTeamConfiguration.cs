@@ -37,6 +37,10 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(t => t.SecondaryJerseyColor)
                 .HasMaxLength(50);
 
+            builder.Property(x => x.TeamCategory)
+                .IsRequired()
+                .HasConversion<string>();
+
             // Ignore Club navigation property to prevent cross-context entity discovery
             builder.Ignore(t => t.Club);
 

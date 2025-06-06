@@ -3,8 +3,9 @@ using MyLeague.Infrastructure.DependencyInjections;
 using WebAPI.Middlewares;
 using WebAPI.DependencyInjections;
 using Serilog;
-using FluentValidation.AspNetCore;
 using Scalar.AspNetCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Text.Json;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -14,10 +15,6 @@ builder.Host.UseSerilog((context, configuration) =>
 
 // Add services to the container
 builder.Services.AddControllers();
-
-// Add FluentValidation (using new non-obsolete methods)
-builder.Services.AddFluentValidationAutoValidation()
-    .AddFluentValidationClientsideAdapters();
 
 // Add API Explorer services for OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -31,11 +28,11 @@ builder.Services.AddCorsConfiguration();
 // Register application services
 builder.Services.AddApplication();
 
-// Register infrastructure services
+// Register infrastructure services 
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// Add health checks
-builder.Services.AddHealthChecks();
+// Add Health Check UI configuration using extension method
+builder.Services.AddHealthCheckUIConfiguration(builder.Configuration);
 
 WebApplication app = builder.Build();
 
@@ -62,17 +59,72 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+app.UseStaticFiles();
 app.UseAuthorization();
 
 // Map controllers
 app.MapControllers();
 
-// Map health check endpoint
-app.MapHealthChecks("/health");
+// Map health check endpoints with detailed responses
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        
+        var response = new
+        {
+            Status = report.Status.ToString(),
+            Duration = report.TotalDuration.TotalMilliseconds,
+            CheckedAt = DateTime.UtcNow,
+            Checks = report.Entries.Select(entry => new
+            {
+                Name = entry.Key,
+                Status = entry.Value.Status.ToString(),
+                Description = entry.Value.Description,
+                Duration = entry.Value.Duration.TotalMilliseconds,
+                Data = entry.Value.Data,
+                Tags = entry.Value.Tags
+            })
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true
+        }));
+    }
+});
+
+// Map simple health check for load balancers
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "text/plain";
+        await context.Response.WriteAsync(report.Status == HealthStatus.Healthy ? "Healthy" : "Unhealthy");
+    }
+});
+
+// Map liveness check
+app.MapGet("/health/live", () => "Alive");
+
+// Map Health Check UI
+app.MapHealthChecksUI(options =>
+{
+    options.UIPath = "/health-ui";
+    options.ApiPath = "/health-ui-api";
+});
 
 // Log application startup
 app.Logger.LogInformation("MyLeague Club API started successfully");
 app.Logger.LogInformation("API Documentation available at: /scalar/v1");
 app.Logger.LogInformation("OpenAPI JSON available at: /swagger/v1/swagger.json");
+app.Logger.LogInformation("Health Check UI available at: /health-ui");
+app.Logger.LogInformation("Health Check endpoints:");
+app.Logger.LogInformation("  - Detailed: /health");
+app.Logger.LogInformation("  - Ready: /health/ready");
+app.Logger.LogInformation("  - Live: /health/live");
 
 app.Run(); 

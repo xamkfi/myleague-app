@@ -30,6 +30,7 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssembly(assembly);
             
             // Add pipeline behaviors - order matters!
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         });
         

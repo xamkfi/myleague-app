@@ -10,6 +10,7 @@ using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
 using MyLeague.Infrastructure.Persistence.Repositories.Common;
 using MyLeague.Infrastructure.Persistence.EventStores;
 using MyLeague.Infrastructure.Persistence.UnitOfWork;
+using MyLeague.Infrastructure.HealthChecks;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -28,7 +29,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? "Host=postgres;Database=myleague;Username=postgres;Password=postgres";
+            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? "";
 
             services.AddDbContext<CommonDbContext>(options =>
                 options.UseNpgsql(
@@ -55,6 +56,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
+            services.AddScoped<IPersonRepository, PersonRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
             services.AddScoped<IFloorballRefereeRepository, FloorballRefereeRepository>();
@@ -71,6 +73,9 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
             // Add domain events
             services.AddDomainEvents();
+
+            // Add health checks
+            services.AddMyLeagueHealthChecks(configuration);
 
             return services;
         }

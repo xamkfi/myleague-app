@@ -104,6 +104,12 @@
       padding: 0;
       margin: 0;
 
+      &.loading {
+        padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+        color: $color-navbar;
+        font-style: italic;
+      }
+
       a {
         display: block;
         padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
