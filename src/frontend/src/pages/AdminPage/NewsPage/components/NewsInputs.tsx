@@ -8,6 +8,7 @@ interface NewsInputsData {
   tags: string[];
   category: string;
   sportCategory: string;
+  summary: string;
 }
 
 interface NewsInputsProps {
@@ -42,6 +43,7 @@ const SPORT_CATEGORIES = [
 export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsProps) {
   const { t } = useTranslation();
   const [newTag, setNewTag] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const updateField = (field: keyof NewsInputsData, value: any) => {
     onChange({ ...data, [field]: value });
@@ -65,14 +67,54 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
     }
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert(t('admin.news.error.invalid_image', 'Please select a valid image file'));
+        return;
+      }
+
+      // Validate file size (e.g., max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert(t('admin.news.error.image_too_large', 'Image file must be less than 5MB'));
+        return;
+      }
+
+      setUploadingImage(true);
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageDataUrl = e.target?.result as string;
+        updateField('mainPicture', imageDataUrl);
+        setUploadingImage(false);
+      };
+      reader.onerror = () => {
+        alert(t('admin.news.error.upload_failed', 'Failed to upload image'));
+        setUploadingImage(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const downloadImage = () => {
+    if (data.mainPicture) {
+      const link = document.createElement('a');
+      link.href = data.mainPicture;
+      link.download = `news-image-${Date.now()}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const removeImage = () => {
+    updateField('mainPicture', '');
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-        {t('admin.news.article_details', 'Article Details')}
-      </h2>
 
       <div className="space-y-6">
         {/* Title */}
@@ -100,47 +142,163 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
           )}
         </div>
 
-        {/* Main Picture */}
+        {/* Summary */}
         <div>
-          <label htmlFor="mainPicture" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('admin.news.main_picture', 'Main Picture URL')}
+          <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-2">
+            {t('admin.news.summary', 'Summary')} <span className="text-red-500">*</span>
           </label>
-          <div className="space-y-3">
-            <input
-              type="url"
-              id="mainPicture"
-              value={data.mainPicture}
-              onChange={(e) => updateField('mainPicture', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                errors.mainPicture ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
-              placeholder={t('admin.news.picture_placeholder', 'https://example.com/image.jpg')}
-            />
-            {data.mainPicture && (
-              <div className="relative">
-                <img
-                  src={data.mainPicture}
-                  alt="Main picture preview"
-                  className="w-full h-48 object-cover rounded-lg border border-gray-200"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = 'https://via.placeholder.com/400x200?text=Invalid+Image+URL';
-                  }}
-                />
-                <div className="absolute top-2 right-2">
-                  <button
-                    type="button"
-                    onClick={() => updateField('mainPicture', '')}
-                    className="bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+          <textarea
+            id="summary"
+            value={data.summary}
+            onChange={(e) => updateField('summary', e.target.value)}
+            rows={3}
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none ${
+              errors.summary ? 'border-red-300 bg-red-50' : 'border-gray-300'
+            }`}
+            placeholder={t('admin.news.summary_placeholder', 'Write a brief summary that captures the essence of your article...')}
+          />
+          <div className="flex justify-between items-center mt-1">
+            <div className="text-sm text-gray-500">
+              {data.summary.length}/200 {t('admin.news.characters', 'characters')}
+            </div>
+            {data.summary.length > 200 && (
+              <div className="text-red-500 text-sm">
+                {t('admin.news.summary_too_long', 'Summary should be under 200 characters')}
               </div>
             )}
           </div>
+          {errors.summary && (
+            <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {errors.summary}
+            </p>
+          )}
+        </div>
+
+        {/* Main Picture */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {t('admin.news.main_picture', 'Main Picture')}
+          </label>
+          
+          {!data.mainPicture ? (
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                id="imageUpload"
+                disabled={uploadingImage}
+              />
+              <label
+                htmlFor="imageUpload"
+                className={`cursor-pointer ${uploadingImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className="flex flex-col items-center">
+                  <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <div className="text-sm text-gray-600">
+                    {uploadingImage ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {t('admin.news.uploading', 'Uploading...')}
+                      </span>
+                    ) : (
+                      <>
+                        <span className="font-medium text-blue-600">
+                          {t('admin.news.click_to_upload', 'Click to upload')}
+                        </span>
+                        <span className="text-gray-500"> {t('admin.news.or_drag_drop', 'or drag and drop')}</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    PNG, JPG, GIF {t('admin.news.up_to', 'up to')} 5MB
+                  </div>
+                </div>
+              </label>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="relative group">
+                <img
+                  src={data.mainPicture}
+                  alt="Main picture preview"
+                  className="w-full h-64 object-cover rounded-lg border border-gray-200"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://via.placeholder.com/400x200?text=Invalid+Image';
+                  }}
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={downloadImage}
+                      className="bg-white text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors flex items-center gap-2"
+                      title={t('admin.news.download_image', 'Download image')}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+                      title={t('admin.news.remove_image', 'Remove image')}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">
+                  {t('admin.news.image_uploaded', 'Image uploaded successfully')}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={downloadImage}
+                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    {t('admin.news.download', 'Download')}
+                  </button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="imageReplace"
+                  />
+                  <label
+                    htmlFor="imageReplace"
+                    className="text-sm text-green-600 hover:text-green-800 cursor-pointer flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    {t('admin.news.replace', 'Replace')}
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {errors.mainPicture && (
             <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
