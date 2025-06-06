@@ -28,12 +28,6 @@ interface FilterValues {
 }
 
 
-interface NewsFilterProps {
-  categories: string[];
-  sportCategories: string[];
-  onFilterChange: (filters: FilterValues) => void;
-}
-
 function NewsPage() {
 
   const { t } = useTranslation();

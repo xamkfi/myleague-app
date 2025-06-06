@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 interface NewsData {
   id: string;
   title: string;
@@ -14,8 +16,11 @@ interface NewsData {
 }
 
 export default function NewsCard({ news }: { news: NewsData }) {
+
+  const navigate = useNavigate();
+  
   return (
-    <div className="rounded-2xl overflow-hidden shadow-md bg-white">
+    <div className="rounded-2xl overflow-hidden shadow-md bg-white cursor-pointer transition-transform duration-300 hover:shadow-lg hover:scale-101" onClick={()=>navigate(`/uutiset/${news.id}`)}>
       <img
         src={news.imageUrls[0]}
         alt={news.title}

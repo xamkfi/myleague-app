@@ -66,13 +66,21 @@ export default function NewsFilter({onFilterChange}: NewsFilterProps) {
       </select>
 
       {/* Search input */}
-      <input
-        type="search"
-        placeholder="Search news..."
-        value={searchTerm}
-        onChange={(e) => handleFilterChange({ searchTerm: e.target.value })}
-        className="border rounded px-3 py-2 flex-grow min-w-[200px]"
-      />
+      <div className="flex items-center max-w-md w-full rounded-lg overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
+        <input
+          type="search"
+          placeholder="Search news..."
+          value={searchTerm}
+          onChange={(e) => handleFilterChange({ searchTerm: e.target.value })}
+          className="flex-grow px-4 py-2 outline-none"
+        />
+        <button
+          className="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors duration-300"
+        >
+          Search
+        </button>
+      </div>
+
     </div>
   );
 }
