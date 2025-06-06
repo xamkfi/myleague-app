@@ -38,6 +38,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// Gets or sets the Clubs DbSet.
         /// </summary>
         public DbSet<Club> Clubs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the NewsArticles DbSet.
+        /// </summary>
+        public DbSet<NewsArticle> NewsArticles { get; set; }
         
         /// <summary>
         /// Saves changes to the database with domain event dispatching.
@@ -83,6 +88,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             // Apply only Common configurations to avoid cross-context conflicts
             modelBuilder.ApplyConfiguration(new PersonConfiguration());
             modelBuilder.ApplyConfiguration(new ClubConfiguration());
+            modelBuilder.ApplyConfiguration(new NewsArticleConfiguration());
         }
     }
 } 

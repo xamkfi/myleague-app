@@ -18,7 +18,7 @@ namespace Domain.Entities.Common
     /// Represents a news article entity that supports domain events for tracking changes.
     /// This class manages news content, metadata, categorization, and archiving functionality.
     /// </summary>
-    public class News : AggregateRoot
+    public class NewsArticle : AggregateRoot
     {
         /// <summary>
         /// Gets the unique identifier of the news article.
@@ -82,7 +82,7 @@ namespace Domain.Entities.Common
         public bool IsArchived { get; private set; }
 
         private readonly List<string> _tags = new();
-        private News() { }
+        private NewsArticle() { }
 
         /// <summary>
         /// Creates a new news article with the specified parameters.
@@ -92,7 +92,7 @@ namespace Domain.Entities.Common
         /// <param name="contentHtml">The HTML content of the news article.</param>
         /// <param name="author">The optional author of the news article.</param>
         /// <exception cref="ArgumentException">Thrown when title or content is empty or title exceeds 200 characters.</exception>
-        public News(Guid id, string title, string contentHtml, string? author = null)
+        public NewsArticle(Guid id, string title, string contentHtml, string? author = null)
         {
             Id = id;
             Title = ValidateTitle(title);
@@ -100,7 +100,7 @@ namespace Domain.Entities.Common
             Author = author;
             CreatedAt = DateTime.UtcNow;
             IsArchived = false;
-            AddDomainEvent(new NewsCreatedEvent(Id, Title, Author, CreatedAt));
+            AddDomainEvent(new NewsArticleCreatedEvent(Id, Title, Author, CreatedAt));
         }
 
         /// <summary>
@@ -119,7 +119,19 @@ namespace Domain.Entities.Common
             ContentHtml = ValidateContent(contentHtml);
             Summary = summary;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsContentUpdatedEvent(Id, oldTitle, Title, oldContent, ContentHtml, oldSummary, Summary, UpdatedAt.Value));
+            AddDomainEvent(new NewsArticleContentUpdatedEvent(Id, oldTitle, Title, oldContent, ContentHtml, oldSummary, Summary, UpdatedAt.Value));
+        }
+
+        /// <summary>
+        /// Updates the author of the news article and raises an author update event.
+        /// </summary>
+        /// <param name="author">The new author name.</param>
+        public void UpdateAuthor(string? author)
+        {
+            string? oldAuthor = Author;
+            Author = author;
+            UpdatedAt = DateTime.UtcNow;
+            AddDomainEvent(new NewsArticleAuthorUpdatedEvent(Id, oldAuthor, Author, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -134,7 +146,7 @@ namespace Domain.Entities.Common
 
             _imageUrls.Add(imageUrl);
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsImageUpdatedEvent(Id ,imageUrl, UpdatedAt.Value));
+            AddDomainEvent(new NewsArticleImageUpdatedEvent(Id ,imageUrl, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -146,7 +158,7 @@ namespace Domain.Entities.Common
             NewsCategory? oldCategory = Category;
             Category = category;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsCategoryChangedEvent(Id, oldCategory, Category, UpdatedAt.Value));
+            AddDomainEvent(new NewsArticleCategoryChangedEvent(Id, oldCategory, Category, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -158,7 +170,7 @@ namespace Domain.Entities.Common
             SportsCategory? oldCategory = SportCategory;
             SportCategory = category;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsSportCategoryChangedEvent(Id, oldCategory, SportCategory, UpdatedAt.Value));
+            AddDomainEvent(new NewsArticleSportCategoryChangedEvent(Id, oldCategory, SportCategory, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -174,7 +186,7 @@ namespace Domain.Entities.Common
                 return;
             _tags.Add(tag);
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsTagAddedEvent(Id, tag, UpdatedAt.Value));
+            AddDomainEvent(new NewsArticleTagAddedEvent(Id, tag, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -186,7 +198,7 @@ namespace Domain.Entities.Common
             if (_tags.RemoveAll(t => string.Equals(t, tag, StringComparison.OrdinalIgnoreCase)) > 0)
             {
                 UpdatedAt = DateTime.UtcNow;
-                AddDomainEvent(new NewsTagRemovedEvent(Id, tag, UpdatedAt.Value));
+                AddDomainEvent(new NewsArticleTagRemovedEvent(Id, tag, UpdatedAt.Value));
             }
         }
 
@@ -199,7 +211,7 @@ namespace Domain.Entities.Common
                 return;
             IsArchived = true;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsArchivedEvent(Id, UpdatedAt.Value));
+            AddDomainEvent(new NewsArticleArchivedEvent(Id, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -211,7 +223,7 @@ namespace Domain.Entities.Common
                 return;
             IsArchived = false;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsRestoredEvent(Id, UpdatedAt.Value));
+            AddDomainEvent(new NewsArticleRestoredEvent(Id, UpdatedAt.Value));
         }
 
         /// <summary>

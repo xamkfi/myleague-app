@@ -5,7 +5,7 @@ namespace Domain.DomainEvents.Common;
 /// <summary>
 /// Event raised when a news article's content is updated
 /// </summary>
-public class NewsContentUpdatedEvent : IDomainEvent
+    public class NewsArticleContentUpdatedEvent : IDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier of the event
@@ -68,7 +68,7 @@ public class NewsContentUpdatedEvent : IDomainEvent
     /// <param name="oldSummary">The previous summary</param>
     /// <param name="newSummary">The new summary</param>
     /// <param name="updatedAt">The date and time when the content was updated</param>
-    public NewsContentUpdatedEvent(Guid newsId, string oldTitle, string newTitle, string oldContent, string newContent, string? oldSummary, string? newSummary, DateTime updatedAt)
+    public NewsArticleContentUpdatedEvent(Guid newsId, string oldTitle, string newTitle, string oldContent, string newContent, string? oldSummary, string? newSummary, DateTime updatedAt)
     {
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;

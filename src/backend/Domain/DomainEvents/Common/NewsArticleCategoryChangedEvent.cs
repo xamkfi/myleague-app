@@ -7,7 +7,7 @@ namespace Domain.DomainEvents.Common;
 /// <summary>
 /// Event raised when a news article's category is changed
 /// </summary>
-public class NewsCategoryChangedEvent : IDomainEvent
+    public class NewsArticleCategoryChangedEvent : IDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier of the event
@@ -46,7 +46,7 @@ public class NewsCategoryChangedEvent : IDomainEvent
     /// <param name="oldCategory">The previous category</param>
     /// <param name="newCategory">The new category</param>
     /// <param name="updatedAt">The date and time when the category was changed</param>
-    public NewsCategoryChangedEvent(Guid newsId, NewsCategory? oldCategory, NewsCategory? newCategory, DateTime updatedAt)
+    public NewsArticleCategoryChangedEvent(Guid newsId, NewsCategory? oldCategory, NewsCategory? newCategory, DateTime updatedAt)
     {
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;

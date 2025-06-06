@@ -3,9 +3,9 @@ using Domain.DomainEvents;
 namespace Domain.DomainEvents.Common;
 
 /// <summary>
-/// Event raised when an archived news article is restored
+/// Event raised when a news article is archived
 /// </summary>
-public class NewsRestoredEvent : IDomainEvent
+    public class NewsArticleArchivedEvent : IDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier of the event
@@ -23,16 +23,16 @@ public class NewsRestoredEvent : IDomainEvent
     public Guid NewsId { get; }
 
     /// <summary>
-    /// Gets the date and time when the article was restored
+    /// Gets the date and time when the article was archived
     /// </summary>
     public DateTime UpdatedAt { get; }
 
     /// <summary>
-    /// Initializes a new instance of the NewsRestoredEvent class
+    /// Initializes a new instance of the NewsArticleArchivedEvent class
     /// </summary>
     /// <param name="newsId">The ID of the news article</param>
-    /// <param name="updatedAt">The date and time when the article was restored</param>
-    public NewsRestoredEvent(Guid newsId, DateTime updatedAt)
+    /// <param name="updatedAt">The date and time when the article was archived</param>
+    public NewsArticleArchivedEvent(Guid newsId, DateTime updatedAt)
     {
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;

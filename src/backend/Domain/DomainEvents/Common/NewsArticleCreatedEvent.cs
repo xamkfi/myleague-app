@@ -6,7 +6,7 @@ namespace Domain.DomainEvents.Common;
 /// <summary>
 /// Event raised when a news article is created
 /// </summary>
-public class NewsCreatedEvent : IDomainEvent
+    public class NewsArticleCreatedEvent : IDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier of the event
@@ -45,7 +45,7 @@ public class NewsCreatedEvent : IDomainEvent
     /// <param name="title">The title of the news article</param>
     /// <param name="author">The author of the news article</param>
     /// <param name="createdAt">The date and time when the article was created</param>
-    public NewsCreatedEvent(Guid newsId, string title, string? author, DateTime createdAt)
+    public NewsArticleCreatedEvent(Guid newsId, string title, string? author, DateTime createdAt)
     {
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;

@@ -4,9 +4,9 @@ using Domain.ValueObjects.Common;
 namespace Domain.DomainEvents.Common;
 
 /// <summary>
-/// Event raised when a tag is removed from a news article
+/// Event raised when a news article's image is added
 /// </summary>
-public class NewsTagRemovedEvent : IDomainEvent
+    public class NewsArticleImageUpdatedEvent : IDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier of the event
@@ -24,27 +24,27 @@ public class NewsTagRemovedEvent : IDomainEvent
     public Guid NewsId { get; }
 
     /// <summary>
-    /// Gets the tag that was removed
+    /// Gets the image URL that was added
     /// </summary>
-    public string Tag { get; }
+    public Uri ImageUrl { get; }
 
     /// <summary>
-    /// Gets the date and time when the tag was removed
+    /// Gets the date and time when the image was added
     /// </summary>
     public DateTime UpdatedAt { get; }
 
     /// <summary>
-    /// Initializes a new instance of the NewsTagRemovedEvent class
+    /// Initializes a new instance of the NewsImageUpdatedEvent class
     /// </summary>
     /// <param name="newsId">The ID of the news article</param>
-    /// <param name="tag">The tag that was removed</param>
-    /// <param name="updatedAt">The date and time when the tag was removed</param>
-    public NewsTagRemovedEvent(Guid newsId, string tag, DateTime updatedAt)
+    /// <param name="imageUrl">The image URL that was added</param>
+    /// <param name="updatedAt">The date and time when the image was added</param>
+    public NewsArticleImageUpdatedEvent(Guid newsId, Uri imageUrl, DateTime updatedAt)
     {
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;
         NewsId = newsId;
-        Tag = tag;
+        ImageUrl = imageUrl;
         UpdatedAt = updatedAt;
     }
 } 

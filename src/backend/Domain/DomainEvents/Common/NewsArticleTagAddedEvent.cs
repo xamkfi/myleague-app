@@ -1,11 +1,12 @@
 using Domain.DomainEvents;
+using Domain.ValueObjects.Common;
 
 namespace Domain.DomainEvents.Common;
 
 /// <summary>
-/// Event raised when a news article is archived
+/// Event raised when a tag is added to a news article
 /// </summary>
-public class NewsArchivedEvent : IDomainEvent
+    public class NewsArticleTagAddedEvent : IDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier of the event
@@ -23,20 +24,27 @@ public class NewsArchivedEvent : IDomainEvent
     public Guid NewsId { get; }
 
     /// <summary>
-    /// Gets the date and time when the article was archived
+    /// Gets the tag that was added
+    /// </summary>
+    public string Tag { get; }
+
+    /// <summary>
+    /// Gets the date and time when the tag was added
     /// </summary>
     public DateTime UpdatedAt { get; }
 
     /// <summary>
-    /// Initializes a new instance of the NewsArchivedEvent class
+    /// Initializes a new instance of the NewsTagAddedEvent class
     /// </summary>
     /// <param name="newsId">The ID of the news article</param>
-    /// <param name="updatedAt">The date and time when the article was archived</param>
-    public NewsArchivedEvent(Guid newsId, DateTime updatedAt)
+    /// <param name="tag">The tag that was added</param>
+    /// <param name="updatedAt">The date and time when the tag was added</param>
+    public NewsArticleTagAddedEvent(Guid newsId, string tag, DateTime updatedAt)
     {
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;
         NewsId = newsId;
+        Tag = tag;
         UpdatedAt = updatedAt;
     }
 } 
