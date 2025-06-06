@@ -8,7 +8,6 @@ import AgeGroupsPage from '../pages/AgeGroupsPage/AgeGroupsPage';
 import RegisterPage from '../pages/RegisterPage/RegisterPage';
 import TournamentsPage from '../pages/TournamentsPage/TournamentsPage';
 import SportsPage from '../pages/SportsPage/SportsPage';
-
 import ClubPage from '../pages/ClubPage/ClubPage';
 import PlayerPage from '../pages/PlayerPage/PlayerPage';
 import AdminPage from '../pages/AdminPage/AdminPage';
