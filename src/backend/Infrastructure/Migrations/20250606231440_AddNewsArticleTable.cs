@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -21,6 +21,7 @@ namespace MyLeague.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    MainImage = table.Column<string>(type: "text", nullable: true),
                     ContentHtml = table.Column<string>(type: "text", nullable: false),
                     Summary = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     ImageUrls = table.Column<string>(type: "text", nullable: false),
@@ -84,4 +85,4 @@ namespace MyLeague.Infrastructure.Migrations
                 schema: "common");
         }
     }
-} 
+}

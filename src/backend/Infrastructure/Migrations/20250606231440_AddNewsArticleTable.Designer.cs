@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations
 {
     [DbContext(typeof(CommonDbContext))]
-    [Migration("20250606172254_AddedMainImageToNews")]
-    partial class AddedMainImageToNews
+    [Migration("20250606231440_AddNewsArticleTable")]
+    partial class AddNewsArticleTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
