@@ -1,4 +1,4 @@
-
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 
 interface NewsFilterProps {
@@ -11,6 +11,7 @@ interface NewsFilterProps {
 
 export default function NewsFilter({onFilterChange}: NewsFilterProps) {
 
+  const { t } = useTranslation();
   const [category, setCategory] = useState('');
   const [sportCategory, setSportCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -69,7 +70,7 @@ export default function NewsFilter({onFilterChange}: NewsFilterProps) {
       <div className="flex items-center max-w-md w-full rounded-lg overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
         <input
           type="search"
-          placeholder="Search news..."
+          placeholder={t("newsPage.searchPlaceholder")}
           value={searchTerm}
           onChange={(e) => handleFilterChange({ searchTerm: e.target.value })}
           className="flex-grow px-4 py-2 outline-none"
@@ -77,7 +78,7 @@ export default function NewsFilter({onFilterChange}: NewsFilterProps) {
         <button
           className="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors duration-300"
         >
-          Search
+          {t("newsPage.search")}
         </button>
       </div>
 
