@@ -86,6 +86,17 @@ Raised when a penalty is assigned during a match.
 ### FloorballOfficialAssignedEvent
 Raised when a referee is assigned to a match.
 
+## News Article
+A published piece of content containing information relevant to the league, including match reports, announcements, player updates, and general league news. Each article has a unique identifier, title, HTML content, and optional metadata such as author, category, and tags.
+## News Category
+A high-level classification system for organizing news content into logical groups such as Match Reports, League News, Player Updates, Team News, Announcements, Events, Transfers, Injuries, and Awards.
+## News Tags
+Flexible labels applied to news articles for enhanced organization and searchability. Tags allow for cross-cutting categorization beyond the primary category system.
+## Content HTML
+Rich formatted content of a news article stored as HTML markup, allowing for proper formatting, links, and embedded media within the article body.
+## News Summary
+An optional brief description or excerpt of a news article used for preview purposes in lists, feeds, or search results.
+
 ## Aggregate Roots
 
 The following entities serve as aggregate roots in our domain model:
