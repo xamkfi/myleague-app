@@ -19,6 +19,12 @@ const AdminPage = () => {
             {t('admin.actions.managePerson', 'Edit/Add Person')}
           </button>
           {/* More admin actions will be added here */}
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/news')}
+          >
+            {t('admin.actions.news', 'Create news')}
+          </button>
         </div>
       </div>
     </PageTemplate>

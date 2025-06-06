@@ -1,0 +1,38 @@
+
+.QuillEditor img{
+    width: 600px;
+    height: auto;
+    display: block;
+    margin: 1rem 0;
+    object-fit: contain;
+}
+
+.QuillEditor{
+    width: 800px;
+    height: 600px;
+}
+
+
+
+.PreviewNews img{
+    width: 600px;
+    height: auto;
+    display: block;
+    margin: 1rem 0;
+    object-fit: contain;
+}
+
+.PreviewNews {
+    text-align: left;
+    padding: 1rem;
+    width: 800px;        /* Fixed width */
+    height: 600px;       /* Fixed height (adjust as needed) */
+    margin: 0 auto;
+    line-height: 1.6;
+    background-color: burlywood;
+    overflow: auto;      /* To handle overflow content, if any */
+
+    word-wrap: break-word;       /* Break long words */
+    overflow-wrap: break-word;   /* Modern equivalent */
+    white-space: normal;         /* Ensure normal line wrapping */
+}
