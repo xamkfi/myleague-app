@@ -5,6 +5,7 @@ using Application.Queries.NewsArticles;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
+using Application.Commands.Common;
 
 namespace WebAPI.Controllers.Common
 {
@@ -503,6 +504,106 @@ namespace WebAPI.Controllers.Common
 
             string errorMessage = result.Error ?? result.GetErrorsString();
             return StatusCode(500, ApiResponse<List<string>>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Upload an image and get its URL
+        /// </summary>
+        /// <param name="file">The image file to upload</param>
+        /// <returns>The URL of the uploaded image</returns>
+        [HttpPost("upload-image")]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<string>>> UploadImage([FromForm] IFormFile file)
+        {
+            _logger.LogInformation("Uploading image: {FileName}", file?.FileName);
+
+            if (file == null || file.Length == 0)
+            {
+                _logger.LogWarning("Image upload failed: No file provided");
+                return BadRequest(ApiResponse<string>.ErrorResponse("No file provided"));
+            }
+
+            // Validate file type
+            string[] allowedContentTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
+            if (!allowedContentTypes.Contains(file.ContentType.ToLower()))
+            {
+                _logger.LogWarning("Image upload failed: Invalid file type {ContentType}", file.ContentType);
+                return BadRequest(ApiResponse<string>.ErrorResponse($"Invalid file type. Allowed types: {string.Join(", ", allowedContentTypes)}"));
+            }
+
+            // Validate file size (e.g., max 10MB)
+            const long maxFileSize = 10 * 1024 * 1024; // 10MB
+            if (file.Length > maxFileSize)
+            {
+                _logger.LogWarning("Image upload failed: File too large {FileSize} bytes", file.Length);
+                return BadRequest(ApiResponse<string>.ErrorResponse($"File too large. Maximum size is {maxFileSize / (1024 * 1024)}MB"));
+            }
+
+            try
+            {
+                using Stream stream = file.OpenReadStream();
+                
+                var command = new UploadImageCommand(
+                    stream,
+                    file.FileName,
+                    file.ContentType);
+
+                Result<Uri> result = await _mediator.Send(command);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    _logger.LogInformation("Image uploaded successfully: {ImageUrl}", result.Data);
+                    return Ok(ApiResponse<string>.SuccessResponse(result.Data.ToString(), "Image uploaded successfully"));
+                }
+
+                string errorMessage = result.Error ?? result.GetErrorsString();
+                _logger.LogError("Image upload failed: {Error}", errorMessage);
+                return StatusCode(500, ApiResponse<string>.ErrorResponse(errorMessage));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error during image upload");
+                return StatusCode(500, ApiResponse<string>.ErrorResponse("An unexpected error occurred during image upload"));
+            }
+        }
+
+        [HttpDelete("delete-image")]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<string>>> DeleteImage(Uri url)
+        {
+            _logger.LogInformation("Deleting image: {url}", url);
+
+            if (url == null)
+            {
+                _logger.LogWarning("Image deletion failed: No url provided");
+                return BadRequest(ApiResponse<string>.ErrorResponse("No url provided"));
+            }
+
+            try
+            {
+                DeleteImageCommand command = new DeleteImageCommand(url);
+
+                Result<bool> result = await _mediator.Send(command);
+
+                if (result.IsSuccess && result.Data == true)
+                {
+                    _logger.LogInformation("Image deleted successfully");
+                    return Ok(ApiResponse<string>.SuccessResponse("Image deleted successfully"));
+                }
+
+                string errorMessage = result.Error ?? result.GetErrorsString();
+                _logger.LogError("Image deletion failed: {Error}", errorMessage);
+                return StatusCode(500, ApiResponse<string>.ErrorResponse(errorMessage));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error during image deletion");
+                return StatusCode(500, ApiResponse<string>.ErrorResponse("An unexpected error occurred during image deletion"));
+            }
         }
     }
 }
