@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import type { Club } from '../../api/clubService';
 import { getClubs } from '../../api/clubService';
+//import clubData from '../../sampledata/club_data.json';
+//import { slugify } from '../../utils/helpers';
 import './ClubPage.scss';
 
 function ClubPage() {

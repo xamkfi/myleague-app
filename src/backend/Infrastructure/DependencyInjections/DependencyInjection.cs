@@ -11,6 +11,8 @@ using MyLeague.Infrastructure.Persistence.Repositories.Common;
 using MyLeague.Infrastructure.Persistence.EventStores;
 using MyLeague.Infrastructure.Persistence.UnitOfWork;
 using MyLeague.Infrastructure.HealthChecks;
+using Application.Interfaces.Common;
+using MyLeague.Infrastructure.Services.ImageStorage;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -57,12 +59,14 @@ namespace MyLeague.Infrastructure.DependencyInjections
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
             services.AddScoped<IPersonRepository, PersonRepository>();
+            services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
             services.AddScoped<IFloorballRefereeRepository, FloorballRefereeRepository>();
             services.AddScoped<IFloorballMatchRepository, FloorballMatchRepository>();
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
             services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
+            services.AddScoped<IImageStorageService, AzureBlobImageStorageService>();
 
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();

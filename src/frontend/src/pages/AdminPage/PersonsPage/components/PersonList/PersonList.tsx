@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { Person } from '../../../../../types/admin/personTypes';
@@ -47,7 +47,6 @@ const PersonList = () => {
   };
 
   const handleToggleRegistration = async (id: string, currentStatus: boolean) => {
-    const action = currentStatus ? 'unregister' : 'register';
     const confirmMessage = currentStatus 
       ? t('admin.persons.confirmUnregister', 'Are you sure you want to unregister this person?')
       : t('admin.persons.confirmRegister', 'Are you sure you want to register this person?');
