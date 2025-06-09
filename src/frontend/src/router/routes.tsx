@@ -14,6 +14,7 @@ import AdminPage from '../pages/AdminPage/AdminPage';
 import PersonsPage from '../pages/AdminPage/PersonsPage/PersonsPage';
 import PersonForm from '../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm';
 import TeamPage from '../pages/TeamPage/TeamPage';
+import PersonUserPage from '../pages/PersonUserPage/PersonUserPage';
 
 export const routes: RouteObject[] = [
   {
@@ -80,5 +81,9 @@ export const routes: RouteObject[] = [
         element: <PersonForm />
       }
     ]
+  },
+  {
+    path: '/person/:id',
+    element: <PersonUserPage />
   }
 ]; 
