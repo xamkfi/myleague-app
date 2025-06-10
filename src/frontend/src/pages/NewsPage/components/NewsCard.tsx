@@ -1,28 +1,14 @@
 import { useNavigate } from "react-router-dom";
+import type { NewsArticleDto } from "../../../api/news/newsService";
 
-interface NewsData {
-  id: string;
-  title: string;
-  contentHtml: string;
-  summary?: string;
-  imageUrls: string[]; 
-  author?: string; 
-  createdAt: string; 
-  updatedAt?: string | null; 
-  category?: string; 
-  sportCategory?: string; 
-  tags: string[];
-  isArchived: boolean;
-}
-
-export default function NewsCard({ news }: { news: NewsData }) {
+export default function NewsCard({ news }: { news: NewsArticleDto }) {
 
   const navigate = useNavigate();
   
   return (
     <div className="rounded-2xl overflow-hidden shadow-md bg-white cursor-pointer transition-transform duration-300 hover:shadow-lg hover:scale-101" onClick={()=>navigate(`/uutiset/${news.id}`)}>
       <img
-        src={news.imageUrls[0]}
+        src={news.mainImage}
         alt={news.title}
         className="w-full h-48 object-cover"
       />

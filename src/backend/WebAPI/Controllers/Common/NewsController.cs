@@ -569,11 +569,16 @@ namespace WebAPI.Controllers.Common
             }
         }
 
+        /// <summary>
+        /// Delete image from azure blob storage using its URL
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         [HttpDelete("delete-image")]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<string>>> DeleteImage(Uri url)
+        public async Task<ActionResult<ApiResponse<string>>> DeleteImage([FromQuery] string url)
         {
             _logger.LogInformation("Deleting image: {url}", url);
 
@@ -582,10 +587,17 @@ namespace WebAPI.Controllers.Common
                 _logger.LogWarning("Image deletion failed: No url provided");
                 return BadRequest(ApiResponse<string>.ErrorResponse("No url provided"));
             }
+            
+            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? imageUri))
+            {
+                _logger.LogError("Failed to parse URL: '{url}'", url);
+                return BadRequest(ApiResponse<string>.ErrorResponse($"Invalid URL format: {url}"));
+            }
 
+            _logger.LogInformation("Successfully parsed Uri: {parsedUri}", imageUri);
             try
             {
-                DeleteImageCommand command = new DeleteImageCommand(url);
+                DeleteImageCommand command = new DeleteImageCommand(imageUri);
 
                 Result<bool> result = await _mediator.Send(command);
 

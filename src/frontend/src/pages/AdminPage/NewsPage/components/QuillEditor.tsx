@@ -1,18 +1,62 @@
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import "../styles/QuillEditor.css"
-import { handleImageUpload } from '../Services/UploadImage';
-import { useMemo, useRef } from "react";
+import "../NewsCreatePage.scss";
+import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
+import { useEffect, useMemo, useRef } from "react";
+import { handleImageDeleteService } from '../../../../api/admin/News/handleImageDeleteService';
 
 interface Values{
     value: string,
-    setValue: (val: string)=>void
+    setValue: (val: string)=>void,
+    setLoading: (val: boolean)=>void
 }
 
-export default function QuillEditor({value, setValue}: Values) {
+export default function QuillEditor({value, setValue, setLoading}: Values) {
 
     const quillRef = useRef<ReactQuill | null>(null);  // Initialize the ref with null type
-    
+    const previousImagesRef = useRef<string[]>([]); //Save previous images
+
+    const extractImageUrls = (html: string): string[] => {
+      const div = document.createElement("div");
+      div.innerHTML = html;
+      const imgTags = div.querySelectorAll("img");
+      return Array.from(imgTags).map((img)=> img.getAttribute("src") || "").filter(Boolean);
+    }
+
+useEffect(() => {
+  const currentImages = extractImageUrls(value);
+  const previousImages = previousImagesRef.current;
+
+  const deletedImages = previousImages.filter((url) => !currentImages.includes(url));
+
+
+  if (deletedImages.length > 0) {
+    const confirmDelete = window.confirm(
+      `Haluatko varmasti poistaa ${deletedImages.length} kuva${deletedImages.length > 1 ? 'a' : 'n'}?`
+    );
+
+    if (confirmDelete) {
+      deletedImages.forEach((url) => {
+        handleImageDeleteService(url).catch((err) => {
+          console.error("Failed to delete image:", err);
+        });
+      });
+    } else {
+
+      if (quillRef.current) {
+        const quill = quillRef.current.getEditor();
+        deletedImages.forEach(url => {
+          const range = quill.getSelection();
+          const index = range ? range.index : quill.getLength();
+          quill.insertEmbed(index, "image", url);
+        });
+      }
+    }
+  }
+
+  previousImagesRef.current = currentImages;
+}, [value]);
+
     const openImageUploader = () => {
         const input = document.createElement("input");
         input.type = "file";
@@ -24,7 +68,8 @@ export default function QuillEditor({value, setValue}: Values) {
             const file = input.files[0];
       
             try {
-              const imageUrl = await handleImageUpload(file); // Call your service here
+              setLoading(true);
+              const imageUrl = await handleImageUploadService(file); // Call your service here
               console.log("Uploaded image URL:", imageUrl);
               
             if (quillRef.current) {
@@ -37,12 +82,13 @@ export default function QuillEditor({value, setValue}: Values) {
                     quill.setSelection(range.index + 1); // Move cursor after image
                 }
               }
+              setLoading(false);
             } catch (error) {
+              setLoading(false);
               alert("Image upload failed.");
             }
           }
         };
-      
         input.click();
       };
 

@@ -7,22 +7,20 @@ interface ApiResponse<T> {
 }
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-export async function handleImageDelete(imageUrl: string) {
+export async function handleImageDeleteService(imageUrl: string) {
 
   try {
-    const response = await fetch(`${API_URL}/news`, {
+    const response = await fetch(`${API_URL}/News/delete-image?url=${encodeURIComponent(imageUrl)}`, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ imageUrl }),
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Delete error response:", errorText);
       throw new Error("Image deletion failed");
     }
 
-    const result = await response.json();
+    const result: ApiResponse<string> = await response.json();
     return result;
   } catch (error) {
     console.error("Delete error:", error);

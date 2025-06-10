@@ -3,99 +3,128 @@ import PageTemplate from "../../../components/PageTemplate/PageTemplate";
 import QuillEditor from "./components/QuillEditor";
 import { useTranslation } from "react-i18next";
 import NewsInputs, { type NewsInputsData } from "./components/NewsInputs";
-import SingleNewsPage from "../../SingleNewsPage/SingleNewsPage";
 import PreviewNews from "./components/PreviewNews";
+import { LoadingSpinner } from "./components/LoadingSpinner";
+import { CreateNewsService } from "../../../api/admin/News/CreateNewsService";
+import { useNavigate } from "react-router-dom";
 
 export default function NewsCreatePage() {
   const { t } = useTranslation();
   const [value, setValue] = useState("");
   const [preview, setPreview] = useState(false);
-  
+  const [loadingAnimation, setLoadingAnimation] = useState(false);
+
   const [newsData, setNewsData] = useState<NewsInputsData>({
     title: '',
     mainPicture: '',
+    summary: '',
     author: '',
-    tags: [],
     category: '',
     sportCategory: '',
-    summary: ''
+    tags: []
   });
 
   const [errors, setErrors] = useState<Partial<NewsInputsData>>({});
+  const [contentError, setContentError] = useState<string>('');
 
+  const navigate = useNavigate();
   const validateInputs = (): boolean => {
     const newErrors: Partial<NewsInputsData> = {};
+    let newContentError = '';
 
     if (!newsData.title.trim()) {
       newErrors.title = t('admin.news.error.title_required', 'Title is required');
+    } else if (newsData.title.trim().length < 5) {
+      newErrors.title = t('admin.news.error.title_too_short', 'Title must be at least 5 characters long');
+    } else if (newsData.title.trim().length > 200) {
+      newErrors.title = t('admin.news.error.title_too_long', 'Title cannot exceed 200 characters');
     }
-    if (!newsData.author.trim()) {
-      newErrors.author = t('admin.news.error.author_required', 'Author is required');
+
+    if (!value.trim()) {
+      newContentError = t('admin.news.error.content_required', 'Article content is required');
     }
-    if (!newsData.category) {
-      newErrors.category = t('admin.news.error.category_required', 'Category is required');
+
+    if (newsData.author && newsData.author.trim().length > 50) {
+      newErrors.author = t('admin.news.error.author_too_long', 'Author name cannot exceed 50 characters');
     }
-    if (!newsData.sportCategory) {
-      newErrors.sportCategory = t('admin.news.error.sport_category_required', 'Sport category is required');
+
+    if (newsData.summary && newsData.summary.trim().length > 200) {
+      newErrors.summary = t('admin.news.error.summary_too_long', 'Summary cannot exceed 200 characters');
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setContentError(newContentError);
+    
+    return Object.keys(newErrors).length === 0 && !newContentError;
   };
 
-  const handleSave = () => {
+  const handlePublish = async () => {
     if (validateInputs()) {
-      // Combine all data
-      const fullArticleData = {
-        ...newsData,
-        contentHtml: value,
-        createdAt: new Date().toISOString(),
-        id: crypto.randomUUID()
-      };
+      const confirmPublish = window.confirm(
+        t('admin.news.confirm_publish', 'Are you sure you want to publish this news article?')
+      );
       
-      console.log('Saving article:', fullArticleData);
-      // Here you would save to your backend
+      if (!confirmPublish) {
+        return;
+      }
+
+      try {
+        setLoadingAnimation(true);
+        const newsToSubmit = convertToNewsData();
+        const response = await CreateNewsService(newsToSubmit);
+        console.log("News created successfully:", response);
+        
+        alert(t('admin.news.publish_success', 'News article published successfully!'));
+        removeInputFields();
+        navigate('/admin');
+        
+      } catch (err) {
+        console.error("Failed to create news:", err);
+        alert(t('admin.news.publish_error', 'Failed to publish news article. Please try again.'));
+      } finally {
+        setLoadingAnimation(false);
+      }
+    } else {
+      const firstErrorElement = document.querySelector('.border-red-300, .text-red-600');
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   };
 
-  const handlePublish = () => {
-    if (validateInputs() && value.trim()) {
-      // Publish the article
-      const fullArticleData = {
-        ...newsData,
-        contentHtml: value,
-        isPublished: true
-      };
-      
-      console.log('Publishing article:', fullArticleData);
-      // Here you would publish to your backend
-    }
-  };
-
-  // Convert NewsInputsData to the format expected by SingleNewsPage
   const convertToNewsData = () => {
     return {
-      id: 'preview',
-      title: newsData.title || 'Untitled Article',
-      contentHtml: value,
-      summary: newsData.summary,
-      imageUrls: newsData.mainPicture ? [newsData.mainPicture] : [],
-      author: newsData.author,
-      createdAt: new Date().toISOString(),
-      updatedAt: null,
-      category: newsData.category,
-      sportCategory: newsData.sportCategory,
-      tags: newsData.tags,
-      isArchived: false
+      title: newsData.title.trim(),
+      mainImage: newsData.mainPicture || null,
+      contentHtml: value.trim(),
+      summary: newsData.summary?.trim() || null,
+      author: newsData.author?.trim() || null,
+      category: newsData.category || null,
+      sportCategory: newsData.sportCategory || null,
+      tags: newsData.tags.filter(tag => tag.trim() !== ''),
     };
   };
 
-  // If in preview mode, show SingleNewsPage directly
+  const removeInputFields = () => {
+
+    setValue("");
+    setNewsData({
+      title: '',
+      mainPicture: '',
+      summary: '',
+      author: '',
+      category: '',
+      sportCategory: '',
+      tags: []
+    });
+    setErrors({});
+    setContentError('');
+  };
+
   if (preview) {
     return (
       <PageTemplate title={t('admin.news.create', 'Create News Article')}>
       <div className="min-h-screen">
-        {/* Preview Header */}
         <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-6xl mx-auto px-4 py-3">
             <div className="flex justify-between items-center">
@@ -121,7 +150,6 @@ export default function NewsCreatePage() {
           </div>
         </div>
 
-        {/* SingleNewsPage Preview */}
         <div className="py-8">
           <PreviewNews 
             value={value} 
@@ -137,7 +165,6 @@ export default function NewsCreatePage() {
     <PageTemplate title={t('admin.news.create', 'Create News Article')}>
       
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
         <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-6xl mx-auto px-4 py-3">
             <div className="flex justify-between items-center">
@@ -153,15 +180,18 @@ export default function NewsCreatePage() {
             <div className="flex gap-3 ">
               <button
                 onClick={handlePublish}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={loadingAnimation}
+                className={`px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 ${
+                  loadingAnimation ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
+                {loadingAnimation && (
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
                 {t('admin.news.publish', 'Publish')}
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                {t('admin.news.save_draft', 'Save Draft')}
               </button>
               <button 
                 onClick={() => setPreview(true)}
@@ -178,7 +208,6 @@ export default function NewsCreatePage() {
           </div>
         </div>
 
-        {/* Article Inputs */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6">
             <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 mb-6">
@@ -196,21 +225,40 @@ export default function NewsCreatePage() {
           </div>
         </div>
 
-        {/* Content Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                {t('admin.news.content', 'Article Content')}
-              </h2>
-            </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  {t('admin.news.content', 'Article Content')}
+                  <span className="text-red-500">*</span>
+                </h2>
+                
+                {contentError && (
+                  <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {contentError}
+                  </p>
+                )}
+              </div>
 
-            <div className="border border-gray-200 rounded-lg">
-              <QuillEditor value={value} setValue={setValue} />
+              {loadingAnimation && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-blue-600">Uploading image...</span>
+                  <LoadingSpinner/>
+                </div>
+              )}
             </div>
+            
+            <div className={`border rounded-lg ${contentError ? 'border-red-300' : 'border-gray-200'}`}>
+              <QuillEditor value={value} setValue={setValue} setLoading={setLoadingAnimation}/>
+            </div>
+            
           </div>
         </div>
       </div>

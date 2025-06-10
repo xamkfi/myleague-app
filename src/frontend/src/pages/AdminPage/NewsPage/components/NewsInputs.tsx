@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
 
-interface NewsInputsData {
+export interface NewsInputsData {
   title: string;
   mainPicture: string;
   author: string;
@@ -18,26 +19,24 @@ interface NewsInputsProps {
 }
 
 const CATEGORIES = [
-  'Transfer',
-  'GameResult', 
-  'Announcement',
-  'Interview',
-  'Analysis',
-  'Breaking News',
-  'Match Preview',
-  'Player Profile'
+  'None',
+  'General',
+  'MatchReports',
+  'LeagueNews',
+  'PlayerUpdates',
+  'TeamNews',
+  'Announcements',
+  'Events',
+  'Transfers',
+  'Injuries',
+  'Awards',
 ];
 
 const SPORT_CATEGORIES = [
-  'Football',
-  'Basketball', 
-  'Tennis',
-  'Baseball',
-  'Hockey',
-  'Swimming',
-  'Athletics',
-  'Volleyball',
-  'Other'
+  'None',
+  'Floorball', 
+  'Icehockey',
+  'Football'
 ];
 
 export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsProps) {
@@ -67,7 +66,7 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate file type
@@ -82,32 +81,20 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
         return;
       }
 
-      setUploadingImage(true);
+      try {
+        setUploadingImage(true);
       
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageDataUrl = e.target?.result as string;
-        updateField('mainPicture', imageDataUrl);
-        setUploadingImage(false);
-      };
-      reader.onerror = () => {
-        alert(t('admin.news.error.upload_failed', 'Failed to upload image'));
-        setUploadingImage(false);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+        const response = await handleImageUploadService(file);
 
-  const downloadImage = () => {
-    if (data.mainPicture) {
-      const link = document.createElement('a');
-      link.href = data.mainPicture;
-      link.download = `news-image-${Date.now()}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+        updateField('mainPicture', response);
+        setUploadingImage(false);
+      } catch (error) {
+        console.log(error)
+        setUploadingImage(false);
+      }
+
   };
+}
 
   const removeImage = () => {
     updateField('mainPicture', '');
@@ -241,16 +228,6 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={downloadImage}
-                      className="bg-white text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors flex items-center gap-2"
-                      title={t('admin.news.download_image', 'Download image')}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
                       onClick={removeImage}
                       className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
                       title={t('admin.news.remove_image', 'Remove image')}
@@ -268,16 +245,6 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
                   {t('admin.news.image_uploaded', 'Image uploaded successfully')}
                 </span>
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={downloadImage}
-                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    {t('admin.news.download', 'Download')}
-                  </button>
                   <input
                     type="file"
                     accept="image/*"
@@ -461,4 +428,3 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
   );
 }
 
-export { type NewsInputsData };

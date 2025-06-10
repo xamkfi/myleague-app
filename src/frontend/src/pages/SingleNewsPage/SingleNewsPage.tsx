@@ -1,49 +1,31 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import mockData from '../NewsPage/mockNews.json';
 import './SingleNewsPage.scss';
+import type { NewsArticleDto } from '../../api/news/newsService';
+import { singleNewsService } from '../../api/news/singleNewsService';
 
-interface NewsData {
-  id: string;
-  title: string;
-  contentHtml: string;
-  summary?: string;
-  imageUrls: string[];
-  author?: string;
-  createdAt: string;
-  updatedAt?: string | null;
-  category?: string;
-  sportCategory?: string;
-  tags: string[];
-  isArchived: boolean;
-}
 
 interface SingleNewsPageProps {
-  newsData?: NewsData;
-  isPreview?: boolean;
+  newsData?: NewsArticleDto;
   onBack?: () => void;
 }
 
-function SingleNewsPage({ newsData, isPreview = false, onBack }: SingleNewsPageProps) {
+function SingleNewsPage({ newsData }: SingleNewsPageProps) {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [news, setNews] = useState<NewsData | null>(newsData || null);
+  const [news, setNews] = useState<NewsArticleDto | null>(newsData || null);
 
-  useEffect(() => {
-    if (!newsData && id) {
-      // Find the news item by ID
-      const foundNews = mockData.news.find((item) => item.id === id);
-      if (foundNews) {
-        setNews(foundNews);
-      } else {
-        // If news not found, redirect to news page
-        navigate('/uutiset');
-      }
+  async function RetrieveNews(articleId: string) {
+    const response = await singleNewsService(articleId);
+    setNews(response);
+  }
+  useEffect(()=>{
+    if(id){
+      RetrieveNews(id);
     }
-  }, [id, navigate, newsData]);
+  },[])
 
   if (!news) {
     return (
@@ -55,31 +37,8 @@ function SingleNewsPage({ newsData, isPreview = false, onBack }: SingleNewsPageP
     );
   }
 
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      navigate('/uutiset');
-    }
-  };
-
-  // Get the main image (first image if available)
-  const mainImage = news.imageUrls.length > 0 ? news.imageUrls[0] : null;
-
   const content = (
-    <article className={`single-news-page ${isPreview ? 'single-news-page--preview' : ''}`}>
-      {/* Back button */}
-      {!isPreview && (
-        <button
-          onClick={handleBack}
-          className="single-news-page__back-button"
-        >
-          <svg className="single-news-page__back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          {t('common.back', 'Back to News')}
-        </button>
-      )}
+    <article className={`single-news-page`}>
 
       {/* Article header */}
       <header className="single-news-page__header">
@@ -139,10 +98,10 @@ function SingleNewsPage({ newsData, isPreview = false, onBack }: SingleNewsPageP
       </header>
 
       {/* Main image */}
-      {mainImage && (
+      {news.mainImage && (
         <div className="single-news-page__image-section">
           <img
-            src={mainImage}
+            src={news.mainImage}
             alt={news.title}
             className="single-news-page__main-image"
             onError={(e) => {
@@ -175,24 +134,8 @@ function SingleNewsPage({ newsData, isPreview = false, onBack }: SingleNewsPageP
         </footer>
       )}
 
-      {/* Navigation button for non-preview mode */}
-      {!isPreview && (
-        <div className="single-news-page__navigation">
-          <button
-            onClick={handleBack}
-            className="single-news-page__back-to-news"
-          >
-            {t('common.back_to_news', 'Back to All News')}
-          </button>
-        </div>
-      )}
     </article>
   );
-
-  // If it's a preview, don't wrap in PageTemplate
-  if (isPreview) {
-    return content;
-  }
 
   return (
     <PageTemplate title={news.title}>
