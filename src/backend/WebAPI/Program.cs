@@ -27,8 +27,8 @@ builder.Services.AddOpenApiConfiguration();
 builder.Services.AddCorsConfiguration();
 
 // Configure pagination options
-builder.Services.Configure<PaginationOptions>(
-    builder.Configuration.GetSection(PaginationOptions.SectionName));
+builder.Services.Configure<PaginationConfiguration>(
+    builder.Configuration.GetSection(PaginationConfiguration.SectionName));
 
 // Register application services
 builder.Services.AddApplication();

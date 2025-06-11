@@ -1,9 +1,27 @@
 namespace Application.Configuration;
 
+
+// ----------------    ADJUSTING PAGINATION FOR ENDPOINTS    ----------------
+//    
+//     You can adjust the setting for each endpoint in the appsettings.json file
+//     It is located in src/backend/WebAPI/appsettings.json
+//     For example, to adjust the pagination for the GetAllFloorballPlayers endpoint,
+//     you can add the following to the appsettings.json file:
+//     "Pagination": {
+//         "Resources": {
+//             "FloorballPlayers": {
+//                 "DefaultPageSize": 10,
+//                 "MaxPageSize": 100,
+//
+// ----------------    ADJUSTING PAGINATION FOR ENDPOINTS    ----------------
+
+
+
 /// <summary>
 /// Configuration options for pagination across the application
 /// </summary>
-public class PaginationOptions
+
+public class PaginationConfiguration
 {
     /// <summary>
     /// Configuration section name for binding

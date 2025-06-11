@@ -8,14 +8,14 @@ namespace Application.Services.Common;
 /// </summary>
 public class PaginationService : IPaginationService
 {
-    private readonly PaginationOptions _options;
+    private readonly PaginationConfiguration _options;
     private readonly Dictionary<Type, string> _typeToResourceMap;
 
     /// <summary>
     /// Initializes a new instance of the PaginationService
     /// </summary>
     /// <param name="options">Pagination configuration options</param>
-    public PaginationService(IOptions<PaginationOptions> options)
+    public PaginationService(IOptions<PaginationConfiguration> options)
     {
         _options = options.Value;
         _typeToResourceMap = BuildTypeToResourceMap();
