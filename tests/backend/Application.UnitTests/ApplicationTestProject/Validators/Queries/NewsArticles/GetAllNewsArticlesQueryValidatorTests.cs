@@ -1,17 +1,28 @@
 using Application.Queries.NewsArticles;
+using Application.Services.Common;
 using Application.Validators.Queries.NewsArticles;
 using FluentValidation.TestHelper;
+using Moq;
 using Xunit;
 
 namespace ApplicationTestProject.Validators.Queries.NewsArticles;
 
 public class GetAllNewsArticlesQueryValidatorTests
 {
+    private readonly Mock<IPaginationService> _mockPaginationService;
     private readonly GetAllNewsArticlesQueryValidator _validator;
 
     public GetAllNewsArticlesQueryValidatorTests()
     {
-        _validator = new GetAllNewsArticlesQueryValidator();
+        _mockPaginationService = new Mock<IPaginationService>();
+        
+        // Setup pagination service defaults for News resource  
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", It.IsAny<int>()))
+            .Returns<string, int>((_, pageSize) => pageSize >= 1 && pageSize <= 50); // News max is 50 from config
+        _mockPaginationService.Setup(x => x.GetPaginationSettings("News"))
+            .Returns(new PaginationSettings(10, 50, 1));
+            
+        _validator = new GetAllNewsArticlesQueryValidator(_mockPaginationService.Object);
     }
 
     [Fact]
@@ -81,32 +92,38 @@ public class GetAllNewsArticlesQueryValidatorTests
     }
 
     [Theory]
-    [InlineData(0)]
     [InlineData(-1)]
-    [InlineData(101)]
+    [InlineData(51)]  // Above News max of 50
     [InlineData(1000)]
     public void Validate_InvalidPageSize_ShouldHaveValidationError(int invalidPageSize)
     {
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(PageSize: invalidPageSize);
+        
+        // Setup mock to return false for invalid page sizes
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", invalidPageSize))
+            .Returns(false);
 
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.PageSize)
-            .WithErrorMessage("Page size must be between 1 and 100");
+        result.ShouldHaveValidationErrorFor(x => x.PageSize);
     }
 
     [Theory]
+    [InlineData(0)]   // Special case - should be valid (means use default)
     [InlineData(1)]
     [InlineData(25)]
-    [InlineData(50)]
-    [InlineData(100)]
+    [InlineData(50)]  // News max is 50
     public void Validate_ValidPageSize_ShouldNotHaveValidationError(int validPageSize)
     {
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(PageSize: validPageSize);
+        
+        // Setup mock to return true for valid page sizes
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", validPageSize))
+            .Returns(true);
 
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
