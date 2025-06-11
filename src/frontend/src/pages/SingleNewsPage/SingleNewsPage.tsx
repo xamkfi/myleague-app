@@ -25,7 +25,7 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
     if(id){
       RetrieveNews(id);
     }
-  },[])
+  },[id])
 
   if (!news) {
     return (

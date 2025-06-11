@@ -45,7 +45,7 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
   const [newTag, setNewTag] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  const updateField = (field: keyof NewsInputsData, value: any) => {
+  const updateField = <K extends keyof NewsInputsData>(field: K, value: NewsInputsData[K]) => {
     onChange({ ...data, [field]: value });
   };
 

@@ -84,6 +84,7 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
               }
               setLoading(false);
             } catch (error) {
+              console.error("Image upload error:", error);
               setLoading(false);
               alert("Image upload failed.");
             }
