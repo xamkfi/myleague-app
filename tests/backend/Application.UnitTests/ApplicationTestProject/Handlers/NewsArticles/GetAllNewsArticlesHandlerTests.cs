@@ -49,8 +49,8 @@ public class GetAllNewsArticlesHandlerTests
 
         List<NewsArticle> newsArticles = new List<NewsArticle>
         {
-            new NewsArticle(Guid.NewGuid(), "Article 1", "<p>Content 1</p>", "Author 1"),
-            new NewsArticle(Guid.NewGuid(), "Article 2", "<p>Content 2</p>", "Author 2")
+            new NewsArticle(Guid.NewGuid(), "Article 1", new Uri("https://example.com/image1.jpg"), "<p>Content 1</p>", "Author 1"),
+            new NewsArticle(Guid.NewGuid(), "Article 2", new Uri("https://example.com/image2.jpg"), "<p>Content 2</p>", "Author 2")
         };
 
         _mockNewsRepository.Setup(x => x.GetAllAsync(1, 3, null, null, null, false, It.IsAny<CancellationToken>()))

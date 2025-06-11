@@ -5,6 +5,34 @@ using Domain.Enums.Floorball;
 namespace WebAPI.Models.Floorball
 {
     /// <summary>
+    /// Request model for getting paginated floorball teams
+    /// </summary>
+    public record GetFloorballTeamsRequest
+    {
+        /// <summary>
+        /// Gets the page number (1-based)
+        /// </summary>
+        [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
+        public int Page { get; init; } = 1;
+
+        /// <summary>
+        /// Gets the number of items per page (0 means use default)
+        /// </summary>
+        [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
+        public int PageSize { get; init; } = 0;
+
+        /// <summary>
+        /// Gets the club ID filter
+        /// </summary>
+        public Guid? ClubId { get; init; }
+
+        /// <summary>
+        /// Gets the division filter
+        /// </summary>
+        public string? Division { get; init; }
+    }
+
+    /// <summary>
     /// Request model for creating or updating a floorball team
     /// </summary>
     public class FloorballTeamRequest

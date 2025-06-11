@@ -35,6 +35,9 @@ public static class DependencyInjection
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         });
         
+        // Register FluentValidation
+        services.AddValidatorsFromAssembly(assembly);
+        
         // Register application services
         services.AddScoped<IPaginationService, PaginationService>();
         

@@ -10,7 +10,20 @@ using MediatR;
 namespace Application.Queries.Floorball.Match
 {
     /// <summary>
-    /// Query for retrieving all floorball matches
+    /// Query for retrieving floorball matches with pagination and filtering support
     /// </summary>
-    public record GetAllFloorballMatchesQuery() : IRequest<Result<IEnumerable<FloorballMatchDto>>>;
+    public record GetAllFloorballMatchesQuery(
+        int Page = 1,
+        int PageSize = 0, // 0 means use default from configuration
+        Guid? SeasonId = null,
+        Guid? TeamId = null,
+        DateTime? StartDate = null,
+        DateTime? EndDate = null
+    ) : IRequest<Result<PagedResult<FloorballMatchDto>>>
+    {
+        /// <summary>
+        /// Resource key for pagination configuration
+        /// </summary>
+        public const string ResourceKey = "FloorballMatches";
+    }
 }
