@@ -773,6 +773,58 @@ public class ExceptionHandlingMiddlewareTests
 4. Configure routing and documentation
 5. Write comprehensive tests
 
+### Implementing Pagination for List Endpoints
+When creating GET endpoints that return collections, always implement pagination:
+
+1. **Request Model**: Include `Page` and `PageSize` parameters in your request model
+   ```csharp
+   public record GetResourcesRequest
+   {
+       [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
+       public int Page { get; init; } = 1;
+       
+       [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
+       public int PageSize { get; init; } = 0; // 0 means use default
+       
+       // Add your filter properties here
+   }
+   ```
+
+2. **Controller Action**: Use `PaginatedApiResponse<T>` for the response
+   ```csharp
+   [HttpGet]
+   public async Task<ActionResult<PaginatedApiResponse<ResourceDto>>> GetResources([FromQuery] GetResourcesRequest request)
+   {
+       var query = new GetResourcesQuery(request.Page, request.PageSize, /* filters */);
+       var result = await _mediator.Send(query);
+       
+       return result.IsSuccess 
+           ? Ok(PaginatedApiResponse<ResourceDto>.SuccessResponse(result.Data!, "Resources retrieved successfully"))
+           : BadRequest(PaginatedApiResponse<ResourceDto>.ErrorResponse(result.Error!));
+   }
+   ```
+
+3. **Query Handler**: Extend `BasePagedQueryHandler<TQuery, TDto>` and use `PagedResult<T>`
+   ```csharp
+   public class GetResourcesHandler : BasePagedQueryHandler<GetResourcesQuery, ResourceDto>
+   {
+       public async Task<Result<PagedResult<ResourceDto>>> Handle(GetResourcesQuery request, CancellationToken cancellationToken)
+       {
+           // Validate pagination parameters
+           var validationResult = ValidatePaginationParameters(request.Page, request.PageSize, "ResourceKey");
+           if (validationResult.IsFailure) return Result<PagedResult<ResourceDto>>.Failure(validationResult.Error!);
+           
+           // Get data and create paged result
+           var pagedResult = CreatePagedResult(items, totalCount, request.Page, actualPageSize);
+           return Result<PagedResult<ResourceDto>>.Success(pagedResult);
+       }
+   }
+   ```
+
+4. **Configuration**: Ensure your resource is configured in `appsettings.json` under `PaginationSettings`
+
+This ensures consistent pagination behavior across all list endpoints with proper validation, error handling, and rich metadata for clients.
+
 ### Custom Middleware Development
 1. Implement middleware class with InvokeAsync method
 2. Register middleware in Program.cs
