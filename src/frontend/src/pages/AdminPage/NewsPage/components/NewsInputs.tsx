@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
+import { handleImageDeleteService } from '../../../../api/admin/News/handleImageDeleteService';
 
 export interface NewsInputsData {
   title: string;
@@ -96,7 +97,8 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
   };
 }
 
-  const removeImage = () => {
+  const removeImage = async () => {
+    await handleImageDeleteService(data.mainPicture);
     updateField('mainPicture', '');
   };
 
