@@ -61,7 +61,7 @@ namespace MyLeague.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Club", "common");
+                    b.ToTable("Clubs");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.NewsArticle", b =>
@@ -138,7 +138,7 @@ namespace MyLeague.Infrastructure.Migrations
                         .IsDescending(false, true)
                         .HasDatabaseName("IX_News_IsArchived_CreatedAt");
 
-                    b.ToTable("News", "common");
+                    b.ToTable("NewsArticles");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>
@@ -167,7 +167,7 @@ namespace MyLeague.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Person", "common");
+                    b.ToTable("Persons");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>
@@ -203,7 +203,7 @@ namespace MyLeague.Infrastructure.Migrations
 
                             b1.HasKey("PersonId");
 
-                            b1.ToTable("Person", "common");
+                            b1.ToTable("Persons");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersonId");
@@ -229,7 +229,7 @@ namespace MyLeague.Infrastructure.Migrations
 
                             b1.HasKey("PersonId");
 
-                            b1.ToTable("Person", "common");
+                            b1.ToTable("Persons");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersonId");

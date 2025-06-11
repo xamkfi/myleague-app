@@ -17,8 +17,6 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
         /// <param name="builder">The entity type builder.</param>
         public void Configure(EntityTypeBuilder<NewsArticle> builder)
         {
-            // Table configuration
-            builder.ToTable("News", "common");
             
             // Primary key
             builder.HasKey(n => n.Id);
