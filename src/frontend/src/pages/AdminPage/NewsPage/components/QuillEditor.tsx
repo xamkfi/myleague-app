@@ -23,39 +23,39 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
       return Array.from(imgTags).map((img)=> img.getAttribute("src") || "").filter(Boolean);
     }
 
-useEffect(() => {
-  const currentImages = extractImageUrls(value);
-  const previousImages = previousImagesRef.current;
+  useEffect(() => {
+    const currentImages = extractImageUrls(value);
+    const previousImages = previousImagesRef.current;
 
-  const deletedImages = previousImages.filter((url) => !currentImages.includes(url));
+    const deletedImages = previousImages.filter((url) => !currentImages.includes(url));
 
 
-  if (deletedImages.length > 0) {
-    const confirmDelete = window.confirm(
-      `Haluatko varmasti poistaa ${deletedImages.length} kuva${deletedImages.length > 1 ? 'a' : 'n'}?`
-    );
+    if (deletedImages.length > 0) {
+      const confirmDelete = window.confirm(
+        `Haluatko varmasti poistaa ${deletedImages.length} kuva${deletedImages.length > 1 ? 'a' : 'n'}?`
+      );
 
-    if (confirmDelete) {
-      deletedImages.forEach((url) => {
-        handleImageDeleteService(url).catch((err) => {
-          console.error("Failed to delete image:", err);
+      if (confirmDelete) {
+        deletedImages.forEach((url) => {
+          handleImageDeleteService(url).catch((err) => {
+            console.error("Failed to delete image:", err);
+          });
         });
-      });
-    } else {
+      } else {
 
-      if (quillRef.current) {
-        const quill = quillRef.current.getEditor();
-        deletedImages.forEach(url => {
-          const range = quill.getSelection();
-          const index = range ? range.index : quill.getLength();
-          quill.insertEmbed(index, "image", url);
-        });
+        if (quillRef.current) {
+          const quill = quillRef.current.getEditor();
+          deletedImages.forEach(url => {
+            const range = quill.getSelection();
+            const index = range ? range.index : quill.getLength();
+            quill.insertEmbed(index, "image", url);
+          });
+        }
       }
     }
-  }
 
-  previousImagesRef.current = currentImages;
-}, [value]);
+    previousImagesRef.current = currentImages;
+  }, [value]);
 
     const openImageUploader = () => {
         const input = document.createElement("input");
@@ -79,7 +79,7 @@ useEffect(() => {
                 const range = quill.getSelection();
                 if (range) {
                     quill.insertEmbed(range.index, "image", imageUrl); // Insert at cursor
-                    quill.setSelection(range.index + 1); // Move cursor after image
+                    quill.setSelection({ index: range.index + 1, length: 0 });// Move cursor after image
                 }
               }
               setLoading(false);
