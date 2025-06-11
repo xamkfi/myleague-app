@@ -4,14 +4,7 @@ import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './NewsPage.scss';
 import NewsCard from './components/NewsCard';
 import NewsFilter from './components/NewsFilter';
-import { newsService, type NewsArticleDto } from '../../api/news/newsService';
-
-
-interface FilterValues {
-  category: string;
-  sportCategory: string;
-  searchTerm: string;
-}
+import { newsService, type NewsArticleDto, type NewsParameters } from '../../api/news/newsService';
 
 
 function NewsPage() {
@@ -19,21 +12,22 @@ function NewsPage() {
   const { t } = useTranslation();
   const [newsList, setNewsList] = useState<NewsArticleDto[]>([]);
   
-  const [filters, setFilters] = useState<FilterValues>({
+  const [filters, setFilters] = useState<NewsParameters>({
     category: '',
     sportCategory: '',
-    searchTerm: '',
+    searchTerm: ''
   });
 
   async function RetrieveNews() {
-    const response = await newsService();
+    console.log("Filters changed:", filters);
+    const response = await newsService(filters);
     setNewsList(response);
   }
 
   useEffect(()=>{
     //Fetch new data when categories change.
     RetrieveNews();
-  },[filters])
+  },[filters.category, filters.sportCategory])
 
   return (
     <PageTemplate title={t('nav.news')}>

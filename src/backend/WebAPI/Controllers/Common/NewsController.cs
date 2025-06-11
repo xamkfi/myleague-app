@@ -569,6 +569,7 @@ namespace WebAPI.Controllers.Common
             }
         }
 
+
         /// <summary>
         /// Delete image from azure blob storage using its URL
         /// </summary>

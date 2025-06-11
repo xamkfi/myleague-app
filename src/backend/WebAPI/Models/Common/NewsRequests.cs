@@ -198,6 +198,12 @@ namespace WebAPI.Models.Common
         public string? SportCategory { get; init; }
 
         /// <summary>
+        /// Gets the optional search term
+        /// </summary>
+        [MinLength(2, ErrorMessage = "Search term must be at least 2 characters")]
+        public string? Search { get; init; }
+
+        /// <summary>
         /// Gets the optional author filter
         /// </summary>
         public string? Author { get; init; }
