@@ -22,7 +22,6 @@ namespace WebAPI.Controllers.Floorball
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    [Authorize]
     public class FloorballTeamController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -45,7 +44,7 @@ namespace WebAPI.Controllers.Floorball
         /// <returns>List of all floorball teams</returns>
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse<List<FloorballTeamDto>>>> GetAllTeams()
         {
             _logger.LogInformation("Getting all floorball teams");
@@ -175,6 +174,7 @@ namespace WebAPI.Controllers.Floorball
                 request.Division,
                 request.ClubId,
                 request.HomeArena,
+                request.Category,
                 request.PrimaryJerseyColor,
                 request.SecondaryJerseyColor);
 
