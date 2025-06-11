@@ -27,6 +27,7 @@ public static class NewsArticleMapper
         return new NewsArticleDto(
             newsArticle.Id,
             newsArticle.Title,
+            newsArticle.MainImage,
             newsArticle.ContentHtml,
             newsArticle.Summary,
             newsArticle.ImageUrls.Select(url => url.ToString()).ToList().AsReadOnly(),
@@ -54,6 +55,7 @@ public static class NewsArticleMapper
         return new NewsArticleListDto(
             newsArticle.Id,
             newsArticle.Title,
+            newsArticle.MainImage,
             newsArticle.Summary,
             newsArticle.Author,
             newsArticle.CreatedAt,
@@ -104,7 +106,11 @@ public static class NewsArticleMapper
             throw new ArgumentNullException(nameof(command));
 
         Guid newsId = Guid.NewGuid();
-        NewsArticle newsArticle = new NewsArticle(newsId, command.Title, command.ContentHtml, command.Author);
+        NewsArticle newsArticle = new NewsArticle(newsId,
+            command.Title,
+            command.MainImage ?? new Uri("http://www.mahl.fi/images/Kausi_2024-2025/Kes%C3%A4nsarjat.jpg"),
+            command.ContentHtml,
+            command.Author);
 
         // Set optional properties if provided
         if (!string.IsNullOrEmpty(command.Summary))
@@ -162,6 +168,12 @@ public static class NewsArticleMapper
 
         // Update content
         newsArticle.UpdateContent(command.Title, command.ContentHtml, command.Summary);
+
+        // Update main image if provided
+        if (command.MainImage != null)
+        {
+            newsArticle.SetMainImage(command.MainImage);
+        }
 
         // Update author if provided
         if (command.Author != null)

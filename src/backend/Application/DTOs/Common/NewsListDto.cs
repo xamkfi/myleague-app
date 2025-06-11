@@ -9,6 +9,7 @@ namespace Application.DTOs.Common;
 public record NewsArticleListDto(
     Guid Id,
     string Title,
+    Uri? MainImage,
     string? Summary,
     string? Author,
     DateTime CreatedAt,

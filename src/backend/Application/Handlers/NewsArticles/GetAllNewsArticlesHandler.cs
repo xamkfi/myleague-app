@@ -68,8 +68,8 @@ public class GetAllNewsArticlesHandler : BasePagedQueryHandler<GetAllNewsArticle
             // Check for cancellation before database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Get both the data and total count in parallel for better performance
-            Task<IEnumerable<NewsArticle>> newsTask = _newsRepository.GetAllAsync(
+            // Execute operations sequentially instead of in parallel
+            IEnumerable<NewsArticle> newsArticles = await _newsRepository.GetAllAsync(
                 request.Page, 
                 actualPageSize, 
                 request.Category, 
@@ -78,20 +78,15 @@ public class GetAllNewsArticlesHandler : BasePagedQueryHandler<GetAllNewsArticle
                 request.IncludeArchived, 
                 cancellationToken);
 
-            Task<int> countTask = _newsRepository.GetCountAsync(
+            int totalCount = await _newsRepository.GetCountAsync(
                 request.Category,
                 request.SportCategory,
                 request.Author,
                 request.IncludeArchived,
                 cancellationToken);
 
-            await Task.WhenAll(newsTask, countTask);
-
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
-
-            IEnumerable<NewsArticle> newsArticles = await newsTask;
-            int totalCount = await countTask;
 
             IEnumerable<NewsArticleListDto> newsDtos = NewsArticleMapper.ToListDtos(newsArticles);
             

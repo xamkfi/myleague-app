@@ -17,8 +17,6 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
         /// <param name="builder">The entity type builder.</param>
         public void Configure(EntityTypeBuilder<NewsArticle> builder)
         {
-            // Table configuration
-            builder.ToTable("News", "common");
             
             // Primary key
             builder.HasKey(n => n.Id);
@@ -32,6 +30,12 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
             builder.Property(n => n.Title)
                 .IsRequired()
                 .HasMaxLength(200);
+
+            // MainImage property - optional, stored as string
+            builder.Property(n => n.MainImage)
+                .HasConversion(
+                    v => v != null ? v.ToString() : null,
+                    v => v != null ? new Uri(v) : null);
 
             // ContentHtml property - required, unlimited length
             builder.Property(n => n.ContentHtml)

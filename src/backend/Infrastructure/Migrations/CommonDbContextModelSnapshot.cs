@@ -93,6 +93,9 @@ namespace MyLeague.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("MainImage")
+                        .HasColumnType("text");
+
                     b.Property<string>("SportCategory")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
@@ -135,7 +138,7 @@ namespace MyLeague.Infrastructure.Migrations
                         .IsDescending(false, true)
                         .HasDatabaseName("IX_News_IsArchived_CreatedAt");
 
-                    b.ToTable("News", "common");
+                    b.ToTable("NewsArticles");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>

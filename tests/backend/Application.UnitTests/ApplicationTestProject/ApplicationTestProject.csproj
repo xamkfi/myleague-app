@@ -28,4 +28,8 @@
     <ProjectReference Include="..\..\..\..\src\backend\Domain\Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Validators\Queries\" />
+  </ItemGroup>
+
 </Project>
