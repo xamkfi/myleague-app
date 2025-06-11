@@ -23,5 +23,17 @@
     "en": "Englanti",
     "fi": "Suomi",
     "switchLanguage": "Vaihda kieli"
+  },
+  "newsPage":{
+    "category": {
+      "all": "Kaikki"
+    },
+    "sportCategory": {
+      "floorball": "Salibandy",
+      "hockey": "Jääkiekko",
+      "football": "Jalkapallo" 
+    },
+    "search": "Hae",
+    "searchPlaceholder": "Hae uutisia..."
   }
 } 

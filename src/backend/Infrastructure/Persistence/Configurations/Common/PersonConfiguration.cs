@@ -15,6 +15,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
         /// <param name="builder">The entity type builder.</param>
         public void Configure(EntityTypeBuilder<Person> builder)
         {
+            
             builder.HasKey(p => p.Id);
 
             builder.Property(p => p.FirstName)

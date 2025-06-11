@@ -11,6 +11,7 @@ namespace Application.Commands.NewsArticles;
 /// </summary>
 public record CreateNewsArticleCommand(
     string Title,
+    Uri? MainImage,
     string ContentHtml,
     string? Summary = null,
     IReadOnlyList<string>? ImageUrls = null,

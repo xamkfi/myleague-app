@@ -23,5 +23,17 @@
     "en": "English",
     "fi": "Finnish",
     "switchLanguage": "Switch language"
+  },
+    "newsPage":{
+    "category": {
+      "all": "All"
+    },
+    "sportCategory": {
+      "floorball": "Floorball",
+      "hockey": "Icehockey",
+      "football": "Football" 
+    },
+    "search": "Search",
+    "searchPlaceholder": "Search news..."
   }
 } 

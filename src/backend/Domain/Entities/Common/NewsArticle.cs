@@ -11,6 +11,7 @@ using Domain.DomainEvents.Common;
 using Domain.Enums.Common;
 using Domain.EventSourcing;
 using Domain.ValueObjects.Common;
+using static System.Net.WebRequestMethods;
 
 namespace Domain.Entities.Common
 {
@@ -29,6 +30,11 @@ namespace Domain.Entities.Common
         /// Gets the title of the news article. Limited to 200 characters.
         /// </summary>
         public string Title { get; private set; } = string.Empty;
+
+        /// <summary>
+        /// Gets the main image for news.
+        /// </summary>
+        public Uri? MainImage { get; private set; } 
 
         /// <summary>
         /// Gets the main content of the news article in HTML format.
@@ -92,10 +98,11 @@ namespace Domain.Entities.Common
         /// <param name="contentHtml">The HTML content of the news article.</param>
         /// <param name="author">The optional author of the news article.</param>
         /// <exception cref="ArgumentException">Thrown when title or content is empty or title exceeds 200 characters.</exception>
-        public NewsArticle(Guid id, string title, string contentHtml, string? author = null)
+        public NewsArticle(Guid id, string title, Uri mainImage, string contentHtml, string? author = null)
         {
             Id = id;
             Title = ValidateTitle(title);
+            MainImage = mainImage;
             ContentHtml = ValidateContent(contentHtml);
             Author = author;
             CreatedAt = DateTime.UtcNow;
@@ -147,6 +154,18 @@ namespace Domain.Entities.Common
             _imageUrls.Add(imageUrl);
             UpdatedAt = DateTime.UtcNow;
             AddDomainEvent(new NewsArticleImageUpdatedEvent(Id ,imageUrl, UpdatedAt.Value));
+        }
+
+        /// <summary>
+        /// Sets the main image of the news article and raises a main image update event.
+        /// </summary>
+        /// <param name="mainImage">The URL of the main image to set.</param>
+        public void SetMainImage(Uri? mainImage)
+        {
+            Uri? oldMainImage = MainImage;
+            MainImage = mainImage;
+            UpdatedAt = DateTime.UtcNow;
+            AddDomainEvent(new NewsArticleMainImageUpdatedEvent(Id, oldMainImage, MainImage, UpdatedAt.Value));
         }
 
         /// <summary>
