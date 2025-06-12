@@ -1,20 +1,95 @@
-import ReactQuill from 'react-quill';
+import ReactQuill, {Quill} from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import "../NewsCreatePage.scss";
 import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
 import { useEffect, useMemo, useRef } from "react";
 import { handleImageDeleteService } from '../../../../api/admin/News/handleImageDeleteService';
+import MatchSelectionHeader from './MatchSelectionHeader';
+import mockMatches from "./mockData.json";
 
 interface Values{
     value: string,
     setValue: (val: string)=>void,
     setLoading: (val: boolean)=>void
 }
+export interface MatchResultValue {
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: string;
+  awayScore: string;
+  date: string;
+  link: string;
+}
+const BlockEmbed = Quill.import('blots/block/embed') as any;
+
+export class MatchResultTableBlot extends BlockEmbed {
+  static blotName = 'matchResultTable';
+  static tagName = 'div';
+  static className = 'match-result-table-container';
+
+  static create(value: { matches: any[], title?: string }): HTMLElement {
+    const node = super.create();
+    const { matches, title } = value;
+
+    const tableRows = matches.map(match => `
+      <tr class="match-result-table__row">
+        <td class="match-result-table__date">${match.date}</td>
+        <td class="match-result-table__teams">
+          ${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam}
+        </td>
+        <td class="match-result-table__link">
+          <a href="${match.link}" target="_blank" rel="noopener noreferrer">View Details</a>
+        </td>
+      </tr>
+    `).join('');
+
+    node.innerHTML = `
+      <div class="match-result-table">
+        ${title ? `<h4 class="match-result-table__title">${title}</h4>` : ''}
+        <table class="match-result-table__table">
+          <thead class="match-result-table__header">
+            <tr>
+              <th>Päivä</th>
+              <th>Ottelu</th>
+              <th>Toiminnot</th>
+            </tr>
+          </thead>
+          <tbody class="match-result-table__body">
+            ${tableRows}
+          </tbody>
+        </table>
+        <!-- Piilotettu data JSON-muodossa -->
+        <script type="application/json" class="match-result-data" style="display: none;">
+          ${JSON.stringify({ matches, title })}
+        </script>
+      </div>
+    `;
+
+    node.setAttribute('contenteditable', 'false');
+    return node;
+  }
+
+  static value(node: HTMLElement) {
+    // Lue data piilotetusta script-elementistä
+    const dataElement = node.querySelector('.match-result-data');
+    if (dataElement && dataElement.textContent) {
+      try {
+        return JSON.parse(dataElement.textContent);
+      } catch (e) {
+        console.error('Error parsing match result data:', e);
+      }
+    }
+    
+    // Fallback: tyhjä data
+    return { matches: [], title: '' };
+  }
+}
+
+Quill.register(MatchResultTableBlot);
 
 export default function QuillEditor({value, setValue, setLoading}: Values) {
-
-    const quillRef = useRef<ReactQuill | null>(null);  // Initialize the ref with null type
-    const previousImagesRef = useRef<string[]>([]); //Save previous images
+    const quillRef = useRef<ReactQuill | null>(null);
+    const previousImagesRef = useRef<string[]>([]);
 
     const extractImageUrls = (html: string): string[] => {
       const div = document.createElement("div");
@@ -108,20 +183,46 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
       },
     }), [])
 
-  return (
-    <>
-        <ReactQuill
-            ref={(element =>{
-              if(element != null){
-                quillRef.current = element
-              }
-            })}
-            className='QuillEditor'
-            theme="snow"
-            value={value}
-            onChange={setValue} 
-            modules={modules}
-        />
-    </>
-  )
+    const handleInsertMatches = (matches: any[]) => {
+        const editor = quillRef.current?.getEditor();
+        const range = editor?.getSelection(true);
+        
+        if (editor && range && matches.length > 0) {
+            // Muunna valitut ottelut oikeaan muotoon
+            const matchesData = matches.map(match => ({
+                homeTeam: match.homeTeam,
+                awayTeam: match.awayTeam,
+                homeScore: match.homeScore,
+                awayScore: match.awayScore,
+                date: match.date,
+                link: match.link
+            }));
+
+            // Lisää ottelut taulukkona
+            editor.insertEmbed(range.index, 'matchResultTable', {
+                matches: matchesData,
+                title: "Valitut ottelut"
+            });
+            editor.setSelection(range.index + 1);
+        }
+    };
+
+    return (
+        <>
+            <MatchSelectionHeader onInsertMatches={handleInsertMatches} />
+            
+            <ReactQuill
+                ref={(element =>{
+                    if(element != null){
+                        quillRef.current = element
+                    }
+                })}
+                className='QuillEditor'
+                theme="snow"
+                value={value}
+                onChange={setValue} 
+                modules={modules}
+            />
+        </>
+    )
 }

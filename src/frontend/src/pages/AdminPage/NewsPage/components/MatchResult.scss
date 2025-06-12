@@ -1,0 +1,98 @@
+// MatchResults.scss
+.match-result-container {
+  margin: 1rem 0 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
+}
+
+.match-result-narrow {
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  background: white !important;
+  font-size: 0.875rem !important;
+  max-width: 400px !important;
+  margin: 0 auto !important;
+
+  &__date {
+    background: #f9fafb !important;
+    padding: 0.5rem 0.75rem !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    font-size: 0.75rem !important;
+    color: #6b7280 !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+  }
+
+  &__content {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.75rem !important;
+    min-height: 2.5rem !important;
+  }
+
+  &__teams {
+    flex: 1 !important;
+    font-weight: 500 !important;
+    color: #111827 !important;
+    line-height: 1.4 !important;
+  }
+
+  &__info {
+    color: #6b7280 !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
+    margin-left: 0.75rem !important;
+    font-weight: 500 !important;
+  }
+}
+
+// Ensure styles work in Quill editor context
+.ql-editor .match-result-container {
+  margin: 1rem 0 !important;
+  
+  .match-result-narrow {
+    margin: 0 auto !important;
+  }
+}
+
+// Ensure styles work in preview context  
+.preview-news__content-html .match-result-container,
+.single-news-page__content-html .match-result-container {
+  margin: 1rem 0 !important;
+  
+  .match-result-narrow {
+    margin: 0 auto !important;
+  }
+}
+
+// Mobile responsive
+@media (max-width: 480px) {
+  .match-result-narrow {
+    max-width: 100% !important;
+    margin: 0 !important;
+    
+    &__content {
+      padding: 0.625rem !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.25rem !important;
+    }
+    
+    &__info {
+      margin-left: 0 !important;
+      font-size: 0.75rem !important;
+    }
+  }
+}
+
+// Hover effect for better UX
+.match-result-narrow {
+  transition: all 0.2s ease !important;
+  cursor: default !important;
+  
+  &:hover {
+    border-color: #9ca3af !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "matches": [
+    {
+      "id": "match_001",
+      "homeTeam": "FC Barcelona",
+      "awayTeam": "Real Madrid",
+      "homeScore": "2",
+      "awayScore": "1",
+      "date": "15.12.2024",
+      "link": "/matches/001"
+    },
+    {
+      "id": "match_002", 
+      "homeTeam": "Manchester United",
+      "awayTeam": "Liverpool",
+      "homeScore": "0",
+      "awayScore": "3",
+      "date": "18.12.2024",
+      "link": "/matches/002"
+    },
+    {
+      "id": "match_003",
+      "homeTeam": "Bayern Munich",
+      "awayTeam": "Borussia Dortmund",
+      "homeScore": "4",
+      "awayScore": "2",
+      "date": "20.12.2024", 
+      "link": "/matches/003"
+    }
+  ]
+}
