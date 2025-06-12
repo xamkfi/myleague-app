@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Application.Common;
 using Application.DTOs.Floorball;
 using Domain.Enums.Floorball;
+using Domain.Enums.Common;
 using MediatR;
 
 namespace Application.Commands.Floorball.Team
@@ -18,6 +19,7 @@ namespace Application.Commands.Floorball.Team
     /// <param name="ClubId"></param>
     /// <param name="HomeArena"></param>
     /// <param name="PrimaryJerseyColor"></param>
+    /// <param name="TeamCategory"></param>
     /// <param name="SecondaryJerseyColor"></param>
     public record CreateFloorballTeamCommand(
         string Name,
@@ -25,5 +27,6 @@ namespace Application.Commands.Floorball.Team
         Guid ClubId,
         string HomeArena,
         string PrimaryJerseyColor,
+        TeamCategory TeamCategory,
         string? SecondaryJerseyColor) : IRequest<Result<FloorballTeamDto>>;
 }

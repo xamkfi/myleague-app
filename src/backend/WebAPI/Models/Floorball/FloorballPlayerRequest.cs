@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Domain.Enums.Floorball;
 
 namespace WebAPI.Models.Floorball
 {
@@ -25,7 +26,7 @@ namespace WebAPI.Models.Floorball
         /// Player's position (e.g., "Forward", "Defense", "Goalkeeper")
         /// </summary>
         [Required(ErrorMessage = "Position is required")]
-        public string Position { get; set; } = string.Empty;
+        public FloorballPosition Position { get; set; } = FloorballPosition.None;
     }
 
     /// <summary>

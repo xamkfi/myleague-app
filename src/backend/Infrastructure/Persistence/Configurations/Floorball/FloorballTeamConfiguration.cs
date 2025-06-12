@@ -44,8 +44,12 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             // Ignore Club navigation property to prevent cross-context entity discovery
             builder.Ignore(t => t.Club);
 
+
             // We maintain the ClubId as a foreign key for reference
-            builder.Property("ClubId")
+            // builder.Property("ClubId")
+
+            // Configure the ClubId as a required property for cross-context reference
+            builder.Property(t => t.ClubId)
                 .IsRequired();
 
             // Configure the owned FloorballTeamPlayer collection

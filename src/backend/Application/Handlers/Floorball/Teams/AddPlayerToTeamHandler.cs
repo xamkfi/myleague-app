@@ -3,6 +3,7 @@ using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Common;
 using Domain.Entities.Floorball;
+using Domain.Entities.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
@@ -20,6 +21,7 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
 {
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AddPlayerToTeamHandler> _logger;
 
@@ -28,16 +30,19 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
     /// </summary>
     /// <param name="teamRepository">The floorball team repository</param>
     /// <param name="playerRepository">The floorball player repository</param>
+    /// <param name="clubRepository">The club repository</param>
     /// <param name="unitOfWork">The unit of work</param>
     /// <param name="logger">The logger</param>
     public AddPlayerToTeamHandler(
         IFloorballTeamRepository teamRepository,
         IFloorballPlayerRepository playerRepository,
+        IClubRepository clubRepository,
         IUnitOfWork unitOfWork,
         ILogger<AddPlayerToTeamHandler> logger)
     {
         _teamRepository = teamRepository;
         _playerRepository = playerRepository;
+        _clubRepository = clubRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -74,7 +79,15 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team);
+            // Load the club for the team
+            Club? club = await _clubRepository.GetByIdAsync(team.ClubId);
+            if (club == null)
+            {
+                _logger.LogWarning("Club with ID {ClubId} not found for team {TeamId}", team.ClubId, team.Id);
+                return Result<FloorballTeamDto>.Failure("Associated club not found");
+            }
+
+            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club);
             _logger.LogInformation("Successfully added player {PlayerId} to team {TeamId}", request.PlayerId, request.TeamId);
 
             return Result<FloorballTeamDto>.Success(teamDto);

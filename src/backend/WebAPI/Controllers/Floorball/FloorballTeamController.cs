@@ -174,8 +174,8 @@ namespace WebAPI.Controllers.Floorball
                 request.Division,
                 request.ClubId,
                 request.HomeArena,
-                request.Category,
                 request.PrimaryJerseyColor,
+                request.Category,
                 request.SecondaryJerseyColor);
 
             Result<FloorballTeamDto> result = await _mediator.Send(command);
@@ -224,6 +224,7 @@ namespace WebAPI.Controllers.Floorball
                 request.Division,
                 request.HomeArena,
                 request.PrimaryJerseyColor,
+                request.Category,
                 request.SecondaryJerseyColor);
 
             Result<FloorballTeamDto> result = await _mediator.Send(command);

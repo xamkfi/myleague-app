@@ -63,9 +63,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <returns>A collection of teams belonging to the specified club</returns>
         public async Task<IEnumerable<FloorballTeam?>> GetByClubIdAsync(Guid clubId)
         {
-            // Use shadow property ClubId for filtering since Club navigation is not available
-            var teams = await _entities
-                .Where(t => EF.Property<Guid>(t, "ClubId") == clubId)
+            // Use the explicit ClubId property for filtering
+            IEnumerable<FloorballTeam> teams = await _entities
+                .Where(t => t.ClubId == clubId)
                 .ToListAsync();
             
             return teams.Cast<FloorballTeam?>();

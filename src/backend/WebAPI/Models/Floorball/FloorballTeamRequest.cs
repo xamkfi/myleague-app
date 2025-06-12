@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using Domain.Enums.Floorball;
+using Domain.Enums.Common;
 
 namespace WebAPI.Models.Floorball
 {
@@ -47,5 +48,11 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Secondary jersey color must be between 2 and 50 characters")]
         public string? SecondaryJerseyColor { get; set; }
+
+        /// <summary>
+        /// The category of the team (Adult, Youth, Women)
+        /// </summary>
+        [Required(ErrorMessage = "Team category is required")]
+        public TeamCategory Category { get; set; }
     }
 } 

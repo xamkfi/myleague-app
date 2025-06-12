@@ -129,7 +129,7 @@ namespace WebAPI.Controllers.Floorball
 
             CreateFloorballPlayerCommand command = new CreateFloorballPlayerCommand(
                 request.PersonId,
-                (FloorballPosition)Enum.Parse(typeof(FloorballPosition), request.Position));
+                request.Position);
 
             Result<FloorballPlayerDto> result = await _mediator.Send(command);
 

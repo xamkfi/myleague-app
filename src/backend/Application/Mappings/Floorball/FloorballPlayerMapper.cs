@@ -26,17 +26,28 @@ public static class FloorballPlayerMapper
             throw new ArgumentNullException(nameof(player));
 
         // TODO: In a complete implementation, PersonDto should be loaded from PersonRepository
-        // For now, providing a placeholder to resolve compilation error
-        var placeholderPerson = new PersonDto(
-            player.PersonId,
-            "Unknown", // FirstName
-            "Unknown", // LastName
-            DateTime.MinValue, // BirthDate
-            "Unknown Unknown", // FullName
-            false,
-            null, // Address
-            null  // ContactInfo
-        );
+        // Handle case where Person navigation property is null (ignored in EF config)
+        PersonDto placeholderPerson = player.Person != null 
+            ? new PersonDto(
+                player.PersonId,
+                player.Person.FirstName,
+                player.Person.LastName,
+                player.Person.BirthDate,
+                player.Person.FullName,
+                player.Person.IsRegistered,
+                player.Person.Address,
+                player.Person.ContactInfo
+            )
+            : new PersonDto(
+                player.PersonId,
+                "Unknown",
+                "Player", 
+                DateTime.MinValue,
+                "Unknown Player",
+                false,
+                null,
+                null
+            );
 
         return new FloorballPlayerDto(
             player.Id,

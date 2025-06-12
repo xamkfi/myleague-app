@@ -38,6 +38,11 @@ public class FloorballTeam : AggregateRoot
     /// </summary>
     public Club Club { get; private set; }
 
+    /// <summary>
+    /// Gets the ID of the club this team belongs to
+    /// </summary>
+    public Guid ClubId { get; private set; }
+
     public TeamCategory TeamCategory { get; private set; }
 
     /// <summary>
@@ -75,6 +80,7 @@ public class FloorballTeam : AggregateRoot
         _roster = new List<FloorballTeamPlayer>();
         Name = string.Empty;
         Club = null!; // Marked as non-nullable, but initialized to null for EF Core
+        ClubId = Guid.Empty; // Default to empty Guid for EF Core
         HomeArena = string.Empty; // Default to an empty string
         PrimaryJerseyColor = string.Empty; // Default to an empty string
         SecondaryJerseyColor = string.Empty; // Default to an empty string
@@ -133,6 +139,7 @@ public class FloorballTeam : AggregateRoot
 
         Division = division;
         Club = club;
+        ClubId = club.Id;
         HomeArena = homeArena;
         PrimaryJerseyColor = primaryJerseyColor;
         SecondaryJerseyColor = secondaryJerseyColor ?? string.Empty;
