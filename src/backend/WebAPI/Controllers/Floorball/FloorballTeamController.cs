@@ -40,26 +40,34 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Gets all floorball teams
+        /// Gets all floorball teams with pagination and filtering
         /// </summary>
-        /// <returns>List of all floorball teams</returns>
+        /// <param name="request">Query parameters for pagination and filtering</param>
+        /// <returns>Paginated list of floorball teams</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballTeamDto>>>> GetAllTeams()
+        public async Task<ActionResult<PaginatedApiResponse<FloorballTeamDto>>> GetAllTeams([FromQuery] GetFloorballTeamsRequest request)
         {
-            _logger.LogInformation("Getting all floorball teams");
+            _logger.LogInformation("Getting all floorball teams with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-            GetAllFloorballTeamsQuery query = new GetAllFloorballTeamsQuery();
-            Result<IEnumerable<FloorballTeamDto>> result = await _mediator.Send(query);
+            var query = new GetAllFloorballTeamsQuery(
+                request.Page,
+                request.PageSize,
+                request.ClubId,
+                request.Division
+            );
+
+            Result<PagedResult<FloorballTeamDto>> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
             {
-                return Ok(ApiResponse<List<FloorballTeamDto>>.SuccessResponse(result.Data.ToList(), "Floorball teams retrieved successfully"));
+                return Ok(PaginatedApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Floorball teams retrieved successfully"));
             }
 
-            string errorMessage = result.Error ?? "Failed to retrieve floorball teams";
-            return BadRequest(ApiResponse<List<FloorballTeamDto>>.ErrorResponse(errorMessage));
+            string errorMessage = result.Error ?? result.GetErrorsString();
+            return StatusCode(500, PaginatedApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>

@@ -1,3 +1,4 @@
+using Application.Configuration;
 using Application.DependencyInjections;
 using MyLeague.Infrastructure.DependencyInjections;
 using WebAPI.Middlewares;
@@ -24,6 +25,10 @@ builder.Services.AddOpenApiConfiguration();
 
 // Add CORS configuration using extension method
 builder.Services.AddCorsConfiguration();
+
+// Configure pagination options
+builder.Services.Configure<PaginationConfiguration>(
+    builder.Configuration.GetSection(PaginationConfiguration.SectionName));
 
 // Register application services
 builder.Services.AddApplication();
