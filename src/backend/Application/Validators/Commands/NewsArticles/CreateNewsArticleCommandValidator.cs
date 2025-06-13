@@ -15,6 +15,10 @@ public class CreateNewsArticleCommandValidator : AbstractValidator<CreateNewsArt
             .NotEmpty().WithMessage("Title is required")
             .MaximumLength(200).WithMessage("Title cannot exceed 200 characters");
 
+        RuleFor(x => x.MainImage)
+            .Must(BeValidUri).WithMessage("Invalid main image URL format")
+            .When(x => x.MainImage != null);
+
         RuleFor(x => x.ContentHtml)
             .NotEmpty().WithMessage("Content is required");
 
@@ -62,6 +66,11 @@ public class CreateNewsArticleCommandValidator : AbstractValidator<CreateNewsArt
     {
         return !string.IsNullOrEmpty(url) && Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult) 
                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+    }
+
+    private static bool BeValidUri(Uri? uri)
+    {
+        return uri == null || (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 
     private static bool HaveUniqueItems(IReadOnlyList<string>? tags)

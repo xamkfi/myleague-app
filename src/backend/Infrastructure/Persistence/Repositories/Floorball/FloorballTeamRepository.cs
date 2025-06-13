@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
@@ -42,6 +43,78 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             return await _entities
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gets paginated floorball teams with filtering support
+        /// </summary>
+        /// <param name="page">Page number (1-based)</param>
+        /// <param name="pageSize">Number of items per page</param>
+        /// <param name="clubId">Optional club ID filter</param>
+        /// <param name="division">Optional division filter</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Paginated collection of floorball teams</returns>
+        public async Task<PagedResult<FloorballTeam>> GetPagedAsync(
+            int page, 
+            int pageSize, 
+            Guid? clubId = null, 
+            FloorballDivision? division = null,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballTeam> query = _entities.AsQueryable();
+
+            // Apply filters
+            if (clubId.HasValue)
+            {
+                query = query.Where(t => t.ClubId == clubId.Value);
+            }
+
+            if (division.HasValue)
+            {
+                query = query.Where(t => t.Division == division.Value);
+            }
+
+            // Apply ordering by name
+            query = query.OrderBy(t => t.Name);
+
+            // Get total count before pagination
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            // Apply pagination
+            List<FloorballTeam> items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return PagedResult.Create(items, totalCount, page, pageSize);
+        }
+
+        /// <summary>
+        /// Gets the total count of floorball teams with filtering
+        /// </summary>
+        /// <param name="clubId">Optional club ID filter</param>
+        /// <param name="division">Optional division filter</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Total count of matching floorball teams</returns>
+        public async Task<int> GetCountAsync(
+            Guid? clubId = null, 
+            FloorballDivision? division = null,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballTeam> query = _entities.AsQueryable();
+
+            // Apply filters
+            if (clubId.HasValue)
+            {
+                query = query.Where(t => t.ClubId == clubId.Value);
+            }
+
+            if (division.HasValue)
+            {
+                query = query.Where(t => t.Division == division.Value);
+            }
+
+            return await query.CountAsync(cancellationToken);
         }
 
         /// <summary>

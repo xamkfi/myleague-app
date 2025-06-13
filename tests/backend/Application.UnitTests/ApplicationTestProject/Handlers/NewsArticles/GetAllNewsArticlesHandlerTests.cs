@@ -2,6 +2,8 @@ using Application.Queries.NewsArticles;
 using Application.Common;
 using Application.DTOs.Common;
 using Application.Handlers.NewsArticles;
+using Application.Services.Common;
+using Domain.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
@@ -18,14 +20,23 @@ namespace ApplicationTestProject.Handlers.NewsArticles;
 public class GetAllNewsArticlesHandlerTests
 {
     private readonly Mock<INewsArticleRepository> _mockNewsRepository;
+    private readonly Mock<IPaginationService> _mockPaginationService;
     private readonly Mock<ILogger<GetAllNewsArticlesHandler>> _mockLogger;
     private readonly GetAllNewsArticlesHandler _handler;
 
     public GetAllNewsArticlesHandlerTests()
     {
         _mockNewsRepository = new Mock<INewsArticleRepository>();
+        _mockPaginationService = new Mock<IPaginationService>();
         _mockLogger = new Mock<ILogger<GetAllNewsArticlesHandler>>();
-        _handler = new GetAllNewsArticlesHandler(_mockNewsRepository.Object, _mockLogger.Object);
+        
+        // Setup pagination service defaults for News resource
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", It.IsAny<int>()))
+            .Returns(true);
+        _mockPaginationService.Setup(x => x.ResolvePageSize("News", It.IsAny<int>()))
+            .Returns<string, int>((_, pageSize) => pageSize <= 0 ? 10 : pageSize);
+        
+        _handler = new GetAllNewsArticlesHandler(_mockNewsRepository.Object, _mockPaginationService.Object, _mockLogger.Object);
     }
 
     [Fact]
@@ -39,8 +50,8 @@ public class GetAllNewsArticlesHandlerTests
 
         List<NewsArticle> newsArticles = new List<NewsArticle>
         {
-            new NewsArticle(Guid.NewGuid(), "Article 1", "<p>Content 1</p>", "Author 1"),
-            new NewsArticle(Guid.NewGuid(), "Article 2", "<p>Content 2</p>", "Author 2")
+            new NewsArticle(Guid.NewGuid(), "Article 1", new Uri("https://example.com/image1.jpg"), "<p>Content 1</p>", "Author 1"),
+            new NewsArticle(Guid.NewGuid(), "Article 2", new Uri("https://example.com/image2.jpg"), "<p>Content 2</p>", "Author 2")
         };
 
         _mockNewsRepository.Setup(x => x.GetAllAsync(1, 3, null, null, null, false, It.IsAny<CancellationToken>()))
@@ -113,26 +124,31 @@ public class GetAllNewsArticlesHandlerTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Contain("Page number must be greater than 0");
+        result.Error.Should().Contain("Page must be greater than 0");
 
         _mockNewsRepository.Verify(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Theory]
-    [InlineData(0)]
     [InlineData(-1)]
     [InlineData(101)]
     public async Task Handle_InvalidPageSize_ReturnsFailureResult(int invalidPageSize)
     {
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(PageSize: invalidPageSize);
+        
+        // Setup pagination service to return invalid for these test cases
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", invalidPageSize))
+            .Returns(false);
+        _mockPaginationService.Setup(x => x.GetPaginationSettings("News"))
+            .Returns(new PaginationSettings(10, 50, 1));
 
         // Act
         Result<PagedResult<NewsArticleListDto>> result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Contain("Page size must be between 1 and 100");
+        result.Error.Should().Contain("Page size");
 
         _mockNewsRepository.Verify(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
     }

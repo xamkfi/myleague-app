@@ -2,6 +2,9 @@ using Application.Queries.NewsArticles;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
 using Application.Common;
+using Domain.Common;
+using Application.Handlers.Common;
+using Application.Services.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
@@ -17,20 +20,23 @@ namespace Application.Handlers.NewsArticles;
 /// <summary>
 /// Handler for retrieving all news articles with pagination and filtering
 /// </summary>
-public class GetAllNewsArticlesHandler : IRequestHandler<GetAllNewsArticlesQuery, Result<PagedResult<NewsArticleListDto>>>
+public class GetAllNewsArticlesHandler : BasePagedQueryHandler<GetAllNewsArticlesQuery, NewsArticleListDto>, 
+    IRequestHandler<GetAllNewsArticlesQuery, Result<PagedResult<NewsArticleListDto>>>
 {
     private readonly INewsArticleRepository _newsRepository;
-    private readonly ILogger<GetAllNewsArticlesHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the GetAllNewsArticlesHandler class
     /// </summary>
     /// <param name="newsRepository">The news repository</param>
+    /// <param name="paginationService">The pagination service</param>
     /// <param name="logger">The logger</param>
-    public GetAllNewsArticlesHandler(INewsArticleRepository newsRepository, ILogger<GetAllNewsArticlesHandler> logger)
+    public GetAllNewsArticlesHandler(
+        INewsArticleRepository newsRepository,
+        IPaginationService paginationService,
+        ILogger<GetAllNewsArticlesHandler> logger) : base(paginationService, logger)
     {
         _newsRepository = newsRepository;
-        _logger = logger;
     }
 
     /// <summary>
@@ -49,54 +55,47 @@ public class GetAllNewsArticlesHandler : IRequestHandler<GetAllNewsArticlesQuery
             _logger.LogInformation("Retrieving news articles - Page: {Page}, PageSize: {PageSize}, Category: {Category}, SportCategory: {SportCategory}, Author: {Author}, IncludeArchived: {IncludeArchived}", 
                 request.Page, request.PageSize, request.Category, request.SportCategory, request.Author, request.IncludeArchived);
 
-            // Validate pagination parameters
-            if (request.Page < 1)
+            // Validate pagination parameters using base handler
+            Result<PaginationValidationResult> validationResult = ValidatePaginationParameters(
+                request.Page, request.PageSize, GetAllNewsArticlesQuery.ResourceKey);
+            
+            if (validationResult.IsFailure)
             {
-                _logger.LogWarning("Invalid page number: {Page}", request.Page);
-                return Result<PagedResult<NewsArticleListDto>>.Failure("Page number must be greater than 0.");
+                return Result<PagedResult<NewsArticleListDto>>.Failure(validationResult.Error!);
             }
 
-            if (request.PageSize < 1 || request.PageSize > 100)
-            {
-                _logger.LogWarning("Invalid page size: {PageSize}", request.PageSize);
-                return Result<PagedResult<NewsArticleListDto>>.Failure("Page size must be between 1 and 100.");
-            }
+            int actualPageSize = validationResult.Data!.ActualPageSize;
 
             // Check for cancellation before database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Get both the data and total count in parallel for better performance
-            Task<IEnumerable<NewsArticle>> newsTask = _newsRepository.GetAllAsync(
+            // Execute operations sequentially instead of in parallel
+            IEnumerable<NewsArticle> newsArticles = await _newsRepository.GetAllAsync(
                 request.Page, 
-                request.PageSize, 
+                actualPageSize, 
                 request.Category, 
                 request.SportCategory, 
                 request.Author, 
                 request.IncludeArchived, 
                 cancellationToken);
 
-            Task<int> countTask = _newsRepository.GetCountAsync(
+            int totalCount = await _newsRepository.GetCountAsync(
                 request.Category,
                 request.SportCategory,
                 request.Author,
                 request.IncludeArchived,
                 cancellationToken);
 
-            await Task.WhenAll(newsTask, countTask);
-
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            IEnumerable<NewsArticle> newsArticles = await newsTask;
-            int totalCount = await countTask;
-
             IEnumerable<NewsArticleListDto> newsDtos = NewsArticleMapper.ToListDtos(newsArticles);
             
-            PagedResult<NewsArticleListDto> pagedResult = PagedResult<NewsArticleListDto>.Create(
+            PagedResult<NewsArticleListDto> pagedResult = CreatePagedResult(
                 newsDtos, 
                 totalCount, 
                 request.Page, 
-                request.PageSize);
+                actualPageSize);
             
             _logger.LogInformation("Successfully retrieved {Count} news articles out of {TotalCount} total", 
                 newsArticles.Count(), totalCount);

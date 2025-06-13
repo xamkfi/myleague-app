@@ -1,17 +1,27 @@
 using Application.Queries.NewsArticles;
+using Application.Services.Common;
 using Application.Validators.Queries.NewsArticles;
 using FluentValidation.TestHelper;
+using Moq;
 using Xunit;
 
 namespace ApplicationTestProject.Validators.Queries.NewsArticles;
 
 public class GetAllNewsArticlesQueryValidatorTests
 {
+    private readonly Mock<IPaginationService> _mockPaginationService;
     private readonly GetAllNewsArticlesQueryValidator _validator;
 
     public GetAllNewsArticlesQueryValidatorTests()
     {
-        _validator = new GetAllNewsArticlesQueryValidator();
+        _mockPaginationService = new Mock<IPaginationService>();
+        
+        // Remove the generic setup that conflicts with individual test mocks
+        // Each test will set up its own specific mock expectations
+        _mockPaginationService.Setup(x => x.GetPaginationSettings("News"))
+            .Returns(new PaginationSettings(10, 50, 1));
+            
+        _validator = new GetAllNewsArticlesQueryValidator(_mockPaginationService.Object);
     }
 
     [Fact]
@@ -27,6 +37,10 @@ public class GetAllNewsArticlesQueryValidatorTests
             IncludeArchived: false
         );
 
+        // Setup mock to return true for valid PageSize (10)
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 10))
+            .Returns(true);
+
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
 
@@ -39,6 +53,10 @@ public class GetAllNewsArticlesQueryValidatorTests
     {
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery();
+        
+        // Setup mock to return true for default PageSize (0)
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
 
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
@@ -73,6 +91,10 @@ public class GetAllNewsArticlesQueryValidatorTests
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(Page: validPage);
 
+        // Setup mock to return true for default PageSize (0) since we're only testing Page
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
+
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
 
@@ -81,32 +103,38 @@ public class GetAllNewsArticlesQueryValidatorTests
     }
 
     [Theory]
-    [InlineData(0)]
     [InlineData(-1)]
-    [InlineData(101)]
+    [InlineData(51)]  // Above News max of 50
     [InlineData(1000)]
     public void Validate_InvalidPageSize_ShouldHaveValidationError(int invalidPageSize)
     {
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(PageSize: invalidPageSize);
+        
+        // Setup mock to return false for invalid page sizes
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", invalidPageSize))
+            .Returns(false);
 
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.PageSize)
-            .WithErrorMessage("Page size must be between 1 and 100");
+        result.ShouldHaveValidationErrorFor(x => x.PageSize);
     }
 
     [Theory]
+    [InlineData(0)]   // Special case - should be valid (means use default)
     [InlineData(1)]
     [InlineData(25)]
-    [InlineData(50)]
-    [InlineData(100)]
+    [InlineData(50)]  // News max is 50
     public void Validate_ValidPageSize_ShouldNotHaveValidationError(int validPageSize)
     {
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(PageSize: validPageSize);
+        
+        // Setup mock to return true for valid page sizes
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", validPageSize))
+            .Returns(true);
 
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
@@ -126,6 +154,10 @@ public class GetAllNewsArticlesQueryValidatorTests
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(Category: category);
 
+        // Setup mock to return true for default PageSize (0) since we're only testing Category
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
+
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
 
@@ -140,6 +172,10 @@ public class GetAllNewsArticlesQueryValidatorTests
     {
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(Category: invalidCategory);
+
+        // Setup mock to return true for default PageSize (0) since we're only testing Category
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
 
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
@@ -158,6 +194,10 @@ public class GetAllNewsArticlesQueryValidatorTests
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(SportCategory: sportCategory);
 
+        // Setup mock to return true for default PageSize (0) since we're only testing SportCategory
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
+
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
 
@@ -173,6 +213,10 @@ public class GetAllNewsArticlesQueryValidatorTests
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(SportCategory: invalidSportCategory);
 
+        // Setup mock to return true for default PageSize (0) since we're only testing SportCategory
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
+
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
 
@@ -187,6 +231,10 @@ public class GetAllNewsArticlesQueryValidatorTests
         // Arrange
         string longAuthor = new string('A', 101); // 101 characters
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(Author: longAuthor);
+
+        // Setup mock to return true for default PageSize (0) since we're only testing Author
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
 
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
@@ -205,6 +253,10 @@ public class GetAllNewsArticlesQueryValidatorTests
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(Author: author);
 
+        // Setup mock to return true for default PageSize (0) since we're only testing Author
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
+
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
 
@@ -219,6 +271,10 @@ public class GetAllNewsArticlesQueryValidatorTests
     {
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(IncludeArchived: includeArchived);
+
+        // Setup mock to return true for default PageSize (0) since we're only testing IncludeArchived
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
 
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
@@ -240,6 +296,10 @@ public class GetAllNewsArticlesQueryValidatorTests
             Author: longAuthor          // Invalid author length
         );
 
+        // Setup mock to return false for invalid PageSize (101)
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 101))
+            .Returns(false);
+
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
 
@@ -258,12 +318,16 @@ public class GetAllNewsArticlesQueryValidatorTests
         string maxLengthAuthor = new string('A', 100); // Exactly 100 characters
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(
             Page: 1,
-            PageSize: 100,
+            PageSize: 50,              // Changed from 100 to 50 (News max)
             Category: "General",
             SportCategory: "Football",
             Author: maxLengthAuthor,
             IncludeArchived: false
         );
+        
+        // Setup mock to return true for valid PageSize (50)
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 50))
+            .Returns(true);
 
         // Act
         TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);

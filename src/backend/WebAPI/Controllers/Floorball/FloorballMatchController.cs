@@ -1,5 +1,6 @@
 ﻿using Application.Commands.Floorball.Match;
 using Application.Common;
+using Domain.Common;
 using Application.DTOs.Common;
 using Application.DTOs.Floorball;
 using Application.Queries.Floorball.Match;
@@ -34,29 +35,36 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Get all floorball matches
+        /// Get all floorball matches with pagination and filtering
         /// </summary>
-        /// <returns>List of floorball matches</returns>
+        /// <param name="request">Query parameters for pagination and filtering</param>
+        /// <returns>Paginated list of floorball matches</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetAllMatches()
+        public async Task<ActionResult<PaginatedApiResponse<FloorballMatchDto>>> GetAllMatches([FromQuery] GetFloorballMatchesRequest request)
         {
-            _logger.LogInformation("Getting all floorball matches");
+            _logger.LogInformation("Getting all floorball matches with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-            GetAllFloorballMatchesQuery query = new GetAllFloorballMatchesQuery();
+            var query = new GetAllFloorballMatchesQuery(
+                request.Page,
+                request.PageSize,
+                request.SeasonId,
+                request.TeamId,
+                request.StartDate,
+                request.EndDate
+            );
 
-            Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(query);
+            Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
             {
-                List<FloorballMatchDto> matchList = result.Data.ToList();
-                return Ok(ApiResponse<List<FloorballMatchDto>>.SuccessResponse(matchList, "Floorball matches retrieved successfully"));
+                return Ok(PaginatedApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Floorball matches retrieved successfully"));
             }
 
-            string errorMessage = result.Error ?? "Failed to retrieve floorball matches";
-            return BadRequest(ApiResponse<List<FloorballMatchDto>>.ErrorResponse("Failed to retrieve floorball matches"));
+            string errorMessage = result.Error ?? result.GetErrorsString();
+            return StatusCode(500, PaginatedApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>

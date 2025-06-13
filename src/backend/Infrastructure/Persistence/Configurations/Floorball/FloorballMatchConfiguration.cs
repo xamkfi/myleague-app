@@ -40,7 +40,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(m => m.WentToShootout)
                 .IsRequired();
 
-            // Configure foreign key relationships without navigation properties to avoid cross-context issues
+            // Configure foreign key relationships with navigation properties within the same context
             builder.Property(m => m.HomeTeamId)
                 .IsRequired();
 
@@ -49,6 +49,22 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
 
             builder.Property(m => m.SeasonId)
                 .IsRequired();
+
+            // Configure relationships within FloorballDbContext
+            builder.HasOne(m => m.Season)
+                .WithMany(s => s.Matches)
+                .HasForeignKey(m => m.SeasonId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(m => m.HomeTeam)
+                .WithMany()
+                .HasForeignKey(m => m.HomeTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(m => m.AwayTeam)
+                .WithMany()
+                .HasForeignKey(m => m.AwayTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Configure the relationship with referees using a simple many-to-many join table
             builder.HasMany(m => m.Officials)

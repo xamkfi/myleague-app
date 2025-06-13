@@ -13,6 +13,9 @@ import AdminPage from '../pages/AdminPage/AdminPage';
 import PersonsPage from '../pages/AdminPage/PersonsPage/PersonsPage';
 import PersonForm from '../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm';
 import TeamPage from '../pages/TeamPage/TeamPage';
+import PersonUserPage from '../pages/PersonUserPage/PersonUserPage';
+import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
+import NewsCreatePage from '../pages/AdminPage/NewsPage/NewsCreatePage';
 
 export const routes: RouteObject[] = [
   {
@@ -22,6 +25,10 @@ export const routes: RouteObject[] = [
   {
     path: '/uutiset',
     element: <NewsPage />
+  },
+  {
+    path: '/uutiset/:id',
+    element: <SingleNewsPage />
   },
   {
     path: '/saannot',
@@ -79,5 +86,14 @@ export const routes: RouteObject[] = [
         element: <PersonForm />
       }
     ]
+  },
+  {
+    path: '/person/:id',
+    element: <PersonUserPage />
+  },
+  {
+    path: '/admin/news',
+    element: <NewsCreatePage/>
   }
+
 ]; 

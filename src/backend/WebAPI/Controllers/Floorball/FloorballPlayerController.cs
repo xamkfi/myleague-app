@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Application.Commands.Floorball.Player;
 using Application.Common;
+using Domain.Common;
 using Application.DTOs.Floorball;
 using Application.Queries.Floorball.Player;
 using Domain.Enums.Floorball;
@@ -39,49 +40,67 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Gets all floorball players
+        /// Gets all floorball players with pagination and filtering
         /// </summary>
-        /// <returns>List of all floorball players</returns>
+        /// <param name="request">Query parameters for pagination and filtering</param>
+        /// <returns>Paginated list of floorball players</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<List<FloorballPlayerDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballPlayerDto>>>> GetAllPlayers()
+        public async Task<ActionResult<PaginatedApiResponse<FloorballPlayerDto>>> GetAllPlayers([FromQuery] GetFloorballPlayersRequest request)
         {
-            _logger.LogInformation("Getting all floorball players");
+            _logger.LogInformation("Getting all floorball players with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-            GetAllFloorballPlayersQuery query = new GetAllFloorballPlayersQuery();
-            Result<IEnumerable<FloorballPlayerDto>> result = await _mediator.Send(query);
+            var query = new GetAllFloorballPlayersQuery(
+                request.Page,
+                request.PageSize,
+                request.IsActive,
+                request.Position,
+                request.TeamId,
+                request.SearchTerm
+            );
+
+            Result<PagedResult<FloorballPlayerDto>> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
             {
-                return Ok(ApiResponse<List<FloorballPlayerDto>>.SuccessResponse(result.Data.ToList(), "Floorball players retrieved successfully"));
+                return Ok(PaginatedApiResponse<FloorballPlayerDto>.SuccessResponse(result.Data, "Floorball players retrieved successfully"));
             }
 
-            string errorMessage = result.Error ?? "Failed to retrieve floorball players";
-            return BadRequest(ApiResponse<List<FloorballPlayerDto>>.ErrorResponse(errorMessage));
+            string errorMessage = result.Error ?? result.GetErrorsString();
+            return StatusCode(500, PaginatedApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>
-        /// Gets all active floorball players
+        /// Gets all active floorball players with pagination and filtering
         /// </summary>
-        /// <returns>List of active floorball players</returns>
+        /// <param name="request">Query parameters for pagination and filtering</param>
+        /// <returns>Paginated list of active floorball players</returns>
         [HttpGet("active")]
-        [ProducesResponseType(typeof(ApiResponse<List<FloorballPlayerDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballPlayerDto>>>> GetActivePlayers()
+        public async Task<ActionResult<PaginatedApiResponse<FloorballPlayerDto>>> GetActivePlayers([FromQuery] GetActiveFloorballPlayersRequest request)
         {
-            _logger.LogInformation("Getting active floorball players");
+            _logger.LogInformation("Getting active floorball players with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-            GetActiveFloorballPlayersQuery query = new GetActiveFloorballPlayersQuery();
-            Result<IEnumerable<FloorballPlayerDto>> result = await _mediator.Send(query);
+            var query = new GetActiveFloorballPlayersQuery(
+                request.Page,
+                request.PageSize,
+                request.Position,
+                request.TeamId
+            );
+
+            Result<PagedResult<FloorballPlayerDto>> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
             {
-                return Ok(ApiResponse<List<FloorballPlayerDto>>.SuccessResponse(result.Data.ToList(), "Active floorball players retrieved successfully"));
+                return Ok(PaginatedApiResponse<FloorballPlayerDto>.SuccessResponse(result.Data, "Active floorball players retrieved successfully"));
             }
 
-            string errorMessage = result.Error ?? "Failed to retrieve active floorball players";
-            return BadRequest(ApiResponse<List<FloorballPlayerDto>>.ErrorResponse(errorMessage));
+            string errorMessage = result.Error ?? result.GetErrorsString();
+            return StatusCode(500, PaginatedApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>

@@ -12,6 +12,7 @@ namespace Application.Commands.NewsArticles;
 public record UpdateNewsArticleCommand(
     Guid Id,
     string Title,
+    Uri? MainImage,
     string ContentHtml,
     string? Summary = null,
     IReadOnlyList<string>? ImageUrls = null,

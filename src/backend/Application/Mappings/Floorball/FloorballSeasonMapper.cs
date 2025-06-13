@@ -64,11 +64,28 @@ public static class FloorballSeasonMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
+        // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
+        DateTime startDateUtc = command.StartDate.Kind switch
+        {
+            DateTimeKind.Utc => command.StartDate,
+            DateTimeKind.Local => command.StartDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.StartDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.StartDate, DateTimeKind.Utc)
+        };
+
+        DateTime endDateUtc = command.EndDate.Kind switch
+        {
+            DateTimeKind.Utc => command.EndDate,
+            DateTimeKind.Local => command.EndDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.EndDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.EndDate, DateTimeKind.Utc)
+        };
+
         return new FloorballSeason(
             command.Name,
             command.Division,
-            command.StartDate.ToUniversalTime(),
-            command.EndDate.ToUniversalTime()
+            startDateUtc,
+            endDateUtc
         );
     }
 
@@ -85,11 +102,28 @@ public static class FloorballSeasonMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
+        // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
+        DateTime startDateUtc = command.StartDate.Kind switch
+        {
+            DateTimeKind.Utc => command.StartDate,
+            DateTimeKind.Local => command.StartDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.StartDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.StartDate, DateTimeKind.Utc)
+        };
+
+        DateTime endDateUtc = command.EndDate.Kind switch
+        {
+            DateTimeKind.Utc => command.EndDate,
+            DateTimeKind.Local => command.EndDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.EndDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.EndDate, DateTimeKind.Utc)
+        };
+
         // Use the entity's UpdateDetails method to update name and date range
         season.UpdateDetails(
             command.Name,
-            command.StartDate.ToUniversalTime(),
-            command.EndDate.ToUniversalTime()
+            startDateUtc,
+            endDateUtc
         );
     }
 } 
