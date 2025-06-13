@@ -20,7 +20,6 @@ namespace WebAPI.Models.Common
         /// <summary>
         /// Gets the Main image
         /// </summary>
-        [Required(ErrorMessage = "MainImage is required")]
         public Uri? MainImage { get; init; }
 
         /// <summary>
