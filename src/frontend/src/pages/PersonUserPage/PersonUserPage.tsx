@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { Player, TeamsData, Team, Goalkeeper, FieldPlayer } from "../../types/playerTypes";
+import type { Team, Goalkeeper, FieldPlayer } from "../../types/playerTypes";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
 import './PersonUserPage.scss';
 
