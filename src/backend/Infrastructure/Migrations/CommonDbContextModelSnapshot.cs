@@ -64,6 +64,83 @@ namespace MyLeague.Infrastructure.Migrations
                     b.ToTable("Clubs");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Common.NewsArticle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Author")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ContentHtml")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ImageUrls")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsArchived")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("MainImage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SportCategory")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Tags")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Author")
+                        .HasDatabaseName("IX_News_Author");
+
+                    b.HasIndex("Category")
+                        .HasDatabaseName("IX_News_Category");
+
+                    b.HasIndex("CreatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_News_CreatedAt");
+
+                    b.HasIndex("IsArchived")
+                        .HasDatabaseName("IX_News_IsArchived");
+
+                    b.HasIndex("SportCategory")
+                        .HasDatabaseName("IX_News_SportCategory");
+
+                    b.HasIndex("IsArchived", "CreatedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("IX_News_IsArchived_CreatedAt");
+
+                    b.ToTable("NewsArticles");
+                });
+
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>
                 {
                     b.Property<Guid>("Id")

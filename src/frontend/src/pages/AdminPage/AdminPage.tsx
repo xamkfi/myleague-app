@@ -1,6 +1,5 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './AdminPage.scss';
 
@@ -19,6 +18,12 @@ const AdminPage = () => {
             {t('admin.actions.managePerson', 'Edit/Add Person')}
           </button>
           {/* More admin actions will be added here */}
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/news')}
+          >
+            {t('admin.actions.news', 'Create news')}
+          </button>
         </div>
       </div>
     </PageTemplate>

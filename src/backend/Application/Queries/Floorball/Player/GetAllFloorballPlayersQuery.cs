@@ -10,7 +10,20 @@ using MediatR;
 namespace Application.Queries.Floorball.Player
 {
     /// <summary>
-    /// Query for retrieving all floorball players
+    /// Query for retrieving floorball players with pagination and comprehensive filtering support
     /// </summary>
-    public record GetAllFloorballPlayersQuery() : IRequest<Result<IEnumerable<FloorballPlayerDto>>>;
+    public record GetAllFloorballPlayersQuery(
+        int Page = 1,
+        int PageSize = 0, // 0 means use default from configuration
+        bool? IsActive = null, // null = all, true = active only, false = inactive only
+        string? Position = null,
+        Guid? TeamId = null,
+        string? SearchTerm = null
+    ) : IRequest<Result<PagedResult<FloorballPlayerDto>>>
+    {
+        /// <summary>
+        /// Resource key for pagination configuration
+        /// </summary>
+        public const string ResourceKey = "FloorballPlayers";
+    }
 }

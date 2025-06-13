@@ -1,0 +1,17 @@
+using Application.Commands.NewsArticles;
+using FluentValidation;
+
+namespace Application.Validators.Commands.NewsArticles;
+
+/// <summary>
+/// Validator for ArchiveNewsArticleCommand
+/// </summary>
+public class ArchiveNewsArticleCommandValidator : AbstractValidator<ArchiveNewsArticleCommand>
+{
+    public ArchiveNewsArticleCommandValidator()
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("News article ID is required")
+            .NotEqual(Guid.Empty).WithMessage("News article ID cannot be empty");
+    }
+} 
