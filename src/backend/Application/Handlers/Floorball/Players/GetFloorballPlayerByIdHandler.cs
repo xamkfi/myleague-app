@@ -32,7 +32,7 @@ public class GetFloorballPlayerByIdHandler : IRequestHandler<GetFloorballPlayerB
     /// <param name="personRepository">The person repository</param>
     /// <param name="logger">The logger</param>
     public GetFloorballPlayerByIdHandler(
-        IFloorballPlayerRepository playerRepository,
+        IFloorballPlayerRepository playerRepository, 
         IPersonRepository personRepository,
         ILogger<GetFloorballPlayerByIdHandler> logger)
     {

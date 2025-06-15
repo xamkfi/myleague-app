@@ -15,14 +15,19 @@ const AdminPage = () => {
             className="admin-action-button"
             onClick={() => navigate('/admin/persons')}
           >
-            {t('admin.actions.managePerson', 'Edit/Add Person')}
+            👤 {t('admin.actions.managePerson', 'Edit/Add Person')}
           </button>
-          {/* More admin actions will be added here */}
           <button
             className="admin-action-button"
             onClick={() => navigate('/admin/news')}
           >
-            {t('admin.actions.news', 'Create news')}
+            📰 {t('admin.actions.news', 'Create news')}
+          </button>
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/floorball')}
+          >
+            🏑 {t('admin.actions.floorball', 'Floorball')}
           </button>
         </div>
       </div>

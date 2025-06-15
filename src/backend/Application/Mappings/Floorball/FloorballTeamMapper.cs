@@ -50,12 +50,12 @@ public static class FloorballTeamMapper
                 }
                 
                 return new FloorballTeamPlayerDto(
-                    team.Id,
-                    p.PlayerId,
+                team.Id,
+                p.PlayerId,
                     playerName,
-                    p.Position,
-                    p.JerseyNumber,
-                    p.IsActive
+                p.Position,
+                p.JerseyNumber,
+                p.IsActive
                 );
             }).ToList().AsReadOnly()
         );
