@@ -42,6 +42,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public override async Task<IEnumerable<FloorballTeam>> GetAllAsync()
         {
             return await _entities
+                .Include(t => t.Roster)
                 .ToListAsync();
         }
 
@@ -80,8 +81,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             // Get total count before pagination
             int totalCount = await query.CountAsync(cancellationToken);
 
-            // Apply pagination
+            // Apply pagination and include roster
             List<FloorballTeam> items = await query
+                .Include(t => t.Roster)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);

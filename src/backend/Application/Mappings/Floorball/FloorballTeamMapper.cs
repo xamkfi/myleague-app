@@ -6,6 +6,7 @@ using Domain.Entities.Floorball;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Application.Mappings.Floorball;
 
@@ -19,9 +20,10 @@ public static class FloorballTeamMapper
     /// </summary>
     /// <param name="team">The team entity to map</param>
     /// <param name="club">The club entity (optional, since Club navigation is ignored in EF)</param>
+    /// <param name="playerPersons">Dictionary of player persons keyed by player ID</param>
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when team is null</exception>
-    public static FloorballTeamDto ToDto(FloorballTeam team, Club? club = null, FloorballPlayer? player = null)
+    public static FloorballTeamDto ToDto(FloorballTeam team, Club? club = null, Dictionary<Guid, Person>? playerPersons = null)
     {
         if (team == null)
             throw new ArgumentNullException(nameof(team));
@@ -39,14 +41,23 @@ public static class FloorballTeamMapper
             team.PrimaryJerseyColor,
             team.SecondaryJerseyColor,
             team.HasActiveMembers,
-            team.Roster.Select(p => new FloorballTeamPlayerDto(
-                team.Id,
-                p.PlayerId,
-                player?.Person?.FullName ?? "Unknown Player",
-                p.Position,
-                p.JerseyNumber,
-                p.IsActive
-            )).ToList().AsReadOnly()
+            team.Roster.Select(p => 
+            {
+                string playerName = "Unknown Player";
+                if (playerPersons != null && playerPersons.TryGetValue(p.PlayerId, out Person? person))
+                {
+                    playerName = person.FullName;
+                }
+                
+                return new FloorballTeamPlayerDto(
+                    team.Id,
+                    p.PlayerId,
+                    playerName,
+                    p.Position,
+                    p.JerseyNumber,
+                    p.IsActive
+                );
+            }).ToList().AsReadOnly()
         );
     }
 
@@ -55,9 +66,10 @@ public static class FloorballTeamMapper
     /// </summary>
     /// <param name="teams">The team entities to map</param>
     /// <param name="clubs">Dictionary of clubs keyed by club ID</param>
+    /// <param name="playerPersons">Dictionary of player persons keyed by player ID</param>
     /// <returns>The mapped DTOs</returns>
     /// <exception cref="ArgumentNullException">Thrown when teams is null</exception>
-    public static IEnumerable<FloorballTeamDto> ToDtos(IEnumerable<FloorballTeam> teams, Dictionary<Guid, Club>? clubs = null)
+    public static IEnumerable<FloorballTeamDto> ToDtos(IEnumerable<FloorballTeam> teams, Dictionary<Guid, Club>? clubs = null, Dictionary<Guid, Person>? playerPersons = null)
     {
         if (teams == null)
             throw new ArgumentNullException(nameof(teams));
@@ -66,7 +78,7 @@ public static class FloorballTeamMapper
         {
             Club? club = null;
             clubs?.TryGetValue(team.ClubId, out club);
-            return ToDto(team, club);
+            return ToDto(team, club, playerPersons);
         });
     }
 

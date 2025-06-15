@@ -1,4 +1,5 @@
 using Domain.Entities.Floorball;
+using Domain.Common;
 
 namespace Domain.Repositories.Floorball;
 
@@ -19,6 +20,24 @@ public interface IFloorballRefereeRepository
     /// </summary>
     /// <returns>A collection of all floorball referees</returns>
     Task<IEnumerable<FloorballReferee>> GetAllAsync();
+    
+    /// <summary>
+    /// Gets paginated floorball referees with filtering support
+    /// </summary>
+    /// <param name="page">Page number (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="isActive">Optional active status filter</param>
+    /// <param name="searchTerm">Optional search term for referee names</param>
+    /// <param name="licenseExpiringWithinDays">Optional filter for referees with license expiring within specified days</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated collection of floorball referees</returns>
+    Task<PagedResult<FloorballReferee>> GetPagedAsync(
+        int page, 
+        int pageSize, 
+        bool? isActive = null,
+        string? searchTerm = null,
+        int? licenseExpiringWithinDays = null,
+        CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all active floorball referees

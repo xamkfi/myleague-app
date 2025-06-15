@@ -2,7 +2,9 @@ using Application.Commands.Floorball.Player;
 using Application.DTOs.Floorball;
 using Application.DTOs.Common;
 using Domain.Entities.Floorball;
+using Domain.Entities.Common;
 using Domain.ValueObjects.Floorball;
+using Domain.Enums.Floorball;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -84,8 +86,8 @@ public static class FloorballPlayerMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        // Convert FloorballPosition enum to Position value object
-        Position position = new Position(command.Position);
+        // Create with default position (None) - position will be set when player is added to a team
+        Position position = new Position(FloorballPosition.None);
         return new FloorballPlayer(command.PersonId, position);
     }
 
@@ -102,9 +104,7 @@ public static class FloorballPlayerMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        // Convert FloorballPosition enum to Position value object
-        Position position = new Position(command.Position);
-        player.UpdatePosition(position);
+        // Only update active status - position is now managed at team level
         player.UpdateActiveStatus(command.IsActive);
     }
 

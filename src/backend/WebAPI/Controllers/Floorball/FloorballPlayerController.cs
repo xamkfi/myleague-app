@@ -146,9 +146,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Creating floorball player for person ID: {personId}", request.PersonId);
 
-            CreateFloorballPlayerCommand command = new CreateFloorballPlayerCommand(
-                request.PersonId,
-                request.Position);
+            CreateFloorballPlayerCommand command = new CreateFloorballPlayerCommand(request.PersonId);
 
             Result<FloorballPlayerDto> result = await _mediator.Send(command);
 
@@ -178,7 +176,6 @@ namespace WebAPI.Controllers.Floorball
 
             UpdateFloorballPlayerCommand command = new UpdateFloorballPlayerCommand(
                 id,
-                (FloorballPosition)Enum.Parse(typeof(FloorballPosition), request.Position),
                 request.IsActive);
 
             Result<FloorballPlayerDto> result = await _mediator.Send(command);

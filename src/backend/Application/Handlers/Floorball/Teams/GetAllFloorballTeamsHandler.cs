@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Queries.Floorball.Team;
 using Domain.Entities.Common;
+using System.Linq;
 
 namespace Application.Handlers.Floorball.Teams;
 
@@ -28,6 +29,8 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
 {
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IClubRepository _clubRepository;
+    private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IPersonRepository _personRepository;
 
     /// <summary>
     /// Initializes a new instance of the GetAllFloorballTeamsHandler class
@@ -35,15 +38,21 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
     /// <param name="teamRepository">The floorball team repository</param>
     /// <param name="paginationService">The pagination service</param>
     /// <param name="clubRepository">The club repository</param>
+    /// <param name="playerRepository">The floorball player repository</param>
+    /// <param name="personRepository">The person repository</param>
     /// <param name="logger">The logger</param>
     public GetAllFloorballTeamsHandler(
         IFloorballTeamRepository teamRepository,
         IPaginationService paginationService,
         IClubRepository clubRepository,
+        IFloorballPlayerRepository playerRepository,
+        IPersonRepository personRepository,
         ILogger<GetAllFloorballTeamsHandler> logger) : base(paginationService, logger)
     {
         _teamRepository = teamRepository;
         _clubRepository = clubRepository;
+        _playerRepository = playerRepository;
+        _personRepository = personRepository;
     }
 
     /// <summary>
@@ -102,10 +111,37 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
                 clubDictionary[club.Id] = club;
             }
 
+            // Load Person data for all players in all team rosters
+            Dictionary<Guid, Person> playerPersons = new Dictionary<Guid, Person>();
+            HashSet<Guid> allPlayerIds = new HashSet<Guid>();
+            
+            // Collect all unique player IDs from all teams
+            foreach (FloorballTeam team in pagedTeams.Items)
+            {
+                foreach (Domain.ValueObjects.Floorball.FloorballTeamPlayer rosterPlayer in team.Roster)
+                {
+                    allPlayerIds.Add(rosterPlayer.PlayerId);
+                }
+            }
+            
+            // Load Person data for all unique players
+            foreach (Guid playerId in allPlayerIds)
+            {
+                FloorballPlayer? floorballPlayer = await _playerRepository.GetByIdAsync(playerId);
+                if (floorballPlayer != null)
+                {
+                    Person? person = await _personRepository.GetByIdAsync(floorballPlayer.PersonId);
+                    if (person != null)
+                    {
+                        playerPersons[playerId] = person;
+                    }
+                }
+            }
+
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            IEnumerable<FloorballTeamDto> teamDtos = FloorballTeamMapper.ToDtos(pagedTeams.Items, clubDictionary);
+            IEnumerable<FloorballTeamDto> teamDtos = FloorballTeamMapper.ToDtos(pagedTeams.Items, clubDictionary, playerPersons);
             
             PagedResult<FloorballTeamDto> pagedResult = CreatePagedResult(
                 teamDtos, 

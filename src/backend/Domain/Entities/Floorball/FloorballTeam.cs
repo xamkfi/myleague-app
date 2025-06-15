@@ -290,4 +290,36 @@ public class FloorballTeam : AggregateRoot
 
         teamPlayer.UpdateJerseyNumber(jerseyNumber);
     }
+
+    /// <summary>
+    /// Updates a player's information in the team (position, jersey number, and active status)
+    /// </summary>
+    /// <param name="playerId">The ID of the player</param>
+    /// <param name="position">The new position</param>
+    /// <param name="jerseyNumber">The new jersey number</param>
+    /// <param name="isActive">The new active status</param>
+    /// <exception cref="InvalidOperationException">Thrown when the player is not found or the jersey number is already taken</exception>
+    public void UpdateTeamPlayer(Guid playerId, FloorballPosition position, int? jerseyNumber, bool isActive)
+    {
+        FloorballTeamPlayer? teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
+        if (teamPlayer == null)
+            throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
+
+        // Check if jersey number is already taken by another player
+        if (jerseyNumber.HasValue && _roster.Any(p => p.JerseyNumber == jerseyNumber && p.PlayerId != playerId))
+            throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
+
+        // Update all properties
+        teamPlayer.UpdatePosition(position);
+        teamPlayer.UpdateJerseyNumber(jerseyNumber);
+        teamPlayer.SetActiveStatus(isActive);
+        
+        // Create and add a domain event for player update
+        AddDomainEvent(new FloorballPlayerUpdatedInTeamEvent(
+            Id,
+            playerId,
+            position,
+            jerseyNumber,
+            isActive));
+    }
 } 

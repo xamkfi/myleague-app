@@ -7,6 +7,9 @@ using Application.Handlers.Common;
 using Application.Services.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Common;
+using Domain.Entities.Common;
+using Application.Mappings.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
@@ -24,19 +27,23 @@ public class GetActiveFloorballPlayersHandler : BasePagedQueryHandler<GetActiveF
     IRequestHandler<GetActiveFloorballPlayersQuery, Result<PagedResult<FloorballPlayerDto>>>
 {
     private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IPersonRepository _personRepository;
 
     /// <summary>
     /// Initializes a new instance of the GetActiveFloorballPlayersHandler class
     /// </summary>
     /// <param name="playerRepository">The floorball player repository</param>
+    /// <param name="personRepository">The person repository</param>
     /// <param name="paginationService">The pagination service</param>
     /// <param name="logger">The logger</param>
     public GetActiveFloorballPlayersHandler(
         IFloorballPlayerRepository playerRepository,
+        IPersonRepository personRepository,
         IPaginationService paginationService,
         ILogger<GetActiveFloorballPlayersHandler> logger) : base(paginationService, logger)
     {
         _playerRepository = playerRepository;
+        _personRepository = personRepository;
     }
 
     /// <summary>
@@ -98,8 +105,32 @@ public class GetActiveFloorballPlayersHandler : BasePagedQueryHandler<GetActiveF
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Map to DTOs
-            IEnumerable<FloorballPlayerDto> playerDtos = FloorballPlayerMapper.ToDtos(pagedPlayers.Items);
+            // Load Person data for each player
+            List<FloorballPlayerDto> playerDtos = new List<FloorballPlayerDto>();
+            foreach (FloorballPlayer player in pagedPlayers.Items)
+            {
+                // Get the associated person
+                Person? person = await _personRepository.GetByIdAsync(player.PersonId);
+                if (person != null)
+                {
+                    // Create DTO with real person data
+                    FloorballPlayerDto playerDto = new FloorballPlayerDto(
+                        player.Id,
+                        player.PersonId,
+                        PersonMapper.ToDto(person),
+                        player.IsActive,
+                        player.Position.PrimaryPosition,
+                        player.CareerGoals,
+                        player.CareerAssists
+                    );
+                    playerDtos.Add(playerDto);
+                }
+                else
+                {
+                    // Fallback to placeholder if person not found
+                    playerDtos.Add(FloorballPlayerMapper.ToDto(player));
+                }
+            }
             
             // Create the final paged result with DTOs
             PagedResult<FloorballPlayerDto> pagedResult = CreatePagedResult(

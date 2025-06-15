@@ -346,5 +346,42 @@ namespace WebAPI.Controllers.Floorball
             string errorMessage = result.Error ?? "Failed to remove player from team";
             return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
         }
+
+        /// <summary>
+        /// Updates a player's information in a team roster
+        /// </summary>
+        /// <param name="teamId">Team ID</param>
+        /// <param name="playerId">Player ID</param>
+        /// <param name="request">Update team player request (position, jersey number, active status)</param>
+        /// <returns>Updated team player details</returns>
+        [HttpPut("{teamId:guid}/players/{playerId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballTeamPlayerDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballTeamPlayerDto>>> UpdateTeamPlayer(
+            Guid teamId, 
+            Guid playerId,
+            [FromBody] UpdateFloorballTeamPlayerRequest request)
+        {
+            _logger.LogInformation("Updating player {playerId} in team {teamId} with position {position}, jersey {jerseyNumber}, active {isActive}", 
+                playerId, teamId, request.Position, request.JerseyNumber, request.IsActive);
+
+            UpdateTeamPlayerCommand command = new UpdateTeamPlayerCommand(
+                teamId,
+                playerId,
+                request.Position,
+                request.JerseyNumber,
+                request.IsActive);
+
+            Result<FloorballTeamPlayerDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballTeamPlayerDto>.SuccessResponse(result.Data, "Team player updated successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to update team player";
+            return BadRequest(ApiResponse<FloorballTeamPlayerDto>.ErrorResponse(errorMessage));
+        }
     }
 } 

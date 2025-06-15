@@ -80,19 +80,6 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Person ID is required")]
         public Guid PersonId { get; set; }
-
-        /// <summary>
-        /// Player's jersey number
-        /// </summary>
-        [Required(ErrorMessage = "Jersey number is required")]
-        [Range(1, 99, ErrorMessage = "Jersey number must be between 1 and 99")]
-        public int JerseyNumber { get; set; }
-
-        /// <summary>
-        /// Player's position (e.g., "Forward", "Defense", "Goalkeeper")
-        /// </summary>
-        [Required(ErrorMessage = "Position is required")]
-        public FloorballPosition Position { get; set; } = FloorballPosition.None;
     }
 
     /// <summary>
@@ -105,18 +92,5 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Active status is required")]
         public bool IsActive { get; set; }
-
-        /// <summary>
-        /// Player's jersey number
-        /// </summary>
-        [Required(ErrorMessage = "Jersey number is required")]
-        [Range(1, 99, ErrorMessage = "Jersey number must be between 1 and 99")]
-        public int JerseyNumber { get; set; }
-
-        /// <summary>
-        /// Player's position (e.g., "Forward", "Defense", "Goalkeeper")
-        /// </summary>
-        [Required(ErrorMessage = "Position is required")]
-        public string Position { get; set; } = string.Empty;
     }
 } 

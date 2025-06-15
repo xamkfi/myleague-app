@@ -27,11 +27,9 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .IsRequired();
 
             builder.Property(r => r.LicenseIssueDate)
-                .HasColumnType("timestamp")
                 .IsRequired(false);
 
             builder.Property(r => r.LicenseExpiryDate)
-                .HasColumnType("timestamp")
                 .IsRequired(false);
 
             builder.Property(r => r.MatchesOfficiated)

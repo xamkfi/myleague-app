@@ -11,6 +11,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
+using Domain.Repositories.Floorball;
+using Application.Mappings.Common;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Application.Handlers.Floorball.Teams;
 
@@ -22,7 +26,8 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballPlayerRepository _playerRepository;
     private readonly IClubRepository _clubRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IPersonRepository _personRepository;
+    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<AddPlayerToTeamHandler> _logger;
 
     /// <summary>
@@ -31,18 +36,21 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
     /// <param name="teamRepository">The floorball team repository</param>
     /// <param name="playerRepository">The floorball player repository</param>
     /// <param name="clubRepository">The club repository</param>
+    /// <param name="personRepository">The person repository</param>
     /// <param name="unitOfWork">The unit of work</param>
     /// <param name="logger">The logger</param>
     public AddPlayerToTeamHandler(
         IFloorballTeamRepository teamRepository,
         IFloorballPlayerRepository playerRepository,
         IClubRepository clubRepository,
-        IUnitOfWork unitOfWork,
+        IPersonRepository personRepository,
+        IFloorballUnitOfWork unitOfWork,
         ILogger<AddPlayerToTeamHandler> logger)
     {
         _teamRepository = teamRepository;
         _playerRepository = playerRepository;
         _clubRepository = clubRepository;
+        _personRepository = personRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -87,7 +95,24 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
                 return Result<FloorballTeamDto>.Failure("Associated club not found");
             }
 
-            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club);
+            // Load Person data for all players in the roster
+            Dictionary<Guid, Person> playerPersons = new Dictionary<Guid, Person>();
+            foreach (Domain.ValueObjects.Floorball.FloorballTeamPlayer rosterPlayer in team.Roster)
+            {
+                // Get the FloorballPlayer to find the PersonId
+                FloorballPlayer? floorballPlayer = await _playerRepository.GetByIdAsync(rosterPlayer.PlayerId);
+                if (floorballPlayer != null)
+                {
+                    // Get the associated Person
+                    Person? person = await _personRepository.GetByIdAsync(floorballPlayer.PersonId);
+                    if (person != null)
+                    {
+                        playerPersons[rosterPlayer.PlayerId] = person;
+                    }
+                }
+            }
+
+            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club, playerPersons);
             _logger.LogInformation("Successfully added player {PlayerId} to team {TeamId}", request.PlayerId, request.TeamId);
 
             return Result<FloorballTeamDto>.Success(teamDto);

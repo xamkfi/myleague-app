@@ -57,7 +57,7 @@ public abstract class PaginatedRepositoryBase<TEntity, TContext>
         int totalCount = await query.CountAsync(cancellationToken);
 
         // Apply pagination
-        var items = await query
+        List<TEntity> items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

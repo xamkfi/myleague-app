@@ -83,4 +83,31 @@ namespace WebAPI.Models.Floorball
         [Required(ErrorMessage = "Team category is required")]
         public TeamCategory Category { get; set; }
     }
+    
+    /// <summary>
+    /// Request model for updating a player in a team
+    /// </summary>
+    public record UpdateFloorballTeamPlayerRequest
+    {
+        /// <summary>
+        /// The position of the player
+        /// </summary>
+        [Required(ErrorMessage = "Position is required")]
+        [EnumDataType(typeof(FloorballPosition), ErrorMessage = "Invalid position value")]
+        public FloorballPosition Position { get; set; }
+        
+        /// <summary>
+        /// The jersey number of the player
+        /// </summary>
+        [Required(ErrorMessage = "Jersey number is required")]
+        [Range(0, 99, ErrorMessage = "Jersey number must be between 0 and 99")]
+        public int JerseyNumber { get; set; }
+
+        /// <summary>
+        /// Whether the player is active
+        /// </summary>
+        [Required(ErrorMessage = "Active status is required")]
+        public bool IsActive { get; set; }        
+        
+    }
 } 
