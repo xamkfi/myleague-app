@@ -10,10 +10,11 @@ namespace WebAPI.DependencyInjections;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Add OpenAPI and Scalar configuration
+    /// Add OpenAPI and Scalar configuration with thread-safety improvements
     /// </summary>
     public static IServiceCollection AddOpenApiConfiguration(this IServiceCollection services)
     {
+        // Configure OpenAPI with minimal transformers to avoid concurrency issues
         services.AddOpenApi(options =>
         {
             var info = new OpenApiInfo
@@ -33,6 +34,7 @@ public static class ServiceCollectionExtensions
                 }
             };
 
+            // Use a simple document transformer that doesn't access complex validation attributes
             options.AddDocumentTransformer((document, context, cancellationToken) =>
             {
                 document.Info = info;

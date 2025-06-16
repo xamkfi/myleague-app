@@ -10,6 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
+using Domain.Entities.Common;
 
 namespace Application.Handlers.Floorball.Teams;
 
@@ -19,6 +20,7 @@ namespace Application.Handlers.Floorball.Teams;
 public class UpdateFloorballTeamHandler : IRequestHandler<UpdateFloorballTeamCommand, Result<FloorballTeamDto>>
 {
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateFloorballTeamHandler> _logger;
 
@@ -26,14 +28,17 @@ public class UpdateFloorballTeamHandler : IRequestHandler<UpdateFloorballTeamCom
     /// Initializes a new instance of the UpdateFloorballTeamHandler class
     /// </summary>
     /// <param name="teamRepository">The floorball team repository</param>
+    /// <param name="clubRepository">The club repository</param>
     /// <param name="unitOfWork">The unit of work</param>
     /// <param name="logger">The logger</param>
     public UpdateFloorballTeamHandler(
         IFloorballTeamRepository teamRepository,
+        IClubRepository clubRepository,
         IUnitOfWork unitOfWork,
         ILogger<UpdateFloorballTeamHandler> logger)
     {
         _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -47,7 +52,8 @@ public class UpdateFloorballTeamHandler : IRequestHandler<UpdateFloorballTeamCom
     public async Task<Result<FloorballTeamDto>> Handle(UpdateFloorballTeamCommand request, CancellationToken cancellationToken)
     {
         try
-        {
+        {   
+            
             // Find the existing team
             FloorballTeam? existingTeam = await _teamRepository.GetByIdAsync(request.Id);
             if (existingTeam == null)
@@ -65,7 +71,15 @@ public class UpdateFloorballTeamHandler : IRequestHandler<UpdateFloorballTeamCom
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(existingTeam);
+            // Load the club for the team
+            Club? club = await _clubRepository.GetByIdAsync(existingTeam.ClubId);
+            if (club == null)
+            {
+                _logger.LogWarning("Club with ID {ClubId} not found for team {TeamId}", existingTeam.ClubId, existingTeam.Id);
+                return Result<FloorballTeamDto>.Failure("Associated club not found");
+            }
+
+            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(existingTeam, club);
             _logger.LogInformation("Successfully updated floorball team with ID: {TeamId}", existingTeam.Id);
 
             return Result<FloorballTeamDto>.Success(teamDto);

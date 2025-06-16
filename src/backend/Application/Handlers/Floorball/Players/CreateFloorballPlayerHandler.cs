@@ -10,6 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
+using Domain.Entities.Common;
 
 namespace Application.Handlers.Floorball.Players;
 
@@ -19,6 +20,7 @@ namespace Application.Handlers.Floorball.Players;
 public class CreateFloorballPlayerHandler : IRequestHandler<CreateFloorballPlayerCommand, Result<FloorballPlayerDto>>
 {
     private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IPersonRepository _personRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFloorballPlayerHandler> _logger;
 
@@ -30,10 +32,12 @@ public class CreateFloorballPlayerHandler : IRequestHandler<CreateFloorballPlaye
     /// <param name="logger">The logger</param>
     public CreateFloorballPlayerHandler(
         IFloorballPlayerRepository playerRepository, 
+        IPersonRepository personRepository,
         IUnitOfWork unitOfWork, 
         ILogger<CreateFloorballPlayerHandler> logger)
     {
         _playerRepository = playerRepository;
+        _personRepository = personRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -48,8 +52,17 @@ public class CreateFloorballPlayerHandler : IRequestHandler<CreateFloorballPlaye
     {
         try
         {
+            // Check if the person exists
+            Person? person = await _personRepository.GetByIdAsync(request.PersonId);
+            if (person == null)
+            {
+                _logger.LogWarning("Person with ID {PersonId} not found", request.PersonId);
+                return Result<FloorballPlayerDto>.Failure("Person not found");
+            }
+
             // Create the player entity
             FloorballPlayer player = FloorballPlayerMapper.ToEntity(request);
+            player.SetPerson(person); // Set the person to the player
 
             _logger.LogInformation("Creating new floorball player for person: {PersonId}", request.PersonId);
             await _playerRepository.AddAsync(player);

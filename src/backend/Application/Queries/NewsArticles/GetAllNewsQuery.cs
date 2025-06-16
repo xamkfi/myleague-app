@@ -2,6 +2,7 @@ using System;
 using MediatR;
 using Application.DTOs.Common;
 using Application.Common;
+using Domain.Common;
 using System.Collections.Generic;
 
 namespace Application.Queries.NewsArticles;
@@ -11,8 +12,14 @@ namespace Application.Queries.NewsArticles;
 /// </summary>
 public record GetAllNewsArticlesQuery(
     int Page = 1,
-    int PageSize = 3,
+    int PageSize = 0, // 0 means use default from configuration
     string? Category = null,
     string? SportCategory = null,
     string? Author = null,
-    bool IncludeArchived = false) : IRequest<Result<PagedResult<NewsArticleListDto>>>; 
+    bool IncludeArchived = false) : IRequest<Result<PagedResult<NewsArticleListDto>>>
+{
+    /// <summary>
+    /// Resource key for pagination configuration
+    /// </summary>
+    public const string ResourceKey = "News";
+} 

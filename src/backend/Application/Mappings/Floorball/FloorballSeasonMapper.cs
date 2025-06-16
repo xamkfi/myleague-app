@@ -1,6 +1,7 @@
 using Application.Commands.Floorball.Season;
 using Application.DTOs.Floorball;
 using Domain.Entities.Floorball;
+using Domain.Entities.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +17,10 @@ public static class FloorballSeasonMapper
     /// Maps a FloorballSeason entity to a FloorballSeasonDto
     /// </summary>
     /// <param name="season">The season entity to map</param>
+    /// <param name="clubs">Dictionary of clubs keyed by club ID (optional)</param>
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when season is null</exception>
-    public static FloorballSeasonDto ToDto(FloorballSeason season)
+    public static FloorballSeasonDto ToDto(FloorballSeason season, Dictionary<Guid, Club>? clubs = null)
     {
         if (season == null)
             throw new ArgumentNullException(nameof(season));
@@ -31,7 +33,7 @@ public static class FloorballSeasonMapper
             season.EndDate.ToUniversalTime(),
             season.IsActive,
             season.IsCompleted,
-            FloorballTeamMapper.ToDtos(season.Teams).ToList().AsReadOnly(),
+            FloorballTeamMapper.ToDtos(season.Teams, clubs).ToList().AsReadOnly(),
             FloorballMatchMapper.ToDtos(season.Matches).ToList().AsReadOnly()
         );
     }
@@ -40,14 +42,15 @@ public static class FloorballSeasonMapper
     /// Maps a collection of FloorballSeason entities to FloorballSeasonDtos
     /// </summary>
     /// <param name="seasons">The season entities to map</param>
+    /// <param name="clubs">Dictionary of clubs keyed by club ID (optional)</param>
     /// <returns>The mapped DTOs</returns>
     /// <exception cref="ArgumentNullException">Thrown when seasons is null</exception>
-    public static IEnumerable<FloorballSeasonDto> ToDtos(IEnumerable<FloorballSeason> seasons)
+    public static IEnumerable<FloorballSeasonDto> ToDtos(IEnumerable<FloorballSeason> seasons, Dictionary<Guid, Club>? clubs = null)
     {
         if (seasons == null)
             throw new ArgumentNullException(nameof(seasons));
 
-        return seasons.Select(season => ToDto(season));
+        return seasons.Select(season => ToDto(season, clubs));
     }
 
     /// <summary>
@@ -61,11 +64,28 @@ public static class FloorballSeasonMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
+        // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
+        DateTime startDateUtc = command.StartDate.Kind switch
+        {
+            DateTimeKind.Utc => command.StartDate,
+            DateTimeKind.Local => command.StartDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.StartDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.StartDate, DateTimeKind.Utc)
+        };
+
+        DateTime endDateUtc = command.EndDate.Kind switch
+        {
+            DateTimeKind.Utc => command.EndDate,
+            DateTimeKind.Local => command.EndDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.EndDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.EndDate, DateTimeKind.Utc)
+        };
+
         return new FloorballSeason(
             command.Name,
             command.Division,
-            command.StartDate.ToUniversalTime(),
-            command.EndDate.ToUniversalTime()
+            startDateUtc,
+            endDateUtc
         );
     }
 
@@ -82,11 +102,28 @@ public static class FloorballSeasonMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
+        // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
+        DateTime startDateUtc = command.StartDate.Kind switch
+        {
+            DateTimeKind.Utc => command.StartDate,
+            DateTimeKind.Local => command.StartDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.StartDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.StartDate, DateTimeKind.Utc)
+        };
+
+        DateTime endDateUtc = command.EndDate.Kind switch
+        {
+            DateTimeKind.Utc => command.EndDate,
+            DateTimeKind.Local => command.EndDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.EndDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.EndDate, DateTimeKind.Utc)
+        };
+
         // Use the entity's UpdateDetails method to update name and date range
         season.UpdateDetails(
             command.Name,
-            command.StartDate.ToUniversalTime(),
-            command.EndDate.ToUniversalTime()
+            startDateUtc,
+            endDateUtc
         );
     }
 } 

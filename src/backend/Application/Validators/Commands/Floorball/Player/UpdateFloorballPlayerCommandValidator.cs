@@ -1,5 +1,4 @@
 using Application.Commands.Floorball.Player;
-using Domain.Enums.Floorball;
 using FluentValidation;
 
 namespace Application.Validators.Commands.Floorball.Player;
@@ -14,9 +13,5 @@ public class UpdateFloorballPlayerCommandValidator : AbstractValidator<UpdateFlo
         RuleFor(x => x.Id)
             .NotEmpty().WithMessage("Player ID is required")
             .NotEqual(Guid.Empty).WithMessage("Player ID cannot be empty");
-
-        RuleFor(x => x.Position)
-            .NotNull().WithMessage("Position is required")
-            .IsInEnum().WithMessage("Invalid position value");
     }
 } 

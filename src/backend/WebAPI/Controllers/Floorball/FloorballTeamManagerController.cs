@@ -19,7 +19,6 @@ namespace WebAPI.Controllers.Floorball
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    [Authorize]
     public class FloorballTeamManagerController : ControllerBase
     {
         private readonly IMediator _mediator;

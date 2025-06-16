@@ -1,0 +1,229 @@
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { FloorballTeamRequest, FloorballDivision, TeamCategory } from '../../../../../types/floorball/floorballTypes';
+import type { Club } from '../../../../../api/clubService';
+
+interface CreateTeamModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (teamData: FloorballTeamRequest) => Promise<void>;
+  clubs: Club[];
+}
+
+const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalProps) => {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<FloorballTeamRequest>({
+    name: '',
+    division: 'Premier' as FloorballDivision,
+    clubId: '',
+    homeArena: '',
+    primaryJerseyColor: '#000000',
+    category: 'Adult' as TeamCategory,
+    secondaryJerseyColor: ''
+  });
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        name: '',
+        division: 'Premier' as FloorballDivision,
+        clubId: '',
+        homeArena: '',
+        primaryJerseyColor: '#000000',
+        category: 'Adult' as TeamCategory,
+        secondaryJerseyColor: ''
+      });
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      // Prepare create data with proper validation
+      const createData: FloorballTeamRequest = {
+        name: formData.name,
+        division: formData.division,
+        clubId: formData.clubId,
+        homeArena: formData.homeArena,
+        primaryJerseyColor: formData.primaryJerseyColor,
+        category: formData.category,
+        // Only include secondaryJerseyColor if it's valid (2-50 characters) or omit it entirely
+        ...(formData.secondaryJerseyColor && formData.secondaryJerseyColor.length >= 2 && formData.secondaryJerseyColor.length <= 50
+          ? { secondaryJerseyColor: formData.secondaryJerseyColor }
+          : {})
+      };
+      
+      console.log('Creating team with data:', createData);
+      console.log('Secondary jersey color length:', formData.secondaryJerseyColor?.length || 0);
+      
+      await onSubmit(createData);
+      onClose();
+    } catch (error) {
+      console.error('Error creating team:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof FloorballTeamRequest, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{t('floorball.teams.createNew', 'Create New Team')}</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="team-form">
+          <div className="form-group">
+            <label htmlFor="teamName">{t('floorball.teams.name', 'Team Name')} *</label>
+            <input
+              id="teamName"
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              required
+              placeholder={t('floorball.teams.namePlaceholder', 'Enter team name')}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="clubId">{t('floorball.teams.club', 'Club')} *</label>
+            <select
+              id="clubId"
+              value={formData.clubId}
+              onChange={(e) => handleInputChange('clubId', e.target.value)}
+              required
+            >
+              <option value="">{t('floorball.teams.selectClub', 'Select a club')}</option>
+              {clubs.map(club => (
+                <option key={club.id} value={club.id}>{club.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="division">{t('floorball.teams.division', 'Division')} *</label>
+              <select
+                id="division"
+                value={formData.division}
+                onChange={(e) => handleInputChange('division', e.target.value as FloorballDivision)}
+                required
+              >
+                <option value="Premier">{t('floorball.divisions.premier', 'Premier')}</option>
+                <option value="Division1">{t('floorball.divisions.division1', 'Division 1')}</option>
+                <option value="Division2">{t('floorball.divisions.division2', 'Division 2')}</option>
+                <option value="Division3">{t('floorball.divisions.division3', 'Division 3')}</option>
+                <option value="Division4">{t('floorball.divisions.division4', 'Division 4')}</option>
+                <option value="Youth">{t('floorball.divisions.youth', 'Youth')}</option>
+                <option value="Junior">{t('floorball.divisions.junior', 'Junior')}</option>
+                <option value="Veterans">{t('floorball.divisions.veterans', 'Veterans')}</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="category">{t('floorball.teams.category', 'Category')} *</label>
+              <select
+                id="category"
+                value={formData.category}
+                onChange={(e) => handleInputChange('category', e.target.value as TeamCategory)}
+                required
+              >
+                <option value="Adult">{t('floorball.categories.adult', 'Adult')}</option>
+                <option value="Youth">{t('floorball.categories.youth', 'Youth')}</option>
+                <option value="Women">{t('floorball.categories.women', 'Women')}</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="homeArena">{t('floorball.teams.homeArena', 'Home Arena')} *</label>
+            <input
+              id="homeArena"
+              type="text"
+              value={formData.homeArena}
+              onChange={(e) => handleInputChange('homeArena', e.target.value)}
+              required
+              placeholder={t('floorball.teams.homeArenaPlaceholder', 'Enter home arena')}
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="primaryColor">{t('floorball.teams.primary', 'Primary Jersey Color')} *</label>
+              <div className="color-input-group">
+                <input
+                  id="primaryColor"
+                  type="color"
+                  value={formData.primaryJerseyColor}
+                  onChange={(e) => handleInputChange('primaryJerseyColor', e.target.value)}
+                  required
+                />
+                <input
+                  type="text"
+                  value={formData.primaryJerseyColor}
+                  onChange={(e) => handleInputChange('primaryJerseyColor', e.target.value)}
+                  placeholder="#000000"
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="secondaryColor">{t('floorball.teams.secondary', 'Secondary Jersey Color')}</label>
+              <div className="color-input-group">
+                <input
+                  id="secondaryColor"
+                  type="color"
+                  value={formData.secondaryJerseyColor || '#ffffff'}
+                  onChange={(e) => handleInputChange('secondaryJerseyColor', e.target.value)}
+                />
+                <input
+                  type="text"
+                  value={formData.secondaryJerseyColor || ''}
+                  onChange={(e) => handleInputChange('secondaryJerseyColor', e.target.value)}
+                  placeholder={t('floorball.teams.optional', 'Optional')}
+                  minLength={2}
+                  maxLength={50}
+                />
+              </div>
+              {formData.secondaryJerseyColor && formData.secondaryJerseyColor.length > 0 && formData.secondaryJerseyColor.length < 2 && (
+                <div className="validation-error">
+                  {t('floorball.teams.secondaryColorTooShort', 'Secondary color must be at least 2 characters')}
+                </div>
+              )}
+              {formData.secondaryJerseyColor && formData.secondaryJerseyColor.length > 50 && (
+                <div className="validation-error">
+                  {t('floorball.teams.secondaryColorTooLong', 'Secondary color must be no more than 50 characters')}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button type="button" onClick={onClose} className="cancel-button">
+              {t('common.cancel', 'Cancel')}
+            </button>
+            <button type="submit" disabled={loading} className="submit-button">
+              {loading ? t('common.creating', 'Creating...') : t('common.create', 'Create')}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default CreateTeamModal; 

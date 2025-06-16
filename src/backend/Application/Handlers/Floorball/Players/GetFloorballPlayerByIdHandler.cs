@@ -4,6 +4,9 @@ using Application.Mappings.Floorball;
 using Application.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Common;
+using Domain.Entities.Common;
+using Application.Mappings.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
@@ -19,18 +22,22 @@ namespace Application.Handlers.Floorball.Players;
 public class GetFloorballPlayerByIdHandler : IRequestHandler<GetFloorballPlayerByIdQuery, Result<FloorballPlayerDto>>
 {
     private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetFloorballPlayerByIdHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the GetFloorballPlayerByIdHandler class
     /// </summary>
     /// <param name="playerRepository">The floorball player repository</param>
+    /// <param name="personRepository">The person repository</param>
     /// <param name="logger">The logger</param>
     public GetFloorballPlayerByIdHandler(
         IFloorballPlayerRepository playerRepository, 
+        IPersonRepository personRepository,
         ILogger<GetFloorballPlayerByIdHandler> logger)
     {
         _playerRepository = playerRepository;
+        _personRepository = personRepository;
         _logger = logger;
     }
 
@@ -53,7 +60,25 @@ public class GetFloorballPlayerByIdHandler : IRequestHandler<GetFloorballPlayerB
                 return Result<FloorballPlayerDto>.NotFound("FloorballPlayer", request.Id);
             }
 
-            FloorballPlayerDto playerDto = FloorballPlayerMapper.ToDto(player);
+            // Get the associated person
+            Person? person = await _personRepository.GetByIdAsync(player.PersonId);
+            if (person == null)
+            {
+                _logger.LogWarning("Person with ID {PersonId} not found for player {PlayerId}", player.PersonId, player.Id);
+                return Result<FloorballPlayerDto>.Failure("Associated person not found");
+            }
+
+            // Create DTO with real person data
+            FloorballPlayerDto playerDto = new FloorballPlayerDto(
+                player.Id,
+                player.PersonId,
+                PersonMapper.ToDto(person),
+                player.IsActive,
+                player.Position.PrimaryPosition,
+                player.CareerGoals,
+                player.CareerAssists
+            );
+
             _logger.LogInformation("Successfully retrieved floorball player: {PlayerId}", player.Id);
 
             return Result<FloorballPlayerDto>.Success(playerDto);

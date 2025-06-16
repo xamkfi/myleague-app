@@ -15,15 +15,15 @@ public class CreateFloorballRefereeCommandValidator : AbstractValidator<CreateFl
             .NotEqual(Guid.Empty).WithMessage("Person ID cannot be empty");
 
         RuleFor(x => x.LicenseIssueDate)
-            .Must(BeValidDate).WithMessage("License issue date must be a valid date and in UTC");
+            .Must(BeValidDate).WithMessage("License issue date must be a valid date");
 
         RuleFor(x => x.LicenseExpiryDate)
-            .Must(BeValidDate).WithMessage("License expiry date must be a valid date and in UTC")
+            .Must(BeValidDate).WithMessage("License expiry date must be a valid date")
             .GreaterThan(x => x.LicenseIssueDate).WithMessage("License expiry date must be after issue date");
     }
 
     private bool BeValidDate(DateTime date)
     {
-        return date.Kind == DateTimeKind.Utc && date <= DateTime.UtcNow.AddYears(10);
+        return date != default && date <= DateTime.UtcNow.AddYears(10);
     }
 } 
