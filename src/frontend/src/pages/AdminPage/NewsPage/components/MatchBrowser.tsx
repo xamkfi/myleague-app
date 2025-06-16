@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import mockMatches from './mockData.json';
-import './MatchBrowser.scss';
+import '../styles/MatchBrowser.scss';
 
 interface MatchData {
   id: string;

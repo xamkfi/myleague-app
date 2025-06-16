@@ -1,5 +1,5 @@
 import { Quill } from 'react-quill';
-import "./MatchResult.scss";
+import "../styles/MatchResult.scss";
 
 export interface MatchResultValue {
   homeTeam: string;

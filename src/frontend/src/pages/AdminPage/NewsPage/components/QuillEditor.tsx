@@ -1,11 +1,10 @@
 import ReactQuill, {Quill} from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import "../NewsCreatePage.scss";
+import "../styles/QuillEditor.scss";
 import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
 import { useEffect, useMemo, useRef } from "react";
 import { handleImageDeleteService } from '../../../../api/admin/News/handleImageDeleteService';
 import MatchSelectionHeader from './MatchSelectionHeader';
-import mockMatches from "./mockData.json";
 
 interface Values{
     value: string,
@@ -70,7 +69,7 @@ export class MatchResultTableBlot extends BlockEmbed {
   }
 
   static value(node: HTMLElement) {
-    // Lue data piilotetusta script-elementistä
+
     const dataElement = node.querySelector('.match-result-data');
     if (dataElement && dataElement.textContent) {
       try {
@@ -80,7 +79,6 @@ export class MatchResultTableBlot extends BlockEmbed {
       }
     }
     
-    // Fallback: tyhjä data
     return { matches: [], title: '' };
   }
 }
@@ -188,7 +186,7 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
         const range = editor?.getSelection(true);
         
         if (editor && range && matches.length > 0) {
-            // Muunna valitut ottelut oikeaan muotoon
+
             const matchesData = matches.map(match => ({
                 homeTeam: match.homeTeam,
                 awayTeam: match.awayTeam,
@@ -198,7 +196,6 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
                 link: match.link
             }));
 
-            // Lisää ottelut taulukkona
             editor.insertEmbed(range.index, 'matchResultTable', {
                 matches: matchesData,
                 title: "Valitut ottelut"

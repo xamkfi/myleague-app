@@ -7,6 +7,7 @@ import PreviewNews from "./components/PreviewNews";
 import { LoadingSpinner } from "./components/LoadingSpinner";
 import { CreateNewsService } from "../../../api/admin/News/CreateNewsService";
 import { useNavigate } from "react-router-dom";
+import "./NewsCreatePage.scss";
 
 export default function NewsCreatePage() {
   const { t } = useTranslation();

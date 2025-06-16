@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { mockMatches, type MatchData } from './matchData';
 import type { MatchResultValue } from './MatchResultBlot';
-import './MatchSelector.scss';
+import '../styles/MatchSelector.scss';
 
 interface MatchSelectorProps {
   onMatchSelect: (matchData: MatchResultValue) => void;
