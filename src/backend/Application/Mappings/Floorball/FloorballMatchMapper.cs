@@ -30,9 +30,9 @@ public static class FloorballMatchMapper
             match.Id,
             match.SeasonId,
             match.HomeTeamId,
-            "Home Team", // HomeTeamName - placeholder
+            match.HomeTeam.Name,
             match.AwayTeamId,
-            "Away Team", // AwayTeamName - placeholder
+            match.AwayTeam.Name,
             match.ScheduledDateTime.ToUniversalTime(),
             match.Venue,
             match.Status,
@@ -68,17 +68,29 @@ public static class FloorballMatchMapper
     /// <returns>The new match entity</returns>
     /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
     /// <exception cref="NotSupportedException">Thrown because FloorballMatch creation requires loaded entities</exception>
-    public static FloorballMatch ToEntity(CreateFloorballMatchCommand command)
+    public static FloorballMatch ToEntity(CreateFloorballMatchCommand command, FloorballSeason season, FloorballTeam homeTeam, FloorballTeam awayTeam)
     {
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        // FloorballMatch constructor requires loaded FloorballSeason and FloorballTeam entities,
-        // but the command only contains IDs. This mapping should be handled in the handler
-        // where repositories are available to load the necessary entities.
-        throw new NotSupportedException(
-            "FloorballMatch creation from command requires loaded entities (Season, HomeTeam, AwayTeam). " +
-            "This should be handled in the handler layer where repositories are available.");
+        // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
+        DateTime scheduledDateTimeUtc = command.ScheduledDateTime.Kind switch
+        {
+            DateTimeKind.Utc => command.ScheduledDateTime,
+            DateTimeKind.Local => command.ScheduledDateTime.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.ScheduledDateTime, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.ScheduledDateTime, DateTimeKind.Utc)
+        };
+
+        FloorballMatch match = new FloorballMatch(
+            season,
+            homeTeam,
+            awayTeam,
+            scheduledDateTimeUtc,
+            command.Venue
+            );
+
+        return match;
     }
 
     /// <summary>

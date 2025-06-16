@@ -5,6 +5,7 @@ import { handleImageUploadService } from '../../../../api/admin/News/handleImage
 import { useEffect, useMemo, useRef } from "react";
 import { handleImageDeleteService } from '../../../../api/admin/News/handleImageDeleteService';
 import MatchSelectionHeader from './MatchSelectionHeader';
+import type { FloorballMatch } from '../../../../api/admin/News/GetMatchesService';
 
 interface Values{
     value: string,
@@ -36,6 +37,11 @@ export class MatchResultTableBlot extends BlockEmbed {
         <td class="match-result-table__teams">
           ${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam}
         </td>
+        <td class="match-result-table__status">
+          <span class="status-badge status-${match.status}">
+            ${match.status}
+          </span>
+        </td>
         <td class="match-result-table__link">
           <a href="${match.link}" target="_blank" rel="noopener noreferrer">View Details</a>
         </td>
@@ -50,6 +56,7 @@ export class MatchResultTableBlot extends BlockEmbed {
             <tr>
               <th>Päivä</th>
               <th>Ottelu</th>
+              <th>Tila</th>
               <th>Toiminnot</th>
             </tr>
           </thead>
@@ -181,19 +188,20 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
       },
     }), [])
 
-    const handleInsertMatches = (matches: any[]) => {
+    const handleInsertMatches = (matches: FloorballMatch[]) => {
         const editor = quillRef.current?.getEditor();
         const range = editor?.getSelection(true);
         
         if (editor && range && matches.length > 0) {
 
             const matchesData = matches.map(match => ({
-                homeTeam: match.homeTeam,
-                awayTeam: match.awayTeam,
+                homeTeam: match.homeTeamName,
+                awayTeam: match.awayTeamName,
                 homeScore: match.homeScore,
                 awayScore: match.awayScore,
-                date: match.date,
-                link: match.link
+                date: match.scheduledDateTime,
+                status: match.status,
+                link: match.id
             }));
 
             editor.insertEmbed(range.index, 'matchResultTable', {
