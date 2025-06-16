@@ -70,6 +70,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
+            services.AddScoped<IFloorballUnitOfWork, FloorballUnitOfWork>();
 
             // Add event sourcing
             services.AddScoped<IEventStore, FloorballEventStore>();

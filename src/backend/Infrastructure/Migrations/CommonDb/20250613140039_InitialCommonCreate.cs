@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace MyLeague.Infrastructure.Migrations
+namespace MyLeague.Infrastructure.Migrations.CommonDb
 {
     /// <inheritdoc />
     public partial class InitialCommonCreate : Migration

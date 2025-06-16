@@ -1,4 +1,5 @@
 using Application.Queries.NewsArticles;
+using Application.Services.Common;
 using Domain.Enums.Common;
 using FluentValidation;
 
@@ -9,13 +10,17 @@ namespace Application.Validators.Queries.NewsArticles;
 /// </summary>
 public class GetAllNewsArticlesQueryValidator : AbstractValidator<GetAllNewsArticlesQuery>
 {
-    public GetAllNewsArticlesQueryValidator()
+    private readonly IPaginationService _paginationService;
+
+    public GetAllNewsArticlesQueryValidator(IPaginationService paginationService)
     {
+        _paginationService = paginationService;
+
         RuleFor(x => x.Page)
             .GreaterThan(0).WithMessage("Page must be greater than 0");
 
         RuleFor(x => x.PageSize)
-            .InclusiveBetween(1, 100).WithMessage("Page size must be between 1 and 100");
+            .Must(BeValidPageSize).WithMessage(GetPageSizeErrorMessage());
 
         RuleFor(x => x.Category)
             .Must(BeValidNewsCategory).WithMessage("Invalid news category")
@@ -28,6 +33,17 @@ public class GetAllNewsArticlesQueryValidator : AbstractValidator<GetAllNewsArti
         RuleFor(x => x.Author)
             .MaximumLength(100).WithMessage("Author filter cannot exceed 100 characters")
             .When(x => !string.IsNullOrEmpty(x.Author));
+    }
+
+    private bool BeValidPageSize(int pageSize)
+    {
+        return _paginationService.IsValidPageSize(GetAllNewsArticlesQuery.ResourceKey, pageSize);
+    }
+
+    private string GetPageSizeErrorMessage()
+    {
+        PaginationSettings settings = _paginationService.GetPaginationSettings(GetAllNewsArticlesQuery.ResourceKey);
+        return $"Page size must be 0 (use default) or between {settings.MinPageSize} and {settings.MaxPageSize}";
     }
 
     private static bool BeValidNewsCategory(string? category)

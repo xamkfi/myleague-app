@@ -3,6 +3,7 @@ using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Common;
 using Domain.Entities.Floorball;
+using Domain.Entities.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
@@ -19,6 +20,7 @@ namespace Application.Handlers.Floorball.Teams;
 public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamCommand, Result<FloorballTeamDto>>
 {
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RemovePlayerFromTeamHandler> _logger;
 
@@ -26,14 +28,17 @@ public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamC
     /// Initializes a new instance of the RemovePlayerFromTeamHandler class
     /// </summary>
     /// <param name="teamRepository">The floorball team repository</param>
+    /// <param name="clubRepository">The club repository</param>
     /// <param name="unitOfWork">The unit of work</param>
     /// <param name="logger">The logger</param>
     public RemovePlayerFromTeamHandler(
         IFloorballTeamRepository teamRepository,
+        IClubRepository clubRepository,
         IUnitOfWork unitOfWork,
         ILogger<RemovePlayerFromTeamHandler> logger)
     {
         _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -62,7 +67,15 @@ public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamC
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team);
+            // Load the club for the team
+            Club? club = await _clubRepository.GetByIdAsync(team.ClubId);
+            if (club == null)
+            {
+                _logger.LogWarning("Club with ID {ClubId} not found for team {TeamId}", team.ClubId, team.Id);
+                return Result<FloorballTeamDto>.Failure("Associated club not found");
+            }
+
+            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club);
             _logger.LogInformation("Successfully removed player {PlayerId} from team {TeamId}", request.PlayerId, request.TeamId);
 
             return Result<FloorballTeamDto>.Success(teamDto);

@@ -10,6 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
+using Domain.Entities.Common;
 
 namespace Application.Handlers.Floorball.Teams;
 
@@ -19,6 +20,7 @@ namespace Application.Handlers.Floorball.Teams;
 public class CreateFloorballTeamHandler : IRequestHandler<CreateFloorballTeamCommand, Result<FloorballTeamDto>>
 {
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFloorballTeamHandler> _logger;
 
@@ -30,10 +32,12 @@ public class CreateFloorballTeamHandler : IRequestHandler<CreateFloorballTeamCom
     /// <param name="logger">The logger</param>
     public CreateFloorballTeamHandler(
         IFloorballTeamRepository teamRepository,
+        IClubRepository clubRepository,
         IUnitOfWork unitOfWork,
         ILogger<CreateFloorballTeamHandler> logger)
     {
         _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -48,8 +52,13 @@ public class CreateFloorballTeamHandler : IRequestHandler<CreateFloorballTeamCom
     {
         try
         {
+            Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
+            if (club == null)
+            {
+                return Result<FloorballTeamDto>.Failure("Club not found");
+            }
             // Create the team entity
-            FloorballTeam team = FloorballTeamMapper.ToEntity(request);
+            FloorballTeam team = FloorballTeamMapper.ToEntity(request, club);
 
             _logger.LogInformation("Creating new floorball team: {TeamName}", request.Name);
             await _teamRepository.AddAsync(team);
@@ -57,7 +66,7 @@ public class CreateFloorballTeamHandler : IRequestHandler<CreateFloorballTeamCom
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team);
+            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club);
             _logger.LogInformation("Successfully created floorball team with ID: {TeamId}", team.Id);
 
             return Result<FloorballTeamDto>.Success(teamDto);

@@ -24,7 +24,62 @@
     "fi": "Finnish",
     "switchLanguage": "Switch language"
   },
-    "newsPage":{
+  "admin": {
+    "title": "Admin Dashboard",
+    "actions": {
+      "managePerson": "Edit/Add Person",
+      "news": "Create News",
+      "floorball": "Floorball Management"
+    }
+  },
+  "floorball": {
+    "management": {
+      "title": "Floorball Management",
+      "actions": {
+        "teams": "Manage Teams",
+        "players": "Manage Players",
+        "coaches": "Manage Coaches",
+        "teamManagers": "Manage Team Managers",
+        "referees": "Manage Referees",
+        "matches": "Manage Matches",
+        "matchEvents": "Manage Match Events",
+        "seasons": "Manage Seasons"
+      }
+    },
+    "teams": {
+      "title": "Manage Teams",
+      "totalCount": "Total: {{count}} teams",
+      "createNew": "Create New Team",
+      "noTeams": "No teams found",
+      "hasMembers": "Yes",
+      "noMembers": "No",
+      "confirmDelete": "Are you sure you want to delete team \"{{name}}\"?",
+      "table": {
+        "name": "Team Name",
+        "club": "Club",
+        "division": "Division",
+        "homeArena": "Home Arena",
+        "activeMembers": "Active Members",
+        "actions": "Actions"
+      }
+    },
+    "divisions": {
+      "men": "Men",
+      "women": "Women",
+      "youth": "Youth",
+      "junior": "Junior"
+    }
+  },
+  "common": {
+    "back": "Back to Admin",
+    "loading": "Loading...",
+    "edit": "Edit",
+    "delete": "Delete",
+    "previous": "Previous",
+    "next": "Next",
+    "pageInfo": "Page {{current}} of {{total}}"
+  },
+  "newsPage":{
     "category": {
       "all": "All"
     },

@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Domain.Common;
 using Application.DTOs.Common;
 using Application.Commands.NewsArticles;
 using Application.Queries.NewsArticles;
@@ -37,10 +38,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">Query parameters for pagination and filtering</param>
         /// <returns>Paginated list of news articles</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<NewsArticleListDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetAllNews([FromQuery] GetNewsArticlesRequest request)
+        public async Task<ActionResult<PaginatedApiResponse<NewsArticleListDto>>> GetAllNews([FromQuery] GetNewsArticlesRequest request)
         {
             _logger.LogInformation("Getting all news articles with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
@@ -57,12 +58,11 @@ namespace WebAPI.Controllers.Common
 
             if (result.IsSuccess && result.Data != null)
             {
-                List<NewsArticleListDto> newsArticleList = result.Data.Items.ToList();
-                return Ok(ApiResponse<List<NewsArticleListDto>>.SuccessResponse(newsArticleList, "News articles retrieved successfully"));
+                return Ok(PaginatedApiResponse<NewsArticleListDto>.SuccessResponse(result.Data, "News articles retrieved successfully"));
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<NewsArticleListDto>>.ErrorResponse(errorMessage));
+            return StatusCode(500, PaginatedApiResponse<NewsArticleListDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>

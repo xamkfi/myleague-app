@@ -126,4 +126,14 @@ public class FloorballPlayer : AggregateRoot
         
         AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.Assist));
     }
+    
+    /// <summary>
+    /// Sets the person for this player (used when loading navigation properties)
+    /// </summary>
+    /// <param name="person">The person to associate with this player</param>
+    public void SetPerson(Person person)
+    {
+        ArgumentNullException.ThrowIfNull(person);
+        Person = person;
+    }
 } 

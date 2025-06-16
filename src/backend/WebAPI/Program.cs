@@ -1,3 +1,4 @@
+using Application.Configuration;
 using Application.DependencyInjections;
 using MyLeague.Infrastructure.DependencyInjections;
 using WebAPI.Middlewares;
@@ -6,6 +7,7 @@ using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -14,16 +16,26 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.WriteIndented = true;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 // Add API Explorer services for OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 
-// Add OpenAPI and Scalar configuration using extension method
+// Add OpenAPI and Scalar configuration using thread-safe extension method
 builder.Services.AddOpenApiConfiguration();
 
 // Add CORS configuration using extension method
 builder.Services.AddCorsConfiguration();
+
+// Configure pagination options
+builder.Services.Configure<PaginationConfiguration>(
+    builder.Configuration.GetSection(PaginationConfiguration.SectionName));
 
 // Register application services
 builder.Services.AddApplication();

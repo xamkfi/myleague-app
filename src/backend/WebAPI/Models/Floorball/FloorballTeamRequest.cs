@@ -1,9 +1,38 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using Domain.Enums.Floorball;
+using Domain.Enums.Common;
 
 namespace WebAPI.Models.Floorball
 {
+    /// <summary>
+    /// Request model for getting paginated floorball teams
+    /// </summary>
+    public record GetFloorballTeamsRequest
+    {
+        /// <summary>
+        /// Gets the page number (1-based)
+        /// </summary>
+        [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
+        public int Page { get; init; } = 1;
+
+        /// <summary>
+        /// Gets the number of items per page (0 means use default)
+        /// </summary>
+        [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
+        public int PageSize { get; init; } = 0;
+
+        /// <summary>
+        /// Gets the club ID filter
+        /// </summary>
+        public Guid? ClubId { get; init; }
+
+        /// <summary>
+        /// Gets the division filter
+        /// </summary>
+        public string? Division { get; init; }
+    }
+
     /// <summary>
     /// Request model for creating or updating a floorball team
     /// </summary>
@@ -47,5 +76,38 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Secondary jersey color must be between 2 and 50 characters")]
         public string? SecondaryJerseyColor { get; set; }
+
+        /// <summary>
+        /// The category of the team (Adult, Youth, Women)
+        /// </summary>
+        [Required(ErrorMessage = "Team category is required")]
+        public TeamCategory Category { get; set; }
+    }
+    
+    /// <summary>
+    /// Request model for updating a player in a team
+    /// </summary>
+    public record UpdateFloorballTeamPlayerRequest
+    {
+        /// <summary>
+        /// The position of the player
+        /// </summary>
+        [Required(ErrorMessage = "Position is required")]
+        [EnumDataType(typeof(FloorballPosition), ErrorMessage = "Invalid position value")]
+        public FloorballPosition Position { get; set; }
+        
+        /// <summary>
+        /// The jersey number of the player
+        /// </summary>
+        [Required(ErrorMessage = "Jersey number is required")]
+        [Range(0, 99, ErrorMessage = "Jersey number must be between 0 and 99")]
+        public int JerseyNumber { get; set; }
+
+        /// <summary>
+        /// Whether the player is active
+        /// </summary>
+        [Required(ErrorMessage = "Active status is required")]
+        public bool IsActive { get; set; }        
+        
     }
 } 

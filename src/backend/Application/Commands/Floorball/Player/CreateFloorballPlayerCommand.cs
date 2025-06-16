@@ -14,8 +14,6 @@ namespace Application.Commands.Floorball.Player
     /// Command for creating a new floorball player
     /// </summary>
     /// <param name="PersonId"></param>
-    /// <param name="Position"></param>
     public record CreateFloorballPlayerCommand(
-        Guid PersonId,
-        FloorballPosition Position) : IRequest<Result<FloorballPlayerDto>>;
+        Guid PersonId) : IRequest<Result<FloorballPlayerDto>>;
 }
