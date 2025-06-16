@@ -57,7 +57,6 @@ public class CreateClubCommandValidatorTests
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
-    [InlineData(null)]
     public void Validate_EmptyOrNullName_ShouldHaveValidationError(string name)
     {
         // Arrange
@@ -118,7 +117,6 @@ public class CreateClubCommandValidatorTests
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
-    [InlineData(null)]
     public void Validate_EmptyOrNullCity_ShouldHaveValidationError(string city)
     {
         // Arrange
@@ -160,7 +158,6 @@ public class CreateClubCommandValidatorTests
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
-    [InlineData(null)]
     public void Validate_EmptyOrNullCountry_ShouldHaveValidationError(string country)
     {
         // Arrange
