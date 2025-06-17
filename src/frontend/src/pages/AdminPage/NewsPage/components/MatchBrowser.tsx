@@ -6,6 +6,8 @@ interface MatchBrowserProps {
   onInsertMatches: (matches: FloorballMatch[]) => void;
 }
 
+type MatchCategory = 'all' | 'scheduled' | 'results' | 'cancelled';
+
 export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
   const [showBrowser, setShowBrowser] = useState(false);
   const [selectedMatches, setSelectedMatches] = useState<FloorballMatch[]>([]);
@@ -13,6 +15,7 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
   const [matches, setMatches] = useState<FloorballMatch[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<MatchCategory>('all');
 
   // Fetch matches when browser is opened
   useEffect(() => {
@@ -61,6 +64,44 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
     fetchMatches();
   };
 
+  // Filter matches by search term and category
+  const getFilteredMatches = () => {
+    let filtered = matches.filter(match => 
+      match.homeTeamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      match.awayTeamName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    switch (selectedCategory) {
+      case 'scheduled':
+        return filtered.filter(match => match.status.toLowerCase() === 'scheduled');
+      case 'results':
+        return filtered.filter(match => match.status.toLowerCase() === 'completed');
+      case 'cancelled':
+        return filtered.filter(match => match.status.toLowerCase() === 'cancelled');
+      default:
+        return filtered;
+    }
+  };
+
+  const filteredMatches = getFilteredMatches();
+
+  const getCategoryButtonClass = (category: MatchCategory) => {
+    return `match-browser__category-btn ${selectedCategory === category ? 'match-browser__category-btn--active' : ''}`;
+  };
+
+  const getCategoryTitle = () => {
+    switch (selectedCategory) {
+      case 'scheduled':
+        return 'Aikataulutetut ottelut';
+      case 'results':
+        return 'Päättyneet ottelut';
+      case 'cancelled':
+        return 'Perutut ottelut';
+      default:
+        return 'Kaikki ottelut';
+    }
+  };
+
   return (
     <>
       <button onClick={() => setShowBrowser(true)}>
@@ -100,6 +141,34 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                 />
               </div>
 
+              {/* Category selection */}
+              <div className="match-browser__categories">
+                <button 
+                  className={getCategoryButtonClass('all')}
+                  onClick={() => setSelectedCategory('all')}
+                >
+                  All
+                </button>
+                <button 
+                  className={getCategoryButtonClass('scheduled')}
+                  onClick={() => setSelectedCategory('scheduled')}
+                >
+                  Upcoming
+                </button>
+                <button 
+                  className={getCategoryButtonClass('results')}
+                  onClick={() => setSelectedCategory('results')}
+                >
+                  Results
+                </button>
+                <button 
+                  className={getCategoryButtonClass('cancelled')}
+                  onClick={() => setSelectedCategory('cancelled')}
+                >
+                  Cancelled
+                </button>
+              </div>
+
               {/* Selected matches */}
               {selectedMatches.length > 0 && (
                 <div className="match-browser__selected">
@@ -129,12 +198,15 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
               {/* Matches list */}
               {!loading && !error && (
                 <div className="match-browser__list">
-                  {matches.length === 0 ? (
+                  <div className="match-browser__list-header">
+                    <h4>{getCategoryTitle()} ({filteredMatches.length})</h4>
+                  </div>
+                  {filteredMatches.length === 0 ? (
                     <div className="match-browser__empty">
                       <p>Ei otteluita saatavilla</p>
                     </div>
                   ) : (
-                    matches.map(match => (
+                    filteredMatches.map(match => (
                       <div key={match.id} className="match-browser__item">
                         <label>
                           <input

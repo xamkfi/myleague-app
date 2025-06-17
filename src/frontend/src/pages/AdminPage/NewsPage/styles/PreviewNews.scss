@@ -118,11 +118,16 @@
     font-size: 1.125rem;
     text-align: left;
 
+    word-break: break-all;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
     // Reset any inherited text alignment
     * {
       text-align: left;
+      word-break: break-all;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
     }
-
     // Enhanced styling for HTML content
     h1, h2, h3, h4, h5, h6 {
       color: #1f2937;
@@ -457,6 +462,7 @@
     }
   }
 }
+
 .status-badge {
   padding: 4px 8px;
   border-radius: 4px;
@@ -483,4 +489,24 @@
 .status-cancelled {
   background-color: #ffebee;
   color: #d32f2f;
+}
+
+.PreviewNews {
+  text-align: left;
+  padding: 1rem;
+  margin: 0 auto;
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  
+  img {
+    max-width: 100% !important;
+    height: auto;
+    display: block;
+    margin: 1rem auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 }

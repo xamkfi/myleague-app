@@ -1,107 +1,99 @@
-.match-result-table {
-  margin: 1rem 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  overflow: hidden;
-  background: white;
-
-  &__title {
-    margin: 0;
-    padding: 1rem;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1e293b;
-  }
-
-  &__table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  &__header {
-    background: #f1f5f9;
+// QuillEditor container styles
+.QuillEditor {
+  width: 100% !important;
+  height: 500px;
+  
+  .ql-container {
+    height: calc(100% - 42px);
+    min-height: 200px;
+    max-height: 500px;
+    overflow-y: auto;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border: 1px solid #ccc;
+    border-top: none;
+    font-family: inherit;
     
-    th {
-      padding: 0.75rem 1rem;
-      text-align: left;
-      font-weight: 600;
-      color: #475569;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 0.875rem;
-    }
-  }
-
-  &__body {
-    tr {
-      border-bottom: 1px solid #f1f5f9;
+    // Fix for long text overflow
+    .ql-editor {
+      min-height: 300px;
+      padding: 1rem;
+      font-size: 16px;
+      line-height: 1.6;
       
-      &:last-child {
-        border-bottom: none;
+      // Force word wrapping for long words
+      word-wrap: break-word !important;
+      word-break: break-all !important;
+      overflow-wrap: break-word !important;
+      white-space: pre-wrap !important;
+      
+      // Ensure content doesn't overflow horizontally
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
+      
+      // Handle long words/strings in all text elements
+      p, div, span, h1, h2, h3, h4, h5, h6, li, td, th {
+        word-wrap: break-word !important;
+        word-break: break-all !important;
+        overflow-wrap: break-word !important;
+        max-width: 100% !important;
+        white-space: pre-wrap !important;
       }
       
-      &:hover {
-        background: #f8fafc;
+      // Force wrapping on specific elements that might not inherit
+      * {
+        word-wrap: break-word !important;
+        word-break: break-all !important;
+        overflow-wrap: break-word !important;
+        max-width: 100% !important;
       }
-    }
-  }
-
-  &__row {
-    td {
-      padding: 0.75rem 1rem;
-      vertical-align: middle;
-      font-size: 0.875rem;
-    }
-  }
-
-  &__date {
-    color: #64748b;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  &__teams {
-    font-weight: 500;
-    color: #1e293b;
-  }
-
-  &__link {
-    a {
-      color: #3b82f6;
-      text-decoration: none;
       
-      &:hover {
-        text-decoration: underline;
+      // Style images inside the editor to be responsive
+      img {
+        max-width: 100% !important;
+        height: auto;
+        display: block;
+        margin: 1rem auto;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
     }
   }
-} 
-
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
+  
+  .ql-toolbar {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #ccc;
+  }
 }
 
-.status-scheduled {
-  background-color: #e3f2fd;
-  color: #1976d2;
+// Responsive breakpoints for mobile
+@media (max-width: 768px) {
+  .QuillEditor {
+    height: 300px;
+    
+    .ql-editor {
+      min-height: 200px;
+      padding: 0.75rem;
+      font-size: 14px;
+    }
+    
+    .ql-toolbar {
+      padding: 0.5rem;
+    }
+  }
 }
 
-.status-in_progress {
-  background-color: #fff3e0;
-  color: #f57c00;
-}
-
-.status-completed {
-  background-color: #e8f5e8;
-  color: #388e3c;
-}
-
-.status-cancelled {
-  background-color: #ffebee;
-  color: #d32f2f;
+@media (max-width: 480px) {
+  .QuillEditor {
+    height: 250px;
+    
+    .ql-editor {
+      min-height: 150px;
+      padding: 0.5rem;
+    }
+  }
 }

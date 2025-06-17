@@ -6,12 +6,15 @@ import { useEffect, useMemo, useRef } from "react";
 import { handleImageDeleteService } from '../../../../api/admin/News/handleImageDeleteService';
 import MatchSelectionHeader from './MatchSelectionHeader';
 import type { FloorballMatch } from '../../../../api/admin/News/GetMatchesService';
+import "../styles/MatchResult.scss";
+
 
 interface Values{
     value: string,
     setValue: (val: string)=>void,
     setLoading: (val: boolean)=>void
 }
+
 export interface MatchResultValue {
   homeTeam: string;
   awayTeam: string;
@@ -20,6 +23,7 @@ export interface MatchResultValue {
   date: string;
   link: string;
 }
+
 const BlockEmbed = Quill.import('blots/block/embed') as any;
 
 export class MatchResultTableBlot extends BlockEmbed {
@@ -76,7 +80,6 @@ export class MatchResultTableBlot extends BlockEmbed {
   }
 
   static value(node: HTMLElement) {
-
     const dataElement = node.querySelector('.match-result-data');
     if (dataElement && dataElement.textContent) {
       try {
@@ -95,6 +98,7 @@ Quill.register(MatchResultTableBlot);
 export default function QuillEditor({value, setValue, setLoading}: Values) {
     const quillRef = useRef<ReactQuill | null>(null);
     const previousImagesRef = useRef<string[]>([]);
+    const previousMatchResultsRef = useRef<any[]>([]);
 
     const extractImageUrls = (html: string): string[] => {
       const div = document.createElement("div");
@@ -103,39 +107,86 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
       return Array.from(imgTags).map((img)=> img.getAttribute("src") || "").filter(Boolean);
     }
 
-  useEffect(() => {
-    const currentImages = extractImageUrls(value);
-    const previousImages = previousImagesRef.current;
+    const extractMatchResults = (html: string): any[] => {
+      const div = document.createElement("div");
+      div.innerHTML = html;
+      const matchResultElements = div.querySelectorAll('.match-result-table-container');
+      
+      return Array.from(matchResultElements).map(element => {
+        const dataElement = element.querySelector('.match-result-data');
+        if (dataElement && dataElement.textContent) {
+          try {
+            return JSON.parse(dataElement.textContent);
+          } catch (e) {
+            console.error('Error parsing match result data:', e);
+          }
+        }
+        return null;
+      }).filter(Boolean);
+    }
 
-    const deletedImages = previousImages.filter((url) => !currentImages.includes(url));
+    const handleElementDeletion = (deletedImages: string[], deletedMatchResults: any[]) => {
+      const totalElements = deletedImages.length + deletedMatchResults.length;
+      
+      if (totalElements === 0) return;
 
+      let message = 'Haluatko varmasti poistaa ';
+      
+      if (deletedImages.length > 0 && deletedMatchResults.length > 0) {
+        message += `${deletedImages.length} kuva${deletedImages.length > 1 ? 'a' : 'n'} ja ${deletedMatchResults.length} ottelutulosta?`;
+      } else if (deletedImages.length > 0) {
+        message += `${deletedImages.length} kuva${deletedImages.length > 1 ? 'a' : 'n'}?`;
+      } else {
+        message += `${deletedMatchResults.length} ottelutulosta?`;
+      }
 
-    if (deletedImages.length > 0) {
-      const confirmDelete = window.confirm(
-        `Haluatko varmasti poistaa ${deletedImages.length} kuva${deletedImages.length > 1 ? 'a' : 'n'}?`
-      );
+      const confirmDelete = window.confirm(message);
 
       if (confirmDelete) {
+        // Poista kuvat palvelimelta
         deletedImages.forEach((url) => {
           handleImageDeleteService(url).catch((err) => {
             console.error("Failed to delete image:", err);
           });
         });
       } else {
-
+        // Palauta poistetut elementit editoriin
         if (quillRef.current) {
           const quill = quillRef.current.getEditor();
+          const range = quill.getSelection();
+          const index = range ? range.index : quill.getLength();
+
+          // Palauta kuvat
           deletedImages.forEach(url => {
-            const range = quill.getSelection();
-            const index = range ? range.index : quill.getLength();
             quill.insertEmbed(index, "image", url);
+          });
+
+          // Palauta ottelutulokset
+          deletedMatchResults.forEach(matchResult => {
+            quill.insertEmbed(index, 'matchResultTable', matchResult);
           });
         }
       }
-    }
+    };
 
-    previousImagesRef.current = currentImages;
-  }, [value]);
+    useEffect(() => {
+      const currentImages = extractImageUrls(value);
+      const currentMatchResults = extractMatchResults(value);
+      const previousImages = previousImagesRef.current;
+      const previousMatchResults = previousMatchResultsRef.current;
+
+      const deletedImages = previousImages.filter((url) => !currentImages.includes(url));
+      const deletedMatchResults = previousMatchResults.filter((prevResult) => 
+        !currentMatchResults.some(currentResult => 
+          JSON.stringify(currentResult) === JSON.stringify(prevResult)
+        )
+      );
+
+      handleElementDeletion(deletedImages, deletedMatchResults);
+
+      previousImagesRef.current = currentImages;
+      previousMatchResultsRef.current = currentMatchResults;
+    }, [value]);
 
     const openImageUploader = () => {
         const input = document.createElement("input");
@@ -143,23 +194,20 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
         input.accept = "image/*";
       
         input.onchange = async () => {
-
           if (input.files?.length) {
             const file = input.files[0];
       
             try {
               setLoading(true);
-              const imageUrl = await handleImageUploadService(file); // Call your service here
+              const imageUrl = await handleImageUploadService(file);
               console.log("Uploaded image URL:", imageUrl);
               
-            if (quillRef.current) {
-                const quill = quillRef.current.getEditor(); // Access the Quill editor instance
-    
-                // Insert the image into the editor at the current cursor position
+              if (quillRef.current) {
+                const quill = quillRef.current.getEditor();
                 const range = quill.getSelection();
                 if (range) {
-                    quill.insertEmbed(range.index, "image", imageUrl); // Insert at cursor
-                    quill.setSelection({ index: range.index + 1, length: 0 });// Move cursor after image
+                    quill.insertEmbed(range.index, "image", imageUrl);
+                    quill.setSelection({ index: range.index + 1, length: 0 });
                 }
               }
               setLoading(false);
@@ -171,7 +219,7 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
           }
         };
         input.click();
-      };
+    };
 
     const modules = useMemo(() => ({
       toolbar: {
@@ -193,7 +241,6 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
         const range = editor?.getSelection(true);
         
         if (editor && range && matches.length > 0) {
-
             const matchesData = matches.map(match => ({
                 homeTeam: match.homeTeamName,
                 awayTeam: match.awayTeamName,
@@ -208,7 +255,7 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
                 matches: matchesData,
                 title: "Valitut ottelut"
             });
-            editor.setSelection(range.index + 1);
+            editor.setSelection({ index: range.index + 1, length: 0 });
         }
     };
 
