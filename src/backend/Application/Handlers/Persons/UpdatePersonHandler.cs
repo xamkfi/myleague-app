@@ -2,7 +2,6 @@
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Handlers.Clubs;
 using Application.Mappings.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
