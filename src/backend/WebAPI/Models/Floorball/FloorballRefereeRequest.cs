@@ -19,13 +19,13 @@ namespace WebAPI.Models.Floorball
         /// Gets or sets the license issue date
         /// </summary>
         [Required(ErrorMessage = "License issue date is required")]
-        public DateTime LicenseIssueDate { get; set; }
+        public string LicenseIssueDate { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the license expiry date
         /// </summary>
         [Required(ErrorMessage = "License expiry date is required")]
-        public DateTime LicenseExpiryDate { get; set; }
+        public string LicenseExpiryDate { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -36,18 +36,18 @@ namespace WebAPI.Models.Floorball
         /// <summary>
         /// Gets or sets the license issue date
         /// </summary>
-        public DateTime? LicenseIssueDate { get; set; }
+        public string? LicenseIssueDate { get; set; }
 
         /// <summary>
         /// Gets or sets the license expiry date
         /// </summary>
-        public DateTime? LicenseExpiryDate { get; set; }
+        public string? LicenseExpiryDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the license level
+        /// Gets or sets the number of matches officiated
         /// </summary>
-        [Required(ErrorMessage = "License level is required")]
-        public int LicenseLevel { get; set; }
+        [Required(ErrorMessage = "Matches officiated is required")]
+        public int MatchesOfficiated { get; set; }
 
         /// <summary>
         /// Gets or sets whether the referee is active

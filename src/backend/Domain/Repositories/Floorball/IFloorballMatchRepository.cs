@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 
@@ -20,6 +21,46 @@ public interface IFloorballMatchRepository
     /// </summary>
     /// <returns>A collection of all floorball matches</returns>
     Task<IEnumerable<FloorballMatch>> GetAllAsync();
+    
+    /// <summary>
+    /// Gets paginated floorball matches with filtering support
+    /// </summary>
+    /// <param name="page">Page number (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="seasonId">Optional season ID filter</param>
+    /// <param name="teamId">Optional team ID filter (home or away)</param>
+    /// <param name="startDate">Optional start date filter</param>
+    /// <param name="endDate">Optional end date filter</param>
+    /// <param name="status">Optional match status filter</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated collection of floorball matches</returns>
+    Task<PagedResult<FloorballMatch>> GetPagedAsync(
+        int page, 
+        int pageSize, 
+        Guid? seasonId = null,
+        Guid? teamId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        FloorballMatchStatus? status = null,
+        CancellationToken cancellationToken = default);
+        
+    /// <summary>
+    /// Gets the total count of floorball matches with filtering
+    /// </summary>
+    /// <param name="seasonId">Optional season ID filter</param>
+    /// <param name="teamId">Optional team ID filter (home or away)</param>
+    /// <param name="startDate">Optional start date filter</param>
+    /// <param name="endDate">Optional end date filter</param>
+    /// <param name="status">Optional match status filter</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Total count of matching floorball matches</returns>
+    Task<int> GetCountAsync(
+        Guid? seasonId = null,
+        Guid? teamId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        FloorballMatchStatus? status = null,
+        CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets matches for a specified season

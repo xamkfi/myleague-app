@@ -16,6 +16,8 @@ import TeamPage from '../pages/TeamPage/TeamPage';
 import PersonUserPage from '../pages/PersonUserPage/PersonUserPage';
 import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
 import NewsCreatePage from '../pages/AdminPage/NewsPage/NewsCreatePage';
+import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/FloorballManagementPage';
+import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
 
 export const routes: RouteObject[] = [
   {
@@ -88,12 +90,26 @@ export const routes: RouteObject[] = [
     ]
   },
   {
+    path: '/admin/floorball',
+    children: [
+      {
+        index: true,
+        element: <FloorballManagementPage/>
+      },
+      {
+        path: 'teams',
+        element: <FloorballTeamsPage/>
+      }
+    ]
+  },
+  {
     path: '/person/:id',
     element: <PersonUserPage />
   },
   {
     path: '/admin/news',
     element: <NewsCreatePage/>
-  }
+  },
+  
 
 ]; 

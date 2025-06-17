@@ -30,6 +30,6 @@ public class UpdateFloorballSeasonCommandValidator : AbstractValidator<UpdateFlo
 
     private bool BeValidDate(DateTime date)
     {
-        return date != default && date.Kind == DateTimeKind.Utc;
+        return date != default;
     }
 } 

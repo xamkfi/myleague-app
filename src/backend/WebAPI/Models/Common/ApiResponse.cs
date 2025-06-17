@@ -1,4 +1,5 @@
 using Application.Common;
+using Domain.Common;
 
 namespace WebAPI.Models.Common;
 

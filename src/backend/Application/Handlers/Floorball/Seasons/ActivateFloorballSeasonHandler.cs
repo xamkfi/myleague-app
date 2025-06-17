@@ -59,6 +59,9 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
             _logger.LogInformation("Activating floorball season: {SeasonId}", request.Id);
             season.Activate();
             
+            // Update the season in the repository to track changes
+            await _seasonRepository.UpdateAsync(season);
+            
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

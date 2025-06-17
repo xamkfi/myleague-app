@@ -1,0 +1,75 @@
+.floorball-management-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.floorball-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.floorball-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #212529;
+  transition: all 0.2s ease-in-out;
+  min-height: 100px;
+  text-align: center;
+  cursor: pointer;
+  gap: 0.5rem;
+
+  // Make emojis bigger by targeting emoji unicode ranges
+  &::first-letter {
+    font-size: 1.8em;
+    line-height: 1;
+  }
+
+  &:hover {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(33, 150, 243, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.back-button-container {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+}
+
+.back-button {
+  padding: 0.75rem 2rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+} 

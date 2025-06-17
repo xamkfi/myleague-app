@@ -56,30 +56,30 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
     {
         try
         {
-            // Verify season exists
-            bool seasonExists = await _seasonRepository.ExistsAsync(request.SeasonId);
-            if (!seasonExists)
+            // Fetch season object
+            FloorballSeason? season = await _seasonRepository.GetByIdAsync(request.SeasonId);
+            if (season==null)
             {
                 _logger.LogWarning("Attempt to create match for non-existent season with ID: {SeasonId}", request.SeasonId);
                 return Result<FloorballMatchDto>.NotFound("FloorballSeason", request.SeasonId);
             }
 
-            // Verify teams exist
-            bool homeTeamExists = await _teamRepository.ExistsAsync(request.HomeTeamId);
-            bool awayTeamExists = await _teamRepository.ExistsAsync(request.AwayTeamId);
-            if (!homeTeamExists)
+            // Fetch team objects
+            FloorballTeam? homeTeam = await _teamRepository.GetByIdAsync(request.HomeTeamId);
+            FloorballTeam? awayTeam = await _teamRepository.GetByIdAsync(request.AwayTeamId);
+            if (homeTeam==null)
             {
                 _logger.LogWarning("Attempt to create match with non-existent home team ID: {TeamId}", request.HomeTeamId);
                 return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.HomeTeamId);
             }
-            if (!awayTeamExists)
+            if (awayTeam==null)
             {
                 _logger.LogWarning("Attempt to create match with non-existent away team ID: {TeamId}", request.AwayTeamId);
                 return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.AwayTeamId);
             }
 
             // Create the match entity
-            FloorballMatch match = FloorballMatchMapper.ToEntity(request);
+            FloorballMatch match = FloorballMatchMapper.ToEntity(request, season, homeTeam, awayTeam);
 
             _logger.LogInformation("Creating new floorball match between teams: {HomeTeamId} vs {AwayTeamId}", 
                 request.HomeTeamId, request.AwayTeamId);

@@ -4,6 +4,8 @@ using Application.Mappings.Floorball;
 using Application.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Common;
+using Domain.Entities.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
@@ -19,18 +21,22 @@ namespace Application.Handlers.Floorball.Teams;
 public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQuery, Result<FloorballTeamDto>>
 {
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetFloorballTeamByIdHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the GetFloorballTeamByIdHandler class
     /// </summary>
     /// <param name="teamRepository">The floorball team repository</param>
+    /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
     public GetFloorballTeamByIdHandler(
         IFloorballTeamRepository teamRepository,
+        IClubRepository clubRepository,
         ILogger<GetFloorballTeamByIdHandler> logger)
     {
         _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
         _logger = logger;
     }
 
@@ -53,7 +59,15 @@ public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQ
                 return Result<FloorballTeamDto>.NotFound("FloorballTeam", request.Id);
             }
 
-            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team);
+            // Load the club for the team
+            Club? club = await _clubRepository.GetByIdAsync(team.ClubId);
+            if (club == null)
+            {
+                _logger.LogWarning("Club with ID {ClubId} not found for team {TeamId}", team.ClubId, team.Id);
+                return Result<FloorballTeamDto>.Failure("Associated club not found");
+            }
+
+            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club);
             _logger.LogInformation("Successfully retrieved floorball team: {TeamId}", team.Id);
 
             return Result<FloorballTeamDto>.Success(teamDto);

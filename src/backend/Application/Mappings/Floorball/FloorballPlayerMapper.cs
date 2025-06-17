@@ -2,7 +2,9 @@ using Application.Commands.Floorball.Player;
 using Application.DTOs.Floorball;
 using Application.DTOs.Common;
 using Domain.Entities.Floorball;
+using Domain.Entities.Common;
 using Domain.ValueObjects.Floorball;
+using Domain.Enums.Floorball;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,17 +28,28 @@ public static class FloorballPlayerMapper
             throw new ArgumentNullException(nameof(player));
 
         // TODO: In a complete implementation, PersonDto should be loaded from PersonRepository
-        // For now, providing a placeholder to resolve compilation error
-        var placeholderPerson = new PersonDto(
-            player.PersonId,
-            "Unknown", // FirstName
-            "Unknown", // LastName
-            DateTime.MinValue, // BirthDate
-            "Unknown Unknown", // FullName
-            false,
-            null, // Address
-            null  // ContactInfo
-        );
+        // Handle case where Person navigation property is null (ignored in EF config)
+        PersonDto placeholderPerson = player.Person != null 
+            ? new PersonDto(
+                player.PersonId,
+                player.Person.FirstName,
+                player.Person.LastName,
+                player.Person.BirthDate,
+                player.Person.FullName,
+                player.Person.IsRegistered,
+                player.Person.Address,
+                player.Person.ContactInfo
+            )
+            : new PersonDto(
+                player.PersonId,
+                "Unknown",
+                "Player", 
+                DateTime.MinValue,
+                "Unknown Player",
+                false,
+                null,
+                null
+            );
 
         return new FloorballPlayerDto(
             player.Id,
@@ -73,8 +86,8 @@ public static class FloorballPlayerMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        // Convert FloorballPosition enum to Position value object
-        Position position = new Position(command.Position);
+        // Create with default position (None) - position will be set when player is added to a team
+        Position position = new Position(FloorballPosition.None);
         return new FloorballPlayer(command.PersonId, position);
     }
 
@@ -91,9 +104,7 @@ public static class FloorballPlayerMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        // Convert FloorballPosition enum to Position value object
-        Position position = new Position(command.Position);
-        player.UpdatePosition(position);
+        // Only update active status - position is now managed at team level
         player.UpdateActiveStatus(command.IsActive);
     }
 

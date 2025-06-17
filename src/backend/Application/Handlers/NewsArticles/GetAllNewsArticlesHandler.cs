@@ -2,6 +2,7 @@ using Application.Queries.NewsArticles;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
 using Application.Common;
+using Domain.Common;
 using Application.Handlers.Common;
 using Application.Services.Common;
 using Domain.Entities.Common;

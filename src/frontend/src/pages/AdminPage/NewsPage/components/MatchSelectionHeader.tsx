@@ -1,17 +1,8 @@
 import MatchBrowser from './MatchBrowser';
-
-interface MatchData {
-  id: string;
-  homeTeam: string;
-  awayTeam: string;
-  homeScore: string;
-  awayScore: string;
-  date: string;
-  link: string;
-}
+import { type FloorballMatch } from '../../../../api/admin/News/GetMatchesService';
 
 interface MatchSelectionHeaderProps {
-  onInsertMatches: (matches: MatchData[]) => void;
+  onInsertMatches: (matches: FloorballMatch[]) => void;
 }
 
 export default function MatchSelectionHeader({ onInsertMatches }: MatchSelectionHeaderProps) {

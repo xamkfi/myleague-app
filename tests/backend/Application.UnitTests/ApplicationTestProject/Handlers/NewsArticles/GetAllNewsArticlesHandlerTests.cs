@@ -3,6 +3,7 @@ using Application.Common;
 using Application.DTOs.Common;
 using Application.Handlers.NewsArticles;
 using Application.Services.Common;
+using Domain.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;

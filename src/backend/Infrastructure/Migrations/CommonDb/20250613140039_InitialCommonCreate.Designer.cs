@@ -9,10 +9,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MyLeague.Infrastructure.Migrations
+namespace MyLeague.Infrastructure.Migrations.CommonDb
 {
     [DbContext(typeof(CommonDbContext))]
-    [Migration("20250611113012_InitialCommonCreate")]
+    [Migration("20250613140039_InitialCommonCreate")]
     partial class InitialCommonCreate
     {
         /// <inheritdoc />

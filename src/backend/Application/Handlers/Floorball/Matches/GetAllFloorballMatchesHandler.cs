@@ -2,6 +2,7 @@ using Application.Queries.Floorball;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Common;
+using Domain.Common;
 using Application.Handlers.Common;
 using Application.Services.Common;
 using Domain.Entities.Floorball;
@@ -13,7 +14,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Queries.Floorball.Match;
-using System.Linq;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -69,52 +69,32 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
             // Check for cancellation before database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Get all matches and apply filtering (will be moved to repository level)
-            IEnumerable<FloorballMatch> allMatches = await _matchRepository.GetAllAsync();
-            
-            // Apply filtering
-            IEnumerable<FloorballMatch> filteredMatches = allMatches;
-            
-            if (request.SeasonId.HasValue)
-            {
-                filteredMatches = filteredMatches.Where(m => m.SeasonId == request.SeasonId.Value);
-            }
-            
-            if (request.TeamId.HasValue)
-            {
-                filteredMatches = filteredMatches.Where(m => m.HomeTeamId == request.TeamId.Value || m.AwayTeamId == request.TeamId.Value);
-            }
-            
-            if (request.StartDate.HasValue)
-            {
-                filteredMatches = filteredMatches.Where(m => m.ScheduledDateTime >= request.StartDate.Value);
-            }
-            
-            if (request.EndDate.HasValue)
-            {
-                filteredMatches = filteredMatches.Where(m => m.ScheduledDateTime <= request.EndDate.Value);
-            }
-
-            // Apply pagination in memory (this will be moved to repository level)
-            int totalCount = filteredMatches.Count();
-            IEnumerable<FloorballMatch> matches = filteredMatches
-                .OrderByDescending(m => m.ScheduledDateTime) // Default ordering by scheduled date
-                .Skip((request.Page - 1) * actualPageSize)
-                .Take(actualPageSize);
+            // Use repository-level pagination with all filters
+            PagedResult<FloorballMatch> pagedMatches = await _matchRepository.GetPagedAsync(
+                page: validationResult.Data.Page,
+                pageSize: actualPageSize,
+                seasonId: request.SeasonId,
+                teamId: request.TeamId,
+                startDate: request.StartDate,
+                endDate: request.EndDate,
+                status: null, // Not used in this query
+                cancellationToken: cancellationToken);
 
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(matches);
+            // Map to DTOs
+            IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(pagedMatches.Items);
             
+            // Create the final paged result with DTOs
             PagedResult<FloorballMatchDto> pagedResult = CreatePagedResult(
                 matchDtos, 
-                totalCount, 
-                request.Page, 
-                actualPageSize);
+                pagedMatches.TotalCount, 
+                pagedMatches.Page, 
+                pagedMatches.PageSize);
             
             _logger.LogInformation("Successfully retrieved {Count} floorball matches out of {TotalCount} total", 
-                matches.Count(), totalCount);
+                pagedMatches.ItemCount, pagedMatches.TotalCount);
 
             return Result<PagedResult<FloorballMatchDto>>.Success(pagedResult);
         }

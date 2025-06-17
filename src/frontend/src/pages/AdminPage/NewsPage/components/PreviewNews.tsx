@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { type NewsInputsData } from './NewsInputs';
-import './PreviewNews.scss';
+import '../styles/PreviewNews.scss';
 
 interface PreviewNewsProps {
   value: string;

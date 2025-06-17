@@ -24,6 +24,61 @@
     "fi": "Suomi",
     "switchLanguage": "Vaihda kieli"
   },
+  "admin": {
+    "title": "Hallintapaneeli",
+    "actions": {
+      "managePerson": "Muokkaa/Lisää Henkilö",
+      "news": "Luo Uutinen",
+      "floorball": "Salibandyn Hallinta"
+    }
+  },
+  "floorball": {
+    "management": {
+      "title": "Salibandyn Hallinta",
+      "actions": {
+        "teams": "Hallitse Joukkueita",
+        "players": "Hallitse Pelaajia",
+        "coaches": "Hallitse Valmentajia",
+        "teamManagers": "Hallitse Joukkueenjohtajia",
+        "referees": "Hallitse Tuomareita",
+        "matches": "Hallitse Otteluita",
+        "matchEvents": "Hallitse Ottelutapahtumia",
+        "seasons": "Hallitse Kausia"
+      }
+    },
+    "teams": {
+      "title": "Hallitse Joukkueita",
+      "totalCount": "Yhteensä: {{count}} joukkuetta",
+      "createNew": "Luo Uusi Joukkue",
+      "noTeams": "Joukkueita ei löytynyt",
+      "hasMembers": "Kyllä",
+      "noMembers": "Ei",
+      "confirmDelete": "Oletko varma että haluat poistaa joukkueen \"{{name}}\"?",
+      "table": {
+        "name": "Joukkueen Nimi",
+        "club": "Seura",
+        "division": "Sarja",
+        "homeArena": "Kotihalli",
+        "activeMembers": "Aktiivisia Jäseniä",
+        "actions": "Toiminnot"
+      }
+    },
+    "divisions": {
+      "men": "Miehet",
+      "women": "Naiset",
+      "youth": "Nuoret",
+      "junior": "Juniorit"
+    }
+  },
+  "common": {
+    "back": "Takaisin Hallintaan",
+    "loading": "Ladataan...",
+    "edit": "Muokkaa",
+    "delete": "Poista",
+    "previous": "Edellinen",
+    "next": "Seuraava",
+    "pageInfo": "Sivu {{current}} / {{total}}"
+  },
   "newsPage":{
     "category": {
       "all": "Kaikki"

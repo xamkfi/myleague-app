@@ -1,32 +1,41 @@
-import { useState } from 'react';
-import mockMatches from './mockData.json';
-import './MatchBrowser.scss';
-
-interface MatchData {
-  id: string;
-  homeTeam: string;
-  awayTeam: string;
-  homeScore: string;
-  awayScore: string;
-  date: string;
-  link: string;
-}
+import { useState, useEffect } from 'react';
+import { getMatchesService, type FloorballMatch } from '../../../../api/admin/News/GetMatchesService';
+import '../styles/MatchBrowser.scss';
 
 interface MatchBrowserProps {
-  onInsertMatches: (matches: MatchData[]) => void;
+  onInsertMatches: (matches: FloorballMatch[]) => void;
 }
 
 export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
   const [showBrowser, setShowBrowser] = useState(false);
-  const [selectedMatches, setSelectedMatches] = useState<MatchData[]>([]);
+  const [selectedMatches, setSelectedMatches] = useState<FloorballMatch[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [matches, setMatches] = useState<FloorballMatch[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredMatches = mockMatches.matches.filter(match => 
-    match.homeTeam.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    match.awayTeam.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Fetch matches when browser is opened
+  useEffect(() => {
+    if (showBrowser && matches.length === 0) {
+      fetchMatches();
+    }
+  }, [showBrowser]);
 
-  const handleMatchSelect = (match: MatchData) => {
+  const fetchMatches = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const fetchedMatches = await getMatchesService.getAll();
+      setMatches(fetchedMatches);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch matches');
+      console.error('Error fetching matches:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMatchSelect = (match: FloorballMatch) => {
     setSelectedMatches(prev => {
       const exists = prev.find(m => m.id === match.id);
       if (exists) {
@@ -48,6 +57,10 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
     setSelectedMatches([]);
   };
 
+  const handleRefresh = () => {
+    fetchMatches();
+  };
+
   return (
     <>
       <button onClick={() => setShowBrowser(true)}>
@@ -60,10 +73,23 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
           <div className="match-browser-modal__content">
             <div className="match-browser-modal__header">
               <h3>Ottelujen selaus</h3>
-              <button onClick={() => setShowBrowser(false)}>×</button>
+              <div className="match-browser-modal__header-actions">
+                <button onClick={handleRefresh} disabled={loading}>
+                  {loading ? 'Ladataan...' : 'Päivitä'}
+                </button>
+                <button onClick={() => setShowBrowser(false)}>×</button>
+              </div>
             </div>
 
             <div className="match-browser-modal__body">
+              {/* Error message */}
+              {error && (
+                <div className="match-browser__error">
+                  <p>Virhe: {error}</p>
+                  <button onClick={fetchMatches}>Yritä uudelleen</button>
+                </div>
+              )}
+
               {/* Search */}
               <div className="match-browser__search">
                 <input
@@ -81,7 +107,7 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                   <div className="match-browser__selected-list">
                     {selectedMatches.map(match => (
                       <span key={match.id} className="match-browser__selected-item">
-                        {match.homeTeam} vs {match.awayTeam}
+                        {match.homeTeamName} vs {match.awayTeamName}
                         <button onClick={() => handleMatchSelect(match)}>×</button>
                       </span>
                     ))}
@@ -93,24 +119,39 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                 </div>
               )}
 
+              {/* Loading state */}
+              {loading && (
+                <div className="match-browser__loading">
+                  <p>Ladataan otteluita...</p>
+                </div>
+              )}
+
               {/* Matches list */}
-              <div className="match-browser__list">
-                {filteredMatches.map(match => (
-                  <div key={match.id} className="match-browser__item">
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={selectedMatches.some(m => m.id === match.id)}
-                        onChange={() => handleMatchSelect(match)}
-                      />
-                      <span className="match-browser__date">{match.date}</span>
-                      <span className="match-browser__teams">
-                        {match.homeTeam} {match.homeScore} - {match.awayScore} {match.awayTeam}
-                      </span>
-                    </label>
-                  </div>
-                ))}
-              </div>
+              {!loading && !error && (
+                <div className="match-browser__list">
+                  {matches.length === 0 ? (
+                    <div className="match-browser__empty">
+                      <p>Ei otteluita saatavilla</p>
+                    </div>
+                  ) : (
+                    matches.map(match => (
+                      <div key={match.id} className="match-browser__item">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={selectedMatches.some(m => m.id === match.id)}
+                            onChange={() => handleMatchSelect(match)}
+                          />
+                          <span className="match-browser__date">{match.scheduledDateTime}</span>
+                          <span className="match-browser__teams">
+                            {match.homeTeamName} {match.homeScore} - {match.awayScore} {match.awayTeamName}
+                          </span>
+                        </label>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,0 +1,102 @@
+using Application.Commands.Floorball.Referee;
+using Application.DTOs.Floorball;
+using Application.Mappings.Floorball;
+using Application.Common;
+using Domain.Entities.Floorball;
+using Domain.Repositories.Floorball;
+using Domain.Repositories.Common;
+using Domain.Entities.Common;
+using Microsoft.Extensions.Logging;
+using MediatR;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Application.Mappings.Common;
+
+namespace Application.Handlers.Floorball.Referees;
+
+/// <summary>
+/// Handler for updating an existing floorball referee
+/// </summary>
+public class UpdateFloorballRefereeHandler : IRequestHandler<UpdateFloorballRefereeCommand, Result<FloorballRefereeDto>>
+{
+    private readonly IFloorballRefereeRepository _refereeRepository;
+    private readonly IPersonRepository _personRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<UpdateFloorballRefereeHandler> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the UpdateFloorballRefereeHandler class
+    /// </summary>
+    /// <param name="refereeRepository">The floorball referee repository</param>
+    /// <param name="personRepository">The person repository</param>
+    /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="logger">The logger</param>
+    public UpdateFloorballRefereeHandler(
+        IFloorballRefereeRepository refereeRepository,
+        IPersonRepository personRepository,
+        IUnitOfWork unitOfWork,
+        ILogger<UpdateFloorballRefereeHandler> logger)
+    {
+        _refereeRepository = refereeRepository;
+        _personRepository = personRepository;
+        _unitOfWork = unitOfWork;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Handles the UpdateFloorballRefereeCommand request
+    /// </summary>
+    /// <param name="request">The command containing updated referee information</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated referee as a DTO wrapped in a Result</returns>
+    public async Task<Result<FloorballRefereeDto>> Handle(UpdateFloorballRefereeCommand request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _logger.LogInformation("Updating floorball referee with ID: {RefereeId}", request.Id);
+
+            // Find the existing referee
+            FloorballReferee? existingReferee = await _refereeRepository.GetByIdAsync(request.Id);
+            if (existingReferee == null)
+            {
+                _logger.LogWarning("Floorball referee with ID {RefereeId} not found", request.Id);
+                return Result<FloorballRefereeDto>.NotFound("FloorballReferee", request.Id);
+            }
+
+            // Update the referee using the mapper
+            FloorballRefereeMapper.UpdateFromCommand(existingReferee, request);
+
+            // Update the referee
+            await _refereeRepository.UpdateAsync(existingReferee);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Get the associated person for DTO mapping
+            Person? person = await _personRepository.GetByIdAsync(existingReferee.PersonId);
+            if (person == null)
+            {
+                _logger.LogWarning("Person with ID {PersonId} not found for referee {RefereeId}", existingReferee.PersonId, existingReferee.Id);
+                return Result<FloorballRefereeDto>.Failure("Associated person not found");
+            }
+
+            // Create the DTO
+            FloorballRefereeDto refereeDto = new FloorballRefereeDto(
+                existingReferee.Id,
+                existingReferee.PersonId,
+                PersonMapper.ToDto(person),
+                existingReferee.IsActive,
+                existingReferee.LicenseIssueDate,
+                existingReferee.LicenseExpiryDate,
+                existingReferee.MatchesOfficiated
+            );
+
+            _logger.LogInformation("Successfully updated floorball referee with ID: {RefereeId}", request.Id);
+            return Result<FloorballRefereeDto>.Success(refereeDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while updating floorball referee with ID: {RefereeId}", request.Id);
+            return Result<FloorballRefereeDto>.Failure("An error occurred while updating the floorball referee.");
+        }
+    }
+} 
