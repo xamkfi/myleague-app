@@ -161,7 +161,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async override Task AddAsync(FloorballTeam team)
         {
             await _entities.AddAsync(team);
-            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -171,7 +170,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public override async Task UpdateAsync(FloorballTeam team)
         {
             _entities.Update(team);
-            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -184,7 +182,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (team != null)
             {
                 _entities.Remove(team);
-                await _dbContext.SaveChangesAsync();
             }
         }
 
