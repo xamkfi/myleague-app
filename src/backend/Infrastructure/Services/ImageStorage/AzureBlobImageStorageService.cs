@@ -32,7 +32,6 @@ namespace MyLeague.Infrastructure.Services.ImageStorage
                 var blobHttpHeaders = new BlobHttpHeaders
                 {
                     ContentType = "image/jpeg",
-                    CacheControl = "public, max-age=31536000"  // 1 year cache
                 };
 
                 // Upload with properties

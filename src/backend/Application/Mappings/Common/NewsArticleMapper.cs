@@ -108,7 +108,7 @@ public static class NewsArticleMapper
         Guid newsId = Guid.NewGuid();
         NewsArticle newsArticle = new NewsArticle(newsId,
             command.Title,
-            command.MainImage ?? new Uri("http://www.mahl.fi/images/Kausi_2024-2025/Kes%C3%A4nsarjat.jpg"),
+            command.MainImage,
             command.ContentHtml,
             command.Author);
 

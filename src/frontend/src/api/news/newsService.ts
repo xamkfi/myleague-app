@@ -55,3 +55,51 @@ export async function newsService(params?: Partial<NewsParameters>) {
     throw error;
   }
 }
+
+export async function archiveNewsService(id: string) {
+  try {
+    const response = await fetch(`${API_URL}/News/${id}/archive`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Archive error response:", errorText);
+      throw new Error("Failed to archive news article.");
+    }
+
+    const data: ApiResponse<NewsArticleDto> = await response.json();
+    return data.data;
+
+  } catch (error) {
+    console.error("Archive error:", error);
+    throw error;
+  }
+}
+
+export async function restoreNewsService(id: string) {
+  try {
+    const response = await fetch(`${API_URL}/News/${id}/restore`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Restore error response:", errorText);
+      throw new Error("Failed to restore news article.");
+    }
+
+    const data: ApiResponse<NewsArticleDto> = await response.json();
+    return data.data;
+
+  } catch (error) {
+    console.error("Restore error:", error);
+    throw error;
+  }
+}

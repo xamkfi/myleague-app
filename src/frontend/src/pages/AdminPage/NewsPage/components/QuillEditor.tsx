@@ -12,7 +12,8 @@ import "../styles/MatchResult.scss";
 interface Values{
     value: string,
     setValue: (val: string)=>void,
-    setLoading: (val: boolean)=>void
+    setLoading: (val: boolean)=>void,
+    isClearing?: boolean
 }
 
 export interface MatchResultValue {
@@ -33,48 +34,25 @@ export class MatchResultTableBlot extends BlockEmbed {
 
   static create(value: { matches: any[], title?: string }): HTMLElement {
     const node = super.create();
-    const { matches, title } = value;
+    const { matches } = value;
 
-    const tableRows = matches.map(match => `
-      <tr class="match-result-table__row">
-        <td class="match-result-table__date">${match.date}</td>
-        <td class="match-result-table__teams">
-          ${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam}
-        </td>
-        <td class="match-result-table__status">
-          <span class="status-badge status-${match.status}">
-            ${match.status}
-          </span>
-        </td>
-        <td class="match-result-table__link">
-          <a href="${match.link}" target="_blank" rel="noopener noreferrer">View Details</a>
-        </td>
-      </tr>
-    `).join('');
-
-    node.innerHTML = `
-      <div class="match-result-table">
-        ${title ? `<h4 class="match-result-table__title">${title}</h4>` : ''}
-        <table class="match-result-table__table">
-          <thead class="match-result-table__header">
-            <tr>
-              <th>Päivä</th>
-              <th>Ottelu</th>
-              <th>Tila</th>
-              <th>Toiminnot</th>
-            </tr>
-          </thead>
-          <tbody class="match-result-table__body">
-            ${tableRows}
-          </tbody>
-        </table>
-        <!-- Piilotettu data JSON-muodossa -->
-        <script type="application/json" class="match-result-data" style="display: none;">
-          ${JSON.stringify({ matches, title })}
-        </script>
-      </div>
-    `;
-
+    const matchRows = matches.map(match => {
+      let teamsHtml;
+      if (match.status && match.status.toLowerCase() === 'completed') {
+        teamsHtml = `${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam}`;
+      } else {
+        teamsHtml = `${match.homeTeam} vs ${match.awayTeam}`;
+      }
+      return `<div class="match-result-row">
+        <span class="match-result-date">${new Date(match.date).toLocaleString("fi-FI", {year: "numeric", month: "numeric", day: 'numeric', hour: '2-digit', minute: '2-digit'})}</span>
+        <span class="match-result-teams">${teamsHtml}</span>
+        <span class="match-result-status"><span class="status-badge status-${match.status}">${match.status}</span></span>
+        <span class="match-result-link"><a href="${match.link}" target="_blank" rel="noopener noreferrer">View Details</a></span>
+      </div>`;
+    }).join('');
+    node.innerHTML = `<div class="match-result-list">
+        ${matchRows}
+      </div><script type="application/json" class="match-result-data" style="display: none;">${JSON.stringify({ matches })}</script>`;
     node.setAttribute('contenteditable', 'false');
     return node;
   }
@@ -95,11 +73,13 @@ export class MatchResultTableBlot extends BlockEmbed {
 
 Quill.register(MatchResultTableBlot);
 
-export default function QuillEditor({value, setValue, setLoading}: Values) {
+export default function QuillEditor({value, setValue, setLoading, isClearing = false}: Values) {
     const quillRef = useRef<ReactQuill | null>(null);
     const previousImagesRef = useRef<string[]>([]);
     const previousMatchResultsRef = useRef<any[]>([]);
-
+    const deletedImagesRef = useRef<string[]>([]);
+    const isNavigatingRef = useRef(false);
+    
     const extractImageUrls = (html: string): string[] => {
       const div = document.createElement("div");
       div.innerHTML = html;
@@ -130,6 +110,15 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
       
       if (totalElements === 0) return;
 
+      if (isClearing) {
+        deletedImages.forEach((url) => {
+          handleImageDeleteService(url).catch((err) => {
+            console.error("Failed to delete image:", err);
+          });
+        });
+        return;
+      }
+
       let message = 'Haluatko varmasti poistaa ';
       
       if (deletedImages.length > 0 && deletedMatchResults.length > 0) {
@@ -143,25 +132,21 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
       const confirmDelete = window.confirm(message);
 
       if (confirmDelete) {
-        // Poista kuvat palvelimelta
         deletedImages.forEach((url) => {
           handleImageDeleteService(url).catch((err) => {
             console.error("Failed to delete image:", err);
           });
         });
       } else {
-        // Palauta poistetut elementit editoriin
         if (quillRef.current) {
           const quill = quillRef.current.getEditor();
           const range = quill.getSelection();
           const index = range ? range.index : quill.getLength();
 
-          // Palauta kuvat
           deletedImages.forEach(url => {
             quill.insertEmbed(index, "image", url);
           });
 
-          // Palauta ottelutulokset
           deletedMatchResults.forEach(matchResult => {
             quill.insertEmbed(index, 'matchResultTable', matchResult);
           });
@@ -170,10 +155,26 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
     };
 
     useEffect(() => {
+      if (isNavigatingRef.current) {
+        console.log("🚫 Navigation in progress - skipping useEffect completely");
+        return;
+      }
+
+      console.log("=== QuillEditor useEffect triggered ===");
+      console.log("Current value:", value);
+      console.log("Previous images:", previousImagesRef.current);
+      
       const currentImages = extractImageUrls(value);
       const currentMatchResults = extractMatchResults(value);
       const previousImages = previousImagesRef.current;
       const previousMatchResults = previousMatchResultsRef.current;
+
+      if (previousImages.length === 0 && previousMatchResults.length === 0) {
+        console.log("First render - setting initial state");
+        previousImagesRef.current = currentImages;
+        previousMatchResultsRef.current = currentMatchResults;
+        return;
+      }
 
       const deletedImages = previousImages.filter((url) => !currentImages.includes(url));
       const deletedMatchResults = previousMatchResults.filter((prevResult) => 
@@ -182,11 +183,25 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
         )
       );
 
-      handleElementDeletion(deletedImages, deletedMatchResults);
+      console.log("Deleted images:", deletedImages);
+
+      if (deletedImages.length > 0 || deletedMatchResults.length > 0) {
+        console.log('Elements deleted, calling handleElementDeletion');
+        handleElementDeletion(deletedImages, deletedMatchResults);
+      }
 
       previousImagesRef.current = currentImages;
       previousMatchResultsRef.current = currentMatchResults;
-    }, [value]);
+    }, [value, isNavigatingRef.current]);
+
+    useEffect(() => {
+      if (typeof window !== 'undefined') {
+        (window as any).setQuillNavigatingState = (isNavigating: boolean) => {
+          isNavigatingRef.current = isNavigating;
+          console.log("QuillEditor navigation state set to:", isNavigating);
+        };
+      }
+    }, []);
 
     const openImageUploader = () => {
         const input = document.createElement("input");

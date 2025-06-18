@@ -15,9 +15,10 @@ import PersonForm from '../pages/AdminPage/PersonsPage/components/PersonForm/Per
 import TeamPage from '../pages/TeamPage/TeamPage';
 import PersonUserPage from '../pages/PersonUserPage/PersonUserPage';
 import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
-import NewsCreatePage from '../pages/AdminPage/NewsPage/NewsCreatePage';
+import NewsCreateEditPage from '../pages/AdminPage/NewsPage/NewsCreateEditPage';
 import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/FloorballManagementPage';
 import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
+import NewsManagementPage from '../pages/AdminPage/NewsPage/NewsManagementPage';
 
 export const routes: RouteObject[] = [
   {
@@ -108,8 +109,21 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/admin/news',
-    element: <NewsCreatePage/>
-  },
+    children: [
+      {
+        index: true,
+        element: <NewsManagementPage />
+      },
+      {
+        path: 'create',
+        element: <NewsCreateEditPage />
+      },
+      {
+        path: 'edit/:id',
+        element: <NewsCreateEditPage />
+      }
+    ]
+  }
   
 
 ]; 

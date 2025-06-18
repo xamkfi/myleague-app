@@ -24,7 +24,9 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
   useEffect(()=>{
     if(id){
       RetrieveNews(id);
+          console.log(news?.mainImage, news?.contentHtml);
     }
+
   },[id])
 
   if (!news) {
