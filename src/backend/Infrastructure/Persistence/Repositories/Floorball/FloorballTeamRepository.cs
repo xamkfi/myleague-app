@@ -72,6 +72,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
+        /// Gets floorball teams where a specific player is in the roster
+        /// </summary>
+        /// <param name="playerId">The player ID</param>
+        /// <returns>A collection of floorball teams containing the player</returns>
+        public async Task<IEnumerable<FloorballTeam>> GetByPlayerIdAsync(Guid playerId)
+        {
+            return await _entities
+                .Include(t => t.Roster)
+                .Where(t => t.Roster.Any(r => r.PlayerId == playerId))
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Gets teams participating in a season
         /// </summary>
         /// <param name="seasonId">The season ID</param>

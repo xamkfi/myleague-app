@@ -15,15 +15,20 @@ interface PersonWithTeams {
 // API function to fetch person's team data
 const fetchPersonTeams = async (personId: number): Promise<PersonWithTeams | null> => {
   try {
-    // Example API endpoint - replace with your actual backend URL
     const response = await fetch(`/api/persons/${personId}/teams`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    const data = await response.json();
-    return data;
+    const apiResponse = await response.json();
+    
+    // Extract data from the ApiResponse wrapper
+    if (apiResponse.success && apiResponse.data) {
+      return apiResponse.data;
+    } else {
+      throw new Error(apiResponse.message || 'Failed to fetch person teams');
+    }
   } catch (error) {
     console.error('Error fetching person teams:', error);
     throw error;
