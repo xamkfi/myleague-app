@@ -3,7 +3,11 @@ import type {
   FloorballTeamRequest, 
   GetFloorballTeamsRequest,
   ApiResponse,
-  PaginatedApiResponse 
+  PaginatedApiResponse,
+  FloorballTeamPlayerDto,
+  UpdateFloorballTeamPlayerRequest,
+  AddPlayerToTeamRequest,
+  FloorballPosition
 } from '../../types/floorball/floorballTypes';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -131,5 +135,95 @@ export const floorballTeamService = {
     if (!apiResponse.success) {
       throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete floorball team');
     }
+  },
+
+  /**
+   * Add a player to a team with position and jersey number
+   */
+  addPlayerToTeam: async (
+    teamId: string, 
+    playerId: string, 
+    position: FloorballPosition, 
+    jerseyNumber?: number
+  ): Promise<FloorballTeam> => {
+    const searchParams = new URLSearchParams();
+    searchParams.append('position', position);
+    if (jerseyNumber !== undefined) {
+      searchParams.append('jerseyNumber', jerseyNumber.toString());
+    }
+
+    const response = await fetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}?${searchParams.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to add player to team'}`);
+    }
+
+    const apiResponse: ApiResponse<FloorballTeam> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to add player to team');
+    }
+
+    return apiResponse.data;
+  },
+
+  /**
+   * Update a team player's position, jersey number, and active status
+   */
+  updateTeamPlayer: async (
+    teamId: string, 
+    playerId: string, 
+    updateData: UpdateFloorballTeamPlayerRequest
+  ): Promise<FloorballTeamPlayerDto> => {
+    console.log('Updating team player:', { teamId, playerId, updateData });
+
+    const response = await fetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Update team player API Error Response:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to update team player'}`);
+    }
+
+    const apiResponse: ApiResponse<FloorballTeamPlayerDto> = await response.json();
+    console.log('Update team player API Response:', apiResponse);
+
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to update team player');
+    }
+
+    return apiResponse.data;
+  },
+
+  /**
+   * Remove a player from a team
+   */
+  removePlayerFromTeam: async (teamId: string, playerId: string): Promise<FloorballTeam> => {
+    const response = await fetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to remove player from team'}`);
+    }
+
+    const apiResponse: ApiResponse<FloorballTeam> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to remove player from team');
+    }
+
+    return apiResponse.data;
   },
 }; 

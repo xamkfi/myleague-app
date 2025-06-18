@@ -56,13 +56,14 @@ const TeamPlayersRow = ({ teamId, isExpanded, team }: TeamPlayersRowProps) => {
       }
     } finally {
       setLoading(false);
+      console.log("team players row", team?.roster);
     }
   };
 
   if (!isExpanded) return null;
 
-  // Use roster data if API failed and roster is available
-  const displayPlayers = useRosterFallback && team?.roster ? team.roster : players;
+  // Prefer roster data when available (has jersey numbers), otherwise use API data
+  const displayPlayers = team?.roster && team.roster.length > 0 ? team.roster : players;
   const playerCount = displayPlayers.length;
 
   return (
@@ -71,11 +72,7 @@ const TeamPlayersRow = ({ teamId, isExpanded, team }: TeamPlayersRowProps) => {
         <div className="team-players-container">
           <h4 className="players-title">
             {t('floorball.teams.players', 'Team Players')} ({playerCount})
-            {useRosterFallback && (
-              <span className="fallback-notice">
-                {' '}({t('floorball.teams.rosterData', 'Roster Data')})
-              </span>
-            )}
+
           </h4>
           
           {loading && (
@@ -110,10 +107,22 @@ const TeamPlayersRow = ({ teamId, isExpanded, team }: TeamPlayersRowProps) => {
               {displayPlayers.map((player, index) => {
                 // Handle both API player data and roster data
                 const playerId = 'id' in player ? player.id : `${teamId}-${index}`;
-                const playerName = 'fullName' in player ? player.fullName : player.playerName;
+                const playerName = 'person' in player ? player.person.fullName : player.playerName;
                 const isActive = 'isActive' in player ? player.isActive : true;
-                const position = 'position' in player ? player.position : player.position;
-                const jerseyNumber = 'jerseyNumber' in player ? player.jerseyNumber : player.jerseyNumber;
+                const position = player.position;
+                console.log("player", displayPlayers);
+                // Handle jersey number - roster data has it directly, API data doesn't
+                let jerseyNumber: number | undefined = undefined;
+                
+                // Check if this is roster data (has jerseyNumber property)
+                if ('jerseyNumber' in player) {
+                  jerseyNumber = player.jerseyNumber !== null && player.jerseyNumber !== undefined ? player.jerseyNumber : undefined;
+                  console.log(`Player ${playerName} jersey number from roster:`, player.jerseyNumber, 'processed:', jerseyNumber);
+                } else {
+                  // This is API data (FloorballPlayerDto) - no jersey numbers available
+                  jerseyNumber = undefined;
+                  console.log(`Player ${playerName} - API data, no jersey number`);
+                }
                 
                 // Handle stats with proper type checking
                 let games = 0, goals = 0, assists = 0, penalties = 0;
@@ -130,11 +139,12 @@ const TeamPlayersRow = ({ teamId, isExpanded, team }: TeamPlayersRowProps) => {
                     className={`player-card ${!isActive ? 'inactive' : ''}`}
                   >
                     <div className="player-header">
+                      <div className="jersey-number-large">
+                        #{jerseyNumber ? jerseyNumber : '?'}
+                      </div>
+                      <div className="player-info">
                       <div className="player-name">
                         <span className="name">{playerName}</span>
-                        {jerseyNumber && (
-                          <span className="jersey-number">#{jerseyNumber}</span>
-                        )}
                       </div>
                       <div className="player-status">
                         <span className={`status-badge ${isActive ? 'active' : 'inactive'}`}>
@@ -143,6 +153,7 @@ const TeamPlayersRow = ({ teamId, isExpanded, team }: TeamPlayersRowProps) => {
                             : t('common.inactive', 'Inactive')
                           }
                         </span>
+                        </div>
                       </div>
                     </div>
                     

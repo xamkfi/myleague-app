@@ -116,4 +116,11 @@ public interface IFloorballTeamRepository
     /// <param name="id">The team ID</param>
     /// <returns>True if the team exists, false otherwise</returns>
     Task<bool> ExistsAsync(Guid id);
+
+    /// <summary>
+    /// Gets floorball teams by player ID
+    /// </summary>
+    /// <param name="playerId">The player ID</param>
+    /// <returns>A collection of floorball teams the player is in</returns>
+    Task<IEnumerable<FloorballTeam>> GetTeamsByPlayerIdAsync(Guid playerId);
 } 

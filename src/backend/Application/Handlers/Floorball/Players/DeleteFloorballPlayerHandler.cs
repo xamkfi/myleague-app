@@ -7,6 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
+using Domain.Entities.Floorball;
 
 namespace Application.Handlers.Floorball.Players;
 
@@ -16,6 +17,8 @@ namespace Application.Handlers.Floorball.Players;
 public class DeleteFloorballPlayerHandler : IRequestHandler<DeleteFloorballPlayerCommand, Result>
 {
     private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IFloorballUnitOfWork _floorballUnitOfWork;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DeleteFloorballPlayerHandler> _logger;
 
@@ -27,10 +30,14 @@ public class DeleteFloorballPlayerHandler : IRequestHandler<DeleteFloorballPlaye
     /// <param name="logger">The logger</param>
     public DeleteFloorballPlayerHandler(
         IFloorballPlayerRepository playerRepository, 
+        IFloorballTeamRepository teamRepository,
+        IFloorballUnitOfWork floorballUnitOfWork,
         IUnitOfWork unitOfWork, 
         ILogger<DeleteFloorballPlayerHandler> logger)
     {
         _playerRepository = playerRepository;
+        _teamRepository = teamRepository;
+        _floorballUnitOfWork = floorballUnitOfWork;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -55,9 +62,25 @@ public class DeleteFloorballPlayerHandler : IRequestHandler<DeleteFloorballPlaye
 
             _logger.LogInformation("Deleting floorball player with ID: {PlayerId}", request.Id);
             await _playerRepository.DeleteAsync(request.Id);
-            
+
+            // Check if the player is in any team
+            IEnumerable<FloorballTeam> teams = await _teamRepository.GetTeamsByPlayerIdAsync(request.Id);
+            if (teams == null)
+            {
+                _logger.LogWarning("Player {PlayerId} is in teams, cannot delete", request.Id);
+                return Result.NotFound("FloorballPlayer", request.Id);
+            }
+            else
+            {
+                foreach (FloorballTeam team in teams)
+                {
+                    team.RemovePlayer(request.Id);
+                }
+            }
+
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Successfully deleted floorball player with ID: {PlayerId}", request.Id);
             return Result.Success();

@@ -294,5 +294,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             return await _entities.AnyAsync(t => t.Name == name);
         }
+
+        /// <summary>
+        /// Gets floorball teams by player ID
+        /// </summary>
+        /// <param name="playerId">The player ID</param>
+        /// <returns>A collection of floorball teams the player is in</returns>
+        public async Task<IEnumerable<FloorballTeam>> GetTeamsByPlayerIdAsync(Guid playerId)
+        {
+            return await _entities
+                .Include(t => t.Roster)
+                .Where(t => t.Roster.Any(r => r.PlayerId == playerId))
+                .ToListAsync();
+        }
     }
 } 

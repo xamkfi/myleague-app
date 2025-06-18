@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { FloorballTeam, FloorballTeamRequest } from '../../../../../types/floorball/floorballTypes';
 import TeamPlayersRow from './TeamPlayersRow';
 import EditTeamModal from './EditTeamModal';
+import React from 'react';
 
 interface TeamsTableProps {
   teams: FloorballTeam[];
@@ -76,9 +77,8 @@ const TeamsTable = ({ teams, onEdit, onDelete }: TeamsTableProps) => {
               </tr>
             ) : (
               teams.map((team) => (
-                <>
+                <React.Fragment key={team.id}>
                   <tr 
-                    key={team.id} 
                     className={`team-row ${expandedTeams.has(team.id) ? 'expanded' : ''}`}
                     onClick={() => toggleTeamExpansion(team.id)}
                   >
@@ -135,12 +135,11 @@ const TeamsTable = ({ teams, onEdit, onDelete }: TeamsTableProps) => {
                     </td>
                   </tr>
                   <TeamPlayersRow 
-                    key={`${team.id}-players`}
                     teamId={team.id}
                     isExpanded={expandedTeams.has(team.id)}
                     team={team}
                   />
-                </>
+                </React.Fragment>
               ))
             )}
           </tbody>

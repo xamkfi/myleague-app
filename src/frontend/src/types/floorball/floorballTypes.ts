@@ -115,3 +115,28 @@ export interface FloorballTeamRequest {
   category?: TeamCategory;
   secondaryJerseyColor?: string;
 } 
+
+// Team Player Management types
+export interface FloorballTeamPlayerDto {
+  teamId: string;
+  playerId: string;
+  playerName: string;
+  position: FloorballPosition;
+  jerseyNumber?: number;
+  isActive: boolean;
+  gamesPlayed: number;
+  goals: number;
+  assists: number;
+  penaltyMinutes: number;
+}
+
+export interface UpdateFloorballTeamPlayerRequest {
+  position: FloorballPosition;
+  jerseyNumber?: number;
+  isActive: boolean;
+}
+
+export interface AddPlayerToTeamRequest {
+  position: FloorballPosition;
+  jerseyNumber?: number;
+} 

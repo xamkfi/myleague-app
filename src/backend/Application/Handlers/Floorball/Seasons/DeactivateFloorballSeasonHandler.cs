@@ -17,28 +17,30 @@ using System.Linq;
 namespace Application.Handlers.Floorball.Seasons;
 
 /// <summary>
-/// Handler for activating a floorball season
+/// Handler for deactivating a floorball season
 /// </summary>
-public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballSeasonCommand, Result<FloorballSeasonDto>>
+public class DeactivateFloorballSeasonHandler : IRequestHandler<DeactivateFloorballSeasonCommand, Result<FloorballSeasonDto>>
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
     private readonly IClubRepository _clubRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFloorballUnitOfWork _floorballUnitOfWork;
-    private readonly ILogger<ActivateFloorballSeasonHandler> _logger;
+    private readonly ILogger<DeactivateFloorballSeasonHandler> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the ActivateFloorballSeasonHandler class
+    /// Initializes a new instance of the DeactivateFloorballSeasonHandler class
     /// </summary>
     /// <param name="seasonRepository">The floorball season repository</param>
+    /// <param name="clubRepository">The club repository</param>
     /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="floorballUnitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
-    public ActivateFloorballSeasonHandler(
+    public DeactivateFloorballSeasonHandler(
         IFloorballSeasonRepository seasonRepository,
         IClubRepository clubRepository,
         IUnitOfWork unitOfWork,
         IFloorballUnitOfWork floorballUnitOfWork,
-        ILogger<ActivateFloorballSeasonHandler> logger)
+        ILogger<DeactivateFloorballSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
         _clubRepository = clubRepository;
@@ -48,12 +50,12 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
     }
 
     /// <summary>
-    /// Handles the ActivateFloorballSeasonCommand request
+    /// Handles the DeactivateFloorballSeasonCommand request
     /// </summary>
     /// <param name="request">The command containing season ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The activated season as a DTO wrapped in a Result</returns>
-    public async Task<Result<FloorballSeasonDto>> Handle(ActivateFloorballSeasonCommand request, CancellationToken cancellationToken)
+    /// <returns>The deactivated season as a DTO wrapped in a Result</returns>
+    public async Task<Result<FloorballSeasonDto>> Handle(DeactivateFloorballSeasonCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -65,8 +67,8 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
                 return Result<FloorballSeasonDto>.Failure($"Season with ID {request.Id} not found.");
             }
 
-            _logger.LogInformation("Activating floorball season: {SeasonId}", request.Id);
-            season.Activate();
+            _logger.LogInformation("Deactivating floorball season: {SeasonId}", request.Id);
+            season.Deactivate();
             
             // Update the season in the repository to track changes
             await _seasonRepository.UpdateAsync(season);
@@ -87,14 +89,14 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
             }
 
             FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, clubsDict);
-            _logger.LogInformation("Successfully activated floorball season: {SeasonId}", request.Id);
+            _logger.LogInformation("Successfully deactivated floorball season: {SeasonId}", request.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while activating floorball season: {SeasonId}", request.Id);
-            return Result<FloorballSeasonDto>.Failure("An error occurred while activating the season.");
+            _logger.LogError(ex, "Error occurred while deactivating floorball season: {SeasonId}", request.Id);
+            return Result<FloorballSeasonDto>.Failure("An error occurred while deactivating the season.");
         }
     }
 } 

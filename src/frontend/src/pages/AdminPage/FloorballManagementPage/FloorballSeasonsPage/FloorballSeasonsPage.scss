@@ -1,0 +1,948 @@
+.floorball-seasons-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.floorball-seasons-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 1.1rem;
+  color: #6c757d;
+}
+
+.floorball-seasons-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  border: 1px solid #dee2e6;
+}
+
+.seasons-count {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.seasons-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.create-season-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.error-message {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 0.375rem;
+}
+
+.filters-section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  border: 1px solid #dee2e6;
+
+  .filters-row {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      label {
+        font-weight: 500;
+        color: #495057;
+        white-space: nowrap;
+      }
+
+      input[type="checkbox"] {
+        margin-right: 0.5rem;
+      }
+
+      select {
+        padding: 0.375rem 0.75rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        background-color: white;
+        color: #495057;
+        min-width: 120px;
+
+        &:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+      }
+    }
+  }
+}
+
+.refresh-button {
+  padding: 0.5rem 1rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.seasons-table-container {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.no-seasons {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 2rem;
+}
+
+.back-button-container {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 2rem;
+}
+
+.back-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.seasons-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  table-layout: fixed;
+
+  thead {
+    background-color: #f8f9fa;
+    
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #495057;
+      border-bottom: 2px solid #dee2e6;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      white-space: nowrap;
+      
+      &:nth-child(1) { width: 22%; } // Name
+      &:nth-child(2) { width: 11%; } // Division
+      &:nth-child(3) { width: 15%; } // Start Date
+      &:nth-child(4) { width: 15%; } // End Date
+      &:nth-child(5) { width: 8%; } // Teams
+      &:nth-child(6) { width: 11%; } // Status
+      &:nth-child(7) { width: 18%; } // Actions
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background-color 0.2s ease-in-out;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+    }
+  }
+
+  td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+
+    // Specific styling for date columns
+    &:nth-child(3), &:nth-child(4) {
+      white-space: nowrap;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 0.9rem;
+      color: #495057;
+      font-weight: 500;
+    }
+  }
+
+  .season-name {
+    strong {
+      color: #333;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.4;
+      display: block;
+    }
+  }
+
+  .division-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    white-space: nowrap;
+
+    &.division-a { background: #e3f2fd; color: #1976d2; }
+    &.division-b { background: #f3e5f5; color: #7b1fa2; }
+    &.division-c { background: #e8f5e8; color: #388e3c; }
+    &.division-d { background: #fff3e0; color: #f57c00; }
+    &.division-junior { background: #e1f5fe; color: #0288d1; }
+    &.division-senior { background: #fce4ec; color: #c2185b; }
+    &.division-premier { background: #e8eaf6; color: #3f51b5; }
+  }
+
+  .teams-count {
+    color: #6c757d;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    white-space: nowrap;
+
+    &.active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    &.inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    &.completed {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+  }
+
+  .actions-group {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+
+          button {
+        border: none;
+        padding: 0.375rem 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        line-height: 1;
+
+      &.btn-outline-primary {
+        background-color: #007bff;
+        color: white;
+
+        &:hover {
+          background-color: #0056b3;
+          transform: scale(1.05);
+        }
+      }
+
+      &.btn-outline-success {
+        background-color: #28a745;
+        color: white;
+
+        &:hover {
+          background-color: #1e7e34;
+          transform: scale(1.05);
+        }
+      }
+
+      &.btn-outline-warning {
+        background-color: #ffc107;
+        color: #212529;
+
+        &:hover {
+          background-color: #e0a800;
+          transform: scale(1.05);
+        }
+      }
+
+      &.btn-outline-info {
+        background-color: #17a2b8;
+        color: white;
+
+        &:hover {
+          background-color: #117a8b;
+          transform: scale(1.05);
+        }
+      }
+
+      &.btn-outline-danger {
+        background-color: #dc3545;
+        color: white;
+
+        &:hover {
+          background-color: #c82333;
+          transform: scale(1.05);
+        }
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+  }
+}
+
+// Modal Styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+
+  .modal-content {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid #dee2e6;
+
+      h3 {
+        margin: 0;
+        color: #333;
+        font-size: 1.5rem;
+      }
+
+      .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #6c757d;
+        cursor: pointer;
+        padding: 0;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.25rem;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #f8f9fa;
+          color: #333;
+        }
+      }
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+
+      .form-group {
+        margin-bottom: 1.5rem;
+
+        label {
+          display: block;
+          margin-bottom: 0.5rem;
+          font-weight: 500;
+          color: #333;
+        }
+
+        input, select {
+          width: 100%;
+          padding: 0.75rem;
+          border: 1px solid #ced4da;
+          border-radius: 0.25rem;
+          background-color: white;
+          color: #333;
+          font-size: 1rem;
+          transition: border-color 0.2s ease;
+          box-sizing: border-box;
+
+          &:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+          }
+
+          &:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .error-message {
+        background: #ffebee;
+        color: #c62828;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        i {
+          font-size: 1.1rem;
+        }
+      }
+
+      .info-message {
+        background: #e3f2fd;
+        color: #1565c0;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+
+        i {
+          font-size: 1rem;
+          margin-top: 0.1rem;
+        }
+      }
+
+      .warning-icon {
+        text-align: center;
+        margin-bottom: 1rem;
+
+        i {
+          font-size: 3rem;
+          color: #ff9800;
+        }
+      }
+
+      .season-details {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        margin: 1rem 0;
+
+        strong {
+          display: block;
+          font-size: 1.1rem;
+          color: #333;
+          margin-bottom: 0.5rem;
+        }
+
+        .season-meta {
+          display: flex;
+          gap: 1rem;
+          font-size: 0.9rem;
+          color: #6c757d;
+
+          .division {
+            background: #007bff;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+          }
+
+          .teams-warning {
+            color: #f57c00;
+            font-weight: 500;
+          }
+        }
+      }
+
+      .warning-text {
+        color: #d32f2f;
+        font-weight: 500;
+        text-align: center;
+        margin-top: 1rem;
+      }
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      padding: 1.5rem;
+      border-top: 1px solid #dee2e6;
+
+      .btn {
+        min-width: 100px;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        border: 1px solid;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+
+        &.btn-secondary {
+          background: white;
+          border-color: #6c757d;
+          color: #6c757d;
+
+          &:hover {
+            background: #6c757d;
+            color: white;
+          }
+        }
+
+        &.btn-primary {
+          background: #007bff;
+          border-color: #007bff;
+          color: white;
+
+          &:hover {
+            background: #0056b3;
+            border-color: #0056b3;
+          }
+
+          &:disabled {
+            background: #6c757d;
+            border-color: #6c757d;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+
+    // Edit Season Modal specific styles
+    &.edit-season-modal {
+      max-width: 800px;
+      width: 100%;
+
+      .tab-navigation {
+        display: flex;
+        border-bottom: 1px solid #dee2e6;
+        margin: 0;
+        padding: 0;
+
+        .tab-button {
+          flex: 1;
+          padding: 1rem 1.5rem;
+          border: none;
+          background: #f8f9fa;
+          color: #6c757d;
+          cursor: pointer;
+          font-size: 1rem;
+          border-bottom: 3px solid transparent;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: #e9ecef;
+            color: #495057;
+          }
+
+          &.active {
+            background: white;
+            color: #007bff;
+            border-bottom-color: #007bff;
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .teams-management {
+        .modal-body {
+          max-height: 70vh;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+        }
+
+        .teams-sections-container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 2rem;
+          min-height: 400px;
+
+          @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .teams-section {
+          display: flex;
+          flex-direction: column;
+
+          h4 {
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 1.1rem;
+          }
+
+          .no-teams {
+            color: #6c757d;
+            font-style: italic;
+            text-align: center;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 0.25rem;
+            border: 1px dashed #dee2e6;
+          }
+
+          .teams-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 350px;
+            padding-right: 0.5rem;
+
+            &::-webkit-scrollbar {
+              width: 6px;
+            }
+
+            &::-webkit-scrollbar-track {
+              background: #f1f1f1;
+              border-radius: 3px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+              background: #c1c1c1;
+              border-radius: 3px;
+
+              &:hover {
+                background: #a8a8a8;
+              }
+            }
+
+            .team-item {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 0.75rem;
+              background: #f8f9fa;
+              border-radius: 0.25rem;
+              border: 1px solid #dee2e6;
+              transition: all 0.2s ease;
+              min-height: 80px;
+
+              &:hover {
+                background: #e9ecef;
+                border-color: #adb5bd;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              }
+
+              .team-info {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+                flex: 1;
+                min-width: 0;
+
+                .team-name {
+                  font-weight: 600;
+                  color: #333;
+                  font-size: 0.95rem;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+
+                .team-club {
+                  color: #6c757d;
+                  font-size: 0.85rem;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+
+                .team-division {
+                  display: inline-block;
+                  padding: 0.2rem 0.4rem;
+                  border-radius: 0.25rem;
+                  font-size: 0.75rem;
+                  font-weight: 500;
+                  background: #007bff;
+                  color: white;
+                  width: fit-content;
+                  max-width: 100px;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+
+                  &.division-Premier {
+                    background: #dc3545;
+                  }
+
+                  &.division-Division1 {
+                    background: #fd7e14;
+                  }
+
+                  &.division-Division2 {
+                    background: #ffc107;
+                    color: #000;
+                  }
+
+                  &.division-Division3 {
+                    background: #28a745;
+                  }
+
+                  &.division-Division4 {
+                    background: #17a2b8;
+                  }
+
+                  &.division-Youth {
+                    background: #6f42c1;
+                  }
+
+                  &.division-Junior {
+                    background: #e83e8c;
+                  }
+
+                  &.division-Veterans {
+                    background: #6c757d;
+                  }
+                }
+              }
+
+              .btn-sm {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.8rem;
+                border-radius: 0.25rem;
+                min-width: 70px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.25rem;
+                margin-left: 0.5rem;
+                flex-shrink: 0;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .floorball-seasons-container {
+    padding: 1rem;
+  }
+
+  .floorball-seasons-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .filters-section .filters-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+
+    .filter-group {
+      justify-content: space-between;
+    }
+  }
+
+  .seasons-table-container {
+    overflow-x: auto;
+
+    .seasons-table {
+      min-width: 1000px; // Increased for better date display
+      
+      th, td {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+      }
+
+      // Ensure date columns maintain proper width on mobile
+      th:nth-child(3), th:nth-child(4),
+      td:nth-child(3), td:nth-child(4) {
+        min-width: 120px; // Minimum width for date columns
+        white-space: nowrap;
+      }
+      
+      .season-name strong {
+        font-size: 0.9rem;
+      }
+      
+      .actions-group {
+        gap: 0.125rem;
+        
+        button {
+          min-width: 28px;
+          height: 28px;
+          padding: 0.25rem;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .modal-overlay {
+    padding: 0.5rem;
+
+    .modal-content {
+      max-width: none;
+      width: 100%;
+    }
+  }
+}
+
+// Enhanced error message styling
+.error-message {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  i {
+    color: #dc3545;
+    font-size: 1.1rem;
+  }
+
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  &.success {
+    background: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+
+    i {
+      color: #28a745;
+    }
+  }
+
+  &.warning {
+    background: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+
+    i {
+      color: #ffc107;
+    }
+  }
+}
+
+// Loading states for operation buttons
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+// Animation keyframes
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+} 
