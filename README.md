@@ -261,6 +261,35 @@ MyLeague/
 | `/scalar/v1` | Interactive API documentation |
 | `/swagger/v1/swagger.json` | OpenAPI specification |
 
+## 📬 Postman Collections
+
+The `postman collections/` folder contains ready-to-use Postman collections for testing and populating the database with sample data.
+
+### Using Existing Collections
+- **Clubs.json** - Complete collection for creating clubs and teams with sample data
+- Import any `.json` file from the folder into Postman to get started with API testing
+
+### Creating New Collections
+When developing new endpoints, follow these steps:
+
+1. **Create a new collection** in Postman for your endpoint
+2. **Add comprehensive test requests** including:
+   - Creating sample entities with realistic data
+   - Testing different scenarios (success, validation errors, etc.)
+   - GET requests to verify created data
+3. **Export the collection** as JSON (Collection v2.1)
+4. **Save the file** in `postman collections/` folder
+5. **Name the file** after the main endpoint (e.g., `Players.json` for `/api/floorball/players`)
+
+### Collection Structure
+Each collection should include:
+- **Descriptive request names** (e.g., "CreateClub1", "CreateClub2")
+- **Sample data** that represents realistic entities
+- **Proper HTTP methods** and endpoints
+- **Valid JSON payloads** for POST/PUT requests
+
+This approach ensures team members can quickly set up test data and understand how to interact with new endpoints.
+
 ## 📚 Layer Documentation
 
 Each layer has comprehensive documentation with development guides:
