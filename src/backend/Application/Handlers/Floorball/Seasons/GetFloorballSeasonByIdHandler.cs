@@ -10,6 +10,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Queries.Floorball.Season;
+using Domain.Entities.Common;
+using Domain.Repositories.Common;
 
 namespace Application.Handlers.Floorball.Seasons;
 
@@ -19,6 +21,7 @@ namespace Application.Handlers.Floorball.Seasons;
 public class GetFloorballSeasonByIdHandler : IRequestHandler<GetFloorballSeasonByIdQuery, Result<FloorballSeasonDto>>
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetFloorballSeasonByIdHandler> _logger;
 
     /// <summary>
@@ -28,9 +31,11 @@ public class GetFloorballSeasonByIdHandler : IRequestHandler<GetFloorballSeasonB
     /// <param name="logger">The logger</param>
     public GetFloorballSeasonByIdHandler(
         IFloorballSeasonRepository seasonRepository,
+        IClubRepository clubRepository,
         ILogger<GetFloorballSeasonByIdHandler> logger)
     {
         _seasonRepository = seasonRepository;
+        _clubRepository = clubRepository;
         _logger = logger;
     }
 
@@ -53,7 +58,18 @@ public class GetFloorballSeasonByIdHandler : IRequestHandler<GetFloorballSeasonB
                 return Result<FloorballSeasonDto>.NotFound("FloorballSeason", request.Id);
             }
 
-            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season);
+            // Load clubs for all teams in the season
+            Dictionary<Guid, Club> clubsDict = new Dictionary<Guid, Club>();
+            foreach (FloorballTeam team in season.Teams)
+            {
+                Club? club = await _clubRepository.GetByIdAsync(team.ClubId);
+                if (club != null)
+                {
+                    clubsDict[team.ClubId] = club;
+                }
+            }
+
+            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, clubsDict);
             _logger.LogInformation("Successfully retrieved floorball season: {SeasonId}", season.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);

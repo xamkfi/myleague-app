@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
@@ -41,7 +42,81 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public override async Task<IEnumerable<FloorballTeam>> GetAllAsync()
         {
             return await _entities
+                .Include(t => t.Roster)
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gets paginated floorball teams with filtering support
+        /// </summary>
+        /// <param name="page">Page number (1-based)</param>
+        /// <param name="pageSize">Number of items per page</param>
+        /// <param name="clubId">Optional club ID filter</param>
+        /// <param name="division">Optional division filter</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Paginated collection of floorball teams</returns>
+        public async Task<PagedResult<FloorballTeam>> GetPagedAsync(
+            int page, 
+            int pageSize, 
+            Guid? clubId = null, 
+            FloorballDivision? division = null,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballTeam> query = _entities.AsQueryable();
+
+            // Apply filters
+            if (clubId.HasValue)
+            {
+                query = query.Where(t => t.ClubId == clubId.Value);
+            }
+
+            if (division.HasValue)
+            {
+                query = query.Where(t => t.Division == division.Value);
+            }
+
+            // Apply ordering by name
+            query = query.OrderBy(t => t.Name);
+
+            // Get total count before pagination
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            // Apply pagination and include roster
+            List<FloorballTeam> items = await query
+                .Include(t => t.Roster)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return PagedResult.Create(items, totalCount, page, pageSize);
+        }
+
+        /// <summary>
+        /// Gets the total count of floorball teams with filtering
+        /// </summary>
+        /// <param name="clubId">Optional club ID filter</param>
+        /// <param name="division">Optional division filter</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Total count of matching floorball teams</returns>
+        public async Task<int> GetCountAsync(
+            Guid? clubId = null, 
+            FloorballDivision? division = null,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballTeam> query = _entities.AsQueryable();
+
+            // Apply filters
+            if (clubId.HasValue)
+            {
+                query = query.Where(t => t.ClubId == clubId.Value);
+            }
+
+            if (division.HasValue)
+            {
+                query = query.Where(t => t.Division == division.Value);
+            }
+
+            return await query.CountAsync(cancellationToken);
         }
 
         /// <summary>
@@ -63,9 +138,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <returns>A collection of teams belonging to the specified club</returns>
         public async Task<IEnumerable<FloorballTeam?>> GetByClubIdAsync(Guid clubId)
         {
-            // Use shadow property ClubId for filtering since Club navigation is not available
-            var teams = await _entities
-                .Where(t => EF.Property<Guid>(t, "ClubId") == clubId)
+            // Use the explicit ClubId property for filtering
+            IEnumerable<FloorballTeam> teams = await _entities
+                .Where(t => t.ClubId == clubId)
                 .ToListAsync();
             
             return teams.Cast<FloorballTeam?>();
@@ -231,6 +306,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<bool> ExistsByNameAsync(string name)
         {
             return await _entities.AnyAsync(t => t.Name == name);
+        }
+
+        /// <summary>
+        /// Gets floorball teams by player ID
+        /// </summary>
+        /// <param name="playerId">The player ID</param>
+        /// <returns>A collection of floorball teams the player is in</returns>
+        public async Task<IEnumerable<FloorballTeam>> GetTeamsByPlayerIdAsync(Guid playerId)
+        {
+            return await _entities
+                .Include(t => t.Roster)
+                .Where(t => t.Roster.Any(r => r.PlayerId == playerId))
+                .ToListAsync();
         }
     }
 } 

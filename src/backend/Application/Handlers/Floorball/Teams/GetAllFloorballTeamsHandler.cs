@@ -4,9 +4,11 @@ using Application.Mappings.Floorball;
 using Application.Common;
 using Application.Handlers.Common;
 using Application.Services.Common;
+using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
 using Domain.Enums.Floorball;
+using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
@@ -14,6 +16,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Queries.Floorball.Team;
+using Domain.Entities.Common;
 using System.Linq;
 
 namespace Application.Handlers.Floorball.Teams;
@@ -25,19 +28,31 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
     IRequestHandler<GetAllFloorballTeamsQuery, Result<PagedResult<FloorballTeamDto>>>
 {
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
+    private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IPersonRepository _personRepository;
 
     /// <summary>
     /// Initializes a new instance of the GetAllFloorballTeamsHandler class
     /// </summary>
     /// <param name="teamRepository">The floorball team repository</param>
     /// <param name="paginationService">The pagination service</param>
+    /// <param name="clubRepository">The club repository</param>
+    /// <param name="playerRepository">The floorball player repository</param>
+    /// <param name="personRepository">The person repository</param>
     /// <param name="logger">The logger</param>
     public GetAllFloorballTeamsHandler(
         IFloorballTeamRepository teamRepository,
         IPaginationService paginationService,
+        IClubRepository clubRepository,
+        IFloorballPlayerRepository playerRepository,
+        IPersonRepository personRepository,
         ILogger<GetAllFloorballTeamsHandler> logger) : base(paginationService, logger)
     {
         _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
+        _playerRepository = playerRepository;
+        _personRepository = personRepository;
     }
 
     /// <summary>
@@ -70,44 +85,72 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
             // Check for cancellation before database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Get all teams and apply filtering (will be moved to repository level)
-            IEnumerable<FloorballTeam> allTeams = await _teamRepository.GetAllAsync();
-            
-            // Apply filtering
-            IEnumerable<FloorballTeam> filteredTeams = allTeams;
-            
-            if (request.ClubId.HasValue)
-            {
-                filteredTeams = filteredTeams.Where(t => t.Club.Id == request.ClubId.Value);
-            }
-            
+            // Parse division filter
+            FloorballDivision? division = null;
             if (!string.IsNullOrEmpty(request.Division))
             {
-                if (Enum.TryParse<FloorballDivision>(request.Division, true, out FloorballDivision division))
+                if (Enum.TryParse<FloorballDivision>(request.Division, true, out FloorballDivision parsedDivision))
                 {
-                    filteredTeams = filteredTeams.Where(t => t.Division == division);
+                    division = parsedDivision;
                 }
             }
 
-            // Apply pagination in memory (this will be moved to repository level)
-            int totalCount = filteredTeams.Count();
-            IEnumerable<FloorballTeam> teams = filteredTeams
-                .Skip((request.Page - 1) * actualPageSize)
-                .Take(actualPageSize);
+            // Get paginated teams using database-level pagination
+            PagedResult<FloorballTeam> pagedTeams = await _teamRepository.GetPagedAsync(
+                request.Page,
+                actualPageSize,
+                request.ClubId,
+                division,
+                cancellationToken);
+            
+            // Load all clubs for DTO mapping (since Club navigation is ignored in FloorballTeam)
+            IEnumerable<Club> clubs = await _clubRepository.GetAllAsync();
+            Dictionary<Guid, Club> clubDictionary = new Dictionary<Guid, Club>();
+            foreach (Club club in clubs)
+            {
+                clubDictionary[club.Id] = club;
+            }
+
+            // Load Person data for all players in all team rosters
+            Dictionary<Guid, Person> playerPersons = new Dictionary<Guid, Person>();
+            HashSet<Guid> allPlayerIds = new HashSet<Guid>();
+            
+            // Collect all unique player IDs from all teams
+            foreach (FloorballTeam team in pagedTeams.Items)
+            {
+                foreach (Domain.ValueObjects.Floorball.FloorballTeamPlayer rosterPlayer in team.Roster)
+                {
+                    allPlayerIds.Add(rosterPlayer.PlayerId);
+                }
+            }
+            
+            // Load Person data for all unique players
+            foreach (Guid playerId in allPlayerIds)
+            {
+                FloorballPlayer? floorballPlayer = await _playerRepository.GetByIdAsync(playerId);
+                if (floorballPlayer != null)
+                {
+                    Person? person = await _personRepository.GetByIdAsync(floorballPlayer.PersonId);
+                    if (person != null)
+                    {
+                        playerPersons[playerId] = person;
+                    }
+                }
+            }
 
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            IEnumerable<FloorballTeamDto> teamDtos = FloorballTeamMapper.ToDtos(teams);
+            IEnumerable<FloorballTeamDto> teamDtos = FloorballTeamMapper.ToDtos(pagedTeams.Items, clubDictionary, playerPersons);
             
             PagedResult<FloorballTeamDto> pagedResult = CreatePagedResult(
                 teamDtos, 
-                totalCount, 
-                request.Page, 
-                actualPageSize);
+                pagedTeams.TotalCount, 
+                pagedTeams.Page, 
+                pagedTeams.PageSize);
             
             _logger.LogInformation("Successfully retrieved {Count} floorball teams out of {TotalCount} total", 
-                teams.Count(), totalCount);
+                pagedTeams.ItemCount, pagedTeams.TotalCount);
 
             return Result<PagedResult<FloorballTeamDto>>.Success(pagedResult);
         }

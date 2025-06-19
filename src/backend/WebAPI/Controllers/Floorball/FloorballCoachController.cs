@@ -15,7 +15,6 @@ namespace WebAPI.Controllers.Floorball
     /// <summary>
     /// Controller for managing floorball coaches
     /// </summary>
-    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]

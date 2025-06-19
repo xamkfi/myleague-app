@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MyLeague.Infrastructure.Migrations.FloorballDb
+namespace MyLeague.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialFloorballCreate : Migration
@@ -94,11 +94,11 @@ namespace MyLeague.Infrastructure.Migrations.FloorballDb
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     ShortName = table.Column<string>(type: "text", nullable: false),
                     Division = table.Column<string>(type: "text", nullable: false),
+                    ClubId = table.Column<Guid>(type: "uuid", nullable: false),
                     TeamCategory = table.Column<string>(type: "text", nullable: false),
                     HomeArena = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     PrimaryJerseyColor = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    SecondaryJerseyColor = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    ClubId = table.Column<Guid>(type: "uuid", nullable: false)
+                    SecondaryJerseyColor = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -135,10 +135,34 @@ namespace MyLeague.Infrastructure.Migrations.FloorballDb
                         column: x => x.AwayTeamId,
                         principalTable: "FloorballTeams",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_FloorballMatches_FloorballTeams_HomeTeamId",
                         column: x => x.HomeTeamId,
+                        principalTable: "FloorballTeams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FloorballSeasonTeam",
+                columns: table => new
+                {
+                    SeasonsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TeamsId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FloorballSeasonTeam", x => new { x.SeasonsId, x.TeamsId });
+                    table.ForeignKey(
+                        name: "FK_FloorballSeasonTeam_FloorballSeasons_SeasonsId",
+                        column: x => x.SeasonsId,
+                        principalTable: "FloorballSeasons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FloorballSeasonTeam_FloorballTeams_TeamsId",
+                        column: x => x.TeamsId,
                         principalTable: "FloorballTeams",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -242,6 +266,11 @@ namespace MyLeague.Infrastructure.Migrations.FloorballDb
                 column: "MatchId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FloorballSeasonTeam_TeamsId",
+                table: "FloorballSeasonTeam",
+                column: "TeamsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FloorballTeamPlayer_TeamId",
                 table: "FloorballTeamPlayer",
                 column: "TeamId");
@@ -261,6 +290,9 @@ namespace MyLeague.Infrastructure.Migrations.FloorballDb
 
             migrationBuilder.DropTable(
                 name: "FloorballPlayers");
+
+            migrationBuilder.DropTable(
+                name: "FloorballSeasonTeam");
 
             migrationBuilder.DropTable(
                 name: "FloorballTeamPlayer");

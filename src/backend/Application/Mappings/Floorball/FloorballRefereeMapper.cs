@@ -60,10 +60,27 @@ public static class FloorballRefereeMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
+        // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
+        DateTime licenseIssueDateUtc = command.LicenseIssueDate.Kind switch
+        {
+            DateTimeKind.Utc => command.LicenseIssueDate,
+            DateTimeKind.Local => command.LicenseIssueDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.LicenseIssueDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.LicenseIssueDate, DateTimeKind.Utc)
+        };
+
+        DateTime licenseExpiryDateUtc = command.LicenseExpiryDate.Kind switch
+        {
+            DateTimeKind.Utc => command.LicenseExpiryDate,
+            DateTimeKind.Local => command.LicenseExpiryDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.LicenseExpiryDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(command.LicenseExpiryDate, DateTimeKind.Utc)
+        };
+
         return new FloorballReferee(
             command.PersonId,
-            command.LicenseIssueDate.ToUniversalTime(),
-            command.LicenseExpiryDate.ToUniversalTime());
+            licenseIssueDateUtc,
+            licenseExpiryDateUtc);
     }
 
     /// <summary>
@@ -83,14 +100,27 @@ public static class FloorballRefereeMapper
         referee.UpdateActiveStatus(command.IsActive);
         
         // Update license expiry date if provided and different from current
-        if (command.LicenseExpiryDate.HasValue && command.LicenseExpiryDate.Value != referee.LicenseExpiryDate)
+        if (command.LicenseExpiryDate.HasValue)
         {
-            referee.UpdateLicenseExpiry(command.LicenseExpiryDate.Value);
+            // Ensure DateTime is in UTC
+            DateTime licenseExpiryDateUtc = command.LicenseExpiryDate.Value.Kind switch
+            {
+                DateTimeKind.Utc => command.LicenseExpiryDate.Value,
+                DateTimeKind.Local => command.LicenseExpiryDate.Value.ToUniversalTime(),
+                DateTimeKind.Unspecified => DateTime.SpecifyKind(command.LicenseExpiryDate.Value, DateTimeKind.Utc),
+                _ => DateTime.SpecifyKind(command.LicenseExpiryDate.Value, DateTimeKind.Utc)
+            };
+
+            if (licenseExpiryDateUtc != referee.LicenseExpiryDate)
+            {
+                referee.UpdateLicenseExpiry(licenseExpiryDateUtc);
+            }
         }
         
-        // Note: LicenseIssueDate and MatchesOfficiated cannot be updated directly
-        // as the entity doesn't expose methods for these operations.
-        // This follows domain-driven design principles where the issue date
-        // should not be changed after creation, and matches are recorded individually.
+        // Note: License issue date cannot be updated after creation as the entity doesn't support it
+        // This is by design - license issue dates should be immutable once set
+        
+        // Note: MatchesOfficiated should be updated through RecordMatchOfficiated() method
+        // when matches are actually officiated, not through direct updates
     }
-} 
+}

@@ -1,4 +1,5 @@
 using Application.Common;
+using Domain.Common;
 using Application.Services.Common;
 using Microsoft.Extensions.Logging;
 
@@ -107,7 +108,7 @@ public abstract class BasePagedQueryHandler<TQuery, TResult>
     protected virtual PagedResult<TResult> CreatePagedResult(
         IEnumerable<TResult> items, int totalCount, int page, int actualPageSize)
     {
-        return PagedResult<TResult>.Create(items, totalCount, page, actualPageSize);
+        return PagedResult.Create(items, totalCount, page, actualPageSize);
     }
 }
 

@@ -18,6 +18,5 @@ namespace Application.Commands.Floorball.Player
     /// <param name="IsActive"></param>
     public record UpdateFloorballPlayerCommand(
         Guid Id,
-        FloorballPosition Position,
         bool IsActive) : IRequest<Result<FloorballPlayerDto>>;
 }

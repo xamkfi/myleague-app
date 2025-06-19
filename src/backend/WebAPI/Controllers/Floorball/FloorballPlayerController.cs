@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Application.Commands.Floorball.Player;
 using Application.Common;
+using Domain.Common;
 using Application.DTOs.Floorball;
 using Application.Queries.Floorball.Player;
 using Domain.Enums.Floorball;
@@ -19,7 +20,6 @@ namespace WebAPI.Controllers.Floorball
     /// <summary>
     /// Controller for managing floorball players
     /// </summary>
-    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
@@ -146,9 +146,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Creating floorball player for person ID: {personId}", request.PersonId);
 
-            CreateFloorballPlayerCommand command = new CreateFloorballPlayerCommand(
-                request.PersonId,
-                (FloorballPosition)Enum.Parse(typeof(FloorballPosition), request.Position));
+            CreateFloorballPlayerCommand command = new CreateFloorballPlayerCommand(request.PersonId);
 
             Result<FloorballPlayerDto> result = await _mediator.Send(command);
 
@@ -178,7 +176,6 @@ namespace WebAPI.Controllers.Floorball
 
             UpdateFloorballPlayerCommand command = new UpdateFloorballPlayerCommand(
                 id,
-                (FloorballPosition)Enum.Parse(typeof(FloorballPosition), request.Position),
                 request.IsActive);
 
             Result<FloorballPlayerDto> result = await _mediator.Send(command);

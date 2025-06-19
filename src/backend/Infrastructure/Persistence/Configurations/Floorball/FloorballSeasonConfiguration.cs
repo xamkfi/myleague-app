@@ -37,10 +37,17 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(s => s.IsCompleted)
                 .IsRequired();
 
-            // Ignore complex relationships for now to avoid navigationName issues
-            // These can be managed at the application level
-            builder.Ignore(s => s.Teams);
-            builder.Ignore(s => s.Matches);
+            // Configure many-to-many relationship with FloorballTeam
+            builder.HasMany(s => s.Teams)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "FloorballSeasonTeam",
+                    j => j.HasOne<FloorballTeam>().WithMany().HasForeignKey("TeamsId"),
+                    j => j.HasOne<FloorballSeason>().WithMany().HasForeignKey("SeasonsId")
+                );
+
+            // Configure one-to-many relationship with FloorballMatch
+            // Note: The inverse relationship is configured in FloorballMatchConfiguration
         }
     }
 } 

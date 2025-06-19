@@ -1,0 +1,105 @@
+// Editable player items for roster management
+.player-item.editable {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  background: #fafafa;
+
+  .player-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 0.5rem;
+  }
+
+  .player-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  .player-controls {
+    display: flex;
+    gap: 0.75rem;
+    align-items: end;
+  }
+
+  .position-control, .jersey-control, .active-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .position-select, .jersey-input {
+    padding: 0.375rem 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    width: 100px;
+  }
+
+  .jersey-input {
+    text-align: center;
+    width: 60px;
+  }
+
+  .jersey-display {
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 0.875rem;
+    min-width: 2rem;
+    text-align: center;
+    margin-right: 0.5rem;
+  }
+
+  .active-toggle {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    min-width: 70px;
+    text-align: center;
+    font-weight: 500;
+
+    &.active {
+      background: #4caf50;
+      color: white;
+      border-color: #4caf50;
+    }
+
+    &.inactive {
+      background: #f44336;
+      color: white;
+      border-color: #f44336;
+    }
+  }
+
+  .remove-button {
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+
+    &:hover {
+      background: #d32f2f;
+    }
+  }
+} 

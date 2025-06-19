@@ -252,6 +252,37 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Deactivates a floorball season
+        /// </summary>
+        /// <param name="id">Season ID</param>
+        /// <returns>Deactivated season details</returns>
+        [HttpPut("{id:guid}/deactivate")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballSeasonDto>>> DeactivateSeason(Guid id)
+        {
+            _logger.LogInformation("Deactivating floorball season with ID: {id}", id);
+
+            DeactivateFloorballSeasonCommand command = new DeactivateFloorballSeasonCommand(id);
+            Result<FloorballSeasonDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballSeasonDto>.SuccessResponse(result.Data, "Floorball season deactivated successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to deactivate floorball season";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Completes a floorball season
         /// </summary>
         /// <param name="id">Season ID</param>
@@ -274,6 +305,70 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to complete floorball season";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Adds a team to a floorball season
+        /// </summary>
+        /// <param name="seasonId">Season ID</param>
+        /// <param name="teamId">Team ID</param>
+        /// <returns>Updated season details</returns>
+        [HttpPost("{seasonId:guid}/teams/{teamId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballSeasonDto>>> AddTeamToSeason(Guid seasonId, Guid teamId)
+        {
+            _logger.LogInformation("Adding team {teamId} to floorball season with ID: {id}", teamId, seasonId);
+
+            AddTeamToSeasonCommand command = new AddTeamToSeasonCommand(seasonId, teamId);
+            Result<FloorballSeasonDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballSeasonDto>.SuccessResponse(result.Data, "Team added to floorball season successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to add team to floorball season";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Removes a team from a floorball season
+        /// </summary>
+        /// <param name="seasonId">Season ID</param>
+        /// <param name="teamId">Team ID</param>
+        /// <returns>Updated season details</returns>
+        [HttpDelete("{seasonId:guid}/teams/{teamId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballSeasonDto>>> RemoveTeamFromSeason(Guid seasonId, Guid teamId)
+        {
+            _logger.LogInformation("Removing team {teamId} from floorball season with ID: {id}", teamId, seasonId);
+
+            RemoveTeamFromSeasonCommand command = new RemoveTeamFromSeasonCommand(seasonId, teamId);
+            Result<FloorballSeasonDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballSeasonDto>.SuccessResponse(result.Data, "Team removed from floorball season successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to remove team from floorball season";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));

@@ -2,10 +2,14 @@ using Application.Queries.Floorball;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Common;
+using Domain.Common;
 using Application.Handlers.Common;
 using Application.Services.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Common;
+using Domain.Entities.Common;
+using Application.Mappings.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
@@ -13,7 +17,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Queries.Floorball.Player;
-using System.Linq;
 using Domain.Enums.Floorball;
 
 namespace Application.Handlers.Floorball.Players;
@@ -25,19 +28,23 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
     IRequestHandler<GetAllFloorballPlayersQuery, Result<PagedResult<FloorballPlayerDto>>>
 {
     private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IPersonRepository _personRepository;
 
     /// <summary>
     /// Initializes a new instance of the GetAllFloorballPlayersHandler class
     /// </summary>
     /// <param name="playerRepository">The floorball player repository</param>
+    /// <param name="personRepository">The person repository</param>
     /// <param name="paginationService">The pagination service</param>
     /// <param name="logger">The logger</param>
     public GetAllFloorballPlayersHandler(
         IFloorballPlayerRepository playerRepository,
+        IPersonRepository personRepository,
         IPaginationService paginationService,
         ILogger<GetAllFloorballPlayersHandler> logger) : base(paginationService, logger)
     {
         _playerRepository = playerRepository;
+        _personRepository = personRepository;
     }
 
     /// <summary>
@@ -67,67 +74,74 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
 
             int actualPageSize = validationResult.Data!.ActualPageSize;
 
-            // Check for cancellation before database operations
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Get all players and apply comprehensive filtering (will be moved to repository level)
-            IEnumerable<FloorballPlayer> allPlayers = await _playerRepository.GetAllAsync();
-            
-            // Apply filtering
-            IEnumerable<FloorballPlayer> filteredPlayers = allPlayers;
-            
-            // Apply active status filter
-            if (request.IsActive.HasValue)
-            {
-                filteredPlayers = filteredPlayers.Where(p => p.IsActive == request.IsActive.Value);
-            }
-            
-            // Apply position filter
+            // Parse position filter if provided
+            FloorballPosition? positionFilter = null;
             if (!string.IsNullOrEmpty(request.Position))
             {
                 if (Enum.TryParse<FloorballPosition>(request.Position, true, out FloorballPosition position))
                 {
-                    filteredPlayers = filteredPlayers.Where(p => p.Position.CanPlayInPosition(position));
+                    positionFilter = position;
+                    _logger.LogDebug("Position filter applied: {Position}", position);
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid position filter provided: {Position}", request.Position);
+                    return Result<PagedResult<FloorballPlayerDto>>.Failure($"Invalid position: {request.Position}");
                 }
             }
-            
-            // Apply team filter
-            // TODO: Implement team filtering when player-team relationship is established
-            if (request.TeamId.HasValue)
-            {
-                // For now, skip team filtering as the relationship structure needs to be clarified
-                _logger.LogWarning("Team filtering requested but not yet implemented for FloorballPlayer entity");
-            }
-            
-            // Apply search term filter (search in person's name - this will need to be handled at repository level)
-            if (!string.IsNullOrEmpty(request.SearchTerm))
-            {
-                string searchLower = request.SearchTerm.ToLower();
-                filteredPlayers = filteredPlayers.Where(p => 
-                    p.Person.FirstName.ToLower().Contains(searchLower) ||
-                    p.Person.LastName.ToLower().Contains(searchLower) ||
-                    $"{p.Person.FirstName} {p.Person.LastName}".ToLower().Contains(searchLower));
-            }
 
-            // Apply pagination in memory (this will be moved to repository level)
-            int totalCount = filteredPlayers.Count();
-            IEnumerable<FloorballPlayer> players = filteredPlayers
-                .Skip((request.Page - 1) * actualPageSize)
-                .Take(actualPageSize);
+            // Check for cancellation before database operations
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Use repository-level pagination with all filters
+            PagedResult<FloorballPlayer> pagedPlayers = await _playerRepository.GetPagedAsync(
+                page: validationResult.Data.Page,
+                pageSize: actualPageSize,
+                isActive: request.IsActive,
+                position: positionFilter,
+                teamId: request.TeamId,
+                searchTerm: request.SearchTerm,
+                cancellationToken: cancellationToken);
 
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            IEnumerable<FloorballPlayerDto> playerDtos = FloorballPlayerMapper.ToDtos(players);
+            // Load Person data for each player
+            List<FloorballPlayerDto> playerDtos = new List<FloorballPlayerDto>();
+            foreach (FloorballPlayer player in pagedPlayers.Items)
+            {
+                // Get the associated person
+                Person? person = await _personRepository.GetByIdAsync(player.PersonId);
+                if (person != null)
+                {
+                    // Create DTO with real person data
+                    FloorballPlayerDto playerDto = new FloorballPlayerDto(
+                        player.Id,
+                        player.PersonId,
+                        PersonMapper.ToDto(person),
+                        player.IsActive,
+                        player.Position.PrimaryPosition,
+                        player.CareerGoals,
+                        player.CareerAssists
+                    );
+                    playerDtos.Add(playerDto);
+                }
+                else
+                {
+                    // Fallback to placeholder if person not found
+                    playerDtos.Add(FloorballPlayerMapper.ToDto(player));
+                }
+            }
             
+            // Create the final paged result with DTOs
             PagedResult<FloorballPlayerDto> pagedResult = CreatePagedResult(
                 playerDtos, 
-                totalCount, 
-                request.Page, 
-                actualPageSize);
+                pagedPlayers.TotalCount, 
+                pagedPlayers.Page, 
+                pagedPlayers.PageSize);
             
             _logger.LogInformation("Successfully retrieved {Count} floorball players out of {TotalCount} total", 
-                players.Count(), totalCount);
+                pagedPlayers.ItemCount, pagedPlayers.TotalCount);
 
             return Result<PagedResult<FloorballPlayerDto>>.Success(pagedResult);
         }

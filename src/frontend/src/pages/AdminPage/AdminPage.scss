@@ -26,6 +26,13 @@
   min-height: 100px;
   text-align: center;
   cursor: pointer;
+  gap: 0.5rem;
+
+  // Make emojis bigger by targeting the first character (emoji)
+  &::first-letter {
+    font-size: 1.8em;
+    line-height: 1;
+  }
 
   &:hover {
     background-color: #e9ecef;

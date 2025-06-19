@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Domain.Common;
 using Application.DTOs.Common;
 using Application.Commands.NewsArticles;
 using Application.Queries.NewsArticles;

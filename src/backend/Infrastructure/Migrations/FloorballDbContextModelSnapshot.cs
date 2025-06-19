@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MyLeague.Infrastructure.Migrations.FloorballDb
+namespace MyLeague.Infrastructure.Migrations
 {
     [DbContext(typeof(FloorballDbContext))]
     partial class FloorballDbContextModelSnapshot : ModelSnapshot
@@ -154,10 +154,10 @@ namespace MyLeague.Infrastructure.Migrations.FloorballDb
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("LicenseExpiryDate")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("LicenseIssueDate")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("MatchesOfficiated")
                         .HasColumnType("integer");
@@ -263,22 +263,37 @@ namespace MyLeague.Infrastructure.Migrations.FloorballDb
                     b.ToTable("FloorballMatchOfficial");
                 });
 
+            modelBuilder.Entity("FloorballSeasonTeam", b =>
+                {
+                    b.Property<Guid>("SeasonsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TeamsId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("SeasonsId", "TeamsId");
+
+                    b.HasIndex("TeamsId");
+
+                    b.ToTable("FloorballSeasonTeam");
+                });
+
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatch", b =>
                 {
                     b.HasOne("Domain.Entities.Floorball.FloorballTeam", "AwayTeam")
                         .WithMany()
                         .HasForeignKey("AwayTeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.Floorball.FloorballTeam", "HomeTeam")
                         .WithMany()
                         .HasForeignKey("HomeTeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.Floorball.FloorballSeason", "Season")
-                        .WithMany()
+                        .WithMany("Matches")
                         .HasForeignKey("SeasonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -413,6 +428,26 @@ namespace MyLeague.Infrastructure.Migrations.FloorballDb
                         .HasForeignKey("OfficialsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("FloorballSeasonTeam", b =>
+                {
+                    b.HasOne("Domain.Entities.Floorball.FloorballSeason", null)
+                        .WithMany()
+                        .HasForeignKey("SeasonsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
+                        .WithMany()
+                        .HasForeignKey("TeamsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeason", b =>
+                {
+                    b.Navigation("Matches");
                 });
 #pragma warning restore 612, 618
         }

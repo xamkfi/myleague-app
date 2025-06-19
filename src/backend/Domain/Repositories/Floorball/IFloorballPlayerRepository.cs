@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 
@@ -27,6 +28,42 @@ public interface IFloorballPlayerRepository
     /// </summary>
     /// <returns>A collection of all floorball players</returns>
     Task<IEnumerable<FloorballPlayer>> GetAllAsync();
+    
+    /// <summary>
+    /// Gets paginated floorball players with filtering support
+    /// </summary>
+    /// <param name="page">Page number (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="isActive">Optional active status filter</param>
+    /// <param name="position">Optional position filter</param>
+    /// <param name="teamId">Optional team ID filter</param>
+    /// <param name="searchTerm">Optional search term for player names</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated collection of floorball players</returns>
+    Task<PagedResult<FloorballPlayer>> GetPagedAsync(
+        int page, 
+        int pageSize, 
+        bool? isActive = null,
+        FloorballPosition? position = null,
+        Guid? teamId = null,
+        string? searchTerm = null,
+        CancellationToken cancellationToken = default);
+        
+    /// <summary>
+    /// Gets the total count of floorball players with filtering
+    /// </summary>
+    /// <param name="isActive">Optional active status filter</param>
+    /// <param name="position">Optional position filter</param>
+    /// <param name="teamId">Optional team ID filter</param>
+    /// <param name="searchTerm">Optional search term for player names</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Total count of matching floorball players</returns>
+    Task<int> GetCountAsync(
+        bool? isActive = null,
+        FloorballPosition? position = null,
+        Guid? teamId = null,
+        string? searchTerm = null,
+        CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets floorball players by team ID

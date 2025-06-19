@@ -2,6 +2,7 @@ using System;
 using MediatR;
 using Application.DTOs.Common;
 using Application.Common;
+using Domain.Common;
 using System.Collections.Generic;
 
 namespace Application.Queries.NewsArticles;

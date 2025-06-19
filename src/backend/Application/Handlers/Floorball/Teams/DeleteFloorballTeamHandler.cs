@@ -16,6 +16,7 @@ namespace Application.Handlers.Floorball.Teams;
 public class DeleteFloorballTeamHandler : IRequestHandler<DeleteFloorballTeamCommand, Result>
 {
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IFloorballUnitOfWork _floorballUnitOfWork;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DeleteFloorballTeamHandler> _logger;
 
@@ -27,10 +28,12 @@ public class DeleteFloorballTeamHandler : IRequestHandler<DeleteFloorballTeamCom
     /// <param name="logger">The logger</param>
     public DeleteFloorballTeamHandler(
         IFloorballTeamRepository teamRepository,
+        IFloorballUnitOfWork floorballUnitOfWork,
         IUnitOfWork unitOfWork,
         ILogger<DeleteFloorballTeamHandler> logger)
     {
         _teamRepository = teamRepository;
+        _floorballUnitOfWork = floorballUnitOfWork;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
