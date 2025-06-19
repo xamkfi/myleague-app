@@ -5,7 +5,7 @@ import PageTemplate from "../../components/PageTemplate/PageTemplate";
 import './PersonUserPage.scss';
 
 interface PersonWithTeams {
-  Id: number;
+  Id: string;
   Name: string;
   Age: number;
   teams: Team[];
@@ -13,7 +13,7 @@ interface PersonWithTeams {
 }
 
 // API function to fetch person's team data
-const fetchPersonTeams = async (personId: number): Promise<PersonWithTeams | null> => {
+const fetchPersonTeams = async (personId: string): Promise<PersonWithTeams | null> => {
   try {
     const response = await fetch(`/api/persons/${personId}/teams`);
     
@@ -49,9 +49,7 @@ const PersonUserPage = () => {
         setLoading(true);
         setError(null);
         
-        const personId = parseInt(id, 10);
-        
-        const personData = await fetchPersonTeams(personId);
+        const personData = await fetchPersonTeams(id);
         
         setPerson(personData);
       } catch (err) {
