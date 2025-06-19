@@ -65,6 +65,13 @@ public interface IFloorballTeamRepository
     Task<IEnumerable<FloorballTeam?>> GetByClubIdAsync(Guid clubId);
     
     /// <summary>
+    /// Gets floorball teams where a specific player is in the roster
+    /// </summary>
+    /// <param name="playerId">The player ID</param>
+    /// <returns>A collection of floorball teams containing the player</returns>
+    Task<IEnumerable<FloorballTeam>> GetByPlayerIdAsync(Guid playerId);
+    
+    /// <summary>
     /// Gets floorball teams by division
     /// </summary>
     /// <param name="division">The division to filter by</param>
@@ -116,4 +123,11 @@ public interface IFloorballTeamRepository
     /// <param name="id">The team ID</param>
     /// <returns>True if the team exists, false otherwise</returns>
     Task<bool> ExistsAsync(Guid id);
+
+    /// <summary>
+    /// Gets floorball teams by player ID
+    /// </summary>
+    /// <param name="playerId">The player ID</param>
+    /// <returns>A collection of floorball teams the player is in</returns>
+    Task<IEnumerable<FloorballTeam>> GetTeamsByPlayerIdAsync(Guid playerId);
 } 

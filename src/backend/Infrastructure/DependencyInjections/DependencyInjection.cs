@@ -73,8 +73,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballUnitOfWork, FloorballUnitOfWork>();
 
             // Add event sourcing
-            services.AddScoped<IEventStore, FloorballEventStore>();
-            services.AddScoped<IEventStore, CommonEventStore>();
+            services.AddScoped<IFloorballEventStore, FloorballEventStore>();
+            services.AddScoped<ICommonEventStore, CommonEventStore>();
 
             // Add domain events
             services.AddDomainEvents();

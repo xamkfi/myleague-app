@@ -391,6 +391,38 @@ namespace WebAPI.Controllers.Common
         }
 
         /// <summary>
+        /// Get person with their teams
+        /// </summary>
+        /// <param name="id">Person ID</param>
+        /// <returns>Person with teams information</returns>
+        [HttpGet("{id:guid}/teams")]
+        [ProducesResponseType(typeof(ApiResponse<PersonWithTeamsDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<PersonWithTeamsDto>>> GetPersonWithTeams(Guid id)
+        {
+            _logger.LogInformation("Getting person with teams for Id: {Id}", id);
+
+            GetPersonWithTeamsQuery query = new GetPersonWithTeamsQuery(id);
+            Result<PersonWithTeamsDto> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<PersonWithTeamsDto>.SuccessResponse(result.Data, "Person with teams retrieved successfully"));
+            }
+
+            string errorMessage = result.Error ?? result.GetErrorsString();
+            
+            // Check if it's a not found error
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage));
+            }
+            
+            return StatusCode(500, ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Delete an existing person
         /// </summary>
         /// <param name="id"></param>

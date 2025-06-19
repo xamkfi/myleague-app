@@ -1,5 +1,5 @@
 export interface Goalkeeper {
-  Id: number;
+  Id: string;
   Number: number;
   Name: string;
   Age: number;
@@ -10,7 +10,7 @@ export interface Goalkeeper {
 }
 
 export interface FieldPlayer {
-  Id: number;
+  Id: string;
   Number: number;
   Name: string;
   Age: number;
@@ -21,13 +21,13 @@ export interface FieldPlayer {
 }
 
 export interface Coach {
-  Id: number;
+  Id: string;
   Name: string;
   Age: number;
 }
 
 export interface Team {
-  Id: number;
+  Id: string;
   Name: string;
   Players: {
     Goalkeepers: Goalkeeper[];

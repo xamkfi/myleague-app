@@ -10,6 +10,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
+using Domain.Entities.Common;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Application.Handlers.Floorball.Seasons;
 
@@ -19,7 +22,9 @@ namespace Application.Handlers.Floorball.Seasons;
 public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballSeasonCommand, Result<FloorballSeasonDto>>
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _floorballUnitOfWork;
     private readonly ILogger<ActivateFloorballSeasonHandler> _logger;
 
     /// <summary>
@@ -30,11 +35,15 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
     /// <param name="logger">The logger</param>
     public ActivateFloorballSeasonHandler(
         IFloorballSeasonRepository seasonRepository,
+        IClubRepository clubRepository,
         IUnitOfWork unitOfWork,
+        IFloorballUnitOfWork floorballUnitOfWork,
         ILogger<ActivateFloorballSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
+        _clubRepository = clubRepository;
         _unitOfWork = unitOfWork;
+        _floorballUnitOfWork = floorballUnitOfWork;
         _logger = logger;
     }
 
@@ -64,8 +73,20 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season);
+            // Load clubs for all teams in the season
+            Dictionary<Guid, Club> clubsDict = new Dictionary<Guid, Club>();
+            foreach (FloorballTeam team in season.Teams)
+            {
+                Club? club = await _clubRepository.GetByIdAsync(team.ClubId);
+                if (club != null)
+                {
+                    clubsDict[team.ClubId] = club;
+                }
+            }
+
+            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, clubsDict);
             _logger.LogInformation("Successfully activated floorball season: {SeasonId}", request.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);

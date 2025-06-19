@@ -147,6 +147,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
+        /// Gets floorball teams where a specific player is in the roster
+        /// </summary>
+        /// <param name="playerId">The player ID</param>
+        /// <returns>A collection of floorball teams containing the player</returns>
+        public async Task<IEnumerable<FloorballTeam>> GetByPlayerIdAsync(Guid playerId)
+        {
+            return await _entities
+                .Include(t => t.Roster)
+                .Where(t => t.Roster.Any(r => r.PlayerId == playerId))
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Gets teams participating in a season
         /// </summary>
         /// <param name="seasonId">The season ID</param>
@@ -293,6 +306,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<bool> ExistsByNameAsync(string name)
         {
             return await _entities.AnyAsync(t => t.Name == name);
+        }
+
+        /// <summary>
+        /// Gets floorball teams by player ID
+        /// </summary>
+        /// <param name="playerId">The player ID</param>
+        /// <returns>A collection of floorball teams the player is in</returns>
+        public async Task<IEnumerable<FloorballTeam>> GetTeamsByPlayerIdAsync(Guid playerId)
+        {
+            return await _entities
+                .Include(t => t.Roster)
+                .Where(t => t.Roster.Any(r => r.PlayerId == playerId))
+                .ToListAsync();
         }
     }
 } 

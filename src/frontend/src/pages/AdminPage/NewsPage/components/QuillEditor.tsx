@@ -249,7 +249,7 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
           image: openImageUploader
         }
       },
-    }), [])
+    }), [openImageUploader])
 
     const handleInsertMatches = (matches: FloorballMatch[]) => {
         const editor = quillRef.current?.getEditor();

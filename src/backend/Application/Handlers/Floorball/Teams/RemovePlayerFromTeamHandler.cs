@@ -21,6 +21,7 @@ public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamC
 {
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IClubRepository _clubRepository;
+    private readonly IFloorballUnitOfWork _floorballUnitOfWork;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RemovePlayerFromTeamHandler> _logger;
 
@@ -34,11 +35,13 @@ public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamC
     public RemovePlayerFromTeamHandler(
         IFloorballTeamRepository teamRepository,
         IClubRepository clubRepository,
+        IFloorballUnitOfWork floorballUnitOfWork,
         IUnitOfWork unitOfWork,
         ILogger<RemovePlayerFromTeamHandler> logger)
     {
         _teamRepository = teamRepository;
         _clubRepository = clubRepository;
+        _floorballUnitOfWork = floorballUnitOfWork;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -66,6 +69,7 @@ public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamC
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
             // Load the club for the team
             Club? club = await _clubRepository.GetByIdAsync(team.ClubId);

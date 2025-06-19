@@ -18,6 +18,8 @@ import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
 import NewsCreateEditPage from '../pages/AdminPage/NewsPage/NewsCreateEditPage';
 import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/FloorballManagementPage';
 import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
+import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage';
+import FloorballSeasonsPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage';
 import NewsManagementPage from '../pages/AdminPage/NewsPage/NewsManagementPage';
 
 export const routes: RouteObject[] = [
@@ -100,6 +102,14 @@ export const routes: RouteObject[] = [
       {
         path: 'teams',
         element: <FloorballTeamsPage/>
+      },
+      {
+        path: 'players',
+        element: <FloorballPlayersPage />
+      },
+      {
+        path: 'seasons',
+        element: <FloorballSeasonsPage />
       }
     ]
   },
@@ -109,6 +119,8 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/admin/news',
+    element: <NewsCreatePage/>
+  },
     children: [
       {
         index: true,
