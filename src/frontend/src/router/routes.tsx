@@ -119,8 +119,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/admin/news',
-    element: <NewsCreatePage/>
-  },
+    element: <NewsCreateEditPage/>,
     children: [
       {
         index: true,
@@ -137,5 +136,4 @@ export const routes: RouteObject[] = [
     ]
   }
   
-
 ]; 
