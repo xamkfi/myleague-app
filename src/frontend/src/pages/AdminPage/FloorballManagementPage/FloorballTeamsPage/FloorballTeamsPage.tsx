@@ -74,11 +74,11 @@ const FloorballTeamsPage = () => {
     }
   };
 
-  // Load teams and clubs on component mount
+  // Load teams and clubs on component mount  
   useEffect(() => {
     fetchTeams();
     fetchClubs();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle edit team
   const handleEdit = async (teamData: FloorballTeamRequest, teamId: string) => {

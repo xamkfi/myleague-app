@@ -74,31 +74,32 @@ export const EditSeasonModal = ({
     }));
   };
 
-  const parseApiError = (error: any): string => {
+  const parseApiError = (error: unknown): string => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
     // Handle network errors
-    if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+    if (errorMessage?.includes('Failed to fetch') || errorMessage?.includes('NetworkError')) {
       return t('floorball.seasons.errors.networkError', 'Network error. Please check your connection and try again.');
     }
 
     // Handle HTTP errors with specific status codes
-    if (error.message?.includes('HTTP 400')) {
+    if (errorMessage?.includes('HTTP 400')) {
       return t('floorball.seasons.errors.validationError', 'Invalid data provided. Please check your input and try again.');
     }
     
-    if (error.message?.includes('HTTP 404')) {
+    if (errorMessage?.includes('HTTP 404')) {
       return t('floorball.seasons.errors.notFound', 'Season not found. It may have been deleted.');
     }
     
-    if (error.message?.includes('HTTP 409')) {
+    if (errorMessage?.includes('HTTP 409')) {
       return t('floorball.seasons.errors.conflictError', 'A season with overlapping dates already exists.');
     }
     
-    if (error.message?.includes('HTTP 500')) {
+    if (errorMessage?.includes('HTTP 500')) {
       return t('floorball.seasons.errors.serverError', 'Server error. Please try again later.');
     }
 
     // Handle specific business logic errors
-    const errorMessage = error.message || '';
     
     if (errorMessage.includes('Cannot update a completed season')) {
       return t('floorball.seasons.errors.cannotUpdateCompleted', 'Cannot update a completed season.');
@@ -137,11 +138,11 @@ export const EditSeasonModal = ({
     }
 
     // Default error message
-    return error.message || t('floorball.seasons.errors.updateFailed', 'Failed to update season. Please try again.');
+    return errorMessage || t('floorball.seasons.errors.updateFailed', 'Failed to update season. Please try again.');
   };
 
-  const parseTeamError = (error: any): string => {
-    const errorMessage = error.message || '';
+  const parseTeamError = (error: unknown): string => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     
     if (errorMessage.includes('Cannot add a team to a completed season')) {
       return t('floorball.seasons.errors.cannotAddTeamToCompleted', 'Cannot add teams to a completed season.');

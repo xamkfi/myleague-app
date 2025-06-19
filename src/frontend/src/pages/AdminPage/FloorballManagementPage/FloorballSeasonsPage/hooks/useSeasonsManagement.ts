@@ -196,7 +196,7 @@ export const useSeasonsManagement = () => {
 
   useEffect(() => {
     loadSeasons();
-  }, []);
+  }, [loadSeasons]);
 
   return {
     // Data

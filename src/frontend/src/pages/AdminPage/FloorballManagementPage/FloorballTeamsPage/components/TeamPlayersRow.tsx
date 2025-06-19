@@ -20,7 +20,7 @@ const TeamPlayersRow = ({ teamId, isExpanded, team }: TeamPlayersRowProps) => {
     if (isExpanded && teamId) {
       fetchPlayers();
     }
-  }, [isExpanded, teamId]);
+  }, [isExpanded, teamId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchPlayers = async () => {
     try {
