@@ -20,6 +20,7 @@ import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/
 import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
 import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage';
 import FloorballSeasonsPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage';
+import FloorballTeamPage from '../pages/FloorballTeamPage/FloorballTeamPage';
 
 export const routes: RouteObject[] = [
   {
@@ -63,8 +64,12 @@ export const routes: RouteObject[] = [
     element: <TeamPage/>
   },
   {
-    path: '/club/:id',
+    path: '/club/:slug',
     element: <ClubPage />
+  },
+  {
+    path: '/team/:slug',
+    element: <FloorballTeamPage />
   },
   {
     path: '/pelaaja/:id',

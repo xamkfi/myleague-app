@@ -8,6 +8,7 @@
     border-radius: 8px;
     padding: 2rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
 
     .club-logo {
       text-align: center;
@@ -53,17 +54,132 @@
     }
   }
 
+  // Teams Section
+  .club-teams {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    h3 {
+      color: #333;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 0.5rem;
+    }
+
+    .teams-loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+
+    .no-teams {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+      font-style: italic;
+    }
+
+    .teams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .team-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: 2px solid transparent;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        border-color: #007bff;
+      }
+
+      .team-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+
+        h4 {
+          margin: 0;
+          color: #333;
+          font-size: 1.2rem;
+          font-weight: 600;
+        }
+
+        .jersey-colors {
+          display: flex;
+          gap: 0.5rem;
+
+          .color-primary, 
+          .color-secondary {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+          }
+        }
+      }
+
+      .team-card-body {
+        .team-info {
+          margin-bottom: 1rem;
+
+          .division {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+          }
+        }
+
+        .home-arena {
+          margin-bottom: 1rem;
+          
+          small {
+            color: #666;
+            font-size: 0.9rem;
+          }
+        }
+
+        .team-status {
+          .active {
+            color: #28a745;
+            font-weight: 500;
+            font-size: 0.9rem;
+          }
+
+          .inactive {
+            color: #ffc107;
+            font-weight: 500;
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+
+  // Legacy styles for backward compatibility
   .teams-section {
     h2 {
       color: #333;
       margin-bottom: 1.5rem;
     }
-  }
-
-  .teams-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
   }
 }
 
