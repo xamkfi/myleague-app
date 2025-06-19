@@ -36,6 +36,13 @@ public interface IFloorballTeamRepository
     Task<IEnumerable<FloorballTeam?>> GetByClubIdAsync(Guid clubId);
     
     /// <summary>
+    /// Gets floorball teams where a specific player is in the roster
+    /// </summary>
+    /// <param name="playerId">The player ID</param>
+    /// <returns>A collection of floorball teams containing the player</returns>
+    Task<IEnumerable<FloorballTeam>> GetByPlayerIdAsync(Guid playerId);
+    
+    /// <summary>
     /// Gets floorball teams by division
     /// </summary>
     /// <param name="division">The division to filter by</param>
