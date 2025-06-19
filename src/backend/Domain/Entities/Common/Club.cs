@@ -3,7 +3,6 @@ using Domain.DomainEvents.Floorball;
 using Domain.Entities.Floorball;
 using Domain.Entities.Hockey;
 using Domain.Enums.Common;
-using Domain.Enums.Floorball;
 using Domain.Enums.Hockey;
 using Domain.EventSourcing;
 
@@ -172,7 +171,7 @@ namespace Domain.Entities.Common
         /// <returns>The created <see cref="FloorballTeam"/> instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
         /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
-        public FloorballTeam AddFloorballTeam(string name, FloorballDivision division, string homeArena, string primaryJerseyColor, TeamCategory teamCategory, string? secondaryColor = null)
+        public FloorballTeam AddFloorballTeam(string name, Division division, string homeArena, string primaryJerseyColor, TeamCategory teamCategory, string? secondaryColor = null)
         {
             ValidateRequired(name, nameof(name));
             ValidateRequired(homeArena, nameof(homeArena));
@@ -207,7 +206,7 @@ namespace Domain.Entities.Common
         /// </summary>
         /// <param name="division">The division to filter by.</param>
         /// <returns>An enumerable of <see cref="FloorballTeam"/> in the specified division.</returns>
-        public IEnumerable<FloorballTeam> GetFloorballTeamsByDivision(FloorballDivision division) =>
+        public IEnumerable<FloorballTeam> GetFloorballTeamsByDivision(Division division) =>
             _floorballTeams.Where(t => t.Division == division);
 
         /// <summary>

@@ -1,5 +1,5 @@
 using Domain.DomainEvents;
-using Domain.Enums.Floorball;
+using Domain.Entities.Common;
 
 namespace Domain.DomainEvents.Floorball;
 
@@ -31,7 +31,7 @@ public class FloorballSeasonCreatedEvent : IDomainEvent
     /// <summary>
     /// Gets the division of the season
     /// </summary>
-    public FloorballDivision Division { get; }
+    public Division Division { get; }
 
     /// <summary>
     /// Gets the start date of the season
@@ -54,7 +54,7 @@ public class FloorballSeasonCreatedEvent : IDomainEvent
     public FloorballSeasonCreatedEvent(
         Guid seasonId, 
         string name, 
-        FloorballDivision division, 
+        Division division, 
         DateTime startDate, 
         DateTime endDate)
     {

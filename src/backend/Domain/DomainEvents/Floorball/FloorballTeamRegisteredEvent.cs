@@ -1,5 +1,5 @@
 using Domain.Entities.Floorball;
-using Domain.Enums.Floorball;
+using Domain.Entities.Common;
 using Domain.DomainEvents;
 
 namespace Domain.DomainEvents.Floorball;
@@ -32,7 +32,7 @@ public class FloorballTeamRegisteredEvent : IDomainEvent
     /// <summary>
     /// Gets the division of the team
     /// </summary>
-    public FloorballDivision Division { get; }
+    public Division Division { get; }
 
     /// <summary>
     /// Gets the ID of the club the team belongs to
@@ -67,7 +67,7 @@ public class FloorballTeamRegisteredEvent : IDomainEvent
     public FloorballTeamRegisteredEvent(
         Guid teamId, 
         string teamName, 
-        FloorballDivision division, 
+        Division division, 
         Guid clubId, 
         string homeArena, 
         string primaryJerseyColor, 

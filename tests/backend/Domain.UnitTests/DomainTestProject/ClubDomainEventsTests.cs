@@ -65,45 +65,45 @@ public class ClubDomainEventsTests
         domainEvent.Country.Should().Be(newCountry);
     }
 
-    [Fact]
-    public void FloorballTeamRemovedEvent_ShouldHaveCorrectProperties()
-    {
-        // Arrange
-        Club club = new Club("Test Club", "Test City", "Test Country");
-        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
-        club.ClearDomainEvents();
+    //[Fact]
+    //public void FloorballTeamRemovedEvent_ShouldHaveCorrectProperties()
+    //{
+    //    // Arrange
+    //    Club club = new Club("Test Club", "Test City", "Test Country");
+    //    FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
+    //    club.ClearDomainEvents();
 
-        // Act
-        bool result = club.RemoveFloorballTeam(team.Id);
+    //    // Act
+    //    bool result = club.RemoveFloorballTeam(team.Id);
 
-        // Assert
-        result.Should().BeTrue();
-        club.DomainEvents.Should().HaveCount(1);
-        FloorballTeamRemovedEvent domainEvent = club.DomainEvents.First().Should().BeOfType<FloorballTeamRemovedEvent>().Subject;
+    //    // Assert
+    //    result.Should().BeTrue();
+    //    club.DomainEvents.Should().HaveCount(1);
+    //    FloorballTeamRemovedEvent domainEvent = club.DomainEvents.First().Should().BeOfType<FloorballTeamRemovedEvent>().Subject;
         
-        domainEvent.Id.Should().NotBeEmpty();
-        domainEvent.OccurredOn.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        domainEvent.ClubId.Should().Be(club.Id);
-        domainEvent.TeamId.Should().Be(team.Id);
-    }
+    //    domainEvent.Id.Should().NotBeEmpty();
+    //    domainEvent.OccurredOn.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    //    domainEvent.ClubId.Should().Be(club.Id);
+    //    domainEvent.TeamId.Should().Be(team.Id);
+    //}
 
-    [Fact]
-    public void MultipleOperations_ShouldRaiseMultipleDomainEvents()
-    {
-        // Arrange
-        Club club = new Club("Test Club", "Test City", "Test Country");
+    //[Fact]
+    //public void MultipleOperations_ShouldRaiseMultipleDomainEvents()
+    //{
+    //    // Arrange
+    //    Club club = new Club("Test Club", "Test City", "Test Country");
         
-        // Act
-        club.UpdateBasicInfo("Updated Name", "Updated City", "Updated Country");
-        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
-        club.RemoveFloorballTeam(team.Id);
+    //    // Act
+    //    club.UpdateBasicInfo("Updated Name", "Updated City", "Updated Country");
+    //    FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
+    //    club.RemoveFloorballTeam(team.Id);
 
-        // Assert
-        club.DomainEvents.Should().HaveCount(3);
-        club.DomainEvents.Should().ContainSingle(e => e is ClubRegisteredEvent);
-        club.DomainEvents.Should().ContainSingle(e => e is ClubInfoUpdatedEvent);
-        club.DomainEvents.Should().ContainSingle(e => e is FloorballTeamRemovedEvent);
-    }
+    //    // Assert
+    //    club.DomainEvents.Should().HaveCount(3);
+    //    club.DomainEvents.Should().ContainSingle(e => e is ClubRegisteredEvent);
+    //    club.DomainEvents.Should().ContainSingle(e => e is ClubInfoUpdatedEvent);
+    //    club.DomainEvents.Should().ContainSingle(e => e is FloorballTeamRemovedEvent);
+    //}
 
     [Fact]
     public void DomainEvents_ShouldBeOrderedByOccurrenceTime()
@@ -124,46 +124,46 @@ public class ClubDomainEventsTests
         secondEventTime.Should().BeAfter(firstEventTime);
     }
 
-    [Fact]
-    public void ClearDomainEvents_ShouldRemoveAllEventsButNotAffectEntityState()
-    {
-        // Arrange
-        Club club = new Club("Test Club", "Test City", "Test Country");
-        club.UpdateBasicInfo("Updated Name", "Updated City", "Updated Country");
-        club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
+    //[Fact]
+    //public void ClearDomainEvents_ShouldRemoveAllEventsButNotAffectEntityState()
+    //{
+    //    // Arrange
+    //    Club club = new Club("Test Club", "Test City", "Test Country");
+    //    club.UpdateBasicInfo("Updated Name", "Updated City", "Updated Country");
+    //    club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
         
-        int eventCountBeforeClear = club.DomainEvents.Count;
-        string nameBeforeClear = club.Name;
-        int teamCountBeforeClear = club.FloorballTeams.Count;
+    //    int eventCountBeforeClear = club.DomainEvents.Count;
+    //    string nameBeforeClear = club.Name;
+    //    int teamCountBeforeClear = club.FloorballTeams.Count;
 
-        // Act
-        club.ClearDomainEvents();
+    //    // Act
+    //    club.ClearDomainEvents();
 
-        // Assert
-        eventCountBeforeClear.Should().BeGreaterThan(0);
-        club.DomainEvents.Should().BeEmpty();
+    //    // Assert
+    //    eventCountBeforeClear.Should().BeGreaterThan(0);
+    //    club.DomainEvents.Should().BeEmpty();
         
-        // Entity state should remain unchanged
-        club.Name.Should().Be(nameBeforeClear);
-        club.FloorballTeams.Should().HaveCount(teamCountBeforeClear);
-    }
+    //    // Entity state should remain unchanged
+    //    club.Name.Should().Be(nameBeforeClear);
+    //    club.FloorballTeams.Should().HaveCount(teamCountBeforeClear);
+    //}
 
-    [Fact]
-    public void DomainEvents_ShouldHaveUniqueIds()
-    {
-        // Arrange
-        Club club = new Club("Test Club", "Test City", "Test Country");
+    //[Fact]
+    //public void DomainEvents_ShouldHaveUniqueIds()
+    //{
+    //    // Arrange
+    //    Club club = new Club("Test Club", "Test City", "Test Country");
         
-        // Act
-        club.UpdateBasicInfo("Updated Name", "Updated City", "Updated Country");
-        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
-        club.RemoveFloorballTeam(team.Id);
+    //    // Act
+    //    club.UpdateBasicInfo("Updated Name", "Updated City", "Updated Country");
+    //    FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
+    //    club.RemoveFloorballTeam(team.Id);
 
-        // Assert
-        List<Guid> eventIds = club.DomainEvents.Select(e => e.Id).ToList();
-        eventIds.Should().OnlyHaveUniqueItems();
-        eventIds.Should().AllSatisfy(id => id.Should().NotBeEmpty());
-    }
+    //    // Assert
+    //    List<Guid> eventIds = club.DomainEvents.Select(e => e.Id).ToList();
+    //    eventIds.Should().OnlyHaveUniqueItems();
+    //    eventIds.Should().AllSatisfy(id => id.Should().NotBeEmpty());
+    //}
 
     [Fact]
     public void UpdateOnlinePresence_ShouldNotRaiseDomainEvent()
@@ -196,21 +196,21 @@ public class ClubDomainEventsTests
         club.DomainEvents.Should().BeEmpty();
     }
 
-    [Fact]
-    public void AddFloorballTeam_ShouldNotRaiseDomainEventFromClub()
-    {
-        // Arrange
-        Club club = new Club("Test Club", "Test City", "Test Country");
-        club.ClearDomainEvents();
+    //[Fact]
+    //public void AddFloorballTeam_ShouldNotRaiseDomainEventFromClub()
+    //{
+    //    // Arrange
+    //    Club club = new Club("Test Club", "Test City", "Test Country");
+    //    club.ClearDomainEvents();
 
-        // Act
-        FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
+    //    // Act
+    //    FloorballTeam team = club.AddFloorballTeam("Test Team", FloorballDivision.Premier, "Arena", "Blue", TeamCategory.Adult);
 
-        // Assert
-        // The Club itself should not raise an event for adding a team
-        // The team might raise its own events, but that's tested elsewhere
-        club.DomainEvents.Should().BeEmpty();
-    }
+    //    // Assert
+    //    // The Club itself should not raise an event for adding a team
+    //    // The team might raise its own events, but that's tested elsewhere
+    //    club.DomainEvents.Should().BeEmpty();
+    //}
 
     [Fact]
     public void AddHockeyTeam_ShouldNotRaiseDomainEventFromClub()

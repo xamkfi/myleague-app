@@ -1,5 +1,5 @@
 using Domain.DomainEvents;
-using Domain.Enums.Floorball;
+using Domain.Entities.Common;
 
 namespace Domain.DomainEvents.Floorball;
 
@@ -26,14 +26,14 @@ public class FloorballSeasonDivisionUpdatedEvent : IDomainEvent
     /// <summary>
     /// Gets the updated division of the season
     /// </summary>
-    public FloorballDivision Division { get; }
+    public Division Division { get; }
 
     /// <summary>
     /// Initializes a new instance of the FloorballSeasonDivisionUpdatedEvent class
     /// </summary>
     /// <param name="seasonId">The ID of the season</param>
     /// <param name="division">The updated division of the season</param>
-    public FloorballSeasonDivisionUpdatedEvent(Guid seasonId, FloorballDivision division)
+    public FloorballSeasonDivisionUpdatedEvent(Guid seasonId, Division division)
     {
         Id = Guid.NewGuid();
         OccurredOn = DateTime.UtcNow;
