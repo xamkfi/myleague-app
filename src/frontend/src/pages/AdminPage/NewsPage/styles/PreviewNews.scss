@@ -44,6 +44,9 @@
     margin-bottom: 1.5rem;
     line-height: 1.1;
     letter-spacing: -0.025em;
+    word-break: break-word;      
+    overflow-wrap: break-word;  
+    hyphens: auto;  
 
     @media (max-width: 768px) {
       font-size: 2rem;
@@ -388,7 +391,7 @@
           border-bottom: 1px solid #e2e8f0;
           font-size: 1.1rem;
           font-weight: 600;
-          color: #1e293b;
+          color: #1e293b;     
         }
 
         &__table {
