@@ -59,7 +59,7 @@ public interface IFloorballSeasonRepository
     /// </summary>
     /// <param name="division">The division</param>
     /// <returns>The current or next season for the division</returns>
-    Task<FloorballSeason> GetCurrentOrUpcomingAsync(Division division);
+    Task<FloorballSeason> GetCurrentOrUpcomingAsync(Guid divisionId);
     
     /// <summary>
     /// Adds a new floorball season

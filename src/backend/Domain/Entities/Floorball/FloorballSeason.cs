@@ -86,19 +86,18 @@ public class FloorballSeason : AggregateRoot
     /// <param name="startDate">The start date of the season</param>
     /// <param name="endDate">The end date of the season</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
-    public FloorballSeason(string name, Division division, DateTime startDate, DateTime endDate)
+    public FloorballSeason(string name, Guid divisionId, DateTime startDate, DateTime endDate)
     {
         ArgumentNullException.ThrowIfNull(name);
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Season name cannot be null or empty.", nameof(name));
         if (endDate <= startDate)
             throw new ArgumentException("End date must be after start date.", nameof(endDate));
-        ArgumentNullException.ThrowIfNull(division);
         
         Id = Guid.NewGuid();
         Name = name;
-        Division = division;
-        DivisionId = division.Id;
+        Division = default!;
+        DivisionId = divisionId;
         StartDate = startDate;
         EndDate = endDate;
         IsActive = false;
@@ -106,7 +105,7 @@ public class FloorballSeason : AggregateRoot
         _teams = new List<FloorballTeam>();
         _matches = new List<FloorballMatch>();
         
-        AddDomainEvent(new FloorballSeasonCreatedEvent(Id, name, division, startDate, endDate));
+        AddDomainEvent(new FloorballSeasonCreatedEvent(Id, name, divisionId, startDate, endDate));
     }
 
     /// <summary>

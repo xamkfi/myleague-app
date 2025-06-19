@@ -102,7 +102,7 @@ public static class FloorballTeamMapper
 
         return new FloorballTeam(
             command.Name,
-            command.Division,
+            command.DivisionId,
             club,
             command.HomeArena,
             command.PrimaryJerseyColor,
@@ -126,7 +126,7 @@ public static class FloorballTeamMapper
 
         // Use the entity's public update methods
         team.UpdateName(command.Name);
-        team.UpdateDivision(command.Division);
+        team.UpdateDivision(command.DivisionId);
         team.UpdateHomeArena(command.HomeArena);
         team.UpdateJerseyColors(command.PrimaryJerseyColor, command.SecondaryJerseyColor!);
     }

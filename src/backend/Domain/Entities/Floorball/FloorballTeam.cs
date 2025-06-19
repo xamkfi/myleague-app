@@ -109,7 +109,7 @@ public class FloorballTeam : AggregateRoot
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballTeam(
         string name, 
-        Division division, 
+        Guid divisionId, 
         Club club,
         string homeArena,
         string primaryJerseyColor,
@@ -118,7 +118,6 @@ public class FloorballTeam : AggregateRoot
         string? shortName = null)
     {
         ArgumentNullException.ThrowIfNull(name);
-        ArgumentNullException.ThrowIfNull(division);
         ArgumentNullException.ThrowIfNull(club);
         ArgumentNullException.ThrowIfNull(homeArena);
         ArgumentNullException.ThrowIfNull(primaryJerseyColor);
@@ -144,8 +143,8 @@ public class FloorballTeam : AggregateRoot
             ShortName = name.Length > 3 ? name.Substring(0, 3).ToUpperInvariant() : name.ToUpperInvariant();
         }
 
-        Division = division;
-        DivisionId = division.Id;
+        DivisionId = divisionId;
+        Division = default!;
         Club = club;
         ClubId = club.Id;
         HomeArena = homeArena;
@@ -156,7 +155,7 @@ public class FloorballTeam : AggregateRoot
         AddDomainEvent(new FloorballTeamRegisteredEvent(
             Id, 
             name, 
-            division, 
+            divisionId, 
             club.Id, 
             homeArena, 
             primaryJerseyColor, 
@@ -180,12 +179,9 @@ public class FloorballTeam : AggregateRoot
     /// Updates the team's division
     /// </summary>
     /// <param name="division">The new division</param>
-    public void UpdateDivision(Division division)
+    public void UpdateDivision(Guid divisionId)
     {
-        ArgumentNullException.ThrowIfNull(division);
-        
-        Division = division;
-        DivisionId = division.Id;
+        DivisionId = divisionId;
     }
     
     /// <summary>

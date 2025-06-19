@@ -14,5 +14,5 @@ namespace Application.Queries.Floorball.Team
     /// Query for retrieving all floorball teams in a division
     /// </summary>
     /// <param name="Division"></param>
-    public record GetFloorballTeamsByDivisionQuery(FloorballDivision Division) : IRequest<Result<IEnumerable<FloorballTeamDto>>>;
+    public record GetFloorballTeamsByDivisionQuery(Guid DivisionId) : IRequest<Result<IEnumerable<FloorballTeamDto>>>;
 }

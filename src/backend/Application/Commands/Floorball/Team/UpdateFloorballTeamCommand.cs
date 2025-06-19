@@ -24,7 +24,7 @@ namespace Application.Commands.Floorball.Team
     public record UpdateFloorballTeamCommand(
         Guid Id,
         string Name,
-        FloorballDivision Division,
+        Guid DivisionId,
         string HomeArena,
         string PrimaryJerseyColor,
         TeamCategory TeamCategory,

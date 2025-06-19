@@ -116,16 +116,16 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Gets floorball seasons by division
         /// </summary>
-        /// <param name="division">Division</param>
+        /// <param name="divisionId">Division</param>
         /// <returns>List of seasons for the division</returns>
         [HttpGet("by-division/{division}")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballSeasonDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballSeasonDto>>>> GetSeasonsByDivision(FloorballDivision division)
+        public async Task<ActionResult<ApiResponse<List<FloorballSeasonDto>>>> GetSeasonsByDivision(Guid divisionId)
         {
-            _logger.LogInformation("Getting floorball seasons for division: {division}", division);
+            _logger.LogInformation("Getting floorball seasons for division: {division}", divisionId);
 
-            GetFloorballSeasonsByDivisionQuery query = new GetFloorballSeasonsByDivisionQuery(division);
+            GetFloorballSeasonsByDivisionQuery query = new GetFloorballSeasonsByDivisionQuery(divisionId);
             Result<IEnumerable<FloorballSeasonDto>> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
@@ -157,7 +157,7 @@ namespace WebAPI.Controllers.Floorball
 
             CreateFloorballSeasonCommand command = new CreateFloorballSeasonCommand(
                 request.Name,
-                request.Division,
+                request.DivisionId,
                 startDate,
                 endDate
             );

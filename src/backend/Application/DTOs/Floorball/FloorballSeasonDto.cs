@@ -12,7 +12,7 @@ namespace Application.DTOs.Floorball
     /// </summary>
     /// <param name="Id">The unique identifier of the season</param>
     /// <param name="Name">The name of the season (e.g., "2023-2024")</param>
-    /// <param name="Division">The division this season belongs to</param>
+    /// <param name="DivisionId">The division this season belongs to</param>
     /// <param name="StartDate">The start date of the season</param>
     /// <param name="EndDate">The end date of the season</param>
     /// <param name="IsActive">Whether the season is currently active</param>
@@ -22,7 +22,7 @@ namespace Application.DTOs.Floorball
     public record FloorballSeasonDto(
         Guid Id,
         string Name,
-        FloorballDivision Division,
+        Guid DivisionId,
         DateTime StartDate,
         DateTime EndDate,
         bool IsActive,

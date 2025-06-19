@@ -127,23 +127,17 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Gets all floorball teams in a specific division
         /// </summary>
-        /// <param name="division">Division</param>
+        /// <param name="divisionId">Division</param>
         /// <returns>List of teams in the division</returns>
         [HttpGet("division/{division}")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballTeamDto>>>> GetTeamsByDivision(string division)
+        public async Task<ActionResult<ApiResponse<List<FloorballTeamDto>>>> GetTeamsByDivision(Guid divisionId)
         {
-            _logger.LogInformation("Getting floorball teams for division: {division}", division);
+            _logger.LogInformation("Getting floorball teams for division: {division}", divisionId);
 
-            if (!Enum.TryParse<FloorballDivision>(division, true, out FloorballDivision divisionEnum))
-            {
-                _logger.LogWarning("Invalid division specified: {division}", division);
-                return BadRequest(ApiResponse<List<FloorballTeamDto>>.ErrorResponse("Invalid division specified"));
-            }
-
-            GetFloorballTeamsByDivisionQuery query = new GetFloorballTeamsByDivisionQuery(divisionEnum);
+            GetFloorballTeamsByDivisionQuery query = new GetFloorballTeamsByDivisionQuery(divisionId);
             Result<IEnumerable<FloorballTeamDto>> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
@@ -180,7 +174,7 @@ namespace WebAPI.Controllers.Floorball
 
             CreateFloorballTeamCommand command = new CreateFloorballTeamCommand(
                 request.Name,
-                request.Division,
+                request.DivisionId,
                 request.ClubId,
                 request.HomeArena,
                 request.PrimaryJerseyColor,
@@ -230,7 +224,7 @@ namespace WebAPI.Controllers.Floorball
             UpdateFloorballTeamCommand command = new UpdateFloorballTeamCommand(
                 id,
                 request.Name,
-                request.Division,
+                request.DivisionId,
                 request.HomeArena,
                 request.PrimaryJerseyColor,
                 request.Category,

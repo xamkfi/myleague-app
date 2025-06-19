@@ -11,8 +11,7 @@ public class GetFloorballSeasonsByDivisionQueryValidator : AbstractValidator<Get
 {
     public GetFloorballSeasonsByDivisionQueryValidator()
     {
-        RuleFor(x => x.Division)
-            .NotNull().WithMessage("Division is required")
-            .IsInEnum().WithMessage("Invalid division value");
+        RuleFor(x => x.DivisionId)
+             .NotNull().WithMessage("Division is required");
     }
 } 

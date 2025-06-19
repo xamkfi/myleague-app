@@ -59,7 +59,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             int page, 
             int pageSize, 
             Guid? clubId = null, 
-            FloorballDivision? division = null,
+            Guid? divisionId = null,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballTeam> query = _entities.AsQueryable();
@@ -70,9 +70,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 query = query.Where(t => t.ClubId == clubId.Value);
             }
 
-            if (division.HasValue)
+            if (divisionId.HasValue)
             {
-                query = query.Where(t => t.Division == division.Value);
+                query = query.Where(t => t.DivisionId == divisionId);
             }
 
             // Apply ordering by name
@@ -100,7 +100,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <returns>Total count of matching floorball teams</returns>
         public async Task<int> GetCountAsync(
             Guid? clubId = null, 
-            FloorballDivision? division = null,
+            Guid? divisionId = null,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballTeam> query = _entities.AsQueryable();
@@ -111,9 +111,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 query = query.Where(t => t.ClubId == clubId.Value);
             }
 
-            if (division.HasValue)
+            if (divisionId.HasValue)
             {
-                query = query.Where(t => t.Division == division.Value);
+                query = query.Where(t => t.DivisionId == divisionId.Value);
             }
 
             return await query.CountAsync(cancellationToken);
@@ -122,12 +122,12 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <summary>
         /// Gets teams by division
         /// </summary>
-        /// <param name="division">The division to filter by</param>
+        /// <param name="divisionId">The division to filter by</param>
         /// <returns>A collection of teams in the specified division</returns>
-        public async Task<IEnumerable<FloorballTeam>> GetByDivisionAsync(FloorballDivision division)
+        public async Task<IEnumerable<FloorballTeam>> GetByDivisionAsync(Guid divisionId)
         {
             return await _entities
-                .Where(t => t.Division == division)
+                .Where(t => t.DivisionId == divisionId)
                 .ToListAsync();
         }
 

@@ -31,7 +31,7 @@ public class FloorballSeasonCreatedEvent : IDomainEvent
     /// <summary>
     /// Gets the division of the season
     /// </summary>
-    public Division Division { get; }
+    public Guid DivisionId { get; }
 
     /// <summary>
     /// Gets the start date of the season
@@ -54,7 +54,7 @@ public class FloorballSeasonCreatedEvent : IDomainEvent
     public FloorballSeasonCreatedEvent(
         Guid seasonId, 
         string name, 
-        Division division, 
+        Guid divisionId, 
         DateTime startDate, 
         DateTime endDate)
     {
@@ -62,7 +62,7 @@ public class FloorballSeasonCreatedEvent : IDomainEvent
         OccurredOn = DateTime.UtcNow;
         SeasonId = seasonId;
         Name = name;
-        Division = division;
+        DivisionId = divisionId;
         StartDate = startDate;
         EndDate = endDate;
     }

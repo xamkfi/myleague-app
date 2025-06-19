@@ -28,7 +28,7 @@ public static class FloorballSeasonMapper
         return new FloorballSeasonDto(
             season.Id,
             season.Name,
-            season.Division,
+            season.DivisionId,
             season.StartDate.ToUniversalTime(),
             season.EndDate.ToUniversalTime(),
             season.IsActive,
@@ -82,11 +82,11 @@ public static class FloorballSeasonMapper
         };
 
         return new FloorballSeason(
-            command.Name,
-            command.Division,
-            startDateUtc,
-            endDateUtc
-        );
+         command.Name,
+         command.DivisionId,
+         startDateUtc,
+         endDateUtc
+     );
     }
 
     /// <summary>

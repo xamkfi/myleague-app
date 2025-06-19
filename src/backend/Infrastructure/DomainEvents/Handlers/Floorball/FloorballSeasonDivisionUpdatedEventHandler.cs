@@ -55,7 +55,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
             FloorballSeasonDivisionUpdatedNotification notification = new()
             {
                 SeasonId = season.Id,
-                Division = domainEvent.Division.ToString(),
+                Division = domainEvent.Division.ToString() ?? "",
                 UpdatedOn = domainEvent.OccurredOn
             };
 
