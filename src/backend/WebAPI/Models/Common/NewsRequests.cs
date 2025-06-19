@@ -20,7 +20,6 @@ namespace WebAPI.Models.Common
         /// <summary>
         /// Gets the Main image
         /// </summary>
-        [Required(ErrorMessage = "MainImage is required")]
         public Uri? MainImage { get; init; }
 
         /// <summary>
@@ -196,6 +195,12 @@ namespace WebAPI.Models.Common
         /// Gets the optional sport category filter
         /// </summary>
         public string? SportCategory { get; init; }
+
+        /// <summary>
+        /// Gets the optional search term
+        /// </summary>
+        [MinLength(2, ErrorMessage = "Search term must be at least 2 characters")]
+        public string? Search { get; init; }
 
         /// <summary>
         /// Gets the optional author filter

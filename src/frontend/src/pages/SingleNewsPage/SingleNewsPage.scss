@@ -87,6 +87,9 @@
     margin-bottom: 1.5rem;
     line-height: 1.1;
     letter-spacing: -0.025em;
+    word-break: break-word;      
+    overflow-wrap: break-word;  
+    hyphens: auto;               
 
     @media (max-width: 768px) {
       font-size: 2rem;
@@ -156,6 +159,10 @@
   }
 
   &__content-html {
+    word-break: break-all;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+
     color: #374151;
     line-height: 1.75;
     font-size: 1.125rem;
@@ -164,6 +171,9 @@
     // Reset any inherited text alignment
     * {
       text-align: left;
+      word-break: break-all;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
     }
 
     // Enhanced styling for HTML content
