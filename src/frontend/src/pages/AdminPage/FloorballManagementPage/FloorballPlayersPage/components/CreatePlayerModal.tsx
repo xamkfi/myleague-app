@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { personApi } from '../../../../../api/admin/personApi';
-import { floorballPlayerService, type FloorballPlayerDto, type CreateFloorballPlayerRequest } from '../../../../../api/floorball/floorballPlayerService';
+import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import type { Person } from '../../../../../types/admin/personTypes';
 import './CreatePlayerModal.scss';
 

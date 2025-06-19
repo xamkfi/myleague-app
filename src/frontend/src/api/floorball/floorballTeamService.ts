@@ -6,7 +6,6 @@ import type {
   PaginatedApiResponse,
   FloorballTeamPlayerDto,
   UpdateFloorballTeamPlayerRequest,
-  AddPlayerToTeamRequest,
   FloorballPosition
 } from '../../types/floorball/floorballTypes';
 

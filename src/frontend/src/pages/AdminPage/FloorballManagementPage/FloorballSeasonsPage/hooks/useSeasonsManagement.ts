@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   floorballSeasonService, 
-  type FloorballSeasonDto 
+  type FloorballSeasonDto,
+  type CreateFloorballSeasonRequest,
+  type UpdateFloorballSeasonRequest
 } from '../../../../../api/floorball/floorballSeasonService';
 
 export const useSeasonsManagement = () => {
@@ -24,32 +26,32 @@ export const useSeasonsManagement = () => {
   const [showActiveOnly, setShowActiveOnly] = useState(false);
   const [divisionFilter, setDivisionFilter] = useState<string>('all');
 
-  const parseApiError = (error: any): string => {
+  const parseApiError = useCallback((error: unknown): string => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
     // Handle network errors
-    if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+    if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
       return t('floorball.seasons.errors.networkError', 'Network error. Please check your connection and try again.');
     }
 
     // Handle HTTP errors with specific status codes
-    if (error.message?.includes('HTTP 400')) {
+    if (errorMessage.includes('HTTP 400')) {
       return t('floorball.seasons.errors.validationError', 'Invalid data provided. Please check your input and try again.');
     }
     
-    if (error.message?.includes('HTTP 404')) {
+    if (errorMessage.includes('HTTP 404')) {
       return t('floorball.seasons.errors.notFound', 'Season not found. It may have been deleted.');
     }
     
-    if (error.message?.includes('HTTP 409')) {
+    if (errorMessage.includes('HTTP 409')) {
       return t('floorball.seasons.errors.conflictError', 'Operation conflicts with current data.');
     }
     
-    if (error.message?.includes('HTTP 500')) {
+    if (errorMessage.includes('HTTP 500')) {
       return t('floorball.seasons.errors.serverError', 'Server error. Please try again later.');
     }
 
     // Handle specific business logic errors
-    const errorMessage = error.message || '';
-    
     if (errorMessage.includes('Cannot activate a completed season')) {
       return t('floorball.seasons.errors.cannotActivateCompleted', 'Cannot activate a completed season.');
     }
@@ -63,10 +65,10 @@ export const useSeasonsManagement = () => {
     }
 
     // Default error message
-    return error.message || t('floorball.seasons.errors.operationFailed', 'Operation failed. Please try again.');
-  };
+    return errorMessage || t('floorball.seasons.errors.operationFailed', 'Operation failed. Please try again.');
+  }, [t]);
 
-  const loadSeasons = async () => {
+  const loadSeasons = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -82,9 +84,9 @@ export const useSeasonsManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showActiveOnly, parseApiError]);
 
-  const handleCreateSeason = async (seasonData: any) => {
+  const handleCreateSeason = async (seasonData: CreateFloorballSeasonRequest) => {
     try {
       await floorballSeasonService.create(seasonData);
       setShowCreateModal(false);
@@ -95,7 +97,7 @@ export const useSeasonsManagement = () => {
     }
   };
 
-  const handleEditSeason = async (seasonData: any) => {
+  const handleEditSeason = async (seasonData: UpdateFloorballSeasonRequest) => {
     if (!selectedSeason) return;
     
     try {
