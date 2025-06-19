@@ -1,7 +1,6 @@
 ﻿using System;
 using Application.Commands.Persons;
 using Application.Common;
-using Application.Handlers.Clubs;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -15,7 +14,7 @@ namespace Application.Handlers.Persons
     {
         private readonly IPersonRepository _personRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<DeleteClubHandler> _logger;
+        private readonly ILogger<DeletePersonHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the DeletePersonHandler class
@@ -23,7 +22,7 @@ namespace Application.Handlers.Persons
         /// <param name="personRepository"></param>
         /// <param name="unitOfWork"></param>
         /// <param name="logger"></param>
-        public DeletePersonHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<DeleteClubHandler> logger)
+        public DeletePersonHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<DeletePersonHandler> logger)
         {
             _personRepository = personRepository;
             _unitOfWork = unitOfWork;
@@ -59,7 +58,7 @@ namespace Application.Handlers.Persons
             }
             catch(Exception ex) 
             {
-                _logger.LogError(ex, "Error occurred while deleting club: {PersonId}", request.Id);
+                _logger.LogError(ex, "Error occurred while deleting person: {PersonId}", request.Id);
                 return Result.Failure("An error occurred while deleting the person.");
             }
         }

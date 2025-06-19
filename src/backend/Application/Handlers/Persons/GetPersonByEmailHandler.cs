@@ -16,14 +16,14 @@ namespace Application.Handlers.Persons
     public class GetPersonByEmailHandler : IRequestHandler<GetPersonByEmailQuery, Result<PersonDto>>
     {
         private readonly IPersonRepository _personRepository;
-        private readonly ILogger<GetPersonByIdHandler> _logger;
+        private readonly ILogger<GetPersonByEmailHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the GetPersonByEmailHandler class
         /// </summary>
         /// <param name="PersonRepository">The Person repository</param>
         /// <param name="logger">The logger</param>
-        public GetPersonByEmailHandler(IPersonRepository PersonRepository, ILogger<GetPersonByIdHandler> logger)
+        public GetPersonByEmailHandler(IPersonRepository PersonRepository, ILogger<GetPersonByEmailHandler> logger)
         {
             _personRepository = PersonRepository;
             _logger = logger;
@@ -44,7 +44,7 @@ namespace Application.Handlers.Persons
                 Person? person = await _personRepository.GetByEmailAsync(request.email);
                 if(person == null)
                 {
-                    _logger.LogWarning("Club with ID {ClubId} not found", request.email);
+                    _logger.LogWarning("Person with email {Email} not found", request.email);
                     return Result<PersonDto>.NotFound("Email", request.email);
                 }
 

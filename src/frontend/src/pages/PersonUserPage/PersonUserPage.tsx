@@ -5,7 +5,7 @@ import PageTemplate from "../../components/PageTemplate/PageTemplate";
 import './PersonUserPage.scss';
 
 interface PersonWithTeams {
-  Id: number;
+  Id: string;
   Name: string;
   Age: number;
   teams: Team[];
@@ -13,17 +13,22 @@ interface PersonWithTeams {
 }
 
 // API function to fetch person's team data
-const fetchPersonTeams = async (personId: number): Promise<PersonWithTeams | null> => {
+const fetchPersonTeams = async (personId: string): Promise<PersonWithTeams | null> => {
   try {
-    // Example API endpoint - replace with your actual backend URL
     const response = await fetch(`/api/persons/${personId}/teams`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    const data = await response.json();
-    return data;
+    const apiResponse = await response.json();
+    
+    // Extract data from the ApiResponse wrapper
+    if (apiResponse.success && apiResponse.data) {
+      return apiResponse.data;
+    } else {
+      throw new Error(apiResponse.message || 'Failed to fetch person teams');
+    }
   } catch (error) {
     console.error('Error fetching person teams:', error);
     throw error;
@@ -44,9 +49,7 @@ const PersonUserPage = () => {
         setLoading(true);
         setError(null);
         
-        const personId = parseInt(id, 10);
-        
-        const personData = await fetchPersonTeams(personId);
+        const personData = await fetchPersonTeams(id);
         
         setPerson(personData);
       } catch (err) {

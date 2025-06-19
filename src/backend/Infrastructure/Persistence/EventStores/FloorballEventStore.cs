@@ -17,7 +17,7 @@ namespace MyLeague.Infrastructure.Persistence.EventStores
     /// <summary>
     /// Floorball-specific EventStore implementation for storing and retrieving domain events
     /// </summary>
-    public class FloorballEventStore : IEventStore
+    public class FloorballEventStore : IFloorballEventStore
     {
         private readonly FloorballDbContext _floorballDbContext;
         private readonly ILogger<FloorballEventStore> _logger;

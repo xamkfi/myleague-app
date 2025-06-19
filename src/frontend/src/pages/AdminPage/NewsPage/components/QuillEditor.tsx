@@ -106,7 +106,7 @@ export default function QuillEditor({value, setValue, setLoading}: Values) {
           image: openImageUploader
         }
       },
-    }), [])
+    }), [openImageUploader])
 
   return (
     <>

@@ -1,8 +1,9 @@
 import type { 
-  FloorballTeamPlayer,
   ApiResponse,
-  PaginatedApiResponse 
+  PaginatedApiResponse,
+  FloorballPosition,
 } from '../../types/floorball/floorballTypes';
+import type { Address, ContactInfo } from '../../types/admin/personTypes';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -13,8 +14,8 @@ export interface PersonDto {
   birthDate: string;
   fullName: string;
   isRegistered: boolean;
-  address?: any;
-  contactInfo?: any;
+  address?: Address;
+  contactInfo?: ContactInfo;
 }
 
 export interface FloorballPlayerDto {
@@ -22,7 +23,7 @@ export interface FloorballPlayerDto {
   personId: string;
   person: PersonDto;  // Nested person object to match backend
   isActive: boolean;
-  position: string;
+  position: FloorballPosition;
   careerGoals: number;
   careerAssists: number;
 }
@@ -31,7 +32,7 @@ export interface GetFloorballPlayersRequest {
   page?: number;
   pageSize?: number;
   isActive?: boolean;
-  position?: string;
+  position?: FloorballPosition;
   teamId?: string;
   searchTerm?: string;
 }

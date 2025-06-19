@@ -1,5 +1,7 @@
 import type { 
-  ApiResponse 
+  ApiResponse,
+  FloorballTeam,
+  FloorballDivision
 } from '../../types/floorball/floorballTypes';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -24,7 +26,7 @@ const parseErrorResponse = async (response: Response, defaultMessage: string): P
         } else {
           return responseText;
         }
-      } catch (parseError) {
+      } catch {
         // If JSON parsing fails, use the raw text
         return responseText;
       }
@@ -39,27 +41,27 @@ const parseErrorResponse = async (response: Response, defaultMessage: string): P
 export interface FloorballSeasonDto {
   id: string;
   name: string;
-  division: string;
+  division: FloorballDivision;
   startDate: string;
   endDate: string;
   isActive: boolean;
   isCompleted: boolean;
-  teams: any[];
-  matches: any[];
+  teams: FloorballTeam[];
+  matches: unknown[];
 }
 
 export interface CreateFloorballSeasonRequest {
   name: string;
   startDate: string;
   endDate: string;
-  division: string;
+  division: FloorballDivision;
 }
 
 export interface UpdateFloorballSeasonRequest {
   name: string;
   startDate: string;
   endDate: string;
-  division: string;
+  division: FloorballDivision;
 }
 
 export const floorballSeasonService = {

@@ -311,7 +311,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public override async Task AddAsync(FloorballMatch match)
         {
             await _entities.AddAsync(match);
-            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -321,7 +320,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public override async Task UpdateAsync(FloorballMatch match)
         {
             _dbContext.Entry(match).State = EntityState.Modified;
-            await _dbContext.SaveChangesAsync();
+
+            await Task.CompletedTask;
         }
 
         /// <summary>

@@ -11,7 +11,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
-using Domain.Repositories.Floorball;
 using Application.Mappings.Common;
 using System.Collections.Generic;
 using System.Linq;

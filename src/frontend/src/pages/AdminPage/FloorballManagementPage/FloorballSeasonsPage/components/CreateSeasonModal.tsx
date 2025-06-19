@@ -18,7 +18,7 @@ export const CreateSeasonModal = ({
     name: '',
     startDate: '',
     endDate: '',
-    division: ''
+    division: FloorballDivision.None
   });
   
   const [loading, setLoading] = useState(false);
@@ -32,28 +32,28 @@ export const CreateSeasonModal = ({
     }));
   };
 
-  const parseApiError = (error: any): string => {
+  const parseApiError = (error: unknown): string => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
     // Handle network errors
-    if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+    if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
       return t('floorball.seasons.errors.networkError', 'Network error. Please check your connection and try again.');
     }
 
     // Handle HTTP errors with specific status codes
-    if (error.message?.includes('HTTP 400')) {
+    if (errorMessage.includes('HTTP 400')) {
       return t('floorball.seasons.errors.validationError', 'Invalid data provided. Please check your input and try again.');
     }
     
-    if (error.message?.includes('HTTP 409')) {
+    if (errorMessage.includes('HTTP 409')) {
       return t('floorball.seasons.errors.conflictError', 'A season with overlapping dates already exists.');
     }
     
-    if (error.message?.includes('HTTP 500')) {
+    if (errorMessage.includes('HTTP 500')) {
       return t('floorball.seasons.errors.serverError', 'Server error. Please try again later.');
     }
 
     // Handle specific business logic errors
-    const errorMessage = error.message || '';
-    
     if (errorMessage.includes('overlapping dates') || errorMessage.includes('overlaps with')) {
       return t('floorball.seasons.errors.overlappingDates', 'A season already exists that overlaps with the specified dates.');
     }
@@ -83,7 +83,7 @@ export const CreateSeasonModal = ({
     }
 
     // Default error message
-    return error.message || t('floorball.seasons.errors.createFailed', 'Failed to create season. Please try again.');
+    return errorMessage || t('floorball.seasons.errors.createFailed', 'Failed to create season. Please try again.');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

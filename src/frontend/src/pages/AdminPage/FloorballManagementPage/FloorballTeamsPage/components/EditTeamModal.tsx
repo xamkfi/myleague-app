@@ -60,7 +60,7 @@ const EditTeamModal = ({ isOpen, onClose, onSubmit, teamId }: EditTeamModalProps
       loadClubs();
       loadAllPlayers();
     }
-  }, [isOpen, teamId]);
+  }, [isOpen, teamId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetForm = () => {
     setFormData({
@@ -98,6 +98,8 @@ const EditTeamModal = ({ isOpen, onClose, onSubmit, teamId }: EditTeamModalProps
 
       // Use the roster data from the team
       if (team.roster && team.roster.length > 0) {
+        // Team has roster data available for editing
+        console.log('Team roster loaded:', team.roster.length, 'players');
       }
     } catch (err) {
       console.error('Error loading team data:', err);

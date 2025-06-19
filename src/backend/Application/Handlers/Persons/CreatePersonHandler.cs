@@ -2,7 +2,6 @@
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Handlers.Clubs;
 using Application.Mappings.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
@@ -18,15 +17,15 @@ namespace Application.Handlers.Persons
     {
         private readonly IPersonRepository _personRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<CreateClubHandler> _logger;
+        private readonly ILogger<CreatePersonHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the CreatePersonHandler class
         /// </summary>
-        /// <param name="clubRepository"></param>
+        /// <param name="personRepository">The person repository</param>
         /// <param name="unitOfWork"></param>
         /// <param name="logger"></param>
-        public CreatePersonHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<CreateClubHandler> logger)
+        public CreatePersonHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<CreatePersonHandler> logger)
         {
             _personRepository = personRepository;
             _unitOfWork = unitOfWork;
@@ -43,7 +42,7 @@ namespace Application.Handlers.Persons
         {
             try
             {
-                // Check if a club with the same name already exists
+                // Check if a person with the same name already exists
                 if (await _personRepository.ExistsByFullNameAsync(request.FirstName, request.LastName))
                 {
                     _logger.LogInformation("Attempt to create person with existing name: {FirstName} {LastName}", request.FirstName, request.LastName);
@@ -67,7 +66,7 @@ namespace Application.Handlers.Persons
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while creating person: {FirstName} {LastName}", request.FirstName, request.LastName);
-                return Result<PersonDto>.Failure("An error occurred while creating the club.");
+                return Result<PersonDto>.Failure("An error occurred while creating the person.");
             }
         }
 

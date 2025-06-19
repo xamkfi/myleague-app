@@ -1,137 +1,18 @@
+// Import component-specific styles
+@import './components/SeasonsPageHeader.scss';
+@import './components/SeasonsFilters.scss';
+@import './components/ErrorMessage.scss';
+@import './components/LoadingState.scss';
+@import './components/BackButton.scss';
+
+// Main container styles
 .floorball-seasons-container {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.floorball-seasons-loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-  font-size: 1.1rem;
-  color: #6c757d;
-}
-
-.floorball-seasons-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 0.5rem;
-  border: 1px solid #dee2e6;
-}
-
-.seasons-count {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #495057;
-}
-
-.seasons-actions {
-  display: flex;
-  gap: 1rem;
-}
-
-.create-season-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: #218838;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-.error-message {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-  border-radius: 0.375rem;
-}
-
-.filters-section {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 0.5rem;
-  border: 1px solid #dee2e6;
-
-  .filters-row {
-    display: flex;
-    gap: 2rem;
-    align-items: center;
-    flex-wrap: wrap;
-
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-
-      label {
-        font-weight: 500;
-        color: #495057;
-        white-space: nowrap;
-      }
-
-      input[type="checkbox"] {
-        margin-right: 0.5rem;
-      }
-
-      select {
-        padding: 0.375rem 0.75rem;
-        border: 1px solid #dee2e6;
-        border-radius: 0.25rem;
-        background-color: white;
-        color: #495057;
-        min-width: 120px;
-
-        &:focus {
-          outline: none;
-          border-color: #007bff;
-          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
-      }
-    }
-  }
-}
-
-.refresh-button {
-  padding: 0.5rem 1rem;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: #5a6268;
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
+// Table container styles
 .seasons-table-container {
   background-color: white;
   border-radius: 0.5rem;
@@ -147,32 +28,7 @@
   padding: 2rem;
 }
 
-.back-button-container {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: 2rem;
-}
-
-.back-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: #5a6268;
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
+// Seasons table styles
 .seasons-table {
   width: 100%;
   border-collapse: collapse;
@@ -293,20 +149,20 @@
     gap: 0.25rem;
     flex-wrap: wrap;
 
-          button {
-        border: none;
-        padding: 0.375rem 0.5rem;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 32px;
-        height: 32px;
-        line-height: 1;
+    button {
+      border: none;
+      padding: 0.375rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      height: 32px;
+      line-height: 1;
 
       &.btn-outline-primary {
         background-color: #007bff;
@@ -360,6 +216,11 @@
 
       &:active {
         transform: scale(0.98);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
     }
   }
@@ -471,38 +332,6 @@
         }
       }
 
-      .error-message {
-        background: #ffebee;
-        color: #c62828;
-        padding: 1rem;
-        border-radius: 0.25rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-
-        i {
-          font-size: 1.1rem;
-        }
-      }
-
-      .info-message {
-        background: #e3f2fd;
-        color: #1565c0;
-        padding: 1rem;
-        border-radius: 0.25rem;
-        margin-top: 1.5rem;
-        display: flex;
-        align-items: flex-start;
-        gap: 0.5rem;
-        font-size: 0.9rem;
-
-        i {
-          font-size: 1rem;
-          margin-top: 0.1rem;
-        }
-      }
-
       .warning-icon {
         text-align: center;
         margin-bottom: 1rem;
@@ -601,7 +430,7 @@
       }
     }
 
-    // Edit Season Modal specific styles
+    // Edit Season Modal specific styles  
     &.edit-season-modal {
       max-width: 800px;
       width: 100%;
@@ -827,37 +656,20 @@
     padding: 1rem;
   }
 
-  .floorball-seasons-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-
-  .filters-section .filters-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-
-    .filter-group {
-      justify-content: space-between;
-    }
-  }
-
   .seasons-table-container {
     overflow-x: auto;
 
     .seasons-table {
-      min-width: 1000px; // Increased for better date display
+      min-width: 1000px;
       
       th, td {
         padding: 0.5rem;
         font-size: 0.85rem;
       }
 
-      // Ensure date columns maintain proper width on mobile
       th:nth-child(3), th:nth-child(4),
       td:nth-child(3), td:nth-child(4) {
-        min-width: 120px; // Minimum width for date columns
+        min-width: 120px;
         white-space: nowrap;
       }
       
@@ -888,61 +700,12 @@
   }
 }
 
-// Enhanced error message styling
-.error-message {
-  background: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
-  padding: 1rem;
-  border-radius: 0.25rem;
-  margin: 1rem 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  i {
-    color: #dc3545;
-    font-size: 1.1rem;
-  }
-
-  p {
-    margin: 0;
-    font-weight: 500;
-  }
-
-  &.success {
-    background: #d4edda;
-    border-color: #c3e6cb;
-    color: #155724;
-
-    i {
-      color: #28a745;
-    }
-  }
-
-  &.warning {
-    background: #fff3cd;
-    border-color: #ffeaa7;
-    color: #856404;
-
-    i {
-      color: #ffc107;
-    }
-  }
-}
-
-// Loading states for operation buttons
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.fa-spinner {
-  animation: spin 1s linear infinite;
-}
-
 // Animation keyframes
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.fa-spinner {
+  animation: spin 1s linear infinite;
 } 

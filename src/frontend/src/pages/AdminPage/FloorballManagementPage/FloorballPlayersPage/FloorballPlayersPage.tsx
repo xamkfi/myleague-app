@@ -19,7 +19,7 @@ const FloorballPlayersPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [playerToDelete, setPlayerToDelete] = useState<FloorballPlayerDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string | null>(null);
+
   const [deleteTimeoutId, setDeleteTimeoutId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -67,18 +67,11 @@ const FloorballPlayersPage = () => {
         clearTimeout(deleteTimeoutId);
       }
       
-      // Show success toast
-      const message = t('floorball.players.playerDeleted', '{{playerName}} has been deleted', { 
-        playerName: playerToDelete.person.fullName 
-      });
-      setDeleteSuccessMessage(message);
-      
-      // Auto-hide success message after 3 seconds
-      const timeoutId = setTimeout(() => {
-        setDeleteSuccessMessage(null);
+      // Clear any timeout
+      if (deleteTimeoutId) {
+        clearTimeout(deleteTimeoutId);
         setDeleteTimeoutId(null);
-      }, 3000);
-      setDeleteTimeoutId(timeoutId);
+      }
       
       // Close modal
       setIsDeleteModalOpen(false);
