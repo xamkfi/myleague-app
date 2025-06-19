@@ -1,5 +1,4 @@
 import type { 
-  FloorballTeamPlayer,
   ApiResponse,
   PaginatedApiResponse 
 } from '../../types/floorball/floorballTypes';
