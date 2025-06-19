@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './NewsPage.scss';
@@ -18,16 +18,16 @@ function NewsPage() {
     searchTerm: ''
   });
 
-  async function RetrieveNews() {
+  const RetrieveNews = useCallback(async () => {
     console.log("Filters changed:", filters);
     const response = await newsService(filters);
     setNewsList(response);
-  }
+  }, [filters]);
 
-  useEffect(()=>{
+  useEffect(() => {
     //Fetch new data when categories change.
     RetrieveNews();
-  },[filters.category, filters.sportCategory])
+  }, [RetrieveNews]);
 
   return (
     <PageTemplate title={t('nav.news')}>

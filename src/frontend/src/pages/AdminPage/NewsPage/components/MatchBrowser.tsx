@@ -22,7 +22,7 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
     if (showBrowser && matches.length === 0) {
       fetchMatches();
     }
-  }, [showBrowser]);
+  }, [showBrowser, matches.length]);
 
   const fetchMatches = async () => {
     setLoading(true);
@@ -66,7 +66,7 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
 
   // Filter matches by search term and category
   const getFilteredMatches = () => {
-    let filtered = matches.filter(match => 
+    const filtered = matches.filter(match => 
       match.homeTeamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       match.awayTeamName.toLowerCase().includes(searchTerm.toLowerCase())
     );

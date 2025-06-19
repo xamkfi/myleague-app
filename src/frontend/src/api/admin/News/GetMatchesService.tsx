@@ -14,8 +14,8 @@ interface FloorballMatch {
   wentToShootout: boolean;
   periodScores: Record<string, { homeScore: number; awayScore: number }>;
   officials: string[];
-  goalEvents: any[];
-  penaltyEvents: any[];
+  goalEvents: unknown[];
+  penaltyEvents: unknown[];
 }
 
 interface ApiResponse<T> {

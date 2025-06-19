@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
-import { handleImageDeleteService } from '../../../../api/admin/News/handleImageDeleteService';
 
 export interface NewsInputsData {
   title: string;
@@ -93,21 +92,7 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
         console.log(error)
         setUploadingImage(false);
       }
-
-  };
-}
-
-  const removeImage = () => {
-    console.log(data.mainPicture);
-    handleImageDeleteService(data.mainPicture)
-      .then(() => {
-        console.log('MainImage deleted successfully');
-        updateField('mainPicture', '');
-      })
-      .catch((err) => {
-        console.error("Failed to delete MainImage:", err);
-        updateField('mainPicture', '');
-      });
+    }
   };
 
   return (

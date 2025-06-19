@@ -11,6 +11,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { singleNewsService } from "../../../api/news/singleNewsService";
 import "./NewsCreateEditPage.scss";
 
+declare global {
+  interface Window {
+    setQuillNavigatingState?: (isNavigating: boolean) => void;
+  }
+}
+
 export default function NewsCreateEditPage() {
   const { t } = useTranslation();
   const { id } = useParams();
@@ -64,7 +70,7 @@ export default function NewsCreateEditPage() {
       fetchNewsArticle();
       console.log(newsData.mainPicture, value);
     }
-  }, [id, isEditMode, navigate]);
+  }, [id, isEditMode, navigate, newsData.mainPicture, value]);
 
   const validateInputs = (): boolean => {
     const newErrors: Partial<NewsInputsData> = {};
@@ -140,8 +146,8 @@ export default function NewsCreateEditPage() {
         console.log("=== Publish Completed ===");
         
         // Aseta navigaatio tila ENNEN navigointia
-        if (typeof window !== 'undefined' && (window as any).setQuillNavigatingState) {
-          (window as any).setQuillNavigatingState(true);
+        if (typeof window !== 'undefined' && window.setQuillNavigatingState) {
+          window.setQuillNavigatingState(true);
           console.log("🚀 Setting navigation state to true before navigate");
         }
         

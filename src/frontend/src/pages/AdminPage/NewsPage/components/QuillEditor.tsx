@@ -2,7 +2,7 @@ import ReactQuill, {Quill} from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import "../styles/QuillEditor.scss";
 import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useCallback } from "react";
 import { handleImageDeleteService } from '../../../../api/admin/News/handleImageDeleteService';
 import MatchSelectionHeader from './MatchSelectionHeader';
 import type { FloorballMatch } from '../../../../api/admin/News/GetMatchesService';
@@ -23,8 +23,10 @@ export interface MatchResultValue {
   awayScore: string;
   date: string;
   link: string;
+  status?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const BlockEmbed = Quill.import('blots/block/embed') as any;
 
 export class MatchResultTableBlot extends BlockEmbed {
@@ -32,7 +34,7 @@ export class MatchResultTableBlot extends BlockEmbed {
   static tagName = 'div';
   static className = 'match-result-table-container';
 
-  static create(value: { matches: any[], title?: string }): HTMLElement {
+  static create(value: { matches: MatchResultValue[], title?: string }): HTMLElement {
     const node = super.create();
     const { matches } = value;
 
@@ -76,8 +78,7 @@ Quill.register(MatchResultTableBlot);
 export default function QuillEditor({value, setValue, setLoading, isClearing = false}: Values) {
     const quillRef = useRef<ReactQuill | null>(null);
     const previousImagesRef = useRef<string[]>([]);
-    const previousMatchResultsRef = useRef<any[]>([]);
-    const deletedImagesRef = useRef<string[]>([]);
+    const previousMatchResultsRef = useRef<MatchResultValue[]>([]);
     const isNavigatingRef = useRef(false);
     
     const extractImageUrls = (html: string): string[] => {
@@ -87,7 +88,7 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
       return Array.from(imgTags).map((img)=> img.getAttribute("src") || "").filter(Boolean);
     }
 
-    const extractMatchResults = (html: string): any[] => {
+    const extractMatchResults = (html: string): MatchResultValue[] => {
       const div = document.createElement("div");
       div.innerHTML = html;
       const matchResultElements = div.querySelectorAll('.match-result-table-container');
@@ -102,10 +103,10 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
           }
         }
         return null;
-      }).filter(Boolean);
+      }).filter(Boolean) as MatchResultValue[];
     }
 
-    const handleElementDeletion = (deletedImages: string[], deletedMatchResults: any[]) => {
+    const handleElementDeletion = useCallback((deletedImages: string[], deletedMatchResults: MatchResultValue[]) => {
       const totalElements = deletedImages.length + deletedMatchResults.length;
       
       if (totalElements === 0) return;
@@ -152,7 +153,7 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
           });
         }
       }
-    };
+    }, [isClearing]);
 
     useEffect(() => {
       if (isNavigatingRef.current) {
@@ -192,18 +193,18 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
 
       previousImagesRef.current = currentImages;
       previousMatchResultsRef.current = currentMatchResults;
-    }, [value, isNavigatingRef.current]);
+    }, [value, handleElementDeletion]);
 
     useEffect(() => {
       if (typeof window !== 'undefined') {
-        (window as any).setQuillNavigatingState = (isNavigating: boolean) => {
+        window.setQuillNavigatingState = (isNavigating: boolean) => {
           isNavigatingRef.current = isNavigating;
           console.log("QuillEditor navigation state set to:", isNavigating);
         };
       }
     }, []);
 
-    const openImageUploader = () => {
+    const openImageUploader = useCallback(() => {
         const input = document.createElement("input");
         input.type = "file";
         input.accept = "image/*";
@@ -234,7 +235,7 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
           }
         };
         input.click();
-    };
+    }, [setLoading]);
 
     const modules = useMemo(() => ({
       toolbar: {

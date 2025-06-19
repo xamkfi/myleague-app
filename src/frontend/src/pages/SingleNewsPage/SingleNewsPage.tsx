@@ -27,7 +27,7 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
           console.log(news?.mainImage, news?.contentHtml);
     }
 
-  },[id])
+  },[news?.contentHtml, news?.mainImage, id])
 
   if (!news) {
     return (
