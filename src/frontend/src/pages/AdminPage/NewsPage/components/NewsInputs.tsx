@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
-import { handleImageDeleteService } from '../../../../api/admin/News/handleImageDeleteService';
 
 export interface NewsInputsData {
   title: string;
@@ -93,13 +92,7 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
         console.log(error)
         setUploadingImage(false);
       }
-
-  };
-}
-
-  const removeImage = async () => {
-    await handleImageDeleteService(data.mainPicture);
-    updateField('mainPicture', '');
+    }
   };
 
   return (
@@ -228,7 +221,7 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <div className="flex gap-2">
-                    <button
+                    {/* <button
                       type="button"
                       onClick={removeImage}
                       className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
@@ -237,7 +230,7 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>

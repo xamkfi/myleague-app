@@ -9,6 +9,7 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export async function handleImageDeleteService(imageUrl: string) {
 
+  console.log("Deleting image:", imageUrl);
   try {
     const response = await fetch(`${API_URL}/News/delete-image?url=${encodeURIComponent(imageUrl)}`, {
       method: "DELETE",

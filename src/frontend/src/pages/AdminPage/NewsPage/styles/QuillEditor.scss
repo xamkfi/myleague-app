@@ -1,0 +1,99 @@
+// QuillEditor container styles
+.QuillEditor {
+  width: 100% !important;
+  height: 500px;
+  
+  .ql-container {
+    height: calc(100% - 42px);
+    min-height: 200px;
+    max-height: 500px;
+    overflow-y: auto;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border: 1px solid #ccc;
+    border-top: none;
+    font-family: inherit;
+    
+    // Fix for long text overflow
+    .ql-editor {
+      min-height: 300px;
+      padding: 1rem;
+      font-size: 16px;
+      line-height: 1.6;
+      
+      // Force word wrapping for long words
+      word-wrap: break-word !important;
+      word-break: break-all !important;
+      overflow-wrap: break-word !important;
+      white-space: pre-wrap !important;
+      
+      // Ensure content doesn't overflow horizontally
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
+      
+      // Handle long words/strings in all text elements
+      p, div, span, h1, h2, h3, h4, h5, h6, li, td, th {
+        word-wrap: break-word !important;
+        word-break: break-all !important;
+        overflow-wrap: break-word !important;
+        max-width: 100% !important;
+        white-space: pre-wrap !important;
+      }
+      
+      // Force wrapping on specific elements that might not inherit
+      * {
+        word-wrap: break-word !important;
+        word-break: break-all !important;
+        overflow-wrap: break-word !important;
+        max-width: 100% !important;
+      }
+      
+      // Style images inside the editor to be responsive
+      img {
+        max-width: 100% !important;
+        height: auto;
+        display: block;
+        margin: 1rem auto;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+  
+  .ql-toolbar {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #ccc;
+  }
+}
+
+// Responsive breakpoints for mobile
+@media (max-width: 768px) {
+  .QuillEditor {
+    height: 300px;
+    
+    .ql-editor {
+      min-height: 200px;
+      padding: 0.75rem;
+      font-size: 14px;
+    }
+    
+    .ql-toolbar {
+      padding: 0.5rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .QuillEditor {
+    height: 250px;
+    
+    .ql-editor {
+      min-height: 150px;
+      padding: 0.5rem;
+    }
+  }
+}

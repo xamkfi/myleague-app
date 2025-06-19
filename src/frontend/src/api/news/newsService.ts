@@ -13,6 +13,12 @@ export interface NewsArticleDto {
   isArchived: boolean;
 }
 
+export interface NewsParameters{
+  category: string,
+  sportCategory: string,
+  searchTerm: string,
+}
+
 interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -22,22 +28,78 @@ interface ApiResponse<T> {
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-export async function newsService(){
+export async function newsService(params?: Partial<NewsParameters>) {
+  try {
+    const queryParams = new URLSearchParams();
 
-    try {
-        const response = await fetch(`${API_URL}/News`, { 
-          method: "GET"
-        });
-    
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.log("Upload error response:", errorText);
-            throw new Error("Failed to fetch news.");
-        }
-        const data: ApiResponse<NewsArticleDto[]> = await response.json();
-        return data.data;
-      } catch (error) {
-        console.error("Upload error:", error);
-        throw error;
-      }
-  };
+    if (params?.category) queryParams.append("category", params.category);
+    if (params?.sportCategory) queryParams.append("sportCategory", params.sportCategory);
+    if (params?.searchTerm) queryParams.append("search", params.searchTerm);
+
+    const queryString = queryParams.toString();
+    const response = await fetch(`${API_URL}/News${queryString ? `?${queryString}` : ''}`, {
+      method: "GET"
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Upload error response:", errorText);
+      throw new Error("Failed to fetch news.");
+    }
+
+    const data: ApiResponse<NewsArticleDto[]> = await response.json();
+    return data.data;
+
+  } catch (error) {
+    console.error("Upload error:", error);
+    throw error;
+  }
+}
+
+export async function archiveNewsService(id: string) {
+  try {
+    const response = await fetch(`${API_URL}/News/${id}/archive`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Archive error response:", errorText);
+      throw new Error("Failed to archive news article.");
+    }
+
+    const data: ApiResponse<NewsArticleDto> = await response.json();
+    return data.data;
+
+  } catch (error) {
+    console.error("Archive error:", error);
+    throw error;
+  }
+}
+
+export async function restoreNewsService(id: string) {
+  try {
+    const response = await fetch(`${API_URL}/News/${id}/restore`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Restore error response:", errorText);
+      throw new Error("Failed to restore news article.");
+    }
+
+    const data: ApiResponse<NewsArticleDto> = await response.json();
+    return data.data;
+
+  } catch (error) {
+    console.error("Restore error:", error);
+    throw error;
+  }
+}
