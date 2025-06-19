@@ -22,9 +22,12 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.Property(t => t.Division)
-                .IsRequired()
-                .HasConversion<string>();
+            // Ignore the Division navigation property since it's in a different DbContext (CommonDbContext)
+            // We use DivisionId as foreign key instead for cross-context relationships
+            builder.Ignore(t => t.Division);
+
+            builder.Property(t => t.DivisionId)
+                .IsRequired();
 
             builder.Property(t => t.HomeArena)
                 .IsRequired()

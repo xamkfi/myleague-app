@@ -32,7 +32,7 @@ namespace WebAPI.Models.Floorball
         /// Division for the season
         /// </summary>
         [Required]
-        public FloorballDivision Division { get; set; }
+        public Guid DivisionId { get; set; }
     }
 
     /// <summary>
@@ -63,6 +63,6 @@ namespace WebAPI.Models.Floorball
         /// Division for the season
         /// </summary>
         [Required]
-        public FloorballDivision Division { get; set; }
+        public Guid DivisionId { get; set; }
     }
 } 

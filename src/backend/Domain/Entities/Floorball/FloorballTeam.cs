@@ -1,10 +1,10 @@
-using Domain.Enums.Floorball;
 using Domain.ValueObjects.Floorball;
 using Domain.Entities;
 using Domain.EventSourcing;
 using Domain.Entities.Common;
 using Domain.DomainEvents.Floorball;
 using Domain.Enums.Common;
+using Domain.Enums.Floorball;
 
 namespace Domain.Entities.Floorball;
 
@@ -31,7 +31,12 @@ public class FloorballTeam : AggregateRoot
     /// <summary>
     /// Gets the division level of the team
     /// </summary>
-    public FloorballDivision Division { get; private set; }
+    public Division Division { get; private set; }
+
+    /// <summary>
+    /// Gets the ID of the division this team belongs to
+    /// </summary>
+    public Guid DivisionId { get; private set; }
 
     /// <summary>
     /// Gets the club this team belongs to
@@ -84,7 +89,8 @@ public class FloorballTeam : AggregateRoot
         HomeArena = string.Empty; // Default to an empty string
         PrimaryJerseyColor = string.Empty; // Default to an empty string
         SecondaryJerseyColor = string.Empty; // Default to an empty string
-        Division = FloorballDivision.None; // Default to None division
+        Division = default!; // Default to None division
+        DivisionId = Guid.Empty; // Default to empty Guid for EF Core
         ShortName = string.Empty; // Default to an empty string
         TeamCategory = TeamCategory.Adult; // Default to Adult category
     }
@@ -103,7 +109,7 @@ public class FloorballTeam : AggregateRoot
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballTeam(
         string name, 
-        FloorballDivision division, 
+        Guid divisionId, 
         Club club,
         string homeArena,
         string primaryJerseyColor,
@@ -137,7 +143,8 @@ public class FloorballTeam : AggregateRoot
             ShortName = name.Length > 3 ? name.Substring(0, 3).ToUpperInvariant() : name.ToUpperInvariant();
         }
 
-        Division = division;
+        DivisionId = divisionId;
+        Division = default!;
         Club = club;
         ClubId = club.Id;
         HomeArena = homeArena;
@@ -148,7 +155,7 @@ public class FloorballTeam : AggregateRoot
         AddDomainEvent(new FloorballTeamRegisteredEvent(
             Id, 
             name, 
-            division, 
+            divisionId, 
             club.Id, 
             homeArena, 
             primaryJerseyColor, 
@@ -172,9 +179,9 @@ public class FloorballTeam : AggregateRoot
     /// Updates the team's division
     /// </summary>
     /// <param name="division">The new division</param>
-    public void UpdateDivision(FloorballDivision division)
+    public void UpdateDivision(Guid divisionId)
     {
-        Division = division;
+        DivisionId = divisionId;
     }
     
     /// <summary>

@@ -49,7 +49,7 @@ namespace WebAPI.Models.Floorball
         /// The division the team plays in
         /// </summary>
         [Required(ErrorMessage = "Division is required")]
-        public FloorballDivision Division { get; set; }
+        public Guid DivisionId { get; set; }
 
         /// <summary>
         /// The ID of the club the team belongs to

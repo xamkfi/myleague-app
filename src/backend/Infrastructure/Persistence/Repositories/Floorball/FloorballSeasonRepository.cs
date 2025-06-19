@@ -86,11 +86,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// </summary>
         /// <param name="division">The division to filter by</param>
         /// <returns>A collection of floorball seasons for the specified division</returns>
-        public async Task<IEnumerable<FloorballSeason>> GetByDivisionAsync(FloorballDivision division)
+        public async Task<IEnumerable<FloorballSeason>> GetByDivisionAsync(Guid divisionId)
         {
             return await _entities
                 .Include(s => s.Teams)
-                .Where(s => s.Division == division)
+                .Where(s => s.DivisionId == divisionId)
                 .ToListAsync();
         }
 
@@ -110,16 +110,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <summary>
         /// Gets the current or upcoming season for a division
         /// </summary>
-        /// <param name="division">The division</param>
+        /// <param name="divisionId">The division</param>
         /// <returns>The current or next season for the division</returns>
-        public async Task<FloorballSeason> GetCurrentOrUpcomingAsync(FloorballDivision division)
+        public async Task<FloorballSeason> GetCurrentOrUpcomingAsync(Guid divisionId)
         {
             DateTime now = DateTime.UtcNow;
             
             // First try to find an active season
             FloorballSeason? activeSeason = await _entities
                 .Include(s => s.Teams)
-                .Where(s => s.Division == division && s.IsActive)
+                .Where(s => s.DivisionId == divisionId && s.IsActive)
                 .FirstOrDefaultAsync();
                 
             if (activeSeason != null)
@@ -128,11 +128,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             // If no active season, try to find a future season
             FloorballSeason? futureSeason = await _entities
                 .Include(s => s.Teams)
-                .Where(s => s.Division == division && s.StartDate > now && !s.IsCompleted)
+                .Where(s => s.DivisionId == divisionId && s.StartDate > now && !s.IsCompleted)
                 .OrderBy(s => s.StartDate)
                 .FirstOrDefaultAsync();
                 
-            return futureSeason ?? throw new KeyNotFoundException($"No current or upcoming season found for division {division}.");
+            return futureSeason ?? throw new KeyNotFoundException($"No current or upcoming season found for division {divisionId}.");
         }
 
         /// <summary>

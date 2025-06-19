@@ -15,9 +15,8 @@ public class CreateFloorballSeasonCommandValidator : AbstractValidator<CreateFlo
             .NotEmpty().WithMessage("Season name is required")
             .MaximumLength(100).WithMessage("Season name cannot exceed 100 characters");
 
-        RuleFor(x => x.Division)
-            .NotNull().WithMessage("Division is required")
-            .IsInEnum().WithMessage("Invalid division value");
+        RuleFor(x => x.DivisionId)
+          .NotNull().WithMessage("Division is required");
 
         RuleFor(x => x.StartDate)
             .NotEmpty().WithMessage("Start date is required")

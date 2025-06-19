@@ -51,10 +51,10 @@ public class GetFloorballTeamsByDivisionHandler : IRequestHandler<GetFloorballTe
     {
         try
         {
-            _logger.LogInformation("Retrieving floorball teams for division: {Division}", request.Division);
+            _logger.LogInformation("Retrieving floorball teams for division: {Division}", request.DivisionId);
             
             // Get teams for the division
-            IEnumerable<FloorballTeam> teams = await _teamRepository.GetByDivisionAsync(request.Division);
+            IEnumerable<FloorballTeam> teams = await _teamRepository.GetByDivisionAsync(request.DivisionId);
             
             // Load all clubs for the teams
             IEnumerable<Club> clubs = await _clubRepository.GetAllAsync();
@@ -63,13 +63,13 @@ public class GetFloorballTeamsByDivisionHandler : IRequestHandler<GetFloorballTe
             // Map teams to DTOs with their corresponding clubs
             IEnumerable<FloorballTeamDto> teamDtos = FloorballTeamMapper.ToDtos(teams, clubDictionary);
             
-            _logger.LogInformation("Successfully retrieved {TeamCount} floorball teams for division: {Division}", teamDtos.Count(), request.Division);
+            _logger.LogInformation("Successfully retrieved {TeamCount} floorball teams for division: {Division}", teamDtos.Count(), request.DivisionId);
             
             return Result<IEnumerable<FloorballTeamDto>>.Success(teamDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving floorball teams for division: {Division}", request.Division);
+            _logger.LogError(ex, "Error occurred while retrieving floorball teams for division: {Division}", request.DivisionId);
             return Result<IEnumerable<FloorballTeamDto>>.Failure("An error occurred while retrieving floorball teams.");
         }
     }

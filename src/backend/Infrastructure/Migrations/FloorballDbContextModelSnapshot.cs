@@ -176,9 +176,8 @@ namespace MyLeague.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Division")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("DivisionId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
@@ -211,9 +210,8 @@ namespace MyLeague.Infrastructure.Migrations
                     b.Property<Guid>("ClubId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Division")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("DivisionId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("HomeArena")
                         .IsRequired()

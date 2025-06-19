@@ -55,11 +55,11 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
             FloorballSeasonDivisionUpdatedNotification notification = new()
             {
                 SeasonId = season.Id,
-                Division = domainEvent.Division.ToString(),
+                DivisionId = domainEvent.Division.Id,
                 UpdatedOn = domainEvent.OccurredOn
             };
 
-            _logger.LogInformation("Season division updated for season {SeasonId}: {Division}", season.Id, domainEvent.Division);
+            _logger.LogInformation("Season division updated for season {SeasonId}: {DivisionId}", season.Id, domainEvent.Division.Id);
 
             return (FloorballNotificationEvents.SeasonDivisionUpdated, notification);
         }

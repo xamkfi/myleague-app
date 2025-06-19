@@ -64,6 +64,61 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.ToTable("Clubs");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Common.Division", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW() AT TIME ZONE 'UTC'");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("SportType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Divisions_IsActive");
+
+                    b.HasIndex("Level")
+                        .HasDatabaseName("IX_Divisions_Level");
+
+                    b.HasIndex("SportType")
+                        .HasDatabaseName("IX_Divisions_SportType");
+
+                    b.HasIndex("Name", "SportType")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Divisions_Name_SportType");
+
+                    b.HasIndex("SportType", "IsActive")
+                        .HasDatabaseName("IX_Divisions_SportType_IsActive");
+
+                    b.ToTable("Divisions");
+                });
+
             modelBuilder.Entity("Domain.Entities.Common.NewsArticle", b =>
                 {
                     b.Property<Guid>("Id")

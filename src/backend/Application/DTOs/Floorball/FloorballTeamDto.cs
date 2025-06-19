@@ -20,7 +20,7 @@ namespace Application.DTOs.Floorball
     public record FloorballTeamDto(
         Guid Id,
         string Name,
-        FloorballDivision Division,
+        Guid? DivisionId,
         ClubDto Club,
         string HomeArena,
         string PrimaryJerseyColor,

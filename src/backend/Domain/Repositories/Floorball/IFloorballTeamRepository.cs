@@ -1,6 +1,6 @@
 using Domain.Common;
 using Domain.Entities.Floorball;
-using Domain.Enums.Floorball;
+using Domain.Entities.Common;
 
 namespace Domain.Repositories.Floorball;
 
@@ -41,8 +41,8 @@ public interface IFloorballTeamRepository
     Task<PagedResult<FloorballTeam>> GetPagedAsync(
         int page, 
         int pageSize, 
-        Guid? clubId = null, 
-        FloorballDivision? division = null,
+        Guid? clubId = null,
+        Guid? divisionId = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>
@@ -53,8 +53,8 @@ public interface IFloorballTeamRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Total count of matching floorball teams</returns>
     Task<int> GetCountAsync(
-        Guid? clubId = null, 
-        FloorballDivision? division = null,
+        Guid? clubId = null,
+        Guid? divisionId = null,
         CancellationToken cancellationToken = default);
     
     /// <summary>
@@ -76,7 +76,7 @@ public interface IFloorballTeamRepository
     /// </summary>
     /// <param name="division">The division to filter by</param>
     /// <returns>A collection of floorball teams in the specified division</returns>
-    Task<IEnumerable<FloorballTeam>> GetByDivisionAsync(FloorballDivision division);
+    Task<IEnumerable<FloorballTeam>> GetByDivisionAsync(Guid divisionId);
     
     /// <summary>
     /// Gets floorball teams participating in a season

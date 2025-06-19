@@ -19,7 +19,7 @@ namespace Application.Commands.Floorball.Season
     /// <param name="EndDate"></param>
     public record CreateFloorballSeasonCommand(
         string Name,
-        FloorballDivision Division,
+        Guid DivisionId,
         DateTime StartDate,
         DateTime EndDate) : IRequest<Result<FloorballSeasonDto>>;
 }

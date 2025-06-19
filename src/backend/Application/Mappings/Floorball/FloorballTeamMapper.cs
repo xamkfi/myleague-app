@@ -35,7 +35,7 @@ public static class FloorballTeamMapper
         return new FloorballTeamDto(
             team.Id,
             team.Name,
-            team.Division,
+            team.DivisionId,
             ClubMapper.ToDto(club),
             team.HomeArena,
             team.PrimaryJerseyColor,
@@ -99,10 +99,10 @@ public static class FloorballTeamMapper
         // 1. Accept a Club parameter in addition to the command, or
         // 2. Load the Club entity within this method using a repository
         // throw new NotImplementedException("This method requires a Club entity to be provided. The FloorballTeam constructor needs a Club entity, but the command only contains ClubId.");
-        
+
         return new FloorballTeam(
             command.Name,
-            command.Division,
+            command.DivisionId,
             club,
             command.HomeArena,
             command.PrimaryJerseyColor,
@@ -126,7 +126,7 @@ public static class FloorballTeamMapper
 
         // Use the entity's public update methods
         team.UpdateName(command.Name);
-        team.UpdateDivision(command.Division);
+        team.UpdateDivision(command.DivisionId);
         team.UpdateHomeArena(command.HomeArena);
         team.UpdateJerseyColors(command.PrimaryJerseyColor, command.SecondaryJerseyColor!);
     }

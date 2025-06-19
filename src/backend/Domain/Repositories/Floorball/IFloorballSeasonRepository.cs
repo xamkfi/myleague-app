@@ -1,5 +1,5 @@
 using Domain.Entities.Floorball;
-using Domain.Enums.Floorball;
+using Domain.Entities.Common;
 
 namespace Domain.Repositories.Floorball;
 
@@ -45,7 +45,7 @@ public interface IFloorballSeasonRepository
     /// </summary>
     /// <param name="division">The division to filter by</param>
     /// <returns>A collection of floorball seasons for the specified division</returns>
-    Task<IEnumerable<FloorballSeason>> GetByDivisionAsync(FloorballDivision division);
+    Task<IEnumerable<FloorballSeason>> GetByDivisionAsync(Guid divisionId);
     
     /// <summary>
     /// Gets seasons containing a specific team
@@ -59,7 +59,7 @@ public interface IFloorballSeasonRepository
     /// </summary>
     /// <param name="division">The division</param>
     /// <returns>The current or next season for the division</returns>
-    Task<FloorballSeason> GetCurrentOrUpcomingAsync(FloorballDivision division);
+    Task<FloorballSeason> GetCurrentOrUpcomingAsync(Guid divisionId);
     
     /// <summary>
     /// Adds a new floorball season

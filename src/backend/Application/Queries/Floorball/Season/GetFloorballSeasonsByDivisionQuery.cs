@@ -14,5 +14,5 @@ namespace Application.Queries.Floorball.Season
     /// Query for retrieving floorball seasons by division
     /// </summary>
     /// <param name="Division"></param>
-    public record GetFloorballSeasonsByDivisionQuery(FloorballDivision Division) : IRequest<Result<IEnumerable<FloorballSeasonDto>>>;
+    public record GetFloorballSeasonsByDivisionQuery(Guid DivisionId) : IRequest<Result<IEnumerable<FloorballSeasonDto>>>;
 }

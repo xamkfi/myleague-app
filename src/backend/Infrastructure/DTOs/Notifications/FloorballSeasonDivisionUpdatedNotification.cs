@@ -13,9 +13,9 @@ namespace MyLeague.Infrastructure.DTOs.Notifications
         public Guid SeasonId { get; init; }
 
         /// <summary>
-        /// Gets the updated division of the season
+        /// Gets the updated division ID of the season
         /// </summary>
-        public string Division { get; init; } = string.Empty;
+        public Guid DivisionId { get; init; }
 
         /// <summary>
         /// Gets the date and time when the season division was updated
