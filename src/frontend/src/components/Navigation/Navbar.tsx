@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle/LanguageToggle';
 import type { Club } from '../../api/clubService';
 import { getClubs } from '../../api/clubService';
-//import clubData from '../../sampledata/club_data.json';
-//import { slugify } from '../../utils/helpers';
+import { createClubSlug } from '../../utils/slugUtils';
 import './Navbar.scss';
 
 interface NavbarProps {
@@ -100,7 +99,7 @@ function Navbar({ onLogin }: NavbarProps) {
                 ) : (
                   clubs.map((club) => (
                     <li key={club.id}>
-                      <Link to={`/club/${club.id}`}>
+                      <Link to={`/club/${createClubSlug(club)}`}>
                         {club.name}
                       </Link>
                     </li>
