@@ -34,6 +34,7 @@ public interface IDivisionRepository
     /// <returns>A collection of active divisions for the specified sport type</returns>
     Task<IEnumerable<Division>> GetActiveBySportTypeAsync(string sportType);
 
+
     /// <summary>
     /// Gets a division by name and sport type
     /// </summary>
