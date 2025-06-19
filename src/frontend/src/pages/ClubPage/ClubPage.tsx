@@ -131,11 +131,15 @@ function ClubPage() {
     <PageTemplate title={club.name}>
       <div className="club-page">
         <div className="club-info">
-          {club.logoUrl && (
-            <div className="club-logo">
+          <div className="club-logo">
+            {club.logoUrl ? (
               <img src={club.logoUrl} alt={`${club.name} logo`} />
-            </div>
-          )}
+            ) : (
+              <div className="logo-placeholder">
+                {club.name} Logo
+              </div>
+            )}
+          </div>
           <h2>{club.name}</h2>
           <ul>
             <li><strong>Founded:</strong> {formatDate(club.foundingDate)}</li>
@@ -167,12 +171,14 @@ function ClubPage() {
                       <span 
                         className="color-primary"
                         style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
+                        data-label="Primary"
                         title={`Primary: ${team.primaryJerseyColor}`}
                       ></span>
                       {team.secondaryJerseyColor && (
                         <span 
                           className="color-secondary"
                           style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
+                          data-label="Secondary"
                           title={`Secondary: ${team.secondaryJerseyColor}`}
                         ></span>
                       )}
