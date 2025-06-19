@@ -9,7 +9,7 @@ using WebAPI.Models.Common;
 namespace WebAPI.Controllers.Club;
 
 /// <summary>
-/// Controller for managing football clubs
+/// Controller for managing clubs
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]

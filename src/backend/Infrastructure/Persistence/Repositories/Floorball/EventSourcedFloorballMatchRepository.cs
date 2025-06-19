@@ -14,7 +14,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
     public class EventSourcedFloorballMatchRepository : IEventSourcedFloorballMatchRepository
     {
         private readonly FloorballDbContext _dbContext;
-        private readonly IEventStore _eventStore;
+        private readonly IFloorballEventStore _eventStore;
         private readonly ILogger<EventSourcedFloorballMatchRepository> _logger;
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <param name="logger">The logger</param>
         public EventSourcedFloorballMatchRepository(
             FloorballDbContext dbContext,
-            IEventStore eventStore,
+            IFloorballEventStore eventStore,
             ILogger<EventSourcedFloorballMatchRepository> logger)
         {
             _dbContext = dbContext;

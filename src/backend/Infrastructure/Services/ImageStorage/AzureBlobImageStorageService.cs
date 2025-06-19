@@ -63,7 +63,7 @@ namespace MyLeague.Infrastructure.Services.ImageStorage
 
                 return response;
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 throw new InvalidOperationException("Failed to delete an image from Azure blob storage", ex);
             }
