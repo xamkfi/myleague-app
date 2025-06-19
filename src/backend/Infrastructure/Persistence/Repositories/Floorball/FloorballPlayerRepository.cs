@@ -33,6 +33,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
+        /// Gets a floorball player by Person ID
+        /// </summary>
+        /// <param name="personId">The person ID</param>
+        /// <returns>The player if found, null otherwise</returns>
+        public async Task<FloorballPlayer?> GetByPersonIdAsync(Guid personId)
+        {
+            return await _entities
+                .FirstOrDefaultAsync(p => p.PersonId == personId);
+        }
+
+        /// <summary>
         /// Gets all floorball players
         /// </summary>
         /// <returns>A collection of all floorball players</returns>
