@@ -1,0 +1,594 @@
+{
+  "info": {
+    "name": "Division Management API",
+    "description": "Complete API collection for managing divisions in the League Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "division-api-collection",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "divisionId",
+      "value": "550e8400-e29b-41d4-a716-446655440000",
+      "type": "string"
+    },
+    {
+      "key": "sportType",
+      "value": "Floorball",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get All Divisions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/divisions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "divisions"]
+        },
+        "description": "Retrieve all divisions in the system"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Divisions retrieved successfully\",\n  \"data\": [\n    {\n      \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"name\": \"First Division\",\n      \"description\": \"The highest competitive level for professional teams\",\n      \"level\": 1,\n      \"sportType\": \"Floorball\",\n      \"isActive\": true,\n      \"createdDate\": \"2024-01-15T10:30:00Z\"\n    }\n  ],\n  \"errors\": null\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Division by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/divisions/{{divisionId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "divisions", "{{divisionId}}"]
+        },
+        "description": "Retrieve a specific division by its ID"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions/{{divisionId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions", "{{divisionId}}"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Division retrieved successfully\",\n  \"data\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"name\": \"First Division\",\n    \"description\": \"The highest competitive level for professional teams\",\n    \"level\": 1,\n    \"sportType\": \"Floorball\",\n    \"isActive\": true,\n    \"createdDate\": \"2024-01-15T10:30:00Z\"\n  },\n  \"errors\": null\n}"
+        },
+        {
+          "name": "Not Found Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions/{{divisionId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions", "{{divisionId}}"]
+            }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"message\": null,\n  \"data\": null,\n  \"errors\": [\"Division with ID 550e8400-e29b-41d4-a716-446655440000 not found.\"]\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Divisions by Sport Type",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/divisions/sport/{{sportType}}?activeOnly=false",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "divisions", "sport", "{{sportType}}"],
+          "query": [
+            {
+              "key": "activeOnly",
+              "value": "false",
+              "description": "Filter to only active divisions"
+            }
+          ]
+        },
+        "description": "Retrieve divisions filtered by sport type with optional active-only filter"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions/sport/{{sportType}}?activeOnly=false",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions", "sport", "{{sportType}}"],
+              "query": [
+                {
+                  "key": "activeOnly",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Divisions for Floorball retrieved successfully\",\n  \"data\": [\n    {\n      \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"name\": \"First Division\",\n      \"description\": \"The highest competitive level for professional teams\",\n      \"level\": 1,\n      \"sportType\": \"Floorball\",\n      \"isActive\": true,\n      \"createdDate\": \"2024-01-15T10:30:00Z\"\n    }\n  ],\n  \"errors\": null\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Division",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"First Division\",\n  \"description\": \"The highest competitive level for professional teams\",\n  \"level\": 1,\n  \"sportType\": \"Floorball\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/divisions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "divisions"]
+        },
+        "description": "Create a new division"
+      },
+      "response": [
+        {
+          "name": "Created Response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"First Division\",\n  \"description\": \"The highest competitive level for professional teams\",\n  \"level\": 1,\n  \"sportType\": \"Floorball\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions"]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Location",
+              "value": "{{baseUrl}}/api/divisions/550e8400-e29b-41d4-a716-446655440000"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Division created successfully\",\n  \"data\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"name\": \"First Division\",\n    \"description\": \"The highest competitive level for professional teams\",\n    \"level\": 1,\n    \"sportType\": \"Floorball\",\n    \"isActive\": true,\n    \"createdDate\": \"2024-01-15T10:30:00Z\"\n  },\n  \"errors\": null\n}"
+        },
+        {
+          "name": "Validation Error Response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"description\": \"\",\n  \"level\": 0,\n  \"sportType\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions"]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"message\": null,\n  \"data\": null,\n  \"errors\": [\n    \"Division name is required\",\n    \"Division description is required\",\n    \"Division level must be between 1 and 10\",\n    \"Sport type is required\"\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Division",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Premier Division\",\n  \"description\": \"The elite competitive level for top professional teams\",\n  \"level\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/divisions/{{divisionId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "divisions", "{{divisionId}}"]
+        },
+        "description": "Update an existing division"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Premier Division\",\n  \"description\": \"The elite competitive level for top professional teams\",\n  \"level\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions/{{divisionId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions", "{{divisionId}}"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Division updated successfully\",\n  \"data\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"name\": \"Premier Division\",\n    \"description\": \"The elite competitive level for top professional teams\",\n    \"level\": 1,\n    \"sportType\": \"Floorball\",\n    \"isActive\": true,\n    \"createdDate\": \"2024-01-15T10:30:00Z\"\n  },\n  \"errors\": null\n}"
+        }
+      ]
+    },
+    {
+      "name": "Activate Division",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/divisions/{{divisionId}}/activate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "divisions", "{{divisionId}}", "activate"]
+        },
+        "description": "Activate a division"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions/{{divisionId}}/activate",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions", "{{divisionId}}", "activate"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Division activated successfully\",\n  \"data\": null,\n  \"errors\": null\n}"
+        }
+      ]
+    },
+    {
+      "name": "Deactivate Division",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/divisions/{{divisionId}}/deactivate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "divisions", "{{divisionId}}", "deactivate"]
+        },
+        "description": "Deactivate a division"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions/{{divisionId}}/deactivate",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions", "{{divisionId}}", "deactivate"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Division deactivated successfully\",\n  \"data\": null,\n  \"errors\": null\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Division",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/divisions/{{divisionId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "divisions", "{{divisionId}}"]
+        },
+        "description": "Delete a division"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions/{{divisionId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions", "{{divisionId}}"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Division deleted successfully\",\n  \"data\": null,\n  \"errors\": null\n}"
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set up common variables",
+          "if (!pm.environment.get('baseUrl')) {",
+          "    pm.environment.set('baseUrl', 'http://localhost:8080');",
+          "}",
+          "",
+          "if (!pm.environment.get('divisionId')) {",
+          "    pm.environment.set('divisionId', '550e8400-e29b-41d4-a716-446655440000');",
+          "}",
+          "",
+          "if (!pm.environment.get('sportType')) {",
+          "    pm.environment.set('sportType', 'Floorball');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Common test for all requests",
+          "pm.test('Response time is less than 2000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "",
+          "pm.test('Response has correct content type', function () {",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "});",
+          "",
+          "// Parse response if it's JSON",
+          "let response;",
+          "try {",
+          "    response = pm.response.json();",
+          "} catch (e) {",
+          "    console.log('Response is not valid JSON');",
+          "    return;",
+          "}",
+          "",
+          "// Test response structure",
+          "pm.test('Response has correct structure', function () {",
+          "    pm.expect(response).to.have.property('success');",
+          "    pm.expect(response).to.have.property('message');",
+          "    pm.expect(response).to.have.property('data');",
+          "    pm.expect(response).to.have.property('errors');",
+          "});",
+          "",
+          "// Store division ID from create response",
+          "if (pm.request.method === 'POST' && pm.request.url.path.includes('divisions') && response.success && response.data && response.data.id) {",
+          "    pm.environment.set('divisionId', response.data.id);",
+          "    console.log('Division ID set to: ' + response.data.id);",
+          "}"
+        ]
+      }
+    }
+  ]
+}
