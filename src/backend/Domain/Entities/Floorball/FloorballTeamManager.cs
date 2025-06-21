@@ -9,11 +9,6 @@ namespace Domain.Entities.Floorball;
 public class FloorballTeamManager : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the team manager
-    /// </summary>
-    public Guid Id { get; private set; }
-    
-    /// <summary>
     /// Gets the ID of the person this team manager profile belongs to (FK)
     /// </summary>
     public Guid PersonId { get; private set; }

@@ -13,11 +13,6 @@ namespace Domain.Entities.Floorball;
 public class FloorballMatch : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the match
-    /// </summary>
-    public Guid Id { get; private set; }
-
-    /// <summary>
     /// Gets the season this match belongs to
     /// </summary>
     public FloorballSeason Season { get; private set; }

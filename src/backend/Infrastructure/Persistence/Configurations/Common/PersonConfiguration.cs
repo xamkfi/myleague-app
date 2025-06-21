@@ -1,23 +1,21 @@
 using Domain.Entities.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using MyLeague.Infrastructure.Persistence.Configurations;
 
 namespace MyLeague.Infrastructure.Persistence.Configurations.Common
 {
     /// <summary>
     /// Entity Framework configuration for the Person entity.
     /// </summary>
-    public class PersonConfiguration : IEntityTypeConfiguration<Person>
+    public class PersonConfiguration : BaseEntityConfiguration<Person>
     {
         /// <summary>
-        /// Configures the entity mapping for Person.
+        /// Configures Person-specific properties.
         /// </summary>
         /// <param name="builder">The entity type builder.</param>
-        public void Configure(EntityTypeBuilder<Person> builder)
+        protected override void ConfigureEntity(EntityTypeBuilder<Person> builder)
         {
-            
-            builder.HasKey(p => p.Id);
-
             builder.Property(p => p.FirstName)
                 .IsRequired()
                 .HasMaxLength(100);

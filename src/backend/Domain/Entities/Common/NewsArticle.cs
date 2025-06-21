@@ -22,11 +22,6 @@ namespace Domain.Entities.Common
     public class NewsArticle : AggregateRoot
     {
         /// <summary>
-        /// Gets the unique identifier of the news article.
-        /// </summary>
-        public Guid Id { get; private set; }
-
-        /// <summary>
         /// Gets the title of the news article. Limited to 200 characters.
         /// </summary>
         public string Title { get; private set; } = string.Empty;
@@ -56,16 +51,6 @@ namespace Domain.Entities.Common
         /// Gets the optional author of the news article.
         /// </summary>
         public string? Author { get; private set; }
-
-        /// <summary>
-        /// Gets the UTC timestamp when the news article was created.
-        /// </summary>
-        public DateTime CreatedAt { get; private set; }
-
-        /// <summary>
-        /// Gets the UTC timestamp of the last update to the news article.
-        /// </summary>
-        public DateTime? UpdatedAt { get; private set; }
 
         /// <summary>
         /// Gets the optional category classification of the news article.

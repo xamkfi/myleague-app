@@ -10,11 +10,6 @@ namespace Domain.Entities.Floorball;
 public class FloorballSeason : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the season
-    /// </summary>
-    public Guid Id { get; private set; }
-
-    /// <summary>
     /// Gets the name of the season (e.g., "2023-2024")
     /// </summary>
     public string Name { get; private set; }

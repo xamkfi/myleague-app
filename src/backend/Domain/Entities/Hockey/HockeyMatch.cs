@@ -13,11 +13,6 @@ namespace Domain.Entities.Hockey;
 public class HockeyMatch : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the match
-    /// </summary>
-    public Guid Id { get; private set; }
-
-    /// <summary>
     /// Gets the season this match belongs to
     /// </summary>
     public HockeySeason Season { get; private set; }

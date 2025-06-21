@@ -14,11 +14,6 @@ namespace Domain.Entities.Common
     public class Club : AggregateRoot
     {
         /// <summary>
-        /// Gets the unique identifier of the club.
-        /// </summary>
-        public Guid Id { get; private set; }
-
-        /// <summary>
         /// Gets the name of the club.
         /// </summary>
         public string Name { get; private set; }

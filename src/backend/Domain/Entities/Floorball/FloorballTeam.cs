@@ -14,11 +14,6 @@ namespace Domain.Entities.Floorball;
 public class FloorballTeam : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the team
-    /// </summary>
-    public Guid Id { get; private set; }
-
-    /// <summary>
     /// Gets the name of the team
     /// </summary>
     public string Name { get; private set; }
