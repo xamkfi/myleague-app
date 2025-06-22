@@ -69,6 +69,12 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AwayTeamId");
+
+                    b.HasIndex("HomeTeamId");
+
+                    b.HasIndex("SeasonId");
+
                     b.ToTable("EventSourcedFloorballMatches");
                 });
 
@@ -597,6 +603,27 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         });
 
                     b.HasDiscriminator().HasValue("Penalty");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.EventSourcedFloorballMatch", b =>
+                {
+                    b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
+                        .WithMany()
+                        .HasForeignKey("AwayTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
+                        .WithMany()
+                        .HasForeignKey("HomeTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Floorball.FloorballSeason", null)
+                        .WithMany()
+                        .HasForeignKey("SeasonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatch", b =>

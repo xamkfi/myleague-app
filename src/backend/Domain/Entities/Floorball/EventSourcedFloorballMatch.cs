@@ -441,19 +441,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// <param name="event">The event to apply</param>
     private void Apply(FloorballGoalScoredEvent @event)
     {
-        // Create a value object for the goal and add it to our collection
-        var goalEvent = new FloorballGoalScoredEvent(
-          Id,
-          @event.TeamId,
-          @event.PlayerId,
-          @event.PeriodNumber,
-          @event.TimeInSeconds,
-          false, // Goal type ID not in the event, defaulting to false
-          false,
-          @event.AssisterId// Description not in the event, defaulting to false
-      );
-
-        _goalEvents.Add(goalEvent);
+        // Add the existing event to our collection (don't create a new one)
+        _goalEvents.Add(@event);
         
         // Update scores
         if (@event.TeamId == HomeTeamId)
@@ -478,19 +467,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// <param name="event">The event to apply</param>
     private void Apply(FloorballPenaltyAssignedEvent @event)
     {
-        // Create a value object for the penalty and add it to our collection
-        var penaltyEvent = new FloorballPenaltyAssignedEvent(
-            Id,
-            @event.TeamId,
-            @event.PlayerId,
-            @event.PenaltyType,
-            @event.TimeInSeconds,
-            @event.PeriodNumber,
-            @event.TimeInSeconds,
-            @event.Description
-        );
-        
-        _penaltyEvents.Add(penaltyEvent);
+        // Add the existing event to our collection (don't create a new one)
+        _penaltyEvents.Add(@event);
     }
     
     /// <summary>

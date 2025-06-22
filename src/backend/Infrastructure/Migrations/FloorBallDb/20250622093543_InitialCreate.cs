@@ -12,29 +12,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "EventSourcedFloorballMatches",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    SeasonId = table.Column<Guid>(type: "uuid", nullable: false),
-                    HomeTeamId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AwayTeamId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ScheduledDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Venue = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    HomeScore = table.Column<int>(type: "integer", nullable: false),
-                    AwayScore = table.Column<int>(type: "integer", nullable: false),
-                    WentToOvertime = table.Column<bool>(type: "boolean", nullable: false),
-                    WentToShootout = table.Column<bool>(type: "boolean", nullable: false),
-                    OfficialIdsJson = table.Column<string>(type: "text", nullable: true),
-                    Version = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventSourcedFloorballMatches", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "FloorballCoaches",
                 columns: table => new
                 {
@@ -147,6 +124,47 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_FloorballTeams", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventSourcedFloorballMatches",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    SeasonId = table.Column<Guid>(type: "uuid", nullable: false),
+                    HomeTeamId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AwayTeamId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ScheduledDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Venue = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    HomeScore = table.Column<int>(type: "integer", nullable: false),
+                    AwayScore = table.Column<int>(type: "integer", nullable: false),
+                    WentToOvertime = table.Column<bool>(type: "boolean", nullable: false),
+                    WentToShootout = table.Column<bool>(type: "boolean", nullable: false),
+                    OfficialIdsJson = table.Column<string>(type: "text", nullable: true),
+                    Version = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventSourcedFloorballMatches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventSourcedFloorballMatches_FloorballSeasons_SeasonId",
+                        column: x => x.SeasonId,
+                        principalTable: "FloorballSeasons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_EventSourcedFloorballMatches_FloorballTeams_AwayTeamId",
+                        column: x => x.AwayTeamId,
+                        principalTable: "FloorballTeams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_EventSourcedFloorballMatches_FloorballTeams_HomeTeamId",
+                        column: x => x.HomeTeamId,
+                        principalTable: "FloorballTeams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -355,6 +373,21 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventSourcedFloorballMatches_AwayTeamId",
+                table: "EventSourcedFloorballMatches",
+                column: "AwayTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventSourcedFloorballMatches_HomeTeamId",
+                table: "EventSourcedFloorballMatches",
+                column: "HomeTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventSourcedFloorballMatches_SeasonId",
+                table: "EventSourcedFloorballMatches",
+                column: "SeasonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FloorballCoach_IsActive",

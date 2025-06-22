@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 {
     [DbContext(typeof(FloorballDbContext))]
-    [Migration("20250622092127_InitialCreate")]
+    [Migration("20250622093543_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -71,6 +71,12 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .HasColumnType("boolean");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AwayTeamId");
+
+                    b.HasIndex("HomeTeamId");
+
+                    b.HasIndex("SeasonId");
 
                     b.ToTable("EventSourcedFloorballMatches");
                 });
@@ -600,6 +606,27 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         });
 
                     b.HasDiscriminator().HasValue("Penalty");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.EventSourcedFloorballMatch", b =>
+                {
+                    b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
+                        .WithMany()
+                        .HasForeignKey("AwayTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
+                        .WithMany()
+                        .HasForeignKey("HomeTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Floorball.FloorballSeason", null)
+                        .WithMany()
+                        .HasForeignKey("SeasonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatch", b =>
