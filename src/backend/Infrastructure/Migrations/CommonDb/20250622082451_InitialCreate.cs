@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MyLeague.Infrastructure.Migrations.CommonDb
 {
     /// <inheritdoc />
-    public partial class InitialCommonCreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,11 +22,32 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     Country = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     WebsiteUrl = table.Column<string>(type: "text", nullable: false),
                     LogoUrl = table.Column<string>(type: "text", nullable: false),
-                    ContactEmail = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                    ContactEmail = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Clubs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Divisions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Level = table.Column<int>(type: "integer", nullable: false),
+                    SportType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW() AT TIME ZONE 'UTC'"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Divisions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -40,12 +61,12 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     Summary = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     ImageUrls = table.Column<string>(type: "text", nullable: false),
                     Author = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     SportCategory = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     Tags = table.Column<string>(type: "text", nullable: false),
-                    IsArchived = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
+                    IsArchived = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -56,7 +77,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                 name: "Persons",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, comment: "Unique identifier for the entity"),
                     FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -68,12 +89,40 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     ContactInfo_Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     ContactInfo_Phone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     ContactInfo_AlternativePhone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    IsRegistered = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
+                    IsRegistered = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "UTC timestamp when the entity was created"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "UTC timestamp when the entity was last updated")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Persons", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Divisions_IsActive",
+                table: "Divisions",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Divisions_Level",
+                table: "Divisions",
+                column: "Level");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Divisions_Name_SportType",
+                table: "Divisions",
+                columns: new[] { "Name", "SportType" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Divisions_SportType",
+                table: "Divisions",
+                column: "SportType");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Divisions_SportType_IsActive",
+                table: "Divisions",
+                columns: new[] { "SportType", "IsActive" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_News_Author",
@@ -106,6 +155,23 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                 name: "IX_News_SportCategory",
                 table: "NewsArticles",
                 column: "SportCategory");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Person_Audit",
+                table: "Persons",
+                columns: new[] { "CreatedAt", "UpdatedAt" },
+                descending: new bool[0]);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Person_CreatedAt",
+                table: "Persons",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Person_UpdatedAt",
+                table: "Persons",
+                column: "UpdatedAt",
+                filter: "\"UpdatedAt\" IS NOT NULL");
         }
 
         /// <inheritdoc />
@@ -113,6 +179,9 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
         {
             migrationBuilder.DropTable(
                 name: "Clubs");
+
+            migrationBuilder.DropTable(
+                name: "Divisions");
 
             migrationBuilder.DropTable(
                 name: "NewsArticles");

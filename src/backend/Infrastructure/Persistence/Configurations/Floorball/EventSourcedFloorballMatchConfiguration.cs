@@ -54,7 +54,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
 
             // Store officials as a serialized JSON string - this will be managed by the domain model
             builder.Property<string>("OfficialIdsJson")
-                .HasColumnType("nvarchar(max)");
+                .HasColumnType("text");
 
             // Event records will be handled by specialized storage
             // Consider moving them to a separate table or document store

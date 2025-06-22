@@ -1,11 +1,12 @@
+using Domain.Entities;
 using Domain.Enums.Floorball;
 
-namespace Domain.ValueObjects.Floorball;
+namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a player's membership in a floorball team
 /// </summary>
-public class FloorballTeamPlayer
+public class FloorballTeamPlayer : BaseEntity
 {
     /// <summary>
     /// Gets the ID of the team
@@ -143,7 +144,62 @@ public class FloorballTeamPlayer
     {
         if (minutes < 0)
             throw new ArgumentException("Penalty minutes cannot be negative.", nameof(minutes));
-            
+        
         PenaltyMinutes += minutes;
+    }
+
+    /// <summary>
+    /// Determines whether the specified object is equal to the current object
+    /// Based on identity (TeamId + PlayerId combination)
+    /// </summary>
+    /// <param name="obj">The object to compare with the current object</param>
+    /// <returns>true if the specified object is equal to the current object; otherwise, false</returns>
+    public override bool Equals(object? obj)
+    {
+        if (obj is not FloorballTeamPlayer other)
+            return false;
+
+        if (ReferenceEquals(this, other))
+            return true;
+
+        // For entities, equality is based on identity (TeamId + PlayerId combination)
+        return TeamId == other.TeamId && PlayerId == other.PlayerId;
+    }
+
+    /// <summary>
+    /// Returns a hash code for the current object
+    /// </summary>
+    /// <returns>A hash code for the current object</returns>
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(TeamId, PlayerId);
+    }
+
+    /// <summary>
+    /// Determines whether two FloorballTeamPlayer instances are equal
+    /// </summary>
+    /// <param name="left">The first instance to compare</param>
+    /// <param name="right">The second instance to compare</param>
+    /// <returns>true if the instances are equal; otherwise, false</returns>
+    public static bool operator ==(FloorballTeamPlayer? left, FloorballTeamPlayer? right)
+    {
+        if (left is null && right is null)
+            return true;
+
+        if (left is null || right is null)
+            return false;
+
+        return left.Equals(right);
+    }
+
+    /// <summary>
+    /// Determines whether two FloorballTeamPlayer instances are not equal
+    /// </summary>
+    /// <param name="left">The first instance to compare</param>
+    /// <param name="right">The second instance to compare</param>
+    /// <returns>true if the instances are not equal; otherwise, false</returns>
+    public static bool operator !=(FloorballTeamPlayer? left, FloorballTeamPlayer? right)
+    {
+        return !(left == right);
     }
 } 

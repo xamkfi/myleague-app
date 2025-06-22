@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.CommonDb
 {
     [DbContext(typeof(CommonDbContext))]
-    [Migration("20250621132027_AddAuditFieldsToCommonEntities")]
-    partial class AddAuditFieldsToCommonEntities
+    [Migration("20250622082451_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

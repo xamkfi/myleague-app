@@ -58,6 +58,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// Gets or sets the FloorballReferees DbSet.
         /// </summary>
         public DbSet<FloorballReferee> FloorballReferees { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballPeriodScores DbSet.
+        /// </summary>
+        public DbSet<FloorballPeriodScore> FloorballPeriodScores { get; set; }
         
         /// <summary>
         /// Saves changes to the database with domain event dispatching.
@@ -107,6 +112,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new EventSourcedFloorballMatchConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballSeasonConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballRefereeConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());
         }
     }
 } 

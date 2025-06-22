@@ -42,6 +42,8 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
+    <Folder Include="Migrations\CommonDb\" />
+    <Folder Include="Migrations\FloorBallDb\" />
   </ItemGroup>
 
 </Project> 

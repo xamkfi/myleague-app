@@ -1,17 +1,12 @@
-using System;
+using Domain.Entities;
 
-namespace Domain.ValueObjects.Floorball;
+namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Base abstract class for all floorball match events
 /// </summary>
-public abstract class FloorballMatchEventBase
+public abstract class FloorballMatchEvent : BaseEntity
 {
-    /// <summary>
-    /// Gets the unique identifier of the event
-    /// </summary>
-    public Guid Id { get; protected set; }
-
     /// <summary>
     /// Gets the ID of the match this event belongs to
     /// </summary>
@@ -53,31 +48,34 @@ public abstract class FloorballMatchEventBase
     /// <summary>
     /// Protected constructor for EF Core and derived classes
     /// </summary>
-    protected FloorballMatchEventBase()
+    protected FloorballMatchEvent()
     {
-        Id = Guid.NewGuid();
     }
 
     /// <summary>
-    /// Initializes a new instance of the FloorballMatchEventBase class
+    /// Initializes a new instance of the FloorballMatchEvent class
     /// </summary>
     /// <param name="matchId">The ID of the match</param>
     /// <param name="teamId">The ID of the team</param>
     /// <param name="periodNumber">The period number</param>
     /// <param name="timeInSeconds">The time in seconds</param>
     /// <param name="description">The description of the event</param>
-    protected FloorballMatchEventBase(
+    protected FloorballMatchEvent(
         Guid matchId,
         Guid teamId,
         int periodNumber,
         int timeInSeconds,
         string? description = null)
     {
-        Id = Guid.NewGuid();
+        if (periodNumber <= 0)
+            throw new ArgumentException("Period number must be positive.", nameof(periodNumber));
+        if (timeInSeconds < 0)
+            throw new ArgumentException("Time cannot be negative.", nameof(timeInSeconds));
+
         MatchId = matchId;
         TeamId = teamId;
         PeriodNumber = periodNumber;
         TimeInSeconds = timeInSeconds;
         Description = description;
     }
-}
+} 

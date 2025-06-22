@@ -2,21 +2,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MyLeague.Infrastructure.Migrations
+namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 {
     [DbContext(typeof(FloorballDbContext))]
-    [Migration("20250619164828_UpdateFloorballEntitiesForDivisionId")]
-    partial class UpdateFloorballEntitiesForDivisionId
+    partial class FloorballDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,7 +41,7 @@ namespace MyLeague.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("OfficialIdsJson")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("ScheduledDateTime")
                         .HasColumnType("timestamp with time zone");
@@ -87,6 +84,9 @@ namespace MyLeague.Infrastructure.Migrations
                     b.Property<Guid>("AwayTeamId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("HomeScore")
                         .HasColumnType("integer");
 
@@ -102,6 +102,9 @@ namespace MyLeague.Infrastructure.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Venue")
                         .HasMaxLength(200)
@@ -124,6 +127,77 @@ namespace MyLeague.Infrastructure.Migrations
                     b.ToTable("FloorballMatches");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballPeriodScore", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasComment("Unique identifier for the entity");
+
+                    b.Property<int>("AwayScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Away team score for this period");
+
+                    b.Property<Guid>("AwayTeamId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the away team");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
+
+                    b.Property<int>("HomeScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Home team score for this period");
+
+                    b.Property<Guid>("HomeTeamId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the home team");
+
+                    b.Property<bool>("IsCompleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasComment("Whether the period is completed");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the match this period score belongs to");
+
+                    b.Property<int>("PeriodNumber")
+                        .HasColumnType("integer")
+                        .HasComment("The period number (1, 2, 3, etc.)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_FloorballPeriodScore_CreatedAt");
+
+                    b.HasIndex("MatchId")
+                        .HasDatabaseName("IX_FloorballPeriodScore_MatchId");
+
+                    b.HasIndex("UpdatedAt")
+                        .HasDatabaseName("IX_FloorballPeriodScore_UpdatedAt")
+                        .HasFilter("\"UpdatedAt\" IS NOT NULL");
+
+                    b.HasIndex("CreatedAt", "UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_FloorballPeriodScore_Audit");
+
+                    b.HasIndex("MatchId", "PeriodNumber")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballPeriodScore_Match_Period");
+
+                    b.ToTable("FloorballPeriodScores", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballPlayer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -136,11 +210,17 @@ namespace MyLeague.Infrastructure.Migrations
                     b.Property<int>("CareerGoals")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -152,6 +232,9 @@ namespace MyLeague.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -168,6 +251,9 @@ namespace MyLeague.Infrastructure.Migrations
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.ToTable("FloorballReferees");
@@ -178,6 +264,9 @@ namespace MyLeague.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("DivisionId")
                         .HasColumnType("uuid");
@@ -199,6 +288,9 @@ namespace MyLeague.Infrastructure.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.ToTable("FloorballSeasons");
@@ -212,6 +304,9 @@ namespace MyLeague.Infrastructure.Migrations
 
                     b.Property<Guid>("ClubId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("DivisionId")
                         .HasColumnType("uuid");
@@ -243,6 +338,9 @@ namespace MyLeague.Infrastructure.Migrations
                     b.Property<string>("TeamCategory")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -299,43 +397,20 @@ namespace MyLeague.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsMany("Domain.ValueObjects.Floorball.FloorballPeriodScore", "PeriodScores", b1 =>
-                        {
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("integer");
-
-                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
-
-                            b1.Property<int>("AwayScore")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("HomeScore")
-                                .HasColumnType("integer");
-
-                            b1.Property<Guid>("MatchId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<int>("PeriodNumber")
-                                .HasColumnType("integer");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("MatchId");
-
-                            b1.ToTable("FloorballPeriodScore");
-
-                            b1.WithOwner()
-                                .HasForeignKey("MatchId");
-                        });
-
                     b.Navigation("AwayTeam");
 
                     b.Navigation("HomeTeam");
 
-                    b.Navigation("PeriodScores");
-
                     b.Navigation("Season");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballPeriodScore", b =>
+                {
+                    b.HasOne("Domain.Entities.Floorball.FloorballMatch", null)
+                        .WithMany("PeriodScores")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballPlayer", b =>
@@ -369,7 +444,7 @@ namespace MyLeague.Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeam", b =>
                 {
-                    b.OwnsMany("Domain.ValueObjects.Floorball.FloorballTeamPlayer", "Roster", b1 =>
+                    b.OwnsMany("Domain.Entities.Floorball.FloorballTeamPlayer", "Roster", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
@@ -377,6 +452,9 @@ namespace MyLeague.Infrastructure.Migrations
 
                             b1.Property<int>("Assists")
                                 .HasColumnType("integer");
+
+                            b1.Property<DateTime>("CreatedAt")
+                                .HasColumnType("timestamp with time zone");
 
                             b1.Property<int>("GamesPlayed")
                                 .HasColumnType("integer");
@@ -402,6 +480,9 @@ namespace MyLeague.Infrastructure.Migrations
 
                             b1.Property<Guid>("TeamId")
                                 .HasColumnType("uuid");
+
+                            b1.Property<DateTime?>("UpdatedAt")
+                                .HasColumnType("timestamp with time zone");
 
                             b1.HasKey("Id");
 
@@ -444,6 +525,11 @@ namespace MyLeague.Infrastructure.Migrations
                         .HasForeignKey("TeamsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatch", b =>
+                {
+                    b.Navigation("PeriodScores");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeason", b =>

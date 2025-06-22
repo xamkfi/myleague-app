@@ -1,17 +1,16 @@
-using System;
 using Domain.Enums.Floorball;
 
-namespace Domain.ValueObjects.Floorball;
+namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a penalty given during a floorball match
 /// </summary>
-public class PenaltyEventValue : MatchEventBaseValue
+public class FloorballPenalty : FloorballMatchEvent
 {
     /// <summary>
     /// Gets the ID of the player who received the penalty
     /// </summary>
-    public Guid PlayerId { get; private set; }
+    public Guid? PlayerId { get; private set; }
     
     /// <summary>
     /// Gets the type of penalty
@@ -26,25 +25,25 @@ public class PenaltyEventValue : MatchEventBaseValue
     /// <summary>
     /// Private constructor for EF Core
     /// </summary>
-    private PenaltyEventValue() : base()
+    private FloorballPenalty() : base()
     {
     }
     
     /// <summary>
-    /// Initializes a new instance of the PenaltyEventValue class
+    /// Initializes a new instance of the FloorballPenalty class
     /// </summary>
     /// <param name="matchId">The ID of the match</param>
-    /// <param name="teamId">The ID of the team</param>
+    /// <param name="teamId">The ID of the penalized team</param>
     /// <param name="playerId">The ID of the player who received the penalty</param>
     /// <param name="penaltyType">The type of penalty</param>
     /// <param name="durationInMinutes">The duration of the penalty in minutes</param>
     /// <param name="periodNumber">The period number</param>
     /// <param name="timeInSeconds">The time in seconds</param>
     /// <param name="description">The description of the penalty</param>
-    public PenaltyEventValue(
+    public FloorballPenalty(
         Guid matchId,
         Guid teamId,
-        Guid playerId,
+        Guid? playerId,
         FloorballPenaltyType penaltyType,
         int durationInMinutes,
         int periodNumber,
@@ -53,7 +52,7 @@ public class PenaltyEventValue : MatchEventBaseValue
         : base(matchId, teamId, periodNumber, timeInSeconds, description)
     {
         if (durationInMinutes <= 0)
-            throw new ArgumentOutOfRangeException(nameof(durationInMinutes), "Penalty duration must be positive.");
+            throw new ArgumentException("Penalty duration must be positive.", nameof(durationInMinutes));
         
         PlayerId = playerId;
         PenaltyType = penaltyType;

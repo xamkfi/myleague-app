@@ -1,13 +1,12 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MyLeague.Infrastructure.Migrations
+namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 {
     /// <inheritdoc />
-    public partial class InitialFloorballCreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -46,7 +45,9 @@ namespace MyLeague.Infrastructure.Migrations
                     Position_SecondaryPosition = table.Column<string>(type: "text", nullable: true),
                     Position_CanPlayAsGoalkeeper = table.Column<bool>(type: "boolean", nullable: false),
                     CareerGoals = table.Column<int>(type: "integer", nullable: false),
-                    CareerAssists = table.Column<int>(type: "integer", nullable: false)
+                    CareerAssists = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -60,9 +61,11 @@ namespace MyLeague.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     PersonId = table.Column<Guid>(type: "uuid", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    LicenseIssueDate = table.Column<DateTime>(type: "timestamp", nullable: true),
-                    LicenseExpiryDate = table.Column<DateTime>(type: "timestamp", nullable: true),
-                    MatchesOfficiated = table.Column<int>(type: "integer", nullable: false)
+                    LicenseIssueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    LicenseExpiryDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    MatchesOfficiated = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -75,11 +78,13 @@ namespace MyLeague.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Division = table.Column<string>(type: "text", nullable: false),
+                    DivisionId = table.Column<Guid>(type: "uuid", nullable: false),
                     StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false)
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -93,12 +98,14 @@ namespace MyLeague.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     ShortName = table.Column<string>(type: "text", nullable: false),
-                    Division = table.Column<string>(type: "text", nullable: false),
+                    DivisionId = table.Column<Guid>(type: "uuid", nullable: false),
                     ClubId = table.Column<Guid>(type: "uuid", nullable: false),
                     TeamCategory = table.Column<string>(type: "text", nullable: false),
                     HomeArena = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     PrimaryJerseyColor = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    SecondaryJerseyColor = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                    SecondaryJerseyColor = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -119,7 +126,9 @@ namespace MyLeague.Infrastructure.Migrations
                     HomeScore = table.Column<int>(type: "integer", nullable: false),
                     AwayScore = table.Column<int>(type: "integer", nullable: false),
                     WentToOvertime = table.Column<bool>(type: "boolean", nullable: false),
-                    WentToShootout = table.Column<bool>(type: "boolean", nullable: false)
+                    WentToShootout = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -181,7 +190,9 @@ namespace MyLeague.Infrastructure.Migrations
                     GamesPlayed = table.Column<int>(type: "integer", nullable: false),
                     Goals = table.Column<int>(type: "integer", nullable: false),
                     Assists = table.Column<int>(type: "integer", nullable: false),
-                    PenaltyMinutes = table.Column<int>(type: "integer", nullable: false)
+                    PenaltyMinutes = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -219,21 +230,25 @@ namespace MyLeague.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "FloorballPeriodScore",
+                name: "FloorballPeriodScores",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    PeriodNumber = table.Column<int>(type: "integer", nullable: false),
-                    HomeScore = table.Column<int>(type: "integer", nullable: false),
-                    AwayScore = table.Column<int>(type: "integer", nullable: false),
-                    MatchId = table.Column<Guid>(type: "uuid", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, comment: "Unique identifier for the entity"),
+                    MatchId = table.Column<Guid>(type: "uuid", nullable: false, comment: "ID of the match this period score belongs to"),
+                    PeriodNumber = table.Column<int>(type: "integer", nullable: false, comment: "The period number (1, 2, 3, etc.)"),
+                    HomeTeamId = table.Column<Guid>(type: "uuid", nullable: false, comment: "ID of the home team"),
+                    AwayTeamId = table.Column<Guid>(type: "uuid", nullable: false, comment: "ID of the away team"),
+                    HomeScore = table.Column<int>(type: "integer", nullable: false, defaultValue: 0, comment: "Home team score for this period"),
+                    AwayScore = table.Column<int>(type: "integer", nullable: false, defaultValue: 0, comment: "Away team score for this period"),
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false, comment: "Whether the period is completed"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "UTC timestamp when the entity was created"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "UTC timestamp when the entity was last updated")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FloorballPeriodScore", x => x.Id);
+                    table.PrimaryKey("PK_FloorballPeriodScores", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_FloorballPeriodScore_FloorballMatches_MatchId",
+                        name: "FK_FloorballPeriodScores_FloorballMatches_MatchId",
                         column: x => x.MatchId,
                         principalTable: "FloorballMatches",
                         principalColumn: "Id",
@@ -261,9 +276,32 @@ namespace MyLeague.Infrastructure.Migrations
                 column: "OfficialsId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FloorballPeriodScore_Audit",
+                table: "FloorballPeriodScores",
+                columns: new[] { "CreatedAt", "UpdatedAt" },
+                descending: new bool[0]);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FloorballPeriodScore_CreatedAt",
+                table: "FloorballPeriodScores",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FloorballPeriodScore_Match_Period",
+                table: "FloorballPeriodScores",
+                columns: new[] { "MatchId", "PeriodNumber" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FloorballPeriodScore_MatchId",
-                table: "FloorballPeriodScore",
+                table: "FloorballPeriodScores",
                 column: "MatchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FloorballPeriodScore_UpdatedAt",
+                table: "FloorballPeriodScores",
+                column: "UpdatedAt",
+                filter: "\"UpdatedAt\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FloorballSeasonTeam_TeamsId",
@@ -286,7 +324,7 @@ namespace MyLeague.Infrastructure.Migrations
                 name: "FloorballMatchOfficial");
 
             migrationBuilder.DropTable(
-                name: "FloorballPeriodScore");
+                name: "FloorballPeriodScores");
 
             migrationBuilder.DropTable(
                 name: "FloorballPlayers");

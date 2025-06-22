@@ -96,7 +96,7 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
 
             // Load Person data for all players in the roster
             Dictionary<Guid, Person> playerPersons = new Dictionary<Guid, Person>();
-            foreach (Domain.ValueObjects.Floorball.FloorballTeamPlayer rosterPlayer in team.Roster)
+            foreach (FloorballTeamPlayer rosterPlayer in team.Roster)
             {
                 // Get the FloorballPlayer to find the PersonId
                 FloorballPlayer? floorballPlayer = await _playerRepository.GetByIdAsync(rosterPlayer.PlayerId);

@@ -1,6 +1,5 @@
 using Domain.Enums;
 using Domain.Enums.Floorball;
-using Domain.ValueObjects.Floorball;
 using System.Collections.Generic;
 using Domain.EventSourcing;
 using Domain.DomainEvents.Floorball;
@@ -80,20 +79,20 @@ public class FloorballMatch : AggregateRoot
     /// <summary>
     /// Gets all match events (goals, penalties, etc.)
     /// </summary>
-    public IReadOnlyCollection<FloorballMatchEventBase> Events => _events.AsReadOnly();
-    private readonly List<FloorballMatchEventBase> _events = new();
+    public IReadOnlyCollection<FloorballMatchEvent> Events => _events.AsReadOnly();
+    private readonly List<FloorballMatchEvent> _events = new();
     
     /// <summary>
     /// Gets all goal events
     /// </summary>
-    public IReadOnlyCollection<FloorballGoalEvent> GoalEvents => 
-        _events.OfType<FloorballGoalEvent>().ToList().AsReadOnly();
+    public IReadOnlyCollection<FloorballGoal> GoalEvents => 
+        _events.OfType<FloorballGoal>().ToList().AsReadOnly();
     
     /// <summary>
     /// Gets all penalty events
     /// </summary>
-    public IReadOnlyCollection<FloorballPenaltyEvent> PenaltyEvents => 
-        _events.OfType<FloorballPenaltyEvent>().ToList().AsReadOnly();
+    public IReadOnlyCollection<FloorballPenalty> PenaltyEvents => 
+        _events.OfType<FloorballPenalty>().ToList().AsReadOnly();
     
     /// <summary>
     /// Gets the match officials (referees)
@@ -118,7 +117,7 @@ public class FloorballMatch : AggregateRoot
         AwayScore = 0;
         WentToOvertime = false;
         WentToShootout = false;
-        _events = new List<FloorballMatchEventBase>();
+        _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
         Season = null!; // EF Core will set this
@@ -165,12 +164,12 @@ public class FloorballMatch : AggregateRoot
         AwayScore = 0;
         WentToOvertime = false;
         WentToShootout = false;
-        _events = new List<FloorballMatchEventBase>();
+        _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
         for (int i = 1; i <= 3; i++)
         {
-            _periodScores.Add(new FloorballPeriodScore(i, 0, 0));
+            _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
         }
     }
 
@@ -297,14 +296,14 @@ public class FloorballMatch : AggregateRoot
         }
 
         // Record the goal event
-        var goalEvent = new FloorballGoalEvent(
+        var goalEvent = new FloorballGoal(
             Id,
             scoringTeam.Id,
             scoringPlayer.Id,
             assistingPlayer?.Id,
             periodNumber,
             timeInSeconds,
-            goalType,
+            null, // goalType as FloorballGoalType
             description);
 
         _events.Add(goalEvent);
@@ -373,7 +372,7 @@ public class FloorballMatch : AggregateRoot
         if(team == null)
             throw new ArgumentNullException(nameof(team), "Team cannot be null.");
 
-        var penaltyEvent = new FloorballPenaltyEvent(
+        var penaltyEvent = new FloorballPenalty(
             Id,
             team.Id,
             player?.Id,
