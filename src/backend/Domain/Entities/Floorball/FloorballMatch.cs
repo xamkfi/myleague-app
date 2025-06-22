@@ -531,4 +531,38 @@ public class FloorballMatch : AggregateRoot
 
         return goalEvent;
     }
+
+    /// <summary>
+    /// Deletes a penalty event from the match
+    /// </summary>
+    /// <param name="penaltyEventId">The ID of the penalty event to delete</param>
+    /// <returns>The deleted penalty event</returns>
+    /// <exception cref="ArgumentException">Thrown when the penalty event is not found</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in a state that allows deleting penalties</exception>
+    public FloorballPenalty DeletePenaltyEvent(Guid penaltyEventId)
+    {
+        if (Status == FloorballMatchStatus.Completed)
+            throw new InvalidOperationException("Cannot delete penalty events from a completed match.");
+
+        // Find the penalty event
+        FloorballPenalty? penaltyEvent = _events.OfType<FloorballPenalty>().FirstOrDefault(p => p.Id == penaltyEventId);
+        if (penaltyEvent == null)
+            throw new ArgumentException($"Penalty event with ID {penaltyEventId} not found in this match.", nameof(penaltyEventId));
+
+        // Remove the penalty event
+        _events.Remove(penaltyEvent);
+
+        // Add domain event for penalty deletion
+        AddDomainEvent(new FloorballPenaltyDeletedEvent(
+            Id,
+            penaltyEvent.TeamId,
+            penaltyEvent.PlayerId,
+            penaltyEvent.PenaltyType,
+            penaltyEvent.DurationInMinutes,
+            penaltyEvent.PeriodNumber,
+            penaltyEvent.TimeInSeconds,
+            penaltyEvent.Description));
+
+        return penaltyEvent;
+    }
 } 

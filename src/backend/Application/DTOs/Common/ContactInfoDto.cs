@@ -11,6 +11,6 @@ namespace Application.DTOs.Common;
     /// </summary>
     public record ContactInfoDto(
         string Email,
-        string Phone,
+        string? Phone,
         string? AlternativePhone);
 

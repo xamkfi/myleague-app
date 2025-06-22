@@ -7,7 +7,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Commands.Floorball.Season;
-using Domain.Repositories.Common;
 using System.Linq;
 
 namespace Application.Handlers.Floorball.Seasons;
@@ -19,7 +18,7 @@ public class DeleteFloorballSeasonHandler : IRequestHandler<DeleteFloorballSeaso
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
     private readonly IFloorballMatchRepository _matchRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<DeleteFloorballSeasonHandler> _logger;
 
     /// <summary>
@@ -27,12 +26,12 @@ public class DeleteFloorballSeasonHandler : IRequestHandler<DeleteFloorballSeaso
     /// </summary>
     /// <param name="seasonRepository">The floorball season repository</param>
     /// <param name="matchRepository">The floorball match repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="unitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public DeleteFloorballSeasonHandler(
         IFloorballSeasonRepository seasonRepository,
         IFloorballMatchRepository matchRepository,
-        IUnitOfWork unitOfWork,
+        IFloorballUnitOfWork unitOfWork,
         ILogger<DeleteFloorballSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;

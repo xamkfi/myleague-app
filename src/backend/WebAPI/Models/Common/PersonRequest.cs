@@ -60,7 +60,7 @@ public record UpdatePersonBasicInfoRequest
     /// Gets the last name of the person
     /// </summary>
     [Required(ErrorMessage = "Last name is required")]
-    [StringLength(100, ErrorMessage = "Last name cannot exceed 100 characters")]
+    [StringLength(100, ErrorMessage = "First name cannot exceed 100 characters")]
     public string LastName { get; init; } = string.Empty;
 }
 
@@ -72,29 +72,26 @@ public record UpdatePersonAddressRequest
     /// <summary>
     /// Gets the street address line 1
     /// </summary>
-    [Required(ErrorMessage = "Street address is required")]
     [StringLength(200, ErrorMessage = "Street address cannot exceed 200 characters")]
-    public string Street1 { get; init; } = string.Empty;
+    public string? Street1 { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets the street address line 2
     /// </summary>
     [StringLength(200, ErrorMessage = "Street address 2 cannot exceed 200 characters")]
-    public string Street2 { get; init; } = string.Empty;
+    public string? Street2 { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets the city
     /// </summary>
-    [Required(ErrorMessage = "City is required")]
     [StringLength(100, ErrorMessage = "City cannot exceed 100 characters")]
-    public string City { get; init; } = string.Empty;
+    public string? City { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets the postal code
     /// </summary>
-    [Required(ErrorMessage = "Postal code is required")]
     [StringLength(20, ErrorMessage = "Postal code cannot exceed 20 characters")]
-    public string PostalCode { get; init; } = string.Empty;
+    public string? PostalCode { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets the country
@@ -121,13 +118,13 @@ public record UpdatePersonContactInfoRequest
     /// Gets the phone number
     /// </summary>
     [StringLength(50, ErrorMessage = "Phone number cannot exceed 50 characters")]
-    public string Phone { get; init; } = string.Empty;
+    public string? Phone { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets the alternative phone number
     /// </summary>
     [StringLength(50, ErrorMessage = "Alternative phone number cannot exceed 50 characters")]
-    public string AlternativePhone { get; init; } = string.Empty;
+    public string? AlternativePhone { get; init; } = string.Empty;
 }
 
 /// <summary>
@@ -161,14 +158,12 @@ public record UpdatePersonRequest
     public bool IsRegistered { get; init; } = false;
 
     /// <summary>
-    /// Gets the address of the person
+    /// Gets the address of the person (optional)
     /// </summary>
-    [Required(ErrorMessage = "Address is required")]
-    public AddressDto Address { get; init; } = new AddressDto("", "", "", "", "");
+    public AddressDto? Address { get; init; }
 
     /// <summary>
-    /// Gets the contact information of the person
+    /// Gets the contact information of the person (optional)
     /// </summary>
-    [Required(ErrorMessage = "Contact information is required")]
-    public ContactInfoDto ContactInfo { get; init; } = new ContactInfoDto("", "", "");
+    public ContactInfoDto? ContactInfo { get; init; }
 } 

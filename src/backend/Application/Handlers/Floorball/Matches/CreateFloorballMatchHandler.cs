@@ -21,7 +21,7 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballSeasonRepository _seasonRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFloorballMatchHandler> _logger;
 
     /// <summary>
@@ -30,13 +30,13 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
     /// <param name="matchRepository">The floorball match repository</param>
     /// <param name="teamRepository">The floorball team repository</param>
     /// <param name="seasonRepository">The floorball season repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="unitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public CreateFloorballMatchHandler(
         IFloorballMatchRepository matchRepository,
         IFloorballTeamRepository teamRepository,
         IFloorballSeasonRepository seasonRepository,
-        IUnitOfWork unitOfWork,
+        IFloorballUnitOfWork unitOfWork,
         ILogger<CreateFloorballMatchHandler> logger)
     {
         _matchRepository = matchRepository;

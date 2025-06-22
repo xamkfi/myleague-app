@@ -21,19 +21,20 @@ public class CreateFloorballTeamHandler : IRequestHandler<CreateFloorballTeamCom
 {
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IClubRepository _clubRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFloorballTeamHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the CreateFloorballTeamHandler class
     /// </summary>
     /// <param name="teamRepository">The floorball team repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="clubRepository">The club repository</param>
+    /// <param name="unitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public CreateFloorballTeamHandler(
         IFloorballTeamRepository teamRepository,
         IClubRepository clubRepository,
-        IUnitOfWork unitOfWork,
+        IFloorballUnitOfWork unitOfWork,
         ILogger<CreateFloorballTeamHandler> logger)
     {
         _teamRepository = teamRepository;

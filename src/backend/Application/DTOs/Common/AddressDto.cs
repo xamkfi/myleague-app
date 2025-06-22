@@ -10,9 +10,9 @@ namespace Application.DTOs.Common;
     /// Data Transfer Object for Address valueobject
     /// </summary>
     public record AddressDto(
-        string Street1,
-        string Street2,
-        string City,
-        string PostalCode,
+        string? Street1,
+        string? Street2,
+        string? City,
+        string? PostalCode,
         string Country);
 

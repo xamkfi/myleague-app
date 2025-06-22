@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.CommonDb
 {
     [DbContext(typeof(CommonDbContext))]
-    [Migration("20250622082451_InitialCreate")]
+    [Migration("20250622123725_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -267,7 +267,6 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                                 .HasColumnType("uuid");
 
                             b1.Property<string>("City")
-                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("character varying(100)");
 
@@ -277,12 +276,10 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                                 .HasColumnType("character varying(100)");
 
                             b1.Property<string>("PostalCode")
-                                .IsRequired()
                                 .HasMaxLength(20)
                                 .HasColumnType("character varying(20)");
 
                             b1.Property<string>("Street1")
-                                .IsRequired()
                                 .HasMaxLength(200)
                                 .HasColumnType("character varying(200)");
 

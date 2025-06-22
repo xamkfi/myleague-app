@@ -10,7 +10,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Commands.Floorball.Season;
-using Domain.Repositories.Common;
 using System.Linq;
 
 namespace Application.Handlers.Floorball.Seasons;
@@ -21,18 +20,18 @@ namespace Application.Handlers.Floorball.Seasons;
 public class CreateFloorballSeasonHandler : IRequestHandler<CreateFloorballSeasonCommand, Result<FloorballSeasonDto>>
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFloorballSeasonHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the CreateFloorballSeasonHandler class
     /// </summary>
     /// <param name="seasonRepository">The floorball season repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="unitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public CreateFloorballSeasonHandler(
         IFloorballSeasonRepository seasonRepository,
-        IUnitOfWork unitOfWork,
+        IFloorballUnitOfWork unitOfWork,
         ILogger<CreateFloorballSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
