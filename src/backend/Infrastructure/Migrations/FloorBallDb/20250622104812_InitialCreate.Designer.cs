@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 {
     [DbContext(typeof(FloorballDbContext))]
-    [Migration("20250622093543_InitialCreate")]
+    [Migration("20250622104812_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -194,6 +194,9 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AssistingPlayerId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -201,16 +204,37 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<int?>("DurationInMinutes")
+                        .HasColumnType("integer");
+
                     b.Property<string>("EventType")
                         .IsRequired()
                         .HasMaxLength(21)
                         .HasColumnType("character varying(21)");
 
+                    b.Property<int?>("GoalType")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("IsOvertime")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsShootout")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("MatchId")
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("PenaltyType")
+                        .HasColumnType("integer");
+
                     b.Property<int>("PeriodNumber")
                         .HasColumnType("integer");
+
+                    b.Property<Guid?>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ScoringPlayerId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("TeamId")
                         .HasColumnType("uuid");
@@ -223,8 +247,32 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssistingPlayerId")
+                        .HasDatabaseName("IX_FloorballMatchEvent_AssistingPlayerId")
+                        .HasFilter("\"AssistingPlayerId\" IS NOT NULL");
+
+                    b.HasIndex("DurationInMinutes")
+                        .HasDatabaseName("IX_FloorballMatchEvent_DurationInMinutes")
+                        .HasFilter("\"DurationInMinutes\" IS NOT NULL");
+
+                    b.HasIndex("GoalType")
+                        .HasDatabaseName("IX_FloorballMatchEvent_GoalType")
+                        .HasFilter("\"GoalType\" IS NOT NULL");
+
                     b.HasIndex("MatchId")
                         .HasDatabaseName("IX_FloorballMatchEvent_MatchId");
+
+                    b.HasIndex("PenaltyType")
+                        .HasDatabaseName("IX_FloorballMatchEvent_PenaltyType")
+                        .HasFilter("\"PenaltyType\" IS NOT NULL");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("IX_FloorballMatchEvent_PlayerId")
+                        .HasFilter("\"PlayerId\" IS NOT NULL");
+
+                    b.HasIndex("ScoringPlayerId")
+                        .HasDatabaseName("IX_FloorballMatchEvent_ScoringPlayerId")
+                        .HasFilter("\"ScoringPlayerId\" IS NOT NULL");
 
                     b.HasIndex("TeamId")
                         .HasDatabaseName("IX_FloorballMatchEvent_TeamId");
@@ -237,6 +285,8 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                             t.HasCheckConstraint("CK_FloorballMatchEvent_PeriodNumber", "\"PeriodNumber\" > 0");
 
                             t.HasCheckConstraint("CK_FloorballMatchEvent_TimeInSeconds", "\"TimeInSeconds\" >= 0");
+
+                            t.HasCheckConstraint("CK_FloorballPenalty_DurationInMinutes", "\"DurationInMinutes\" IS NULL OR \"DurationInMinutes\" > 0");
                         });
 
                     b.HasDiscriminator<string>("EventType").HasValue("FloorballMatchEvent");
@@ -542,32 +592,13 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                 {
                     b.HasBaseType("Domain.Entities.Floorball.FloorballMatchEvent");
 
-                    b.Property<Guid?>("AssistingPlayerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("GoalType")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("ScoringPlayerId")
-                        .HasColumnType("uuid");
-
-                    b.HasIndex("AssistingPlayerId")
-                        .HasDatabaseName("IX_FloorballGoal_AssistingPlayerId")
-                        .HasFilter("\"AssistingPlayerId\" IS NOT NULL");
-
-                    b.HasIndex("GoalType")
-                        .HasDatabaseName("IX_FloorballGoal_GoalType")
-                        .HasFilter("\"GoalType\" IS NOT NULL");
-
-                    b.HasIndex("ScoringPlayerId")
-                        .HasDatabaseName("IX_FloorballGoal_ScoringPlayerId")
-                        .HasFilter("\"ScoringPlayerId\" IS NOT NULL");
-
                     b.ToTable(t =>
                         {
                             t.HasCheckConstraint("CK_FloorballMatchEvent_PeriodNumber", "\"PeriodNumber\" > 0");
 
                             t.HasCheckConstraint("CK_FloorballMatchEvent_TimeInSeconds", "\"TimeInSeconds\" >= 0");
+
+                            t.HasCheckConstraint("CK_FloorballPenalty_DurationInMinutes", "\"DurationInMinutes\" IS NULL OR \"DurationInMinutes\" > 0");
                         });
 
                     b.HasDiscriminator().HasValue("Goal");
@@ -577,32 +608,13 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                 {
                     b.HasBaseType("Domain.Entities.Floorball.FloorballMatchEvent");
 
-                    b.Property<int>("DurationInMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PenaltyType")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("PlayerId")
-                        .HasColumnType("uuid");
-
-                    b.HasIndex("DurationInMinutes")
-                        .HasDatabaseName("IX_FloorballPenalty_DurationInMinutes");
-
-                    b.HasIndex("PenaltyType")
-                        .HasDatabaseName("IX_FloorballPenalty_PenaltyType");
-
-                    b.HasIndex("PlayerId")
-                        .HasDatabaseName("IX_FloorballPenalty_PlayerId")
-                        .HasFilter("\"PlayerId\" IS NOT NULL");
-
                     b.ToTable(t =>
                         {
                             t.HasCheckConstraint("CK_FloorballMatchEvent_PeriodNumber", "\"PeriodNumber\" > 0");
 
                             t.HasCheckConstraint("CK_FloorballMatchEvent_TimeInSeconds", "\"TimeInSeconds\" >= 0");
 
-                            t.HasCheckConstraint("CK_FloorballPenalty_DurationInMinutes", "\"DurationInMinutes\" > 0");
+                            t.HasCheckConstraint("CK_FloorballPenalty_DurationInMinutes", "\"DurationInMinutes\" IS NULL OR \"DurationInMinutes\" > 0");
                         });
 
                     b.HasDiscriminator().HasValue("Penalty");
@@ -658,11 +670,26 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatchEvent", b =>
                 {
+                    b.HasOne("Domain.Entities.Floorball.FloorballPlayer", null)
+                        .WithMany()
+                        .HasForeignKey("AssistingPlayerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Domain.Entities.Floorball.FloorballMatch", null)
                         .WithMany()
                         .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Domain.Entities.Floorball.FloorballPlayer", null)
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Domain.Entities.Floorball.FloorballPlayer", null)
+                        .WithMany()
+                        .HasForeignKey("ScoringPlayerId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
                         .WithMany()
@@ -804,27 +831,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .HasForeignKey("TeamsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Domain.Entities.Floorball.FloorballGoal", b =>
-                {
-                    b.HasOne("Domain.Entities.Floorball.FloorballPlayer", null)
-                        .WithMany()
-                        .HasForeignKey("AssistingPlayerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.Floorball.FloorballPlayer", null)
-                        .WithMany()
-                        .HasForeignKey("ScoringPlayerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Floorball.FloorballPenalty", b =>
-                {
-                    b.HasOne("Domain.Entities.Floorball.FloorballPlayer", null)
-                        .WithMany()
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatch", b =>

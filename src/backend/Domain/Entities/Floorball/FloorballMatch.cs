@@ -477,4 +477,58 @@ public class FloorballMatch : AggregateRoot
         // Add domain event
         AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
     }
+
+    /// <summary>
+    /// Deletes a goal event from the match
+    /// </summary>
+    /// <param name="goalEventId">The ID of the goal event to delete</param>
+    /// <returns>The deleted goal event</returns>
+    /// <exception cref="ArgumentException">Thrown when the goal event is not found</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in a state that allows deleting goals</exception>
+    public FloorballGoal DeleteGoalEvent(Guid goalEventId)
+    {
+        if (Status == FloorballMatchStatus.Completed)
+            throw new InvalidOperationException("Cannot delete goal events from a completed match.");
+
+        // Find the goal event
+        FloorballGoal? goalEvent = _events.OfType<FloorballGoal>().FirstOrDefault(g => g.Id == goalEventId);
+        if (goalEvent == null)
+            throw new ArgumentException($"Goal event with ID {goalEventId} not found in this match.", nameof(goalEventId));
+
+        // Remove the goal event
+        _events.Remove(goalEvent);
+
+        // Update the score
+        if (goalEvent.TeamId == HomeTeamId)
+        {
+            HomeScore--;
+            // Update the period score for the goal's period
+            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == goalEvent.PeriodNumber);
+            if (periodScore != null)
+            {
+                periodScore.DecrementHomeScore();
+            }
+        }
+        else
+        {
+            AwayScore--;
+            // Update the period score for the goal's period
+            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == goalEvent.PeriodNumber);
+            if (periodScore != null)
+            {
+                periodScore.DecrementAwayScore();
+            }
+        }
+
+        // Add domain event for goal deletion
+        AddDomainEvent(new FloorballGoalDeletedEvent(
+            Id,
+            goalEvent.TeamId,
+            goalEvent.ScoringPlayerId,
+            goalEvent.PeriodNumber,
+            goalEvent.TimeInSeconds,
+            goalEvent.AssistingPlayerId));
+
+        return goalEvent;
+    }
 } 

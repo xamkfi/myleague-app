@@ -127,6 +127,30 @@ public class FloorballPeriodScore : BaseEntity
     }
     
     /// <summary>
+    /// Decrements the home team's score by 1
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the home score is already 0</exception>
+    public void DecrementHomeScore()
+    {
+        if (HomeScore <= 0)
+            throw new InvalidOperationException("Cannot decrement home score below 0.");
+        
+        HomeScore--;
+    }
+    
+    /// <summary>
+    /// Decrements the away team's score by 1
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the away score is already 0</exception>
+    public void DecrementAwayScore()
+    {
+        if (AwayScore <= 0)
+            throw new InvalidOperationException("Cannot decrement away score below 0.");
+        
+        AwayScore--;
+    }
+    
+    /// <summary>
     /// Marks the period as completed
     /// </summary>
     public void Complete()

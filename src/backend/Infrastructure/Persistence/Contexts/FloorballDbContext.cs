@@ -139,8 +139,6 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballRefereeConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchEventConfiguration());
-            modelBuilder.ApplyConfiguration(new FloorballGoalConfiguration());
-            modelBuilder.ApplyConfiguration(new FloorballPenaltyConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamManagerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballCoachConfiguration());
         }

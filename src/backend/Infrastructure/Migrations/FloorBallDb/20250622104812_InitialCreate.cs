@@ -276,13 +276,15 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     PeriodNumber = table.Column<int>(type: "integer", nullable: false),
                     TimeInSeconds = table.Column<int>(type: "integer", nullable: false),
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    EventType = table.Column<string>(type: "character varying(21)", maxLength: 21, nullable: false),
-                    ScoringPlayerId = table.Column<Guid>(type: "uuid", nullable: true),
                     AssistingPlayerId = table.Column<Guid>(type: "uuid", nullable: true),
-                    GoalType = table.Column<int>(type: "integer", nullable: true),
-                    PlayerId = table.Column<Guid>(type: "uuid", nullable: true),
-                    PenaltyType = table.Column<int>(type: "integer", nullable: true),
                     DurationInMinutes = table.Column<int>(type: "integer", nullable: true),
+                    EventType = table.Column<string>(type: "character varying(21)", maxLength: 21, nullable: false),
+                    GoalType = table.Column<int>(type: "integer", nullable: true),
+                    IsOvertime = table.Column<bool>(type: "boolean", nullable: true),
+                    IsShootout = table.Column<bool>(type: "boolean", nullable: true),
+                    PenaltyType = table.Column<int>(type: "integer", nullable: true),
+                    PlayerId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ScoringPlayerId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -291,7 +293,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     table.PrimaryKey("PK_FloorballMatchEvents", x => x.Id);
                     table.CheckConstraint("CK_FloorballMatchEvent_PeriodNumber", "\"PeriodNumber\" > 0");
                     table.CheckConstraint("CK_FloorballMatchEvent_TimeInSeconds", "\"TimeInSeconds\" >= 0");
-                    table.CheckConstraint("CK_FloorballPenalty_DurationInMinutes", "\"DurationInMinutes\" > 0");
+                    table.CheckConstraint("CK_FloorballPenalty_DurationInMinutes", "\"DurationInMinutes\" IS NULL OR \"DurationInMinutes\" > 0");
                     table.ForeignKey(
                         name: "FK_FloorballMatchEvents_FloorballMatches_MatchId",
                         column: x => x.MatchId,
@@ -422,22 +424,22 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                 column: "SeasonId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FloorballGoal_AssistingPlayerId",
+                name: "IX_FloorballMatchEvent_AssistingPlayerId",
                 table: "FloorballMatchEvents",
                 column: "AssistingPlayerId",
                 filter: "\"AssistingPlayerId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FloorballGoal_GoalType",
+                name: "IX_FloorballMatchEvent_DurationInMinutes",
+                table: "FloorballMatchEvents",
+                column: "DurationInMinutes",
+                filter: "\"DurationInMinutes\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FloorballMatchEvent_GoalType",
                 table: "FloorballMatchEvents",
                 column: "GoalType",
                 filter: "\"GoalType\" IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_FloorballGoal_ScoringPlayerId",
-                table: "FloorballMatchEvents",
-                column: "ScoringPlayerId",
-                filter: "\"ScoringPlayerId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FloorballMatchEvent_MatchId",
@@ -450,25 +452,27 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                 columns: new[] { "MatchId", "PeriodNumber", "TimeInSeconds" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_FloorballMatchEvent_TeamId",
+                name: "IX_FloorballMatchEvent_PenaltyType",
                 table: "FloorballMatchEvents",
-                column: "TeamId");
+                column: "PenaltyType",
+                filter: "\"PenaltyType\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FloorballPenalty_DurationInMinutes",
-                table: "FloorballMatchEvents",
-                column: "DurationInMinutes");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_FloorballPenalty_PenaltyType",
-                table: "FloorballMatchEvents",
-                column: "PenaltyType");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_FloorballPenalty_PlayerId",
+                name: "IX_FloorballMatchEvent_PlayerId",
                 table: "FloorballMatchEvents",
                 column: "PlayerId",
                 filter: "\"PlayerId\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FloorballMatchEvent_ScoringPlayerId",
+                table: "FloorballMatchEvents",
+                column: "ScoringPlayerId",
+                filter: "\"ScoringPlayerId\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FloorballMatchEvent_TeamId",
+                table: "FloorballMatchEvents",
+                column: "TeamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FloorballMatchOfficial_OfficialsId",

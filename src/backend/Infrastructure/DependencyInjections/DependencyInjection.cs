@@ -63,6 +63,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IDivisionRepository, DivisionRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
+            services.AddScoped<IFloorballCoachRepository, FloorballCoachRepository>();
+            services.AddScoped<IFloorballTeamManagerRepository, FloorballTeamManagerRepository>();
             services.AddScoped<IFloorballRefereeRepository, FloorballRefereeRepository>();
             services.AddScoped<IFloorballMatchRepository, FloorballMatchRepository>();
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();

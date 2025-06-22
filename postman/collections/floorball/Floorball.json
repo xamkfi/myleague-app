@@ -1,0 +1,1034 @@
+{
+	"info": {
+		"_postman_id": "fb5a8c2d-9e7f-4a1b-8c6d-2d1e3f4a5b6c",
+		"name": "Floorball API",
+		"description": "Complete collection for Floorball API endpoints organized in logical order",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		},
+		{
+			"key": "seasonId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "teamId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "playerId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "coachId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "teamManagerId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refereeId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "matchId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Season Management",
+			"item": [
+				{
+					"name": "Create Season",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"2024-2025 Season\",\n  \"divisionId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"startDate\": \"2024-09-01\",\n  \"endDate\": \"2025-05-31\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Seasons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Seasons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason/active",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason", "active"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Season By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason/{{seasonId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason", "{{seasonId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Seasons By Division",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason/by-division/550e8400-e29b-41d4-a716-446655440000",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason", "by-division", "550e8400-e29b-41d4-a716-446655440000"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Season",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"2024-2025 Updated Season\",\n  \"divisionId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"startDate\": \"2024-09-01\",\n  \"endDate\": \"2025-05-31\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason/{{seasonId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason", "{{seasonId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activate Season",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason/{{seasonId}}/activate",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason", "{{seasonId}}", "activate"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate Season",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason/{{seasonId}}/deactivate",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason", "{{seasonId}}", "deactivate"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Season",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason/{{seasonId}}/complete",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason", "{{seasonId}}", "complete"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Team to Season",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason/{{seasonId}}/teams/{{teamId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason", "{{seasonId}}", "teams", "{{teamId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Team from Season",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason/{{seasonId}}/teams/{{teamId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason", "{{seasonId}}", "teams", "{{teamId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Season",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballSeason/{{seasonId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballSeason", "{{seasonId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Team Management",
+			"item": [
+				{
+					"name": "Create Team",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Helsinki Hawks\",\n  \"divisionId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"clubId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"homeArena\": \"Helsinki Ice Hall\",\n  \"primaryJerseyColor\": \"Blue\",\n  \"secondaryJerseyColor\": \"White\",\n  \"category\": \"Men\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Teams",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam?page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Team By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam/{{teamId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam", "{{teamId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Teams By Club",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam/club/550e8400-e29b-41d4-a716-446655440001",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam", "club", "550e8400-e29b-41d4-a716-446655440001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Teams By Division",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam/division/550e8400-e29b-41d4-a716-446655440000",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam", "division", "550e8400-e29b-41d4-a716-446655440000"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Team",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Helsinki Hawks Updated\",\n  \"divisionId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"clubId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"homeArena\": \"Helsinki New Ice Hall\",\n  \"primaryJerseyColor\": \"Navy Blue\",\n  \"secondaryJerseyColor\": \"Silver\",\n  \"category\": \"Men\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam/{{teamId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam", "{{teamId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Player to Team",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam/{{teamId}}/players/{{playerId}}?position=Forward&jerseyNumber=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam", "{{teamId}}", "players", "{{playerId}}"],
+							"query": [
+								{
+									"key": "position",
+									"value": "Forward"
+								},
+								{
+									"key": "jerseyNumber",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Player from Team",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam/{{teamId}}/players/{{playerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam", "{{teamId}}", "players", "{{playerId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Team Player",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"position\": \"Defender\",\n  \"jerseyNumber\": 5,\n  \"isCaptain\": true,\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam/{{teamId}}/players/{{playerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam", "{{teamId}}", "players", "{{playerId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Team",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam/{{teamId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam", "{{teamId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Player Management",
+			"item": [
+				{
+					"name": "Create Player",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"550e8400-e29b-41d4-a716-446655440002\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballPlayer",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballPlayer"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Players",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballPlayer?page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballPlayer"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Players",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballPlayer/active?page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballPlayer", "active"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Player By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballPlayer/{{playerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballPlayer", "{{playerId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Player",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballPlayer/{{playerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballPlayer", "{{playerId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Player",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballPlayer/{{playerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballPlayer", "{{playerId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Coach Management",
+			"item": [
+				{
+					"name": "Create Coach",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"550e8400-e29b-41d4-a716-446655440003\",\n  \"yearsOfExperience\": 5,\n  \"certificationLevel\": \"Level 2\",\n  \"specialization\": \"Offense\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballCoach",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballCoach"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Coach",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"isActive\": true,\n  \"yearsOfExperience\": 6,\n  \"certificationLevel\": \"Level 3\",\n  \"specialization\": \"Defense\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballCoach/{{coachId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballCoach", "{{coachId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Coach",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballCoach/{{coachId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballCoach", "{{coachId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Team Manager Management",
+			"item": [
+				{
+					"name": "Create Team Manager",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"550e8400-e29b-41d4-a716-446655440004\",\n  \"primaryResponsibility\": \"Operations\",\n  \"yearsOfExperience\": 3\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeamManager",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeamManager"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Team Manager",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"550e8400-e29b-41d4-a716-446655440004\",\n  \"isActive\": true,\n  \"primaryResponsibility\": \"Logistics\",\n  \"yearsOfExperience\": 4\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeamManager/{{teamManagerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeamManager", "{{teamManagerId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Team Manager",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeamManager/{{teamManagerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeamManager", "{{teamManagerId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Referee Management",
+			"item": [
+				{
+					"name": "Create Referee",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"550e8400-e29b-41d4-a716-446655440005\",\n  \"licenseIssueDate\": \"2023-01-15\",\n  \"licenseExpiryDate\": \"2025-01-15\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballReferee",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballReferee"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Referees",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballReferee?page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballReferee"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Referee By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballReferee/{{refereeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballReferee", "{{refereeId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Referee",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"licenseIssueDate\": \"2023-01-15\",\n  \"licenseExpiryDate\": \"2026-01-15\",\n  \"matchesOfficiated\": 25,\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballReferee/{{refereeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballReferee", "{{refereeId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Referee",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballReferee/{{refereeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballReferee", "{{refereeId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Match Management",
+			"item": [
+				{
+					"name": "Create Match",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"seasonId\": \"{{seasonId}}\",\n  \"homeTeamId\": \"{{teamId}}\",\n  \"awayTeamId\": \"550e8400-e29b-41d4-a716-446655440006\",\n  \"scheduledDateTime\": \"2024-10-15T19:00:00\",\n  \"venue\": \"Helsinki Ice Hall\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatch",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatch"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Matches",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatch?page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatch"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Match By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatch/by-id/{{matchId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatch", "by-id", "{{matchId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Matches By Season",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatch/by-seasonId/{{seasonId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatch", "by-seasonId", "{{seasonId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Matches By Team",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatch/by-team/{{teamId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatch", "by-team", "{{teamId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Match",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"matchId\": \"{{matchId}}\",\n  \"scheduledDateTime\": \"2024-10-15T20:00:00\",\n  \"venue\": \"Helsinki New Ice Hall\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatch",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatch"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start Match",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatch/start-match/{{matchId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatch", "start-match", "{{matchId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Match",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatch/complete-match/{{matchId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatch", "complete-match", "{{matchId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Record Goal (Legacy)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"matchId\": \"{{matchId}}\",\n  \"teamId\": \"{{teamId}}\",\n  \"playerId\": \"{{playerId}}\",\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 300\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatch/record-goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatch", "record-goal"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. Match Events",
+			"item": [
+				{
+					"name": "Record Goal Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"matchId\": \"{{matchId}}\",\n  \"teamId\": \"{{teamId}}\",\n  \"playerId\": \"{{playerId}}\",\n  \"assisterId\": null,\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 300,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Record Penalty Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"matchId\": \"{{matchId}}\",\n  \"teamId\": \"{{teamId}}\",\n  \"playerId\": \"{{playerId}}\",\n  \"penaltyType\": \"Slashing\",\n  \"durationMinutes\": 2,\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 450\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/penalty",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "penalty"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Goal Event",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"eventId\": \"550e8400-e29b-41d4-a716-446655440007\",\n  \"matchId\": \"{{matchId}}\",\n  \"assisterId\": \"{{playerId}}\",\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 305,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Penalty Event",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"eventId\": \"550e8400-e29b-41d4-a716-446655440008\",\n  \"matchId\": \"{{matchId}}\",\n  \"penaltyType\": \"Roughing\",\n  \"durationMinutes\": 2,\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 455\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/penalty",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "penalty"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Goal Event",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal/550e8400-e29b-41d4-a716-446655440007",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal", "550e8400-e29b-41d4-a716-446655440007"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Penalty Event",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/penalty/550e8400-e29b-41d4-a716-446655440008",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "penalty", "550e8400-e29b-41d4-a716-446655440008"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+} 
