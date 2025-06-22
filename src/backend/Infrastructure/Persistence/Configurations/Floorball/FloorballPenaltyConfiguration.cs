@@ -15,6 +15,12 @@ public class FloorballPenaltyConfiguration : IEntityTypeConfiguration<FloorballP
     /// <param name="builder">The entity type builder</param>
     public void Configure(EntityTypeBuilder<FloorballPenalty> builder)
     {
+        // Table configuration with constraints
+        builder.ToTable("FloorballPenalty", t => 
+        {
+            t.HasCheckConstraint("CK_FloorballPenalty_DurationInMinutes", "\"DurationInMinutes\" > 0");
+        });
+
         // Properties specific to FloorballPenalty
         builder.Property(p => p.PlayerId)
             .IsRequired(false);
@@ -32,9 +38,6 @@ public class FloorballPenaltyConfiguration : IEntityTypeConfiguration<FloorballP
             .HasForeignKey(p => p.PlayerId)
             .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
-
-        // Constraints specific to penalties
-        builder.HasCheckConstraint("CK_FloorballPenalty_DurationInMinutes", "\"DurationInMinutes\" > 0");
 
         // Indexes specific to penalties
         builder.HasIndex(p => p.PlayerId)

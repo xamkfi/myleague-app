@@ -15,8 +15,11 @@ public class FloorballTeamManagerConfiguration : IEntityTypeConfiguration<Floorb
     /// <param name="builder">The entity type builder</param>
     public void Configure(EntityTypeBuilder<FloorballTeamManager> builder)
     {
-        // Table name
-        builder.ToTable("FloorballTeamManagers");
+        // Table name and constraints
+        builder.ToTable("FloorballTeamManagers", t => 
+        {
+            t.HasCheckConstraint("CK_FloorballTeamManager_YearsOfExperience", "\"YearsOfExperience\" >= 0");
+        });
 
         // Primary key
         builder.HasKey(tm => tm.Id);
@@ -39,9 +42,6 @@ public class FloorballTeamManagerConfiguration : IEntityTypeConfiguration<Floorb
         builder.Property(tm => tm.YearsOfExperience)
             .IsRequired()
             .HasDefaultValue(0);
-
-        // Constraints
-        builder.HasCheckConstraint("CK_FloorballTeamManager_YearsOfExperience", "\"YearsOfExperience\" >= 0");
 
         // Indexes
         builder.HasIndex(tm => tm.PersonId)

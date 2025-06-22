@@ -15,8 +15,12 @@ public class FloorballMatchEventConfiguration : IEntityTypeConfiguration<Floorba
     /// <param name="builder">The entity type builder</param>
     public void Configure(EntityTypeBuilder<FloorballMatchEvent> builder)
     {
-        // Table name
-        builder.ToTable("FloorballMatchEvents");
+        // Table name and constraints
+        builder.ToTable("FloorballMatchEvents", t => 
+        {
+            t.HasCheckConstraint("CK_FloorballMatchEvent_PeriodNumber", "\"PeriodNumber\" > 0");
+            t.HasCheckConstraint("CK_FloorballMatchEvent_TimeInSeconds", "\"TimeInSeconds\" >= 0");
+        });
 
         // Primary key
         builder.HasKey(e => e.Id);
@@ -67,10 +71,6 @@ public class FloorballMatchEventConfiguration : IEntityTypeConfiguration<Floorba
             .HasForeignKey(e => e.TeamId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
-
-        // Constraints
-        builder.HasCheckConstraint("CK_FloorballMatchEvent_PeriodNumber", "\"PeriodNumber\" > 0");
-        builder.HasCheckConstraint("CK_FloorballMatchEvent_TimeInSeconds", "\"TimeInSeconds\" >= 0");
 
         // Indexes
         builder.HasIndex(e => e.MatchId)

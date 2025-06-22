@@ -15,8 +15,11 @@ public class FloorballCoachConfiguration : IEntityTypeConfiguration<FloorballCoa
     /// <param name="builder">The entity type builder</param>
     public void Configure(EntityTypeBuilder<FloorballCoach> builder)
     {
-        // Table name
-        builder.ToTable("FloorballCoaches");
+        // Table name and constraints
+        builder.ToTable("FloorballCoaches", t => 
+        {
+            t.HasCheckConstraint("CK_FloorballCoach_YearsOfExperience", "\"YearsOfExperience\" >= 0");
+        });
 
         // Primary key
         builder.HasKey(c => c.Id);
@@ -43,9 +46,6 @@ public class FloorballCoachConfiguration : IEntityTypeConfiguration<FloorballCoa
         builder.Property(c => c.Specialization)
             .HasMaxLength(100)
             .IsRequired(false);
-
-        // Constraints
-        builder.HasCheckConstraint("CK_FloorballCoach_YearsOfExperience", "\"YearsOfExperience\" >= 0");
 
         // Indexes
         builder.HasIndex(c => c.PersonId)
