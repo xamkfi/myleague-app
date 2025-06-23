@@ -29,8 +29,7 @@ public static class FloorballTeamManagerMapper
             manager.PersonId,
             null!, // TODO: Add Person navigation property to FloorballTeamManager entity or load Person separately
             manager.TeamId,
-            manager.IsActive,
-            manager.PrimaryResponsibility
+            manager.IsActive
         );
     }
 
@@ -61,8 +60,7 @@ public static class FloorballTeamManagerMapper
 
         return new FloorballTeamManager(
             command.PersonId,
-            command.TeamId,
-            command.PrimaryResponsibility);
+            command.TeamId);
     }
 
     /// <summary>
@@ -79,6 +77,5 @@ public static class FloorballTeamManagerMapper
             throw new ArgumentNullException(nameof(command));
 
         manager.UpdateActiveStatus(command.IsActive);
-        manager.UpdatePrimaryResponsibility(command.PrimaryResponsibility);
     }
 } 

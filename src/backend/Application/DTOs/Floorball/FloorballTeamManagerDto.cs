@@ -11,12 +11,10 @@ namespace Application.DTOs.Floorball
     /// <param name="Person">The person information for this team manager</param>
     /// <param name="TeamId">The ID of the team this manager is responsible for</param>
     /// <param name="IsActive">Whether the team manager is currently active</param>
-    /// <param name="PrimaryResponsibility">The team manager's primary responsibility area</param>
     public record FloorballTeamManagerDto(
         Guid Id,
         Guid PersonId,
         PersonDto Person,
         Guid TeamId,
-        bool IsActive,
-        string? PrimaryResponsibility);
+        bool IsActive);
 }

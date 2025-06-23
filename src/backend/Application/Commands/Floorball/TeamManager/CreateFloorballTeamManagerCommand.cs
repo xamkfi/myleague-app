@@ -14,9 +14,7 @@ namespace Application.Commands.Floorball.TeamManager
     /// </summary>
     /// <param name="PersonId">The ID of the person who will be the team manager</param>
     /// <param name="TeamId">The ID of the team this manager will be responsible for</param>
-    /// <param name="PrimaryResponsibility">The primary responsibility area (optional)</param>
     public record CreateFloorballTeamManagerCommand(
         Guid PersonId,
-        Guid TeamId,
-        string? PrimaryResponsibility) : IRequest<Result<FloorballTeamManagerDto>>;
+        Guid TeamId) : IRequest<Result<FloorballTeamManagerDto>>;
 } 

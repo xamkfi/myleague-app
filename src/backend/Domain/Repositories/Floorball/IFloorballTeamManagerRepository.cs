@@ -34,14 +34,12 @@ public interface IFloorballTeamManagerRepository
     /// <param name="page">Page number (1-based)</param>
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="isActive">Optional active status filter</param>
-    /// <param name="primaryResponsibility">Optional primary responsibility filter</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated collection of floorball team managers</returns>
     Task<PagedResult<FloorballTeamManager>> GetPagedAsync(
         int page, 
         int pageSize, 
         bool? isActive = null,
-        string? primaryResponsibility = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>
@@ -49,13 +47,6 @@ public interface IFloorballTeamManagerRepository
     /// </summary>
     /// <returns>A collection of active floorball team managers</returns>
     Task<IEnumerable<FloorballTeamManager>> GetActiveAsync();
-    
-    /// <summary>
-    /// Gets floorball team managers by primary responsibility
-    /// </summary>
-    /// <param name="primaryResponsibility">The primary responsibility to filter by</param>
-    /// <returns>A collection of floorball team managers with the specified primary responsibility</returns>
-    Task<IEnumerable<FloorballTeamManager>> GetByPrimaryResponsibilityAsync(string primaryResponsibility);
     
     /// <summary>
     /// Adds a new floorball team manager

@@ -22,11 +22,6 @@ public class FloorballTeamManager : AggregateRoot
     /// Gets whether the team manager is currently active
     /// </summary>
     public bool IsActive { get; private set; }
-    
-    /// <summary>
-    /// Gets the team manager's primary responsibility area
-    /// </summary>
-    public string? PrimaryResponsibility { get; private set; }
 
     /// <summary>
     /// Private constructor for EF Core
@@ -44,12 +39,10 @@ public class FloorballTeamManager : AggregateRoot
     /// </summary>
     /// <param name="personId">The ID of the person this team manager profile belongs to</param>
     /// <param name="teamId">The ID of the team this manager is responsible for</param>
-    /// <param name="primaryResponsibility">The primary responsibility area (optional)</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballTeamManager(
         Guid personId,
-        Guid teamId,
-        string? primaryResponsibility = null)
+        Guid teamId)
     {
         if (personId == Guid.Empty)
             throw new ArgumentException("Person ID cannot be empty.", nameof(personId));
@@ -61,7 +54,6 @@ public class FloorballTeamManager : AggregateRoot
         PersonId = personId;
         TeamId = teamId;
         IsActive = true;
-        PrimaryResponsibility = primaryResponsibility;
     }
 
     /// <summary>
@@ -71,15 +63,6 @@ public class FloorballTeamManager : AggregateRoot
     public void UpdateActiveStatus(bool isActive)
     {
         IsActive = isActive;
-    }
-    
-    /// <summary>
-    /// Updates the team manager's primary responsibility
-    /// </summary>
-    /// <param name="primaryResponsibility">The new primary responsibility</param>
-    public void UpdatePrimaryResponsibility(string? primaryResponsibility)
-    {
-        PrimaryResponsibility = primaryResponsibility;
     }
     
     /// <summary>

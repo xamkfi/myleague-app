@@ -35,10 +35,6 @@ public class FloorballTeamManagerConfiguration : IEntityTypeConfiguration<Floorb
             .IsRequired()
             .HasDefaultValue(true);
 
-        builder.Property(tm => tm.PrimaryResponsibility)
-            .HasMaxLength(250)
-            .IsRequired(false);
-
         // Foreign key relationships
         builder.HasOne<FloorballTeam>()
             .WithMany()

@@ -20,11 +20,6 @@ namespace WebAPI.Models.Floorball
         public Guid TeamId { get; set; }
 
         /// <summary>
-        /// Gets or sets the primary responsibility of the team manager
-        /// </summary>
-        public string? PrimaryResponsibility { get; set; }
-
-        /// <summary>
         /// Gets or sets whether the team manager is active
         /// </summary>
         public bool IsActive { get; set; } = true;

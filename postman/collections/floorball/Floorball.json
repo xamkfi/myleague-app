@@ -607,7 +607,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{teamId}}\",\n  \"primaryResponsibility\": \"Operations\"\n}"
+							"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{teamId}}\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballTeamManager",
@@ -665,7 +665,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"isActive\": true,\n  \"primaryResponsibility\": \"Logistics\"\n}"
+							"raw": "{\n  \"isActive\": true\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballTeamManager/{{teamManagerId}}",

@@ -14,9 +14,7 @@ namespace Application.Commands.Floorball.TeamManager
     /// </summary>
     /// <param name="Id">The ID of the team manager to update</param>
     /// <param name="IsActive">Whether the team manager is active</param>
-    /// <param name="PrimaryResponsibility">The primary responsibility area</param>
     public record UpdateFloorballTeamManagerCommand(
         Guid Id,
-        bool IsActive,
-        string? PrimaryResponsibility) : IRequest<Result<FloorballTeamManagerDto>>;
+        bool IsActive) : IRequest<Result<FloorballTeamManagerDto>>;
 } 
