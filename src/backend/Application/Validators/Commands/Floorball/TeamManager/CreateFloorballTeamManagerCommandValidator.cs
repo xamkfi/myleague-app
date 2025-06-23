@@ -14,11 +14,8 @@ public class CreateFloorballTeamManagerCommandValidator : AbstractValidator<Crea
             .NotEmpty().WithMessage("Person ID is required")
             .NotEqual(Guid.Empty).WithMessage("Person ID cannot be empty");
 
-        RuleFor(x => x.PrimaryResponsibility)
-            .MaximumLength(100).WithMessage("Primary responsibility cannot exceed 100 characters")
-            .When(x => !string.IsNullOrEmpty(x.PrimaryResponsibility));
-
-        RuleFor(x => x.YearsOfExperience)
-            .GreaterThanOrEqualTo(0).WithMessage("Years of experience cannot be negative");
+        RuleFor(x => x.TeamId)
+            .NotEmpty().WithMessage("Team ID is required")
+            .NotEqual(Guid.Empty).WithMessage("Team ID cannot be empty");
     }
 } 

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 {
     [DbContext(typeof(FloorballDbContext))]
-    partial class FloorballDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250623130727_FixedManagerRelations")]
+    partial class FixedManagerRelations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,6 +80,58 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasIndex("SeasonId");
 
                     b.ToTable("EventSourcedFloorballMatches", "floorball");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballCoach", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CertificationLevel")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Specialization")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("YearsOfExperience")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_FloorballCoach_IsActive");
+
+                    b.HasIndex("PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballCoach_PersonId");
+
+                    b.HasIndex("Specialization")
+                        .HasDatabaseName("IX_FloorballCoach_Specialization")
+                        .HasFilter("\"Specialization\" IS NOT NULL");
+
+                    b.ToTable("FloorballCoaches", "floorball", t =>
+                        {
+                            t.HasCheckConstraint("CK_FloorballCoach_YearsOfExperience", "\"YearsOfExperience\" >= 0");
+                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatch", b =>
@@ -476,6 +531,10 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("PrimaryResponsibility")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
 
                     b.Property<Guid>("TeamId")
                         .HasColumnType("uuid");

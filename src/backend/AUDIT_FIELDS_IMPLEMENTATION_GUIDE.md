@@ -161,13 +161,24 @@ For each entity, complete these tasks:
 - [ ] Create migration to add audit fields
 - [ ] Test entity creation and updates
 
+### 🔄 FloorballTeamManager
+- [ ] Remove manual `Id` property
+- [ ] Remove `Id = Guid.NewGuid()` from constructors
+- [ ] Update configuration to use `BaseEntityConfiguration<FloorballTeamManager>`
+- [ ] Create migration to add audit fields
+- [ ] Test entity creation and updates
+
+### 🔄 FloorballReferee
+- [ ] Remove manual `Id` property
+- [ ] Remove `Id = Guid.NewGuid()` from constructors
+- [ ] Update configuration to use `BaseEntityConfiguration<FloorballReferee>`
+- [ ] Create migration to add audit fields
+- [ ] Test entity creation and updates
+
 ### 🔄 Other Entities
 Apply the same pattern to:
 - [ ] FloorballSeason
 - [ ] FloorballMatch
-- [ ] FloorballReferee
-- [ ] FloorballCoach
-- [ ] FloorballTeamManager
 - [ ] HockeyTeam
 - [ ] HockeyPlayer
 - [ ] HockeySeason

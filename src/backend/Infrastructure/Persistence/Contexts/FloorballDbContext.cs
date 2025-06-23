@@ -85,11 +85,6 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballTeamManager> FloorballTeamManagers { get; set; }
 
         /// <summary>
-        /// Gets or sets the FloorballCoaches DbSet.
-        /// </summary>
-        public DbSet<FloorballCoach> FloorballCoaches { get; set; }
-        
-        /// <summary>
         /// Saves changes to the database with domain event dispatching.
         /// </summary>
         /// <returns>The number of state entries written to the database.</returns>
@@ -143,7 +138,6 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchEventConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamManagerConfiguration());
-            modelBuilder.ApplyConfiguration(new FloorballCoachConfiguration());
         }
     }
 } 

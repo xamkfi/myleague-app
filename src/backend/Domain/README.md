@@ -60,9 +60,8 @@ The following entities serve as aggregate roots in our domain model:
 4. **FloorballMatch** - Manages match data, events, and state transitions
 5. **FloorballTeam** - Manages team roster and details
 6. **FloorballPlayer** - Manages player-specific attributes and statistics
-7. **FloorballReferee** - Manages referee qualifications and assignments
-8. **FloorballCoach** - Manages coaching credentials and responsibilities
-9. **FloorballTeamManager** - Manages administrative team responsibilities
+7. **FloorballTeamManager** - Manages team operations and administration
+8. **FloorballReferee** - Officiates matches with licensing and experience tracking
 
 ### Key Value Objects
 - **Address** - Physical location information

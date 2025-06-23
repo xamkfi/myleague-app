@@ -26,9 +26,6 @@ A Person with a player role in floorball. Tracks player-specific attributes like
 ### FloorballReferee 
 A Person with a referee role in floorball. Tracks referee-specific attributes like license status and match count.
 
-### FloorballCoach
-A Person with a coaching role for a floorball team. Tracks coach-specific attributes like experience and certification.
-
 ### FloorballTeamManager
 A Person with a team management role. Handles administrative responsibilities for a floorball team.
 
@@ -107,6 +104,5 @@ The following entities serve as aggregate roots in our domain model:
 4. **FloorballMatch** - Manages all match-related data and events
 5. **FloorballTeam** - Manages roster and team details
 6. **FloorballPlayer** - Manages player-specific attributes
-7. **FloorballReferee** - Manages referee-specific attributes
-8. **FloorballCoach** - Manages coach-specific attributes
-9. **FloorballTeamManager** - Manages team manager-specific attributes 
+7. **FloorballTeamManager** - Manages team administrative responsibilities
+8. **FloorballReferee** - Manages referee qualifications and match assignments

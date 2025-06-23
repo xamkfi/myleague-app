@@ -37,14 +37,12 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <param name="page">Page number (1-based)</param>
         /// <param name="pageSize">Number of items per page</param>
         /// <param name="isActive">Optional active status filter</param>
-        /// <param name="primaryResponsibility">Optional primary responsibility filter</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Paginated collection of floorball team managers</returns>
         public async Task<PagedResult<FloorballTeamManager>> GetPagedAsync(
             int page, 
             int pageSize, 
             bool? isActive = null,
-            string? primaryResponsibility = null,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballTeamManager> query = _entities.AsQueryable();
@@ -55,13 +53,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 query = query.Where(tm => tm.IsActive == isActive.Value);
             }
 
-            if (!string.IsNullOrEmpty(primaryResponsibility))
-            {
-                query = query.Where(tm => tm.PrimaryResponsibility == primaryResponsibility);
-            }
-
-            // Apply ordering by years of experience (descending)
-            query = query.OrderByDescending(tm => tm.YearsOfExperience);
+            // Apply ordering by ID (for consistent ordering)
+            query = query.OrderBy(tm => tm.Id);
 
             // Get total count before pagination
             int totalCount = await query.CountAsync(cancellationToken);
@@ -83,20 +76,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             return await _entities
                 .Where(tm => tm.IsActive)
-                .OrderByDescending(tm => tm.YearsOfExperience)
-                .ToListAsync();
-        }
-
-        /// <summary>
-        /// Gets floorball team managers by primary responsibility
-        /// </summary>
-        /// <param name="primaryResponsibility">The primary responsibility to filter by</param>
-        /// <returns>A collection of floorball team managers with the specified primary responsibility</returns>
-        public async Task<IEnumerable<FloorballTeamManager>> GetByPrimaryResponsibilityAsync(string primaryResponsibility)
-        {
-            return await _entities
-                .Where(tm => tm.PrimaryResponsibility == primaryResponsibility)
-                .OrderByDescending(tm => tm.YearsOfExperience)
+                .OrderBy(tm => tm.Id)
                 .ToListAsync();
         }
 

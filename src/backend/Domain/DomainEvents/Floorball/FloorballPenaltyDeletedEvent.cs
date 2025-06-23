@@ -46,7 +46,7 @@ public class FloorballPenaltyDeletedEvent : FloorballDomainEvent
     /// <summary>
     /// Gets the description of the deleted penalty
     /// </summary>
-    public string Description { get; }
+    public string? Description { get; }
 
     /// <summary>
     /// Initializes a new instance of the FloorballPenaltyDeletedEvent class
@@ -67,7 +67,7 @@ public class FloorballPenaltyDeletedEvent : FloorballDomainEvent
         int minutes,
         int periodNumber,
         int timeInSeconds,
-        string description)
+        string? description)
     {
         MatchId = matchId;
         TeamId = teamId;
