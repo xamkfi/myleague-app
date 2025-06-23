@@ -90,6 +90,9 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         {
             base.OnModelCreating(modelBuilder);
 
+            // Set default schema for all Common entities
+            modelBuilder.HasDefaultSchema("common");
+
             // Apply only Common configurations to avoid cross-context conflicts
             modelBuilder.ApplyConfiguration(new PersonConfiguration());
             modelBuilder.ApplyConfiguration(new ClubConfiguration());

@@ -17,6 +17,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("common")
                 .HasAnnotation("ProductVersion", "9.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -67,7 +68,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clubs");
+                    b.ToTable("Clubs", "common");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Division", b =>
@@ -128,7 +129,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.HasIndex("SportType", "IsActive")
                         .HasDatabaseName("IX_Divisions_SportType_IsActive");
 
-                    b.ToTable("Divisions");
+                    b.ToTable("Divisions", "common");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.NewsArticle", b =>
@@ -205,7 +206,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .IsDescending(false, true)
                         .HasDatabaseName("IX_News_IsArchived_CreatedAt");
 
-                    b.ToTable("NewsArticles");
+                    b.ToTable("NewsArticles", "common");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>
@@ -253,7 +254,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .IsDescending()
                         .HasDatabaseName("IX_Person_Audit");
 
-                    b.ToTable("Persons");
+                    b.ToTable("Persons", "common");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>
@@ -286,7 +287,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
 
                             b1.HasKey("PersonId");
 
-                            b1.ToTable("Persons");
+                            b1.ToTable("Persons", "common");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersonId");
@@ -312,7 +313,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
 
                             b1.HasKey("PersonId");
 
-                            b1.ToTable("Persons");
+                            b1.ToTable("Persons", "common");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersonId");

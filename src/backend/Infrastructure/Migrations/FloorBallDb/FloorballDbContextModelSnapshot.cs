@@ -17,6 +17,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("floorball")
                 .HasAnnotation("ProductVersion", "9.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -75,7 +76,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasIndex("SeasonId");
 
-                    b.ToTable("EventSourcedFloorballMatches");
+                    b.ToTable("EventSourcedFloorballMatches", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballCoach", b =>
@@ -124,7 +125,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .HasDatabaseName("IX_FloorballCoach_Specialization")
                         .HasFilter("\"Specialization\" IS NOT NULL");
 
-                    b.ToTable("FloorballCoaches", null, t =>
+                    b.ToTable("FloorballCoaches", "floorball", t =>
                         {
                             t.HasCheckConstraint("CK_FloorballCoach_YearsOfExperience", "\"YearsOfExperience\" >= 0");
                         });
@@ -182,7 +183,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasIndex("SeasonId");
 
-                    b.ToTable("FloorballMatches");
+                    b.ToTable("FloorballMatches", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatchEvent", b =>
@@ -277,7 +278,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasIndex("MatchId", "PeriodNumber", "TimeInSeconds")
                         .HasDatabaseName("IX_FloorballMatchEvent_MatchId_Period_Time");
 
-                    b.ToTable("FloorballMatchEvents", null, t =>
+                    b.ToTable("FloorballMatchEvents", "floorball", t =>
                         {
                             t.HasCheckConstraint("CK_FloorballMatchEvent_PeriodNumber", "\"PeriodNumber\" > 0");
 
@@ -359,7 +360,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .IsUnique()
                         .HasDatabaseName("IX_FloorballPeriodScore_Match_Period");
 
-                    b.ToTable("FloorballPeriodScores", (string)null);
+                    b.ToTable("FloorballPeriodScores", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballPlayer", b =>
@@ -388,7 +389,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("FloorballPlayers");
+                    b.ToTable("FloorballPlayers", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballReferee", b =>
@@ -420,7 +421,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("FloorballReferees");
+                    b.ToTable("FloorballReferees", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeason", b =>
@@ -457,7 +458,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("FloorballSeasons");
+                    b.ToTable("FloorballSeasons", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeam", b =>
@@ -508,7 +509,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("FloorballTeams");
+                    b.ToTable("FloorballTeams", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeamManager", b =>
@@ -549,7 +550,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .IsUnique()
                         .HasDatabaseName("IX_FloorballTeamManager_PersonId");
 
-                    b.ToTable("FloorballTeamManagers", null, t =>
+                    b.ToTable("FloorballTeamManagers", "floorball", t =>
                         {
                             t.HasCheckConstraint("CK_FloorballTeamManager_YearsOfExperience", "\"YearsOfExperience\" >= 0");
                         });
@@ -567,7 +568,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasIndex("OfficialsId");
 
-                    b.ToTable("FloorballMatchOfficial");
+                    b.ToTable("FloorballMatchOfficial", "floorball");
                 });
 
             modelBuilder.Entity("FloorballSeasonTeam", b =>
@@ -582,7 +583,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasIndex("TeamsId");
 
-                    b.ToTable("FloorballSeasonTeam");
+                    b.ToTable("FloorballSeasonTeam", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballGoal", b =>
@@ -723,7 +724,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                             b1.HasKey("FloorballPlayerId");
 
-                            b1.ToTable("FloorballPlayers");
+                            b1.ToTable("FloorballPlayers", "floorball");
 
                             b1.WithOwner()
                                 .HasForeignKey("FloorballPlayerId");
@@ -785,7 +786,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                                 .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_JerseyNumber")
                                 .HasFilter("\"JerseyNumber\" IS NOT NULL");
 
-                            b1.ToTable("FloorballTeamPlayer");
+                            b1.ToTable("FloorballTeamPlayer", "floorball");
 
                             b1.HasOne("Domain.Entities.Floorball.FloorballPlayer", null)
                                 .WithMany()

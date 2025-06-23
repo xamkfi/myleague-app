@@ -130,6 +130,9 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         {
             base.OnModelCreating(modelBuilder);
 
+            // Set default schema for all Floorball entities
+            modelBuilder.HasDefaultSchema("floorball");
+
             // Apply only Floorball configurations to avoid cross-context conflicts
             modelBuilder.ApplyConfiguration(new FloorballPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamConfiguration());

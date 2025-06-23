@@ -11,8 +11,12 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "common");
+
             migrationBuilder.CreateTable(
                 name: "Clubs",
+                schema: "common",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -33,6 +37,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
 
             migrationBuilder.CreateTable(
                 name: "Divisions",
+                schema: "common",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -52,6 +57,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
 
             migrationBuilder.CreateTable(
                 name: "NewsArticles",
+                schema: "common",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -75,6 +81,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
 
             migrationBuilder.CreateTable(
                 name: "Persons",
+                schema: "common",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, comment: "Unique identifier for the entity"),
@@ -100,75 +107,89 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
 
             migrationBuilder.CreateIndex(
                 name: "IX_Divisions_IsActive",
+                schema: "common",
                 table: "Divisions",
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Divisions_Level",
+                schema: "common",
                 table: "Divisions",
                 column: "Level");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Divisions_Name_SportType",
+                schema: "common",
                 table: "Divisions",
                 columns: new[] { "Name", "SportType" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Divisions_SportType",
+                schema: "common",
                 table: "Divisions",
                 column: "SportType");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Divisions_SportType_IsActive",
+                schema: "common",
                 table: "Divisions",
                 columns: new[] { "SportType", "IsActive" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_News_Author",
+                schema: "common",
                 table: "NewsArticles",
                 column: "Author");
 
             migrationBuilder.CreateIndex(
                 name: "IX_News_Category",
+                schema: "common",
                 table: "NewsArticles",
                 column: "Category");
 
             migrationBuilder.CreateIndex(
                 name: "IX_News_CreatedAt",
+                schema: "common",
                 table: "NewsArticles",
                 column: "CreatedAt",
                 descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_News_IsArchived",
+                schema: "common",
                 table: "NewsArticles",
                 column: "IsArchived");
 
             migrationBuilder.CreateIndex(
                 name: "IX_News_IsArchived_CreatedAt",
+                schema: "common",
                 table: "NewsArticles",
                 columns: new[] { "IsArchived", "CreatedAt" },
                 descending: new[] { false, true });
 
             migrationBuilder.CreateIndex(
                 name: "IX_News_SportCategory",
+                schema: "common",
                 table: "NewsArticles",
                 column: "SportCategory");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Person_Audit",
+                schema: "common",
                 table: "Persons",
                 columns: new[] { "CreatedAt", "UpdatedAt" },
                 descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Person_CreatedAt",
+                schema: "common",
                 table: "Persons",
                 column: "CreatedAt");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Person_UpdatedAt",
+                schema: "common",
                 table: "Persons",
                 column: "UpdatedAt",
                 filter: "\"UpdatedAt\" IS NOT NULL");
@@ -178,16 +199,20 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Clubs");
+                name: "Clubs",
+                schema: "common");
 
             migrationBuilder.DropTable(
-                name: "Divisions");
+                name: "Divisions",
+                schema: "common");
 
             migrationBuilder.DropTable(
-                name: "NewsArticles");
+                name: "NewsArticles",
+                schema: "common");
 
             migrationBuilder.DropTable(
-                name: "Persons");
+                name: "Persons",
+                schema: "common");
         }
     }
 }
