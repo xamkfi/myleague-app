@@ -52,9 +52,28 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(m => m.Version)
                 .IsRequired();
 
+            // Foreign key relationships
+            builder.HasOne<FloorballSeason>()
+                .WithMany()
+                .HasForeignKey(m => m.SeasonId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            builder.HasOne<FloorballTeam>()
+                .WithMany()
+                .HasForeignKey(m => m.HomeTeamId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            builder.HasOne<FloorballTeam>()
+                .WithMany()
+                .HasForeignKey(m => m.AwayTeamId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
             // Store officials as a serialized JSON string - this will be managed by the domain model
             builder.Property<string>("OfficialIdsJson")
-                .HasColumnType("nvarchar(max)");
+                .HasColumnType("text");
 
             // Event records will be handled by specialized storage
             // Consider moving them to a separate table or document store

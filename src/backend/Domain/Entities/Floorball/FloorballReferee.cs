@@ -11,11 +11,6 @@ namespace Domain.Entities.Floorball;
 public class FloorballReferee : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the referee
-    /// </summary>
-    public Guid Id { get; private set; }
-    
-    /// <summary>
     /// Gets the ID of the person this referee profile belongs to (FK)
     /// </summary>
     public Guid PersonId { get; private set; }

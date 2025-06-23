@@ -25,16 +25,16 @@ namespace Application.Validators.Commands.Person
             When(x => x.address != null, () =>
             {
                 RuleFor(x => x.address.Street1)
-                    .NotEmpty().WithMessage("Street address is required")
-                    .MaximumLength(200).WithMessage("Street address cannot exceed 200 characters");
+                    .MaximumLength(200).WithMessage("Street address cannot exceed 200 characters")
+                    .When(x => !string.IsNullOrEmpty(x.address.Street1));
 
                 RuleFor(x => x.address.City)
-                    .NotEmpty().WithMessage("City is required")
-                    .MaximumLength(100).WithMessage("City cannot exceed 100 characters");
+                    .MaximumLength(100).WithMessage("City cannot exceed 100 characters")
+                    .When(x => !string.IsNullOrEmpty(x.address.City));
 
                 RuleFor(x => x.address.PostalCode)
-                    .NotEmpty().WithMessage("Postal code is required")
-                    .MaximumLength(20).WithMessage("Postal code cannot exceed 20 characters");
+                    .MaximumLength(20).WithMessage("Postal code cannot exceed 20 characters")
+                    .When(x => !string.IsNullOrEmpty(x.address.PostalCode));
 
                 RuleFor(x => x.address.Country)
                     .NotEmpty().WithMessage("Country is required")

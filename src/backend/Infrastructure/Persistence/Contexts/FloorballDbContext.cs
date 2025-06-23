@@ -58,6 +58,36 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// Gets or sets the FloorballReferees DbSet.
         /// </summary>
         public DbSet<FloorballReferee> FloorballReferees { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballPeriodScores DbSet.
+        /// </summary>
+        public DbSet<FloorballPeriodScore> FloorballPeriodScores { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballMatchEvents DbSet.
+        /// </summary>
+        public DbSet<FloorballMatchEvent> FloorballMatchEvents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballGoals DbSet.
+        /// </summary>
+        public DbSet<FloorballGoal> FloorballGoals { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballPenalties DbSet.
+        /// </summary>
+        public DbSet<FloorballPenalty> FloorballPenalties { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballTeamManagers DbSet.
+        /// </summary>
+        public DbSet<FloorballTeamManager> FloorballTeamManagers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballCoaches DbSet.
+        /// </summary>
+        public DbSet<FloorballCoach> FloorballCoaches { get; set; }
         
         /// <summary>
         /// Saves changes to the database with domain event dispatching.
@@ -100,6 +130,9 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         {
             base.OnModelCreating(modelBuilder);
 
+            // Set default schema for all Floorball entities
+            modelBuilder.HasDefaultSchema("floorball");
+
             // Apply only Floorball configurations to avoid cross-context conflicts
             modelBuilder.ApplyConfiguration(new FloorballPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamConfiguration());
@@ -107,6 +140,10 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new EventSourcedFloorballMatchConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballSeasonConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballRefereeConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballMatchEventConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballTeamManagerConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballCoachConfiguration());
         }
     }
 } 

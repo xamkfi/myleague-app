@@ -10,11 +10,6 @@ namespace Domain.Entities.Common;
 public class Person : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the person
-    /// </summary>
-    public Guid Id { get; private set; }
-
-    /// <summary>
     /// Gets the first name of the person
     /// </summary>
     public string FirstName { get; private set; }
@@ -51,7 +46,6 @@ public class Person : AggregateRoot
     /// </summary>
     protected Person()
     {
-        Id = Guid.NewGuid();
         FirstName = string.Empty;
         LastName = string.Empty;
     }
@@ -80,7 +74,6 @@ public class Person : AggregateRoot
         if (birthDate > DateTime.UtcNow)
             throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
 
-        Id = Guid.NewGuid();
         FirstName = firstName;
         LastName = lastName;
         BirthDate = birthDate;

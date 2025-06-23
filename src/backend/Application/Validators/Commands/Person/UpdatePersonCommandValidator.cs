@@ -26,23 +26,20 @@ namespace Application.Validators.Commands.Person
             RuleFor(x => x.BirthDate)
                 .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Birth date cannot be in the future");
 
-            // Address validation
-            RuleFor(x => x.Address)
-                .NotNull().WithMessage("Address is required");
-
+            // Address validation (optional)
             When(x => x.Address != null, () =>
             {
                 RuleFor(x => x.Address.Street1)
-                    .NotEmpty().WithMessage("Street address is required")
-                    .MaximumLength(200).WithMessage("Street address cannot exceed 200 characters");
+                    .MaximumLength(200).WithMessage("Street address cannot exceed 200 characters")
+                    .When(x => !string.IsNullOrEmpty(x.Address.Street1));
 
                 RuleFor(x => x.Address.City)
-                    .NotEmpty().WithMessage("City is required")
-                    .MaximumLength(100).WithMessage("City cannot exceed 100 characters");
+                    .MaximumLength(100).WithMessage("City cannot exceed 100 characters")
+                    .When(x => !string.IsNullOrEmpty(x.Address.City));
 
                 RuleFor(x => x.Address.PostalCode)
-                    .NotEmpty().WithMessage("Postal code is required")
-                    .MaximumLength(20).WithMessage("Postal code cannot exceed 20 characters");
+                    .MaximumLength(20).WithMessage("Postal code cannot exceed 20 characters")
+                    .When(x => !string.IsNullOrEmpty(x.Address.PostalCode));
 
                 RuleFor(x => x.Address.Country)
                     .NotEmpty().WithMessage("Country is required")
@@ -53,10 +50,7 @@ namespace Application.Validators.Commands.Person
                     .When(x => !string.IsNullOrEmpty(x.Address.Street2));
             });
 
-            // Contact info validation
-            RuleFor(x => x.ContactInfo)
-                .NotNull().WithMessage("Contact information is required");
-
+            // Contact info validation (optional)
             When(x => x.ContactInfo != null, () =>
             {
                 RuleFor(x => x.ContactInfo.Email)

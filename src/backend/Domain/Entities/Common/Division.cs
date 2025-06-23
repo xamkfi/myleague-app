@@ -8,10 +8,6 @@ namespace Domain.Entities.Common;
 /// </summary>
 public class Division : AggregateRoot
 {
-    /// <summary>
-    /// Gets the unique identifier of the division
-    /// </summary>
-    public Guid Id { get; private set; }
 
     /// <summary>
     /// Gets the name of the division

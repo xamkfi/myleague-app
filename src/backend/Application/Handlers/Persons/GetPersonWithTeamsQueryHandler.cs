@@ -71,7 +71,7 @@ public class GetPersonWithTeamsQueryHandler : IRequestHandler<GetPersonWithTeams
 
             foreach (FloorballTeam team in teams)
             {
-                Domain.ValueObjects.Floorball.FloorballTeamPlayer? playerInTeam = team.Roster.FirstOrDefault(r => r.PlayerId == floorballPlayer.Id);
+                FloorballTeamPlayer? playerInTeam = team.Roster.FirstOrDefault(r => r.PlayerId == floorballPlayer.Id);
                 if (playerInTeam == null) continue;
 
                 totalMatchesPlayed += playerInTeam.GamesPlayed;

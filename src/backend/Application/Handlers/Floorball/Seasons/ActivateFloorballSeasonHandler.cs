@@ -72,8 +72,10 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
             await _seasonRepository.UpdateAsync(season);
             
             // Save changes explicitly to trigger domain events
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // Save FloorballDbContext changes first (for the season)
             await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
+            // Then save CommonDbContext changes (for any club updates if needed)
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Load clubs for all teams in the season
             Dictionary<Guid, Club> clubsDict = new Dictionary<Guid, Club>();

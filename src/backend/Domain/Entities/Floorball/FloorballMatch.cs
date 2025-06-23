@@ -1,6 +1,5 @@
 using Domain.Enums;
 using Domain.Enums.Floorball;
-using Domain.ValueObjects.Floorball;
 using System.Collections.Generic;
 using Domain.EventSourcing;
 using Domain.DomainEvents.Floorball;
@@ -12,11 +11,6 @@ namespace Domain.Entities.Floorball;
 /// </summary>
 public class FloorballMatch : AggregateRoot
 {
-    /// <summary>
-    /// Gets the unique identifier of the match
-    /// </summary>
-    public Guid Id { get; private set; }
-
     /// <summary>
     /// Gets the season this match belongs to
     /// </summary>
@@ -85,20 +79,20 @@ public class FloorballMatch : AggregateRoot
     /// <summary>
     /// Gets all match events (goals, penalties, etc.)
     /// </summary>
-    public IReadOnlyCollection<FloorballMatchEventBase> Events => _events.AsReadOnly();
-    private readonly List<FloorballMatchEventBase> _events = new();
+    public IReadOnlyCollection<FloorballMatchEvent> Events => _events.AsReadOnly();
+    private readonly List<FloorballMatchEvent> _events = new();
     
     /// <summary>
     /// Gets all goal events
     /// </summary>
-    public IReadOnlyCollection<FloorballGoalEvent> GoalEvents => 
-        _events.OfType<FloorballGoalEvent>().ToList().AsReadOnly();
+    public IReadOnlyCollection<FloorballGoal> GoalEvents => 
+        _events.OfType<FloorballGoal>().ToList().AsReadOnly();
     
     /// <summary>
     /// Gets all penalty events
     /// </summary>
-    public IReadOnlyCollection<FloorballPenaltyEvent> PenaltyEvents => 
-        _events.OfType<FloorballPenaltyEvent>().ToList().AsReadOnly();
+    public IReadOnlyCollection<FloorballPenalty> PenaltyEvents => 
+        _events.OfType<FloorballPenalty>().ToList().AsReadOnly();
     
     /// <summary>
     /// Gets the match officials (referees)
@@ -123,7 +117,7 @@ public class FloorballMatch : AggregateRoot
         AwayScore = 0;
         WentToOvertime = false;
         WentToShootout = false;
-        _events = new List<FloorballMatchEventBase>();
+        _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
         Season = null!; // EF Core will set this
@@ -170,12 +164,12 @@ public class FloorballMatch : AggregateRoot
         AwayScore = 0;
         WentToOvertime = false;
         WentToShootout = false;
-        _events = new List<FloorballMatchEventBase>();
+        _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
         for (int i = 1; i <= 3; i++)
         {
-            _periodScores.Add(new FloorballPeriodScore(i, 0, 0));
+            _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
         }
     }
 
@@ -302,14 +296,14 @@ public class FloorballMatch : AggregateRoot
         }
 
         // Record the goal event
-        var goalEvent = new FloorballGoalEvent(
+        var goalEvent = new FloorballGoal(
             Id,
             scoringTeam.Id,
             scoringPlayer.Id,
             assistingPlayer?.Id,
             periodNumber,
             timeInSeconds,
-            goalType,
+            null, // goalType as FloorballGoalType
             description);
 
         _events.Add(goalEvent);
@@ -378,7 +372,7 @@ public class FloorballMatch : AggregateRoot
         if(team == null)
             throw new ArgumentNullException(nameof(team), "Team cannot be null.");
 
-        var penaltyEvent = new FloorballPenaltyEvent(
+        var penaltyEvent = new FloorballPenalty(
             Id,
             team.Id,
             player?.Id,
@@ -482,5 +476,93 @@ public class FloorballMatch : AggregateRoot
         
         // Add domain event
         AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
+    }
+
+    /// <summary>
+    /// Deletes a goal event from the match
+    /// </summary>
+    /// <param name="goalEventId">The ID of the goal event to delete</param>
+    /// <returns>The deleted goal event</returns>
+    /// <exception cref="ArgumentException">Thrown when the goal event is not found</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in a state that allows deleting goals</exception>
+    public FloorballGoal DeleteGoalEvent(Guid goalEventId)
+    {
+        if (Status == FloorballMatchStatus.Completed)
+            throw new InvalidOperationException("Cannot delete goal events from a completed match.");
+
+        // Find the goal event
+        FloorballGoal? goalEvent = _events.OfType<FloorballGoal>().FirstOrDefault(g => g.Id == goalEventId);
+        if (goalEvent == null)
+            throw new ArgumentException($"Goal event with ID {goalEventId} not found in this match.", nameof(goalEventId));
+
+        // Remove the goal event
+        _events.Remove(goalEvent);
+
+        // Update the score
+        if (goalEvent.TeamId == HomeTeamId)
+        {
+            HomeScore--;
+            // Update the period score for the goal's period
+            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == goalEvent.PeriodNumber);
+            if (periodScore != null)
+            {
+                periodScore.DecrementHomeScore();
+            }
+        }
+        else
+        {
+            AwayScore--;
+            // Update the period score for the goal's period
+            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == goalEvent.PeriodNumber);
+            if (periodScore != null)
+            {
+                periodScore.DecrementAwayScore();
+            }
+        }
+
+        // Add domain event for goal deletion
+        AddDomainEvent(new FloorballGoalDeletedEvent(
+            Id,
+            goalEvent.TeamId,
+            goalEvent.ScoringPlayerId,
+            goalEvent.PeriodNumber,
+            goalEvent.TimeInSeconds,
+            goalEvent.AssistingPlayerId));
+
+        return goalEvent;
+    }
+
+    /// <summary>
+    /// Deletes a penalty event from the match
+    /// </summary>
+    /// <param name="penaltyEventId">The ID of the penalty event to delete</param>
+    /// <returns>The deleted penalty event</returns>
+    /// <exception cref="ArgumentException">Thrown when the penalty event is not found</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in a state that allows deleting penalties</exception>
+    public FloorballPenalty DeletePenaltyEvent(Guid penaltyEventId)
+    {
+        if (Status == FloorballMatchStatus.Completed)
+            throw new InvalidOperationException("Cannot delete penalty events from a completed match.");
+
+        // Find the penalty event
+        FloorballPenalty? penaltyEvent = _events.OfType<FloorballPenalty>().FirstOrDefault(p => p.Id == penaltyEventId);
+        if (penaltyEvent == null)
+            throw new ArgumentException($"Penalty event with ID {penaltyEventId} not found in this match.", nameof(penaltyEventId));
+
+        // Remove the penalty event
+        _events.Remove(penaltyEvent);
+
+        // Add domain event for penalty deletion
+        AddDomainEvent(new FloorballPenaltyDeletedEvent(
+            Id,
+            penaltyEvent.TeamId,
+            penaltyEvent.PlayerId,
+            penaltyEvent.PenaltyType,
+            penaltyEvent.DurationInMinutes,
+            penaltyEvent.PeriodNumber,
+            penaltyEvent.TimeInSeconds,
+            penaltyEvent.Description));
+
+        return penaltyEvent;
     }
 } 

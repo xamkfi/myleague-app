@@ -10,7 +10,7 @@ public class Address : IEquatable<Address>
     /// <summary>
     /// Gets the street line 1
     /// </summary>
-    public string Street1 { get; private set; }
+    public string? Street1 { get; private set; }
     
     /// <summary>
     /// Gets the street line 2 (optional)
@@ -20,12 +20,12 @@ public class Address : IEquatable<Address>
     /// <summary>
     /// Gets the city
     /// </summary>
-    public string City { get; private set; }
+    public string? City { get; private set; }
     
     /// <summary>
     /// Gets the postal code
     /// </summary>
-    public string PostalCode { get; private set; }
+    public string? PostalCode { get; private set; }
     
     /// <summary>
     /// Gets the country
@@ -43,25 +43,8 @@ public class Address : IEquatable<Address>
     /// <summary>
     /// Creates a new address
     /// </summary>
-    public Address(string street1, string city, string postalCode, string country, string? street2 = null)
+    public Address(string? street1, string? city, string? postalCode, string country, string? street2 = null)
     {
-        ArgumentNullException.ThrowIfNull(street1);
-        ArgumentNullException.ThrowIfNull(city);
-        ArgumentNullException.ThrowIfNull(postalCode);
-        ArgumentNullException.ThrowIfNull(country);
-        
-        if (string.IsNullOrWhiteSpace(street1))
-            throw new ArgumentException("Street cannot be empty", nameof(street1));
-        
-        if (string.IsNullOrWhiteSpace(city))
-            throw new ArgumentException("City cannot be empty", nameof(city));
-        
-        if (string.IsNullOrWhiteSpace(postalCode))
-            throw new ArgumentException("Postal code cannot be empty", nameof(postalCode));
-        
-        if (string.IsNullOrWhiteSpace(country))
-            throw new ArgumentException("Country cannot be empty", nameof(country));
-        
         Street1 = street1;
         Street2 = street2;
         City = city;
@@ -99,5 +82,8 @@ public class Address : IEquatable<Address>
         return left.Equals(right);
     }
 
-    public static bool operator !=(Address? left, Address? right) => !(left == right);
+    public static bool operator !=(Address? left, Address? right)
+    {
+        return !(left == right);
+    }
 } 

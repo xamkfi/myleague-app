@@ -129,7 +129,7 @@ namespace WebAPI.Controllers.Floorball
         /// </summary>
         /// <param name="divisionId">Division</param>
         /// <returns>List of teams in the division</returns>
-        [HttpGet("division/{division}")]
+        [HttpGet("division/{divisionId}")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]

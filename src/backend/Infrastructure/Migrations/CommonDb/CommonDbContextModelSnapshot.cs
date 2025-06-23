@@ -17,6 +17,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("common")
                 .HasAnnotation("ProductVersion", "9.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -43,6 +44,9 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("FoundingDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -55,13 +59,16 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("WebsiteUrl")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clubs");
+                    b.ToTable("Clubs", "common");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Division", b =>
@@ -69,6 +76,9 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
@@ -98,6 +108,9 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("IsActive")
@@ -116,7 +129,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.HasIndex("SportType", "IsActive")
                         .HasDatabaseName("IX_Divisions_SportType_IsActive");
 
-                    b.ToTable("Divisions");
+                    b.ToTable("Divisions", "common");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.NewsArticle", b =>
@@ -193,17 +206,21 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .IsDescending(false, true)
                         .HasDatabaseName("IX_News_IsArchived_CreatedAt");
 
-                    b.ToTable("NewsArticles");
+                    b.ToTable("NewsArticles", "common");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasComment("Unique identifier for the entity");
 
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -220,9 +237,24 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Persons");
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Person_CreatedAt");
+
+                    b.HasIndex("UpdatedAt")
+                        .HasDatabaseName("IX_Person_UpdatedAt")
+                        .HasFilter("\"UpdatedAt\" IS NOT NULL");
+
+                    b.HasIndex("CreatedAt", "UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_Person_Audit");
+
+                    b.ToTable("Persons", "common");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>
@@ -233,7 +265,6 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                                 .HasColumnType("uuid");
 
                             b1.Property<string>("City")
-                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("character varying(100)");
 
@@ -243,12 +274,10 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                                 .HasColumnType("character varying(100)");
 
                             b1.Property<string>("PostalCode")
-                                .IsRequired()
                                 .HasMaxLength(20)
                                 .HasColumnType("character varying(20)");
 
                             b1.Property<string>("Street1")
-                                .IsRequired()
                                 .HasMaxLength(200)
                                 .HasColumnType("character varying(200)");
 
@@ -258,7 +287,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
 
                             b1.HasKey("PersonId");
 
-                            b1.ToTable("Persons");
+                            b1.ToTable("Persons", "common");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersonId");
@@ -284,7 +313,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
 
                             b1.HasKey("PersonId");
 
-                            b1.ToTable("Persons");
+                            b1.ToTable("Persons", "common");
 
                             b1.WithOwner()
                                 .HasForeignKey("PersonId");

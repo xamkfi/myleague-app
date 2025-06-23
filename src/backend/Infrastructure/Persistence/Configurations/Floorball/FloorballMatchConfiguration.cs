@@ -75,22 +75,11 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                     j => j.HasOne<FloorballMatch>().WithMany().HasForeignKey("MatchesId")
                 );
 
-            // Configure owned types for period scores
-            builder.OwnsMany(m => m.PeriodScores, periodBuilder =>
-            {
-                periodBuilder.WithOwner().HasForeignKey("MatchId");
-                periodBuilder.Property<int>("Id").ValueGeneratedOnAdd();
-                periodBuilder.HasKey("Id");
-
-                periodBuilder.Property(p => p.PeriodNumber)
-                    .IsRequired();
-
-                periodBuilder.Property(p => p.HomeScore)
-                    .IsRequired();
-
-                periodBuilder.Property(p => p.AwayScore)
-                    .IsRequired();
-            });
+            // Configure relationship with PeriodScores - they are now separate entities
+            builder.HasMany(m => m.PeriodScores)
+                .WithOne()
+                .HasForeignKey(p => p.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Ignore complex event configurations for now to avoid navigationName issues
             builder.Ignore(m => m.Events);

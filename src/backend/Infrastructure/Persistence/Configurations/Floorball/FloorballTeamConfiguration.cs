@@ -88,6 +88,22 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 
                 rosterBuilder.Property(p => p.PenaltyMinutes)
                     .IsRequired();
+
+                // Foreign key relationship to FloorballPlayer
+                rosterBuilder.HasOne<FloorballPlayer>()
+                    .WithMany()
+                    .HasForeignKey(p => p.PlayerId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                // Indexes for performance
+                rosterBuilder.HasIndex(p => p.PlayerId)
+                    .HasDatabaseName("IX_FloorballTeamPlayer_PlayerId");
+
+                rosterBuilder.HasIndex(p => new { p.TeamId, p.JerseyNumber })
+                    .IsUnique()
+                    .HasFilter("\"JerseyNumber\" IS NOT NULL")
+                    .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_JerseyNumber");
             });
         }
     }
