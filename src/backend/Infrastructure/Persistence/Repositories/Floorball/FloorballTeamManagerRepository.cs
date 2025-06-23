@@ -60,8 +60,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 query = query.Where(tm => tm.PrimaryResponsibility == primaryResponsibility);
             }
 
-            // Apply ordering by years of experience (descending)
-            query = query.OrderByDescending(tm => tm.YearsOfExperience);
+            // Apply ordering by ID (for consistent ordering)
+            query = query.OrderBy(tm => tm.Id);
 
             // Get total count before pagination
             int totalCount = await query.CountAsync(cancellationToken);
@@ -83,7 +83,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             return await _entities
                 .Where(tm => tm.IsActive)
-                .OrderByDescending(tm => tm.YearsOfExperience)
+                .OrderBy(tm => tm.Id)
                 .ToListAsync();
         }
 
@@ -96,7 +96,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             return await _entities
                 .Where(tm => tm.PrimaryResponsibility == primaryResponsibility)
-                .OrderByDescending(tm => tm.YearsOfExperience)
+                .OrderBy(tm => tm.Id)
                 .ToListAsync();
         }
 

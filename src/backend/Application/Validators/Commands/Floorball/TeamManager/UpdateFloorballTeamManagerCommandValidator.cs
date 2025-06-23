@@ -17,8 +17,5 @@ public class UpdateFloorballTeamManagerCommandValidator : AbstractValidator<Upda
         RuleFor(x => x.PrimaryResponsibility)
             .MaximumLength(100).WithMessage("Primary responsibility cannot exceed 100 characters")
             .When(x => !string.IsNullOrEmpty(x.PrimaryResponsibility));
-
-        RuleFor(x => x.YearsOfExperience)
-            .GreaterThanOrEqualTo(0).WithMessage("Years of experience cannot be negative");
     }
 } 

@@ -14,16 +14,15 @@ namespace WebAPI.Models.Floorball
         public Guid PersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the ID of the team this manager is responsible for
+        /// </summary>
+        [Required]
+        public Guid TeamId { get; set; }
+
+        /// <summary>
         /// Gets or sets the primary responsibility of the team manager
         /// </summary>
         public string? PrimaryResponsibility { get; set; }
-
-        /// <summary>
-        /// Gets or sets the years of experience of the team manager
-        /// </summary>
-        [Required]
-        [Range(0, 100)]
-        public int YearsOfExperience { get; set; }
 
         /// <summary>
         /// Gets or sets whether the team manager is active

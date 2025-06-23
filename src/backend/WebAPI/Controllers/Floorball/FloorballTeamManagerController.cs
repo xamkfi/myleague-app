@@ -60,8 +60,8 @@ namespace WebAPI.Controllers.Floorball
 
             CreateFloorballTeamManagerCommand command = new CreateFloorballTeamManagerCommand(
                 request.PersonId,
-                request.PrimaryResponsibility,
-                request.YearsOfExperience);
+                request.TeamId,
+                request.PrimaryResponsibility);
 
             Result<FloorballTeamManagerDto> result = await _mediator.Send(command);
 
@@ -102,8 +102,7 @@ namespace WebAPI.Controllers.Floorball
             UpdateFloorballTeamManagerCommand command = new UpdateFloorballTeamManagerCommand(
                 id,
                 request.IsActive,
-                request.PrimaryResponsibility,
-                request.YearsOfExperience);
+                request.PrimaryResponsibility);
 
             Result<FloorballTeamManagerDto> result = await _mediator.Send(command);
 

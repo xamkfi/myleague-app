@@ -607,12 +607,48 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"primaryResponsibility\": \"Operations\",\n  \"yearsOfExperience\": 3\n}"
+							"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{teamId}}\",\n  \"primaryResponsibility\": \"Operations\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballTeamManager",
 							"host": ["{{baseUrl}}"],
 							"path": ["FloorballTeamManager"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Team Managers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeamManager?page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeamManager"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Team Manager By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeamManager/{{teamManagerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeamManager", "{{teamManagerId}}"]
 						}
 					},
 					"response": []
@@ -629,12 +665,34 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"isActive\": true,\n  \"primaryResponsibility\": \"Logistics\",\n  \"yearsOfExperience\": 4\n}"
+							"raw": "{\n  \"isActive\": true,\n  \"primaryResponsibility\": \"Logistics\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballTeamManager/{{teamManagerId}}",
 							"host": ["{{baseUrl}}"],
 							"path": ["FloorballTeamManager", "{{teamManagerId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Team Manager Team Assignment",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"teamId\": \"{{teamId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeamManager/{{teamManagerId}}/team",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeamManager", "{{teamManagerId}}", "team"]
 						}
 					},
 					"response": []

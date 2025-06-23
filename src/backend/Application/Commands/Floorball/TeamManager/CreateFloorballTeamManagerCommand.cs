@@ -12,11 +12,11 @@ namespace Application.Commands.Floorball.TeamManager
     /// <summary>
     /// Command for creating a new floorball team manager
     /// </summary>
-    /// <param name="PersonId"></param>
-    /// <param name="PrimaryResponsibility"></param>
-    /// <param name="YearsOfExperience"></param>
+    /// <param name="PersonId">The ID of the person who will be the team manager</param>
+    /// <param name="TeamId">The ID of the team this manager will be responsible for</param>
+    /// <param name="PrimaryResponsibility">The primary responsibility area (optional)</param>
     public record CreateFloorballTeamManagerCommand(
         Guid PersonId,
-        string? PrimaryResponsibility,
-        int YearsOfExperience) : IRequest<Result<FloorballTeamManagerDto>>;
+        Guid TeamId,
+        string? PrimaryResponsibility) : IRequest<Result<FloorballTeamManagerDto>>;
 } 

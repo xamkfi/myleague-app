@@ -28,9 +28,9 @@ public static class FloorballTeamManagerMapper
             manager.Id,
             manager.PersonId,
             null!, // TODO: Add Person navigation property to FloorballTeamManager entity or load Person separately
+            manager.TeamId,
             manager.IsActive,
-            manager.PrimaryResponsibility,
-            manager.YearsOfExperience
+            manager.PrimaryResponsibility
         );
     }
 
@@ -61,8 +61,8 @@ public static class FloorballTeamManagerMapper
 
         return new FloorballTeamManager(
             command.PersonId,
-            command.PrimaryResponsibility,
-            command.YearsOfExperience);
+            command.TeamId,
+            command.PrimaryResponsibility);
     }
 
     /// <summary>
@@ -78,10 +78,7 @@ public static class FloorballTeamManagerMapper
         if (command == null)
             throw new ArgumentNullException(nameof(command));
 
-        // Note: The entity needs to expose methods for updating these properties
-        // For now, assuming these methods exist or will be added
         manager.UpdateActiveStatus(command.IsActive);
-        manager.UpdateExperience(command.YearsOfExperience);
         manager.UpdatePrimaryResponsibility(command.PrimaryResponsibility);
     }
 } 
