@@ -55,56 +55,12 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(t => t.ClubId)
                 .IsRequired();
 
-            // Configure the owned FloorballTeamPlayer collection
-            builder.OwnsMany(t => t.Roster, rosterBuilder =>
-            {
-                rosterBuilder.WithOwner().HasForeignKey("TeamId");
-                rosterBuilder.Property<Guid>("Id").ValueGeneratedOnAdd();
-                rosterBuilder.HasKey("Id");
-                
-                rosterBuilder.Property(p => p.TeamId)
-                    .IsRequired();
-                
-                rosterBuilder.Property(p => p.PlayerId)
-                    .IsRequired();
-                
-                rosterBuilder.Property(p => p.Position)
-                    .IsRequired()
-                    .HasConversion<string>();
-                
-                rosterBuilder.Property(p => p.JerseyNumber);
-                
-                rosterBuilder.Property(p => p.IsActive)
-                    .IsRequired();
-                
-                rosterBuilder.Property(p => p.GamesPlayed)
-                    .IsRequired();
-                
-                rosterBuilder.Property(p => p.Goals)
-                    .IsRequired();
-                
-                rosterBuilder.Property(p => p.Assists)
-                    .IsRequired();
-                
-                rosterBuilder.Property(p => p.PenaltyMinutes)
-                    .IsRequired();
-
-                // Foreign key relationship to FloorballPlayer
-                rosterBuilder.HasOne<FloorballPlayer>()
-                    .WithMany()
-                    .HasForeignKey(p => p.PlayerId)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .IsRequired();
-
-                // Indexes for performance
-                rosterBuilder.HasIndex(p => p.PlayerId)
-                    .HasDatabaseName("IX_FloorballTeamPlayer_PlayerId");
-
-                rosterBuilder.HasIndex(p => new { p.TeamId, p.JerseyNumber })
-                    .IsUnique()
-                    .HasFilter("\"JerseyNumber\" IS NOT NULL")
-                    .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_JerseyNumber");
-            });
+            // Configure the relationship with FloorballTeamPlayer
+            builder.HasMany(t => t.Roster)
+                .WithOne()
+                .HasForeignKey(p => p.TeamId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
         }
     }
 } 
