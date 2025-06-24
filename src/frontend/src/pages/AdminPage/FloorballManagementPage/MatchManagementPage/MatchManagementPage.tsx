@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
-import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
+import Navbar from '../../../../components/Navigation/Navbar';
 import type { 
   FloorballMatchDto, 
   FloorballTeam,
@@ -44,7 +44,6 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch seasons, teams, and matches in parallel
       const [seasonsResponse, teamsResponse, matchesResponse] = await Promise.all([
         floorballSeasonService.getAll(),
         floorballTeamService.getAll(),
@@ -71,17 +70,14 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
     }
   }, []);
 
-  // Filter matches by selected season
   const filteredMatches = selectedSeasonId 
     ? matches.filter(match => match.seasonId === selectedSeasonId)
     : matches;
 
-  // Initialize data on component mount
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Handle create form submission
   const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -121,50 +117,14 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
     }
   };
 
-  // Handle match status changes
-  const handleStartMatch = async (matchId: string) => {
-    try {
-      setActionLoading(`start-${matchId}`);
-      setError(null);
-
-      const response = await floorballMatchService.start(matchId);
-      
-      if (response.success && response.data) {
-        setMatches(prev => prev.map(match => 
-          match.id === matchId ? response.data! : match
-        ));
-      }
-
-    } catch (error) {
-      console.error('Error starting match:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start match');
-    } finally {
-      setActionLoading(null);
-    }
+  const handleLiveMatch = (match: FloorballMatchDto) => {
+    navigate(`/admin/floorball/matches/${match.id}/live`);
   };
 
-  const handleCompleteMatch = async (matchId: string) => {
-    try {
-      setActionLoading(`complete-${matchId}`);
-      setError(null);
-
-      const response = await floorballMatchService.complete(matchId);
-      
-      if (response.success && response.data) {
-        setMatches(prev => prev.map(match => 
-          match.id === matchId ? response.data! : match
-        ));
-      }
-
-    } catch (error) {
-      console.error('Error completing match:', error);
-      setError(error instanceof Error ? error.message : 'Failed to complete match');
-    } finally {
-      setActionLoading(null);
-    }
+  const handleEditMatch = (match: FloorballMatchDto) => {
+    navigate(`/admin/floorball/matches/${match.id}/edit`);
   };
 
-  // Format date for display (dd-mm-yyyy 24-hour format)
   const formatDateTime = (dateTime: string) => {
     const date = new Date(dateTime);
     const day = date.getDate().toString().padStart(2, '0');
@@ -176,180 +136,131 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
     return `${day}-${month}-${year}, ${hours}:${minutes}`;
   };
 
-  // Get status badge styling
-  const getStatusClass = (status: FloorballMatchStatus) => {
-    const baseClass = "match-management__status";
+  const getStatusBadge = (status: FloorballMatchStatus) => {
+    const statusClasses = {
+      'Scheduled': 'status-scheduled',
+      'InProgress': 'status-progress',
+      'Completed': 'status-completed',
+      'Cancelled': 'status-cancelled',
+      'Postponed': 'status-postponed'
+    };
     
-    switch (status) {
-      case 'Scheduled':
-        return `${baseClass} ${baseClass}--scheduled`;
-      case 'InProgress':
-        return `${baseClass} ${baseClass}--progress`;
-      case 'Completed':
-        return `${baseClass} ${baseClass}--completed`;
-      case 'Cancelled':
-        return `${baseClass} ${baseClass}--cancelled`;
-      case 'Postponed':
-        return `${baseClass} ${baseClass}--postponed`;
-      default:
-        return `${baseClass} ${baseClass}--completed`;
-    }
+    return `status-badge ${statusClasses[status] || 'status-completed'}`;
   };
 
-  // Helper function to format season display name
   const formatSeasonDisplayName = (season: FloorballSeasonDto) => {
-    const startYear = new Date(season.startDate).getFullYear();
-    const endYear = new Date(season.endDate).getFullYear();
-    return `${season.name} (${startYear}-${endYear})`;
-  };
-
-  // Handle Live button click
-  const handleLiveMatch = (match: FloorballMatchDto) => {
-    // TODO: Implement live match tracking
-    alert(`🔴 Live match tracking for "${match.homeTeamName} vs ${match.awayTeamName}" coming soon!`);
-  };
-
-  // Handle Edit button click
-  const handleEditMatch = (match: FloorballMatchDto) => {
-    // TODO: Implement match editing
-    alert(`✏️ Edit match "${match.homeTeamName} vs ${match.awayTeamName}" coming soon!`);
+    return `${season.name} (${season.startDate.split('-')[0]}-${season.endDate.split('-')[0]})`;
   };
 
   if (loading) {
     return (
-      <PageTemplate title={t('floorball.matches.title', 'Manage Matches')}>
-        <div className="match-management">
-          <div className="match-management__container">
-            <div className="match-management__loading">
-              <div className="match-management__loading-header"></div>
-              <div className="match-management__loading-container">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="match-management__loading-row"></div>
-                ))}
-              </div>
-            </div>
+      <div className="match-management">
+        <Navbar />
+        <div className="match-management__content">
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+            <p>Loading matches...</p>
           </div>
         </div>
-      </PageTemplate>
+      </div>
     );
   }
 
   return (
-    <PageTemplate title={t('floorball.matches.title', 'Manage Matches')}>
-      <div className="match-management">
-        <div className="match-management__container">
-          {/* Enhanced Header */}
-          <div className="match-management__header">
-            <div className="match-management__header-actions">
-              {/* Back Button */}
-              <button
-                onClick={() => navigate('/admin/floorball')}
-                className="match-management__back-btn"
-              >
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                {t('common.back', 'Back to Floorball Management')}
-              </button>
+    <div className="match-management">
+      <Navbar />
+      <div className="match-management__content">
+        {/* Header Section */}
+        <div className="page-header">
+          <div className="page-header__top">
+            <button 
+              onClick={() => navigate('/admin/floorball')}
+              className="back-button"
+            >
+              ← Back to Admin
+            </button>
+            <button 
+              onClick={() => setShowCreateForm(true)}
+              className="create-button"
+            >
+              + Create New Match
+            </button>
+          </div>
+          <div className="page-header__main">
+            <h1 className="page-title">Match Management</h1>
+            <p className="page-subtitle">Manage your floorball matches, track live games, and organize your season</p>
+          </div>
+        </div>
 
-              {/* Create Button */}
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="match-management__create-btn"
-              >
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                {t('floorball.matches.createNew', 'Create New Match')}
-              </button>
+        {/* Error Message */}
+        {error && (
+          <div className="error-alert">
+            <span className="error-icon">⚠️</span>
+            <span className="error-text">{error}</span>
+            <button onClick={() => setError(null)} className="error-close">×</button>
+          </div>
+        )}
+
+        {/* Stats and Filter Section */}
+        <div className="stats-section">
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-number">{filteredMatches.length}</div>
+              <div className="stat-label">{selectedSeasonId ? 'Season Matches' : 'Total Matches'}</div>
             </div>
-
-            {/* Centered Title */}
-            <div className="match-management__header-title-section">
-              <h1 className="match-management__header-title">
-                {t('floorball.matches.title', 'Match Management')}
-              </h1>
-              <p className="match-management__header-subtitle">
-                Manage your floorball matches, track live games, and organize your season
-              </p>
+            <div className="stat-card">
+              <div className="stat-number">{matches.filter(m => m.status === 'Scheduled').length}</div>
+              <div className="stat-label">Scheduled</div>
+              <div className="stat-indicator scheduled"></div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-number">{matches.filter(m => m.status === 'InProgress').length}</div>
+              <div className="stat-label">In Progress</div>
+              <div className="stat-indicator progress"></div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-number">{matches.filter(m => m.status === 'Completed').length}</div>
+              <div className="stat-label">Completed</div>
+              <div className="stat-indicator completed"></div>
             </div>
           </div>
 
-          {/* Error Display */}
-          {error && (
-            <div className="match-management__error">
-              <div className="match-management__error-content">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{error}</span>
-                <button 
-                  onClick={() => setError(null)}
-                  className="match-management__error-close"
-                >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Statistics Section */}
-          <div className="match-management__stats">
-            <div className="match-management__stats-content">
-              <div className="match-management__stats-left">
-                <div className="match-management__stats-total">
-                  {filteredMatches.length}
-                  <span>
-                    {selectedSeasonId ? 'matches in season' : 'total matches'}
-                  </span>
-                </div>
-                
-                <div className="match-management__stats-indicators">
-                  <div className="match-management__stats-indicator">
-                    <div className="match-management__stats-indicator-dot match-management__stats-indicator-dot--scheduled"></div>
-                    <span className="match-management__stats-indicator-text">
-                      <span>{matches.filter(m => m.status === 'Scheduled').length}</span> Scheduled
-                    </span>
-                  </div>
-                  <div className="match-management__stats-indicator">
-                    <div className="match-management__stats-indicator-dot match-management__stats-indicator-dot--progress"></div>
-                    <span className="match-management__stats-indicator-text">
-                      <span>{matches.filter(m => m.status === 'InProgress').length}</span> In Progress
-                    </span>
-                  </div>
-                  <div className="match-management__stats-indicator">
-                    <div className="match-management__stats-indicator-dot match-management__stats-indicator-dot--completed"></div>
-                    <span className="match-management__stats-indicator-text">
-                      <span>{matches.filter(m => m.status === 'Completed').length}</span> Completed
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Season Filter */}
-              <div className="match-management__stats-filter">
-                <label>Filter by Season:</label>
-                <select
-                  value={selectedSeasonId}
-                  onChange={(e) => setSelectedSeasonId(e.target.value)}
-                >
-                  <option value="">All Seasons</option>
-                  {seasons.map(season => (
-                    <option key={season.id} value={season.id}>
-                      {formatSeasonDisplayName(season)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+          <div className="filter-section">
+            <label htmlFor="season-filter">Filter by Season:</label>
+            <select
+              id="season-filter"
+              value={selectedSeasonId}
+              onChange={(e) => setSelectedSeasonId(e.target.value)}
+              className="season-filter"
+            >
+              <option value="">All Seasons</option>
+              {seasons.map(season => (
+                <option key={season.id} value={season.id}>
+                  {formatSeasonDisplayName(season)}
+                </option>
+              ))}
+            </select>
           </div>
+        </div>
 
-          {/* Matches Table */}
-          <div className="match-management__table">
-            <div className="match-management__table-container">
-              <table>
+        {/* Matches Table */}
+        <div className="matches-section">
+          <div className="section-header">
+            <h2>Matches</h2>
+          </div>
+          
+          {filteredMatches.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📋</div>
+              <h3>No matches found</h3>
+              <p>{selectedSeasonId ? 'No matches found for the selected season' : 'Create your first match to get started'}</p>
+              <button onClick={() => setShowCreateForm(true)} className="create-button">
+                Create New Match
+              </button>
+            </div>
+          ) : (
+            <div className="matches-table-container">
+              <table className="matches-table">
                 <thead>
                   <tr>
                     <th>Match</th>
@@ -361,213 +272,153 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredMatches.length === 0 ? (
-                    <tr>
-                      <td colSpan={6}>
-                        <div className="match-management__empty">
-                          <svg className="match-management__empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                          </svg>
-                          <h3 className="match-management__empty-title">
-                            {selectedSeasonId ? 'No matches found for selected season' : 'No matches found'}
-                          </h3>
-                          <p className="match-management__empty-description">Create your first match to get started</p>
+                  {filteredMatches.map((match) => (
+                    <tr key={match.id}>
+                      <td className="match-cell">
+                        <div className="match-teams">
+                          {match.homeTeamName} vs {match.awayTeamName}
+                        </div>
+                      </td>
+                      <td className="date-cell">
+                        {formatDateTime(match.scheduledDateTime)}
+                      </td>
+                      <td className="venue-cell">
+                        {match.venue || <span className="tbd">TBD</span>}
+                      </td>
+                      <td className="score-cell">
+                        {match.status === 'Scheduled' ? (
+                          <span className="no-score">-</span>
+                        ) : (
+                          <span className="score">{match.homeScore} - {match.awayScore}</span>
+                        )}
+                      </td>
+                      <td className="status-cell">
+                        <span className={getStatusBadge(match.status)}>
+                          {match.status}
+                        </span>
+                      </td>
+                      <td className="actions-cell">
+                        <div className="action-buttons">
                           <button
-                            onClick={() => setShowCreateForm(true)}
-                            className="match-management__empty-button"
+                            onClick={() => handleLiveMatch(match)}
+                            className="live-button"
+                            disabled={actionLoading !== null}
                           >
-                            Create New Match
+                            🔴 Live
+                          </button>
+                          <button
+                            onClick={() => handleEditMatch(match)}
+                            className="edit-button"
+                            disabled={actionLoading !== null}
+                          >
+                            ✏️ Edit
                           </button>
                         </div>
                       </td>
                     </tr>
-                  ) : (
-                    filteredMatches.map((match) => (
-                      <tr key={match.id}>
-                        <td>
-                          <div className="match-management__table-match-name">
-                            {match.homeTeamName} vs {match.awayTeamName}
-                          </div>
-                        </td>
-                        <td className="no-wrap">
-                          <div className="match-management__table-date">
-                            {formatDateTime(match.scheduledDateTime)}
-                          </div>
-                        </td>
-                        <td className="no-wrap">
-                          <div className={`match-management__table-venue ${!match.venue ? 'match-management__table-venue--tbd' : ''}`}>
-                            {match.venue || 'TBD'}
-                          </div>
-                        </td>
-                        <td className="no-wrap">
-                          <div className={`match-management__table-score ${match.status === 'Scheduled' ? 'match-management__table-score--empty' : 'match-management__table-score--filled'}`}>
-                            {match.status === 'Scheduled' ? '-' : `${match.homeScore} - ${match.awayScore}`}
-                          </div>
-                        </td>
-                        <td className="no-wrap">
-                          <span className={getStatusClass(match.status)}>
-                            {match.status}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="match-management__table-actions">
-                            {/* Live Button */}
-                            <button
-                              onClick={() => handleLiveMatch(match)}
-                              className="match-management__live-btn"
-                            >
-                              <svg fill="currentColor" viewBox="0 0 20 20">
-                                <circle cx="10" cy="10" r="3" />
-                              </svg>
-                              Live
-                            </button>
-                            
-                            {/* Edit Button */}
-                            <button
-                              onClick={() => handleEditMatch(match)}
-                              className="match-management__edit-btn"
-                            >
-                              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                              Edit
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
-          </div>
-
-          {/* Create Form Modal */}
-          {showCreateForm && (
-            <div className="modal">
-              <div className="modal__content">
-                <div className="modal__header">
-                  <div className="modal__header-content">
-                    <h2 className="modal__header-title">Create New Match</h2>
-                    <button
-                      onClick={() => setShowCreateForm(false)}
-                      className="modal__header-close"
-                    >
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                
-                <form onSubmit={handleCreateMatch} className="modal__form">
-                  {/* Season Selection */}
-                  <div className="form-group">
-                    <label>Season *</label>
-                    <select
-                      value={createForm.seasonId}
-                      onChange={(e) => setCreateForm(prev => ({ ...prev, seasonId: e.target.value }))}
-                      required
-                    >
-                      <option value="">Select Season</option>
-                      {seasons.map(season => (
-                        <option key={season.id} value={season.id}>
-                          {formatSeasonDisplayName(season)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Home Team Selection */}
-                  <div className="form-group">
-                    <label>Home Team *</label>
-                    <select
-                      value={createForm.homeTeamId}
-                      onChange={(e) => setCreateForm(prev => ({ ...prev, homeTeamId: e.target.value }))}
-                      required
-                    >
-                      <option value="">Select Home Team</option>
-                      {teams.map(team => (
-                        <option key={team.id} value={team.id}>
-                          {team.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Away Team Selection */}
-                  <div className="form-group">
-                    <label>Away Team *</label>
-                    <select
-                      value={createForm.awayTeamId}
-                      onChange={(e) => setCreateForm(prev => ({ ...prev, awayTeamId: e.target.value }))}
-                      required
-                    >
-                      <option value="">Select Away Team</option>
-                      {teams.filter(team => team.id !== createForm.homeTeamId).map(team => (
-                        <option key={team.id} value={team.id}>
-                          {team.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Scheduled Date/Time */}
-                  <div className="form-group">
-                    <label>Scheduled Date & Time *</label>
-                    <input
-                      type="datetime-local"
-                      value={createForm.scheduledDateTime}
-                      onChange={(e) => setCreateForm(prev => ({ ...prev, scheduledDateTime: e.target.value }))}
-                      required
-                    />
-                  </div>
-
-                  {/* Venue */}
-                  <div className="form-group">
-                    <label>Venue</label>
-                    <input
-                      type="text"
-                      value={createForm.venue}
-                      onChange={(e) => setCreateForm(prev => ({ ...prev, venue: e.target.value }))}
-                      placeholder="Enter venue name"
-                    />
-                  </div>
-
-                  {/* Form Actions */}
-                  <div className="modal__form-actions">
-                    <button
-                      type="submit"
-                      disabled={actionLoading === 'create'}
-                      className="primary"
-                    >
-                      {actionLoading === 'create' ? (
-                        <>
-                          <svg className="spinner" fill="none" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Creating...
-                        </>
-                      ) : (
-                        'Create Match'
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowCreateForm(false)}
-                      className="secondary"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
           )}
         </div>
+
+        {/* Create Match Modal */}
+        {showCreateForm && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <div className="modal-header">
+                <h2>Create New Match</h2>
+                <button onClick={() => setShowCreateForm(false)} className="modal-close">×</button>
+              </div>
+              <form onSubmit={handleCreateMatch} className="modal-form">
+                <div className="form-group">
+                  <label htmlFor="season">Season *</label>
+                  <select
+                    id="season"
+                    value={createForm.seasonId}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, seasonId: e.target.value }))}
+                    required
+                  >
+                    <option value="">Select Season</option>
+                    {seasons.map(season => (
+                      <option key={season.id} value={season.id}>
+                        {formatSeasonDisplayName(season)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="homeTeam">Home Team *</label>
+                  <select
+                    id="homeTeam"
+                    value={createForm.homeTeamId}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, homeTeamId: e.target.value }))}
+                    required
+                  >
+                    <option value="">Select Home Team</option>
+                    {teams.map(team => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="awayTeam">Away Team *</label>
+                  <select
+                    id="awayTeam"
+                    value={createForm.awayTeamId}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, awayTeamId: e.target.value }))}
+                    required
+                  >
+                    <option value="">Select Away Team</option>
+                    {teams.map(team => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="dateTime">Date & Time *</label>
+                  <input
+                    type="datetime-local"
+                    id="dateTime"
+                    value={createForm.scheduledDateTime}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, scheduledDateTime: e.target.value }))}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="venue">Venue</label>
+                  <input
+                    type="text"
+                    id="venue"
+                    value={createForm.venue}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, venue: e.target.value }))}
+                    placeholder="Enter venue (optional)"
+                  />
+                </div>
+                
+                <div className="modal-actions">
+                  <button type="button" onClick={() => setShowCreateForm(false)} className="cancel-button">
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={actionLoading === 'create'} className="submit-button">
+                    {actionLoading === 'create' ? 'Creating...' : 'Create Match'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
-    </PageTemplate>
+    </div>
   );
 };
 
