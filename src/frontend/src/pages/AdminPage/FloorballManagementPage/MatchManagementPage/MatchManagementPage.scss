@@ -459,10 +459,11 @@
 }
 
 .live-button,
+.go-live-button,
 .edit-button {
   display: inline-flex;
   align-items: center;
-  padding: 0.5rem 0.75rem;
+  justify-content: center;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -470,6 +471,7 @@
   transition: all 0.2s ease;
   border: none;
   white-space: nowrap;
+  min-width: 70px;
 
   &:disabled {
     opacity: 0.5;
@@ -480,9 +482,20 @@
 .live-button {
   background-color: #dc2626;
   color: white;
+  padding: 0.5rem 1rem;
 
   &:hover:not(:disabled) {
     background-color: #b91c1c;
+  }
+}
+
+.go-live-button {
+  background-color: #16a34a;
+  color: white;
+  padding: 0.5rem 0.75rem;
+
+  &:hover:not(:disabled) {
+    background-color: #15803d;
   }
 }
 
@@ -490,11 +503,14 @@
   background-color: #f3f4f6;
   color: #374151;
   border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
 
   &:hover:not(:disabled) {
     background-color: #e5e7eb;
   }
 }
+
+
 
 // Modal Styles
 .modal-overlay {

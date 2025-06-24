@@ -26,6 +26,7 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [liveMatches, setLiveMatches] = useState<Set<string>>(new Set());
 
   // Form state
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -70,9 +71,43 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
     }
   }, []);
 
-  const filteredMatches = selectedSeasonId 
-    ? matches.filter(match => match.seasonId === selectedSeasonId)
-    : matches;
+  // Filter and sort matches: upcoming first (ascending), then past (descending)
+  const filteredMatches = React.useMemo(() => {
+    const now = new Date();
+    
+    // First filter by season if selected
+    const filtered = selectedSeasonId 
+      ? matches.filter(match => match.seasonId === selectedSeasonId)
+      : matches;
+    
+    // Separate upcoming and past matches
+    const upcomingMatches = filtered.filter(match => {
+      const matchDate = new Date(match.scheduledDateTime);
+      return matchDate >= now || match.status === 'Scheduled' || match.status === 'InProgress';
+    });
+    
+    const pastMatches = filtered.filter(match => {
+      const matchDate = new Date(match.scheduledDateTime);
+      return matchDate < now && (match.status === 'Completed' || match.status === 'Cancelled' || match.status === 'Postponed');
+    });
+    
+    // Sort upcoming matches by date ascending (soonest first)
+    const sortedUpcoming = upcomingMatches.sort((a, b) => {
+      const dateA = new Date(a.scheduledDateTime);
+      const dateB = new Date(b.scheduledDateTime);
+      return dateA.getTime() - dateB.getTime();
+    });
+    
+    // Sort past matches by date descending (most recent first)
+    const sortedPast = pastMatches.sort((a, b) => {
+      const dateA = new Date(a.scheduledDateTime);
+      const dateB = new Date(b.scheduledDateTime);
+      return dateB.getTime() - dateA.getTime();
+    });
+    
+    // Combine: upcoming first, then past
+    return [...sortedUpcoming, ...sortedPast];
+  }, [matches, selectedSeasonId]);
 
   useEffect(() => {
     fetchData();
@@ -118,7 +153,22 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
   };
 
   const handleLiveMatch = (match: FloorballMatchDto) => {
-    navigate(`/admin/floorball/matches/${match.id}/live`);
+    const isCurrentlyLive = liveMatches.has(match.id);
+    
+    if (isCurrentlyLive) {
+      // If already live, navigate to live match page
+      navigate(`/admin/floorball/matches/${match.id}/live`);
+    } else {
+      // If not live, mark as live (Go Live -> Live) and update status
+      setLiveMatches(prev => new Set([...prev, match.id]));
+      
+      // Update match status to InProgress
+      setMatches(prev => prev.map(m => 
+        m.id === match.id 
+          ? { ...m, status: 'InProgress' as FloorballMatchStatus }
+          : m
+      ));
+    }
   };
 
   const handleEditMatch = (match: FloorballMatchDto) => {
@@ -301,10 +351,10 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
                         <div className="action-buttons">
                           <button
                             onClick={() => handleLiveMatch(match)}
-                            className="live-button"
+                            className={liveMatches.has(match.id) ? "live-button" : "go-live-button"}
                             disabled={actionLoading !== null}
                           >
-                            🔴 Live
+                            {liveMatches.has(match.id) ? "🔴 Live" : "🟢 Go Live"}
                           </button>
                           <button
                             onClick={() => handleEditMatch(match)}
