@@ -28,6 +28,20 @@ interface FloorballMatch {
   };
 }
 
+interface PlayerStats {
+  gamesPlayed: number;
+  goals: number;
+  assists: number;
+  points: number;
+  penaltyMinutes: number;
+}
+
+interface TeamCareerStats {
+  teamId: string;
+  teamName: string;
+  stats: PlayerStats;
+}
+
 interface PlayerWithMatches {
   id: string;
   playerName: string;
@@ -36,13 +50,7 @@ interface PlayerWithMatches {
   teamName: string;
   teamId: string;
   isActive: boolean;
-  careerStats: {
-    gamesPlayed: number;
-    goals: number;
-    assists: number;
-    points: number;
-    penaltyMinutes: number;
-  };
+  careerStats: TeamCareerStats[];
   recentMatches: FloorballMatch[];
 }
 
@@ -65,7 +73,7 @@ const fetchPlayerMatches = async (playerId: string): Promise<PlayerWithMatches |
     }
   } catch (error) {
     console.error('Error fetching player matches:', error);
-    // Return mock data for development
+    // Return mock data for development with team-specific stats
     return {
       id: playerId || '1',
       playerName: 'Matti Meikäläinen',
@@ -74,13 +82,30 @@ const fetchPlayerMatches = async (playerId: string): Promise<PlayerWithMatches |
       teamName: 'MAHL Tigers',
       teamId: 'team-1',
       isActive: true,
-      careerStats: {
-        gamesPlayed: 28,
-        goals: 12,
-        assists: 8,
-        points: 20,
-        penaltyMinutes: 14
-      },
+      careerStats: [
+        {
+          teamId: 'team-1',
+          teamName: 'MAHL Tigers',
+          stats: {
+            gamesPlayed: 20,
+            goals: 8,
+            assists: 5,
+            points: 13,
+            penaltyMinutes: 6
+          }
+        },
+        {
+          teamId: 'team-5',
+          teamName: 'Espoo Eagles',
+          stats: {
+            gamesPlayed: 8,
+            goals: 4,
+            assists: 3,
+            points: 7,
+            penaltyMinutes: 8
+          }
+        }
+      ],
       recentMatches: [
         {
           id: '1',
@@ -168,6 +193,20 @@ const fetchPlayerMatches = async (playerId: string): Promise<PlayerWithMatches |
   }
 };
 
+// Helper function to calculate total career stats
+const calculateTotalStats = (careerStats: TeamCareerStats[]): PlayerStats => {
+  return careerStats.reduce(
+    (total, teamStats) => ({
+      gamesPlayed: total.gamesPlayed + teamStats.stats.gamesPlayed,
+      goals: total.goals + teamStats.stats.goals,
+      assists: total.assists + teamStats.stats.assists,
+      points: total.points + teamStats.stats.points,
+      penaltyMinutes: total.penaltyMinutes + teamStats.stats.penaltyMinutes,
+    }),
+    { gamesPlayed: 0, goals: 0, assists: 0, points: 0, penaltyMinutes: 0 }
+  );
+};
+
 const FloorballTeamPlayerUserPage = () => {
   const { id } = useParams<{ id: string }>();
   const [player, setPlayer] = useState<PlayerWithMatches | null>(null);
@@ -233,6 +272,8 @@ const FloorballTeamPlayerUserPage = () => {
   if (error) return <PageTemplate title="Pelaaja"><div>Virhe: {error}</div></PageTemplate>;
   if (!player) return <PageTemplate title="Pelaaja"><div>Pelaajaa ei löytynyt</div></PageTemplate>;
 
+  const totalStats = calculateTotalStats(player.careerStats);
+
   return (
     <PageTemplate title={player.playerName}>
       <div className="floorball-player-container">
@@ -247,28 +288,49 @@ const FloorballTeamPlayerUserPage = () => {
 
         <div className="career-stats-section">
           <h3>Urastatistiikka</h3>
+          
+          {/* Show aggregated totals */}
           <div className="stats-grid">
             <div className="stats-box">
-              <div className="stats-value">{player.careerStats.gamesPlayed}</div>
+              <div className="stats-value">{totalStats.gamesPlayed}</div>
               <div className="stats-label">Ottelut</div>
             </div>
             <div className="stats-box">
-              <div className="stats-value">{player.careerStats.goals}</div>
+              <div className="stats-value">{totalStats.goals}</div>
               <div className="stats-label">Maalit</div>
             </div>
             <div className="stats-box">
-              <div className="stats-value">{player.careerStats.assists}</div>
+              <div className="stats-value">{totalStats.assists}</div>
               <div className="stats-label">Syötöt</div>
             </div>
             <div className="stats-box">
-              <div className="stats-value">{player.careerStats.points}</div>
+              <div className="stats-value">{totalStats.points}</div>
               <div className="stats-label">Pisteet</div>
             </div>
             <div className="stats-box">
-              <div className="stats-value">{player.careerStats.penaltyMinutes}</div>
+              <div className="stats-value">{totalStats.penaltyMinutes}</div>
               <div className="stats-label">Jäähy min</div>
             </div>
           </div>
+
+          {/* Show team-specific breakdown if player has played for multiple teams */}
+          {player.careerStats.length > 1 && (
+            <div className="team-stats-breakdown">
+              <h4>Joukkuekohtaiset tilastot</h4>
+              {player.careerStats.map(teamStats => (
+                <div key={teamStats.teamId} className="team-stats">
+                  <h5>{teamStats.teamName}</h5>
+                  <div className="team-stats-grid">
+                    <span>{teamStats.stats.gamesPlayed} ottelua</span>
+                    <span>{teamStats.stats.goals} maalia</span>
+                    <span>{teamStats.stats.assists} syöttöä</span>
+                    <span>{teamStats.stats.points} pistettä</span>
+                    <span>{teamStats.stats.penaltyMinutes} jäähy min</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="matches-section">

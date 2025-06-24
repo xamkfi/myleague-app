@@ -55,6 +55,48 @@
   }
 }
 
+.team-stats-breakdown {
+  margin-top: map.get($spacing, 'lg');
+  padding-top: map.get($spacing, 'base');
+  border-top: 1px solid $color-border;
+
+  h4 {
+    font-size: map.get($font-sizes, 'md');
+    margin-bottom: map.get($spacing, 'base');
+    color: $color-text-primary;
+  }
+}
+
+.team-stats {
+  margin-bottom: map.get($spacing, 'base');
+  padding: map.get($spacing, 'base');
+  background-color: $color-background-light;
+  border-radius: map.get($border-radius, 'sm');
+  border: 1px solid $color-border;
+
+  h5 {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'bold');
+    margin-bottom: map.get($spacing, 'xs');
+    color: $color-text-primary;
+  }
+
+  &-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'sm');
+    font-size: map.get($font-sizes, 'xs');
+
+    span {
+      color: $color-text-muted;
+      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+      background-color: $color-background-light;
+      border-radius: map.get($border-radius, 'sm');
+      border: 1px solid $color-border;
+    }
+  }
+}
+
 .stats {
   &-grid {
     display: grid;

@@ -15,13 +15,21 @@ namespace Application.DTOs.Floorball
         string TeamName,
         Guid TeamId,
         bool IsActive,
-        FloorballPlayerCareerStatsDto CareerStats,
+        IReadOnlyCollection<FloorballPlayerTeamCareerStatsDto> CareerStats,
         IReadOnlyCollection<FloorballPlayerMatchDto> RecentMatches);
 
     /// <summary>
-    /// Data Transfer Object for a player's career statistics
+    /// Data Transfer Object for a player's career statistics with a specific team
     /// </summary>
-    public record FloorballPlayerCareerStatsDto(
+    public record FloorballPlayerTeamCareerStatsDto(
+        Guid TeamId,
+        string TeamName,
+        FloorballPlayerStatsDto Stats);
+
+    /// <summary>
+    /// Data Transfer Object for player statistics
+    /// </summary>
+    public record FloorballPlayerStatsDto(
         int GamesPlayed,
         int Goals,
         int Assists,
@@ -46,7 +54,6 @@ namespace Application.DTOs.Floorball
         bool WentToOvertime,
         bool WentToShootout,
         IReadOnlyDictionary<int, (int HomeScore, int AwayScore)> PeriodScores,
-        IReadOnlyCollection<string> Officials,
         FloorballPlayerMatchStatsDto? PlayerStats);
 
     /// <summary>

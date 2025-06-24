@@ -70,10 +70,10 @@ namespace Application.Handlers.Floorball.Players
                 }
 
                 // Get all teams the player has been part of
-                IEnumerable<FloorballTeam> playerTeams = await _teamRepository.GetByPlayerIdAsync(player.Id);
-                List<FloorballTeam> teams = playerTeams.ToList();
+                IEnumerable<FloorballTeam> playerTeamsEnumerable = await _teamRepository.GetByPlayerIdAsync(player.Id);
+                List<FloorballTeam> playerTeams = playerTeamsEnumerable.ToList();
 
-                if (!teams.Any())
+                if (!playerTeams.Any())
                 {
                     _logger.LogInformation("Player {PlayerId} has no team associations", request.PlayerId);
                     
@@ -86,8 +86,7 @@ namespace Application.Handlers.Floorball.Players
                         "No Team",
                         Guid.Empty,
                         player.IsActive,
-                        new FloorballPlayerCareerStatsDto(0, player.CareerGoals, player.CareerAssists, 
-                            player.CareerGoals + player.CareerAssists, 0),
+                        new List<FloorballPlayerTeamCareerStatsDto>(),
                         new List<FloorballPlayerMatchDto>()
                     );
                     
@@ -95,12 +94,12 @@ namespace Application.Handlers.Floorball.Players
                 }
 
                 // Get the most recent team (assuming the player's current team)
-                FloorballTeam currentTeam = teams.OrderByDescending(t => t.CreatedAt).First();
+                FloorballTeam currentTeam = playerTeams.OrderByDescending(t => t.CreatedAt).First();
                 FloorballTeamPlayer? teamPlayer = currentTeam.Roster.FirstOrDefault(r => r.PlayerId == player.Id);
 
                 // Get all matches for all teams the player has been part of
                 List<FloorballMatch> allMatches = new List<FloorballMatch>();
-                foreach (FloorballTeam team in teams)
+                foreach (FloorballTeam team in playerTeams)
                 {
                     IEnumerable<FloorballMatch> teamMatches = await _matchRepository.GetByTeamIdAsync(team.Id);
                     allMatches.AddRange(teamMatches.Where(m => m.Status == FloorballMatchStatus.Completed));
@@ -118,7 +117,7 @@ namespace Application.Handlers.Floorball.Players
                 foreach (FloorballMatch match in recentMatches)
                 {
                     // Get the team this player was playing for in this match
-                    FloorballTeam? playerTeamInMatch = teams.FirstOrDefault(t => 
+                    FloorballTeam? playerTeamInMatch = playerTeams.FirstOrDefault(t => 
                         t.Id == match.HomeTeamId || t.Id == match.AwayTeamId);
 
                     if (playerTeamInMatch == null) continue;
@@ -142,9 +141,6 @@ namespace Application.Handlers.Floorball.Players
                         ps => (ps.HomeScore, ps.AwayScore)
                     );
 
-                    // Get official names (simplified - you might want to get actual referee names)
-                    List<string> officials = match.Officials.Select(r => $"Official {r.Id}").ToList();
-
                     FloorballPlayerMatchDto matchDto = new FloorballPlayerMatchDto(
                         match.Id,
                         match.SeasonId,
@@ -160,26 +156,37 @@ namespace Application.Handlers.Floorball.Players
                         match.WentToOvertime,
                         match.WentToShootout,
                         periodScores,
-                        officials,
                         playerStats
                     );
 
                     playerMatchDtos.Add(matchDto);
                 }
 
-                // Calculate career stats
-                int totalGamesPlayed = teams.Sum(t => 
-                    t.Roster.Where(r => r.PlayerId == player.Id).Sum(r => r.GamesPlayed));
-                int totalPenaltyMinutes = teams.Sum(t => 
-                    t.Roster.Where(r => r.PlayerId == player.Id).Sum(r => r.PenaltyMinutes));
+                // Calculate team-specific career stats
+                List<FloorballPlayerTeamCareerStatsDto> teamCareerStats = new List<FloorballPlayerTeamCareerStatsDto>();
+                
+                foreach (FloorballTeam team in playerTeams)
+                {
+                    FloorballTeamPlayer? playerInTeam = team.Roster.FirstOrDefault(r => r.PlayerId == player.Id);
+                    if (playerInTeam != null)
+                    {
+                        FloorballPlayerStatsDto teamStats = new FloorballPlayerStatsDto(
+                            playerInTeam.GamesPlayed,
+                            playerInTeam.Goals,
+                            playerInTeam.Assists,
+                            playerInTeam.Goals + playerInTeam.Assists,
+                            playerInTeam.PenaltyMinutes
+                        );
 
-                FloorballPlayerCareerStatsDto careerStats = new FloorballPlayerCareerStatsDto(
-                    totalGamesPlayed,
-                    player.CareerGoals,
-                    player.CareerAssists,
-                    player.CareerGoals + player.CareerAssists,
-                    totalPenaltyMinutes
-                );
+                        FloorballPlayerTeamCareerStatsDto teamCareerStat = new FloorballPlayerTeamCareerStatsDto(
+                            team.Id,
+                            team.Name,
+                            teamStats
+                        );
+
+                        teamCareerStats.Add(teamCareerStat);
+                    }
+                }
 
                 FloorballPlayerWithMatchesDto result = new FloorballPlayerWithMatchesDto(
                     player.Id,
@@ -189,7 +196,7 @@ namespace Application.Handlers.Floorball.Players
                     currentTeam.Name,
                     currentTeam.Id,
                     player.IsActive,
-                    careerStats,
+                    teamCareerStats,
                     playerMatchDtos
                 );
 
