@@ -11,6 +11,7 @@ import type {
   CreateFloorballMatchRequest,
   FloorballMatchStatus
 } from '../../../../types/floorball/floorballTypes';
+import './MatchManagementPage.scss';
 
 interface MatchManagementPageProps {}
 
@@ -163,28 +164,35 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
     }
   };
 
-  // Format date for display
+  // Format date for display (dd-mm-yyyy 24-hour format)
   const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString();
+    const date = new Date(dateTime);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    
+    return `${day}-${month}-${year}, ${hours}:${minutes}`;
   };
 
   // Get status badge styling
-  const getStatusBadge = (status: FloorballMatchStatus) => {
-    const baseClasses = "px-2 py-1 text-xs font-medium rounded-full";
+  const getStatusClass = (status: FloorballMatchStatus) => {
+    const baseClass = "match-management__status";
     
     switch (status) {
       case 'Scheduled':
-        return `${baseClasses} bg-blue-100 text-blue-800`;
+        return `${baseClass} ${baseClass}--scheduled`;
       case 'InProgress':
-        return `${baseClasses} bg-green-100 text-green-800`;
+        return `${baseClass} ${baseClass}--progress`;
       case 'Completed':
-        return `${baseClasses} bg-gray-100 text-gray-800`;
+        return `${baseClass} ${baseClass}--completed`;
       case 'Cancelled':
-        return `${baseClasses} bg-red-100 text-red-800`;
+        return `${baseClass} ${baseClass}--cancelled`;
       case 'Postponed':
-        return `${baseClasses} bg-yellow-100 text-yellow-800`;
+        return `${baseClass} ${baseClass}--postponed`;
       default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
+        return `${baseClass} ${baseClass}--completed`;
     }
   };
 
@@ -195,16 +203,30 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
     return `${season.name} (${startYear}-${endYear})`;
   };
 
+  // Handle Live button click
+  const handleLiveMatch = (match: FloorballMatchDto) => {
+    // TODO: Implement live match tracking
+    alert(`🔴 Live match tracking for "${match.homeTeamName} vs ${match.awayTeamName}" coming soon!`);
+  };
+
+  // Handle Edit button click
+  const handleEditMatch = (match: FloorballMatchDto) => {
+    // TODO: Implement match editing
+    alert(`✏️ Edit match "${match.homeTeamName} vs ${match.awayTeamName}" coming soon!`);
+  };
+
   if (loading) {
     return (
       <PageTemplate title={t('floorball.matches.title', 'Manage Matches')}>
-        <div className="p-6">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-200 rounded"></div>
-              ))}
+        <div className="match-management">
+          <div className="match-management__container">
+            <div className="match-management__loading">
+              <div className="match-management__loading-header"></div>
+              <div className="match-management__loading-container">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="match-management__loading-row"></div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -214,309 +236,335 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
 
   return (
     <PageTemplate title={t('floorball.matches.title', 'Manage Matches')}>
-      <div className="match-management-container p-6">
-        {/* Header with Back Button and Title */}
-        <div className="flex items-center justify-between mb-8">
-          {/* Back Button */}
-          <button
-            onClick={() => navigate('/admin/floorball')}
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <svg 
-              className="w-5 h-5 mr-2" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M15 19l-7-7 7-7" 
-              />
-            </svg>
-            {t('common.back', 'Back to Floorball Management')}
-          </button>
+      <div className="match-management">
+        <div className="match-management__container">
+          {/* Enhanced Header */}
+          <div className="match-management__header">
+            <div className="match-management__header-actions">
+              {/* Back Button */}
+              <button
+                onClick={() => navigate('/admin/floorball')}
+                className="match-management__back-btn"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                {t('common.back', 'Back to Floorball Management')}
+              </button>
 
-          {/* Centered Title and Create Button */}
-          <div className="flex-1 flex items-center justify-center">
-            <h1 className="text-3xl font-bold text-gray-900 mr-8">
-              {t('floorball.matches.title', 'Match Management')}
-            </h1>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium"
-            >
-              {t('floorball.matches.createNew', 'Create New Match')}
-            </button>
-          </div>
-          
-          {/* Placeholder for balance */}
-          <div className="w-48"></div>
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-            {error}
-            <button 
-              onClick={() => setError(null)}
-              className="float-right text-red-500 hover:text-red-700 ml-4"
-            >
-              ×
-            </button>
-          </div>
-        )}
-
-        {/* Match Statistics and Season Filter */}
-        <div className="flex items-center justify-between mb-6 bg-gray-50 p-4 rounded-lg">
-          <div className="flex items-center space-x-6">
-            <div className="text-sm text-gray-600">
-              <span className="font-medium text-gray-900">{filteredMatches.length}</span> 
-              {selectedSeasonId ? ' matches in selected season' : ' total matches'}
+              {/* Create Button */}
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="match-management__create-btn"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                {t('floorball.matches.createNew', 'Create New Match')}
+              </button>
             </div>
-            <div className="flex space-x-4 text-xs">
-              <span className="flex items-center">
-                <span className="w-2 h-2 bg-blue-500 rounded-full mr-1"></span>
-                {matches.filter(m => m.status === 'Scheduled').length} Scheduled
-              </span>
-              <span className="flex items-center">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                {matches.filter(m => m.status === 'InProgress').length} In Progress
-              </span>
-              <span className="flex items-center">
-                <span className="w-2 h-2 bg-gray-500 rounded-full mr-1"></span>
-                {matches.filter(m => m.status === 'Completed').length} Completed
-              </span>
+
+            {/* Centered Title */}
+            <div className="match-management__header-title-section">
+              <h1 className="match-management__header-title">
+                {t('floorball.matches.title', 'Match Management')}
+              </h1>
+              <p className="match-management__header-subtitle">
+                Manage your floorball matches, track live games, and organize your season
+              </p>
             </div>
           </div>
 
-          {/* Season Filter */}
-          <div className="flex items-center space-x-3">
-            <label className="text-sm font-medium text-gray-700">
-              Filter by Season:
-            </label>
-            <select
-              value={selectedSeasonId}
-              onChange={(e) => setSelectedSeasonId(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Seasons</option>
-              {seasons.map(season => (
-                <option key={season.id} value={season.id}>
-                  {formatSeasonDisplayName(season)}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+          {/* Error Display */}
+          {error && (
+            <div className="match-management__error">
+              <div className="match-management__error-content">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{error}</span>
+                <button 
+                  onClick={() => setError(null)}
+                  className="match-management__error-close"
+                >
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
 
-        {/* Create Form Modal */}
-        {showCreateForm && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-              <h2 className="text-lg font-semibold mb-4">Create New Match</h2>
-              
-              <form onSubmit={handleCreateMatch} className="space-y-4">
-                {/* Season Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Season *
-                  </label>
-                  <select
-                    value={createForm.seasonId}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, seasonId: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    required
-                  >
-                    <option value="">Select Season</option>
-                    {seasons.map(season => (
-                      <option key={season.id} value={season.id}>
-                        {formatSeasonDisplayName(season)}
-                      </option>
-                    ))}
-                  </select>
+          {/* Statistics Section */}
+          <div className="match-management__stats">
+            <div className="match-management__stats-content">
+              <div className="match-management__stats-left">
+                <div className="match-management__stats-total">
+                  {filteredMatches.length}
+                  <span>
+                    {selectedSeasonId ? 'matches in season' : 'total matches'}
+                  </span>
                 </div>
+                
+                <div className="match-management__stats-indicators">
+                  <div className="match-management__stats-indicator">
+                    <div className="match-management__stats-indicator-dot match-management__stats-indicator-dot--scheduled"></div>
+                    <span className="match-management__stats-indicator-text">
+                      <span>{matches.filter(m => m.status === 'Scheduled').length}</span> Scheduled
+                    </span>
+                  </div>
+                  <div className="match-management__stats-indicator">
+                    <div className="match-management__stats-indicator-dot match-management__stats-indicator-dot--progress"></div>
+                    <span className="match-management__stats-indicator-text">
+                      <span>{matches.filter(m => m.status === 'InProgress').length}</span> In Progress
+                    </span>
+                  </div>
+                  <div className="match-management__stats-indicator">
+                    <div className="match-management__stats-indicator-dot match-management__stats-indicator-dot--completed"></div>
+                    <span className="match-management__stats-indicator-text">
+                      <span>{matches.filter(m => m.status === 'Completed').length}</span> Completed
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-                {/* Home Team Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Home Team *
-                  </label>
-                  <select
-                    value={createForm.homeTeamId}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, homeTeamId: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    required
-                  >
-                    <option value="">Select Home Team</option>
-                    {teams.map(team => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Away Team Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Away Team *
-                  </label>
-                  <select
-                    value={createForm.awayTeamId}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, awayTeamId: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    required
-                  >
-                    <option value="">Select Away Team</option>
-                    {teams.filter(team => team.id !== createForm.homeTeamId).map(team => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Scheduled Date/Time */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Scheduled Date & Time *
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={createForm.scheduledDateTime}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, scheduledDateTime: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    required
-                  />
-                </div>
-
-                {/* Venue */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Venue
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.venue}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, venue: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    placeholder="Enter venue name"
-                  />
-                </div>
-
-                {/* Form Actions */}
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="submit"
-                    disabled={actionLoading === 'create'}
-                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {actionLoading === 'create' ? 'Creating...' : 'Create Match'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateForm(false)}
-                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+              {/* Season Filter */}
+              <div className="match-management__stats-filter">
+                <label>Filter by Season:</label>
+                <select
+                  value={selectedSeasonId}
+                  onChange={(e) => setSelectedSeasonId(e.target.value)}
+                >
+                  <option value="">All Seasons</option>
+                  {seasons.map(season => (
+                    <option key={season.id} value={season.id}>
+                      {formatSeasonDisplayName(season)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Matches Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Match
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date & Time
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Venue
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Score
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredMatches.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    <div className="flex flex-col items-center">
-                      <svg className="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                      {selectedSeasonId ? 'No matches found for selected season' : 'No matches found'}
-                      <p className="text-sm text-gray-400 mt-1">Create your first match to get started</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredMatches.map((match) => (
-                  <tr key={match.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {match.homeTeamName} vs {match.awayTeamName}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDateTime(match.scheduledDateTime)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {match.venue || <span className="text-gray-400 italic">TBD</span>}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {match.status === 'Scheduled' ? (
-                        <span className="text-gray-400">-</span>
-                      ) : (
-                        <span className="font-medium">{match.homeScore} - {match.awayScore}</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={getStatusBadge(match.status)}>
-                        {match.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
-                      {match.status === 'Scheduled' && (
-                        <button
-                          onClick={() => handleStartMatch(match.id)}
-                          disabled={actionLoading === `start-${match.id}`}
-                          className="text-green-600 hover:text-green-900 disabled:opacity-50 transition-colors"
-                        >
-                          {actionLoading === `start-${match.id}` ? 'Starting...' : 'Start'}
-                        </button>
-                      )}
-                      {match.status === 'InProgress' && (
-                        <button
-                          onClick={() => handleCompleteMatch(match.id)}
-                          disabled={actionLoading === `complete-${match.id}`}
-                          className="text-blue-600 hover:text-blue-900 disabled:opacity-50 transition-colors"
-                        >
-                          {actionLoading === `complete-${match.id}` ? 'Completing...' : 'Complete'}
-                        </button>
-                      )}
-                    </td>
+          {/* Matches Table */}
+          <div className="match-management__table">
+            <div className="match-management__table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Match</th>
+                    <th>Date & Time</th>
+                    <th>Venue</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {filteredMatches.length === 0 ? (
+                    <tr>
+                      <td colSpan={6}>
+                        <div className="match-management__empty">
+                          <svg className="match-management__empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          </svg>
+                          <h3 className="match-management__empty-title">
+                            {selectedSeasonId ? 'No matches found for selected season' : 'No matches found'}
+                          </h3>
+                          <p className="match-management__empty-description">Create your first match to get started</p>
+                          <button
+                            onClick={() => setShowCreateForm(true)}
+                            className="match-management__empty-button"
+                          >
+                            Create New Match
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredMatches.map((match) => (
+                      <tr key={match.id}>
+                        <td>
+                          <div className="match-management__table-match-name">
+                            {match.homeTeamName} vs {match.awayTeamName}
+                          </div>
+                        </td>
+                        <td className="no-wrap">
+                          <div className="match-management__table-date">
+                            {formatDateTime(match.scheduledDateTime)}
+                          </div>
+                        </td>
+                        <td className="no-wrap">
+                          <div className={`match-management__table-venue ${!match.venue ? 'match-management__table-venue--tbd' : ''}`}>
+                            {match.venue || 'TBD'}
+                          </div>
+                        </td>
+                        <td className="no-wrap">
+                          <div className={`match-management__table-score ${match.status === 'Scheduled' ? 'match-management__table-score--empty' : 'match-management__table-score--filled'}`}>
+                            {match.status === 'Scheduled' ? '-' : `${match.homeScore} - ${match.awayScore}`}
+                          </div>
+                        </td>
+                        <td className="no-wrap">
+                          <span className={getStatusClass(match.status)}>
+                            {match.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="match-management__table-actions">
+                            {/* Live Button */}
+                            <button
+                              onClick={() => handleLiveMatch(match)}
+                              className="match-management__live-btn"
+                            >
+                              <svg fill="currentColor" viewBox="0 0 20 20">
+                                <circle cx="10" cy="10" r="3" />
+                              </svg>
+                              Live
+                            </button>
+                            
+                            {/* Edit Button */}
+                            <button
+                              onClick={() => handleEditMatch(match)}
+                              className="match-management__edit-btn"
+                            >
+                              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              Edit
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Create Form Modal */}
+          {showCreateForm && (
+            <div className="modal">
+              <div className="modal__content">
+                <div className="modal__header">
+                  <div className="modal__header-content">
+                    <h2 className="modal__header-title">Create New Match</h2>
+                    <button
+                      onClick={() => setShowCreateForm(false)}
+                      className="modal__header-close"
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                
+                <form onSubmit={handleCreateMatch} className="modal__form">
+                  {/* Season Selection */}
+                  <div className="form-group">
+                    <label>Season *</label>
+                    <select
+                      value={createForm.seasonId}
+                      onChange={(e) => setCreateForm(prev => ({ ...prev, seasonId: e.target.value }))}
+                      required
+                    >
+                      <option value="">Select Season</option>
+                      {seasons.map(season => (
+                        <option key={season.id} value={season.id}>
+                          {formatSeasonDisplayName(season)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Home Team Selection */}
+                  <div className="form-group">
+                    <label>Home Team *</label>
+                    <select
+                      value={createForm.homeTeamId}
+                      onChange={(e) => setCreateForm(prev => ({ ...prev, homeTeamId: e.target.value }))}
+                      required
+                    >
+                      <option value="">Select Home Team</option>
+                      {teams.map(team => (
+                        <option key={team.id} value={team.id}>
+                          {team.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Away Team Selection */}
+                  <div className="form-group">
+                    <label>Away Team *</label>
+                    <select
+                      value={createForm.awayTeamId}
+                      onChange={(e) => setCreateForm(prev => ({ ...prev, awayTeamId: e.target.value }))}
+                      required
+                    >
+                      <option value="">Select Away Team</option>
+                      {teams.filter(team => team.id !== createForm.homeTeamId).map(team => (
+                        <option key={team.id} value={team.id}>
+                          {team.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Scheduled Date/Time */}
+                  <div className="form-group">
+                    <label>Scheduled Date & Time *</label>
+                    <input
+                      type="datetime-local"
+                      value={createForm.scheduledDateTime}
+                      onChange={(e) => setCreateForm(prev => ({ ...prev, scheduledDateTime: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  {/* Venue */}
+                  <div className="form-group">
+                    <label>Venue</label>
+                    <input
+                      type="text"
+                      value={createForm.venue}
+                      onChange={(e) => setCreateForm(prev => ({ ...prev, venue: e.target.value }))}
+                      placeholder="Enter venue name"
+                    />
+                  </div>
+
+                  {/* Form Actions */}
+                  <div className="modal__form-actions">
+                    <button
+                      type="submit"
+                      disabled={actionLoading === 'create'}
+                      className="primary"
+                    >
+                      {actionLoading === 'create' ? (
+                        <>
+                          <svg className="spinner" fill="none" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Creating...
+                        </>
+                      ) : (
+                        'Create Match'
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCreateForm(false)}
+                      className="secondary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </PageTemplate>
