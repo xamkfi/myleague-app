@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useDivisions } from '../../../../../hooks/useDivisions';
 import type { FloorballSeasonDto } from '../../../../../api/floorball/floorballSeasonService';
 
 interface SeasonsTableProps {
@@ -19,7 +20,7 @@ export const SeasonsTable = ({
   operationLoading
 }: SeasonsTableProps) => {
   const { t } = useTranslation();
-
+  const { divisions } = useDivisions();
   const formatDate = (dateString: string) => {
     try {
       return new Date(dateString).toLocaleDateString();
@@ -60,8 +61,8 @@ export const SeasonsTable = ({
                 </div>
               </td>
               <td>
-                <span className={`division-badge division-${season.division.toLowerCase()}`}>
-                  {season.division}
+                <span className={`division-badge division-${season.divisionId.toLowerCase()}`}>
+                  {divisions.find(d => d.id == season.divisionId)?.name || ''}
                 </span>
               </td>
               <td>{formatDate(season.startDate)}</td>

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
-import { getClubs, type Club } from '../../../../api/clubService';
+import { getClubs, type Club } from '../../../../api/common/clubService';
 import type { FloorballTeam, PaginatedApiResponse, FloorballTeamRequest } from '../../../../types/floorball/floorballTypes';
 import TeamsTable from './components/TeamsTable';
 import PaginationControls from './components/PaginationControls';

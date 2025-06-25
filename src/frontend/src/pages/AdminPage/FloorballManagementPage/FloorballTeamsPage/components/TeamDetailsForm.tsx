@@ -1,8 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Club } from '../../../../../api/clubService';
-import { FloorballDivision, TeamCategory, type FloorballTeamRequest } from '../../../../../types/floorball/floorballTypes';
+import type { Club } from '../../../../../api/common/clubService';
+import { TeamCategory, type FloorballTeamRequest } from '../../../../../types/floorball/floorballTypes';
 import './TeamDetailsForm.scss';
+import { useDivisions } from '../../../../../hooks/useDivisions';
 
 interface TeamDetailsFormProps {
   formData: FloorballTeamRequest;
@@ -22,7 +23,8 @@ const TeamDetailsForm = ({
   onClose
 }: TeamDetailsFormProps) => {
   const { t } = useTranslation();
-
+  const { divisions } = useDivisions();
+  
   return (
     <form onSubmit={handleSubmit} className="team-form">
       <div className="form-group">
@@ -57,18 +59,14 @@ const TeamDetailsForm = ({
           <label htmlFor="division">{t('floorball.teams.division', 'Division')} *</label>
           <select
             id="division"
-            value={formData.division}
-            onChange={(e) => handleInputChange('division', e.target.value as FloorballDivision)}
+            value={formData.divisionId}
+            onChange={(e) => handleInputChange('divisionId', e.target.value)}
             required
           >
-            <option value={FloorballDivision.Premier}>{t('floorball.divisions.premier', 'Premier')}</option>
-            <option value={FloorballDivision.Division1}>{t('floorball.divisions.division1', 'Division 1')}</option>
-            <option value={FloorballDivision.Division2}>{t('floorball.divisions.division2', 'Division 2')}</option>
-            <option value={FloorballDivision.Division3}>{t('floorball.divisions.division3', 'Division 3')}</option>
-            <option value={FloorballDivision.Division4}>{t('floorball.divisions.division4', 'Division 4')}</option>
-            <option value={FloorballDivision.Youth}>{t('floorball.divisions.youth', 'Youth')}</option>
-            <option value={FloorballDivision.Junior}>{t('floorball.divisions.junior', 'Junior')}</option>
-            <option value={FloorballDivision.Veterans}>{t('floorball.divisions.veterans', 'Veterans')}</option>
+            <option value="">{t('floorball.teams.selectDivision', 'Select a division')}</option>
+            {divisions.map(division => (
+              <option key={division.id} value={division.id}>{division.name}</option>
+            ))}
           </select>
         </div>
 

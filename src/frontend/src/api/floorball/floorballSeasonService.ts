@@ -1,7 +1,6 @@
 import type { 
   ApiResponse,
-  FloorballTeam,
-  FloorballDivision
+  FloorballTeam
 } from '../../types/floorball/floorballTypes';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -41,27 +40,27 @@ const parseErrorResponse = async (response: Response, defaultMessage: string): P
 export interface FloorballSeasonDto {
   id: string;
   name: string;
-  division: FloorballDivision;
+  divisionId: string;
   startDate: string;
   endDate: string;
   isActive: boolean;
   isCompleted: boolean;
   teams: FloorballTeam[];
   matches: unknown[];
-}
+} 
 
 export interface CreateFloorballSeasonRequest {
   name: string;
   startDate: string;
   endDate: string;
-  division: FloorballDivision;
+  divisionId: string;
 }
 
 export interface UpdateFloorballSeasonRequest {
   name: string;
   startDate: string;
   endDate: string;
-  division: FloorballDivision;
+  divisionId: string;
 }
 
 export const floorballSeasonService = {

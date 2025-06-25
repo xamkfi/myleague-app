@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import type { Club } from '../../api/clubService';
-import { getClubs } from '../../api/clubService';
+import type { Club } from '../../api/common/clubService';
+import { getClubs } from '../../api/common/clubService';
 import type { FloorballTeam } from '../../types/floorball/floorballTypes';
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findClubBySlug, getTeamSlug } from '../../utils/slugUtils';
