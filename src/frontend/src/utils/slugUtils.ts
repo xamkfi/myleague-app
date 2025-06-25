@@ -1,4 +1,4 @@
-import type { Club, FloorballTeam, FloorballDivision } from '../types/floorball/floorballTypes';
+import type { Club, FloorballTeam } from '../types/floorball/floorballTypes';
 
 /**
  * Convert text to URL-friendly slug
@@ -14,34 +14,11 @@ export const slugify = (text: string): string => {
 };
 
 /**
- * Division priority order (higher number = higher priority)
- * Premier division gets highest priority, then Division1, etc.
+ * Get division slug suffix for a team
  */
-const DIVISION_PRIORITY: Record<FloorballDivision, number> = {
-  Premier: 9,
-  Division1: 8,
-  Division2: 7,
-  Division3: 6,
-  Division4: 5,
-  None: 4,
-  Junior: 3,
-  Youth: 2,
-  Veterans: 1
-};
-
-/**
- * Division suffix mapping for URLs
- */
-const DIVISION_SLUGS: Record<FloorballDivision, string> = {
-  Premier: '', // No suffix for premier (highest priority)
-  Division1: 'div1',
-  Division2: 'div2', 
-  Division3: 'div3',
-  Division4: 'div4',
-  None: 'none',
-  Junior: 'junior',
-  Youth: 'youth',
-  Veterans: 'veterans'
+const getDivisionSlug = (divisionId: string): string => {
+  // Create a simple slug from the division ID
+  return divisionId.toLowerCase().replace(/[^a-z0-9]/g, '');
 };
 
 /**
@@ -53,7 +30,7 @@ export const createClubSlug = (club: Club): string => {
 
 /**
  * Create team slugs with smart duplicate handling
- * Only adds division suffix if there are name conflicts
+ * Only adds ID suffix if there are name conflicts
  */
 export const createTeamSlugs = (teams: FloorballTeam[]): Map<string, string> => {
   const slugMap = new Map<string, string>();
@@ -78,20 +55,17 @@ export const createTeamSlugs = (teams: FloorballTeam[]): Map<string, string> => 
       const team = teamGroup[0];
       slugMap.set(team.id, baseSlug);
     } else {
-      // Handle duplicates - sort by division priority (highest first)
-      const sortedTeams = teamGroup.sort((a, b) => 
-        DIVISION_PRIORITY[b.division] - DIVISION_PRIORITY[a.division]
-      );
-      
-      // Highest priority team gets the base slug (no suffix)
-      const highestPriorityTeam = sortedTeams[0];
-      slugMap.set(highestPriorityTeam.id, baseSlug);
-      
-      // Other teams get division suffixes
-      sortedTeams.slice(1).forEach(team => {
-        const divisionSuffix = DIVISION_SLUGS[team.division];
-        const slugWithSuffix = divisionSuffix ? `${baseSlug}-${divisionSuffix}` : `${baseSlug}-${team.id.slice(0, 8)}`;
-        slugMap.set(team.id, slugWithSuffix);
+      // Handle duplicates - add division or ID suffix
+      teamGroup.forEach((team, index) => {
+        if (index === 0) {
+          // First team gets the base slug
+          slugMap.set(team.id, baseSlug);
+        } else {
+          // Other teams get division suffix or ID suffix
+          const divisionSuffix = getDivisionSlug(team.divisionId);
+          const slugWithSuffix = divisionSuffix ? `${baseSlug}-${divisionSuffix}` : `${baseSlug}-${team.id.slice(0, 8)}`;
+          slugMap.set(team.id, slugWithSuffix);
+        }
       });
     }
   });

@@ -6,11 +6,13 @@ import { getClubs } from '../../api/common/clubService';
 import type { FloorballTeam } from '../../types/floorball/floorballTypes';
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findClubBySlug, getTeamSlug } from '../../utils/slugUtils';
+import { useDivisions } from '../../hooks/useDivisions';
 import './ClubPage.scss';
 
 function ClubPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { divisions } = useDivisions();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [teams, setTeams] = useState<FloorballTeam[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,19 +112,9 @@ function ClubPage() {
     navigate(`/team/${teamSlug}`);
   };
 
-  const getDivisionDisplayName = (division: string) => {
-    const divisionMap: Record<string, string> = {
-      'Premier': 'Premier Division',
-      'Division1': 'Division 1',
-      'Division2': 'Division 2', 
-      'Division3': 'Division 3',
-      'Division4': 'Division 4',
-      'Youth': 'Youth',
-      'Junior': 'Junior',
-      'Veterans': 'Veterans',
-      'None': 'Unassigned'
-    };
-    return divisionMap[division] || division;
+  const getDivisionDisplayName = (divisionId: string) => {
+    const division = divisions.find(d => d.id === divisionId);
+    return division?.name || 'Unknown Division';
   };
 
 
@@ -187,7 +179,7 @@ function ClubPage() {
                   
                   <div className="team-card-body">
                     <div className="team-info">
-                      <span className="division">{getDivisionDisplayName(team.division)}</span>
+                      <span className="division">{getDivisionDisplayName(team.divisionId)}</span>
                     </div>
                     <div className="home-arena">
                       <small>🏟️ {team.homeArena}</small>
