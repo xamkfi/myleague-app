@@ -108,10 +108,20 @@
           background-color: #f3f4f6;
         }
 
+        &.highlighted {
+          background-color: #e0f2fe;
+          color: #0369a1;
+        }
+
         &.selected {
           background-color: #eff6ff;
           color: #1d4ed8;
           font-weight: 500;
+        }
+
+        &.selected.highlighted {
+          background-color: #dbeafe;
+          color: #1d4ed8;
         }
 
         &:last-child {

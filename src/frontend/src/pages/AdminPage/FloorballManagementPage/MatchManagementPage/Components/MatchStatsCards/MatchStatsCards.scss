@@ -1,10 +1,10 @@
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(5, 100px);
-  justify-content: center;
-  gap: 8px;
+  grid-template-columns: repeat(5, 1fr);
+  justify-content: stretch;
+  gap: 12px;
   margin-bottom: 24px;
-  //width: 100%;
+  width: 100%;
   grid-auto-flow: column; // Force items to stay in columns
   overflow-x: auto; // Allow horizontal scroll if needed on very small screens
 }
@@ -12,8 +12,9 @@
 // Force 5 columns on desktop/tablet screens
 @media (min-width: 769px) {
   .stats-grid {
-    grid-template-columns: repeat(5, minmax(120px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     overflow-x: visible;
+    gap: 12px;
   }
 }
 
@@ -109,7 +110,7 @@
 // Responsive design
 @media (max-width: 1200px) {
   .stats-grid {
-    gap: 6px;
+    gap: 10px;
   }
 
   .stat-card {
@@ -129,7 +130,7 @@
 @media (max-width: 900px) {
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 6px;
   }
 
   .stat-card {
@@ -148,7 +149,7 @@
 @media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 8px;
   }
 
   .stat-card {

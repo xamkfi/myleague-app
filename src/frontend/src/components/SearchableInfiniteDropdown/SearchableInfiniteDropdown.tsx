@@ -23,6 +23,7 @@ interface SearchableInfiniteDropdownProps {
   className?: string;
   emptyMessage?: string;
   searchPlaceholder?: string;
+  onEnterSelect?: () => void; // Callback for moving to next field
 }
 
 const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
@@ -34,7 +35,8 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
   required = false,
   className = "",
   emptyMessage = "No options found",
-  searchPlaceholder = "Search..."
+  searchPlaceholder = "Search...",
+  onEnterSelect
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,14 +46,43 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<number>();
+  const searchTimeoutRef = useRef<number | undefined>(undefined);
+  const optionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const selectedOption = options.find(option => option.id === value);
+
+  // Auto-highlight first option when options change (but not during loading more)
+  useEffect(() => {
+    // Only auto-highlight if we're not loading more data (which appends to existing options)
+    if (!loadingMore && options.length > 0) {
+      setHighlightedIndex(0);
+    } else if (options.length === 0) {
+      setHighlightedIndex(-1);
+    }
+  }, [options, loadingMore]);
+
+  // Scroll highlighted option into view
+  useEffect(() => {
+    if (highlightedIndex >= 0 && highlightedIndex < optionRefs.current.length) {
+      const highlightedElement = optionRefs.current[highlightedIndex];
+      if (highlightedElement && listRef.current) {
+        const listRect = listRef.current.getBoundingClientRect();
+        const optionRect = highlightedElement.getBoundingClientRect();
+        
+        if (optionRect.bottom > listRect.bottom) {
+          highlightedElement.scrollIntoView({ block: 'end', behavior: 'smooth' });
+        } else if (optionRect.top < listRect.top) {
+          highlightedElement.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
+      }
+    }
+  }, [highlightedIndex]);
 
   // Load initial data
   const loadInitialData = useCallback(async (query: string = '') => {
@@ -62,9 +93,12 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
       setOptions(result.data);
       setHasMore(result.pagination.hasNextPage);
       setPage(1);
+      // Highlight first option if there are results
+      setHighlightedIndex(result.data.length > 0 ? 0 : -1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load options');
       setOptions([]);
+      setHighlightedIndex(-1);
     } finally {
       setLoading(false);
     }
@@ -103,6 +137,102 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
     }, 300);
   }, [loadInitialData]);
 
+  // Handle keyboard navigation for dropdown container
+  const handleDropdownKeyDown = useCallback((event: React.KeyboardEvent) => {
+    if (!isOpen) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        setIsOpen(true);
+      }
+      return;
+    }
+
+    // Only handle navigation keys here, not input keys
+    switch (event.key) {
+      case 'Escape':
+        event.preventDefault();
+        setIsOpen(false);
+        setHighlightedIndex(-1);
+        break;
+
+      case 'Tab':
+        if (highlightedIndex >= 0 && highlightedIndex < options.length) {
+          event.preventDefault();
+          const selectedOption = options[highlightedIndex];
+          onChange(selectedOption.id);
+          setIsOpen(false);
+          setSearchQuery('');
+          setHighlightedIndex(-1);
+          onEnterSelect?.();
+        } else {
+          // Allow tab to close dropdown and move to next field
+          setIsOpen(false);
+          setSearchQuery('');
+          setHighlightedIndex(-1);
+        }
+        break;
+
+      default:
+        break;
+    }
+  }, [isOpen, highlightedIndex, options, onChange, onEnterSelect]);
+
+  // Handle keyboard navigation for search input
+  const handleSearchKeyDown = useCallback((event: React.KeyboardEvent) => {
+    if (!isOpen) return;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        setHighlightedIndex(prev => {
+          if (prev === -1) {
+            // If nothing is highlighted, go to first option
+            return options.length > 0 ? 0 : -1;
+          }
+          // Move down the list (increase index), wrap to beginning when reaching end
+          return prev + 1 >= options.length ? 0 : prev + 1;
+        });
+        break;
+
+      case 'ArrowUp':
+        event.preventDefault();
+        setHighlightedIndex(prev => {
+          if (prev === -1) {
+            // If nothing highlighted, go to last option
+            return options.length > 0 ? options.length - 1 : -1;
+          }
+          if (prev === 0) {
+            // If at first option, wrap to last option
+            return options.length - 1;
+          }
+          // Move up the list (decrease index)
+          return prev - 1;
+        });
+        break;
+
+      case 'Enter':
+        event.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < options.length) {
+          const selectedOption = options[highlightedIndex];
+          onChange(selectedOption.id);
+          setIsOpen(false);
+          setSearchQuery('');
+          setHighlightedIndex(-1);
+          onEnterSelect?.();
+        }
+        break;
+
+      case 'Escape':
+        event.preventDefault();
+        setIsOpen(false);
+        setHighlightedIndex(-1);
+        break;
+
+      default:
+        break;
+    }
+  }, [isOpen, highlightedIndex, options, onChange, onEnterSelect]);
+
   // Intersection Observer for infinite scroll
   useEffect(() => {
     const trigger = loadMoreTriggerRef.current;
@@ -129,6 +259,7 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setHighlightedIndex(-1);
       }
     };
 
@@ -153,25 +284,28 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
   const handleToggle = () => {
     if (disabled) return;
     setIsOpen(!isOpen);
+    if (!isOpen) {
+      setHighlightedIndex(-1);
+    }
   };
 
   const handleOptionSelect = (option: DropdownOption) => {
     onChange(option.id);
     setIsOpen(false);
     setSearchQuery('');
+    setHighlightedIndex(-1);
+    onEnterSelect?.();
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      setIsOpen(false);
-    }
+  const handleMouseEnter = (index: number) => {
+    setHighlightedIndex(index);
   };
 
   return (
     <div
       ref={dropdownRef}
       className={`searchable-infinite-dropdown ${className} ${disabled ? 'disabled' : ''} ${isOpen ? 'open' : ''}`}
-      onKeyDown={handleKeyDown}
+      onKeyDown={handleDropdownKeyDown}
     >
       <div
         className="dropdown-trigger"
@@ -199,6 +333,7 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="search-input"
             />
           </div>
@@ -222,11 +357,13 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
               </div>
             ) : (
               <>
-                {options.map((option) => (
+                {options.map((option, index) => (
                   <div
                     key={option.id}
-                    className={`dropdown-option ${option.id === value ? 'selected' : ''}`}
+                    ref={(el) => { optionRefs.current[index] = el; }}
+                    className={`dropdown-option ${option.id === value ? 'selected' : ''} ${index === highlightedIndex ? 'highlighted' : ''}`}
                     onClick={() => handleOptionSelect(option)}
+                    onMouseEnter={() => handleMouseEnter(index)}
                     role="option"
                     aria-selected={option.id === value}
                   >
