@@ -12,6 +12,14 @@ export enum TeamCategory {
   Women = 'Women'
 }
 
+export enum FloorballMatchStatus {
+  Scheduled = 'Scheduled',
+  InProgress = 'InProgress',
+  Completed = 'Completed',
+  Cancelled = 'Cancelled',
+  Postponed = 'Postponed'
+}
+
 // Base interfaces
 export interface Club {
   id: string;
@@ -127,4 +135,48 @@ export interface UpdateFloorballTeamPlayerRequest {
 export interface AddPlayerToTeamRequest {
   position: FloorballPosition;
   jerseyNumber?: number;
+}
+
+// Match-related interfaces
+export interface FloorballMatchDto {
+  id: string;
+  seasonId: string;
+  homeTeamId: string;
+  homeTeamName: string;
+  awayTeamId: string;
+  awayTeamName: string;
+  scheduledDateTime: string;
+  venue?: string;
+  status: FloorballMatchStatus;
+  homeScore: number;
+  awayScore: number;
+  wentToOvertime: boolean;
+  wentToShootout: boolean;
+  periodScores: Record<number, { homeScore: number; awayScore: number }>;
+  officials: string[];
+  goalEvents: unknown[];
+  penaltyEvents: unknown[];
+}
+
+export interface CreateFloorballMatchRequest {
+  seasonId: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  scheduledDateTime: string;
+  venue?: string;
+}
+
+export interface UpdateFloorballMatchRequest {
+  id: string;
+  scheduledDateTime: string;
+  venue?: string;
+}
+
+export interface GetFloorballMatchesRequest {
+  page?: number;
+  pageSize?: number;
+  seasonId?: string;
+  teamId?: string;
+  startDate?: string;
+  endDate?: string;
 } 

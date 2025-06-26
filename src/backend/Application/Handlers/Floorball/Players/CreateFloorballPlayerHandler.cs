@@ -28,7 +28,7 @@ public class CreateFloorballPlayerHandler : IRequestHandler<CreateFloorballPlaye
     /// Initializes a new instance of the CreateFloorballPlayerHandler class
     /// </summary>
     /// <param name="playerRepository">The floorball player repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="floorballUnitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public CreateFloorballPlayerHandler(
         IFloorballPlayerRepository playerRepository, 
