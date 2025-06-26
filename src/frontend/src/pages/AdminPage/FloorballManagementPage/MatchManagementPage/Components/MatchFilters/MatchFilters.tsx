@@ -1,4 +1,3 @@
-import React from 'react';
 import type { FloorballSeasonDto } from '../../../../../../api/floorball/floorballSeasonService';
 import { formatSeasonDisplayName } from '../../utils/matchFormatters';
 import './MatchFilters.scss';

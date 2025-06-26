@@ -1,4 +1,3 @@
-import React from 'react';
 import type { FloorballMatchDto } from '../../../../../../types/floorball/floorballTypes';
 import './MatchStatsCards.scss';
 
