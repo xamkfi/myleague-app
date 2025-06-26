@@ -1,4 +1,4 @@
-import { VITE_API_URL } from "../constants/config";
+import { VITE_API_URL } from "../../constants/config";
 
 export interface Club {
   id: string;

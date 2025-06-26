@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CreateFloorballSeasonRequest } from '../../../../../api/floorball/floorballSeasonService';
-import { FloorballDivision } from '../../../../../types/floorball/floorballTypes';
+import { useDivisions } from '../../../../../hooks/useDivisions';
 
 interface CreateSeasonModalProps {
   onSave: (seasonData: CreateFloorballSeasonRequest) => Promise<void>;
@@ -13,12 +13,12 @@ export const CreateSeasonModal = ({
   onClose
 }: CreateSeasonModalProps) => {
   const { t } = useTranslation();
-  
+  const { divisions } = useDivisions();
   const [formData, setFormData] = useState<CreateFloorballSeasonRequest>({
     name: '',
     startDate: '',
     endDate: '',
-    division: FloorballDivision.None
+    divisionId: ''
   });
   
   const [loading, setLoading] = useState(false);
@@ -101,7 +101,7 @@ export const CreateSeasonModal = ({
         throw new Error(t('floorball.seasons.validation.nameTooLong', 'Season name cannot exceed 100 characters'));
       }
 
-      if (!formData.division) {
+      if (!formData.divisionId) {
         throw new Error(t('floorball.seasons.validation.divisionRequired', 'Division is required'));
       }
 
@@ -139,7 +139,7 @@ export const CreateSeasonModal = ({
     }
   };
 
-  const divisions = Object.values(FloorballDivision).filter(div => div !== FloorballDivision.None);
+  //const divisions = Object.values(FloorballDivision).filter(div => div !== FloorballDivision.None);
 
   // Set default dates (current year season)
   const currentYear = new Date().getFullYear();
@@ -200,17 +200,15 @@ export const CreateSeasonModal = ({
               </label>
               <select
                 id="create-division"
-                name="division"
-                value={formData.division}
+                name="divisionId"
+                value={formData.divisionId}
                 onChange={handleInputChange}
                 required
                 disabled={loading}
               >
                 <option value="">{t('floorball.seasons.placeholders.selectDivision', 'Select division')}</option>
                 {divisions.map(division => (
-                  <option key={division} value={division}>
-                    {division}
-                  </option>
+                  <option key={division.id} value={division.id}>{division.name}</option>
                 ))}
               </select>
             </div>

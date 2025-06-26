@@ -1,16 +1,4 @@
 // Enums
-export enum FloorballDivision {
-  None = 'None',
-  Premier = 'Premier',
-  Division1 = 'Division1',
-  Division2 = 'Division2',
-  Division3 = 'Division3',
-  Division4 = 'Division4',
-  Youth = 'Youth',
-  Junior = 'Junior',
-  Veterans = 'Veterans'
-}
-
 export enum FloorballPosition {
   None = 'None',
   Goalkeeper = 'Goalkeeper',
@@ -64,7 +52,7 @@ export interface FloorballTeamPlayer {
 export interface FloorballTeam {
   id: string;
   name: string;
-  division: FloorballDivision;
+  divisionId: string;
   club: Club;
   homeArena: string;
   primaryJerseyColor: string;
@@ -108,7 +96,7 @@ export interface GetFloorballTeamsRequest {
 
 export interface FloorballTeamRequest {
   name: string;
-  division: FloorballDivision;
+  divisionId: string;
   clubId: string;
   homeArena: string;
   primaryJerseyColor: string;

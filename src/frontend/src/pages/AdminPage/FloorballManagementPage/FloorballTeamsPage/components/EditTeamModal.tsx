@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
-import { getClubs, type Club } from '../../../../../api/clubService';
+import { getClubs, type Club } from '../../../../../api/common/clubService';
 import type { 
   FloorballTeam, 
   FloorballTeamRequest, 
@@ -10,7 +10,6 @@ import type {
   UpdateFloorballTeamPlayerRequest
 } from '../../../../../types/floorball/floorballTypes';
 import { 
-  FloorballDivision, 
   TeamCategory,
   FloorballPosition 
 } from '../../../../../types/floorball/floorballTypes';
@@ -40,7 +39,7 @@ const EditTeamModal = ({ isOpen, onClose, onSubmit, teamId }: EditTeamModalProps
   
   const [formData, setFormData] = useState<FloorballTeamRequest>({
     name: '',
-    division: FloorballDivision.Premier,
+    divisionId: '',
     clubId: '',
     homeArena: '',
     primaryJerseyColor: '#000000',
@@ -65,7 +64,7 @@ const EditTeamModal = ({ isOpen, onClose, onSubmit, teamId }: EditTeamModalProps
   const resetForm = () => {
     setFormData({
       name: '',
-      division: FloorballDivision.Premier,
+      divisionId: '',
       clubId: '',
       homeArena: '',
       primaryJerseyColor: '#000000',
@@ -88,7 +87,7 @@ const EditTeamModal = ({ isOpen, onClose, onSubmit, teamId }: EditTeamModalProps
       setCurrentTeam(team);
       setFormData({
         name: team.name,
-        division: team.division,
+        divisionId: team.divisionId,
         clubId: team.club.id,
         homeArena: team.homeArena,
         primaryJerseyColor: team.primaryJerseyColor,
@@ -140,6 +139,9 @@ const EditTeamModal = ({ isOpen, onClose, onSubmit, teamId }: EditTeamModalProps
     }
   };
 
+
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -148,7 +150,7 @@ const EditTeamModal = ({ isOpen, onClose, onSubmit, teamId }: EditTeamModalProps
       // Prepare update data with proper validation
       const updateData: FloorballTeamRequest = {
         name: formData.name,
-        division: formData.division,
+        divisionId: formData.divisionId,
         clubId: formData.clubId,
         homeArena: formData.homeArena,
         primaryJerseyColor: formData.primaryJerseyColor,

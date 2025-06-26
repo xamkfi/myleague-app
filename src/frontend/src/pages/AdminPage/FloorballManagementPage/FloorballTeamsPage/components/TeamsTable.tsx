@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { FloorballTeam, FloorballTeamRequest } from '../../../../../types/floorball/floorballTypes';
 import TeamPlayersRow from './TeamPlayersRow';
 import EditTeamModal from './EditTeamModal';
 import React from 'react';
+import type { DivisionType } from '../../../../../types/common/divisionType';
+import { divisionService } from '../../../../../api/common/divisionService';
 
 interface TeamsTableProps {
   teams: FloorballTeam[];
@@ -14,13 +16,9 @@ interface TeamsTableProps {
 const TeamsTable = ({ teams, onEdit, onDelete }: TeamsTableProps) => {
   const { t } = useTranslation();
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
+  const [divisions, setDivisions] = useState<DivisionType[]>([])
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
-
-  // Format division for display
-  const formatDivision = (division: string) => {
-    return t(`floorball.divisions.${division.toLowerCase()}`, division);
-  };
 
   // Toggle team expansion
   const toggleTeamExpansion = (teamId: string) => {
@@ -53,6 +51,14 @@ const TeamsTable = ({ teams, onEdit, onDelete }: TeamsTableProps) => {
     setEditModalOpen(false);
     setEditingTeamId(null);
   };
+  
+  useEffect(() => {
+    const fetchDivisions = async () => {
+      const tempDivisions = await divisionService.getAll();
+      setDivisions(tempDivisions.data);
+    };
+    fetchDivisions();
+  }, []);
 
   return (
     <>
@@ -107,7 +113,7 @@ const TeamsTable = ({ teams, onEdit, onDelete }: TeamsTableProps) => {
                       </div>
                     </td>
                     <td>{team.club.name}</td>
-                    <td>{formatDivision(team.division)}</td>
+                    <td>{divisions.find(d => d.id == team.divisionId)?.name}</td>
                     <td>{team.homeArena}</td>
                     <td>
                       <span className={`active-status ${team.hasActiveMembers ? 'has-members' : 'no-members'}`}>

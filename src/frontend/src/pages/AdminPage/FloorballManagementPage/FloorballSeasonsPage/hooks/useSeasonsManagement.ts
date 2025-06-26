@@ -7,6 +7,7 @@ import {
   type UpdateFloorballSeasonRequest
 } from '../../../../../api/floorball/floorballSeasonService';
 
+
 export const useSeasonsManagement = () => {
   const { t } = useTranslation();
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
@@ -186,13 +187,13 @@ export const useSeasonsManagement = () => {
 
   // Filter seasons based on current filters
   const filteredSeasons = seasons.filter(season => {
-    if (divisionFilter !== 'all' && season.division !== divisionFilter) {
+    if (divisionFilter !== 'all' && season.divisionId !== divisionFilter) {
       return false;
     }
     return true;
   });
 
-  const uniqueDivisions = [...new Set(seasons.map(s => s.division))].sort();
+  const uniqueDivisions = [...new Set(seasons.map(s => s.divisionId))].sort();
 
   useEffect(() => {
     loadSeasons();
