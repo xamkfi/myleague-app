@@ -200,6 +200,21 @@
     font-family: 'Courier New', monospace;
     margin-bottom: 16px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: color 0.3s ease;
+
+    &.time-over-limit {
+      color: #ef4444;
+      animation: timeAlert 1s ease-in-out infinite alternate;
+    }
+  }
+
+  @keyframes timeAlert {
+    from {
+      text-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    }
+    to {
+      text-shadow: 0 2px 8px rgba(239, 68, 68, 0.6);
+    }
   }
 
   .clock-controls {
@@ -250,6 +265,54 @@
 
         &:hover {
           background: #2563eb;
+        }
+      }
+    }
+  }
+
+  .time-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+
+    .time-control-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      &.back-time-btn {
+        background: #8b5cf6;
+        color: white;
+
+        &:hover {
+          background: #7c3aed;
+          transform: translateY(-1px);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+
+      &.ahead-time-btn {
+        background: #06b6d4;
+        color: white;
+
+        &:hover {
+          background: #0891b2;
+          transform: translateY(-1px);
+        }
+
+        &:active {
+          transform: translateY(0);
         }
       }
     }

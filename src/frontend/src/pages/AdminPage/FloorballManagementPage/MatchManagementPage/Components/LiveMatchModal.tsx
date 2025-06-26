@@ -224,6 +224,38 @@ const LiveMatchModal: React.FC<LiveMatchModalProps> = ({
     });
   };
 
+  const goBackTime = () => {
+    if (!onStateUpdate) return;
+    const totalSeconds = clock.minutes * 60 + clock.seconds;
+    const newTotalSeconds = Math.max(0, totalSeconds - 5); // Don't go below 0
+    const newMinutes = Math.floor(newTotalSeconds / 60);
+    const newSeconds = newTotalSeconds % 60;
+    
+    onStateUpdate({
+      clock: { 
+        ...clock, 
+        minutes: newMinutes, 
+        seconds: newSeconds 
+      }
+    });
+  };
+
+  const goAheadTime = () => {
+    if (!onStateUpdate) return;
+    const totalSeconds = clock.minutes * 60 + clock.seconds;
+    const newTotalSeconds = Math.min(1200, totalSeconds + 30); // Cap at 20 minutes (1200 seconds)
+    const newMinutes = Math.floor(newTotalSeconds / 60);
+    const newSeconds = newTotalSeconds % 60;
+    
+    onStateUpdate({
+      clock: { 
+        ...clock, 
+        minutes: newMinutes, 
+        seconds: newSeconds 
+      }
+    });
+  };
+
   // Clock is now managed by parent component with persistent background timer
 
   // Event recording functions
@@ -301,6 +333,11 @@ const LiveMatchModal: React.FC<LiveMatchModalProps> = ({
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const isTimeOverLimit = (minutes: number, seconds: number) => {
+    const totalSeconds = minutes * 60 + seconds;
+    return totalSeconds >= 1200; // 20 minutes = 1200 seconds
+  };
+
   const formatEventTime = (timeInSeconds: number) => {
     const mins = Math.floor(timeInSeconds / 60);
     const secs = timeInSeconds % 60;
@@ -351,13 +388,23 @@ const LiveMatchModal: React.FC<LiveMatchModalProps> = ({
           <div className="clock-score-section">
             <div className="match-clock">
               <div className="period">Period {clock.period}</div>
-              <div className="time-display">{formatTime(clock.minutes, clock.seconds)}</div>
+              <div className={`time-display ${isTimeOverLimit(clock.minutes, clock.seconds) ? 'time-over-limit' : ''}`}>
+                {formatTime(clock.minutes, clock.seconds)}
+              </div>
               <div className="clock-controls">
                 <button onClick={toggleClock} className={clock.isRunning ? "pause-btn" : "start-btn"}>
                   {clock.isRunning ? '⏸️ Pause' : '▶️ Start'}
                 </button>
                 <button onClick={resetClock} className="reset-btn">🔄 Reset</button>
                 <button onClick={nextPeriod} className="next-period-btn">⏭️ Next Period</button>
+              </div>
+              <div className="time-controls">
+                <button onClick={goBackTime} className="time-control-btn back-time-btn" title="Go back 5 seconds">
+                  ⏪ 5s
+                </button>
+                <button onClick={goAheadTime} className="time-control-btn ahead-time-btn" title="Go ahead 30 seconds (Debug)">
+                  ⏩ 30s
+                </button>
               </div>
             </div>
             

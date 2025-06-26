@@ -20,5 +20,5 @@ namespace Application.Commands.Floorball.MatchEvent
         Guid HomeTeamId,
         Guid AwayTeamId,
         DateTime ScheduledDateTime,
-        string Venue) : IRequest<Result<FloorballMatchDto>>;
+        string? Venue) : IRequest<Result<FloorballMatchDto>>;
 } 
