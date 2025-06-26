@@ -9,11 +9,11 @@ interface MatchFiltersProps {
   onSeasonChange: (seasonId: string) => void;
 }
 
-const MatchFilters: React.FC<MatchFiltersProps> = ({
+const MatchFilters = ({
   seasons,
   selectedSeasonId,
   onSeasonChange
-}) => {
+}: MatchFiltersProps) => {
   return (
     <div className="filter-section">
       <label htmlFor="season-filter">Filter by Season:</label>

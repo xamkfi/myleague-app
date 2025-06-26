@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { signalRService, type MatchEvent } from '../../../../../services/signalRService';
 import { 
   floorballMatchEventService, 
@@ -15,23 +15,37 @@ interface LiveMatchModalProps {
   match: FloorballMatchDto;
   isOpen: boolean;
   onClose: () => void;
-  onMatchUpdate: (updatedMatch: FloorballMatchDto) => void;
   onCancelLive?: (matchId: string) => void;
   liveState?: LiveMatchState;
   onStateUpdate?: (updates: Partial<LiveMatchState>) => void;
 }
 
+interface GoalEventData {
+  TeamId: string;
+  PlayerId: string;
+  AssisterId?: string;
+  PeriodNumber: number;
+  TimeInSeconds: number;
+}
 
+interface PenaltyEventData {
+  TeamId: string;
+  PlayerId: string;
+  PenaltyType: string;
+  Minutes: number;
+  PeriodNumber: number;
+  TimeInSeconds: number;
+  Description: string;
+}
 
-const LiveMatchModal: React.FC<LiveMatchModalProps> = ({ 
+const LiveMatchModal = ({ 
   match, 
   isOpen, 
   onClose, 
-  onMatchUpdate: _onMatchUpdate,
   onCancelLive,
   liveState,
   onStateUpdate
-}) => {
+}: LiveMatchModalProps) => {
   // State management
   const [homeTeam, setHomeTeam] = useState<FloorballTeam | null>(null);
   const [awayTeam, setAwayTeam] = useState<FloorballTeam | null>(null);
@@ -41,8 +55,14 @@ const LiveMatchModal: React.FC<LiveMatchModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   
   // Use state from parent or default values
-  const currentScore = liveState?.currentScore || { home: match.homeScore, away: match.awayScore };
-  const events = liveState?.events || [];
+  const currentScore = useMemo(() => 
+    liveState?.currentScore || { home: match.homeScore, away: match.awayScore }, 
+    [liveState?.currentScore, match.homeScore, match.awayScore]
+  );
+  const events = useMemo(() => 
+    liveState?.events || [], 
+    [liveState?.events]
+  );
   const clock = liveState?.clock || {
     period: 1,
     minutes: 0,
@@ -79,6 +99,7 @@ const LiveMatchModal: React.FC<LiveMatchModalProps> = ({
     return () => {
       cleanupSignalR();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, match.id]);
 
   const loadTeamData = async () => {
@@ -136,18 +157,20 @@ const LiveMatchModal: React.FC<LiveMatchModalProps> = ({
   const handleSignalREvent = useCallback((event: MatchEvent) => {
     console.log('Received match event:', event);
     
-    if (event.data.MatchId !== match.id) {
+    const eventData = event.data as { MatchId?: string };
+    if (eventData?.MatchId !== match.id) {
       return; // Event is not for this match
     }
     
     if (event.eventType === 'FloorballGoalScoredEvent') {
-      handleGoalScored(event.data);
+      handleGoalScored(event.data as GoalEventData);
     } else if (event.eventType === 'FloorballPenaltyAssignedEvent') {
-      handlePenaltyAssigned(event.data);
+      handlePenaltyAssigned(event.data as PenaltyEventData);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [match.id]);
 
-  const handleGoalScored = (eventData: any) => {
+  const handleGoalScored = useCallback((eventData: GoalEventData) => {
     if (!onStateUpdate) return;
     
     // Update score
@@ -173,9 +196,9 @@ const LiveMatchModal: React.FC<LiveMatchModalProps> = ({
       currentScore: newScore,
       events: [goalEvent, ...events]
     });
-  };
+  }, [onStateUpdate, match.homeTeamId, match.awayTeamId, currentScore, homeTeam?.name, awayTeam?.name, events]);
 
-  const handlePenaltyAssigned = (eventData: any) => {
+  const handlePenaltyAssigned = useCallback((eventData: PenaltyEventData) => {
     if (!onStateUpdate) return;
     
     const penaltyEvent = {
@@ -195,7 +218,7 @@ const LiveMatchModal: React.FC<LiveMatchModalProps> = ({
     onStateUpdate({
       events: [penaltyEvent, ...events]
     });
-  };
+  }, [onStateUpdate, match.homeTeamId, homeTeam?.name, awayTeam?.name, events]);
 
   // Clock management
   const toggleClock = () => {

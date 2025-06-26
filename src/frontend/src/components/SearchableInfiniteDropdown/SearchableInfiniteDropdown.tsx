@@ -4,7 +4,7 @@ import './SearchableInfiniteDropdown.scss';
 interface DropdownOption {
   id: string;
   name: string;
-  [key: string]: any; // Allow additional properties
+  [key: string]: unknown; // Allow additional properties
 }
 
 interface SearchableInfiniteDropdownProps {

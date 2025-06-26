@@ -1,9 +1,11 @@
 import { floorballTeamService } from './floorballTeamService';
 import type { FloorballTeam } from '../../types/floorball/floorballTypes';
+import type { FloorballSeasonDto } from './floorballSeasonService';
 
 export interface DropdownOption {
   id: string;
   name: string;
+  [key: string]: unknown; // Allow additional properties
 }
 
 export interface SearchResult {
@@ -18,7 +20,7 @@ export const floorballTeamSearchService = {
   /**
    * Search teams for dropdown with pagination support
    */
-  searchTeams: async (query: string = '', page: number = 1): Promise<SearchResult> => {
+  searchTeams: async (query: string, page: number): Promise<SearchResult> => {
     try {
       const response = await floorballTeamService.getAll({
         page,
@@ -60,8 +62,12 @@ export const floorballSeasonSearchService = {
   /**
    * Search seasons for dropdown (seasons are typically fewer, so we can load all)
    */
-  searchSeasons: async (query: string = '', page: number = 1): Promise<SearchResult> => {
+  searchSeasons: async (query: string, page: number): Promise<SearchResult> => {
     try {
+      // Note: Since seasons are typically few, we load all and ignore pagination
+      // but keep the page parameter for interface compatibility
+      console.debug(`Searching seasons - page: ${page}, query: "${query}"`);
+      
       // Import the season service here to avoid circular dependencies
       const { floorballSeasonService } = await import('./floorballSeasonService');
       
@@ -72,9 +78,9 @@ export const floorballSeasonSearchService = {
       }
 
       // Convert seasons to dropdown options
-      let seasons: DropdownOption[] = response.data.map((season: any) => ({
+      let seasons: DropdownOption[] = response.data.map((season: FloorballSeasonDto) => ({
         id: season.id,
-        name: `${season.year} - ${season.name}`,
+        name: season.name,
       }));
 
       // Client-side filtering if query is provided
@@ -85,6 +91,7 @@ export const floorballSeasonSearchService = {
       }
 
       // For seasons, we typically show all in one page since there aren't many
+      // Note: page parameter is required by interface but not used since we load all seasons
       return {
         data: seasons,
         pagination: {

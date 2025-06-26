@@ -9,12 +9,12 @@ interface MatchStatsCardsProps {
   onCreateNew?: () => void;
 }
 
-const MatchStatsCards: React.FC<MatchStatsCardsProps> = ({
+const MatchStatsCards = ({
   allMatches,
   filteredMatches,
   selectedSeasonId,
   onCreateNew
-}) => {
+}: MatchStatsCardsProps) => {
   const getMatchCountByStatus = (status: string) => {
     return allMatches.filter(m => m.status === status).length;
   };

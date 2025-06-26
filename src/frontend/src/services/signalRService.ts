@@ -2,7 +2,7 @@ import { HubConnection, HubConnectionBuilder, LogLevel, HubConnectionState } fro
 
 export interface MatchEvent {
   eventType: string;
-  data: any;
+  data: unknown;
 }
 
 export class SignalRService {

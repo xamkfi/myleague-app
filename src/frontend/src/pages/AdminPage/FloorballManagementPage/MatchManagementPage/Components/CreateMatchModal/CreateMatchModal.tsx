@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import type { 
-  FloorballTeam,
   CreateFloorballMatchRequest
 } from '../../../../../../types/floorball/floorballTypes';
-import type { FloorballSeasonDto } from '../../../../../../api/floorball/floorballSeasonService';
-import { formatSeasonDisplayName } from '../../utils/matchFormatters';
 import SearchableInfiniteDropdown from '../../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import { floorballTeamSearchService, floorballSeasonSearchService } from '../../../../../../api/floorball/floorballTeamSearchService';
 import './CreateMatchModal.scss';
@@ -16,12 +13,12 @@ interface CreateMatchModalProps {
   loading?: boolean;
 }
 
-const CreateMatchModal: React.FC<CreateMatchModalProps> = ({
+const CreateMatchModal = ({
   isOpen,
   onClose,
   onSubmit,
   loading = false
-}) => {
+}: CreateMatchModalProps) => {
   const [createForm, setCreateForm] = useState<CreateFloorballMatchRequest>({
     seasonId: '',
     homeTeamId: '',

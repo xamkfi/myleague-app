@@ -16,9 +16,7 @@ import type {
 } from '../../../../types/floorball/floorballTypes';
 import './MatchManagementPage.scss';
 
-interface MatchManagementPageProps {}
-
-const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
+const MatchManagementPage = () => {
   const navigate = useNavigate();
   
   // State management
@@ -169,11 +167,7 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
     setLiveModalMatch(null);
   };
 
-  const handleMatchUpdate = (updatedMatch: FloorballMatchDto) => {
-    setMatches(prev => prev.map(m => 
-      m.id === updatedMatch.id ? updatedMatch : m
-    ));
-  };
+
 
   const handleCancelLive = (matchId: string) => {
     // Use the hook to cancel live match
@@ -340,15 +334,14 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
 
         {/* Live Match Modal */}
         {liveModalMatch && (
-          <LiveMatchModal
-            match={liveModalMatch}
-            isOpen={isLiveModalOpen}
-            onClose={handleCloseLiveModal}
-            onMatchUpdate={handleMatchUpdate}
-            onCancelLive={handleCancelLive}
-            liveState={getLiveMatchState(liveModalMatch.id)}
-            onStateUpdate={(updates) => updateLiveMatchState(liveModalMatch.id, updates)}
-          />
+                  <LiveMatchModal
+          match={liveModalMatch}
+          isOpen={isLiveModalOpen}
+          onClose={handleCloseLiveModal}
+          onCancelLive={handleCancelLive}
+          liveState={getLiveMatchState(liveModalMatch.id)}
+          onStateUpdate={(updates) => updateLiveMatchState(liveModalMatch.id, updates)}
+        />
         )}
       </div>
     </div>
