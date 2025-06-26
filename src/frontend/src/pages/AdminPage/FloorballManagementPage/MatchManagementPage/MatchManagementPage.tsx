@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
-import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import Navbar from '../../../../components/Navigation/Navbar';
+import LiveMatchModal from './Components/LiveMatchModal';
+import CreateMatchModal from './Components/CreateMatchModal/CreateMatchModal';
+import MatchStatsCards from './Components/MatchStatsCards/MatchStatsCards';
+import MatchFilters from './Components/MatchFilters/MatchFilters';
+import { useLiveMatchState } from './hooks/useLiveMatchState';
+import { formatDateTime, getStatusBadge } from './utils/matchFormatters';
 import type { 
   FloorballMatchDto, 
-  FloorballTeam,
   CreateFloorballMatchRequest,
   FloorballMatchStatus
 } from '../../../../types/floorball/floorballTypes';
@@ -16,28 +19,32 @@ import './MatchManagementPage.scss';
 interface MatchManagementPageProps {}
 
 const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   
   // State management
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
-  const [teams, setTeams] = useState<FloorballTeam[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [liveMatches, setLiveMatches] = useState<Set<string>>(new Set());
+  
+  // Live match modal state
+  const [liveModalMatch, setLiveModalMatch] = useState<FloorballMatchDto | null>(null);
+  const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
+  
+  // Use the live match state hook
+  const {
+    liveMatches,
+    initializeLiveMatch,
+    updateLiveMatchState,
+    cancelLiveMatch,
+    getLiveMatchState,
+    isMatchLive
+  } = useLiveMatchState();
 
   // Form state
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
-  const [createForm, setCreateForm] = useState<CreateFloorballMatchRequest>({
-    seasonId: '',
-    homeTeamId: '',
-    awayTeamId: '',
-    scheduledDateTime: '',
-    venue: ''
-  });
 
   // Fetch all required data
   const fetchData = useCallback(async () => {
@@ -45,18 +52,13 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
       setLoading(true);
       setError(null);
 
-      const [seasonsResponse, teamsResponse, matchesResponse] = await Promise.all([
+      const [seasonsResponse, matchesResponse] = await Promise.all([
         floorballSeasonService.getAll(),
-        floorballTeamService.getAll(),
         floorballMatchService.getAll({ pageSize: 100 })
       ]);
 
       if (seasonsResponse.success && seasonsResponse.data) {
         setSeasons(seasonsResponse.data);
-      }
-
-      if (teamsResponse.success && teamsResponse.data) {
-        setTeams(teamsResponse.data);
       }
 
       if (matchesResponse.success && matchesResponse.data) {
@@ -113,54 +115,37 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleCreateMatch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!createForm.seasonId || !createForm.homeTeamId || !createForm.awayTeamId || !createForm.scheduledDateTime) {
-      setError('Please fill in all required fields');
-      return;
-    }
-
-    if (createForm.homeTeamId === createForm.awayTeamId) {
-      setError('Home team and away team cannot be the same');
-      return;
-    }
-
+  const handleCreateMatch = async (matchData: CreateFloorballMatchRequest) => {
     try {
       setActionLoading('create');
       setError(null);
 
-      const response = await floorballMatchService.create(createForm);
+      const response = await floorballMatchService.create(matchData);
       
       if (response.success && response.data) {
         setMatches(prev => [...prev, response.data!]);
         setShowCreateForm(false);
-        setCreateForm({
-          seasonId: '',
-          homeTeamId: '',
-          awayTeamId: '',
-          scheduledDateTime: '',
-          venue: ''
-        });
       }
 
     } catch (error) {
       console.error('Error creating match:', error);
       setError(error instanceof Error ? error.message : 'Failed to create match');
+      throw error; // Re-throw so the modal can handle it
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleLiveMatch = (match: FloorballMatchDto) => {
-    const isCurrentlyLive = liveMatches.has(match.id);
+    const isCurrentlyLive = isMatchLive(match.id);
     
     if (isCurrentlyLive) {
-      // If already live, navigate to live match page
-      navigate(`/admin/floorball/matches/${match.id}/live`);
+      // If already live, open the live modal again
+      setLiveModalMatch(match);
+      setIsLiveModalOpen(true);
     } else {
-      // If not live, mark as live (Go Live -> Live) and update status
-      setLiveMatches(prev => new Set([...prev, match.id]));
+      // If not live, initialize live state
+      initializeLiveMatch(match);
       
       // Update match status to InProgress
       setMatches(prev => prev.map(m => 
@@ -168,6 +153,10 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
           ? { ...m, status: 'InProgress' as FloorballMatchStatus }
           : m
       ));
+      
+      // Open the live match modal
+      setLiveModalMatch(match);
+      setIsLiveModalOpen(true);
     }
   };
 
@@ -175,32 +164,34 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
     navigate(`/admin/floorball/matches/${match.id}/edit`);
   };
 
-  const formatDateTime = (dateTime: string) => {
-    const date = new Date(dateTime);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    
-    return `${day}-${month}-${year}, ${hours}:${minutes}`;
+  const handleCloseLiveModal = () => {
+    setIsLiveModalOpen(false);
+    setLiveModalMatch(null);
   };
 
-  const getStatusBadge = (status: FloorballMatchStatus) => {
-    const statusClasses = {
-      'Scheduled': 'status-scheduled',
-      'InProgress': 'status-progress',
-      'Completed': 'status-completed',
-      'Cancelled': 'status-cancelled',
-      'Postponed': 'status-postponed'
-    };
-    
-    return `status-badge ${statusClasses[status] || 'status-completed'}`;
+  const handleMatchUpdate = (updatedMatch: FloorballMatchDto) => {
+    setMatches(prev => prev.map(m => 
+      m.id === updatedMatch.id ? updatedMatch : m
+    ));
   };
 
-  const formatSeasonDisplayName = (season: FloorballSeasonDto) => {
-    return `${season.name} (${season.startDate.split('-')[0]}-${season.endDate.split('-')[0]})`;
+  const handleCancelLive = (matchId: string) => {
+    // Use the hook to cancel live match
+    cancelLiveMatch(matchId);
+    
+    // Update match status back to Scheduled
+    setMatches(prev => prev.map(m => 
+      m.id === matchId 
+        ? { ...m, status: 'Scheduled' as FloorballMatchStatus }
+        : m
+    ));
+    
+    // Close the modal
+    setIsLiveModalOpen(false);
+    setLiveModalMatch(null);
   };
+
+
 
   if (loading) {
     return (
@@ -229,12 +220,6 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
             >
               ← Back to Admin
             </button>
-            <button 
-              onClick={() => setShowCreateForm(true)}
-              className="create-button"
-            >
-              + Create New Match
-            </button>
           </div>
           <div className="page-header__main">
             <h1 className="page-title">Match Management</h1>
@@ -252,46 +237,18 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
         )}
 
         {/* Stats and Filter Section */}
-        <div className="stats-section">
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-number">{filteredMatches.length}</div>
-              <div className="stat-label">{selectedSeasonId ? 'Season Matches' : 'Total Matches'}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{matches.filter(m => m.status === 'Scheduled').length}</div>
-              <div className="stat-label">Scheduled</div>
-              <div className="stat-indicator scheduled"></div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{matches.filter(m => m.status === 'InProgress').length}</div>
-              <div className="stat-label">In Progress</div>
-              <div className="stat-indicator progress"></div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{matches.filter(m => m.status === 'Completed').length}</div>
-              <div className="stat-label">Completed</div>
-              <div className="stat-indicator completed"></div>
-            </div>
-          </div>
+        <MatchStatsCards 
+          allMatches={matches}
+          filteredMatches={filteredMatches}
+          selectedSeasonId={selectedSeasonId}
+          onCreateNew={() => setShowCreateForm(true)}
+        />
 
-          <div className="filter-section">
-            <label htmlFor="season-filter">Filter by Season:</label>
-            <select
-              id="season-filter"
-              value={selectedSeasonId}
-              onChange={(e) => setSelectedSeasonId(e.target.value)}
-              className="season-filter"
-            >
-              <option value="">All Seasons</option>
-              {seasons.map(season => (
-                <option key={season.id} value={season.id}>
-                  {formatSeasonDisplayName(season)}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <MatchFilters 
+          seasons={seasons}
+          selectedSeasonId={selectedSeasonId}
+          onSeasonChange={setSelectedSeasonId}
+        />
 
         {/* Matches Table */}
         <div className="matches-section">
@@ -374,98 +331,24 @@ const MatchManagementPage: React.FC<MatchManagementPageProps> = () => {
         </div>
 
         {/* Create Match Modal */}
-        {showCreateForm && (
-          <div className="modal-overlay">
-            <div className="modal">
-              <div className="modal-header">
-                <h2>Create New Match</h2>
-                <button onClick={() => setShowCreateForm(false)} className="modal-close">×</button>
-              </div>
-              <form onSubmit={handleCreateMatch} className="modal-form">
-                <div className="form-group">
-                  <label htmlFor="season">Season *</label>
-                  <select
-                    id="season"
-                    value={createForm.seasonId}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, seasonId: e.target.value }))}
-                    required
-                  >
-                    <option value="">Select Season</option>
-                    {seasons.map(season => (
-                      <option key={season.id} value={season.id}>
-                        {formatSeasonDisplayName(season)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="homeTeam">Home Team *</label>
-                  <select
-                    id="homeTeam"
-                    value={createForm.homeTeamId}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, homeTeamId: e.target.value }))}
-                    required
-                  >
-                    <option value="">Select Home Team</option>
-                    {teams.map(team => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="awayTeam">Away Team *</label>
-                  <select
-                    id="awayTeam"
-                    value={createForm.awayTeamId}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, awayTeamId: e.target.value }))}
-                    required
-                  >
-                    <option value="">Select Away Team</option>
-                    {teams.map(team => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="dateTime">Date & Time *</label>
-                  <input
-                    type="datetime-local"
-                    id="dateTime"
-                    value={createForm.scheduledDateTime}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, scheduledDateTime: e.target.value }))}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="venue">Venue</label>
-                  <input
-                    type="text"
-                    id="venue"
-                    value={createForm.venue}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, venue: e.target.value }))}
-                    placeholder="Enter venue (optional)"
-                  />
-                </div>
-                
-                <div className="modal-actions">
-                  <button type="button" onClick={() => setShowCreateForm(false)} className="cancel-button">
-                    Cancel
-                  </button>
-                  <button type="submit" disabled={actionLoading === 'create'} className="submit-button">
-                    {actionLoading === 'create' ? 'Creating...' : 'Create Match'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+        <CreateMatchModal
+          isOpen={showCreateForm}
+          onClose={() => setShowCreateForm(false)}
+          onSubmit={handleCreateMatch}
+          loading={actionLoading === 'create'}
+        />
+
+        {/* Live Match Modal */}
+        {liveModalMatch && (
+          <LiveMatchModal
+            match={liveModalMatch}
+            isOpen={isLiveModalOpen}
+            onClose={handleCloseLiveModal}
+            onMatchUpdate={handleMatchUpdate}
+            onCancelLive={handleCancelLive}
+            liveState={getLiveMatchState(liveModalMatch.id)}
+            onStateUpdate={(updates) => updateLiveMatchState(liveModalMatch.id, updates)}
+          />
         )}
       </div>
     </div>

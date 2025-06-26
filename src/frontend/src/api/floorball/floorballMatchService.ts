@@ -2,7 +2,6 @@ import type {
   ApiResponse,
   PaginatedApiResponse,
   FloorballMatchDto,
-  FloorballMatchStatus,
   CreateFloorballMatchRequest,
   UpdateFloorballMatchRequest,
   GetFloorballMatchesRequest
