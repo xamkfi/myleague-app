@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { divisionService } from '../../../api/common/divisionService';
 import PageTemplate from '../../../components/PageTemplate/PageTemplate';
 import './FloorballManagementPage.scss';
 
@@ -7,7 +8,9 @@ const FloorballManagementPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleComingSoonClick = (featureName: string) => {
+  const handleComingSoonClick = async (featureName: string) => {
+    const division = (await divisionService.getById("b851ac37-219c-4fa9-a76f-d8620066151d")).data.name;
+    console.log(division);
     alert(`🚧 ${featureName} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯`);
   };
 

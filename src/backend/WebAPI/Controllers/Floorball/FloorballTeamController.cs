@@ -377,5 +377,26 @@ namespace WebAPI.Controllers.Floorball
             string errorMessage = result.Error ?? "Failed to update team player";
             return BadRequest(ApiResponse<FloorballTeamPlayerDto>.ErrorResponse(errorMessage));
         }
+
+        [HttpPatch("{teamId:guid}/division{divisionId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballTeamDto>>> UpdateTeamDivision(Guid teamId, Guid divisionId)
+        {
+            _logger.LogInformation("Updating teams {teamId} into division {divisionId}", teamId, divisionId);
+
+            UpdateTeamDivisionCommand command = new UpdateTeamDivisionCommand(teamId, divisionId);
+            Result<FloorballTeamDto> result = await _mediator.Send(command);
+
+            if(result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Team division updated succesfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to update teams division";
+            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+        }
     }
 } 

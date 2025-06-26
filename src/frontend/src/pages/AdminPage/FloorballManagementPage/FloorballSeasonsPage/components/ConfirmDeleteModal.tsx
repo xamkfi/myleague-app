@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { FloorballSeasonDto } from '../../../../../api/floorball/floorballSeasonService';
+import { useDivisions } from '../../../../../hooks/useDivisions';
 
 interface ConfirmDeleteModalProps {
   season: FloorballSeasonDto;
@@ -13,6 +14,12 @@ export const ConfirmDeleteModal = ({
   onCancel
 }: ConfirmDeleteModalProps) => {
   const { t } = useTranslation();
+  const { divisions } = useDivisions();
+  
+  const getDivisionName = (divisionId: string) => {
+    const division = divisions.find(d => d.id === divisionId);
+    return division?.name || 'Unknown Division';
+  };
 
   const handleConfirm = () => {
     onConfirm();
@@ -42,7 +49,7 @@ export const ConfirmDeleteModal = ({
           <div className="season-details">
             <strong>{season.name}</strong>
             <div className="season-meta">
-              <span className="division">{season.division}</span>
+              <span className="division">{getDivisionName(season.divisionId)}</span>
               {season.teams && season.teams.length > 0 && (
                 <span className="teams-warning">
                   {t('floorball.seasons.deleteConfirm.teamsWarning', 'This season has {{count}} teams', { count: season.teams.length })}

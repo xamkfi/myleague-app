@@ -1,0 +1,328 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+@use '../../styles/common' as *;
+
+.floorball-player {
+  &-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'base');
+    border-bottom: 2px solid $color-border;
+    padding-bottom: map.get($spacing, 'base');
+    margin-bottom: map.get($spacing, 'lg');
+  }
+
+  &-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: map.get($border-radius, 'full');
+    background-color: $color-placeholder;
+  }
+
+  &-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &-name {
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+  }
+
+  &-subtitle {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
+}
+
+.career-stats-section {
+  width: 100%;
+  margin-bottom: map.get($spacing, 'lg');
+
+  h3 {
+    font-size: map.get($font-sizes, 'lg');
+    margin-bottom: map.get($spacing, 'base');
+    color: $color-text-primary;
+  }
+}
+
+.team-stats-breakdown {
+  margin-top: map.get($spacing, 'lg');
+  padding-top: map.get($spacing, 'base');
+  border-top: 1px solid $color-border;
+
+  h4 {
+    font-size: map.get($font-sizes, 'md');
+    margin-bottom: map.get($spacing, 'base');
+    color: $color-text-primary;
+  }
+}
+
+.team-stats {
+  margin-bottom: map.get($spacing, 'base');
+  padding: map.get($spacing, 'base');
+  background-color: $color-background-light;
+  border-radius: map.get($border-radius, 'sm');
+  border: 1px solid $color-border;
+
+  h5 {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'bold');
+    margin-bottom: map.get($spacing, 'xs');
+    color: $color-text-primary;
+  }
+
+  &-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'sm');
+    font-size: map.get($font-sizes, 'xs');
+
+    span {
+      color: $color-text-muted;
+      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+      background-color: $color-background-light;
+      border-radius: map.get($border-radius, 'sm');
+      border: 1px solid $color-border;
+    }
+  }
+}
+
+.stats {
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: map.get($spacing, 'base');
+    margin-bottom: map.get($spacing, 'lg');
+    width: 100%;
+  }
+
+  &-box {
+    background-color: $color-background-light;
+    padding: map.get($spacing, 'base');
+    border-radius: map.get($border-radius, 'sm');
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    border: 1px solid $color-border;
+  }
+
+  &-label {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+    margin-top: map.get($spacing, 'xs');
+  }
+
+  &-value {
+    font-size: map.get($font-sizes, 'xl');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+  }
+}
+
+.matches {
+  &-section {
+    width: 100%;
+    padding-top: map.get($spacing, 'base');
+
+    h3 {
+      font-size: map.get($font-sizes, 'lg');
+      margin-bottom: map.get($spacing, 'base');
+      color: $color-text-primary;
+    }
+  }
+
+  &-list {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'base');
+  }
+}
+
+.match {
+  &-card {
+    background-color: $color-background-light;
+    border-radius: map.get($border-radius, 'sm');
+    box-shadow: var(--shadow-sm);
+    padding: map.get($spacing, 'base');
+    border: 1px solid $color-border;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    &.voitto {
+      border-left: 4px solid #10b981;
+      background-color: rgba(16, 185, 129, 0.05);
+    }
+
+    &.tappio {
+      border-left: 4px solid #ef4444;
+      background-color: rgba(239, 68, 68, 0.05);
+    }
+
+    &.tasapeli {
+      border-left: 4px solid #6b7280;
+      background-color: rgba(107, 114, 128, 0.05);
+    }
+  }
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: map.get($spacing, 'sm');
+    border-bottom: 1px solid $color-border;
+    padding-bottom: map.get($spacing, 'xs');
+  }
+
+  &-teams {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &-opponent {
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+  }
+
+  &-location {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
+
+  &-result {
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    
+    &.voitto {
+      color: #10b981;
+    }
+
+    &.tappio {
+      color: #ef4444;
+    }
+
+    &.tasapeli {
+      color: #6b7280;
+    }
+  }
+
+  &-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: map.get($spacing, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
+
+  &-date, &-venue {
+    color: $color-text-muted;
+  }
+
+  &-status {
+    font-weight: map.get($font-weights, 'bold');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'xs');
+    
+    &.voitto {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+    }
+
+    &.tappio {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
+    &.tasapeli {
+      background-color: rgba(107, 114, 128, 0.1);
+      color: #6b7280;
+    }
+  }
+
+  &-player-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: map.get($spacing, 'sm');
+    padding-top: map.get($spacing, 'sm');
+    border-top: 1px solid $color-border;
+  }
+}
+
+.player-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: map.get($font-sizes, 'sm');
+
+  .stat-label {
+    color: $color-text-muted;
+  }
+
+  .stat-value {
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .stats {
+    &-grid {
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+  }
+
+  .match {
+    &-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: map.get($spacing, 'xs');
+    }
+
+    &-info {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: map.get($spacing, 'xs');
+    }
+
+    &-player-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .floorball-player {
+    &-header {
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: center;
+    }
+
+    &-avatar {
+      width: 60px;
+      height: 60px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .stats {
+    &-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
