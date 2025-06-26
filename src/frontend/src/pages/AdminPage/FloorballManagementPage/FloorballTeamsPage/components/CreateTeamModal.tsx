@@ -139,6 +139,7 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
                 onChange={(e) => handleInputChange('divisionId', e.target.value)}
                 required
               >
+                <option>{t('floorball.divisions.premier', 'Select division...')}</option>
                 {divisions.map(division => (
                   <option key={division.id} value={division.id}>{t('floorball.divisions.premier', division.name)}</option>
                 ))}
