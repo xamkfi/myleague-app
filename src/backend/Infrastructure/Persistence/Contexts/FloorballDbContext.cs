@@ -40,6 +40,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballTeam> FloorballTeams { get; set; }
 
         /// <summary>
+        /// Gets or sets the FloorballTeamPlayers DbSet.
+        /// </summary>
+        public DbSet<FloorballTeamPlayer> FloorballTeamPlayers { get; set; }
+
+        /// <summary>
         /// Gets or sets the FloorballMatches DbSet.
         /// </summary>
         public DbSet<FloorballMatch> FloorballMatches { get; set; }
@@ -131,6 +136,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             // Apply only Floorball configurations to avoid cross-context conflicts
             modelBuilder.ApplyConfiguration(new FloorballPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballTeamPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchConfiguration());
             modelBuilder.ApplyConfiguration(new EventSourcedFloorballMatchConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballSeasonConfiguration());
