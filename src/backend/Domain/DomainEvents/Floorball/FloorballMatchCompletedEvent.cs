@@ -3,7 +3,7 @@ namespace Domain.DomainEvents.Floorball;
 /// <summary>
 /// Event raised when a floorball match is completed
 /// </summary>
-public class FloorballMatchCompletedEvent : IDomainEvent
+public class FloorballMatchCompletedEvent : FloorballDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier of the event
@@ -63,4 +63,9 @@ public class FloorballMatchCompletedEvent : IDomainEvent
         WentToOvertime = wentToOvertime;
         WentToShootout = wentToShootout;
     }
+
+    /// <summary>
+    /// Private constructor for EF Core serialization.
+    /// </summary>
+    private FloorballMatchCompletedEvent() { }
 } 

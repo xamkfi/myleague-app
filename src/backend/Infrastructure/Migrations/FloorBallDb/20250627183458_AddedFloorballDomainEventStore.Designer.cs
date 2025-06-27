@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 {
     [DbContext(typeof(FloorballDbContext))]
-    partial class FloorballDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250627183458_AddedFloorballDomainEventStore")]
+    partial class AddedFloorballDomainEventStore
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,14 +29,11 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
             modelBuilder.Entity("Domain.DomainEvents.Floorball.FloorballDomainEvent", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("AggregateId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
 
                     b.Property<string>("EventType")
                         .IsRequired()
@@ -50,10 +50,14 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasIndex("AggregateId");
 
-                    b.HasIndex(new[] { "AggregateId", "Version" }, "IX_FloorballDomainEvents_AggregateId_Version")
+                    b.HasIndex("AggregateId", "Version")
                         .IsUnique();
 
                     b.ToTable("FloorballDomainEvents", "floorball");
+
+                    b.HasDiscriminator<string>("EventType").HasValue("FloorballDomainEvent");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.EventSourcedFloorballMatch", b =>
@@ -629,6 +633,55 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasIndex("TeamsId");
 
                     b.ToTable("FloorballSeasonTeam", "floorball");
+                });
+
+            modelBuilder.Entity("Domain.DomainEvents.Floorball.FloorballGoalScoredEvent", b =>
+                {
+                    b.HasBaseType("Domain.DomainEvents.Floorball.FloorballDomainEvent");
+
+                    b.HasDiscriminator().HasValue("FloorballGoalScoredEvent");
+                });
+
+            modelBuilder.Entity("Domain.DomainEvents.Floorball.FloorballMatchCompletedEvent", b =>
+                {
+                    b.HasBaseType("Domain.DomainEvents.Floorball.FloorballDomainEvent");
+
+                    b.HasDiscriminator().HasValue("FloorballMatchCompletedEvent");
+                });
+
+            modelBuilder.Entity("Domain.DomainEvents.Floorball.FloorballMatchCreatedEvent", b =>
+                {
+                    b.HasBaseType("Domain.DomainEvents.Floorball.FloorballDomainEvent");
+
+                    b.HasDiscriminator().HasValue("FloorballMatchCreatedEvent");
+                });
+
+            modelBuilder.Entity("Domain.DomainEvents.Floorball.FloorballMatchStartedEvent", b =>
+                {
+                    b.HasBaseType("Domain.DomainEvents.Floorball.FloorballDomainEvent");
+
+                    b.HasDiscriminator().HasValue("FloorballMatchStartedEvent");
+                });
+
+            modelBuilder.Entity("Domain.DomainEvents.Floorball.FloorballOfficialAssignedEvent", b =>
+                {
+                    b.HasBaseType("Domain.DomainEvents.Floorball.FloorballDomainEvent");
+
+                    b.HasDiscriminator().HasValue("FloorballOfficialAssignedEvent");
+                });
+
+            modelBuilder.Entity("Domain.DomainEvents.Floorball.FloorballPenaltyAssignedEvent", b =>
+                {
+                    b.HasBaseType("Domain.DomainEvents.Floorball.FloorballDomainEvent");
+
+                    b.HasDiscriminator().HasValue("FloorballPenaltyAssignedEvent");
+                });
+
+            modelBuilder.Entity("Domain.DomainEvents.Floorball.FloorballPeriodEndedEvent", b =>
+                {
+                    b.HasBaseType("Domain.DomainEvents.Floorball.FloorballDomainEvent");
+
+                    b.HasDiscriminator().HasValue("FloorballPeriodEndedEvent");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballGoal", b =>

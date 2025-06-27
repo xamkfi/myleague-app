@@ -99,7 +99,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         {
             _periodScores[i] = (0, 0);
         }
-        Venue = string.Empty;
+        Venue = null!;
     }
     
     /// <summary>
@@ -300,7 +300,9 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         
         var officialAssignedEvent = new FloorballOfficialAssignedEvent(
             Id,
-            refereeId);
+            refereeId,
+            refereeId,
+            "Referee");
             
         ApplyEvent(officialAssignedEvent);
     }
@@ -389,12 +391,12 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     // These methods are called by the base class via reflection when applying events
     
     /// <summary>
-    /// Applies a match created event
+    /// Applies the state changes for a match creation event
     /// </summary>
-    /// <param name="event">The event to apply</param>
-    private void Apply(FloorballMatchCreatedEvent @event)
+    /// <param name="event">The match created event</param>
+    protected void Apply(FloorballMatchCreatedEvent @event)
     {
-        Id = @event.MatchId;
+        Id = @event.AggregateId;
         SeasonId = @event.SeasonId;
         HomeTeamId = @event.HomeTeamId;
         AwayTeamId = @event.AwayTeamId;
@@ -411,7 +413,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies a match rescheduled event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private void Apply(FloorballMatchRescheduledEvent @event)
+    protected void Apply(FloorballMatchRescheduledEvent @event)
     {
         ScheduledDateTime = @event.NewScheduledDateTime;
         Venue = @event.NewVenue;
@@ -421,7 +423,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies a match status changed event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private void Apply(FloorballMatchStatusChangedEvent @event)
+    protected void Apply(FloorballMatchStatusChangedEvent @event)
     {
         Status = @event.NewStatus;
     }
@@ -430,7 +432,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies a match started event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private static void Apply(FloorballMatchStartedEvent @event)
+    protected void Apply(FloorballMatchStartedEvent @event)
     {
         // No additional state changes beyond the status change
     }
@@ -439,7 +441,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies a goal scored event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private void Apply(FloorballGoalScoredEvent @event)
+    protected void Apply(FloorballGoalScoredEvent @event)
     {
         // Add the existing event to our collection (don't create a new one)
         _goalEvents.Add(@event);
@@ -465,7 +467,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies a penalty assigned event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private void Apply(FloorballPenaltyAssignedEvent @event)
+    protected void Apply(FloorballPenaltyAssignedEvent @event)
     {
         // Add the existing event to our collection (don't create a new one)
         _penaltyEvents.Add(@event);
@@ -475,7 +477,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies an official assigned event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private void Apply(FloorballOfficialAssignedEvent @event)
+    protected void Apply(FloorballOfficialAssignedEvent @event)
     {
         _officialIds.Add(@event.RefereeId);
     }
@@ -484,7 +486,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies a match overtime started event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private void Apply(FloorballMatchOvertimeStartedEvent @event)
+    protected void Apply(FloorballMatchOvertimeStartedEvent @event)
     {
         WentToOvertime = true;
         
@@ -499,7 +501,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies a match shootout started event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private void Apply(FloorballMatchShootoutStartedEvent @event)
+    protected void Apply(FloorballMatchShootoutStartedEvent @event)
     {
         WentToShootout = true;
         
@@ -514,7 +516,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// Applies a match completed event
     /// </summary>
     /// <param name="event">The event to apply</param>
-    private static void Apply(FloorballMatchCompletedEvent @event)
+    protected static void Apply(FloorballMatchCompletedEvent @event)
     {
         // The status change is handled by the status changed event
         // This event just contains the final score which we already track

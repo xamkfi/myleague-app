@@ -22,7 +22,7 @@ public class CreateFloorballRefereeHandler : IRequestHandler<CreateFloorballRefe
 {
     private readonly IFloorballRefereeRepository _refereeRepository;
     private readonly IPersonRepository _personRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFloorballRefereeHandler> _logger;
 
     /// <summary>
@@ -35,7 +35,7 @@ public class CreateFloorballRefereeHandler : IRequestHandler<CreateFloorballRefe
     public CreateFloorballRefereeHandler(
         IFloorballRefereeRepository refereeRepository, 
         IPersonRepository personRepository,
-        IUnitOfWork unitOfWork, 
+        IFloorballUnitOfWork unitOfWork, 
         ILogger<CreateFloorballRefereeHandler> logger)
     {
         _refereeRepository = refereeRepository;

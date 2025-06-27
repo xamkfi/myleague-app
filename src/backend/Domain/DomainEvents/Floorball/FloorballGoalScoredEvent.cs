@@ -87,4 +87,9 @@ public class FloorballGoalScoredEvent : FloorballDomainEvent
         IsPenaltyShot = isPenaltyShot;
         AssisterId = assisterId;
     }
+
+    /// <summary>
+    /// Private constructor for EF Core serialization.
+    /// </summary>
+    private FloorballGoalScoredEvent() { }
 } 

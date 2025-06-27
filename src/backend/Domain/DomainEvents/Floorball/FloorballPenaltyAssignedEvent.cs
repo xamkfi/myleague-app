@@ -6,7 +6,7 @@ namespace Domain.DomainEvents.Floorball;
 /// <summary>
 /// Event raised when a penalty is assigned in a floorball match
 /// </summary>
-public class FloorballPenaltyAssignedEvent : IDomainEvent
+public class FloorballPenaltyAssignedEvent : FloorballDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier of the event
@@ -105,4 +105,9 @@ public class FloorballPenaltyAssignedEvent : IDomainEvent
         Minutes = minutes;
         Description = description ?? string.Empty;
     }
+
+    /// <summary>
+    /// Private constructor for EF Core serialization.
+    /// </summary>
+    private FloorballPenaltyAssignedEvent() { }
 } 

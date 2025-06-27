@@ -1,90 +1,38 @@
 using Domain.Entities.Floorball;
+using System;
 
-namespace Domain.DomainEvents.Floorball;
-
-/// <summary>
-/// Event raised when a floorball match is created
-/// </summary>
-public class FloorballMatchCreatedEvent : FloorballDomainEvent
+namespace Domain.DomainEvents.Floorball
 {
     /// <summary>
-    /// Gets the ID of the match
+    /// Event raised when a floorball match is created
     /// </summary>
-    public Guid MatchId { get; }
-    
-    /// <summary>
-    /// Gets the ID of the season
-    /// </summary>
-    public Guid SeasonId { get; }
-    
-    /// <summary>
-    /// Gets the ID of the home team
-    /// </summary>
-    public Guid HomeTeamId { get; }
-    
-    /// <summary>
-    /// Gets the ID of the away team
-    /// </summary>
-    public Guid AwayTeamId { get; }
-    
-    /// <summary>
-    /// Gets the scheduled date and time
-    /// </summary>
-    public DateTime ScheduledDateTime { get; }
-    
-    /// <summary>
-    /// Gets the venue
-    /// </summary>
-    public string Venue { get; }
-    
-    /// <summary>
-    /// Initializes a new instance of the FloorballMatchCreatedEvent class
-    /// </summary>
-    /// <param name="matchId">The ID of the match</param>
-    /// <param name="seasonId">The ID of the season</param>
-    /// <param name="homeTeamId">The ID of the home team</param>
-    /// <param name="awayTeamId">The ID of the away team</param>
-    /// <param name="scheduledDateTime">The scheduled date and time</param>
-    /// <param name="venue">The venue</param>
-    public FloorballMatchCreatedEvent(
-        Guid matchId,
-        Guid seasonId,
-        Guid homeTeamId,
-        Guid awayTeamId,
-        DateTime scheduledDateTime,
-        string venue)
+    public class FloorballMatchCreatedEvent : FloorballDomainEvent
     {
-        MatchId = matchId;
-        SeasonId = seasonId;
-        HomeTeamId = homeTeamId;
-        AwayTeamId = awayTeamId;
-        ScheduledDateTime = scheduledDateTime;
-        Venue = venue;
-    }
-    
-    /// <summary>
-    /// Initializes a new instance of the FloorballMatchCreatedEvent class from entity objects
-    /// </summary>
-    /// <param name="match">The match that was created</param>
-    /// <param name="season">The season of the match</param>
-    /// <param name="homeTeam">The home team</param>
-    /// <param name="awayTeam">The away team</param>
-    public FloorballMatchCreatedEvent(
-        FloorballMatch match,
-        FloorballSeason season,
-        FloorballTeam homeTeam,
-        FloorballTeam awayTeam)
-    {
-        ArgumentNullException.ThrowIfNull(match);
-        ArgumentNullException.ThrowIfNull(season);
-        ArgumentNullException.ThrowIfNull(homeTeam);
-        ArgumentNullException.ThrowIfNull(awayTeam);
+        public Guid MatchId { get; }
+        public Guid SeasonId { get; }
+        public Guid HomeTeamId { get; }
+        public Guid AwayTeamId { get; }
+        public DateTime ScheduledDateTime { get; }
+        public string Venue { get; }
 
-        MatchId = match.Id;
-        SeasonId = season.Id;
-        HomeTeamId = homeTeam.Id;
-        AwayTeamId = awayTeam.Id;
-        ScheduledDateTime = match.ScheduledDateTime;
-        Venue = match.Venue ?? "";
+        public FloorballMatchCreatedEvent(
+            Guid matchId,
+            Guid seasonId,
+            Guid homeTeamId,
+            Guid awayTeamId,
+            DateTime scheduledDateTime,
+            string venue)
+        {
+            AggregateId = matchId; // Set the aggregate ID
+            MatchId = matchId;
+            SeasonId = seasonId;
+            HomeTeamId = homeTeamId;
+            AwayTeamId = awayTeamId;
+            ScheduledDateTime = scheduledDateTime;
+            Venue = venue;
+        }
+
+        // Private constructor for EF Core/deserialization
+        private FloorballMatchCreatedEvent() { }
     }
 } 

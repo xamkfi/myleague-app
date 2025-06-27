@@ -5,7 +5,7 @@ namespace Domain.DomainEvents.Floorball;
 /// <summary>
 /// Event raised when a period ends in a floorball match
 /// </summary>
-public class FloorballPeriodEndedEvent : IDomainEvent
+public class FloorballPeriodEndedEvent : FloorballDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier of the event
@@ -70,4 +70,9 @@ public class FloorballPeriodEndedEvent : IDomainEvent
         AwayTeamScore = awayTeamScore;
         IsLastRegularPeriod = isLastRegularPeriod;
     }
+
+    /// <summary>
+    /// Private constructor for EF Core serialization.
+    /// </summary>
+    private FloorballPeriodEndedEvent() { }
 } 

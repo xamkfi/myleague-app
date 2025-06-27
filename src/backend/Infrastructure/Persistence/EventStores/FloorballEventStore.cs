@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.DomainEvents;
-using Domain.DomainEvents.Common;
 using Domain.DomainEvents.Floorball;
 using Domain.EventSourcing;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +21,7 @@ namespace MyLeague.Infrastructure.Persistence.EventStores
     {
         private readonly FloorballDbContext _floorballDbContext;
         private readonly ILogger<FloorballEventStore> _logger;
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
         /// <summary>
         /// Initializes a new instance of the FloorballEventStore class
@@ -38,58 +39,64 @@ namespace MyLeague.Infrastructure.Persistence.EventStores
         /// <inheritdoc />
         public async Task SaveEventsAsync(Guid aggregateId, IEnumerable<IDomainEvent> events, int expectedVersion, CancellationToken cancellationToken = default)
         {
-            // Get current version from database
             int currentVersion = await GetAggregateVersionAsync(aggregateId, cancellationToken);
-
-            // Check concurrency
-            if (expectedVersion != -1 && currentVersion != expectedVersion)
+            if (currentVersion != expectedVersion)
             {
-                _logger.LogWarning("Concurrency conflict when saving events for aggregate {AggregateId}. Expected version: {ExpectedVersion}, Actual version: {CurrentVersion}", 
-                    aggregateId, expectedVersion, currentVersion);
+                _logger.LogWarning("Concurrency conflict for aggregate {AggregateId}. Expected: {ExpectedVersion}, Actual: {CurrentVersion}", aggregateId, expectedVersion, currentVersion);
                 throw new DbUpdateConcurrencyException($"Concurrency conflict. Expected version {expectedVersion} but found {currentVersion}");
             }
 
+            var eventEntities = new List<FloorballDomainEvent>();
             int version = currentVersion;
 
-            // Add each event to DbContext
-            foreach (IDomainEvent @event in events)
+            foreach (FloorballDomainEvent domainEvent in events.Cast<FloorballDomainEvent>())
             {
                 version++;
+                domainEvent.Data = JsonSerializer.Serialize(domainEvent, domainEvent.GetType(), _jsonSerializerOptions);
                 
-                // Set the aggregate ID and version properties
-                EntityEntry<IDomainEvent> entry = _floorballDbContext.Entry(@event);
+                EntityEntry<FloorballDomainEvent> entry = _floorballDbContext.Entry(domainEvent);
                 entry.Property("AggregateId").CurrentValue = aggregateId;
                 entry.Property("Version").CurrentValue = version;
-                
-                // Add the event to the context
-                _floorballDbContext.Add(@event);
+
+                eventEntities.Add(domainEvent);
             }
 
-            // Save all events in a single transaction
+            _floorballDbContext.Set<FloorballDomainEvent>().AddRange(eventEntities);
             await _floorballDbContext.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Saved {Count} events for aggregate {AggregateId}", events.Count(), aggregateId);
+            _logger.LogInformation("Saved {Count} events for aggregate {AggregateId}", eventEntities.Count, aggregateId);
         }
 
         /// <inheritdoc />
         public async Task<IEnumerable<IDomainEvent>> GetEventsAsync(Guid aggregateId, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                List<IDomainEvent> events = await _floorballDbContext.Set<IDomainEvent>()
-                    .AsNoTracking()
-                    .Where(e => EF.Property<Guid>(e, "AggregateId") == aggregateId)
-                    .OrderBy(e => EF.Property<int>(e, "Version"))
-                    .ToListAsync(cancellationToken);
+            List<FloorballDomainEvent> eventEntities = await _floorballDbContext.Set<FloorballDomainEvent>()
+                .AsNoTracking()
+                .Where(e => e.AggregateId == aggregateId)
+                .OrderBy(e => EF.Property<int>(e, "Version"))
+                .ToListAsync(cancellationToken);
 
-                _logger.LogInformation("Retrieved {Count} events for aggregate {AggregateId}", events.Count, aggregateId);
-                return events;
-            }
-            catch (Exception ex)
+            if (!eventEntities.Any())
             {
-                _logger.LogError(ex, "Error retrieving events for aggregate {AggregateId}", aggregateId);
                 return Enumerable.Empty<IDomainEvent>();
             }
+
+            var domainEvents = new List<IDomainEvent>();
+            foreach (FloorballDomainEvent entity in eventEntities)
+            {
+                var eventType = Type.GetType($"Domain.DomainEvents.Floorball.{entity.EventType}, Domain");
+                if (eventType == null)
+                {
+                    _logger.LogWarning("Could not find event type {EventType}", entity.EventType);
+                    continue;
+                }
+
+                var domainEvent = (IDomainEvent)JsonSerializer.Deserialize(entity.Data, eventType, _jsonSerializerOptions)!;
+                domainEvents.Add(domainEvent);
+            }
+
+            _logger.LogInformation("Retrieved {Count} events for aggregate {AggregateId}", domainEvents.Count, aggregateId);
+            return domainEvents;
         }
 
         /// <inheritdoc />
@@ -97,12 +104,13 @@ namespace MyLeague.Infrastructure.Persistence.EventStores
         {
             try
             {
-                return await _floorballDbContext.Set<IDomainEvent>()
+                int? maxVersion = await _floorballDbContext.Set<FloorballDomainEvent>()
                     .AsNoTracking()
-                    .Where(e => EF.Property<Guid>(e, "AggregateId") == aggregateId)
-                    .Select(e => EF.Property<int>(e, "Version"))
-                    .DefaultIfEmpty(-1)
+                    .Where(e => e.AggregateId == aggregateId)
+                    .Select(e => (int?)EF.Property<int>(e, "Version"))
                     .MaxAsync(cancellationToken);
+
+                return maxVersion ?? -1;
             }
             catch (Exception ex)
             {

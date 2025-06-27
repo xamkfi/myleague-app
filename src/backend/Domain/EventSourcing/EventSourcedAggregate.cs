@@ -42,16 +42,14 @@ public abstract class EventSourcedAggregate
     private void ApplyChange(IDomainEvent @event, bool isNew)
     {
         // Use reflection to call the Apply method that matches the event type
-        MethodInfo? method = this.GetType()
-            .GetMethods(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-            .Where(m => m.Name == "Apply")
-            .Where(m => m.GetParameters().Length == 1)
-            .SingleOrDefault(m => m.GetParameters()[0].ParameterType == @event.GetType());
-        
-        if (method != null)
+        var method = GetType().GetMethod("Apply", BindingFlags.NonPublic | BindingFlags.Instance, new[] { @event.GetType() });
+
+        if (method == null)
         {
-            method.Invoke(this, new object[] { @event });
+            throw new InvalidOperationException($"Could not find a protected 'Apply' method for event type {@event.GetType().Name} in aggregate {GetType().Name}.");
         }
+
+        method.Invoke(this, new object[] { @event });
         
         if (isNew)
         {

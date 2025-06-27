@@ -3,7 +3,7 @@ namespace Domain.DomainEvents.Floorball;
 /// <summary>
 /// Event raised when a floorball match is started
 /// </summary>
-public class FloorballMatchStartedEvent : IDomainEvent
+public class FloorballMatchStartedEvent : FloorballDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier of the event
@@ -39,4 +39,9 @@ public class FloorballMatchStartedEvent : IDomainEvent
         MatchId = matchId;
         StartTime = startTime;
     }
+
+    /// <summary>
+    /// Private constructor for EF Core serialization.
+    /// </summary>
+    private FloorballMatchStartedEvent() { }
 } 

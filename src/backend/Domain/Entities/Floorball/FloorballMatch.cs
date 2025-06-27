@@ -414,7 +414,7 @@ public class FloorballMatch : AggregateRoot
         _officials.Add(referee);
         
         // Add domain event
-        AddDomainEvent(new FloorballOfficialAssignedEvent(Id, referee.Id));
+        AddDomainEvent(new FloorballOfficialAssignedEvent(Id, referee.Id, referee.Id, "Referee"));
     }
 
     /// <summary>

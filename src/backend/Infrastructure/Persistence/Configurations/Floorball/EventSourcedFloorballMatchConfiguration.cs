@@ -1,3 +1,4 @@
+
 using Domain.Entities.Floorball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
