@@ -35,6 +35,37 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         }
 
         /// <summary>
+        /// Handles the domain event by assigning an official to the FloorballMatch read model and then sending a notification.
+        /// </summary>
+        /// <param name="domainEvent">The domain event to handle</param>
+        public override async Task HandleAsync(FloorballOfficialAssignedEvent domainEvent)
+        {
+            // 1. Update the read model entity
+            FloorballMatch? match = await _dbContext.FloorballMatches.FindAsync(domainEvent.MatchId);
+            FloorballReferee? referee = await _dbContext.Set<FloorballReferee>().FindAsync(domainEvent.RefereeId);
+
+            if (match == null)
+            {
+                _logger.LogWarning("Floorball match with ID {MatchId} not found. Could not assign official.", domainEvent.MatchId);
+                return;
+            }
+
+            if (referee == null)
+            {
+                _logger.LogWarning("Floorball referee with ID {RefereeId} not found. Could not assign official to match {MatchId}.", domainEvent.RefereeId, domainEvent.MatchId);
+                return;
+            }
+
+            match.AddOfficial(referee);
+            await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("Assigned official {RefereeId} to match {MatchId} in read model.", referee.Id, match.Id);
+
+            // 2. Call the base handler to build and send the notification
+            await base.HandleAsync(domainEvent);
+        }
+
+        /// <summary>
         /// Builds the notification payload from the domain event
         /// </summary>
         /// <param name="domainEvent">The domain event</param>

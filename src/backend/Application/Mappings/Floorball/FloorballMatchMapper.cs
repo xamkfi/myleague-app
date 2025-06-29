@@ -83,6 +83,7 @@ public static class FloorballMatchMapper
         };
 
         FloorballMatch match = new FloorballMatch(
+            Guid.NewGuid(),
             season,
             homeTeam,
             awayTeam,

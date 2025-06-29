@@ -129,6 +129,7 @@ public class FloorballMatch : AggregateRoot
     /// <summary>
     /// Initializes a new instance of the FloorballMatch class
     /// </summary>
+    /// <param name="id">The match's unique identifier</param>
     /// <param name="season">The season this match belongs to</param>
     /// <param name="homeTeam">The home team</param>
     /// <param name="awayTeam">The away team</param>
@@ -137,11 +138,12 @@ public class FloorballMatch : AggregateRoot
     /// <exception cref="ArgumentNullException">Thrown when a required parameter is null</exception>
     /// <exception cref="ArgumentException">Thrown when teams are the same or venue is invalid</exception>
     public FloorballMatch(
+        Guid id,
         FloorballSeason season,
         FloorballTeam homeTeam,
         FloorballTeam awayTeam,
         DateTime scheduledDateTime,
-        string? venue)
+        string? venue) : base(id)
     {
         ArgumentNullException.ThrowIfNull(season);
         ArgumentNullException.ThrowIfNull(homeTeam);
@@ -150,7 +152,6 @@ public class FloorballMatch : AggregateRoot
         if (homeTeam == awayTeam)
             throw new ArgumentException("Home team and away team cannot be the same team.");
 
-        Id = Guid.NewGuid();
         Season = season;
         SeasonId = season.Id;
         HomeTeam = homeTeam;
