@@ -164,8 +164,10 @@ jobs:
       
     - name: Test Frontend in Docker Compose
       run: |
+        # Build all services that frontend depends on
+        docker compose build
         # Start only frontend service from docker-compose
-        docker compose up -d --build frontend
+        docker compose up -d frontend
         
         # Wait for service to be ready
         echo "Waiting for frontend service to start..."
