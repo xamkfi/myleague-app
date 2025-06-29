@@ -40,9 +40,9 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         public override async Task HandleAsync(FloorballMatchCreatedEvent domainEvent)
         {
             // 1. Create the read model entity
-            var homeTeam = await _dbContext.FloorballTeams.FindAsync(domainEvent.HomeTeamId);
-            var awayTeam = await _dbContext.FloorballTeams.FindAsync(domainEvent.AwayTeamId);
-            var season = await _dbContext.FloorballSeasons.FindAsync(domainEvent.SeasonId);
+            FloorballTeam? homeTeam = await _dbContext.FloorballTeams.FindAsync(domainEvent.HomeTeamId);
+            FloorballTeam? awayTeam = await _dbContext.FloorballTeams.FindAsync(domainEvent.AwayTeamId);
+            FloorballSeason? season = await _dbContext.FloorballSeasons.FindAsync(domainEvent.SeasonId);
 
             if (homeTeam == null || awayTeam == null || season == null)
             {

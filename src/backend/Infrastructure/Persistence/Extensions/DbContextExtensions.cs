@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MyLeague.Infrastructure.DomainEvents;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using System.Reflection;
+using System.Text.Json;
+using Domain.DomainEvents.Floorball;
 
 namespace MyLeague.Infrastructure.Persistence.Extensions
 {
@@ -40,8 +42,43 @@ namespace MyLeague.Infrastructure.Persistence.Extensions
                 .SelectMany(x => x.DomainEvents)
                 .ToList();
 
+            // Also get events from EventSourcedAggregates
+            var eventSourcedAggregates = dbContext.ChangeTracker.Entries<EventSourcedAggregate>()
+                .Where(x => x.Entity.UncommittedEvents.Any())
+                .Select(x => x.Entity)
+                .ToList();
+
+            domainEvents.AddRange(eventSourcedAggregates.SelectMany(x => x.UncommittedEvents));
+
+            // Fallback: Manually detect new FloorballDomainEvent entities in the change tracker.
+            // This handles cases where the Unit of Work is not managed correctly in the calling code,
+            // for example, when EventStore saves changes before the aggregate snapshot is saved in a separate transaction.
+            var newEventEntities = dbContext.ChangeTracker.Entries<FloorballDomainEvent>()
+                .Where(e => e.State == EntityState.Added)
+                .Select(e => e.Entity)
+                .ToList();
+
+            if (newEventEntities.Any())
+            {
+                var jsonSerializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                foreach (FloorballDomainEvent entity in newEventEntities)
+                {
+                    // The entity itself is not the event, the Data property holds the serialized event.
+                    var eventType = Type.GetType($"Domain.DomainEvents.Floorball.{entity.EventType}, Domain");
+                    if (eventType != null)
+                    {
+                        var domainEvent = (IDomainEvent)JsonSerializer.Deserialize(entity.Data, eventType, jsonSerializerOptions)!;
+                        if (domainEvent != null)
+                        {
+                            domainEvents.Add(domainEvent);
+                        }
+                    }
+                }
+            }
+
             // Clear the domain events from the aggregate roots
             aggregateRoots.ForEach(aggregate => aggregate.ClearDomainEvents());
+            eventSourcedAggregates.ForEach(aggregate => aggregate.MarkEventsAsCommitted());
 
             // Save changes to the database using the appropriate method to avoid recursion
             int result;

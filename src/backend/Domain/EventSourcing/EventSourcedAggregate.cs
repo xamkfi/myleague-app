@@ -42,7 +42,7 @@ public abstract class EventSourcedAggregate
     private void ApplyChange(IDomainEvent @event, bool isNew)
     {
         // Use reflection to call the Apply method that matches the event type
-        var method = GetType().GetMethod("Apply", BindingFlags.NonPublic | BindingFlags.Instance, new[] { @event.GetType() });
+        MethodInfo? method = GetType().GetMethod("Apply", BindingFlags.NonPublic | BindingFlags.Instance, new[] { @event.GetType() });
 
         if (method == null)
         {

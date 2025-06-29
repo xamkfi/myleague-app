@@ -29,6 +29,25 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
             _dbContext = dbContext;
         }
 
+        public override async Task HandleAsync(FloorballMatchStartedEvent domainEvent)
+        {
+            FloorballMatch? match = await _dbContext.FloorballMatches.FindAsync(domainEvent.MatchId);
+
+            if (match == null)
+            {
+                _logger.LogWarning("Could not create match read model for {MatchId} because a dependency (Season, Home, or Away team) was not found.", domainEvent.AggregateId);
+                return;
+            }
+            match.Start();
+
+            await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("FloorballMatch read model with ID {MatchId} started", match.Id);
+
+            // 2. Call the base handler to build and send the notification
+            await base.HandleAsync(domainEvent);
+        }
+
         /// <summary>
         /// Processes the FloorballMatchStartedEvent before notification
         /// </summary>
