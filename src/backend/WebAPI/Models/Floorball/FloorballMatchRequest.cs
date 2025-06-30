@@ -41,6 +41,34 @@ public record GetFloorballMatchesRequest
 }
 
 /// <summary>
+/// Request model for getting team matches with pagination and filtering (team ID comes from route)
+/// </summary>
+public record GetTeamMatchesRequest
+{
+    /// <summary>
+    /// Gets the page number (1-based)
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
+    public int Page { get; init; } = 1;
+
+    /// <summary>
+    /// Gets the number of items per page (0 means use default)
+    /// </summary>
+    [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
+    public int PageSize { get; init; } = 0;
+
+    /// <summary>
+    /// Gets the start date filter (matches on or after this date)
+    /// </summary>
+    public DateTime? StartDate { get; init; }
+
+    /// <summary>
+    /// Gets the end date filter (matches on or before this date)
+    /// </summary>
+    public DateTime? EndDate { get; init; }
+}
+
+/// <summary>
 /// Request model for creating a new floorball match
 /// </summary>
 public record CreateFloorballMatchRequest
