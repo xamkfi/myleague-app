@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import type { FloorballTeam } from '../../types/floorball/floorballTypes';
+import type { FloorballMatchDto, FloorballTeam } from '../../types/floorball/floorballTypes';
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
 import './FloorballTeamPage.scss';
+import { divisionService } from '../../api/common/divisionService';
+import type { DivisionType } from '../../types/common/divisionType';
+import type { FloorballMatch } from '../../api/admin/News/GetMatchesService';
+import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 
 function FloorballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
 
   const [team, setTeam] = useState<FloorballTeam | null>(null);
+  const [division, setDivision] = useState<DivisionType | null>(null)
+  const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,6 +40,16 @@ function FloorballTeamPage() {
         
         if (foundTeam) {
           setTeam(foundTeam);
+          
+          // Fetch division the team is in
+          const divisionResponse = await divisionService.getById(foundTeam.divisionId)
+          setDivision(divisionResponse.data)
+
+          // Fetch matches that the team is participating in
+          const matchResponse = await floorballMatchService.getByTeam(foundTeam.id)
+          setMatches(matchResponse.data)
+          console.log(matches)
+
         } else {
           setError('Team not found');
         }
@@ -44,7 +60,6 @@ function FloorballTeamPage() {
         setLoading(false);
       }
     };
-
     fetchTeamData();
   }, [slug]);
 
@@ -92,25 +107,11 @@ function FloorballTeamPage() {
     );
   }
 
-  const getDivisionDisplayName = (division: string) => {
-    const divisionMap: Record<string, string> = {
-      'Premier': 'Premier Division',
-      'Division1': 'Division 1',
-      'Division2': 'Division 2',
-      'Division3': 'Division 3', 
-      'Division4': 'Division 4',
-      'Youth': 'Youth',
-      'Junior': 'Junior',
-      'Veterans': 'Veterans',
-      'None': 'Unassigned'
-    };
-    return divisionMap[division] || division;
-  };
-
   const handleBackToClub = () => {
     const clubSlug = createClubSlug(team.club);
     navigate(`/club/${clubSlug}`);
   };
+
 
   return (
     <PageTemplate title={team.name}>
@@ -131,7 +132,7 @@ function FloorballTeamPage() {
             <div className="team-meta">
               <span className="division-badge">
                 {/* TODO: Get division name from divisionId */}
-                {getDivisionDisplayName(team.divisionId)}
+                {division?.name}
               </span>
               <span className="arena">🏟️ {team.homeArena}</span>
             </div>
@@ -182,7 +183,7 @@ function FloorballTeamPage() {
                 </div>
                 <div className="info-item">
                   {/* TODO: Get division name from divisionId */}
-                  <strong>Division:</strong> {getDivisionDisplayName(team.divisionId)}
+                  <strong>Division:</strong> {division?.name}
                 </div>
                 <div className="info-item">
                   <strong>Home Arena:</strong> {team.homeArena}
