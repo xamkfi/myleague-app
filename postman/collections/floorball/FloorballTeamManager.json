@@ -1,0 +1,325 @@
+{
+	"info": {
+		"_postman_id": "d7f8e9c2-4a5b-6c8d-9e0f-1a2b3c4d5e6f",
+		"name": "FloorballTeamManager",
+		"description": "Collection for adding managers to floorball teams with dynamic team ID fetching",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		},
+		{
+			"key": "managerId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team1Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team2Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team3Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team4Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team5Id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Get All Teams (Fetch Team IDs)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Extract team IDs from response and set as collection variables",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.data && responseJson.data.items && responseJson.data.items.length > 0) {",
+							"        const teams = responseJson.data.items;",
+							"        ",
+							"        // Set team IDs as variables (up to 5 teams)",
+							"        if (teams.length >= 1) {",
+							"            pm.collectionVariables.set('team1Id', teams[0].id);",
+							"            console.log('Team 1 ID set to: ' + teams[0].id + ' (Name: ' + teams[0].name + ')');",
+							"        }",
+							"        if (teams.length >= 2) {",
+							"            pm.collectionVariables.set('team2Id', teams[1].id);",
+							"            console.log('Team 2 ID set to: ' + teams[1].id + ' (Name: ' + teams[1].name + ')');",
+							"        }",
+							"        if (teams.length >= 3) {",
+							"            pm.collectionVariables.set('team3Id', teams[2].id);",
+							"            console.log('Team 3 ID set to: ' + teams[2].id + ' (Name: ' + teams[2].name + ')');",
+							"        }",
+							"        if (teams.length >= 4) {",
+							"            pm.collectionVariables.set('team4Id', teams[3].id);",
+							"            console.log('Team 4 ID set to: ' + teams[3].id + ' (Name: ' + teams[3].name + ')');",
+							"        }",
+							"        if (teams.length >= 5) {",
+							"            pm.collectionVariables.set('team5Id', teams[4].id);",
+							"            console.log('Team 5 ID set to: ' + teams[4].id + ' (Name: ' + teams[4].name + ')');",
+							"        }",
+							"        ",
+							"        console.log('Total teams found: ' + teams.length);",
+							"    } else {",
+							"        console.log('No teams found in response');",
+							"    }",
+							"} else {",
+							"    console.log('Failed to fetch teams. Response code: ' + pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/FloorballTeam?page=1&pageSize=50",
+					"host": ["{{baseUrl}}"],
+					"path": ["FloorballTeam"],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "pageSize",
+							"value": "50"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Add Manager to Team 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Log the result of adding manager to team",
+							"if (pm.response.code === 201) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('Successfully added manager to Team 1');",
+							"    console.log('Manager ID: ' + pm.collectionVariables.get('managerId'));",
+							"    console.log('Team ID: ' + pm.collectionVariables.get('team1Id'));",
+							"} else {",
+							"    console.log('Failed to add manager to Team 1. Response code: ' + pm.response.code);",
+							"    console.log('Response: ' + pm.response.text());",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{team1Id}}\",\n  \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/FloorballTeamManager",
+					"host": ["{{baseUrl}}"],
+					"path": ["FloorballTeamManager"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Add Manager to Team 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Log the result of adding manager to team",
+							"if (pm.response.code === 201) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('Successfully added manager to Team 2');",
+							"    console.log('Manager ID: ' + pm.collectionVariables.get('managerId'));",
+							"    console.log('Team ID: ' + pm.collectionVariables.get('team2Id'));",
+							"} else {",
+							"    console.log('Failed to add manager to Team 2. Response code: ' + pm.response.code);",
+							"    console.log('Response: ' + pm.response.text());",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{team2Id}}\",\n  \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/FloorballTeamManager",
+					"host": ["{{baseUrl}}"],
+					"path": ["FloorballTeamManager"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Add Manager to Team 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Log the result of adding manager to team",
+							"if (pm.response.code === 201) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('Successfully added manager to Team 3');",
+							"    console.log('Manager ID: ' + pm.collectionVariables.get('managerId'));",
+							"    console.log('Team ID: ' + pm.collectionVariables.get('team3Id'));",
+							"} else {",
+							"    console.log('Failed to add manager to Team 3. Response code: ' + pm.response.code);",
+							"    console.log('Response: ' + pm.response.text());",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{team3Id}}\",\n  \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/FloorballTeamManager",
+					"host": ["{{baseUrl}}"],
+					"path": ["FloorballTeamManager"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Add Manager to Team 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Log the result of adding manager to team",
+							"if (pm.response.code === 201) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('Successfully added manager to Team 4');",
+							"    console.log('Manager ID: ' + pm.collectionVariables.get('managerId'));",
+							"    console.log('Team ID: ' + pm.collectionVariables.get('team4Id'));",
+							"} else {",
+							"    console.log('Failed to add manager to Team 4. Response code: ' + pm.response.code);",
+							"    console.log('Response: ' + pm.response.text());",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{team4Id}}\",\n  \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/FloorballTeamManager",
+					"host": ["{{baseUrl}}"],
+					"path": ["FloorballTeamManager"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Add Manager to Team 5",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Log the result of adding manager to team",
+							"if (pm.response.code === 201) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('Successfully added manager to Team 5');",
+							"    console.log('Manager ID: ' + pm.collectionVariables.get('managerId'));",
+							"    console.log('Team ID: ' + pm.collectionVariables.get('team5Id'));",
+							"} else {",
+							"    console.log('Failed to add manager to Team 5. Response code: ' + pm.response.code);",
+							"    console.log('Response: ' + pm.response.text());",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{team5Id}}\",\n  \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/FloorballTeamManager",
+					"host": ["{{baseUrl}}"],
+					"path": ["FloorballTeamManager"]
+				}
+			},
+			"response": []
+		}
+	]
+} 

@@ -1,0 +1,972 @@
+{
+	"info": {
+		"_postman_id": "8f9e1a2b-3c4d-5e6f-7a8b-9c0d1e2f3a4b",
+		"name": "Persons",
+		"description": "Collection for creating persons with strategic naming for team assignments",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Managers (Teams 1-15)",
+			"item": [
+				{
+					"name": "Create Manager Team01 - John Anderson-Manager-Team01",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Anderson-Manager-Team01\",\n  \"birthDate\": \"1980-03-15\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 101\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00101\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"john.anderson.manager.team01@example.com\",\n    \"phone\": \"+358401000001\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team02 - Sarah Johnson-Manager-Team02",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Sarah\",\n  \"lastName\": \"Johnson-Manager-Team02\",\n  \"birthDate\": \"1982-07-22\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 102\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00102\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"sarah.johnson.manager.team02@example.com\",\n    \"phone\": \"+358401000002\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team03 - Michael Smith-Manager-Team03",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Michael\",\n  \"lastName\": \"Smith-Manager-Team03\",\n  \"birthDate\": \"1979-11-08\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 103\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00103\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"michael.smith.manager.team03@example.com\",\n    \"phone\": \"+358401000003\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team04 - Emma Wilson-Manager-Team04",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Emma\",\n  \"lastName\": \"Wilson-Manager-Team04\",\n  \"birthDate\": \"1984-05-14\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 104\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00104\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"emma.wilson.manager.team04@example.com\",\n    \"phone\": \"+358401000004\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team05 - David Brown-Manager-Team05",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"David\",\n  \"lastName\": \"Brown-Manager-Team05\",\n  \"birthDate\": \"1981-09-30\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 105\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00105\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"david.brown.manager.team05@example.com\",\n    \"phone\": \"+358401000005\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team06 - Lisa Garcia-Manager-Team06",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Lisa\",\n  \"lastName\": \"Garcia-Manager-Team06\",\n  \"birthDate\": \"1983-12-03\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 106\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00106\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"lisa.garcia.manager.team06@example.com\",\n    \"phone\": \"+358401000006\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team07 - Robert Martinez-Manager-Team07",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Robert\",\n  \"lastName\": \"Martinez-Manager-Team07\",\n  \"birthDate\": \"1978-04-18\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 107\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00107\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"robert.martinez.manager.team07@example.com\",\n    \"phone\": \"+358401000007\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team08 - Jennifer Davis-Manager-Team08",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Jennifer\",\n  \"lastName\": \"Davis-Manager-Team08\",\n  \"birthDate\": \"1985-01-27\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 108\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00108\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"jennifer.davis.manager.team08@example.com\",\n    \"phone\": \"+358401000008\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team09 - Christopher Miller-Manager-Team09",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Christopher\",\n  \"lastName\": \"Miller-Manager-Team09\",\n  \"birthDate\": \"1980-08-12\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 109\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00109\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"christopher.miller.manager.team09@example.com\",\n    \"phone\": \"+358401000009\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team10 - Amanda Rodriguez-Manager-Team10",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Amanda\",\n  \"lastName\": \"Rodriguez-Manager-Team10\",\n  \"birthDate\": \"1982-06-05\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 110\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00110\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"amanda.rodriguez.manager.team10@example.com\",\n    \"phone\": \"+358401000010\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Managers (Teams 11-25)",
+			"item": [
+				{
+					"name": "Create Manager Team11 - James Wilson-Manager-Team11",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"James\",\n  \"lastName\": \"Wilson-Manager-Team11\",\n  \"birthDate\": \"1979-10-15\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 111\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00111\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"james.wilson.manager.team11@example.com\",\n    \"phone\": \"+358401000011\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team12 - Maria Gonzalez-Manager-Team12",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Gonzalez-Manager-Team12\",\n  \"birthDate\": \"1984-02-28\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 112\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00112\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"maria.gonzalez.manager.team12@example.com\",\n    \"phone\": \"+358401000012\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team13 - Kevin Taylor-Manager-Team13",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Kevin\",\n  \"lastName\": \"Taylor-Manager-Team13\",\n  \"birthDate\": \"1981-07-09\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 113\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00113\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"kevin.taylor.manager.team13@example.com\",\n    \"phone\": \"+358401000013\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team14 - Nicole Thomas-Manager-Team14",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Nicole\",\n  \"lastName\": \"Thomas-Manager-Team14\",\n  \"birthDate\": \"1983-11-20\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 114\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00114\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"nicole.thomas.manager.team14@example.com\",\n    \"phone\": \"+358401000014\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team15 - Daniel Jackson-Manager-Team15",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Daniel\",\n  \"lastName\": \"Jackson-Manager-Team15\",\n  \"birthDate\": \"1980-04-02\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 115\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00115\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"daniel.jackson.manager.team15@example.com\",\n    \"phone\": \"+358401000015\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team16 - Ashley White-Manager-Team16",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Ashley\",\n  \"lastName\": \"White-Manager-Team16\",\n  \"birthDate\": \"1982-09-11\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 116\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00116\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"ashley.white.manager.team16@example.com\",\n    \"phone\": \"+358401000016\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team17 - Mark Harris-Manager-Team17",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Mark\",\n  \"lastName\": \"Harris-Manager-Team17\",\n  \"birthDate\": \"1978-12-25\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 117\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00117\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"mark.harris.manager.team17@example.com\",\n    \"phone\": \"+358401000017\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team18 - Rachel Clark-Manager-Team18",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Rachel\",\n  \"lastName\": \"Clark-Manager-Team18\",\n  \"birthDate\": \"1985-03-17\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 118\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00118\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"rachel.clark.manager.team18@example.com\",\n    \"phone\": \"+358401000018\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team19 - Paul Lewis-Manager-Team19",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Paul\",\n  \"lastName\": \"Lewis-Manager-Team19\",\n  \"birthDate\": \"1981-06-08\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 119\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00119\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"paul.lewis.manager.team19@example.com\",\n    \"phone\": \"+358401000019\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team20 - Stephanie Young-Manager-Team20",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Stephanie\",\n  \"lastName\": \"Young-Manager-Team20\",\n  \"birthDate\": \"1983-08-14\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 120\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00120\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"stephanie.young.manager.team20@example.com\",\n    \"phone\": \"+358401000020\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Managers (Teams 21-45)",
+			"item": [
+				{
+					"name": "Create Manager Team21 - Eric King-Manager-Team21",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Eric\",\n  \"lastName\": \"King-Manager-Team21\",\n  \"birthDate\": \"1980-01-22\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 121\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00121\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"eric.king.manager.team21@example.com\",\n    \"phone\": \"+358401000021\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team22 - Lauren Scott-Manager-Team22",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Lauren\",\n  \"lastName\": \"Scott-Manager-Team22\",\n  \"birthDate\": \"1984-05-09\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 122\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00122\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"lauren.scott.manager.team22@example.com\",\n    \"phone\": \"+358401000022\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team23 - Brian Green-Manager-Team23",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Brian\",\n  \"lastName\": \"Green-Manager-Team23\",\n  \"birthDate\": \"1979-11-03\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 123\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00123\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"brian.green.manager.team23@example.com\",\n    \"phone\": \"+358401000023\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team24 - Megan Adams-Manager-Team24",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Megan\",\n  \"lastName\": \"Adams-Manager-Team24\",\n  \"birthDate\": \"1982-07-16\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 124\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00124\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"megan.adams.manager.team24@example.com\",\n    \"phone\": \"+358401000024\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team25 - Gregory Baker-Manager-Team25",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Gregory\",\n  \"lastName\": \"Baker-Manager-Team25\",\n  \"birthDate\": \"1981-04-29\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 125\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00125\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"gregory.baker.manager.team25@example.com\",\n    \"phone\": \"+358401000025\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team26 - Helen Nelson-Manager-Team26",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Helen\",\n  \"lastName\": \"Nelson-Manager-Team26\",\n  \"birthDate\": \"1983-10-12\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 126\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00126\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"helen.nelson.manager.team26@example.com\",\n    \"phone\": \"+358401000026\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team27 - Steven Carter-Manager-Team27",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Steven\",\n  \"lastName\": \"Carter-Manager-Team27\",\n  \"birthDate\": \"1980-02-07\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 127\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00127\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"steven.carter.manager.team27@example.com\",\n    \"phone\": \"+358401000027\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team28 - Amy Mitchell-Manager-Team28",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Amy\",\n  \"lastName\": \"Mitchell-Manager-Team28\",\n  \"birthDate\": \"1984-06-23\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 128\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00128\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"amy.mitchell.manager.team28@example.com\",\n    \"phone\": \"+358401000028\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team29 - Ryan Perez-Manager-Team29",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Ryan\",\n  \"lastName\": \"Perez-Manager-Team29\",\n  \"birthDate\": \"1981-09-04\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 129\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00129\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"ryan.perez.manager.team29@example.com\",\n    \"phone\": \"+358401000029\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team30 - Diana Roberts-Manager-Team30",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Diana\",\n  \"lastName\": \"Roberts-Manager-Team30\",\n  \"birthDate\": \"1982-12-18\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 130\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00130\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"diana.roberts.manager.team30@example.com\",\n    \"phone\": \"+358401000030\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team31 - Tyler Turner-Manager-Team31",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Tyler\",\n  \"lastName\": \"Turner-Manager-Team31\",\n  \"birthDate\": \"1979-05-31\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 131\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00131\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"tyler.turner.manager.team31@example.com\",\n    \"phone\": \"+358401000031\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team32 - Samantha Phillips-Manager-Team32",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Samantha\",\n  \"lastName\": \"Phillips-Manager-Team32\",\n  \"birthDate\": \"1983-08-26\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 132\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00132\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"samantha.phillips.manager.team32@example.com\",\n    \"phone\": \"+358401000032\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team33 - Nathan Campbell-Manager-Team33",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Nathan\",\n  \"lastName\": \"Campbell-Manager-Team33\",\n  \"birthDate\": \"1980-11-13\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 133\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00133\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"nathan.campbell.manager.team33@example.com\",\n    \"phone\": \"+358401000033\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team34 - Kimberly Parker-Manager-Team34",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Kimberly\",\n  \"lastName\": \"Parker-Manager-Team34\",\n  \"birthDate\": \"1984-04-08\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 134\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00134\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"kimberly.parker.manager.team34@example.com\",\n    \"phone\": \"+358401000034\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team35 - Justin Evans-Manager-Team35",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Justin\",\n  \"lastName\": \"Evans-Manager-Team35\",\n  \"birthDate\": \"1981-01-25\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 135\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00135\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"justin.evans.manager.team35@example.com\",\n    \"phone\": \"+358401000035\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team36 - Brittany Edwards-Manager-Team36",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Brittany\",\n  \"lastName\": \"Edwards-Manager-Team36\",\n  \"birthDate\": \"1982-07-19\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 136\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00136\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"brittany.edwards.manager.team36@example.com\",\n    \"phone\": \"+358401000036\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team37 - Jeremy Collins-Manager-Team37",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Jeremy\",\n  \"lastName\": \"Collins-Manager-Team37\",\n  \"birthDate\": \"1979-10-06\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 137\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00137\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"jeremy.collins.manager.team37@example.com\",\n    \"phone\": \"+358401000037\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team38 - Heather Stewart-Manager-Team38",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Heather\",\n  \"lastName\": \"Stewart-Manager-Team38\",\n  \"birthDate\": \"1983-03-14\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 138\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00138\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"heather.stewart.manager.team38@example.com\",\n    \"phone\": \"+358401000038\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team39 - Aaron Sanchez-Manager-Team39",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Aaron\",\n  \"lastName\": \"Sanchez-Manager-Team39\",\n  \"birthDate\": \"1980-08-01\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 139\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00139\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"aaron.sanchez.manager.team39@example.com\",\n    \"phone\": \"+358401000039\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team40 - Crystal Morris-Manager-Team40",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Crystal\",\n  \"lastName\": \"Morris-Manager-Team40\",\n  \"birthDate\": \"1984-12-28\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 140\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00140\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"crystal.morris.manager.team40@example.com\",\n    \"phone\": \"+358401000040\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team41 - Sean Rogers-Manager-Team41",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Sean\",\n  \"lastName\": \"Rogers-Manager-Team41\",\n  \"birthDate\": \"1981-05-15\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 141\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00141\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"sean.rogers.manager.team41@example.com\",\n    \"phone\": \"+358401000041\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team42 - Vanessa Reed-Manager-Team42",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Vanessa\",\n  \"lastName\": \"Reed-Manager-Team42\",\n  \"birthDate\": \"1982-09-09\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 142\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00142\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"vanessa.reed.manager.team42@example.com\",\n    \"phone\": \"+358401000042\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team43 - Brandon Cook-Manager-Team43",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Brandon\",\n  \"lastName\": \"Cook-Manager-Team43\",\n  \"birthDate\": \"1979-12-22\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 143\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00143\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"brandon.cook.manager.team43@example.com\",\n    \"phone\": \"+358401000043\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team44 - Cynthia Bailey-Manager-Team44",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Cynthia\",\n  \"lastName\": \"Bailey-Manager-Team44\",\n  \"birthDate\": \"1983-06-11\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 144\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00144\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"cynthia.bailey.manager.team44@example.com\",\n    \"phone\": \"+358401000044\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager Team45 - Adam Rivera-Manager-Team45",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Adam\",\n  \"lastName\": \"Rivera-Manager-Team45\",\n  \"birthDate\": \"1980-03-05\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Manager Street 145\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"00145\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"adam.rivera.manager.team45@example.com\",\n    \"phone\": \"+358401000045\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+} 
