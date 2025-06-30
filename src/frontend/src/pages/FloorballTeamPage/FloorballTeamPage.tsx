@@ -49,9 +49,6 @@ function FloorballTeamPage() {
           // Fetch division the team is in
           const divisionResponse = await divisionService.getById(foundTeam.divisionId)
           setDivision(divisionResponse.data)
-
-          // Note: Match fetching moved to separate useEffect for pagination
-
         } else {
           setError('Team not found');
         }
