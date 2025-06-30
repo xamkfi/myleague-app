@@ -2,18 +2,13 @@
 	"info": {
 		"_postman_id": "d7f8e9c2-4a5b-6c8d-9e0f-1a2b3c4d5e6f",
 		"name": "FloorballTeamManager",
-		"description": "Collection for adding managers to floorball teams with dynamic team ID fetching",
+		"description": "Collection for adding managers to floorball teams with dynamic team and manager ID fetching for all 45 teams",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
 		{
 			"key": "baseUrl",
 			"value": "http://localhost:8080/api",
-			"type": "string"
-		},
-		{
-			"key": "managerId",
-			"value": "",
 			"type": "string"
 		},
 		{
@@ -40,6 +35,431 @@
 			"key": "team5Id",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "team6Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team7Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team8Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team9Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team10Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team11Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team12Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team13Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team14Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team15Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team16Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team17Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team18Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team19Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team20Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team21Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team22Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team23Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team24Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team25Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team26Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team27Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team28Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team29Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team30Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team31Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team32Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team33Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team34Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team35Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team36Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team37Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team38Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team39Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team40Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team41Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team42Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team43Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team44Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "team45Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager1Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager2Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager3Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager4Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager5Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager6Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager7Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager8Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager9Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager10Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager11Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager12Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager13Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager14Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager15Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager16Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager17Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager18Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager19Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager20Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager21Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager22Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager23Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager24Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager25Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager26Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager27Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager28Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager29Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager30Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager31Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager32Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager33Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager34Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager35Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager36Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager37Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager38Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager39Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager40Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager41Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager42Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager43Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager44Id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manager45Id",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"item": [
@@ -53,32 +473,21 @@
 							"// Extract team IDs from response and set as collection variables",
 							"if (pm.response.code === 200) {",
 							"    const responseJson = pm.response.json();",
-							"    if (responseJson.data && responseJson.data.items && responseJson.data.items.length > 0) {",
-							"        const teams = responseJson.data.items;",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        let teams = responseJson.data;",
 							"        ",
-							"        // Set team IDs as variables (up to 5 teams)",
-							"        if (teams.length >= 1) {",
-							"            pm.collectionVariables.set('team1Id', teams[0].id);",
-							"            console.log('Team 1 ID set to: ' + teams[0].id + ' (Name: ' + teams[0].name + ')');",
-							"        }",
-							"        if (teams.length >= 2) {",
-							"            pm.collectionVariables.set('team2Id', teams[1].id);",
-							"            console.log('Team 2 ID set to: ' + teams[1].id + ' (Name: ' + teams[1].name + ')');",
-							"        }",
-							"        if (teams.length >= 3) {",
-							"            pm.collectionVariables.set('team3Id', teams[2].id);",
-							"            console.log('Team 3 ID set to: ' + teams[2].id + ' (Name: ' + teams[2].name + ')');",
-							"        }",
-							"        if (teams.length >= 4) {",
-							"            pm.collectionVariables.set('team4Id', teams[3].id);",
-							"            console.log('Team 4 ID set to: ' + teams[3].id + ' (Name: ' + teams[3].name + ')');",
-							"        }",
-							"        if (teams.length >= 5) {",
-							"            pm.collectionVariables.set('team5Id', teams[4].id);",
-							"            console.log('Team 5 ID set to: ' + teams[4].id + ' (Name: ' + teams[4].name + ')');",
+							"        // Sort teams alphabetically by name for consistent ordering",
+							"        teams.sort((a, b) => a.name.localeCompare(b.name));",
+							"        ",
+							"        // Set team IDs as variables (up to 45 teams)",
+							"        for (let i = 0; i < Math.min(teams.length, 45); i++) {",
+							"            const teamVarName = 'team' + (i + 1) + 'Id';",
+							"            pm.collectionVariables.set(teamVarName, teams[i].id);",
+							"            console.log('Team ' + (i + 1) + ' ID set to: ' + teams[i].id + ' (Name: ' + teams[i].name + ')');",
 							"        }",
 							"        ",
 							"        console.log('Total teams found: ' + teams.length);",
+							"        console.log('Teams sorted alphabetically for consistent manager assignment');",
 							"    } else {",
 							"        console.log('No teams found in response');",
 							"    }",
@@ -112,21 +521,41 @@
 			"response": []
 		},
 		{
-			"name": "2. Add Manager to Team 1",
+			"name": "2. Get All Managers (Fetch Manager IDs)",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"// Log the result of adding manager to team",
-							"if (pm.response.code === 201) {",
+							"// Extract manager IDs from response and set as collection variables",
+							"if (pm.response.code === 200) {",
 							"    const responseJson = pm.response.json();",
-							"    console.log('Successfully added manager to Team 1');",
-							"    console.log('Manager ID: ' + pm.collectionVariables.get('managerId'));",
-							"    console.log('Team ID: ' + pm.collectionVariables.get('team1Id'));",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        let managers = responseJson.data;",
+							"        ",
+							"        // Sort managers by team number extracted from lastName",
+							"        managers.sort((a, b) => {",
+							"            const getTeamNumber = (lastName) => {",
+							"                const match = lastName.match(/Team(\\d+)/);",
+							"                return match ? parseInt(match[1]) : 999;",
+							"            };",
+							"            return getTeamNumber(a.lastName) - getTeamNumber(b.lastName);",
+							"        });",
+							"        ",
+							"        // Set manager IDs as variables (up to 45 managers)",
+							"        for (let i = 0; i < Math.min(managers.length, 45); i++) {",
+							"            const managerVarName = 'manager' + (i + 1) + 'Id';",
+							"            pm.collectionVariables.set(managerVarName, managers[i].id);",
+							"            console.log('Manager ' + (i + 1) + ' ID set to: ' + managers[i].id + ' (Name: ' + managers[i].fullName + ')');",
+							"        }",
+							"        ",
+							"        console.log('Total managers found: ' + managers.length);",
+							"        console.log('Managers sorted by team number for consistent assignment');",
+							"    } else {",
+							"        console.log('No managers found in response');",
+							"    }",
 							"} else {",
-							"    console.log('Failed to add manager to Team 1. Response code: ' + pm.response.code);",
-							"    console.log('Response: ' + pm.response.text());",
+							"    console.log('Failed to fetch managers. Response code: ' + pm.response.code);",
 							"}"
 						],
 						"type": "text/javascript"
@@ -134,189 +563,130 @@
 				}
 			],
 			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{team1Id}}\",\n  \"isActive\": true\n}"
-				},
+				"method": "GET",
+				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/FloorballTeamManager",
+					"raw": "{{baseUrl}}/Persons/search?name=Manager",
 					"host": ["{{baseUrl}}"],
-					"path": ["FloorballTeamManager"]
+					"path": ["Persons", "search"],
+					"query": [
+						{
+							"key": "name",
+							"value": "Manager"
+						}
+					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "3. Add Manager to Team 2",
+			"name": "3. Batch Assign All 45 Managers to Teams",
 			"event": [
+				{
+					"listen": "pre-request",
+					"script": {
+						"exec": [
+							"// Initialize batch assignment tracking",
+							"pm.collectionVariables.set('batchAssignmentIndex', '1');",
+							"pm.collectionVariables.set('batchAssignmentTotal', '45');",
+							"pm.collectionVariables.set('batchSuccessCount', '0');",
+							"pm.collectionVariables.set('batchFailureCount', '0');",
+							"",
+							"console.log('🚀 Starting batch assignment of 45 managers to teams');",
+							"console.log('========================================================');"
+						],
+						"type": "text/javascript"
+					}
+				},
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"// Log the result of adding manager to team",
-							"if (pm.response.code === 201) {",
-							"    const responseJson = pm.response.json();",
-							"    console.log('Successfully added manager to Team 2');",
-							"    console.log('Manager ID: ' + pm.collectionVariables.get('managerId'));",
-							"    console.log('Team ID: ' + pm.collectionVariables.get('team2Id'));",
-							"} else {",
-							"    console.log('Failed to add manager to Team 2. Response code: ' + pm.response.code);",
-							"    console.log('Response: ' + pm.response.text());",
-							"}"
+							"// Handle batch assignment with recursive pm.sendRequest calls",
+							"const totalAssignments = 45;",
+							"let successCount = 0;",
+							"let failureCount = 0;",
+							"let completedCount = 0;",
+							"",
+							"// Function to make assignment request",
+							"function assignManagerToTeam(index) {",
+							"    if (index > totalAssignments) {",
+							"        console.log('\\n🎉 Batch assignment complete!');",
+							"        console.log('   Total assignments: ' + totalAssignments);",
+							"        console.log('   Successful: ' + successCount);",
+							"        console.log('   Failed: ' + failureCount);",
+							"        console.log('========================================================');",
+							"        return;",
+							"    }",
+							"    ",
+							"    const managerId = pm.collectionVariables.get('manager' + index + 'Id');",
+							"    const teamId = pm.collectionVariables.get('team' + index + 'Id');",
+							"    ",
+							"    if (!managerId || !teamId) {",
+							"        console.log('⚠️  Skipping assignment ' + index + ' - missing IDs');",
+							"        console.log('   Manager ID: ' + (managerId || 'NOT FOUND'));",
+							"        console.log('   Team ID: ' + (teamId || 'NOT FOUND'));",
+							"        failureCount++;",
+							"        assignManagerToTeam(index + 1);",
+							"        return;",
+							"    }",
+							"    ",
+							"    const assignmentRequest = {",
+							"        url: pm.collectionVariables.get('baseUrl') + '/FloorballTeamManager',",
+							"        method: 'POST',",
+							"        header: {",
+							"            'Content-Type': 'application/json'",
+							"        },",
+							"        body: {",
+							"            mode: 'raw',",
+							"            raw: JSON.stringify({",
+							"                personId: managerId,",
+							"                teamId: teamId,",
+							"                isActive: true",
+							"            })",
+							"        }",
+							"    };",
+							"    ",
+							"    pm.sendRequest(assignmentRequest, function (err, response) {",
+							"        completedCount++;",
+							"        ",
+							"        if (err || response.code !== 201) {",
+							"            console.log('❌ Assignment ' + index + ' failed');",
+							"            console.log('   Manager ID: ' + managerId);",
+							"            console.log('   Team ID: ' + teamId);",
+							"            if (err) {",
+							"                console.log('   Error: ' + err);",
+							"            } else {",
+							"                console.log('   Response code: ' + response.code);",
+							"                console.log('   Response: ' + response.text());",
+							"            }",
+							"            failureCount++;",
+							"        } else {",
+							"            console.log('✅ Assignment ' + index + ' successful');",
+							"            console.log('   Manager ' + index + ' → Team ' + index);",
+							"            successCount++;",
+							"        }",
+							"        ",
+							"        // Continue with next assignment",
+							"        assignManagerToTeam(index + 1);",
+							"    });",
+							"}",
+							"",
+							"// Start the batch assignment process",
+							"console.log('Starting batch assignment process...');",
+							"assignManagerToTeam(1);"
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
 			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{team2Id}}\",\n  \"isActive\": true\n}"
-				},
+				"method": "GET",
+				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/FloorballTeamManager",
+					"raw": "{{baseUrl}}/health",
 					"host": ["{{baseUrl}}"],
-					"path": ["FloorballTeamManager"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "4. Add Manager to Team 3",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"// Log the result of adding manager to team",
-							"if (pm.response.code === 201) {",
-							"    const responseJson = pm.response.json();",
-							"    console.log('Successfully added manager to Team 3');",
-							"    console.log('Manager ID: ' + pm.collectionVariables.get('managerId'));",
-							"    console.log('Team ID: ' + pm.collectionVariables.get('team3Id'));",
-							"} else {",
-							"    console.log('Failed to add manager to Team 3. Response code: ' + pm.response.code);",
-							"    console.log('Response: ' + pm.response.text());",
-							"}"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{team3Id}}\",\n  \"isActive\": true\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/FloorballTeamManager",
-					"host": ["{{baseUrl}}"],
-					"path": ["FloorballTeamManager"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "5. Add Manager to Team 4",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"// Log the result of adding manager to team",
-							"if (pm.response.code === 201) {",
-							"    const responseJson = pm.response.json();",
-							"    console.log('Successfully added manager to Team 4');",
-							"    console.log('Manager ID: ' + pm.collectionVariables.get('managerId'));",
-							"    console.log('Team ID: ' + pm.collectionVariables.get('team4Id'));",
-							"} else {",
-							"    console.log('Failed to add manager to Team 4. Response code: ' + pm.response.code);",
-							"    console.log('Response: ' + pm.response.text());",
-							"}"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{team4Id}}\",\n  \"isActive\": true\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/FloorballTeamManager",
-					"host": ["{{baseUrl}}"],
-					"path": ["FloorballTeamManager"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "6. Add Manager to Team 5",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"// Log the result of adding manager to team",
-							"if (pm.response.code === 201) {",
-							"    const responseJson = pm.response.json();",
-							"    console.log('Successfully added manager to Team 5');",
-							"    console.log('Manager ID: ' + pm.collectionVariables.get('managerId'));",
-							"    console.log('Team ID: ' + pm.collectionVariables.get('team5Id'));",
-							"} else {",
-							"    console.log('Failed to add manager to Team 5. Response code: ' + pm.response.code);",
-							"    console.log('Response: ' + pm.response.text());",
-							"}"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"personId\": \"{{managerId}}\",\n  \"teamId\": \"{{team5Id}}\",\n  \"isActive\": true\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/FloorballTeamManager",
-					"host": ["{{baseUrl}}"],
-					"path": ["FloorballTeamManager"]
+					"path": ["health"]
 				}
 			},
 			"response": []
