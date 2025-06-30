@@ -1,0 +1,582 @@
+{
+	"info": {
+		"_postman_id": "e8f9a0b1-5c6d-7e8f-9f0g-2b3c4d5e6f7g",
+		"name": "FloorballTeamPlayer",
+		"description": "Collection for adding players to floorball teams with dynamic team and player ID fetching. Assigns 2 goalkeepers and 3 of each other position per team across all 45 teams.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Get All Teams (Fetch Team IDs)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Extract team IDs from response and set as collection variables",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        let teams = responseJson.data;",
+							"        ",
+							"        // Sort teams alphabetically by name for consistent ordering",
+							"        teams.sort((a, b) => a.name.localeCompare(b.name));",
+							"        ",
+							"        // Set team IDs as variables (up to 45 teams)",
+							"        for (let i = 0; i < Math.min(teams.length, 45); i++) {",
+							"            const teamVarName = 'team' + (i + 1) + 'Id';",
+							"            pm.collectionVariables.set(teamVarName, teams[i].id);",
+							"            console.log('Team ' + (i + 1) + ' ID set to: ' + teams[i].id + ' (Name: ' + teams[i].name + ')');",
+							"        }",
+							"        ",
+							"        console.log('🏒 Total teams found: ' + teams.length);",
+							"        console.log('Teams sorted alphabetically for consistent player assignment');",
+							"    } else {",
+							"        console.log('No teams found in response');",
+							"    }",
+							"} else {",
+							"    console.log('Failed to fetch teams. Response code: ' + pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/FloorballTeam?page=1&pageSize=50",
+					"host": ["{{baseUrl}}"],
+					"path": ["FloorballTeam"],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "pageSize",
+							"value": "50"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get All Goalkeepers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Extract goalkeeper person IDs and set as collection variables",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        let goalkeepers = responseJson.data;",
+							"        ",
+							"        // Set goalkeeper person IDs as variables (2 per team, up to 90 total)",
+							"        for (let teamNum = 1; teamNum <= 45; teamNum++) {",
+							"            let teamGoalkeepers = goalkeepers.filter(gk => gk.lastName.includes('Goalkeeper-Team' + teamNum.toString().padStart(2, '0')));",
+							"            teamGoalkeepers.sort((a, b) => a.firstName.localeCompare(b.firstName));",
+							"            ",
+							"            for (let i = 0; i < Math.min(teamGoalkeepers.length, 2); i++) {",
+							"                const varName = 'goalkeeper_team' + teamNum + '_' + (i + 1) + '_personId';",
+							"                pm.collectionVariables.set(varName, teamGoalkeepers[i].id);",
+							"                console.log('Goalkeeper Team' + teamNum + '-' + (i + 1) + ' person ID set to: ' + teamGoalkeepers[i].id + ' (Name: ' + teamGoalkeepers[i].fullName + ')');",
+							"            }",
+							"        }",
+							"        ",
+							"        console.log('🥅 Total goalkeepers found: ' + goalkeepers.length);",
+							"        console.log('Goalkeepers organized by team for consistent assignment');",
+							"    } else {",
+							"        console.log('No goalkeepers found in response');",
+							"    }",
+							"} else {",
+							"    console.log('Failed to fetch goalkeepers. Response code: ' + pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/Persons/search?name=Goalkeeper",
+					"host": ["{{baseUrl}}"],
+					"path": ["Persons", "search"],
+					"query": [
+						{
+							"key": "name",
+							"value": "Goalkeeper"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Get All Left Wingers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Extract left winger person IDs and set as collection variables",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        let leftWingers = responseJson.data;",
+							"        ",
+							"        // Set left winger person IDs as variables (3 per team, up to 135 total)",
+							"        for (let teamNum = 1; teamNum <= 45; teamNum++) {",
+							"            let teamLeftWingers = leftWingers.filter(lw => lw.lastName.includes('LeftWinger-Team' + teamNum.toString().padStart(2, '0')));",
+							"            teamLeftWingers.sort((a, b) => a.firstName.localeCompare(b.firstName));",
+							"            ",
+							"            for (let i = 0; i < Math.min(teamLeftWingers.length, 3); i++) {",
+							"                const varName = 'leftwinger_team' + teamNum + '_' + (i + 1) + '_personId';",
+							"                pm.collectionVariables.set(varName, teamLeftWingers[i].id);",
+							"                console.log('LeftWinger Team' + teamNum + '-' + (i + 1) + ' person ID set to: ' + teamLeftWingers[i].id + ' (Name: ' + teamLeftWingers[i].fullName + ')');",
+							"            }",
+							"        }",
+							"        ",
+							"        console.log('🏒 Total left wingers found: ' + leftWingers.length);",
+							"    } else {",
+							"        console.log('No left wingers found in response');",
+							"    }",
+							"} else {",
+							"    console.log('Failed to fetch left wingers. Response code: ' + pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/Persons/search?name=LeftWinger",
+					"host": ["{{baseUrl}}"],
+					"path": ["Persons", "search"],
+					"query": [
+						{
+							"key": "name",
+							"value": "LeftWinger"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get All Centers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Extract center person IDs and set as collection variables",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        let centers = responseJson.data;",
+							"        ",
+							"        // Set center person IDs as variables (3 per team, up to 135 total)",
+							"        for (let teamNum = 1; teamNum <= 45; teamNum++) {",
+							"            let teamCenters = centers.filter(c => c.lastName.includes('Center-Team' + teamNum.toString().padStart(2, '0')));",
+							"            teamCenters.sort((a, b) => a.firstName.localeCompare(b.firstName));",
+							"            ",
+							"            for (let i = 0; i < Math.min(teamCenters.length, 3); i++) {",
+							"                const varName = 'center_team' + teamNum + '_' + (i + 1) + '_personId';",
+							"                pm.collectionVariables.set(varName, teamCenters[i].id);",
+							"                console.log('Center Team' + teamNum + '-' + (i + 1) + ' person ID set to: ' + teamCenters[i].id + ' (Name: ' + teamCenters[i].fullName + ')');",
+							"            }",
+							"        }",
+							"        ",
+							"        console.log('🏒 Total centers found: ' + centers.length);",
+							"    } else {",
+							"        console.log('No centers found in response');",
+							"    }",
+							"} else {",
+							"    console.log('Failed to fetch centers. Response code: ' + pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/Persons/search?name=Center",
+					"host": ["{{baseUrl}}"],
+					"path": ["Persons", "search"],
+					"query": [
+						{
+							"key": "name",
+							"value": "Center"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Get All Right Wingers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Extract right winger person IDs and set as collection variables",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        let rightWingers = responseJson.data;",
+							"        ",
+							"        // Set right winger person IDs as variables (3 per team, up to 135 total)",
+							"        for (let teamNum = 1; teamNum <= 45; teamNum++) {",
+							"            let teamRightWingers = rightWingers.filter(rw => rw.lastName.includes('RightWinger-Team' + teamNum.toString().padStart(2, '0')));",
+							"            teamRightWingers.sort((a, b) => a.firstName.localeCompare(b.firstName));",
+							"            ",
+							"            for (let i = 0; i < Math.min(teamRightWingers.length, 3); i++) {",
+							"                const varName = 'rightwinger_team' + teamNum + '_' + (i + 1) + '_personId';",
+							"                pm.collectionVariables.set(varName, teamRightWingers[i].id);",
+							"                console.log('RightWinger Team' + teamNum + '-' + (i + 1) + ' person ID set to: ' + teamRightWingers[i].id + ' (Name: ' + teamRightWingers[i].fullName + ')');",
+							"            }",
+							"        }",
+							"        ",
+							"        console.log('🏒 Total right wingers found: ' + rightWingers.length);",
+							"    } else {",
+							"        console.log('No right wingers found in response');",
+							"    }",
+							"} else {",
+							"    console.log('Failed to fetch right wingers. Response code: ' + pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/Persons/search?name=RightWinger",
+					"host": ["{{baseUrl}}"],
+					"path": ["Persons", "search"],
+					"query": [
+						{
+							"key": "name",
+							"value": "RightWinger"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Get All Left Defenders",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Extract left defender person IDs and set as collection variables",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        let leftDefenders = responseJson.data;",
+							"        ",
+							"        // Set left defender person IDs as variables (3 per team, up to 135 total)",
+							"        for (let teamNum = 1; teamNum <= 45; teamNum++) {",
+							"            let teamLeftDefenders = leftDefenders.filter(ld => ld.lastName.includes('LeftDefender-Team' + teamNum.toString().padStart(2, '0')));",
+							"            teamLeftDefenders.sort((a, b) => a.firstName.localeCompare(b.firstName));",
+							"            ",
+							"            for (let i = 0; i < Math.min(teamLeftDefenders.length, 3); i++) {",
+							"                const varName = 'leftdefender_team' + teamNum + '_' + (i + 1) + '_personId';",
+							"                pm.collectionVariables.set(varName, teamLeftDefenders[i].id);",
+							"                console.log('LeftDefender Team' + teamNum + '-' + (i + 1) + ' person ID set to: ' + teamLeftDefenders[i].id + ' (Name: ' + teamLeftDefenders[i].fullName + ')');",
+							"            }",
+							"        }",
+							"        ",
+							"        console.log('🏒 Total left defenders found: ' + leftDefenders.length);",
+							"    } else {",
+							"        console.log('No left defenders found in response');",
+							"    }",
+							"} else {",
+							"    console.log('Failed to fetch left defenders. Response code: ' + pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/Persons/search?name=LeftDefender",
+					"host": ["{{baseUrl}}"],
+					"path": ["Persons", "search"],
+					"query": [
+						{
+							"key": "name",
+							"value": "LeftDefender"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7. Get All Right Defenders",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Extract right defender person IDs and set as collection variables",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        let rightDefenders = responseJson.data;",
+							"        ",
+							"        // Set right defender person IDs as variables (3 per team, up to 135 total)",
+							"        for (let teamNum = 1; teamNum <= 45; teamNum++) {",
+							"            let teamRightDefenders = rightDefenders.filter(rd => rd.lastName.includes('RightDefender-Team' + teamNum.toString().padStart(2, '0')));",
+							"            teamRightDefenders.sort((a, b) => a.firstName.localeCompare(b.firstName));",
+							"            ",
+							"            for (let i = 0; i < Math.min(teamRightDefenders.length, 3); i++) {",
+							"                const varName = 'rightdefender_team' + teamNum + '_' + (i + 1) + '_personId';",
+							"                pm.collectionVariables.set(varName, teamRightDefenders[i].id);",
+							"                console.log('RightDefender Team ' + teamNum + '-' + (i + 1) + ' person ID set to: ' + teamRightDefenders[i].id + ' (Name: ' + teamRightDefenders[i].fullName + ')');",
+							"            }",
+							"        }",
+							"        ",
+							"        console.log('🏒 Total right defenders found: ' + rightDefenders.length);",
+							"        console.log('✅ All player searches completed! Ready for player creation and assignment.');",
+							"    } else {",
+							"        console.log('No right defenders found in response');",
+							"    }",
+							"} else {",
+							"    console.log('Failed to fetch right defenders. Response code: ' + pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/Persons/search?name=RightDefender",
+					"host": ["{{baseUrl}}"],
+					"path": ["Persons", "search"],
+					"query": [
+						{
+							"key": "name",
+							"value": "RightDefender"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8. Batch Create FloorballPlayers and Assign to Teams",
+			"event": [
+				{
+					"listen": "pre-request",
+					"script": {
+						"exec": [
+							"// Initialize batch process tracking",
+							"pm.collectionVariables.set('currentTeam', '1');",
+							"pm.collectionVariables.set('totalTeams', '45');",
+							"pm.collectionVariables.set('totalPlayersPerTeam', '17');",
+							"pm.collectionVariables.set('totalSuccessfulAssignments', '0');",
+							"pm.collectionVariables.set('totalFailedAssignments', '0');",
+							"",
+							"console.log('🚀 Starting batch creation and assignment of all players to teams');",
+							"console.log('📊 Total teams: 45 | Players per team: 17 | Total assignments: 765');",
+							"console.log('========================================================');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Handle batch player creation and assignment with recursive pm.sendRequest calls",
+							"const totalTeams = 45;",
+							"const playersPerTeam = 17; // 2 goalkeepers + 3 of each other position",
+							"let totalSuccessful = 0;",
+							"let totalFailed = 0;",
+							"let completedTeams = 0;",
+							"",
+							"// Define position mappings",
+							"const positions = [",
+							"    { role: 'goalkeeper', position: 'Goalkeeper', count: 2 },",
+							"    { role: 'leftwinger', position: 'LeftWinger', count: 3 },",
+							"    { role: 'center', position: 'Center', count: 3 },",
+							"    { role: 'rightwinger', position: 'RightWinger', count: 3 },",
+							"    { role: 'leftdefender', position: 'LeftDefender', count: 3 },",
+							"    { role: 'rightdefender', position: 'RightDefender', count: 3 }",
+							"];",
+							"",
+							"// Function to process one team's players",
+							"function processTeam(teamNum) {",
+							"    if (teamNum > totalTeams) {",
+							"        console.log('\\n🎉 Batch assignment complete!');",
+							"        console.log('   Total teams processed: ' + totalTeams);",
+							"        console.log('   Total assignments: ' + (totalSuccessful + totalFailed));",
+							"        console.log('   Successful: ' + totalSuccessful);",
+							"        console.log('   Failed: ' + totalFailed);",
+							"        console.log('========================================================');",
+							"        return;",
+							"    }",
+							"    ",
+							"    console.log('\\n🏒 Processing Team ' + teamNum + ' (' + (completedTeams + 1) + '/' + totalTeams + ')');",
+							"    const teamId = pm.collectionVariables.get('team' + teamNum + 'Id');",
+							"    ",
+							"    if (!teamId) {",
+							"        console.log('❌ Team ' + teamNum + ' ID not found, skipping...');",
+							"        totalFailed += playersPerTeam;",
+							"        completedTeams++;",
+							"        processTeam(teamNum + 1);",
+							"        return;",
+							"    }",
+							"    ",
+							"    let teamPlayersProcessed = 0;",
+							"    let teamSuccessful = 0;",
+							"    let teamFailed = 0;",
+							"    ",
+							"    // Function to process positions for this team",
+							"    function processPosition(positionIndex) {",
+							"        if (positionIndex >= positions.length) {",
+							"            // Team complete",
+							"            console.log('   Team ' + teamNum + ' complete: ' + teamSuccessful + ' successful, ' + teamFailed + ' failed');",
+							"            totalSuccessful += teamSuccessful;",
+							"            totalFailed += teamFailed;",
+							"            completedTeams++;",
+							"            processTeam(teamNum + 1);",
+							"            return;",
+							"        }",
+							"        ",
+							"        const pos = positions[positionIndex];",
+							"        processPlayerInPosition(pos, 1, positionIndex);",
+							"    }",
+							"    ",
+							"    // Function to process individual players in a position",
+							"    function processPlayerInPosition(pos, playerIndex, positionIndex) {",
+							"        if (playerIndex > pos.count) {",
+							"            // Position complete, move to next position",
+							"            processPosition(positionIndex + 1);",
+							"            return;",
+							"        }",
+							"        ",
+							"        const personIdVar = pos.role + '_team' + teamNum + '_' + playerIndex + '_personId';",
+							"        const personId = pm.collectionVariables.get(personIdVar);",
+							"        ",
+							"        if (!personId) {",
+							"            console.log('   ⚠️  ' + pos.position + ' ' + playerIndex + ' person ID not found for team ' + teamNum);",
+							"            teamFailed++;",
+							"            processPlayerInPosition(pos, playerIndex + 1, positionIndex);",
+							"            return;",
+							"        }",
+							"        ",
+							"        // Step 1: Create FloorballPlayer",
+							"        const createPlayerRequest = {",
+							"            url: pm.collectionVariables.get('baseUrl') + '/FloorballPlayer',",
+							"            method: 'POST',",
+							"            header: {",
+							"                'Content-Type': 'application/json'",
+							"            },",
+							"            body: {",
+							"                mode: 'raw',",
+							"                raw: JSON.stringify({",
+							"                    personId: personId",
+							"                })",
+							"            }",
+							"        };",
+							"        ",
+							"        pm.sendRequest(createPlayerRequest, function (err, createResponse) {",
+							"            if (err || createResponse.code !== 200) {",
+							"                console.log('   ❌ Failed to create player for ' + pos.position + ' ' + playerIndex + ' in team ' + teamNum);",
+							"                if (err) console.log('      Error: ' + err);",
+							"                else console.log('      Response: ' + createResponse.code + ' - ' + createResponse.text());",
+							"                teamFailed++;",
+							"                processPlayerInPosition(pos, playerIndex + 1, positionIndex);",
+							"                return;",
+							"            }",
+							"            ",
+							"            // Step 2: Add player to team with position",
+							"            const createResponseData = createResponse.json();",
+							"            const playerId = createResponseData.data.id;",
+							"            const jerseyNumber = ((teamNum - 1) * playersPerTeam) + teamPlayersProcessed + 1;",
+							"            ",
+							"            const addToTeamRequest = {",
+							"                url: pm.collectionVariables.get('baseUrl') + '/FloorballTeam/' + teamId + '/players/' + playerId + '?position=' + pos.position + '&jerseyNumber=' + jerseyNumber,",
+							"                method: 'POST',",
+							"                header: {",
+							"                    'Content-Type': 'application/json'",
+							"                }",
+							"            };",
+							"            ",
+							"            pm.sendRequest(addToTeamRequest, function (err2, addResponse) {",
+							"                teamPlayersProcessed++;",
+							"                ",
+							"                if (err2 || addResponse.code !== 200) {",
+							"                    console.log('   ❌ Failed to add ' + pos.position + ' ' + playerIndex + ' to team ' + teamNum);",
+							"                    if (err2) console.log('      Error: ' + err2);",
+							"                    else console.log('      Response: ' + addResponse.code + ' - ' + addResponse.text());",
+							"                    teamFailed++;",
+							"                } else {",
+							"                    console.log('   ✅ Added ' + pos.position + ' ' + playerIndex + ' to team ' + teamNum + ' (Jersey #' + jerseyNumber + ')');",
+							"                    teamSuccessful++;",
+							"                }",
+							"                ",
+							"                processPlayerInPosition(pos, playerIndex + 1, positionIndex);",
+							"            });",
+							"        });",
+							"    }",
+							"    ",
+							"    // Start processing positions for this team",
+							"    processPosition(0);",
+							"}",
+							"",
+							"// Start the batch process",
+							"console.log('Starting batch player creation and assignment...');",
+							"processTeam(1);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/health",
+					"host": ["{{baseUrl}}"],
+					"path": ["health"]
+				}
+			},
+			"response": []
+		}
+	]
+} 
