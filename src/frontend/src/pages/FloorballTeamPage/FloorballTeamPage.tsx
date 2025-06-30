@@ -7,7 +7,6 @@ import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
 import './FloorballTeamPage.scss';
 import { divisionService } from '../../api/common/divisionService';
 import type { DivisionType } from '../../types/common/divisionType';
-import type { FloorballMatch } from '../../api/admin/News/GetMatchesService';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import TeamNavbar from './components/teamNavbar';
 
