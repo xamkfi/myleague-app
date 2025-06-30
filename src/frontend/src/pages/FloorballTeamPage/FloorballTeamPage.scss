@@ -158,9 +158,13 @@
       gap: 1rem;
 
       .team-logo {
+        width: 120px;
+        margin: 1rem 0px;
+        flex-shrink: 0;
+        
         .logo-placeholder {
-          width: 80px;
-          height: 80px;
+          width: 120px;
+          height: 120px;
           background: #f8f9fa;
           border: 2px solid #dee2e6;
           border-radius: 12px;
@@ -168,7 +172,7 @@
           align-items: center;
           justify-content: center;
           color: #6c757d;
-          font-size: 0.8rem;
+          font-size: 1rem;
 
           &::before {
             content: "LOGO";
