@@ -1,0 +1,58 @@
+.team-navbar {
+   display: flex;
+   background: #f8f9fa;
+   //border-top: 1px solid #e9ecef;
+   overflow: hidden;
+   width: 100%;
+}
+
+.team-navbar-btn {
+   flex: 1;
+   padding: 1rem;
+   text-align: center;
+   background: #ffffff;
+   border-right: 1px solid #dee2e6;
+   cursor: pointer;
+   transition: all 0.2s ease;
+   position: relative;
+
+   &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: #007bff;
+      transform: scaleX(0);
+      transition: transform 0.2s ease;
+   }
+
+   &:hover {
+      background: #f8f9fa;
+   }
+
+   &.active {
+      background: #e3f2fd;
+      
+      &::after {
+         transform: scaleX(1);
+      }
+      
+      span {
+         color: #007bff;
+         font-weight: 600;
+      }
+   }
+
+   &:last-child {
+      border-right: none;
+   }
+
+   span {
+      font-weight: 500;
+      color: #495057;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+   }
+}

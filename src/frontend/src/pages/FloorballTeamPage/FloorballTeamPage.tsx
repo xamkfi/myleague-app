@@ -9,6 +9,7 @@ import { divisionService } from '../../api/common/divisionService';
 import type { DivisionType } from '../../types/common/divisionType';
 import type { FloorballMatch } from '../../api/admin/News/GetMatchesService';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
+import TeamNavbar from './components/teamNavbar';
 
 function FloorballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -19,6 +20,11 @@ function FloorballTeamPage() {
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('results');
+  const [matchesLoading, setMatchesLoading] = useState(false);
+  const [matchesError, setMatchesError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchTeamData = async () => {
@@ -30,30 +36,27 @@ function FloorballTeamPage() {
 
       try {
         setLoading(true);
-        
+
         // Fetch all teams to enable slug resolution
         const teamsResponse = await floorballTeamService.getAll({});
         const allTeams = teamsResponse.data || [];
-        
+
         // Find team by slug
         const foundTeam = findTeamBySlug(allTeams, slug);
-        
+
         if (foundTeam) {
           setTeam(foundTeam);
-          
+
           // Fetch division the team is in
           const divisionResponse = await divisionService.getById(foundTeam.divisionId)
           setDivision(divisionResponse.data)
 
-          // Fetch matches that the team is participating in
-          const matchResponse = await floorballMatchService.getByTeam(foundTeam.id)
-          setMatches(matchResponse.data)
-          console.log(matches)
+          // Note: Match fetching moved to separate useEffect for pagination
 
         } else {
           setError('Team not found');
         }
-        
+
         setLoading(false);
       } catch {
         setError('Failed to load team information. Please try again later.');
@@ -62,6 +65,35 @@ function FloorballTeamPage() {
     };
     fetchTeamData();
   }, [slug]);
+
+  // Fetch matches with pagination when team changes or page changes
+  useEffect(() => {
+    const fetchMatches = async () => {
+      if (!team) return;
+
+      try {
+        setMatchesLoading(true);
+        setMatchesError(null);
+
+        const response = await floorballMatchService.getAll({
+          teamId: team.id,
+          page: currentPage,
+          pageSize: 10
+        });
+
+        setMatches(response.data || []);
+        setTotalPages(response.pagination.totalPages || 1);
+      } catch (error) {
+        console.error('Failed to fetch matches:', error);
+        setMatchesError('Failed to load matches');
+        setMatches([]);
+      } finally {
+        setMatchesLoading(false);
+      }
+    };
+
+    fetchMatches();
+  }, [team, currentPage]);
 
   if (loading) {
     return (
@@ -112,10 +144,144 @@ function FloorballTeamPage() {
     navigate(`/club/${clubSlug}`);
   };
 
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    console.log('Active tab changed to:', tabId);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'results':
+        return (
+          <div className="results-section">
+            {matchesLoading ? (
+              <div className="loading-state">Loading matches...</div>
+            ) : matchesError ? (
+              <div className="error-state">
+                <p>{matchesError}</p>
+                <button onClick={() => setCurrentPage(1)} className="retry-button">
+                  Retry
+                </button>
+              </div>
+            ) : matches && matches.length > 0 ? (
+              <>
+                <div className="matches-grid">
+                  {matches.map((match) => (
+                    <div key={match.id} className="match-row">
+                                             <div className="match-date">
+                         {new Date(match.scheduledDateTime).toLocaleDateString('en-GB', {
+                           day: '2-digit',
+                           month: '2-digit',
+                         })} {new Date(match.scheduledDateTime).toLocaleTimeString('en-GB', {
+                           hour: '2-digit',
+                           minute: '2-digit'
+                         })}
+                       </div>
+                       
+                       <div className="teams-section">
+                         <div className="team home-team">
+                           <span className="team-name">{match.homeTeamName}</span>
+                           <span className="team-score">{match.homeScore}</span>
+                         </div>
+                         <div className="team away-team">
+                           <span className="team-name">{match.awayTeamName}</span>
+                           <span className="team-score">{match.awayScore}</span>
+                         </div>
+                       </div>
+
+                       <div className="match-status">
+                         {match.status === 'Completed' ? (
+                           <span className={`result-badge ${
+                             (match.homeTeamId === team?.id && match.homeScore > match.awayScore) ||
+                             (match.awayTeamId === team?.id && match.awayScore > match.homeScore) 
+                               ? 'win' : 'loss'
+                           }`}>
+                             {(match.homeTeamId === team?.id && match.homeScore > match.awayScore) ||
+                              (match.awayTeamId === team?.id && match.awayScore > match.homeScore) 
+                                ? 'W' : 'L'}
+                           </span>
+                         ) : (
+                           <span className="status-badge">{match.status}</span>
+                         )}
+                       </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {totalPages > 1 && (
+                  <div className="pagination">
+                    <button 
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="pagination-btn"
+                    >
+                      Previous
+                    </button>
+                    
+                    <span className="page-info">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    
+                    <button 
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="pagination-btn"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="no-matches">
+                <p>No matches found for this team.</p>
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'roster':
+        return (
+          <div className="roster-section">
+            <h3>🚧 Team Roster</h3>
+            <p>Roster information coming soon...</p>
+          </div>
+        );
+      
+      case 'stats':
+        return (
+          <div className="stats-section">
+            <h3>🚧 Team Statistics</h3>
+            <p>Team statistics coming soon...</p>
+          </div>
+        );
+      
+      case 'standings':
+        return (
+          <div className="standings-section">
+            <h3>🚧 League Standings</h3>
+            <p>League standings coming soon...</p>
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="default-section">
+            <h3>Select a tab to view content</h3>
+          </div>
+        );
+    }
+  };
+
 
   return (
     <PageTemplate title={team.name}>
       <div className="floorball-team-page">
+        
         {/* Breadcrumb Navigation */}
         <div className="breadcrumb">
           <button onClick={handleBackToClub} className="club-link">
@@ -124,97 +290,73 @@ function FloorballTeamPage() {
           <span className="separator">›</span>
           <span className="current">{team.name}</span>
         </div>
-
-        {/* Team Header */}
-        <div className="team-header">
-          <div className="team-info">
-            <h1>{team.name}</h1>
-            <div className="team-meta">
-              <span className="division-badge">
-                {/* TODO: Get division name from divisionId */}
-                {division?.name}
-              </span>
-              <span className="arena">🏟️ {team.homeArena}</span>
-            </div>
-          </div>
-          
-          <div className="jersey-colors">
-            <div className="color-info">
-              <span>Jersey Colors:</span>
-              <div className="colors">
-                <div 
-                  className="color-swatch primary"
-                  style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
-                  title={`Primary: ${team.primaryJerseyColor}`}
-                ></div>
-                {team.secondaryJerseyColor && (
-                  <div 
-                    className="color-swatch secondary"
-                    style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
-                    title={`Secondary: ${team.secondaryJerseyColor}`}
-                  ></div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Coming Soon Content */}
-        <div className="coming-soon">
-          <div className="placeholder-content">
-            <h2>🚧 Team Page Under Construction</h2>
-            <p>
-              This team page is currently being developed by another team member. 
-              Soon you'll be able to see:
-            </p>
-            <ul>
-              <li>📋 Complete team roster with player details</li>
-              <li>📊 Team statistics and performance</li>
-              <li>📅 Match schedule and results</li>
-              <li>📰 Team news and updates</li>
-              <li>🏆 Season standings and achievements</li>
-            </ul>
-            
-            <div className="current-info">
-              <h3>Current Team Information:</h3>
-              <div className="info-grid">
-                <div className="info-item">
-                  <strong>Club:</strong> {team.club.name}
-                </div>
-                <div className="info-item">
-                  {/* TODO: Get division name from divisionId */}
-                  <strong>Division:</strong> {division?.name}
-                </div>
-                <div className="info-item">
-                  <strong>Home Arena:</strong> {team.homeArena}
-                </div>
-                <div className="info-item">
-                  <strong>Primary Jersey:</strong> {team.primaryJerseyColor}
-                </div>
-                {team.secondaryJerseyColor && (
-                  <div className="info-item">
-                    <strong>Secondary Jersey:</strong> {team.secondaryJerseyColor}
-                  </div>
-                )}
-                <div className="info-item">
-                  <strong>Active Roster:</strong> 
-                  {team.hasActiveMembers ? (
-                    <span className="status active">✅ Yes</span>
-                  ) : (
-                    <span className="status inactive">❌ No active members</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        
         {/* Navigation */}
         <div className="team-navigation">
           <button onClick={handleBackToClub} className="back-button">
             ← Back to {team.club.name}
           </button>
         </div>
+
+        {/* Team Header */}
+        <div className="team-header">
+          <div className="header-content">
+
+            <div className="team-branding">
+              <div className="team-logo">
+                <div className="logo-placeholder">
+                  {/* Team logo would go here */}
+                </div>
+              </div>
+              <div className="jersey-colors">
+                <div className="color-info">
+                  <span>Jersey Colors:</span>
+                  <div className="colors">
+                    <div
+                      className="color-swatch primary"
+                      style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
+                      title={`Primary: ${team.primaryJerseyColor}`}
+                    ></div>
+                    {team.secondaryJerseyColor && (
+                      <div
+                        className="color-swatch secondary"
+                        style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
+                        title={`Secondary: ${team.secondaryJerseyColor}`}
+                      ></div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="team-info">
+              <h1>{team.name}</h1>
+              <div className="team-meta">
+                <span className="division-badge">
+                  {division?.name}
+                </span>
+                <span className="club-badge">
+                  Club: {team.club.name}
+                </span>
+                <span className="arena">Arena: {team.homeArena}</span>
+              </div>
+            </div>
+
+            
+          </div>
+
+          <div className="header-navigation">
+            <TeamNavbar onTabChange={handleTabChange} />
+          </div>
+        </div>
+
+
+        {/* Tab Content */}
+        <div className="tab-content">
+          {renderTabContent()}
+        </div>
+
+        
       </div>
     </PageTemplate>
   );
