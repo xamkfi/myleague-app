@@ -21,24 +21,24 @@ public class CreateFloorballPlayerHandler : IRequestHandler<CreateFloorballPlaye
 {
     private readonly IFloorballPlayerRepository _playerRepository;
     private readonly IPersonRepository _personRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _floorballUnitOfWork;
     private readonly ILogger<CreateFloorballPlayerHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the CreateFloorballPlayerHandler class
     /// </summary>
     /// <param name="playerRepository">The floorball player repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="floorballUnitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public CreateFloorballPlayerHandler(
         IFloorballPlayerRepository playerRepository, 
         IPersonRepository personRepository,
-        IUnitOfWork unitOfWork, 
+        IFloorballUnitOfWork floorballUnitOfWork, 
         ILogger<CreateFloorballPlayerHandler> logger)
     {
         _playerRepository = playerRepository;
         _personRepository = personRepository;
-        _unitOfWork = unitOfWork;
+        _floorballUnitOfWork = floorballUnitOfWork;
         _logger = logger;
     }
 
@@ -68,7 +68,7 @@ public class CreateFloorballPlayerHandler : IRequestHandler<CreateFloorballPlaye
             await _playerRepository.AddAsync(player);
             
             // Save changes explicitly to trigger domain events
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballPlayerDto playerDto = FloorballPlayerMapper.ToDto(player);
             _logger.LogInformation("Successfully created floorball player with ID: {PlayerId}", player.Id);

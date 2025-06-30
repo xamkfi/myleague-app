@@ -498,6 +498,76 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.ToTable("FloorballTeamManagers", "floorball");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeamPlayer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasComment("Unique identifier for the entity");
+
+                    b.Property<int>("Assists")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
+
+                    b.Property<int>("GamesPlayed")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Goals")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("JerseyNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PenaltyMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_FloorballTeamPlayer_CreatedAt");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("IX_FloorballTeamPlayer_PlayerId");
+
+                    b.HasIndex("UpdatedAt")
+                        .HasDatabaseName("IX_FloorballTeamPlayer_UpdatedAt")
+                        .HasFilter("\"UpdatedAt\" IS NOT NULL");
+
+                    b.HasIndex("CreatedAt", "UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_FloorballTeamPlayer_Audit");
+
+                    b.HasIndex("TeamId", "JerseyNumber")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_JerseyNumber")
+                        .HasFilter("\"JerseyNumber\" IS NOT NULL");
+
+                    b.HasIndex("TeamId", "PlayerId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_PlayerId");
+
+                    b.ToTable("FloorballTeamPlayers", "floorball");
+                });
+
             modelBuilder.Entity("FloorballMatchOfficial", b =>
                 {
                     b.Property<Guid>("MatchesId")
@@ -676,77 +746,25 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeam", b =>
-                {
-                    b.OwnsMany("Domain.Entities.Floorball.FloorballTeamPlayer", "Roster", b1 =>
-                        {
-                            b1.Property<Guid>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("uuid");
-
-                            b1.Property<int>("Assists")
-                                .HasColumnType("integer");
-
-                            b1.Property<DateTime>("CreatedAt")
-                                .HasColumnType("timestamp with time zone");
-
-                            b1.Property<int>("GamesPlayed")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Goals")
-                                .HasColumnType("integer");
-
-                            b1.Property<bool>("IsActive")
-                                .HasColumnType("boolean");
-
-                            b1.Property<int?>("JerseyNumber")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("PenaltyMinutes")
-                                .HasColumnType("integer");
-
-                            b1.Property<Guid>("PlayerId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Position")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<Guid>("TeamId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<DateTime?>("UpdatedAt")
-                                .HasColumnType("timestamp with time zone");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("PlayerId")
-                                .HasDatabaseName("IX_FloorballTeamPlayer_PlayerId");
-
-                            b1.HasIndex("TeamId", "JerseyNumber")
-                                .IsUnique()
-                                .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_JerseyNumber")
-                                .HasFilter("\"JerseyNumber\" IS NOT NULL");
-
-                            b1.ToTable("FloorballTeamPlayer", "floorball");
-
-                            b1.HasOne("Domain.Entities.Floorball.FloorballPlayer", null)
-                                .WithMany()
-                                .HasForeignKey("PlayerId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
-
-                            b1.WithOwner()
-                                .HasForeignKey("TeamId");
-                        });
-
-                    b.Navigation("Roster");
-                });
-
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeamManager", b =>
                 {
                     b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
                         .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeamPlayer", b =>
+                {
+                    b.HasOne("Domain.Entities.Floorball.FloorballPlayer", null)
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
+                        .WithMany("Roster")
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -790,6 +808,11 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeason", b =>
                 {
                     b.Navigation("Matches");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeam", b =>
+                {
+                    b.Navigation("Roster");
                 });
 #pragma warning restore 612, 618
         }

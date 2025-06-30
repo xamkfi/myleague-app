@@ -1,16 +1,4 @@
 // Enums
-export enum FloorballDivision {
-  None = 'None',
-  Premier = 'Premier',
-  Division1 = 'Division1',
-  Division2 = 'Division2',
-  Division3 = 'Division3',
-  Division4 = 'Division4',
-  Youth = 'Youth',
-  Junior = 'Junior',
-  Veterans = 'Veterans'
-}
-
 export enum FloorballPosition {
   None = 'None',
   Goalkeeper = 'Goalkeeper',
@@ -22,6 +10,14 @@ export enum TeamCategory {
   Adult = 'Adult',
   Youth = 'Youth',
   Women = 'Women'
+}
+
+export enum FloorballMatchStatus {
+  Scheduled = 'Scheduled',
+  InProgress = 'InProgress',
+  Completed = 'Completed',
+  Cancelled = 'Cancelled',
+  Postponed = 'Postponed'
 }
 
 // Base interfaces
@@ -64,7 +60,7 @@ export interface FloorballTeamPlayer {
 export interface FloorballTeam {
   id: string;
   name: string;
-  division: FloorballDivision;
+  divisionId: string;
   club: Club;
   homeArena: string;
   primaryJerseyColor: string;
@@ -108,7 +104,7 @@ export interface GetFloorballTeamsRequest {
 
 export interface FloorballTeamRequest {
   name: string;
-  division: FloorballDivision;
+  divisionId: string;
   clubId: string;
   homeArena: string;
   primaryJerseyColor: string;
@@ -139,4 +135,48 @@ export interface UpdateFloorballTeamPlayerRequest {
 export interface AddPlayerToTeamRequest {
   position: FloorballPosition;
   jerseyNumber?: number;
+}
+
+// Match-related interfaces
+export interface FloorballMatchDto {
+  id: string;
+  seasonId: string;
+  homeTeamId: string;
+  homeTeamName: string;
+  awayTeamId: string;
+  awayTeamName: string;
+  scheduledDateTime: string;
+  venue?: string;
+  status: FloorballMatchStatus;
+  homeScore: number;
+  awayScore: number;
+  wentToOvertime: boolean;
+  wentToShootout: boolean;
+  periodScores: Record<number, { homeScore: number; awayScore: number }>;
+  officials: string[];
+  goalEvents: unknown[];
+  penaltyEvents: unknown[];
+}
+
+export interface CreateFloorballMatchRequest {
+  seasonId: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  scheduledDateTime: string;
+  venue?: string;
+}
+
+export interface UpdateFloorballMatchRequest {
+  id: string;
+  scheduledDateTime: string;
+  venue?: string;
+}
+
+export interface GetFloorballMatchesRequest {
+  page?: number;
+  pageSize?: number;
+  seasonId?: string;
+  teamId?: string;
+  startDate?: string;
+  endDate?: string;
 } 

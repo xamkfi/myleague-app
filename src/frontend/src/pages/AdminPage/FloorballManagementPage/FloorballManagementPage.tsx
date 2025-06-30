@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { divisionService } from '../../../api/common/divisionService';
 import PageTemplate from '../../../components/PageTemplate/PageTemplate';
 import './FloorballManagementPage.scss';
 
@@ -7,7 +8,9 @@ const FloorballManagementPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleComingSoonClick = (featureName: string) => {
+  const handleComingSoonClick = async (featureName: string) => {
+    const division = (await divisionService.getById("b851ac37-219c-4fa9-a76f-d8620066151d")).data.name;
+    console.log(division);
     alert(`🚧 ${featureName} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯`);
   };
 
@@ -61,6 +64,17 @@ const FloorballManagementPage = () => {
             </div>
           </button>
           
+          <button
+            className="floorball-action-button available"
+            onClick={() => navigate('/admin/floorball/matches')}
+          >
+            <div className="button-content">
+              <span className="emoji">⚔️</span>
+              <span className="text">{t('floorball.management.actions.matches', 'Manage Matches')}</span>
+              <div className="status-badge available">✨ Ready!</div>
+            </div>
+          </button>
+          
           {/* Coming Soon Features */}
           <button
             className="floorball-action-button coming-soon"
@@ -92,17 +106,6 @@ const FloorballManagementPage = () => {
               <span className="emoji">👨‍⚖️</span>
               <span className="text">{t('floorball.management.actions.referees', 'Manage Referees')}</span>
               <div className="status-badge available">✨ Ready!</div>
-            </div>
-          </button>
-          
-          <button
-            className="floorball-action-button coming-soon"
-            onClick={() => handleComingSoonClick('Manage Matches')}
-          >
-            <div className="button-content">
-              <span className="emoji">⚔️</span>
-              <span className="text">{t('floorball.management.actions.matches', 'Manage Matches')}</span>
-              <div className="status-badge coming-soon">🚧 Soon</div>
             </div>
           </button>
           

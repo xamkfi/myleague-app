@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle/LanguageToggle';
-import type { Club } from '../../api/clubService';
-import { getClubs } from '../../api/clubService';
+import type { Club } from '../../api/common/clubService';
+import { getClubs } from '../../api/common/clubService';
 import { createClubSlug } from '../../utils/slugUtils';
 import './Navbar.scss';
 

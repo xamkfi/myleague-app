@@ -42,14 +42,20 @@ namespace Application.Handlers.Persons
         {
             try
             {
+                //Check if the person exists
                 Person? personExists = await _personRepository.GetByIdAsync(request.Id);
                 if(personExists == null)
                 {
                     return Result<PersonDto>.NotFound("Person", request.Id);
                 }
 
+                //Update name and lastname
                 personExists.UpdateBasicInfo(request.FirstName, request.LastName);
 
+                //save changes to database
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                //Create dto for returning data
                 PersonDto personDto = PersonMapper.ToDto(personExists);
 
                 return Result<PersonDto>.Success(personDto);

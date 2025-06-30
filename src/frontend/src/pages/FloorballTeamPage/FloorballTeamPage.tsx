@@ -130,7 +130,8 @@ function FloorballTeamPage() {
             <h1>{team.name}</h1>
             <div className="team-meta">
               <span className="division-badge">
-                {getDivisionDisplayName(team.division)}
+                {/* TODO: Get division name from divisionId */}
+                {getDivisionDisplayName(team.divisionId)}
               </span>
               <span className="arena">🏟️ {team.homeArena}</span>
             </div>
@@ -180,7 +181,8 @@ function FloorballTeamPage() {
                   <strong>Club:</strong> {team.club.name}
                 </div>
                 <div className="info-item">
-                  <strong>Division:</strong> {getDivisionDisplayName(team.division)}
+                  {/* TODO: Get division name from divisionId */}
+                  <strong>Division:</strong> {getDivisionDisplayName(team.divisionId)}
                 </div>
                 <div className="info-item">
                   <strong>Home Arena:</strong> {team.homeArena}

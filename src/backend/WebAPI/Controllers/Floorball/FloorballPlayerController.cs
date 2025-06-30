@@ -195,6 +195,40 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Gets a floorball player's match history with performance statistics
+        /// </summary>
+        /// <param name="id">Player ID</param>
+        /// <param name="limit">Maximum number of recent matches to return (default: 10, max: 50)</param>
+        /// <returns>Player information with match history and performance statistics</returns>
+        [HttpGet("{id:guid}/matches")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballPlayerWithMatchesDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballPlayerWithMatchesDto>>> GetPlayerMatches(
+            Guid id,
+            [FromQuery] int limit = 10)
+        {
+            _logger.LogInformation("Getting match history for floorball player with ID: {id}, limit: {limit}", id, limit);
+
+            GetFloorballPlayerMatchesQuery query = new GetFloorballPlayerMatchesQuery(id, limit);
+            Result<FloorballPlayerWithMatchesDto> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballPlayerWithMatchesDto>.SuccessResponse(result.Data, "Player match history retrieved successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to retrieve player match history";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballPlayerWithMatchesDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballPlayerWithMatchesDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Deletes a floorball player
         /// </summary>
         /// <param name="id">Player ID</param>

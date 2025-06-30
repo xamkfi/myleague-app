@@ -6,7 +6,8 @@ import type {
 } from '../../../../../api/floorball/floorballSeasonService';
 import { floorballSeasonService } from '../../../../../api/floorball/floorballSeasonService';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
-import { FloorballDivision, type FloorballTeam } from '../../../../../types/floorball/floorballTypes';
+import { type FloorballTeam } from '../../../../../types/floorball/floorballTypes';
+import { useDivisions } from '../../../../../hooks/useDivisions';
 
 interface EditSeasonModalProps {
   season: FloorballSeasonDto;
@@ -27,7 +28,7 @@ export const EditSeasonModal = ({
     name: season.name,
     startDate: season.startDate.split('T')[0], // Convert to YYYY-MM-DD format
     endDate: season.endDate.split('T')[0],
-    division: season.division
+    divisionId: season.divisionId
   });
   
   const [loading, setLoading] = useState(false);
@@ -186,7 +187,7 @@ export const EditSeasonModal = ({
         throw new Error(t('floorball.seasons.validation.nameTooLong', 'Season name cannot exceed 100 characters'));
       }
 
-      if (!formData.division) {
+      if (!formData.divisionId) {
         throw new Error(t('floorball.seasons.validation.divisionRequired', 'Division is required'));
       }
 
@@ -234,7 +235,7 @@ export const EditSeasonModal = ({
     }
     
     // Check division match
-    if (team.division !== season.division) {
+    if (team.divisionId !== season.divisionId) {
       setError(t('floorball.seasons.errors.teamDivisionMismatch', 'Team division does not match season division.'));
       return;
     }
@@ -311,7 +312,7 @@ export const EditSeasonModal = ({
     }
   };
 
-  const divisions = Object.values(FloorballDivision).filter(div => div !== FloorballDivision.None);
+  const { divisions } = useDivisions();
 
   // Calculate display data for teams
   const seasonTeams = season.teams?.filter(team => !removedTeams.has(team.id)) || [];
@@ -392,16 +393,16 @@ export const EditSeasonModal = ({
                 </label>
                 <select
                   id="edit-division"
-                  name="division"
-                  value={formData.division}
+                  name="divisionId"
+                  value={formData.divisionId}
                   onChange={handleInputChange}
                   required
                   disabled={loading}
                 >
                   <option value="">{t('floorball.seasons.placeholders.selectDivision', 'Select division')}</option>
                   {divisions.map(division => (
-                    <option key={division} value={division}>
-                      {division}
+                    <option key={division.id} value={division.id}>
+                      {division.name}
                     </option>
                   ))}
                 </select>
@@ -492,8 +493,8 @@ export const EditSeasonModal = ({
                           <div className="team-info">
                             <span className="team-name">{team.name}</span>
                             <span className="team-club">{team.club.name}</span>
-                            <span className={`team-division division-${team.division}`}>
-                              {team.division}
+                            <span className={`team-division division-${team.divisionId}`}>
+                              {divisions.find(d => d.id == team.divisionId)?.name || ''}
                             </span>
                           </div>
                           <button
@@ -524,8 +525,8 @@ export const EditSeasonModal = ({
                           <div className="team-info">
                             <span className="team-name">{team.name}</span>
                             <span className="team-club">{team.club.name}</span>
-                            <span className={`team-division division-${team.division}`}>
-                              {team.division}
+                            <span className={`team-division division-${team.divisionId.toLowerCase()}`}>
+                              {divisions.find(d => d.id == team.divisionId)?.name || ''}
                             </span>
                           </div>
                           <button
