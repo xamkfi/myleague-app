@@ -53,7 +53,7 @@ public class CreateEventSourcedFloorballMatchHandler : IRequestHandler<CreateEve
                 request.HomeTeamId,
                 request.AwayTeamId,
                 request.ScheduledDateTime,
-                request.Venue);
+                request.Venue ?? string.Empty);
 
             // Save the match with its creation event
             await _eventSourcedMatchRepository.SaveAsync(match, cancellationToken);

@@ -99,13 +99,13 @@ const FloorballManagementPage = () => {
           </button>
           
           <button
-            className="floorball-action-button coming-soon"
-            onClick={() => handleComingSoonClick('Manage Referees')}
+            className="floorball-action-button available"
+            onClick={() => navigate('/admin/floorball/referees')}
           >
             <div className="button-content">
               <span className="emoji">👨‍⚖️</span>
               <span className="text">{t('floorball.management.actions.referees', 'Manage Referees')}</span>
-              <div className="status-badge coming-soon">🚧 Soon</div>
+              <div className="status-badge available">✨ Ready!</div>
             </div>
           </button>
           

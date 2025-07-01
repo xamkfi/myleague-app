@@ -127,24 +127,30 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Get floorball matches with team ID
         /// </summary>
-        /// <param name="teamId"></param>
+        /// <param name="teamId">Team ID to filter matches</param>
+        /// <param name="request">Query parameters for pagination and date filtering</param>
         /// <returns></returns>
         [HttpGet("by-team/{teamId:guid}")]
-        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetMatchByTeam(Guid teamId)
+        public async Task<ActionResult<PaginatedApiResponse<FloorballMatchDto>>> GetMatchByTeam(Guid teamId, [FromQuery] GetTeamMatchesRequest request)
         {
-            _logger.LogInformation("Gettring floorball match with team ID of: {teamId}", teamId);
+            _logger.LogInformation("Getting floorball match with team ID of: {teamId}", teamId);
 
-            GetFloorballMatchesByTeamQuery query = new GetFloorballMatchesByTeamQuery(teamId);
+            GetFloorballMatchesByTeamQuery query = new GetFloorballMatchesByTeamQuery(
+                Page: request.Page,
+                PageSize: request.PageSize,
+                TeamId: teamId,
+                StartDate: request.StartDate,
+                EndDate: request.EndDate
+                );
 
-            Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(query);
+            Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
             {
-                List<FloorballMatchDto> matchList = result.Data.ToList();
-                return Ok(ApiResponse<List<FloorballMatchDto>>.SuccessResponse(matchList, "Retrieved floorball matches with team ID successfully"));
+                return Ok(PaginatedApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Retrieved floorball matches with team ID successfully"));
             }
             string errorMessage = result.Error ?? "Failed to retrieve floorball matches with team ID";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))

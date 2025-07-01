@@ -22,7 +22,7 @@ public class UpdateFloorballRefereeHandler : IRequestHandler<UpdateFloorballRefe
 {
     private readonly IFloorballRefereeRepository _refereeRepository;
     private readonly IPersonRepository _personRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _floorballUnitOfWork;
     private readonly ILogger<UpdateFloorballRefereeHandler> _logger;
 
     /// <summary>
@@ -30,17 +30,17 @@ public class UpdateFloorballRefereeHandler : IRequestHandler<UpdateFloorballRefe
     /// </summary>
     /// <param name="refereeRepository">The floorball referee repository</param>
     /// <param name="personRepository">The person repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="floorballUnitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public UpdateFloorballRefereeHandler(
         IFloorballRefereeRepository refereeRepository,
         IPersonRepository personRepository,
-        IUnitOfWork unitOfWork,
+        IFloorballUnitOfWork floorballUnitOfWork,
         ILogger<UpdateFloorballRefereeHandler> logger)
     {
         _refereeRepository = refereeRepository;
         _personRepository = personRepository;
-        _unitOfWork = unitOfWork;
+        _floorballUnitOfWork = floorballUnitOfWork;
         _logger = logger;
     }
 
@@ -69,7 +69,7 @@ public class UpdateFloorballRefereeHandler : IRequestHandler<UpdateFloorballRefe
 
             // Update the referee
             await _refereeRepository.UpdateAsync(existingReferee);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
             // Get the associated person for DTO mapping
             Person? person = await _personRepository.GetByIdAsync(existingReferee.PersonId);
