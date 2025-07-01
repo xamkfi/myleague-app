@@ -121,4 +121,14 @@ public class FloorballReferee : AggregateRoot
     {
         return IsActive && LicenseExpiryDate.HasValue && checkDate <= LicenseExpiryDate;
     }
+    
+    /// <summary>
+    /// Sets the person for this referee (used when loading navigation properties)
+    /// </summary>
+    /// <param name="person">The person to associate with this referee</param>
+    public void SetPerson(Person person)
+    {
+        ArgumentNullException.ThrowIfNull(person);
+        Person = person;
+    }
 } 

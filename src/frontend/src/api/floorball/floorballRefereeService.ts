@@ -32,9 +32,9 @@ export interface GetFloorballRefereesRequest {
 }
 
 export interface CreateFloorballRefereeRequest {
-  personId: string;
-  licenseIssueDate: string;
-  licenseExpiryDate: string;
+  PersonId: string;
+  LicenseIssueDate: string;
+  LicenseExpiryDate: string;
 }
 
 export interface UpdateFloorballRefereeRequest {
@@ -138,7 +138,7 @@ export const floorballRefereeService = {
    */
   create: async (data: CreateFloorballRefereeRequest): Promise<FloorballRefereeDto> => {
     try {
-      console.log('Creating referee for person ID:', data.personId);
+      console.log('Creating referee for person ID:', data.PersonId);
       
       const response = await fetch(`${API_URL}/FloorballReferee`, {
         method: 'POST',

@@ -150,9 +150,9 @@ const CreateRefereeModal = ({
       
       // Create the referee using the floorball referee service
       const newReferee = await floorballRefereeService.create({ 
-        personId: selectedPersonId,
-        licenseIssueDate,
-        licenseExpiryDate
+        PersonId: selectedPersonId,
+        LicenseIssueDate: licenseIssueDate,
+        LicenseExpiryDate: licenseExpiryDate
       });
       
       // Remove the person from available persons list

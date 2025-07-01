@@ -21,7 +21,7 @@ public class DeleteFloorballRefereeHandler : IRequestHandler<DeleteFloorballRefe
 {
     private readonly IFloorballRefereeRepository _refereeRepository;
     private readonly IPersonRepository _personRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _floorballUnitOfWork;
     private readonly ILogger<DeleteFloorballRefereeHandler> _logger;
 
     /// <summary>
@@ -29,17 +29,17 @@ public class DeleteFloorballRefereeHandler : IRequestHandler<DeleteFloorballRefe
     /// </summary>
     /// <param name="refereeRepository">The floorball referee repository</param>
     /// <param name="personRepository">The person repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="floorballUnitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public DeleteFloorballRefereeHandler(
         IFloorballRefereeRepository refereeRepository,
         IPersonRepository personRepository,
-        IUnitOfWork unitOfWork,
+        IFloorballUnitOfWork floorballUnitOfWork,
         ILogger<DeleteFloorballRefereeHandler> logger)
     {
         _refereeRepository = refereeRepository;
         _personRepository = personRepository;
-        _unitOfWork = unitOfWork;
+        _floorballUnitOfWork = floorballUnitOfWork;
         _logger = logger;
     }
 
@@ -84,7 +84,7 @@ public class DeleteFloorballRefereeHandler : IRequestHandler<DeleteFloorballRefe
 
             // Delete the referee
             await _refereeRepository.DeleteAsync(request.Id);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Successfully deleted floorball referee with ID: {RefereeId}", request.Id);
             return Result<FloorballRefereeDto>.Success(refereeDto);
