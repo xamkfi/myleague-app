@@ -120,7 +120,7 @@ namespace Application.Mappings.Common
         {
             if (dto == null) return null;
             return new ContactInfo(
-                dto.Email,
+                dto.Email ?? string.Empty,
                 dto.Phone,
                 dto.AlternativePhone
             );
