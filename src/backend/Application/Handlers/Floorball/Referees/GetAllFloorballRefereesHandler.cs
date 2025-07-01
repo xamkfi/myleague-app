@@ -83,24 +83,19 @@ public class GetAllFloorballRefereesHandler : BasePagedQueryHandler<GetAllFloorb
                 request.SearchTerm,
                 request.LicenseExpiringWithinDays,
                 cancellationToken);
-            
-            // Load all persons for DTO mapping (since Person navigation is ignored in FloorballReferee)
-            IEnumerable<Person> persons = await _personRepository.GetAllAsync();
-            Dictionary<Guid, Person> personDictionary = new Dictionary<Guid, Person>();
-            foreach (Person person in persons)
-            {
-                personDictionary[person.Id] = person;
-            }
 
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Map to DTOs
+            // Load Person data for each referee
             List<FloorballRefereeDto> refereeDtos = new List<FloorballRefereeDto>();
             foreach (FloorballReferee referee in pagedReferees.Items)
             {
-                if (personDictionary.TryGetValue(referee.PersonId, out Person? person))
+                // Get the associated person
+                Person? person = await _personRepository.GetByIdAsync(referee.PersonId);
+                if (person != null)
                 {
+                    // Create DTO with real person data
                     FloorballRefereeDto refereeDto = new FloorballRefereeDto(
                         referee.Id,
                         referee.PersonId,
@@ -114,7 +109,30 @@ public class GetAllFloorballRefereesHandler : BasePagedQueryHandler<GetAllFloorb
                 }
                 else
                 {
-                    _logger.LogWarning("Person with ID {PersonId} not found for referee {RefereeId}", referee.PersonId, referee.Id);
+                    _logger.LogWarning("Person with ID {PersonId} not found for referee {RefereeId}, using placeholder", referee.PersonId, referee.Id);
+                    
+                    // Create DTO with placeholder person data
+                    Application.DTOs.Common.PersonDto placeholderPerson = new Application.DTOs.Common.PersonDto(
+                        referee.PersonId,
+                        "Unknown",
+                        "Person",
+                        DateTime.MinValue,
+                        "Unknown Person",
+                        false,
+                        null,
+                        null
+                    );
+                    
+                    FloorballRefereeDto refereeDto = new FloorballRefereeDto(
+                        referee.Id,
+                        referee.PersonId,
+                        placeholderPerson,
+                        referee.IsActive,
+                        referee.LicenseIssueDate,
+                        referee.LicenseExpiryDate,
+                        referee.MatchesOfficiated
+                    );
+                    refereeDtos.Add(refereeDto);
                 }
             }
             

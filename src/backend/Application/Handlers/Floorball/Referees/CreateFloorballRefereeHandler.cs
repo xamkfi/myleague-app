@@ -22,7 +22,7 @@ public class CreateFloorballRefereeHandler : IRequestHandler<CreateFloorballRefe
 {
     private readonly IFloorballRefereeRepository _refereeRepository;
     private readonly IPersonRepository _personRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _floorballUnitOfWork;
     private readonly ILogger<CreateFloorballRefereeHandler> _logger;
 
     /// <summary>
@@ -30,17 +30,17 @@ public class CreateFloorballRefereeHandler : IRequestHandler<CreateFloorballRefe
     /// </summary>
     /// <param name="refereeRepository">The floorball referee repository</param>
     /// <param name="personRepository">The person repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="floorballUnitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public CreateFloorballRefereeHandler(
         IFloorballRefereeRepository refereeRepository, 
         IPersonRepository personRepository,
-        IUnitOfWork unitOfWork, 
+        IFloorballUnitOfWork floorballUnitOfWork, 
         ILogger<CreateFloorballRefereeHandler> logger)
     {
         _refereeRepository = refereeRepository;
         _personRepository = personRepository;
-        _unitOfWork = unitOfWork;
+        _floorballUnitOfWork = floorballUnitOfWork;
         _logger = logger;
     }
 
@@ -54,7 +54,8 @@ public class CreateFloorballRefereeHandler : IRequestHandler<CreateFloorballRefe
     {
         try
         {
-            _logger.LogInformation("Creating floorball referee for person: {PersonId}", request.PersonId);
+            _logger.LogInformation("Starting referee creation for person: {PersonId}, LicenseIssueDate: {LicenseIssueDate}, LicenseExpiryDate: {LicenseExpiryDate}", 
+                request.PersonId, request.LicenseIssueDate, request.LicenseExpiryDate);
 
             // Check if the person exists
             Person? person = await _personRepository.GetByIdAsync(request.PersonId);
@@ -63,14 +64,33 @@ public class CreateFloorballRefereeHandler : IRequestHandler<CreateFloorballRefe
                 _logger.LogWarning("Person with ID {PersonId} not found", request.PersonId);
                 return Result<FloorballRefereeDto>.Failure("Person not found");
             }
+            _logger.LogInformation("Found person: {PersonName} (ID: {PersonId})", person.FullName, person.Id);
+
+            // Check if this person is already a referee
+            IEnumerable<FloorballReferee> existingReferees = await _refereeRepository.GetAllAsync();
+            FloorballReferee? existingReferee = existingReferees.FirstOrDefault(r => r.PersonId == request.PersonId);
+            if (existingReferee != null)
+            {
+                _logger.LogWarning("Person {PersonId} is already a referee with ID {RefereeId}", request.PersonId, existingReferee.Id);
+                return Result<FloorballRefereeDto>.Failure("This person is already a referee");
+            }
+            _logger.LogInformation("Confirmed person is not already a referee");
 
             // Create the referee entity using the mapper
+            _logger.LogInformation("Creating referee entity from command");
             FloorballReferee referee = FloorballRefereeMapper.ToEntity(request);
+            _logger.LogInformation("Created referee entity with ID: {RefereeId}", referee.Id);
+            
+            referee.SetPerson(person); // Set the person to the referee
+            _logger.LogInformation("Set person on referee entity");
 
             // AddAsync automatically saves changes to FloorballDbContext
+            _logger.LogInformation("Adding referee to repository");
             await _refereeRepository.AddAsync(referee);
+            _logger.LogInformation("Added referee to repository, now saving changes");
             
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            int changesSaved = await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("SaveChanges completed. Changes saved: {ChangesSaved}", changesSaved);
 
             // Note: Since Person navigation property is ignored in EF config, 
             // we need to manually set it for the DTO mapping
@@ -84,14 +104,15 @@ public class CreateFloorballRefereeHandler : IRequestHandler<CreateFloorballRefe
                 referee.MatchesOfficiated
             );
 
-            _logger.LogInformation("Successfully created floorball referee with ID: {RefereeId}", referee.Id);
+            _logger.LogInformation("Successfully created floorball referee with ID: {RefereeId}, returning DTO", referee.Id);
 
             return Result<FloorballRefereeDto>.Success(refereeDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while creating floorball referee for person: {PersonId}", request.PersonId);
-            return Result<FloorballRefereeDto>.Failure("An error occurred while creating the floorball referee.");
+            _logger.LogError(ex, "Error occurred while creating floorball referee for person: {PersonId}. Exception: {ExceptionMessage}", 
+                request.PersonId, ex.Message);
+            return Result<FloorballRefereeDto>.Failure($"An error occurred while creating the floorball referee: {ex.Message}");
         }
     }
 } 
