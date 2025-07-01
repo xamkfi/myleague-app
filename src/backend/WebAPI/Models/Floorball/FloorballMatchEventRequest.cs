@@ -109,12 +109,6 @@ namespace WebAPI.Models.Floorball
     public class CreateEventSourcedFloorballMatchRequest
     {
         /// <summary>
-        /// ID of the match
-        /// </summary>
-        [Required(ErrorMessage = "Match ID is required")]
-        public Guid Id { get; set; }
-
-        /// <summary>
         /// ID of the season
         /// </summary>
         [Required(ErrorMessage = "Season ID is required")]
@@ -136,7 +130,7 @@ namespace WebAPI.Models.Floorball
         /// Scheduled date and time of the match
         /// </summary>
         [Required(ErrorMessage = "Scheduled date and time is required")]
-        public DateTime ScheduledDateTime { get; set; }
+        public string ScheduledDateTime { get; set; } = string.Empty;
 
         /// <summary>
         /// Venue of the match

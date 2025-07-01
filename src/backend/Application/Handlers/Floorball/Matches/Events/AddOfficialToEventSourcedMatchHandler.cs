@@ -18,18 +18,22 @@ namespace Application.Handlers.Floorball.Matches.Events;
 public class AddOfficialToEventSourcedMatchHandler : IRequestHandler<AddOfficialToEventSourcedMatchCommand, Result<FloorballMatchDto>>
 {
     private readonly IEventSourcedFloorballMatchRepository _eventSourcedMatchRepository;
+    private readonly IFloorballRefereeRepository _refereeRepository;
     private readonly ILogger<AddOfficialToEventSourcedMatchHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the AddOfficialToEventSourcedMatchHandler class
     /// </summary>
     /// <param name="eventSourcedMatchRepository">The event sourced match repository</param>
+    /// <param name="refereeRepository">Repository for referees (for existence check)</param>
     /// <param name="logger">The logger</param>
     public AddOfficialToEventSourcedMatchHandler(
         IEventSourcedFloorballMatchRepository eventSourcedMatchRepository,
+        IFloorballRefereeRepository refereeRepository,
         ILogger<AddOfficialToEventSourcedMatchHandler> logger)
     {
         _eventSourcedMatchRepository = eventSourcedMatchRepository;
+        _refereeRepository = refereeRepository;
         _logger = logger;
     }
 
@@ -46,6 +50,13 @@ public class AddOfficialToEventSourcedMatchHandler : IRequestHandler<AddOfficial
             _logger.LogInformation("Adding official to event-sourced floorball match: {MatchId}, Official: {RefereeId}", 
                 request.MatchId, request.RefereeId);
 
+                        // Ensure referee exists
+            bool refereeExists = await _refereeRepository.ExistsAsync(request.RefereeId);
+            if (!refereeExists)
+            {
+                _logger.LogWarning("Referee with ID {RefereeId} not found.", request.RefereeId);
+                return Result<FloorballMatchDto>.Failure($"Referee with ID {request.RefereeId} not found.");
+            }
             // Get the event sourced match
             EventSourcedFloorballMatch match = await _eventSourcedMatchRepository.GetByIdAsync(request.MatchId, cancellationToken);
 

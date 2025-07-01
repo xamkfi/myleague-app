@@ -39,4 +39,6 @@ public class FloorballOfficialAssignedEvent : IDomainEvent
         MatchId = matchId;
         RefereeId = refereeId;
     }
+
+    private FloorballOfficialAssignedEvent() { }
 } 

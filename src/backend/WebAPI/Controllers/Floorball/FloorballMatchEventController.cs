@@ -260,14 +260,18 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> CreateEventSourcedMatch([FromBody] CreateEventSourcedFloorballMatchRequest request)
         {
-            _logger.LogInformation("Creating event-sourced floorball match with ID {matchId}", request.Id);
+            Guid matchId = Guid.NewGuid();
+            _logger.LogInformation("Creating event-sourced floorball match with ID {matchId}", matchId);
+
+            if (!DateTime.TryParse(request.ScheduledDateTime, out DateTime scheduledDateTime))
+                return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse("Invalid scheduled date and time format"));
 
             CreateEventSourcedFloorballMatchCommand command = new CreateEventSourcedFloorballMatchCommand(
-                request.Id,
+                matchId,
                 request.SeasonId,
                 request.HomeTeamId,
                 request.AwayTeamId,
-                request.ScheduledDateTime,
+                scheduledDateTime,
                 request.Venue
             );
 
@@ -277,7 +281,7 @@ namespace WebAPI.Controllers.Floorball
             {
                 return CreatedAtAction(
                     nameof(CreateEventSourcedMatch),
-                    new { id = request.Id },
+                    new { id = matchId },
                     ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Event-sourced match created successfully")
                 );
             }

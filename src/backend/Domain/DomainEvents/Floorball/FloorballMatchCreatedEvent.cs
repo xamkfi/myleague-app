@@ -1,4 +1,5 @@
 using Domain.Entities.Floorball;
+using System.Text.Json.Serialization;
 
 namespace Domain.DomainEvents.Floorball;
 
@@ -61,15 +62,16 @@ public class FloorballMatchCreatedEvent : FloorballDomainEvent
         ScheduledDateTime = scheduledDateTime;
         Venue = venue;
     }
-    
+
     /// <summary>
-    /// Initializes a new instance of the FloorballMatchCreatedEvent class from entity objects
+    /// Parameterless constructor for JSON deserialization
     /// </summary>
-    /// <param name="match">The match that was created</param>
-    /// <param name="season">The season of the match</param>
-    /// <param name="homeTeam">The home team</param>
-    /// <param name="awayTeam">The away team</param>
-    public FloorballMatchCreatedEvent(
+    private FloorballMatchCreatedEvent() { }
+
+    /// <summary>
+    /// Factory method that creates event from entity instances
+    /// </summary>
+    public static FloorballMatchCreatedEvent FromEntities(
         FloorballMatch match,
         FloorballSeason season,
         FloorballTeam homeTeam,
@@ -80,11 +82,12 @@ public class FloorballMatchCreatedEvent : FloorballDomainEvent
         ArgumentNullException.ThrowIfNull(homeTeam);
         ArgumentNullException.ThrowIfNull(awayTeam);
 
-        MatchId = match.Id;
-        SeasonId = season.Id;
-        HomeTeamId = homeTeam.Id;
-        AwayTeamId = awayTeam.Id;
-        ScheduledDateTime = match.ScheduledDateTime;
-        Venue = match.Venue ?? "";
+        return new FloorballMatchCreatedEvent(
+            match.Id,
+            season.Id,
+            homeTeam.Id,
+            awayTeam.Id,
+            match.ScheduledDateTime,
+            match.Venue ?? string.Empty);
     }
 } 
