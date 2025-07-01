@@ -14,7 +14,7 @@ public record UpdatePersonCommand(
     string LastName,
     DateTime BirthDate,
     bool IsRegistered,
-    AddressDto Address,
-    ContactInfoDto ContactInfo) : IRequest<Result<PersonDto>>;
+    AddressDto? Address,
+    ContactInfoDto? ContactInfo) : IRequest<Result<PersonDto>>;
 
 

@@ -78,7 +78,7 @@ jobs:
     - name: Test Docker Compose startup
       run: |
         # Start services with docker compose
-        docker compose up -d
+        docker compose up -d --build
         
         # Wait for services to be ready (PostgreSQL needs time to initialize)
         echo "Waiting for services to start..."

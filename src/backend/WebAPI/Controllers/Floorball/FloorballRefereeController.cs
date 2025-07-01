@@ -181,10 +181,10 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="licenseExpiringWithinDays">Filter for referees with license expiring within specified days</param>
         /// <returns>Paginated list of floorball referees</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<FloorballRefereeDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballRefereeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<PagedResult<FloorballRefereeDto>>>> GetAllReferees(
+        public async Task<ActionResult<PaginatedApiResponse<FloorballRefereeDto>>> GetAllReferees(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 0,
             [FromQuery] bool? isActive = null,
@@ -201,11 +201,11 @@ namespace WebAPI.Controllers.Floorball
 
             if (result.IsSuccess && result.Data != null)
             {
-                return Ok(ApiResponse<PagedResult<FloorballRefereeDto>>.SuccessResponse(result.Data, "Floorball referees retrieved successfully"));
+                return Ok(PaginatedApiResponse<FloorballRefereeDto>.SuccessResponse(result.Data, "Floorball referees retrieved successfully"));
             }
 
             string errorMessage = result.Error ?? "Failed to retrieve floorball referees";
-            return BadRequest(ApiResponse<PagedResult<FloorballRefereeDto>>.ErrorResponse(errorMessage));
+            return StatusCode(500, PaginatedApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>

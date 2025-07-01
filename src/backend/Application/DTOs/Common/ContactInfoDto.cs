@@ -10,7 +10,7 @@ namespace Application.DTOs.Common;
     /// Data Transfer Object for ContactInfo valueobject
     /// </summary>
     public record ContactInfoDto(
-        string Email,
+        string? Email,
         string? Phone,
         string? AlternativePhone);
 

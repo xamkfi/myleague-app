@@ -19,6 +19,7 @@ import NewsCreateEditPage from '../pages/AdminPage/NewsPage/NewsCreateEditPage';
 import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/FloorballManagementPage';
 import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
 import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage';
+import FloorballRefereesPage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage';
 import FloorballSeasonsPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage';
 import MatchManagementPage from '../pages/AdminPage/FloorballManagementPage/MatchManagementPage/MatchManagementPage';
 import FloorballTeamPage from '../pages/FloorballTeamPage/FloorballTeamPage';
@@ -113,6 +114,10 @@ export const routes: RouteObject[] = [
       {
         path: 'players',
         element: <FloorballPlayersPage />
+      },
+      {
+        path: 'referees',
+        element: <FloorballRefereesPage />
       },
       {
         path: 'seasons',
