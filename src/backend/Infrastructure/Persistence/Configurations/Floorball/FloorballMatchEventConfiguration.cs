@@ -88,7 +88,7 @@ public class FloorballMatchEventConfiguration : IEntityTypeConfiguration<Floorba
 
         // Foreign key relationships
         builder.HasOne<FloorballMatch>()
-            .WithMany()
+            .WithMany(m => m.Events)
             .HasForeignKey(e => e.MatchId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();

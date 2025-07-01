@@ -175,6 +175,66 @@ public class FloorballMatch : AggregateRoot
     }
 
     /// <summary>
+    /// Initializes a new instance of the FloorballMatch class using IDs.
+    /// This is for creating a new match without loading related entities.
+    /// </summary>
+    /// <param name="id">The match's unique identifier</param>
+    /// <param name="seasonId">The ID of the season this match belongs to</param>
+    /// <param name="homeTeamId">The ID of the home team</param>
+    /// <param name="awayTeamId">The ID of the away team</param>
+    /// <param name="scheduledDateTime">The scheduled date and time of the match</param>
+    /// <param name="venue">The venue where the match will be played</param>
+    /// <exception cref="ArgumentException">Thrown when teams are the same</exception>
+    public FloorballMatch(
+        Guid id,
+        Guid seasonId,
+        Guid homeTeamId,
+        Guid awayTeamId,
+        DateTime scheduledDateTime,
+        string? venue) : base(id)
+    {
+        if (homeTeamId == awayTeamId)
+            throw new ArgumentException("Home team and away team cannot be the same team.");
+
+        SeasonId = seasonId;
+        HomeTeamId = homeTeamId;
+        AwayTeamId = awayTeamId;
+        ScheduledDateTime = scheduledDateTime;
+        Venue = venue;
+        Status = FloorballMatchStatus.Scheduled;
+        HomeScore = 0;
+        AwayScore = 0;
+        WentToOvertime = false;
+        WentToShootout = false;
+        _events = new List<FloorballMatchEvent>();
+        _officials = new List<FloorballReferee>();
+        _periodScores = new List<FloorballPeriodScore>();
+        for (int i = 1; i <= 3; i++)
+        {
+            _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeamId, awayTeamId));
+        }
+        
+        // Navigation properties are not loaded
+        Season = null!; 
+        HomeTeam = null!;
+        AwayTeam = null!;
+    }
+
+    /// <summary>
+    /// Raises a domain event signifying the creation of this match.
+    /// </summary>
+    public void Create()
+    {
+        var domainEvent = new FloorballMatchCreatedEvent(
+            Id,
+            SeasonId,
+            HomeTeamId,
+            AwayTeamId,
+            ScheduledDateTime,
+            Venue);
+    }
+
+    /// <summary>
     /// Sets the season for this match
     /// </summary>
     /// <param name="season">The season to set</param>
@@ -184,6 +244,72 @@ public class FloorballMatch : AggregateRoot
         ArgumentNullException.ThrowIfNull(season);
         Season = season;
         SeasonId = season.Id;
+    }
+
+    /// <summary>
+    /// Starts the match
+    /// This method is intended for use by projections and does not contain business logic.
+    /// </summary>
+    public void ProjectionStart()
+    {
+        Status = FloorballMatchStatus.InProgress;
+    }
+
+    /// <summary>
+    /// Add referee to a match
+    /// </summary>
+    /// <param name="referee"></param>
+    public void ProjectionAddReferee(FloorballReferee referee)
+    {
+        _officials.Add(referee);
+    }
+
+    /// <summary>
+    /// Records a goal for the match.
+    /// This method is intended for use by projections and does not contain business logic.
+    /// </summary>
+    public void ProjectionRecordGoal(
+        Guid scoringTeamId,
+        Guid? scoringPlayerId,
+        int periodNumber,
+        int timeInSeconds,
+        Guid? assistingPlayerId,
+        string? description = null)
+    {
+        // Record the goal event by creating the read model entity
+        var goalEvent = new FloorballGoal(
+            Id,
+            scoringTeamId,
+            scoringPlayerId,
+            assistingPlayerId,
+            periodNumber,
+            timeInSeconds,
+            null, // goalType is not projected
+            description);
+
+        _events.Add(goalEvent);
+
+        // Update the match score
+        if (scoringTeamId == HomeTeamId)
+        {
+            HomeScore++;
+            // Update the period score for the current period
+            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
+            if (periodScore != null)
+            {
+                periodScore.IncrementHomeScore();
+            }
+        }
+        else
+        {
+            AwayScore++;
+            // Update the period score for the current period
+            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
+            if (periodScore != null)
+            {
+                periodScore.IncrementAwayScore();
+            }
+        }
     }
 
     /// <summary>

@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Domain.DomainEvents;
 
 namespace Domain.EventSourcing;
@@ -7,4 +11,5 @@ namespace Domain.EventSourcing;
 /// </summary>
 public interface IFloorballEventStore : IEventStore
 {
+
 }

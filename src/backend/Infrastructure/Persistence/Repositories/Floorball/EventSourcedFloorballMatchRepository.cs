@@ -71,42 +71,27 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 return;
             }
 
-            // 1. Save all uncommitted events to the event store.
-            // This also performs a concurrency check using the aggregate's current version.
+            // If the aggregate is new (version is -1), we add the root entity to the DbContext.
+            // It will be saved in the same transaction as the events.
+            if (match.Version == -1)
+            {
+                _dbContext.EventSourcedFloorballMatches.Add(match);
+            }
+
+            // Save all uncommitted events to the event store.
+            // This performs a concurrency check using the aggregate's current version.
+            // If two commands try to create the same match, the version check in the event store will fail the second one.
             await _eventStore.SaveEventsAsync(
                 match.Id,
                 eventsToSave,
                 match.Version, // The version of the aggregate before these new events
                 cancellationToken);
 
-            // 2. Mark events as committed on the aggregate. This updates its version number.
+            // Mark events as committed so they won't be saved again
             match.MarkEventsAsCommitted();
 
-            // 3. Update the read model/snapshot in the main database.
-            EventSourcedFloorballMatch? snapshot = await _dbContext.EventSourcedFloorballMatches
-                .FirstOrDefaultAsync(m => m.Id == match.Id, cancellationToken);
-
-            if (snapshot == null)
-            {
-                // The match is new, add the entire aggregate as the snapshot.
-                _dbContext.EventSourcedFloorballMatches.Add(match);
-            }
-            else
-            {
-                // The match exists, update its properties from the in-memory aggregate.
-                // CurrentValues.SetValues copies scalar and complex type properties.
-                // Navigation properties or collections are not updated, which is desired for a snapshot.
-                _dbContext.Entry(snapshot).CurrentValues.SetValues(match);
-            }
-
-            // 4. Save the snapshot changes to the database.
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation(
-                "Saved {EventCount} new events for match {MatchId}. Snapshot is now at version {Version}",
-                eventsToSave.Count,
-                match.Id,
-                match.Version);
+            _logger.LogInformation("Saved {EventCount} new events for match {MatchId}. Aggregate is now at version {Version}",
+                eventsToSave.Count, match.Id, match.Version);
         }
 
         /// <inheritdoc />

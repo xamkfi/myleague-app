@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
     /// <summary>
-    /// Handles FloorballMatchCreatedEvent by notifying SignalR clients with new match details.
+    /// Handles FloorballMatchProjectedEvent by notifying SignalR clients with new match details.
     /// </summary>
-    public class FloorballMatchCreatedEventHandler : NotificationDomainEventHandler<FloorballMatchCreatedEvent>
+    public class FloorballMatchCreatedEventHandler : NotificationDomainEventHandler<FloorballMatchProjectedEvent>
     {
         private readonly FloorballDbContext _dbContext;
 
@@ -33,40 +33,6 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
             _dbContext = dbContext;
         }
 
-        /// <summary>
-        /// Handles the domain event by creating a new FloorballMatch read model and then sending a notification.
-        /// </summary>
-        /// <param name="domainEvent">The domain event to handle</param>
-        public override async Task HandleAsync(FloorballMatchCreatedEvent domainEvent)
-        {
-            // 1. Create the read model entity
-            FloorballTeam? homeTeam = await _dbContext.FloorballTeams.FindAsync(domainEvent.HomeTeamId);
-            FloorballTeam? awayTeam = await _dbContext.FloorballTeams.FindAsync(domainEvent.AwayTeamId);
-            FloorballSeason? season = await _dbContext.FloorballSeasons.FindAsync(domainEvent.SeasonId);
-
-            if (homeTeam == null || awayTeam == null || season == null)
-            {
-                _logger.LogWarning("Could not create match read model for {MatchId} because a dependency (Season, Home, or Away team) was not found.", domainEvent.AggregateId);
-                return;
-            }
-
-            // The public constructor now takes the Id as a parameter.
-            var newMatch = new FloorballMatch(
-                domainEvent.AggregateId, // Pass the correct Id from the event.
-                season,
-                homeTeam,
-                awayTeam,
-                domainEvent.ScheduledDateTime,
-                domainEvent.Venue);
-
-            await _dbContext.FloorballMatches.AddAsync(newMatch);
-            await _dbContext.SaveChangesAsync();
-
-            _logger.LogInformation("Created new FloorballMatch read model with ID {MatchId}", newMatch.Id);
-
-            // 2. Call the base handler to build and send the notification
-            await base.HandleAsync(domainEvent);
-        }
 
         /// <summary>
         /// Builds the notification payload from the domain event
@@ -75,17 +41,17 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>A tuple containing the event name and notification payload</returns>
         protected override async Task<(string EventName, object? Notification)> BuildNotificationAsync(
-            FloorballMatchCreatedEvent domainEvent, 
+            FloorballMatchProjectedEvent domainEvent, 
             CancellationToken cancellationToken = default)
         {
             FloorballMatch? match = await _dbContext.FloorballMatches
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
-                .FirstOrDefaultAsync(m => m.Id == domainEvent.MatchId, cancellationToken);
+                .FirstOrDefaultAsync(m => m.Id == domainEvent.Id, cancellationToken);
 
             if (match == null)
             {
-                _logger.LogWarning("Floorball match with ID {MatchId} not found for MatchCreated event.", domainEvent.MatchId);
+                _logger.LogWarning("Floorball match with ID {MatchId} not found for MatchProjected event.", domainEvent.Id);
                 return (FloorballNotificationEvents.MatchCreated, null);
             }
 
