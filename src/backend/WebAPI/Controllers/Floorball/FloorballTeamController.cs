@@ -378,6 +378,12 @@ namespace WebAPI.Controllers.Floorball
             return BadRequest(ApiResponse<FloorballTeamPlayerDto>.ErrorResponse(errorMessage));
         }
 
+        /// <summary>
+        /// Updates the division of a floorball team
+        /// </summary>
+        /// <param name="teamId">The ID of the team to update</param>
+        /// <param name="divisionId">The ID of the new division</param>
+        /// <returns>Updated team details</returns>
         [HttpPatch("{teamId:guid}/division{divisionId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
