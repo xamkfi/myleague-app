@@ -295,7 +295,7 @@ namespace WebAPI.Controllers.Common
                 request.Street1,
                 request.City,
                 request.PostalCode,
-                request.Country,
+                request.Country ?? string.Empty,
                 request.Street2);
 
             UpdatePersonAddressCommand command = new UpdatePersonAddressCommand(id, address);
@@ -333,7 +333,7 @@ namespace WebAPI.Controllers.Common
             _logger.LogInformation("Updating person contact info with Id: {Id}", id);
 
             ContactInfo contactInfo = new ContactInfo(
-                request.Email,
+                request.Email ?? string.Empty,
                 request.Phone,
                 request.AlternativePhone);
 

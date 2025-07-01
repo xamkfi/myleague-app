@@ -108,7 +108,7 @@ public static class NewsArticleMapper
         Guid newsId = Guid.NewGuid();
         NewsArticle newsArticle = new NewsArticle(newsId,
             command.Title,
-            command.MainImage,
+            command.MainImage ?? new Uri("https://placeholder.com/default-image"),
             command.ContentHtml,
             command.Author);
 
