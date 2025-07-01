@@ -1,7 +1,6 @@
 ﻿using Application.Commands.Floorball.Match;
 using Application.Common;
 using Domain.Common;
-using Application.DTOs.Common;
 using Application.DTOs.Floorball;
 using Application.Queries.Floorball.Match;
 using MediatR;
@@ -340,6 +339,37 @@ namespace WebAPI.Controllers.Floorball
             }
 
             return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Gets the full event history of an event-sourced floorball match
+        /// </summary>
+        /// <param name="matchId">Match identifier</param>
+        /// <returns>Chronological list of domain events for the match</returns>
+        [HttpGet("{matchId:guid}/history")]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<FloorballDomainEventDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<IEnumerable<FloorballDomainEventDto>>>> GetMatchHistory(Guid matchId)
+        {
+            _logger.LogInformation("Fetching full event history for match: {MatchId}", matchId);
+
+            GetFullFloorballMatchHistoryQuery query = new GetFullFloorballMatchHistoryQuery(matchId);
+            Result<IEnumerable<FloorballDomainEventDto>> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<IEnumerable<FloorballDomainEventDto>>.SuccessResponse(result.Data, "Event history retrieved successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to fetch event history";
+
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<IEnumerable<FloorballDomainEventDto>>.ErrorResponse(errorMessage));
+            }
+
+            return StatusCode(500, ApiResponse<IEnumerable<FloorballDomainEventDto>>.ErrorResponse(errorMessage));
         }
     }
 }
