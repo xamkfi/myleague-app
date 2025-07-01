@@ -10,6 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Application.Commands.Floorball.Match;
 
 namespace Application.Handlers.Floorball.Matches.Events;
 
@@ -20,6 +21,10 @@ public class CreateEventSourcedFloorballMatchHandler : IRequestHandler<CreateEve
 {
     private readonly IEventSourcedFloorballMatchRepository _eventSourcedMatchRepository;
     private readonly ILogger<CreateEventSourcedFloorballMatchHandler> _logger;
+    private readonly IFloorballMatchRepository _matchRepository;
+    private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballUnitOfWork _unitOfWork;
 
     /// <summary>
     /// Initializes a new instance of the CreateEventSourcedFloorballMatchHandler class
@@ -28,10 +33,18 @@ public class CreateEventSourcedFloorballMatchHandler : IRequestHandler<CreateEve
     /// <param name="logger">The logger</param>
     public CreateEventSourcedFloorballMatchHandler(
         IEventSourcedFloorballMatchRepository eventSourcedMatchRepository,
-        ILogger<CreateEventSourcedFloorballMatchHandler> logger)
+        ILogger<CreateEventSourcedFloorballMatchHandler> logger,
+        IFloorballMatchRepository matchRepository,
+        IFloorballTeamRepository teamRepository,
+        IFloorballSeasonRepository seasonRepository,
+        IFloorballUnitOfWork unitOfWork)
     {
         _eventSourcedMatchRepository = eventSourcedMatchRepository;
         _logger = logger;
+        _matchRepository = matchRepository;
+        _teamRepository = teamRepository;
+        _seasonRepository = seasonRepository;
+        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
@@ -58,14 +71,43 @@ public class CreateEventSourcedFloorballMatchHandler : IRequestHandler<CreateEve
             // Save the match with its creation event
             await _eventSourcedMatchRepository.SaveAsync(match, cancellationToken);
 
+                        // Fetch season object
+            FloorballSeason? season = await _seasonRepository.GetByIdAsync(request.SeasonId);
+            if (season==null)
+            {
+                _logger.LogWarning("Attempt to create match for non-existent season with ID: {SeasonId}", request.SeasonId);
+                return Result<FloorballMatchDto>.NotFound("FloorballSeason", request.SeasonId);
+            }
+
+            // Fetch team objects
+            FloorballTeam? homeTeam = await _teamRepository.GetByIdAsync(request.HomeTeamId);
+            FloorballTeam? awayTeam = await _teamRepository.GetByIdAsync(request.AwayTeamId);
+            if (homeTeam==null)
+            {
+                _logger.LogWarning("Attempt to create match with non-existent home team ID: {TeamId}", request.HomeTeamId);
+                return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.HomeTeamId);
+            }
+            if (awayTeam==null)
+            {
+                _logger.LogWarning("Attempt to create match with non-existent away team ID: {TeamId}", request.AwayTeamId);
+                return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.AwayTeamId);
+            }
+
+            CreateFloorballMatchCommand command = new CreateFloorballMatchCommand(request.SeasonId, request.HomeTeamId, request.AwayTeamId, request.ScheduledDateTime, request.Venue);
+            // Create the match entity
+            FloorballMatch match2 = FloorballMatchMapper.ToEntity(command, season, homeTeam, awayTeam);
+
+            await _matchRepository.AddAsync(match2);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             // Create the DTO response (simplified for event sourcing)
             var matchDto = new FloorballMatchDto(
                 match.Id,
                 match.SeasonId,
                 match.HomeTeamId,
-                "Home Team", // Placeholder - in full implementation would fetch from repository
+                homeTeam.Name,
                 match.AwayTeamId,
-                "Away Team", // Placeholder - in full implementation would fetch from repository
+                awayTeam.Name,
                 match.ScheduledDateTime,
                 match.Venue,
                 match.Status,
