@@ -2,8 +2,10 @@ using Domain.DomainEvents;
 using Domain.Entities.Floorball;
 using Domain.EventSourcing;
 using Domain.Repositories.Floorball;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MyLeague.Infrastructure.DomainEvents;
 using MyLeague.Infrastructure.Persistence.Contexts;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
@@ -14,6 +16,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
     public class EventSourcedFloorballMatchRepository : IEventSourcedFloorballMatchRepository
     {
         private readonly FloorballDbContext _dbContext;
+        private readonly IDomainEventDispatcher _domainEventDispatcher;
         private readonly IFloorballEventStore _eventStore;
         private readonly ILogger<EventSourcedFloorballMatchRepository> _logger;
 
@@ -26,11 +29,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public EventSourcedFloorballMatchRepository(
             FloorballDbContext dbContext,
             IFloorballEventStore eventStore,
-            ILogger<EventSourcedFloorballMatchRepository> logger)
+            ILogger<EventSourcedFloorballMatchRepository> logger,
+            IDomainEventDispatcher domainEventDispatcher)
         {
             _dbContext = dbContext;
             _eventStore = eventStore;
             _logger = logger;
+            _domainEventDispatcher = domainEventDispatcher;
         }
 
         /// <inheritdoc />
@@ -87,12 +92,15 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 match.UncommittedEvents,
                 expectedVersion,
                 cancellationToken);
-            
+
+            //Send saved events to projections for database updates
+            await _domainEventDispatcher.DispatchAsync(match.UncommittedEvents);
+
             // Mark events as committed so they won't be saved again
             match.MarkEventsAsCommitted();
 
-            // Persist snapshot updates in case EventStore didn't already commit them (different DbContext instance)
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            //// Persist snapshot updates in case EventStore didn't already commit them (different DbContext instance)
+            //await _dbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Saved event sourced floorball match {MatchId} with {EventCount} new events", 
                 match.Id, match.UncommittedEvents.Count);
