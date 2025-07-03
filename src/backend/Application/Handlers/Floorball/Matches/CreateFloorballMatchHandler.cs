@@ -21,6 +21,7 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballRefereeRepository _refereeRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFloorballMatchHandler> _logger;
 
@@ -30,18 +31,21 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
     /// <param name="matchRepository">The floorball match repository</param>
     /// <param name="teamRepository">The floorball team repository</param>
     /// <param name="seasonRepository">The floorball season repository</param>
+    /// <param name="refereeRepository">The floorball referee repository</param>
     /// <param name="unitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public CreateFloorballMatchHandler(
         IFloorballMatchRepository matchRepository,
         IFloorballTeamRepository teamRepository,
         IFloorballSeasonRepository seasonRepository,
+        IFloorballRefereeRepository refereeRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<CreateFloorballMatchHandler> logger)
     {
         _matchRepository = matchRepository;
         _teamRepository = teamRepository;
         _seasonRepository = seasonRepository;
+        _refereeRepository = refereeRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -78,8 +82,20 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
                 return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.AwayTeamId);
             }
 
+            // Fetch referee if provided
+            FloorballReferee? referee = null;
+            if (request.RefereeId.HasValue)
+            {
+                referee = await _refereeRepository.GetByIdAsync(request.RefereeId.Value);
+                if (referee == null)
+                {
+                    _logger.LogWarning("Attempt to create match with non-existent referee ID: {RefereeId}", request.RefereeId);
+                    return Result<FloorballMatchDto>.NotFound("FloorballReferee", request.RefereeId.Value);
+                }
+            }
+
             // Create the match entity
-            FloorballMatch match = FloorballMatchMapper.ToEntity(request, season, homeTeam, awayTeam);
+            FloorballMatch match = FloorballMatchMapper.ToEntity(request, season, homeTeam, awayTeam, referee);
 
             _logger.LogInformation("Creating new floorball match between teams: {HomeTeamId} vs {AwayTeamId}", 
                 request.HomeTeamId, request.AwayTeamId);

@@ -33,6 +33,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
+                .Include(m => m.PeriodScores)
                 .FirstOrDefaultAsync(m => m.Id == id) ?? throw new KeyNotFoundException($"Match with ID {id} not found.");
         }
 
@@ -46,6 +47,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(m => m.Season)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
+                .Include(m => m.Officials)
+                .Include(m => m.PeriodScores)
                 .ToListAsync();
         }
 
@@ -75,6 +78,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(m => m.Season)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
+                .Include(m => m.Officials)
+                .Include(m => m.PeriodScores)
                 .AsQueryable();
 
             // Apply filters
@@ -177,6 +182,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             return await _entities
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
+                .Include(m => m.Officials)
+                .Include(m => m.PeriodScores)
                 .Where(m => m.SeasonId == seasonId)
                 .ToListAsync();
         }
@@ -192,6 +199,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(m => m.Season)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
+                .Include(m => m.Officials)
+                .Include(m => m.PeriodScores)
                 .Where(m => m.HomeTeamId == teamId || m.AwayTeamId == teamId)
                 .ToListAsync();
         }
