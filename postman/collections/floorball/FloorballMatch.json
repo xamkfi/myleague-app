@@ -200,9 +200,9 @@
 								"value": "PostmanRuntime"
 							}
 						],
-														"body": {
-									"mode": "raw",
-									"raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2026-07-15T20:00:00\",\n  \"venue\": \"Test Arena\"\n}",
+						"body": {
+							"mode": "raw",
+								"raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2026-07-15T20:00:00\",\n  \"venue\": \"Test Arena\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -401,7 +401,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2026-07-15T19:00:00\",\n  \"venue\": \"Amsterdam Lions Arena\"\n}"
+									  "raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2026-07-15T19:00:00\",\n  \"venue\": \"Amsterdam Lions Arena\",\n  \"refereeId\": \"0de78882-3f18-466e-a030-f097d18f08e5\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/FloorballMatch",
@@ -429,12 +429,100 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
+											"console.log('🎯 CREATE MATCH 1 RESPONSE:');",
+											"console.log('Status:', pm.response.code);",
+											"console.log('Response:', pm.response.text());",
+											"",
 											"if (pm.response.code === 201) {",
 											"    const response = pm.response.json();",
 											"    if (response.success && response.data) {",
 											"        pm.globals.set('match1_id', response.data.id);",
-											"        console.log('Match 1 ID stored:', response.data.id);",
+											"        console.log('✅ Match 1 created successfully with ID:', response.data.id);",
+											"        ",
+											"        // Check if officials are already included in the creation response",
+											"        if (response.data.officials !== undefined) {",
+											"            console.log('🔍 Officials in creation response:', response.data.officials.length);",
+											"            console.log('🔍 Officials list:', response.data.officials);",
+											"            if (response.data.officials.length > 0) {",
+											"                console.log('✅ Officials found in creation response!');",
+											"                if (response.data.officials.includes('0de78882-3f18-466e-a030-f097d18f08e5')) {",
+											"                    console.log('✅ PERFECT: Our referee is in the creation response!');",
+											"                } else {",
+											"                    console.log('⚠️  Different officials found in creation response');",
+											"                }",
+											"            } else {",
+											"                console.log('⚠️  Empty officials array in creation response');",
+											"            }",
+											"        } else {",
+											"            console.log('🔍 No officials field in creation response');",
+											"        }",
+											"    } else {",
+											"        console.log('❌ No data in successful response');",
 											"    }",
+											"} else if (pm.response.code === 400) {",
+											"    console.log('❌ Match creation failed with validation error');",
+											"    try {",
+											"        const errorResponse = pm.response.json();",
+											"        console.log('❌ Error details:', JSON.stringify(errorResponse, null, 2));",
+											"    } catch (e) {",
+											"        console.log('❌ Could not parse error response');",
+											"    }",
+											"} else {",
+											"    console.log('❌ Match creation failed with status:', pm.response.code);",
+											"    console.log('Error details:', pm.response.text());",
+											"}"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Verify Match 1 Officials",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/FloorballMatch/by-id/{{match1_id}}",
+									"host": ["{{baseUrl}}"],
+									"path": ["FloorballMatch", "by-id", "{{match1_id}}"]
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"console.log('🔍 VERIFICATION: Checking if referee was assigned as official');",
+											"console.log('Response status:', pm.response.code);",
+											"console.log('Response body:', pm.response.text());",
+											"",
+											"if (pm.response.code === 200) {",
+											"    const response = pm.response.json();",
+											"    if (response.success && response.data) {",
+											"        const match = response.data;",
+											"        console.log('✅ Match found:', match.id);",
+											"        console.log('🔍 Match status:', match.status);",
+											"        console.log('🔍 Officials count:', match.officials ? match.officials.length : 0);",
+											"        console.log('🔍 Officials IDs:', match.officials);",
+											"        ",
+											"        if (match.officials && match.officials.length > 0) {",
+											"            console.log('✅ SUCCESS: Match has officials assigned!');",
+											"            if (match.officials.includes('0de78882-3f18-466e-a030-f097d18f08e5')) {",
+											"                console.log('✅ PERFECT: Our specific referee is assigned as official');",
+											"            } else {",
+											"                console.log('⚠️  Our referee ID not found, but other officials exist');",
+											"            }",
+											"        } else {",
+											"            console.log('❌ PROBLEM FOUND: No officials assigned to match!');",
+											"            console.log('❌ This is why match start is failing');",
+											"        }",
+											"    } else {",
+											"        console.log('❌ No match data in response');",
+											"    }",
+											"} else {",
+											"    console.log('❌ Failed to get match details, status:', pm.response.code);",
 											"}"
 										]
 									}
@@ -616,7 +704,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{barcelonaeagles_condors_id}}\",\n  \"awayTeamId\": \"{{berlinthunder_storm_id}}\",\n  \"scheduledDateTime\": \"2025-07-16T18:30:00\",\n  \"venue\": \"Barcelona Sports Palace\"\n}"
+									  "raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{barcelonaeagles_condors_id}}\",\n  \"awayTeamId\": \"{{berlinthunder_storm_id}}\",\n  \"scheduledDateTime\": \"2025-07-16T18:30:00\",\n  \"venue\": \"Barcelona Sports Palace\",\n  \"refereeId\": \"0de78882-3f18-466e-a030-f097d18f08e5\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/FloorballMatch",
@@ -774,7 +862,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{milanodragons_fire_id}}\",\n  \"awayTeamId\": \"{{pariswolves_pack_id}}\",\n  \"scheduledDateTime\": \"2025-08-17T20:00:00\",\n  \"venue\": \"Milano Arena Drago\"\n}"
+									  "raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{milanodragons_fire_id}}\",\n  \"awayTeamId\": \"{{pariswolves_pack_id}}\",\n  \"scheduledDateTime\": \"2025-08-17T20:00:00\",\n  \"venue\": \"Milano Arena Drago\",\n  \"refereeId\": \"0de78882-3f18-466e-a030-f097d18f08e5\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/FloorballMatch",
@@ -976,7 +1064,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{amsterdamlions_pride_id}}\",\n  \"awayTeamId\": \"{{stockholmvikings_berserkers_id}}\",\n  \"scheduledDateTime\": \"2025-09-18T19:30:00\",\n  \"venue\": \"Amsterdam Sports Palace\"\n}"
+									  "raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{amsterdamlions_pride_id}}\",\n  \"awayTeamId\": \"{{stockholmvikings_berserkers_id}}\",\n  \"scheduledDateTime\": \"2025-09-18T19:30:00\",\n  \"venue\": \"Amsterdam Sports Palace\",\n  \"refereeId\": \"0de78882-3f18-466e-a030-f097d18f08e5\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/FloorballMatch",
@@ -1090,7 +1178,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{dublinshamrocks_clover_id}}\",\n  \"awayTeamId\": \"{{viennahawks_talons_id}}\",\n  \"scheduledDateTime\": \"2025-10-19T20:15:00\",\n  \"venue\": \"Croke Park Arena\"\n}"
+									  "raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{dublinshamrocks_clover_id}}\",\n  \"awayTeamId\": \"{{viennahawks_talons_id}}\",\n  \"scheduledDateTime\": \"2025-10-19T20:15:00\",\n  \"venue\": \"Croke Park Arena\",\n  \"refereeId\": \"0de78882-3f18-466e-a030-f097d18f08e5\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/FloorballMatch",
