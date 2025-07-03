@@ -191,7 +191,6 @@ const CreateMatchModal = ({
               onSearch={floorballRefereeSearchService.searchReferees}
               searchPlaceholder="Search referees..."
               emptyMessage="No referees found"
-              required
             />
           </div>
           

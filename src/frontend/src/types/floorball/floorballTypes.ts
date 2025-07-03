@@ -167,7 +167,7 @@ export interface CreateFloorballMatchRequest {
   seasonId: string;
   homeTeamId: string;
   awayTeamId: string;
-  refereeId: string;
+  refereeId?: string;
   scheduledDateTime: string;
   venue?: string;
 }

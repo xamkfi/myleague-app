@@ -92,6 +92,11 @@ public record CreateFloorballMatchRequest
     public Guid AwayTeamId { get; init; }
 
     /// <summary>
+    /// Gets the referee ID (optional)
+    /// </summary>
+    public Guid? RefereeId { get; init; }
+
+    /// <summary>
     /// Gets the scheduled date and time of the match
     /// </summary>
     [Required(ErrorMessage = "Scheduled date and time is required")]
