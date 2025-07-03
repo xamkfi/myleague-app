@@ -24,10 +24,10 @@ public static class FloorballMatchMapper
             throw new ArgumentNullException(nameof(match));
 
         // Map officials from the match entity
-        var officials = match.Officials.Select(referee => referee.Id).ToList();
-        
+        List<Guid> officials = match.Officials.Select(referee => referee.Id).ToList();
+
         // Map period scores from the match entity
-        var periodScores = match.PeriodScores.ToDictionary(
+        Dictionary<int, (int HomeScore, int AwayScore)> periodScores = match.PeriodScores.ToDictionary(
             ps => ps.PeriodNumber,
             ps => (ps.HomeScore, ps.AwayScore)
         );
