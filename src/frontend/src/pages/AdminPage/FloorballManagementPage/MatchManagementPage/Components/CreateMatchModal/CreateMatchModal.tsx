@@ -4,6 +4,7 @@ import type {
 } from '../../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import { floorballTeamSearchService, floorballSeasonSearchService } from '../../../../../../api/floorball/floorballTeamSearchService';
+import { floorballRefereeSearchService } from '../../../../../../api/floorball/floorballRefereeSearchService';
 import './CreateMatchModal.scss';
 
 interface CreateMatchModalProps {
@@ -23,6 +24,7 @@ const CreateMatchModal = ({
     seasonId: '',
     homeTeamId: '',
     awayTeamId: '',
+    refereeId: '',
     scheduledDateTime: '',
     venue: ''
   });
@@ -93,6 +95,7 @@ const CreateMatchModal = ({
         seasonId: '',
         homeTeamId: '',
         awayTeamId: '',
+        refereeId: '',
         scheduledDateTime: '',
         venue: ''
       });
@@ -110,6 +113,7 @@ const CreateMatchModal = ({
       seasonId: '',
       homeTeamId: '',
       awayTeamId: '',
+      refereeId: '',
       scheduledDateTime: '',
       venue: ''
     });
@@ -174,6 +178,19 @@ const CreateMatchModal = ({
               onSearch={floorballTeamSearchService.searchTeams}
               searchPlaceholder="Search teams..."
               emptyMessage="No teams found"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="referee">Referee</label>
+            <SearchableInfiniteDropdown
+              placeholder="Select Referee"
+              value={createForm.refereeId}
+              onChange={(value) => setCreateForm(prev => ({ ...prev, refereeId: value }))}
+              onSearch={floorballRefereeSearchService.searchReferees}
+              searchPlaceholder="Search referees..."
+              emptyMessage="No referees found"
               required
             />
           </div>

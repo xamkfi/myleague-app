@@ -57,6 +57,11 @@ export interface FloorballTeamPlayer {
   penaltyMinutes: number;
 }
 
+export interface FloorballReferee {
+  refereeId: string;
+  name: string;
+}
+
 export interface FloorballTeam {
   id: string;
   name: string;
@@ -126,6 +131,11 @@ export interface FloorballTeamPlayerDto {
   penaltyMinutes: number;
 }
 
+export interface FloorballRefereeDto {
+  refereeId: string;
+  name: string;
+}
+
 export interface UpdateFloorballTeamPlayerRequest {
   position: FloorballPosition;
   jerseyNumber?: number;
@@ -162,6 +172,7 @@ export interface CreateFloorballMatchRequest {
   seasonId: string;
   homeTeamId: string;
   awayTeamId: string;
+  refereeId: string;
   scheduledDateTime: string;
   venue?: string;
 }
