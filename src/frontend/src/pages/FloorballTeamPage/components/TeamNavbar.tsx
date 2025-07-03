@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './TeamNavbar.scss'
+import { useTranslation } from 'react-i18next';
 
 interface TeamNavbarProps {
    onTabChange?: (activeTab: string) => void;
@@ -7,12 +8,13 @@ interface TeamNavbarProps {
 
 export default function TeamNavbar({ onTabChange }: TeamNavbarProps) {
    const [activeTab, setActiveTab] = useState<string>('results');
+   const { t } = useTranslation();
 
    const tabs = [
-      { id: 'results', label: '📅 Results', icon: '📅' },
-      { id: 'roster', label: '📋 Roster', icon: '📋' },
-      { id: 'stats', label: '📊 Stats', icon: '📊' },
-      { id: 'standings', label: '🏆 Standings', icon: '🏆' }
+      { id: 'results', label: t('teamUserPage.results') , icon: '📅' },
+      { id: 'roster', label: t('teamUserPage.roster'), icon: '📋' },
+      { id: 'stats', label: t('teamUserPage.stats'), icon: '📊' },
+      { id: 'standings', label: t('teamUserPage.standings'), icon: '🏆' }
    ];
 
    const handleTabClick = (tabId: string) => {
@@ -28,7 +30,7 @@ export default function TeamNavbar({ onTabChange }: TeamNavbarProps) {
                className={`team-navbar-btn ${activeTab === tab.id ? 'active' : ''}`}
                onClick={() => handleTabClick(tab.id)}
             >
-               <span>{tab.label}</span>
+               <span>{tab.icon} {tab.label}</span>
             </div>
          ))}
       </div>

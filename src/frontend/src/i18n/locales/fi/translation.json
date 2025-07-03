@@ -72,12 +72,21 @@
   },
   "common": {
     "back": "Takaisin Hallintaan",
+    "backTo": "Takaisin",
     "loading": "Ladataan...",
     "edit": "Muokkaa",
     "delete": "Poista",
     "previous": "Edellinen",
     "next": "Seuraava",
-    "pageInfo": "Sivu {{current}} / {{total}}"
+    "pageInfo": "Sivu {{current}} / {{total}}",
+    "error": "Virhe",
+    "goBack": "Palaa takaisin",
+    "retry": "Yritä uudelleen",
+    "pagination": {
+      "previous": "Edellinen",
+      "next": "Seuraava",
+      "pageOf": "Sivu {{current}} / {{total}}"
+    }
   },
   "newsPage":{
     "category": {
@@ -90,5 +99,19 @@
     },
     "search": "Hae",
     "searchPlaceholder": "Hae uutisia..."
+  },
+  "teamUserPage": {
+    "loadingInfo": "Ladataan joukkueen tietoja…",
+    "notFoundTitle": "Joukkuetta ei löydy",
+    "notFound": "Joukkuetta ei löytynyt",
+    "notFoundDesc": "Etsimääsi joukkuetta ei ole olemassa.",
+    "results": "Tulokset",
+    "roster": "Kokoonpano",
+    "stats": "Tilastot",
+    "standings": "Sarjataulukko"
+  },
+  "matches": {
+    "loading": "Otteluita ladataan…",
+    "noMatches": "Tälle joukkueelle ei löytynyt otteluita."
   }
 } 
