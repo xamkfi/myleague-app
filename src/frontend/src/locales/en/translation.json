@@ -30,7 +30,8 @@
     "create": "Create",
     "creating": "Creating...",
     "saving": "Saving...",
-    "retry": "Retry"
+    "retry": "Retry",
+    "cancelSelection": "Cancel Selection"
   },
   "admin": {
     "title": "Admin Panel",
