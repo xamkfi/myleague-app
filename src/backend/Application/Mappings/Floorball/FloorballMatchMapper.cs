@@ -23,9 +23,15 @@ public static class FloorballMatchMapper
         if (match == null)
             throw new ArgumentNullException(nameof(match));
 
-        // TODO: In a complete implementation, team names should be loaded from TeamRepository
-        // TODO: Period scores, officials, and events should be loaded from respective repositories
-        // For now, providing placeholder values to resolve compilation error
+        // Map officials from the match entity
+        List<Guid> officials = match.Officials.Select(referee => referee.Id).ToList();
+
+        // Map period scores from the match entity
+        Dictionary<int, (int HomeScore, int AwayScore)> periodScores = match.PeriodScores.ToDictionary(
+            ps => ps.PeriodNumber,
+            ps => (ps.HomeScore, ps.AwayScore)
+        );
+
         return new FloorballMatchDto(
             match.Id,
             match.SeasonId,
@@ -38,12 +44,12 @@ public static class FloorballMatchMapper
             match.Status,
             match.HomeScore,
             match.AwayScore,
-            false, // WentToOvertime - placeholder
-            false, // WentToShootout - placeholder
-            new Dictionary<int, (int HomeScore, int AwayScore)>(), // Empty period scores
-            new List<Guid>(), // Empty officials list
-            new List<FloorballGoalEventDto>(), // Empty goal events
-            new List<FloorballPenaltyEventDto>() // Empty penalty events
+            match.WentToOvertime,
+            match.WentToShootout,
+            periodScores,
+            officials,
+            new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed
+            new List<FloorballPenaltyEventDto>() // TODO: Map penalty events when needed
         );
     }
 
@@ -65,10 +71,14 @@ public static class FloorballMatchMapper
     /// Creates a new FloorballMatch entity from a create command
     /// </summary>
     /// <param name="command">The create command</param>
+    /// <param name="season">The season entity</param>
+    /// <param name="homeTeam">The home team entity</param>
+    /// <param name="awayTeam">The away team entity</param>
+    /// <param name="referee">The referee entity (optional)</param>
     /// <returns>The new match entity</returns>
     /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
     /// <exception cref="NotSupportedException">Thrown because FloorballMatch creation requires loaded entities</exception>
-    public static FloorballMatch ToEntity(CreateFloorballMatchCommand command, FloorballSeason season, FloorballTeam homeTeam, FloorballTeam awayTeam)
+    public static FloorballMatch ToEntity(CreateFloorballMatchCommand command, FloorballSeason season, FloorballTeam homeTeam, FloorballTeam awayTeam, FloorballReferee? referee = null)
     {
         if (command == null)
             throw new ArgumentNullException(nameof(command));
@@ -89,6 +99,12 @@ public static class FloorballMatchMapper
             scheduledDateTimeUtc,
             command.Venue
             );
+
+        // Add referee if provided
+        if (referee != null)
+        {
+            match.AddOfficial(referee);
+        }
 
         return match;
     }

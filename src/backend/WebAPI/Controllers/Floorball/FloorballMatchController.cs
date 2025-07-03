@@ -180,6 +180,7 @@ namespace WebAPI.Controllers.Floorball
                 request.SeasonId,
                 request.HomeTeamId,
                 request.AwayTeamId,
+                request.RefereeId,
                 scheduledDateTime,
                 request.Venue
             );
