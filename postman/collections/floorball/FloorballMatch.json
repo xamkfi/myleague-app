@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "fm123456-7890-abcd-ef12-1234567890ab",
 		"name": "FloorballMatch",
-		"description": "Collection for creating floorball matches with events and completing them\n\n## Prerequisites:\n- Backend API must be running on localhost:8080\n- Teams must exist in database (run the Clubs.json collection first)\n- Teams must have players assigned to them\n\n## Usage Instructions:\n1. First run 'Setup' folder in order:\n   a. 'Setup Division' - finds existing division or creates one automatically\n   b. 'Get Existing Season' - fetches an existing season to use for matches\n2. Run the 'Completed Matches' folder to create 5 different match scenarios:\n   - Match 1: Amsterdam Lions Pride vs Barcelona Eagles Condors (3-2 OT) - June 2025\n   - Match 2: Barcelona Eagles vs Berlin Thunder (1-2 SO) - July 2025\n   - Match 3: Milano Dragons vs Paris Wolves (4-1) - August 2025\n   - Match 4: Amsterdam Lions vs Stockholm Vikings (0-1) - September 2025\n   - Match 5: Dublin Shamrocks vs Vienna Hawks (6-4) - October 2025\n3. Each match includes realistic events like goals, penalties, assists\n4. Use 'Queries' folder to verify the matches were created correctly\n\n## Automatic ID Fetching:\nThis collection uses pre-request scripts to automatically fetch:\n- Team IDs from existing teams in the database\n- Player IDs for each team (up to 3 players per team)\n- Fallback IDs if teams/players don't exist\n\nThe collection will work consistently across different environments as long as the required teams exist.\n\n## Match Features:\n- Different penalty types: Minor, Major, Misconduct, Technical\n- Power play goals and regular goals\n- Overtime and shootout scenarios\n- Various score lines and match patterns\n- Realistic timing and period distribution",
+		"description": "Collection for creating floorball matches with events and completing them\n\n## Prerequisites:\n- Backend API must be running on localhost:8080\n- Teams must exist in database (run the Clubs.json collection first)\n- Teams must have players assigned to them\n\n## Usage Instructions:\n1. First run 'Setup' folder in order:\n   a. 'Setup Division' - finds existing division or creates one automatically\n   b. 'Get Existing Season' - fetches an existing season to use for matches\n2. Run the 'Completed Matches' folder to create 5 different match scenarios:\n   - Match 1: Amsterdam Lions Pride vs Barcelona Eagles Condors (3-2 OT) - June 2026\n   - Match 2: Barcelona Eagles vs Berlin Thunder (1-2 SO) - July 2026\n   - Match 3: Milano Dragons vs Paris Wolves (4-1) - August 2026\n   - Match 4: Amsterdam Lions vs Stockholm Vikings (0-1) - September 2026\n   - Match 5: Dublin Shamrocks vs Vienna Hawks (6-4) - October 2026\n3. Each match includes realistic events like goals, penalties, assists\n4. Use 'Queries' folder to verify the matches were created correctly\n\n## Automatic ID Fetching:\nThis collection uses pre-request scripts to automatically fetch:\n- Team IDs from existing teams in the database\n- Player IDs for each team (up to 3 players per team)\n- Fallback IDs if teams/players don't exist\n\nThe collection will work consistently across different environments as long as the required teams exist.\n\n## Match Features:\n- Different penalty types: Minor, Major, Misconduct, Technical\n- Power play goals and regular goals\n- Overtime and shootout scenarios\n- Various score lines and match patterns\n- Realistic timing and period distribution",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -200,9 +200,9 @@
 								"value": "PostmanRuntime"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2025-07-15T20:00:00\",\n  \"venue\": \"Test Arena\"\n}",
+														"body": {
+									"mode": "raw",
+									"raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2026-07-15T20:00:00\",\n  \"venue\": \"Test Arena\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -263,7 +263,7 @@
 									"    seasonId: pm.globals.get('season_id'),",
 									"    homeTeamId: pm.globals.get('amsterdamlions_pride_id'),",
 									"    awayTeamId: pm.globals.get('barcelonaeagles_condors_id'),",
-									"    scheduledDateTime: '2024-12-31T20:00:00',",
+									"    scheduledDateTime: '2025-12-31T20:00:00',",
 									"    venue: 'Test Arena'",
 									"};",
 									"console.log('📄 Request body JSON:', JSON.stringify(requestBody, null, 2));",
@@ -340,7 +340,7 @@
 									"    seasonId: pm.globals.get('season_id'),",
 									"    homeTeamId: pm.globals.get('amsterdamlions_pride_id'),",
 									"    awayTeamId: pm.globals.get('barcelonaeagles_condors_id'),",
-									"    scheduledDateTime: '2025-01-15T20:00:00',",
+									"    scheduledDateTime: '2026-01-15T20:00:00',",
 									"    venue: 'Direct Test Arena'",
 									"};",
 									"",
@@ -401,7 +401,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2025-06-15T19:00:00\",\n  \"venue\": \"Amsterdam Lions Arena\"\n}"
+									"raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2026-07-15T19:00:00\",\n  \"venue\": \"Amsterdam Lions Arena\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/FloorballMatch",
@@ -420,7 +420,7 @@
 											"console.log('  - seasonId: 4d2f2806-ea23-4e4c-a446-71a16da2d3bc');",
 											"console.log('  - homeTeamId: 3284920d-1d5b-433f-8c32-3b0bf2d53a30 (TestiClubi Phoenixs)');",
 											"console.log('  - awayTeamId: 709a2c3a-93e1-4242-af38-8fd16bf3b24b (TestiClubi Ravens)');",
-											"console.log('  - scheduledDateTime: 2025-06-15T19:00:00');"
+											"console.log('  - scheduledDateTime: 2025-07-15T19:00:00');"
 										]
 									}
 								},
