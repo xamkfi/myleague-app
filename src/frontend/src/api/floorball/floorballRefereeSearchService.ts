@@ -1,5 +1,4 @@
-import { floorballRefereeService } from "./floorballRefereeService";
-import type { FloorballReferee } from "../../types/floorball/floorballTypes";
+import { floorballRefereeService, type FloorballRefereeDto } from "./floorballRefereeService";
 
 export interface DropdownOption {
   id: string;
@@ -28,9 +27,9 @@ export const floorballRefereeSearchService = {
             }
 
             //Convert referees to dropdown options
-            let referees: DropdownOption[] = response.data.map((referee: FloorballReferee) => ({
-                id: referee.refereeId,
-                name: referee.name,
+            let referees: DropdownOption[] = response.data.map((referee: FloorballRefereeDto) => ({
+                id: referee.id,
+                name: referee.person.fullName,
             }));
 
             if (query.trim()) {

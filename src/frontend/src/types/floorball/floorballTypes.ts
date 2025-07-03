@@ -131,11 +131,6 @@ export interface FloorballTeamPlayerDto {
   penaltyMinutes: number;
 }
 
-export interface FloorballRefereeDto {
-  refereeId: string;
-  name: string;
-}
-
 export interface UpdateFloorballTeamPlayerRequest {
   position: FloorballPosition;
   jerseyNumber?: number;
