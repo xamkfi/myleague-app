@@ -1,0 +1,133 @@
+{
+	"info": {
+		"_postman_id": "simple-match-test",
+		"name": "Simple FloorballMatch Test",
+		"description": "Simple collection to test match creation without complex scripts",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Test Match Creation - Working Values",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2025-07-15T20:00:00\",\n  \"venue\": \"Test Arena\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/FloorballMatch",
+					"host": ["{{baseUrl}}"],
+					"path": ["FloorballMatch"]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"console.log('Response Status:', pm.response.code);",
+							"console.log('Response Body:', pm.response.text());",
+							"",
+							"if (pm.response.code === 201) {",
+							"    console.log('✅ SUCCESS: Match created successfully!');",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data) {",
+							"        console.log('Created match ID:', response.data.id);",
+							"    }",
+							"} else {",
+							"    console.log('❌ FAILED: Status', pm.response.code);",
+							"}"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Test Match Creation - Template Variables",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{home_team_id}}\",\n  \"awayTeamId\": \"{{away_team_id}}\",\n  \"scheduledDateTime\": \"2025-08-15T20:00:00\",\n  \"venue\": \"Variable Test Arena\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/FloorballMatch",
+					"host": ["{{baseUrl}}"],
+					"path": ["FloorballMatch"]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Set the working values as variables",
+							"pm.globals.set('season_id', '4d2f2806-ea23-4e4c-a446-71a16da2d3bc');",
+							"pm.globals.set('home_team_id', '3284920d-1d5b-433f-8c32-3b0bf2d53a30');",
+							"pm.globals.set('away_team_id', '709a2c3a-93e1-4242-af38-8fd16bf3b24b');",
+							"",
+							"console.log('Variables set:');",
+							"console.log('season_id:', pm.globals.get('season_id'));",
+							"console.log('home_team_id:', pm.globals.get('home_team_id'));",
+							"console.log('away_team_id:', pm.globals.get('away_team_id'));"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"console.log('Response Status:', pm.response.code);",
+							"console.log('Response Body:', pm.response.text());",
+							"",
+							"if (pm.response.code === 201) {",
+							"    console.log('✅ SUCCESS: Variables work correctly!');",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data) {",
+							"        console.log('Created match ID:', response.data.id);",
+							"    }",
+							"} else {",
+							"    console.log('❌ FAILED: Status', pm.response.code);",
+							"    console.log('This confirms the issue is with variable substitution');",
+							"}"
+						]
+					}
+				}
+			]
+		}
+	]
+} 
