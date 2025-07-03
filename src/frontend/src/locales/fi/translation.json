@@ -30,7 +30,8 @@
     "create": "Luo",
     "creating": "Luodaan...",
     "saving": "Tallennetaan...",
-    "retry": "Yritä uudelleen"
+    "retry": "Yritä uudelleen",
+    "cancelSelection": "Peruuta valinta"
   },
   "admin": {
     "title": "Hallintapaneeli",
