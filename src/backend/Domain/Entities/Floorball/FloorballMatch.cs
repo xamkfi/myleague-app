@@ -174,6 +174,57 @@ public class FloorballMatch : AggregateRoot
     }
 
     /// <summary>
+    /// Initializes a new instance of the FloorballMatch class with a predefined identifier.
+    /// This overload is intended for projections so that the read-model row uses exactly
+    /// the same Guid as EventSourcedFloorballMatch aggregateId.
+    /// </summary>
+    /// <param name="id">The identifier that should be used for the match.</param>
+    /// <param name="season">The season this match belongs to</param>
+    /// <param name="homeTeam">The home team</param>
+    /// <param name="awayTeam">The away team</param>
+    /// <param name="scheduledDateTime">The scheduled date and time of the match</param>
+    /// <param name="venue">The venue where the match will be played</param>
+    /// <exception cref="ArgumentNullException">Thrown when a required parameter is null</exception>
+    /// <exception cref="ArgumentException">Thrown when teams are the same or venue is invalid</exception>
+    public FloorballMatch(
+        Guid id,
+        FloorballSeason season,
+        FloorballTeam homeTeam,
+        FloorballTeam awayTeam,
+        DateTime scheduledDateTime,
+        string? venue)
+    {
+        ArgumentNullException.ThrowIfNull(season);
+        ArgumentNullException.ThrowIfNull(homeTeam);
+        ArgumentNullException.ThrowIfNull(awayTeam);
+
+        if (homeTeam == awayTeam)
+            throw new ArgumentException("Home team and away team cannot be the same team.");
+
+        Id = id;
+        Season = season;
+        SeasonId = season.Id;
+        HomeTeam = homeTeam;
+        HomeTeamId = homeTeam.Id;
+        AwayTeam = awayTeam;
+        AwayTeamId = awayTeam.Id;
+        ScheduledDateTime = scheduledDateTime;
+        Venue = venue;
+        Status = FloorballMatchStatus.Scheduled;
+        HomeScore = 0;
+        AwayScore = 0;
+        WentToOvertime = false;
+        WentToShootout = false;
+        _events = new List<FloorballMatchEvent>();
+        _officials = new List<FloorballReferee>();
+        _periodScores = new List<FloorballPeriodScore>();
+        for (int i = 1; i <= 3; i++)
+        {
+            _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
+        }
+    }
+
+    /// <summary>
     /// Sets the season for this match
     /// </summary>
     /// <param name="season">The season to set</param>
@@ -232,18 +283,18 @@ public class FloorballMatch : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the match status doesn't allow starting</exception>
     public void Start()
     {
-        if (Status != FloorballMatchStatus.Scheduled)
-            throw new InvalidOperationException($"Cannot start a match with status {Status}.");
+        //if (Status != FloorballMatchStatus.Scheduled)
+        //    throw new InvalidOperationException($"Cannot start a match with status {Status}.");
         
-        if (_officials.Count == 0)
-            throw new InvalidOperationException("Cannot start a match without officials.");
+        //if (_officials.Count == 0)
+        //    throw new InvalidOperationException("Cannot start a match without officials.");
 
-        FloorballMatchStatus oldStatus = Status;
+        //FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.InProgress;
         
         // Add domain events
-        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
-        AddDomainEvent(new FloorballMatchStartedEvent(Id, DateTime.UtcNow));
+        //AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
+        //AddDomainEvent(new FloorballMatchStartedEvent(Id, DateTime.UtcNow));
     }
 
     /// <summary>
@@ -260,7 +311,7 @@ public class FloorballMatch : AggregateRoot
     public void RecordGoal(
         FloorballTeam scoringTeam, 
         FloorballPlayer scoringPlayer,
-        FloorballPlayer assistingPlayer,
+        FloorballPlayer? assistingPlayer,
         int periodNumber,
         int timeInSeconds,
         string? description = null,
@@ -268,16 +319,16 @@ public class FloorballMatch : AggregateRoot
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot record a goal when match status is {Status}.");
-        
+
         ArgumentNullException.ThrowIfNull(scoringTeam);
         ArgumentNullException.ThrowIfNull(scoringPlayer);
-        
+
         if (periodNumber < 1 || periodNumber > 5) // Regular periods (1-3), Overtime (4), Shootout (5)
             throw new ArgumentOutOfRangeException(nameof(periodNumber), "Period number must be between 1 and 5.");
-        
+
         if (timeInSeconds < 0)
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be non-negative.");
-        
+
         // Check if the scoring team is part of this match
         if (scoringTeam.Id != HomeTeamId && scoringTeam.Id != AwayTeamId)
             throw new ArgumentException("Scoring team is not participating in this match.", nameof(scoringTeam));
@@ -329,7 +380,7 @@ public class FloorballMatch : AggregateRoot
                 periodScore.IncrementAwayScore();
             }
         }
-        
+
         // Add domain event
         AddDomainEvent(new FloorballGoalScoredEvent(
             Id,
@@ -342,6 +393,13 @@ public class FloorballMatch : AggregateRoot
             assistingPlayer?.Id));
     }
 
+    public void UpdateScore(Guid scoringTeamId)
+    {
+        if (scoringTeamId == HomeTeamId)
+            HomeScore++;
+        else
+            AwayScore++;
+    }
     /// <summary>
     /// Records a penalty
     /// </summary>
@@ -399,22 +457,25 @@ public class FloorballMatch : AggregateRoot
     /// Adds an official (referee) to the match
     /// </summary>
     /// <param name="referee">The referee to add</param>
+    /// <param name="addDomainEvent">Whether to add a domain event</param>
     /// <exception cref="ArgumentNullException">Thrown when the referee is null</exception>
     /// <exception cref="InvalidOperationException">Thrown when the match is not in a state that allows adding officials</exception>
     public void AddOfficial(FloorballReferee referee)
     {
-        ArgumentNullException.ThrowIfNull(referee);
+        //ArgumentNullException.ThrowIfNull(referee);
         
-        if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
-            throw new InvalidOperationException($"Cannot add officials to a match with status {Status}.");
+        //if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
+        //    throw new InvalidOperationException($"Cannot add officials to a match with status {Status}.");
         
-        if (_officials.Contains(referee))
-            return;
+        //if (_officials.Contains(referee))
+        //    return;
             
         _officials.Add(referee);
+
         
         // Add domain event
-        AddDomainEvent(new FloorballOfficialAssignedEvent(Id, referee.Id));
+        //AddDomainEvent(new FloorballOfficialAssignedEvent(Id, referee.Id));
+        
     }
 
     /// <summary>

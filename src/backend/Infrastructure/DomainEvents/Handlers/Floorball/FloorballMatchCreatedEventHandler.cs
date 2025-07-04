@@ -47,7 +47,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .FirstOrDefaultAsync(m => m.Id == domainEvent.MatchId, cancellationToken);
-
+            
             if (match == null)
             {
                 _logger.LogWarning("Floorball match with ID {MatchId} not found for MatchCreated event.", domainEvent.MatchId);

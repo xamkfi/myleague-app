@@ -69,7 +69,7 @@ namespace MyLeague.Infrastructure.Persistence.EventStores
                 {
                     Id = Guid.NewGuid(),
                     AggregateId = aggregateId,
-                    EventType = @event.GetType().AssemblyQualifiedName ?? @event.GetType().Name,
+                    EventType = @event.GetType().AssemblyQualifiedName!,
                     Data = JsonSerializer.Serialize(@event, @event.GetType(), serializerOptions),
                     Version = version,
                     OccurredOn = @event.OccurredOn

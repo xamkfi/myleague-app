@@ -6,17 +6,8 @@ namespace Domain.DomainEvents.Floorball;
 /// <summary>
 /// Event raised when a penalty is assigned in a floorball match
 /// </summary>
-public class FloorballPenaltyAssignedEvent : IDomainEvent
+public class FloorballPenaltyAssignedEvent : FloorballDomainEvent
 {
-    /// <summary>
-    /// Gets the unique identifier of the event
-    /// </summary>
-    public Guid Id { get; }
-
-    /// <summary>
-    /// Gets the date and time when the event occurred
-    /// </summary>
-    public DateTime OccurredOn { get; }
 
     /// <summary>
     /// Gets the ID of the match
@@ -94,8 +85,6 @@ public class FloorballPenaltyAssignedEvent : IDomainEvent
             throw new ArgumentException("Penalty minutes must be positive", nameof(minutes));
         }
 
-        Id = Guid.NewGuid();
-        OccurredOn = DateTime.UtcNow;
         MatchId = matchId;
         TeamId = teamId;
         PlayerId = playerId;

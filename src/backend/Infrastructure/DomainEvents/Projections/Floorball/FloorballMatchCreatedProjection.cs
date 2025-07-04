@@ -11,6 +11,9 @@ using MyLeague.Infrastructure.Persistence.Contexts;
 
 namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
 {
+    /// <summary>
+    /// Projection for handling the FloorballMatch creation after event is stored.
+    /// </summary>
     public sealed class FloorballMatchCreatedProjection : IDomainEventHandler<FloorballMatchCreatedEvent>
     {
         private readonly FloorballDbContext _dbContext;
@@ -23,7 +26,9 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
             _dbContext = dbContext;
             _logger = logger;
         }
-
+        /// <summary>
+        /// Creating Floorball match after event storing
+        /// </summary>
         public async Task HandleAsync(FloorballMatchCreatedEvent domainEvent)
         {
             // Idempotence: jos rivi on jo olemassa, ei tehdä mitään.
@@ -45,10 +50,11 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
             if (season == null || homeTeam == null || awayTeam == null)
             {
                 _logger.LogWarning("Projection failed – required entities missing for match {MatchId}", domainEvent.MatchId);
-                return; // tai heitä poikkeus jos haluat pysäyttää käsittelyn
+                return; 
             }
 
             FloorballMatch match = new FloorballMatch(
+                domainEvent.MatchId,
                 season,
                 homeTeam,
                 awayTeam,

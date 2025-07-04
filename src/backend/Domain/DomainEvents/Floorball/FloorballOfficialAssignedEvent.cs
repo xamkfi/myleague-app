@@ -5,18 +5,8 @@ namespace Domain.DomainEvents.Floorball;
 /// <summary>
 /// Event raised when an official is assigned to a floorball match
 /// </summary>
-public class FloorballOfficialAssignedEvent : IDomainEvent
+public class FloorballOfficialAssignedEvent : FloorballDomainEvent
 {
-    /// <summary>
-    /// Gets the unique identifier of the event
-    /// </summary>
-    public Guid Id { get; }
-
-    /// <summary>
-    /// Gets the date and time when the event occurred
-    /// </summary>
-    public DateTime OccurredOn { get; }
-
     /// <summary>
     /// Gets the ID of the match
     /// </summary>
@@ -34,8 +24,6 @@ public class FloorballOfficialAssignedEvent : IDomainEvent
     /// <param name="refereeId">The ID of the referee</param>
     public FloorballOfficialAssignedEvent(Guid matchId, Guid refereeId)
     {
-        Id = Guid.NewGuid();
-        OccurredOn = DateTime.UtcNow;
         MatchId = matchId;
         RefereeId = refereeId;
     }

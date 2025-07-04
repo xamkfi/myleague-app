@@ -68,26 +68,4 @@ public class FloorballMatchCreatedEvent : FloorballDomainEvent
     /// </summary>
     private FloorballMatchCreatedEvent() { }
 
-    /// <summary>
-    /// Factory method that creates event from entity instances
-    /// </summary>
-    public static FloorballMatchCreatedEvent FromEntities(
-        FloorballMatch match,
-        FloorballSeason season,
-        FloorballTeam homeTeam,
-        FloorballTeam awayTeam)
-    {
-        ArgumentNullException.ThrowIfNull(match);
-        ArgumentNullException.ThrowIfNull(season);
-        ArgumentNullException.ThrowIfNull(homeTeam);
-        ArgumentNullException.ThrowIfNull(awayTeam);
-
-        return new FloorballMatchCreatedEvent(
-            match.Id,
-            season.Id,
-            homeTeam.Id,
-            awayTeam.Id,
-            match.ScheduledDateTime,
-            match.Venue ?? string.Empty);
-    }
 } 
