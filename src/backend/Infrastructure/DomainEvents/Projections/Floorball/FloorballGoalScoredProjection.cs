@@ -32,32 +32,77 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
         /// </summary>
         public async Task HandleAsync(FloorballGoalScoredEvent domainEvent)
         {
-            FloorballMatch? match = await _dbContext.FloorballMatches.FindAsync(domainEvent.MatchId);
+            _logger.LogInformation("Handling FloorballGoalScoredEvent for match {MatchId}, period {PeriodNumber}", 
+                domainEvent.MatchId, domainEvent.PeriodNumber);
 
-            FloorballPeriodScore? periodScore = await _dbContext.FloorballPeriodScores
-                .FirstOrDefaultAsync(x => x.MatchId == domainEvent.MatchId && x.PeriodNumber == domainEvent.PeriodNumber);
+            try
+            {
+                FloorballMatch? match = await _dbContext.FloorballMatches.FindAsync(domainEvent.MatchId);
 
-            FloorballGoal goal = new FloorballGoal(
-                domainEvent.MatchId,
-                domainEvent.TeamId,
-                domainEvent.PlayerId,
-                domainEvent.AssisterId,
-                domainEvent.PeriodNumber,
-                domainEvent.TimeInSeconds);
+                if (match == null)
+                {
+                    _logger.LogWarning("FloorballMatch with ID {MatchId} not found for goal scoring projection", domainEvent.MatchId);
+                    return;
+                }
 
-            if (match == null || periodScore == null)
-                return;
+                FloorballPeriodScore? periodScore = await _dbContext.FloorballPeriodScores
+                    .FirstOrDefaultAsync(x => x.MatchId == domainEvent.MatchId && x.PeriodNumber == domainEvent.PeriodNumber);
 
-            if (domainEvent.TeamId == match.HomeTeamId)
-                periodScore.IncrementHomeScore();
-            else
-                periodScore.IncrementAwayScore();
+                // Create period score if it doesn't exist
+                if (periodScore == null)
+                {
+                    _logger.LogInformation("Creating missing FloorballPeriodScore for match {MatchId}, period {PeriodNumber}", 
+                        domainEvent.MatchId, domainEvent.PeriodNumber);
 
+                    periodScore = new FloorballPeriodScore(
+                        domainEvent.MatchId,
+                        domainEvent.PeriodNumber,
+                        match.HomeTeamId,
+                        match.AwayTeamId);
 
-            match.UpdateScore(domainEvent.TeamId);
-            _dbContext.FloorballGoals.Add(goal);
+                    _dbContext.FloorballPeriodScores.Add(periodScore);
+                }
 
-            await _dbContext.SaveChangesAsync();
+                // Update period score
+                if (domainEvent.TeamId == match.HomeTeamId)
+                {
+                    periodScore.IncrementHomeScore();
+                    _logger.LogDebug("Incremented home score for period {PeriodNumber} to {HomeScore}", 
+                        domainEvent.PeriodNumber, periodScore.HomeScore);
+                }
+                else
+                {
+                    periodScore.IncrementAwayScore();
+                    _logger.LogDebug("Incremented away score for period {PeriodNumber} to {AwayScore}", 
+                        domainEvent.PeriodNumber, periodScore.AwayScore);
+                }
+
+                // Update match total score
+                match.UpdateScore(domainEvent.TeamId);
+
+                // Create goal record
+                FloorballGoal goal = new FloorballGoal(
+                    domainEvent.MatchId,
+                    domainEvent.TeamId,
+                    domainEvent.PlayerId,
+                    domainEvent.AssisterId,
+                    domainEvent.PeriodNumber,
+                    domainEvent.TimeInSeconds);
+
+                _dbContext.FloorballGoals.Add(goal);
+
+                // Save all changes
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully processed goal for match {MatchId}, period {PeriodNumber}. Match score: {HomeScore}-{AwayScore}", 
+                    domainEvent.MatchId, domainEvent.PeriodNumber, match.HomeScore, match.AwayScore);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process FloorballGoalScoredEvent for match {MatchId}, period {PeriodNumber}", 
+                    domainEvent.MatchId, domainEvent.PeriodNumber);
+                throw;
+            }
         }
     }
 }
