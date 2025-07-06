@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "fm123456-7890-abcd-ef12-1234567890ab",
-		"name": "FloorballMatch",
-		"description": "Collection for creating floorball matches with events and completing them\n\n## Prerequisites:\n- Backend API must be running on localhost:8080\n- Teams must exist in database (run the Clubs.json collection first)\n- Teams must have players assigned to them\n\n## Usage Instructions:\n1. First run 'Setup' folder in order:\n   a. 'Setup Division' - finds existing division or creates one automatically\n   b. 'Get Existing Season' - fetches an existing season to use for matches\n2. Run the 'Completed Matches' folder to create 5 different match scenarios:\n   - Match 1: Amsterdam Lions Pride vs Barcelona Eagles Condors (3-2 OT) - June 2026\n   - Match 2: Barcelona Eagles vs Berlin Thunder (1-2 SO) - July 2026\n   - Match 3: Milano Dragons vs Paris Wolves (4-1) - August 2026\n   - Match 4: Amsterdam Lions vs Stockholm Vikings (0-1) - September 2026\n   - Match 5: Dublin Shamrocks vs Vienna Hawks (6-4) - October 2026\n3. Each match includes realistic events like goals, penalties, assists\n4. Use 'Queries' folder to verify the matches were created correctly\n\n## Automatic ID Fetching:\nThis collection uses pre-request scripts to automatically fetch:\n- Team IDs from existing teams in the database\n- Player IDs for each team (up to 3 players per team)\n- Fallback IDs if teams/players don't exist\n\nThe collection will work consistently across different environments as long as the required teams exist.\n\n## Match Features:\n- Different penalty types: Minor, Major, Misconduct, Technical\n- Power play goals and regular goals\n- Overtime and shootout scenarios\n- Various score lines and match patterns\n- Realistic timing and period distribution",
+		"_postman_id": "floorball-match-2024",
+		"name": "FloorballMatch - EventSourced Implementation",
+		"description": "Collection for creating floorball matches using EventSourced endpoints\n\n## Overview:\nThis collection demonstrates the complete flow for creating a floorball match:\n1. Setup: Fetch required IDs (seasons, teams, referees, players)\n2. Create single match and test the complete flow\n3. Verify results\n\n## Prerequisites:\n- Backend API running on localhost:8080\n- At least one season exists in database\n- At least two teams exist with players\n- At least one referee exists\n\n## Flow:\n1. **Setup**: Fetch and store all required IDs\n2. **Single Match Demo**: Create → Add Official → Start → Events → Complete\n3. **Queries**: Verify the match was created correctly\n\n## Endpoints Used (EventSourced):\n- POST /FloorballMatchEvent/match (create)\n- POST /FloorballMatchEvent/match/{id}/official (add official)\n- POST /FloorballMatchEvent/match/{id}/start (start)\n- POST /FloorballMatchEvent/goal (record goals)\n- POST /FloorballMatchEvent/match/{id}/complete (complete)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -12,12 +12,47 @@
 			"type": "string"
 		},
 		{
-			"key": "division_id",
+			"key": "season_id",
 			"value": "",
 			"type": "string"
 		},
 		{
-			"key": "season_id",
+			"key": "home_team_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "away_team_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "referee_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "home_player1_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "home_player2_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "away_player1_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "away_player2_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "match_id",
 			"value": "",
 			"type": "string"
 		}
@@ -27,94 +62,7 @@
 			"name": "Setup",
 			"item": [
 				{
-					"name": "Setup Division",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/Divisions",
-							"host": ["{{baseUrl}}"],
-							"path": ["Divisions"]
-						}
-					},
-					"response": [],
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"console.log('🔍 All Divisions API Response Code:', pm.response.code);",
-									"",
-									"if (pm.response.code === 200) {",
-									"    const response = pm.response.json();",
-									"    console.log('🔍 Found', response.data ? response.data.length : 0, 'total divisions');",
-									"    ",
-									"    if (response.success && response.data && response.data.length > 0) {",
-									"        // Look for any existing division (prefer floorball if available)",
-									"        let selectedDivision = response.data.find(d => d.sportType && d.sportType.toLowerCase() === 'floorball');",
-									"        ",
-									"        if (!selectedDivision) {",
-									"            // Use any available division as fallback",
-									"            selectedDivision = response.data[0];",
-									"            console.log('⚠️  No floorball division found, using:', selectedDivision.name, '(' + selectedDivision.sportType + ')');",
-									"        } else {",
-									"            console.log('✅ Found floorball division:', selectedDivision.name);",
-									"        }",
-									"        ",
-									"        pm.globals.set('division_id', selectedDivision.id);",
-									"        console.log('✅ Division ID stored:', selectedDivision.id);",
-									"    } else {",
-									"        console.log('❌ No divisions found, creating one...');",
-									"        // Create a floorball division",
-									"        pm.sendRequest({",
-									"            url: pm.globals.get('baseUrl') + '/Divisions',",
-									"            method: 'POST',",
-									"            header: {",
-									"                'Content-Type': 'application/json'",
-									"            },",
-									"            body: {",
-									"                mode: 'raw',",
-									"                raw: JSON.stringify({",
-									"                    name: 'Test Floorball Division',",
-									"                    description: 'Auto-created division for testing',",
-									"                    level: 'Professional',",
-									"                    sportType: 'Floorball'",
-									"                })",
-									"            },",
-									"        }, function(err, res) {",
-									"            if (err) {",
-									"                console.log('❌ Failed to create division:', err);",
-									"                pm.globals.set('division_id', '550e8400-e29b-41d4-a716-446655440000');",
-									"                console.log('🔄 Using hardcoded fallback division ID');",
-									"            } else if (res.code === 201) {",
-									"                const createResponse = res.json();",
-									"                if (createResponse.success && createResponse.data) {",
-									"                    pm.globals.set('division_id', createResponse.data.id);",
-									"                    console.log('✅ Created new division:', createResponse.data.id);",
-									"                } else {",
-									"                    pm.globals.set('division_id', '550e8400-e29b-41d4-a716-446655440000');",
-									"                    console.log('🔄 Division creation failed, using hardcoded fallback');",
-									"                }",
-									"            } else {",
-									"                console.log('❌ Division creation failed with status:', res.code);",
-									"                pm.globals.set('division_id', '550e8400-e29b-41d4-a716-446655440000');",
-									"                console.log('🔄 Using hardcoded fallback division ID');",
-									"            }",
-									"        });",
-									"    }",
-									"} else {",
-									"    console.log('❌ Failed to fetch divisions, status:', pm.response.code);",
-									"    pm.globals.set('division_id', '550e8400-e29b-41d4-a716-446655440000');",
-									"    console.log('🔄 Using hardcoded fallback division ID');",
-									"}"
-								]
-							}
-						}
-					]
-				},
-				{
-					"name": "Get Existing Season",
+					"name": "01 - Get Season",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -131,51 +79,23 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"console.log('🔍 Seasons API Response Code:', pm.response.code);",
-									"console.log('🔍 Full API response:', pm.response.text());",
+									"console.log('🔍 Fetching seasons...');",
+									"console.log('Response status:', pm.response.code);",
 									"",
 									"if (pm.response.code === 200) {",
 									"    const response = pm.response.json();",
-									"    console.log('🔍 Response structure:', response);",
-									"    console.log('🔍 Found', response.data ? response.data.length : 0, 'total seasons');",
 									"    ",
 									"    if (response.success && response.data && response.data.length > 0) {",
-									"        // Use the first available season",
 									"        const season = response.data[0];",
-									"        ",
-									"        // Ensure we have a valid GUID",
-									"        if (season.id && typeof season.id === 'string' && season.id.length === 36) {",
-									"            pm.globals.set('season_id', season.id);",
-									"            console.log('✅ Using existing season:', season.name, '(' + season.id + ')');",
-									"            console.log('🔍 Season ID type:', typeof season.id);",
-									"            console.log('🔍 Season ID length:', season.id.length);",
-									"            console.log('🔍 Season details:', {",
-									"                name: season.name,",
-									"                startDate: season.startDate,",
-									"                endDate: season.endDate,",
-									"                divisionId: season.divisionId",
-									"            });",
-									"        } else {",
-									"            console.log('❌ Invalid season ID format:', season.id);",
-									"            console.log('🔄 Using fallback GUID');",
-									"            pm.globals.set('season_id', '550e8400-e29b-41d4-a716-446655440001');",
-									"        }",
-									"        ",
-									"        // Verify what's stored in globals",
-									"        console.log('🔍 Stored season_id:', pm.globals.get('season_id'));",
+									"        pm.collectionVariables.set('season_id', season.id);",
+									"        console.log('✅ Season found:', season.name, '(' + season.id + ')');",
 									"    } else {",
-									"        console.log('❌ No seasons found in database');",
-									"        console.log('⚠️  You need to create a season first using another collection');",
-									"        // Set a proper GUID fallback season ID",
-									"        pm.globals.set('season_id', '550e8400-e29b-41d4-a716-446655440001');",
-									"        console.log('🔄 Using fallback GUID:', pm.globals.get('season_id'));",
+									"        console.log('❌ No seasons found - you need to create a season first');",
+									"        pm.collectionVariables.set('season_id', '550e8400-e29b-41d4-a716-446655440001');",
 									"    }",
 									"} else {",
 									"    console.log('❌ Failed to fetch seasons, status:', pm.response.code);",
-									"    console.log('Response:', pm.response.text());",
-									"    // Set a proper GUID fallback season ID",
-									"    pm.globals.set('season_id', '550e8400-e29b-41d4-a716-446655440001');",
-									"    console.log('🔄 Using fallback GUID:', pm.globals.get('season_id'));",
+									"    pm.collectionVariables.set('season_id', '550e8400-e29b-41d4-a716-446655440001');",
 									"}"
 								]
 							}
@@ -183,26 +103,322 @@
 					]
 				},
 				{
-					"name": "Test Match Creation - Hardcoded Working Values",
+					"name": "02 - Get Teams",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballTeam",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballTeam"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🔍 Fetching teams...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data && response.data.length >= 2) {",
+									"        const teams = response.data;",
+									"        ",
+									"        // Use first two teams",
+									"        pm.collectionVariables.set('home_team_id', teams[0].id);",
+									"        pm.collectionVariables.set('away_team_id', teams[1].id);",
+									"        ",
+									"        console.log('✅ Home team:', teams[0].name, '(' + teams[0].id + ')');",
+									"        console.log('✅ Away team:', teams[1].name, '(' + teams[1].id + ')');",
+									"        console.log('📊 Total teams available:', teams.length);",
+									"    } else {",
+									"        console.log('❌ Need at least 2 teams - found:', response.data ? response.data.length : 0);",
+									"        pm.collectionVariables.set('home_team_id', '550e8400-e29b-41d4-a716-446655440002');",
+									"        pm.collectionVariables.set('away_team_id', '550e8400-e29b-41d4-a716-446655440003');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to fetch teams, status:', pm.response.code);",
+									"    pm.collectionVariables.set('home_team_id', '550e8400-e29b-41d4-a716-446655440002');",
+									"    pm.collectionVariables.set('away_team_id', '550e8400-e29b-41d4-a716-446655440003');",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "03 - Get Referees",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballReferee",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballReferee"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🔍 Fetching referees...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data && response.data.length > 0) {",
+									"        const referee = response.data[0];",
+									"        pm.collectionVariables.set('referee_id', referee.id);",
+									"        console.log('✅ Referee found:', referee.name || referee.fullName || 'ID: ' + referee.id);",
+									"        console.log('📊 Total referees available:', response.data.length);",
+									"    } else {",
+									"        console.log('❌ No referees found - using fallback ID');",
+									"        pm.collectionVariables.set('referee_id', '550e8400-e29b-41d4-a716-446655440004');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to fetch referees, status:', pm.response.code);",
+									"    pm.collectionVariables.set('referee_id', '550e8400-e29b-41d4-a716-446655440004');",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "04 - Get Home Team Players",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballPlayer?TeamId={{home_team_id}}&PageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballPlayer"],
+							"query": [
+								{
+									"key": "TeamId",
+									"value": "{{home_team_id}}"
+								},
+								{
+									"key": "PageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🔍 Fetching home team players...');",
+									"console.log('Response status:', pm.response.code);",
+									"console.log('Response body:', pm.response.text());",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data && response.data.length >= 2) {",
+									"        const players = response.data;",
+									"        ",
+									"        pm.collectionVariables.set('home_player1_id', players[0].id);",
+									"        pm.collectionVariables.set('home_player2_id', players[1].id);",
+									"        ",
+									"        console.log('✅ Home Player 1:', players[0].person.firstName + ' ' + players[0].person.lastName, '(ID: ' + players[0].id + ')');",
+									"        console.log('✅ Home Player 2:', players[1].person.firstName + ' ' + players[1].person.lastName, '(ID: ' + players[1].id + ')');",
+									"        console.log('📊 Total home team players:', players.length);",
+									"    } else {",
+									"        console.log('❌ Need at least 2 home team players - found:', response.data ? response.data.length : 0);",
+									"        console.log('❌ Response structure:', JSON.stringify(response, null, 2));",
+									"        console.log('❌ This probably means the teams don\\'t have players assigned yet.');",
+									"        console.log('❌ You need to create FloorballPlayer records for the teams first.');",
+									"        pm.collectionVariables.set('home_player1_id', '550e8400-e29b-41d4-a716-446655440005');",
+									"        pm.collectionVariables.set('home_player2_id', '550e8400-e29b-41d4-a716-446655440006');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to fetch home team players, status:', pm.response.code);",
+									"    console.log('❌ Response:', pm.response.text());",
+									"    pm.collectionVariables.set('home_player1_id', '550e8400-e29b-41d4-a716-446655440005');",
+									"    pm.collectionVariables.set('home_player2_id', '550e8400-e29b-41d4-a716-446655440006');",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "05 - Get Away Team Players",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballPlayer?TeamId={{away_team_id}}&PageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballPlayer"],
+							"query": [
+								{
+									"key": "TeamId",
+									"value": "{{away_team_id}}"
+								},
+								{
+									"key": "PageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🔍 Fetching away team players...');",
+									"console.log('Response status:', pm.response.code);",
+									"console.log('Response body:', pm.response.text());",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data && response.data.length >= 2) {",
+									"        const players = response.data;",
+									"        ",
+									"        pm.collectionVariables.set('away_player1_id', players[0].id);",
+									"        pm.collectionVariables.set('away_player2_id', players[1].id);",
+									"        ",
+									"        console.log('✅ Away Player 1:', players[0].person.firstName + ' ' + players[0].person.lastName, '(ID: ' + players[0].id + ')');",
+									"        console.log('✅ Away Player 2:', players[1].person.firstName + ' ' + players[1].person.lastName, '(ID: ' + players[1].id + ')');",
+									"        console.log('📊 Total away team players:', players.length);",
+									"    } else {",
+									"        console.log('❌ Need at least 2 away team players - found:', response.data ? response.data.length : 0);",
+									"        console.log('❌ Response structure:', JSON.stringify(response, null, 2));",
+									"        console.log('❌ This probably means the teams don\\'t have players assigned yet.');",
+									"        console.log('❌ You need to create FloorballPlayer records for the teams first.');",
+									"        pm.collectionVariables.set('away_player1_id', '550e8400-e29b-41d4-a716-446655440007');",
+									"        pm.collectionVariables.set('away_player2_id', '550e8400-e29b-41d4-a716-446655440008');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to fetch away team players, status:', pm.response.code);",
+									"    console.log('❌ Response:', pm.response.text());",
+									"    pm.collectionVariables.set('away_player1_id', '550e8400-e29b-41d4-a716-446655440007');",
+									"    pm.collectionVariables.set('away_player2_id', '550e8400-e29b-41d4-a716-446655440008');",
+									"}",
+									"",
+									"console.log('\\n🎯 SETUP COMPLETE! Ready to create match with:');",
+									"console.log('   Season ID:', pm.collectionVariables.get('season_id'));",
+									"console.log('   Home Team ID:', pm.collectionVariables.get('home_team_id'));",
+									"console.log('   Away Team ID:', pm.collectionVariables.get('away_team_id'));",
+									"console.log('   Referee ID:', pm.collectionVariables.get('referee_id'));",
+									"console.log('   Home Players:', pm.collectionVariables.get('home_player1_id'), ',', pm.collectionVariables.get('home_player2_id'));",
+									"console.log('   Away Players:', pm.collectionVariables.get('away_player1_id'), ',', pm.collectionVariables.get('away_player2_id'));",
+									"",
+									"// Check if we're using fallback IDs (indicates missing players)",
+									"const homePlayer1 = pm.collectionVariables.get('home_player1_id');",
+									"const awayPlayer1 = pm.collectionVariables.get('away_player1_id');",
+									"",
+									"if (homePlayer1 === '550e8400-e29b-41d4-a716-446655440005' || awayPlayer1 === '550e8400-e29b-41d4-a716-446655440007') {",
+									"    console.log('\\n⚠️  WARNING: Using fallback player IDs!');",
+									"    console.log('⚠️  This means your teams don\\'t have players assigned.');",
+									"    console.log('⚠️  The match creation will work, but goal recording will fail.');",
+									"    console.log('⚠️  To fix this, you need to:');",
+									"    console.log('⚠️  1. Create persons using the Persons.json collection');",
+									"    console.log('⚠️  2. Create FloorballPlayer records for those persons');",
+									"    console.log('⚠️  3. Assign players to teams using FloorballTeamPlayer');",
+									"}"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Single Match Demo",
+			"item": [
+				{
+					"name": "01 - Create Match",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
 								"value": "application/json"
-							},
-							{
-								"key": "Accept",
-								"value": "application/json"
-							},
-							{
-								"key": "User-Agent",
-								"value": "PostmanRuntime"
 							}
 						],
 						"body": {
 							"mode": "raw",
-								"raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2026-07-15T20:00:00\",\n  \"venue\": \"Test Arena\"\n}",
+							"raw": "{\n  \"SeasonId\": \"{{season_id}}\",\n  \"HomeTeamId\": \"{{home_team_id}}\",\n  \"AwayTeamId\": \"{{away_team_id}}\",\n  \"ScheduledDateTime\": \"2025-10-08T19:00:00\",\n  \"Venue\": \"Test Arena\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/match",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "match"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🎯 Creating match...');",
+									"console.log('Response status:', pm.response.code);",
+									"console.log('Response body:', pm.response.text());",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        pm.collectionVariables.set('match_id', response.data.id);",
+									"        console.log('✅ Match created successfully!');",
+									"        console.log('   Match ID:', response.data.id);",
+									"        console.log('   Status:', response.data.status);",
+									"        console.log('   Home Team:', response.data.homeTeamName);",
+									"        console.log('   Away Team:', response.data.awayTeamName);",
+									"        console.log('   Venue:', response.data.venue);",
+									"        console.log('   Scheduled:', response.data.scheduledDateTime);",
+									"    } else {",
+									"        console.log('❌ Match created but no data in response');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to create match');",
+									"    try {",
+									"        const errorResponse = pm.response.json();",
+									"        console.log('Error details:', JSON.stringify(errorResponse, null, 2));",
+									"    } catch (e) {",
+									"        console.log('Could not parse error response');",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "02 - Add Official to Match",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"MatchId\": \"{{match_id}}\",\n  \"RefereeId\": \"{{referee_id}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -210,171 +426,289 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/FloorballMatch",
+							"raw": "{{baseUrl}}/FloorballMatchEvent/match/official",
 							"host": ["{{baseUrl}}"],
-							"path": ["FloorballMatch"]
+							"path": ["FloorballMatchEvent", "match", "official"]
 						}
 					},
 					"response": [],
 					"event": [
 						{
-							"listen": "prerequest",
+							"listen": "test",
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"// Function to validate GUID format",
-									"function isValidGuid(guid) {",
-									"    if (!guid || typeof guid !== 'string') return false;",
-									"    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;",
-									"    return guidRegex.test(guid);",
-									"}",
+									"console.log('👨‍⚖️ Adding official to match...');",
+									"console.log('Response status:', pm.response.code);",
 									"",
-									"// Get current values",
-									"const seasonId = pm.globals.get('season_id');",
-									"const homeTeamId = pm.globals.get('amsterdamlions_pride_id');",
-									"const awayTeamId = pm.globals.get('barcelonaeagles_condors_id');",
-									"",
-									"console.log('🧪 TEST REQUEST - Validating variables before request:');",
-									"console.log('  - season_id:', seasonId, '(valid GUID:', isValidGuid(seasonId), ')');",
-									"console.log('  - homeTeamId:', homeTeamId, '(valid GUID:', isValidGuid(homeTeamId), ')');",
-									"console.log('  - awayTeamId:', awayTeamId, '(valid GUID:', isValidGuid(awayTeamId), ')');",
-									"",
-									"// Set fallback GUIDs if needed",
-									"if (!isValidGuid(seasonId)) {",
-									"    console.log('⚠️  Setting fallback season_id');",
-									"    pm.globals.set('season_id', '550e8400-e29b-41d4-a716-446655440001');",
-									"}",
-									"if (!isValidGuid(homeTeamId)) {",
-									"    console.log('⚠️  Setting fallback homeTeamId');",
-									"    pm.globals.set('amsterdamlions_pride_id', '550e8400-e29b-41d4-a716-446655440002');",
-									"}",
-									"if (!isValidGuid(awayTeamId)) {",
-									"    console.log('⚠️  Setting fallback awayTeamId');",
-									"    pm.globals.set('barcelonaeagles_condors_id', '550e8400-e29b-41d4-a716-446655440003');",
-									"}",
-									"",
-									"console.log('✅ Final request will use:');",
-									"console.log('  - seasonId:', pm.globals.get('season_id'));",
-									"console.log('  - homeTeamId:', pm.globals.get('amsterdamlions_pride_id'));",
-									"console.log('  - awayTeamId:', pm.globals.get('barcelonaeagles_condors_id'));",
-									"",
-									"// Show the final JSON that will be sent",
-									"const requestBody = {",
-									"    seasonId: pm.globals.get('season_id'),",
-									"    homeTeamId: pm.globals.get('amsterdamlions_pride_id'),",
-									"    awayTeamId: pm.globals.get('barcelonaeagles_condors_id'),",
-									"    scheduledDateTime: '2025-12-31T20:00:00',",
-									"    venue: 'Test Arena'",
-									"};",
-									"console.log('📄 Request body JSON:', JSON.stringify(requestBody, null, 2));",
-									"console.log('📄 Request body string length:', JSON.stringify(requestBody).length);",
-									"console.log('📄 Base URL:', pm.globals.get('baseUrl'));",
-									"",
-									"// Verify the exact raw body that will be sent",
-									"console.log('🔍 DEBUGGING: Raw body template:');",
-									"console.log(pm.request.body.raw);",
-									"",
-									"// Check for any weird characters or encoding issues",
-									"const finalJson = JSON.stringify(requestBody);",
-									"console.log('🔍 Final JSON bytes:', Array.from(finalJson).map(c => c.charCodeAt(0)));",
-									"",
-									"// Validate the JSON is parseable",
-									"try {",
-									"    const parsed = JSON.parse(finalJson);",
-									"    console.log('✅ JSON is valid and parseable');",
-									"} catch (e) {",
-									"    console.log('❌ JSON parsing error:', e);",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success) {",
+									"        console.log('✅ Official added successfully!');",
+									"        console.log('   Referee ID:', pm.collectionVariables.get('referee_id'));",
+									"    } else {",
+									"        console.log('❌ Official added but response indicates failure');",
+									"        console.log('   Error:', response.message);",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to add official, status:', pm.response.code);",
+									"    try {",
+									"        const errorResponse = pm.response.json();",
+									"        console.log('Error details:', JSON.stringify(errorResponse, null, 2));",
+									"    } catch (e) {",
+									"        console.log('Error response:', pm.response.text());",
+									"    }",
 									"}"
 								]
 							}
-						},
+						}
+					]
+				},
+				{
+					"name": "03 - Start Match",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/match/{{match_id}}/start",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "match", "{{match_id}}", "start"]
+						}
+					},
+					"response": [],
+					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"console.log('🧪 TEST RESPONSE - Status:', pm.response.code);",
-									"console.log('🧪 Response headers:', pm.response.headers.toObject());",
-									"console.log('🧪 Request headers sent:', pm.request.headers.toObject());",
-									"console.log('🧪 Raw response body:', pm.response.text());",
+									"console.log('🏒 Starting match...');",
+									"console.log('Response status:', pm.response.code);",
 									"",
-									"// Check what was actually sent",
-									"console.log('🔍 ACTUAL REQUEST DEBUGGING:');",
-									"console.log('  - Method:', pm.request.method);",
-									"console.log('  - URL:', pm.request.url.toString());",
-									"console.log('  - Body mode:', pm.request.body ? pm.request.body.mode : 'no body');",
-									"console.log('  - Raw body sent:', pm.request.body ? pm.request.body.raw : 'no raw body');",
-									"",
-									"if (pm.response.code === 201) {",
-									"    console.log('✅ SUCCESS: Match created successfully!');",
+									"if (pm.response.code === 200) {",
 									"    const response = pm.response.json();",
+									"    ",
 									"    if (response.success && response.data) {",
-									"        console.log('✅ Created match ID:', response.data.id);",
-									"        console.log('✅ The collection JSON structure is working correctly!');",
-									"    }",
-									"} else if (pm.response.code === 400) {",
-									"    console.log('❌ VALIDATION ERROR: Check the error details above');",
-									"    try {",
-									"        const errorResponse = pm.response.json();",
-									"        console.log('❌ Full error object:', JSON.stringify(errorResponse, null, 2));",
-									"        ",
-									"        // Analyze specific errors",
-									"        if (errorResponse.errors) {",
-									"            console.log('❌ Specific validation errors:');",
-									"            Object.keys(errorResponse.errors).forEach(key => {",
-									"                console.log(`  - ${key}: ${errorResponse.errors[key]}`);",
-									"            });",
-									"        }",
-									"    } catch (e) {",
-									"        console.log('❌ Could not parse error response as JSON');",
+									"        console.log('✅ Match started successfully!');",
+									"        console.log('   Match ID:', response.data.id);",
+									"        console.log('   Status:', response.data.status);",
+									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"    } else {",
+									"        console.log('❌ Match started but unexpected response structure');",
 									"    }",
 									"} else {",
-									"    console.log('⚠️  Unexpected response code:', pm.response.code);",
-									"    console.log('⚠️  Response body:', pm.response.text());",
-									"}",
-									"",
-									"// Try to make a simple direct API call to compare",
-									"console.log('🔬 Making a direct API call for comparison...');",
-									"",
-									"const testPayload = {",
-									"    seasonId: pm.globals.get('season_id'),",
-									"    homeTeamId: pm.globals.get('amsterdamlions_pride_id'),",
-									"    awayTeamId: pm.globals.get('barcelonaeagles_condors_id'),",
-									"    scheduledDateTime: '2026-01-15T20:00:00',",
-									"    venue: 'Direct Test Arena'",
-									"};",
-									"",
-									"pm.sendRequest({",
-									"    url: pm.globals.get('baseUrl') + '/FloorballMatch',",
-									"    method: 'POST',",
-									"    header: {",
-									"        'Content-Type': 'application/json',",
-									"        'Accept': 'application/json'",
-									"    },",
-									"    body: {",
-									"        mode: 'raw',",
-									"        raw: JSON.stringify(testPayload)",
+									"    console.log('❌ Failed to start match, status:', pm.response.code);",
+									"    try {",
+									"        const errorResponse = pm.response.json();",
+									"        console.log('Error details:', JSON.stringify(errorResponse, null, 2));",
+									"    } catch (e) {",
+									"        console.log('Error response:', pm.response.text());",
 									"    }",
-									"}, function(err, directResponse) {",
-									"    if (err) {",
-									"        console.log('🔬 Direct API call error:', err);",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "04 - Goal 1-0 (Home Team Period 1)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"MatchId\": \"{{match_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player1_id}}\",\n  \"AssisterId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 1,\n  \"TimeInSeconds\": 420,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('⚽ Recording goal 1-0...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Goal recorded successfully!');",
+									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"        console.log('   Match Status:', response.data.status);",
 									"    } else {",
-									"        console.log('🔬 Direct API call status:', directResponse.code);",
-									"        console.log('🔬 Direct API call response:', directResponse.text());",
-									"        ",
-									"        if (directResponse.code === 201) {",
-									"            console.log('🎉 DIRECT CALL SUCCEEDED! Issue might be with variable substitution.');",
-									"        } else if (directResponse.code === 400) {",
-									"            console.log('🔬 Direct call also failed - backend issue confirmed');",
-									"            try {",
-									"                const directError = directResponse.json();",
-									"                console.log('🔬 Direct call error details:', JSON.stringify(directError, null, 2));",
-									"            } catch (e) {",
-									"                console.log('🔬 Could not parse direct call error response');",
-									"            }",
-									"        }",
+									"        console.log('❌ Goal recorded but unexpected response structure');",
 									"    }",
-									"});"
+									"} else {",
+									"    console.log('❌ Failed to record goal, status:', pm.response.code);",
+									"    console.log('Response:', pm.response.text());",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "05 - Goal 1-1 (Away Team Period 2)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"MatchId\": \"{{match_id}}\",\n  \"TeamId\": \"{{away_team_id}}\",\n  \"PlayerId\": \"{{away_player1_id}}\",\n  \"PeriodNumber\": 2,\n  \"TimeInSeconds\": 1440,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('⚽ Recording goal 1-1...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Goal recorded successfully!');",
+									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"        console.log('   Match Status:', response.data.status);",
+									"    } else {",
+									"        console.log('❌ Goal recorded but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to record goal, status:', pm.response.code);",
+									"    console.log('Response:', pm.response.text());",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "06 - Goal 2-1 (Home Team Period 3 Winner)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"MatchId\": \"{{match_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 3240,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('⚽ Recording winning goal 2-1...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Winning goal recorded successfully!');",
+									"        console.log('   Final Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"        console.log('   Match Status:', response.data.status);",
+									"    } else {",
+									"        console.log('❌ Goal recorded but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to record goal, status:', pm.response.code);",
+									"    console.log('Response:', pm.response.text());",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "07 - Complete Match",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/match/{{match_id}}/complete",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "match", "{{match_id}}", "complete"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🏁 Completing match...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Match completed successfully!');",
+									"        console.log('   Match ID:', response.data.id);",
+									"        console.log('   Status:', response.data.status);",
+									"        console.log('   Final Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"        console.log('   Home Team:', response.data.homeTeamName);",
+									"        console.log('   Away Team:', response.data.awayTeamName);",
+									"        console.log('\\n🎉 MATCH CREATION COMPLETE!');",
+									"        console.log('   The match has been successfully created and completed.');",
+									"        console.log('   Use the Queries folder to verify the results.');",
+									"    } else {",
+									"        console.log('❌ Match completed but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to complete match, status:', pm.response.code);",
+									"    try {",
+									"        const errorResponse = pm.response.json();",
+									"        console.log('Error details:', JSON.stringify(errorResponse, null, 2));",
+									"    } catch (e) {",
+									"        console.log('Error response:', pm.response.text());",
+									"    }",
+									"}"
 								]
 							}
 						}
@@ -383,1096 +717,63 @@
 			]
 		},
 		{
-			"name": "Completed Matches",
+			"name": "Queries & Verification",
 			"item": [
 				{
-					"name": "Match 1 - Amsterdam Lions Pride vs Barcelona Eagles Condors (3-2 OT)",
-					"item": [
-						{
-							"name": "Create Match 1",
-
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									  "raw": "{\n  \"seasonId\": \"4d2f2806-ea23-4e4c-a446-71a16da2d3bc\",\n  \"homeTeamId\": \"3284920d-1d5b-433f-8c32-3b0bf2d53a30\",\n  \"awayTeamId\": \"709a2c3a-93e1-4242-af38-8fd16bf3b24b\",\n  \"scheduledDateTime\": \"2026-07-15T19:00:00\",\n  \"venue\": \"Amsterdam Lions Arena\",\n  \"refereeId\": \"0de78882-3f18-466e-a030-f097d18f08e5\"\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch"]
-								}
-							},
-							"response": [],
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"type": "text/javascript",
-										"exec": [
-											"console.log('✅ Creating match with hardcoded working values');",
-											"console.log('  - seasonId: 4d2f2806-ea23-4e4c-a446-71a16da2d3bc');",
-											"console.log('  - homeTeamId: 3284920d-1d5b-433f-8c32-3b0bf2d53a30 (TestiClubi Phoenixs)');",
-											"console.log('  - awayTeamId: 709a2c3a-93e1-4242-af38-8fd16bf3b24b (TestiClubi Ravens)');",
-											"console.log('  - scheduledDateTime: 2025-07-15T19:00:00');"
-										]
-									}
-								},
-								{
-									"listen": "test",
-									"script": {
-										"type": "text/javascript",
-										"exec": [
-											"console.log('🎯 CREATE MATCH 1 RESPONSE:');",
-											"console.log('Status:', pm.response.code);",
-											"console.log('Response:', pm.response.text());",
-											"",
-											"if (pm.response.code === 201) {",
-											"    const response = pm.response.json();",
-											"    if (response.success && response.data) {",
-											"        pm.globals.set('match1_id', response.data.id);",
-											"        console.log('✅ Match 1 created successfully with ID:', response.data.id);",
-											"        ",
-											"        // Check if officials are already included in the creation response",
-											"        if (response.data.officials !== undefined) {",
-											"            console.log('🔍 Officials in creation response:', response.data.officials.length);",
-											"            console.log('🔍 Officials list:', response.data.officials);",
-											"            if (response.data.officials.length > 0) {",
-											"                console.log('✅ Officials found in creation response!');",
-											"                if (response.data.officials.includes('0de78882-3f18-466e-a030-f097d18f08e5')) {",
-											"                    console.log('✅ PERFECT: Our referee is in the creation response!');",
-											"                } else {",
-											"                    console.log('⚠️  Different officials found in creation response');",
-											"                }",
-											"            } else {",
-											"                console.log('⚠️  Empty officials array in creation response');",
-											"            }",
-											"        } else {",
-											"            console.log('🔍 No officials field in creation response');",
-											"        }",
-											"    } else {",
-											"        console.log('❌ No data in successful response');",
-											"    }",
-											"} else if (pm.response.code === 400) {",
-											"    console.log('❌ Match creation failed with validation error');",
-											"    try {",
-											"        const errorResponse = pm.response.json();",
-											"        console.log('❌ Error details:', JSON.stringify(errorResponse, null, 2));",
-											"    } catch (e) {",
-											"        console.log('❌ Could not parse error response');",
-											"    }",
-											"} else {",
-											"    console.log('❌ Match creation failed with status:', pm.response.code);",
-											"    console.log('Error details:', pm.response.text());",
-											"}"
-										]
-									}
-								}
-							]
-						},
-						{
-							"name": "Verify Match 1 Officials",
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/by-id/{{match1_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "by-id", "{{match1_id}}"]
-								}
-							},
-							"response": [],
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"type": "text/javascript",
-										"exec": [
-											"console.log('🔍 VERIFICATION: Checking if referee was assigned as official');",
-											"console.log('Response status:', pm.response.code);",
-											"console.log('Response body:', pm.response.text());",
-											"",
-											"if (pm.response.code === 200) {",
-											"    const response = pm.response.json();",
-											"    if (response.success && response.data) {",
-											"        const match = response.data;",
-											"        console.log('✅ Match found:', match.id);",
-											"        console.log('🔍 Match status:', match.status);",
-											"        console.log('🔍 Officials count:', match.officials ? match.officials.length : 0);",
-											"        console.log('🔍 Officials IDs:', match.officials);",
-											"        ",
-											"        if (match.officials && match.officials.length > 0) {",
-											"            console.log('✅ SUCCESS: Match has officials assigned!');",
-											"            if (match.officials.includes('0de78882-3f18-466e-a030-f097d18f08e5')) {",
-											"                console.log('✅ PERFECT: Our specific referee is assigned as official');",
-											"            } else {",
-											"                console.log('⚠️  Our referee ID not found, but other officials exist');",
-											"            }",
-											"        } else {",
-											"            console.log('❌ PROBLEM FOUND: No officials assigned to match!');",
-											"            console.log('❌ This is why match start is failing');",
-											"        }",
-											"    } else {",
-											"        console.log('❌ No match data in response');",
-											"    }",
-											"} else {",
-											"    console.log('❌ Failed to get match details, status:', pm.response.code);",
-											"}"
-										]
-									}
-								}
-							]
-						},
-						{
-							"name": "Start Match 1",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/start-match/{{match1_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "start-match", "{{match1_id}}"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 1-0 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match1_id}}\",\n  \"teamId\": \"{{amsterdamlions_pride_id}}\",\n  \"playerId\": \"{{amsterdamlions_player1_id}}\",\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 420,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 1-1 (Away)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match1_id}}\",\n  \"teamId\": \"{{barcelonaeagles_condors_id}}\",\n  \"playerId\": \"{{barcelonaeagles_player1_id}}\",\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 900,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Penalty - Minor",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match1_id}}\",\n  \"teamId\": \"{{barcelonaeagles_condors_id}}\",\n  \"playerId\": \"{{barcelonaeagles_player2_id}}\",\n  \"periodNumber\": 2,\n  \"timeInSeconds\": 1680,\n  \"durationMinutes\": 2,\n  \"penaltyType\": \"Minor\",\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/penalty",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "penalty"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 2-1 (Home - PP)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match1_id}}\",\n  \"teamId\": \"{{testiclubi_phoenixs_id}}\",\n  \"playerId\": \"{{testiclubi_player2_id}}\",\n  \"assisterId\": \"{{testiclubi_player1_id}}\",\n  \"periodNumber\": 2,\n  \"timeInSeconds\": 1740,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 2-2 (Away)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match1_id}}\",\n  \"teamId\": \"{{sunriseunited_dynamo_id}}\",\n  \"playerId\": \"{{sunriseunited_player3_id}}\",\n  \"periodNumber\": 3,\n  \"timeInSeconds\": 3300,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 3-2 (Home - OT Winner)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match1_id}}\",\n  \"teamId\": \"{{testiclubi_phoenixs_id}}\",\n  \"playerId\": \"{{testiclubi_player3_id}}\",\n  \"periodNumber\": 4,\n  \"timeInSeconds\": 180,\n  \"wasInOvertime\": true,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Complete Match 1",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/complete-match/{{match1_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "complete-match", "{{match1_id}}"]
-								}
-							},
-							"response": []
-						}
-					]
-				},
-				{
-					"name": "Match 2 - Barcelona Eagles vs Berlin Thunder (1-2 Shootout)",
-					"item": [
-						{
-							"name": "Create Match 2",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									  "raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{barcelonaeagles_condors_id}}\",\n  \"awayTeamId\": \"{{berlinthunder_storm_id}}\",\n  \"scheduledDateTime\": \"2025-07-16T18:30:00\",\n  \"venue\": \"Barcelona Sports Palace\",\n  \"refereeId\": \"0de78882-3f18-466e-a030-f097d18f08e5\"\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch"]
-								}
-							},
-							"response": [],
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"type": "text/javascript",
-										"exec": [
-											"if (pm.response.code === 201) {",
-											"    const response = pm.response.json();",
-											"    if (response.success && response.data) {",
-											"        pm.globals.set('match2_id', response.data.id);",
-											"        console.log('Match 2 ID stored:', response.data.id);",
-											"    }",
-											"}"
-										]
-									}
-								}
-							]
-						},
-						{
-							"name": "Start Match 2",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/start-match/{{match2_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "start-match", "{{match2_id}}"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 1-0 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match2_id}}\",\n  \"teamId\": \"{{barcelonaeagles_condors_id}}\",\n  \"playerId\": \"{{barcelona_player1_id}}\",\n  \"periodNumber\": 2,\n  \"timeInSeconds\": 1200,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Penalty - Major",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match2_id}}\",\n  \"teamId\": \"{{barcelonaeagles_condors_id}}\",\n  \"playerId\": \"{{barcelona_player2_id}}\",\n  \"periodNumber\": 3,\n  \"timeInSeconds\": 2700,\n  \"durationMinutes\": 5,\n  \"penaltyType\": \"Major\",\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/penalty",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "penalty"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 1-1 (Away - PP)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match2_id}}\",\n  \"teamId\": \"{{berlinthunder_storm_id}}\",\n  \"playerId\": \"{{berlin_player1_id}}\",\n  \"periodNumber\": 3,\n  \"timeInSeconds\": 2820,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 1-2 (Away - Shootout Winner)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match2_id}}\",\n  \"teamId\": \"{{berlinthunder_storm_id}}\",\n  \"playerId\": \"{{berlin_player2_id}}\",\n  \"periodNumber\": 5,\n  \"timeInSeconds\": 0,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": true\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Complete Match 2",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/complete-match/{{match2_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "complete-match", "{{match2_id}}"]
-								}
-							},
-							"response": []
-						}
-					]
-				},
-				{
-					"name": "Match 3 - Milano Dragons vs Paris Wolves (4-1 Regular)",
-					"item": [
-						{
-							"name": "Create Match 3",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									  "raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{milanodragons_fire_id}}\",\n  \"awayTeamId\": \"{{pariswolves_pack_id}}\",\n  \"scheduledDateTime\": \"2025-08-17T20:00:00\",\n  \"venue\": \"Milano Arena Drago\",\n  \"refereeId\": \"0de78882-3f18-466e-a030-f097d18f08e5\"\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch"]
-								}
-							},
-							"response": [],
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"type": "text/javascript",
-										"exec": [
-											"if (pm.response.code === 201) {",
-											"    const response = pm.response.json();",
-											"    if (response.success && response.data) {",
-											"        pm.globals.set('match3_id', response.data.id);",
-											"        console.log('Match 3 ID stored:', response.data.id);",
-											"    }",
-											"}"
-										]
-									}
-								}
-							]
-						},
-						{
-							"name": "Start Match 3",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/start-match/{{match3_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "start-match", "{{match3_id}}"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 1-0 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match3_id}}\",\n  \"teamId\": \"{{milanodragons_fire_id}}\",\n  \"playerId\": \"{{milano_player1_id}}\",\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 600,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 2-0 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match3_id}}\",\n  \"teamId\": \"{{milanodragons_fire_id}}\",\n  \"playerId\": \"{{milano_player2_id}}\",\n  \"assisterId\": \"{{milano_player1_id}}\",\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 1140,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Penalty - Misconduct",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match3_id}}\",\n  \"teamId\": \"{{pariswolves_pack_id}}\",\n  \"playerId\": \"{{paris_player1_id}}\",\n  \"periodNumber\": 2,\n  \"timeInSeconds\": 1800,\n  \"durationMinutes\": 10,\n  \"penaltyType\": \"Misconduct\",\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/penalty",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "penalty"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 0-1 (Away)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match3_id}}\",\n  \"teamId\": \"{{pariswolves_pack_id}}\",\n  \"playerId\": \"{{paris_player2_id}}\",\n  \"periodNumber\": 2,\n  \"timeInSeconds\": 2100,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 3-1 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match3_id}}\",\n  \"teamId\": \"{{milanodragons_fire_id}}\",\n  \"playerId\": \"{{milano_player3_id}}\",\n  \"periodNumber\": 3,\n  \"timeInSeconds\": 2700,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 4-1 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match3_id}}\",\n  \"teamId\": \"{{milanodragons_fire_id}}\",\n  \"playerId\": \"{{milano_player1_id}}\",\n  \"assisterId\": \"{{milano_player3_id}}\",\n  \"periodNumber\": 3,\n  \"timeInSeconds\": 3480,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Complete Match 3",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/complete-match/{{match3_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "complete-match", "{{match3_id}}"]
-								}
-							},
-							"response": []
-						}
-					]
-				},
-				{
-					"name": "Match 4 - Amsterdam Lions vs Stockholm Vikings (0-1 Regular)",
-					"item": [
-						{
-							"name": "Create Match 4",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									  "raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{amsterdamlions_pride_id}}\",\n  \"awayTeamId\": \"{{stockholmvikings_berserkers_id}}\",\n  \"scheduledDateTime\": \"2025-09-18T19:30:00\",\n  \"venue\": \"Amsterdam Sports Palace\",\n  \"refereeId\": \"0de78882-3f18-466e-a030-f097d18f08e5\"\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch"]
-								}
-							},
-							"response": [],
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"type": "text/javascript",
-										"exec": [
-											"if (pm.response.code === 201) {",
-											"    const response = pm.response.json();",
-											"    if (response.success && response.data) {",
-											"        pm.globals.set('match4_id', response.data.id);",
-											"        console.log('Match 4 ID stored:', response.data.id);",
-											"    }",
-											"}"
-										]
-									}
-								}
-							]
-						},
-						{
-							"name": "Start Match 4",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/start-match/{{match4_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "start-match", "{{match4_id}}"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Penalty - Technical",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match4_id}}\",\n  \"teamId\": \"{{amsterdamlions_pride_id}}\",\n  \"playerId\": \"{{amsterdam_player1_id}}\",\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 300,\n  \"durationMinutes\": 2,\n  \"penaltyType\": \"Technical\",\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/penalty",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "penalty"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 0-1 (Away - Late Goal)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match4_id}}\",\n  \"teamId\": \"{{stockholmvikings_berserkers_id}}\",\n  \"playerId\": \"{{stockholm_player1_id}}\",\n  \"periodNumber\": 3,\n  \"timeInSeconds\": 3420,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Complete Match 4",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/complete-match/{{match4_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "complete-match", "{{match4_id}}"]
-								}
-							},
-							"response": []
-						}
-					]
-				},
-				{
-					"name": "Match 5 - Dublin Shamrocks vs Vienna Hawks (6-4 High Scoring)",
-					"item": [
-						{
-							"name": "Create Match 5",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									  "raw": "{\n  \"seasonId\": \"{{season_id}}\",\n  \"homeTeamId\": \"{{dublinshamrocks_clover_id}}\",\n  \"awayTeamId\": \"{{viennahawks_talons_id}}\",\n  \"scheduledDateTime\": \"2025-10-19T20:15:00\",\n  \"venue\": \"Croke Park Arena\",\n  \"refereeId\": \"0de78882-3f18-466e-a030-f097d18f08e5\"\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch"]
-								}
-							},
-							"response": [],
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"type": "text/javascript",
-										"exec": [
-											"if (pm.response.code === 201) {",
-											"    const response = pm.response.json();",
-											"    if (response.success && response.data) {",
-											"        pm.globals.set('match5_id', response.data.id);",
-											"        console.log('Match 5 ID stored:', response.data.id);",
-											"    }",
-											"}"
-										]
-									}
-								}
-							]
-						},
-						{
-							"name": "Start Match 5",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/start-match/{{match5_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "start-match", "{{match5_id}}"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 1-0 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match5_id}}\",\n  \"teamId\": \"{{dublinshamrocks_clover_id}}\",\n  \"playerId\": \"{{dublin_player1_id}}\",\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 360,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 1-1 (Away)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match5_id}}\",\n  \"teamId\": \"{{viennahawks_talons_id}}\",\n  \"playerId\": \"{{vienna_player1_id}}\",\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 720,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 2-1 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match5_id}}\",\n  \"teamId\": \"{{dublinshamrocks_clover_id}}\",\n  \"playerId\": \"{{dublin_player2_id}}\",\n  \"assisterId\": \"{{dublin_player1_id}}\",\n  \"periodNumber\": 1,\n  \"timeInSeconds\": 1080,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 2-2 (Away)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match5_id}}\",\n  \"teamId\": \"{{viennahawks_talons_id}}\",\n  \"playerId\": \"{{vienna_player2_id}}\",\n  \"periodNumber\": 2,\n  \"timeInSeconds\": 1380,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 3-2 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match5_id}}\",\n  \"teamId\": \"{{dublinshamrocks_clover_id}}\",\n  \"playerId\": \"{{dublin_player3_id}}\",\n  \"periodNumber\": 2,\n  \"timeInSeconds\": 1800,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 3-3 (Away)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match5_id}}\",\n  \"teamId\": \"{{viennahawks_talons_id}}\",\n  \"playerId\": \"{{vienna_player3_id}}\",\n  \"periodNumber\": 2,\n  \"timeInSeconds\": 2160,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 4-3 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match5_id}}\",\n  \"teamId\": \"{{dublinshamrocks_clover_id}}\",\n  \"playerId\": \"{{dublin_player1_id}}\",\n  \"periodNumber\": 3,\n  \"timeInSeconds\": 2640,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 4-4 (Away)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match5_id}}\",\n  \"teamId\": \"{{viennahawks_talons_id}}\",\n  \"playerId\": \"{{vienna_player1_id}}\",\n  \"periodNumber\": 3,\n  \"timeInSeconds\": 3000,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 5-4 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match5_id}}\",\n  \"teamId\": \"{{dublinshamrocks_clover_id}}\",\n  \"playerId\": \"{{dublin_player2_id}}\",\n  \"periodNumber\": 3,\n  \"timeInSeconds\": 3300,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Goal 6-4 (Home)",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"matchId\": \"{{match5_id}}\",\n  \"teamId\": \"{{dublinshamrocks_clover_id}}\",\n  \"playerId\": \"{{dublin_player3_id}}\",\n  \"periodNumber\": 3,\n  \"timeInSeconds\": 3540,\n  \"wasInOvertime\": false,\n  \"wasInShootout\": false\n}"
-								},
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatchEvent", "goal"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Complete Match 5",
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/FloorballMatch/complete-match/{{match5_id}}",
-									"host": ["{{baseUrl}}"],
-									"path": ["FloorballMatch", "complete-match", "{{match5_id}}"]
-								}
-							},
-							"response": []
-						}
-					]
-				}
-			]
-		},
-		{
-			"name": "Queries",
-			"item": [
-				{
-					"name": "Get All Matches",
+					"name": "Get Match Details",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/FloorballMatch",
+							"raw": "{{baseUrl}}/FloorballMatch/by-id/{{match_id}}",
 							"host": ["{{baseUrl}}"],
-							"path": ["FloorballMatch"]
+							"path": ["FloorballMatch", "by-id", "{{match_id}}"]
 						}
 					},
-					"response": []
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🔍 Verifying match details...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        const match = response.data;",
+									"        console.log('✅ Match verification successful!');",
+									"        console.log('');",
+									"        console.log('📋 MATCH DETAILS:');",
+									"        console.log('   ID:', match.id);",
+									"        console.log('   Status:', match.status);",
+									"        console.log('   Score:', match.homeScore + '-' + match.awayScore);",
+									"        console.log('   Home Team:', match.homeTeamName, '(' + match.homeTeamId + ')');",
+									"        console.log('   Away Team:', match.awayTeamName, '(' + match.awayTeamId + ')');",
+									"        console.log('   Venue:', match.venue);",
+									"        console.log('   Scheduled:', match.scheduledDateTime);",
+									"        console.log('   Officials:', match.officials ? match.officials.length : 0);",
+									"        console.log('');",
+									"        console.log('⚽ GOALS:', match.goalEvents ? match.goalEvents.length : 0);",
+									"        console.log('🟨 PENALTIES:', match.penaltyEvents ? match.penaltyEvents.length : 0);",
+									"        console.log('🏒 OVERTIME:', match.wentToOvertime ? 'Yes' : 'No');",
+									"        console.log('🥅 SHOOTOUT:', match.wentToShootout ? 'Yes' : 'No');",
+									"    } else {",
+									"        console.log('❌ No match data in response');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to get match details, status:', pm.response.code);",
+									"}"
+								]
+							}
+						}
+					]
 				},
 				{
-					"name": "Get Matches by Season",
+					"name": "Get Season Matches",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -1482,186 +783,52 @@
 							"path": ["FloorballMatch", "by-seasonId", "{{season_id}}"]
 						}
 					},
-					"response": []
-				},
-				{
-					"name": "Get Match Details",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/FloorballMatch/by-id/{{match1_id}}",
-							"host": ["{{baseUrl}}"],
-							"path": ["FloorballMatch", "by-id", "{{match1_id}}"]
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🔍 Checking season matches...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        const matches = response.data;",
+									"        console.log('✅ Season matches found:', matches.length);",
+									"        ",
+									"        // Find our created match",
+									"        const ourMatch = matches.find(m => m.id === pm.collectionVariables.get('match_id'));",
+									"        if (ourMatch) {",
+									"            console.log('✅ Our created match is in the season!');",
+									"            console.log('   Match:', ourMatch.homeTeamName, 'vs', ourMatch.awayTeamName);",
+									"            console.log('   Score:', ourMatch.homeScore + '-' + ourMatch.awayScore);",
+									"            console.log('   Status:', ourMatch.status);",
+									"        } else {",
+									"            console.log('⚠️  Our created match not found in season matches');",
+									"        }",
+									"        ",
+									"        // Show all matches in season",
+									"        console.log('');",
+									"        console.log('📋 ALL MATCHES IN SEASON:');",
+									"        matches.forEach((match, index) => {",
+									"            console.log('   ' + (index + 1) + '. ' + match.homeTeamName + ' vs ' + match.awayTeamName + ' (' + match.homeScore + '-' + match.awayScore + ') - ' + match.status);",
+									"        });",
+									"    } else {",
+									"        console.log('❌ No season matches found');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to get season matches, status:', pm.response.code);",
+									"}"
+								]
+							}
 						}
-					},
-					"response": []
+					]
 				}
 			]
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					"/*",
-					" * AUTOMATIC ID FETCHING SCRIPT",
-					" * ",
-					" * This pre-request script runs before any request in the collection to:",
-					" * 1. Fetch team IDs for all teams used in our match scenarios",
-					" * 2. Fetch player IDs for each team (up to 3 players per team)",
-					" * 3. Store these IDs as global variables for use in requests",
-					" * 4. Provide fallback IDs if teams/players don't exist",
-					" * ",
-					" * This ensures the collection works consistently across different",
-					" * environments as long as the required teams exist in the database.",
-					" * ",
-					" * Required teams (based on actual database names):",
-					" * - Amsterdam Lions (Pride, Mane, Roar)",
-					" * - Barcelona Eagles (Condors, Falcons, Hawks)",
-					" * - Berlin Thunder Bolts, Milano Dragons Fire",
-					" * - Paris Wolves Pack, Dublin Shamrocks Clover",
-					" */",
-					"",
-					"// Only run this script once per collection run",
-					"if (pm.globals.get('teams_fetched') === 'true') {",
-					"    console.log('🔄 Teams already fetched, skipping...');",
-					"    return;",
-					"}",
-					"",
-					"console.log('🚀 Starting team and player ID fetching...');",
-					"pm.globals.set('teams_fetched', 'true');",
-					"",
-					"// Configuration - teams we need for our matches (based on actual database names)",
-					"const requiredTeams = {",
-					"    'Amsterdam Lions Pride': 'amsterdamlions_pride_id',",
-					"    'Amsterdam Lions Mane': 'amsterdamlions_mane_id',",
-					"    'Amsterdam Lions Roar': 'amsterdamlions_roar_id',",
-					"    'Barcelona Eagles Condors': 'barcelonaeagles_condors_id',",
-					"    'Barcelona Eagles Falcons': 'barcelonaeagles_falcons_id',",
-					"    'Barcelona Eagles Hawks': 'barcelonaeagles_hawks_id',",
-					"    'Berlin Thunder Bolts': 'berlinthunder_bolts_id',",
-					"    'Milano Dragons Fire': 'milanodragons_fire_id',",
-					"    'Paris Wolves Pack': 'pariswolves_pack_id',",
-					"    'Dublin Shamrocks Clover': 'dublinshamrocks_clover_id'",
-					"};",
-					"",
-					"// Track completion",
-					"let completedRequests = 0;",
-					"const totalRequests = Object.keys(requiredTeams).length + 1; // +1 for teams request",
-					"",
-					"// Function to check if all requests are done",
-					"function checkCompletion() {",
-					"    completedRequests++;",
-					"    if (completedRequests === totalRequests) {",
-					"        console.log('✅ All team and player IDs fetched successfully!');",
-					"        console.log('Ready to run match creation requests.');",
-					"    }",
-					"}",
-					"",
-					"// Function to get players for a team",
-					"function getPlayersForTeam(teamId, teamVariableName) {",
-					"    const teamPrefix = teamVariableName.replace('_id', '');",
-					"    ",
-					"    pm.sendRequest({",
-					"        url: `http://localhost:8080/api/FloorballPlayer?TeamId=${teamId}&PageSize=100`,",
-					"        method: 'GET'",
-					"    }, function (err, response) {",
-					"        if (err) {",
-					"            console.log(`⚠️  Error fetching players for team ${teamId}:`, err);",
-					"            // Set fallback player IDs if API fails",
-					"            pm.globals.set(`${teamPrefix}_player1_id`, '550e8400-e29b-41d4-a716-446655440011');",
-					"            pm.globals.set(`${teamPrefix}_player2_id`, '550e8400-e29b-41d4-a716-446655440012');",
-					"            pm.globals.set(`${teamPrefix}_player3_id`, '550e8400-e29b-41d4-a716-446655440013');",
-					"            checkCompletion();",
-					"            return;",
-					"        }",
-					"        ",
-					"        const players = response.json();",
-					"        if (players.success && players.data && players.data.items && players.data.items.length > 0) {",
-					"            // Store up to 3 player IDs per team",
-					"            const playerItems = players.data.items;",
-					"            for (let i = 0; i < Math.min(3, playerItems.length); i++) {",
-					"                pm.globals.set(`${teamPrefix}_player${i + 1}_id`, playerItems[i].id);",
-					"            }",
-					"            ",
-					"            // Fill missing slots with the first player if we have fewer than 3",
-					"            for (let i = playerItems.length; i < 3; i++) {",
-					"                pm.globals.set(`${teamPrefix}_player${i + 1}_id`, playerItems[0].id);",
-					"            }",
-					"            ",
-					"            console.log(`✅ Fetched ${Math.min(3, playerItems.length)} player(s) for ${teamVariableName}`);",
-					"        } else {",
-					"            console.log(`⚠️  No players found for team ${teamId}, using fallback IDs`);",
-					"            // Set fallback player IDs if no players found",
-					"            pm.globals.set(`${teamPrefix}_player1_id`, '550e8400-e29b-41d4-a716-446655440011');",
-					"            pm.globals.set(`${teamPrefix}_player2_id`, '550e8400-e29b-41d4-a716-446655440012');",
-					"            pm.globals.set(`${teamPrefix}_player3_id`, '550e8400-e29b-41d4-a716-446655440013');",
-					"        }",
-					"        ",
-					"        checkCompletion();",
-					"    });",
-					"}",
-					"",
-					"// Step 1: Get team IDs",
-					"pm.sendRequest({",
-					"    url: 'http://localhost:8080/api/FloorballTeam',",
-					"    method: 'GET'",
-					"}, function (err, response) {",
-					"    if (err) {",
-					"        console.log('❌ Error fetching teams:', err);",
-					"        checkCompletion();",
-					"        return;",
-					"    }",
-					"    ",
-					"    const teams = response.json();",
-					"    if (teams.success && teams.data) {",
-					"        let foundTeams = 0;",
-					"        ",
-					"        // Store team IDs and track which ones we found",
-					"        console.log('🔍 Available teams in database:');",
-					"        teams.data.forEach(team => {",
-					"            console.log(`   - \"${team.name}\" (${team.id})`);",
-					"        });",
-					"        console.log('');",
-					"        ",
-					"        const foundTeamNames = new Set(); // Track found teams to avoid duplicates",
-					"        ",
-					"        teams.data.forEach(team => {",
-					"            if (requiredTeams[team.name] && !foundTeamNames.has(team.name)) {",
-					"                // Only store the first occurrence of each team name",
-					"                foundTeamNames.add(team.name);",
-					"                pm.globals.set(requiredTeams[team.name], team.id);",
-					"                foundTeams++;",
-					"                console.log(`✅ Found required team: ${team.name} (${team.id})`);",
-					"                ",
-					"                // Step 2: Get players for this team",
-					"                getPlayersForTeam(team.id, requiredTeams[team.name]);",
-					"            } else if (requiredTeams[team.name] && foundTeamNames.has(team.name)) {",
-					"                console.log(`🔄 Skipping duplicate team: ${team.name} (${team.id})`);",
-					"            }",
-					"        });",
-					"        ",
-					"        console.log(`📊 Found ${foundTeams}/${Object.keys(requiredTeams).length} required teams`);",
-					"        ",
-					"        // Check for missing teams",
-					"        Object.keys(requiredTeams).forEach(teamName => {",
-					"            const teamId = pm.globals.get(requiredTeams[teamName]);",
-					"            if (!teamId) {",
-					"                console.log(`⚠️  Missing team: ${teamName} - you may need to run the Clubs collection first`);",
-					"            }",
-					"        });",
-					"        ",
-					"        checkCompletion();",
-					"    } else {",
-					"        console.log('❌ Failed to fetch teams or no teams found');",
-					"        checkCompletion();",
-					"    }",
-					"});"
-				]
-			}
 		}
 	]
 } 
