@@ -577,7 +577,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match_id}}\",\n  \"TeamId\": \"{{away_team_id}}\",\n  \"PlayerId\": \"{{away_player1_id}}\",\n  \"PeriodNumber\": 2,\n  \"TimeInSeconds\": 1440,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+							"raw": "{\n  \"MatchId\": \"{{match_id}}\",\n  \"TeamId\": \"{{away_team_id}}\",\n  \"PlayerId\": \"{{away_player1_id}}\",\n  \"PeriodNumber\": 2,\n  \"TimeInSeconds\": 720,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
@@ -626,7 +626,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 3240,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+							"raw": "{\n  \"MatchId\": \"{{match_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 900,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
