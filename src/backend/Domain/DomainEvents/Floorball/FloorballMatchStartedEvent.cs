@@ -3,18 +3,9 @@ namespace Domain.DomainEvents.Floorball;
 /// <summary>
 /// Event raised when a floorball match is started
 /// </summary>
-public class FloorballMatchStartedEvent : IDomainEvent
+public class FloorballMatchStartedEvent : FloorballDomainEvent
 {
-    /// <summary>
-    /// Gets the unique identifier of the event
-    /// </summary>
-    public Guid Id { get; }
 
-    /// <summary>
-    /// Gets the date and time when the event occurred
-    /// </summary>
-    public DateTime OccurredOn { get; }
-    
     /// <summary>
     /// Gets the ID of the match
     /// </summary>
@@ -34,9 +25,9 @@ public class FloorballMatchStartedEvent : IDomainEvent
         Guid matchId,
         DateTime startTime)
     {
-        Id = Guid.NewGuid();
-        OccurredOn = DateTime.UtcNow;
         MatchId = matchId;
         StartTime = startTime;
     }
+
+    private FloorballMatchStartedEvent() { }
 } 

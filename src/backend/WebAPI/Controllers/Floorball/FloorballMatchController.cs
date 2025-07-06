@@ -1,7 +1,6 @@
 ﻿using Application.Commands.Floorball.Match;
 using Application.Common;
 using Domain.Common;
-using Application.DTOs.Common;
 using Application.DTOs.Floorball;
 using Application.Queries.Floorball.Match;
 using MediatR;
