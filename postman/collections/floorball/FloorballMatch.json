@@ -644,9 +644,9 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/FloorballMatchEvent/match/{{match2_id}}/start",
+							"raw": "{{baseUrl}}/FloorballMatchEvent/match/{{match_id}}/start",
 							"host": ["{{baseUrl}}"],
-							"path": ["FloorballMatchEvent", "match", "{{match2_id}}", "start"]
+							"path": ["FloorballMatchEvent", "match", "{{match_id}}", "start"]
 						}
 					},
 					"response": [],
@@ -893,9 +893,9 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/FloorballMatchEvent/match/{{match_id}}",
+							"raw": "{{baseUrl}}/FloorballMatch/by-id/{{match_id}}",
 							"host": ["{{baseUrl}}"],
-							"path": ["FloorballMatchEvent", "match", "{{match_id}}"]
+							"path": ["FloorballMatch", "by-id", "{{match_id}}"]
 						}
 					},
 					"response": [],
@@ -1124,7 +1124,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match2_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player1_id}}\",\n  \"AssisterId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 1,\n  \"TimeInSeconds\": 420,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}",
+							"raw": "{\n  \"MatchId\": \"{{match2_id}}\",\n  \"TeamId\": \"{{team3_id}}\",\n  \"PlayerId\": \"{{team3_player1_id}}\",\n  \"AssisterId\": \"{{team3_player2_id}}\",\n  \"PeriodNumber\": 1,\n  \"TimeInSeconds\": 300,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1144,7 +1144,7 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"console.log('⚽ Recording goal 1-0...');",
+									"console.log('⚽ Recording goal 1-0 (Period 1)...');",
 									"console.log('Response status:', pm.response.code);",
 									"",
 									"if (pm.response.code === 200) {",
@@ -1167,7 +1167,7 @@
 					]
 				},
 				{
-					"name": "05 - Goal 1-1 (Away Team Period 2)",
+					"name": "05 - Goal 1-1 (Away Team Period 1)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1178,7 +1178,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match2_id}}\",\n  \"TeamId\": \"{{away_team_id}}\",\n  \"PlayerId\": \"{{away_player1_id}}\",\n  \"PeriodNumber\": 2,\n  \"TimeInSeconds\": 720,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+							"raw": "{\n  \"MatchId\": \"{{match2_id}}\",\n  \"TeamId\": \"{{team4_id}}\",\n  \"PlayerId\": \"{{team4_player1_id}}\",\n  \"PeriodNumber\": 1,\n  \"TimeInSeconds\": 600,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
@@ -1193,7 +1193,7 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"console.log('⚽ Recording goal 1-1...');",
+									"console.log('⚽ Recording goal 1-1 (Period 1)...');",
 									"console.log('Response status:', pm.response.code);",
 									"",
 									"if (pm.response.code === 200) {",
@@ -1216,7 +1216,7 @@
 					]
 				},
 				{
-					"name": "06 - Goal 2-1 (Home Team Period 3 Winner)",
+					"name": "06 - Goal 2-1 (Home Team Period 2)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1227,7 +1227,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match2_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 900,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+							"raw": "{\n  \"MatchId\": \"{{match2_id}}\",\n  \"TeamId\": \"{{team3_id}}\",\n  \"PlayerId\": \"{{team3_player2_id}}\",\n  \"PeriodNumber\": 2,\n  \"TimeInSeconds\": 400,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
@@ -1242,16 +1242,213 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"console.log('⚽ Recording winning goal 2-1...');",
+									"console.log('⚽ Recording goal 2-1 (Period 2)...');",
 									"console.log('Response status:', pm.response.code);",
 									"",
 									"if (pm.response.code === 200) {",
 									"    const response = pm.response.json();",
 									"    ",
 									"    if (response.success && response.data) {",
-									"        console.log('✅ Winning goal recorded successfully!');",
+									"        console.log('✅ Goal recorded successfully!');",
+									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"        console.log('   Match Status:', response.data.status);",
+									"    } else {",
+									"        console.log('❌ Goal recorded but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to record goal, status:', pm.response.code);",
+									"    console.log('Response:', pm.response.text());",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "07 - Goal 2-2 (Away Team Period 2)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"MatchId\": \"{{match2_id}}\",\n  \"TeamId\": \"{{team4_id}}\",\n  \"PlayerId\": \"{{team4_player2_id}}\",\n  \"PeriodNumber\": 2,\n  \"TimeInSeconds\": 800,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('⚽ Recording goal 2-2 (Period 2)...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Goal recorded successfully!');",
+									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"        console.log('   Match Status:', response.data.status);",
+									"    } else {",
+									"        console.log('❌ Goal recorded but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to record goal, status:', pm.response.code);",
+									"    console.log('Response:', pm.response.text());",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "08 - Goal 3-2 (Home Team Period 3)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"MatchId\": \"{{match2_id}}\",\n  \"TeamId\": \"{{team3_id}}\",\n  \"PlayerId\": \"{{team3_player1_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 300,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('⚽ Recording goal 3-2 (Period 3)...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Goal recorded successfully!');",
+									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"        console.log('   Match Status:', response.data.status);",
+									"    } else {",
+									"        console.log('❌ Goal recorded but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to record goal, status:', pm.response.code);",
+									"    console.log('Response:', pm.response.text());",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "09 - Goal 3-3 (Away Team Period 3)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"MatchId\": \"{{match2_id}}\",\n  \"TeamId\": \"{{team4_id}}\",\n  \"PlayerId\": \"{{team4_player1_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 900,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('⚽ Recording goal 3-3 (Period 3)...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Goal recorded successfully!');",
+									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"        console.log('   Match Status:', response.data.status);",
+									"    } else {",
+									"        console.log('❌ Goal recorded but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to record goal, status:', pm.response.code);",
+									"    console.log('Response:', pm.response.text());",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "10 - Goal 4-3 (Home Team Overtime Winner)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"MatchId\": \"{{match2_id}}\",\n  \"TeamId\": \"{{team3_id}}\",\n  \"PlayerId\": \"{{team3_player2_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 1080,\n  \"WasInOvertime\": true,\n  \"WasInShootout\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('⚽ Recording OVERTIME WINNING goal 4-3...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ OVERTIME WINNER recorded successfully!');",
 									"        console.log('   Final Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
 									"        console.log('   Match Status:', response.data.status);",
+									"        console.log('   🏒 OVERTIME WIN ACHIEVED!');",
 									"    } else {",
 									"        console.log('❌ Goal recorded but unexpected response structure');",
 									"    }",
@@ -1265,7 +1462,7 @@
 					]
 				},
 				{
-					"name": "07 - Complete Match",
+					"name": "11 - Complete Match",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -1316,14 +1513,14 @@
 					]
 				},
 				{
-					"name": "08 - Get Match Details",
+					"name": "12 - Get Match Details",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/FloorballMatchEvent/match/{{match2_id}}",
+							"raw": "{{baseUrl}}/FloorballMatch/by-id/{{match2_id}}",
 							"host": ["{{baseUrl}}"],
-							"path": ["FloorballMatchEvent", "match", "{{match2_id}}"]
+							"path": ["FloorballMatch", "by-id", "{{match2_id}}"]
 						}
 					},
 					"response": [],
@@ -1542,7 +1739,7 @@
 					]
 				},
 				{
-					"name": "04 - Goal 1-0 (Home Team Period 1)",
+					"name": "04 - Shootout Goal 1-0 (Home Team)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1553,7 +1750,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match3_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player1_id}}\",\n  \"AssisterId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 1,\n  \"TimeInSeconds\": 420,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}",
+							"raw": "{\n  \"MatchId\": \"{{match3_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player1_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 1200,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1573,14 +1770,14 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"console.log('⚽ Recording goal 1-0...');",
+									"console.log('🥅 Recording SHOOTOUT goal 1-0 (Home Team)...');",
 									"console.log('Response status:', pm.response.code);",
 									"",
 									"if (pm.response.code === 200) {",
 									"    const response = pm.response.json();",
 									"    ",
 									"    if (response.success && response.data) {",
-									"        console.log('✅ Goal recorded successfully!');",
+									"        console.log('✅ Shootout goal recorded successfully!');",
 									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
 									"        console.log('   Match Status:', response.data.status);",
 									"    } else {",
@@ -1596,7 +1793,7 @@
 					]
 				},
 				{
-					"name": "05 - Goal 1-1 (Away Team Period 2)",
+					"name": "05 - Shootout Goal 1-1 (Away Team)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1607,7 +1804,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match3_id}}\",\n  \"TeamId\": \"{{away_team_id}}\",\n  \"PlayerId\": \"{{away_player1_id}}\",\n  \"PeriodNumber\": 2,\n  \"TimeInSeconds\": 720,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+							"raw": "{\n  \"MatchId\": \"{{match3_id}}\",\n  \"TeamId\": \"{{team3_id}}\",\n  \"PlayerId\": \"{{team3_player1_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 1200,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": true\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
@@ -1622,14 +1819,14 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"console.log('⚽ Recording goal 1-1...');",
+									"console.log('🥅 Recording SHOOTOUT goal 1-1 (Away Team)...');",
 									"console.log('Response status:', pm.response.code);",
 									"",
 									"if (pm.response.code === 200) {",
 									"    const response = pm.response.json();",
 									"    ",
 									"    if (response.success && response.data) {",
-									"        console.log('✅ Goal recorded successfully!');",
+									"        console.log('✅ Shootout goal recorded successfully!');",
 									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
 									"        console.log('   Match Status:', response.data.status);",
 									"    } else {",
@@ -1645,7 +1842,7 @@
 					]
 				},
 				{
-					"name": "06 - Goal 2-1 (Home Team Period 3 Winner)",
+					"name": "06 - Shootout Goal 2-1 (Home Team)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1656,7 +1853,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match3_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 900,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+							"raw": "{\n  \"MatchId\": \"{{match3_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 1200,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": true\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
@@ -1671,16 +1868,115 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"console.log('⚽ Recording winning goal 2-1...');",
+									"console.log('🥅 Recording SHOOTOUT goal 2-1 (Home Team)...');",
 									"console.log('Response status:', pm.response.code);",
 									"",
 									"if (pm.response.code === 200) {",
 									"    const response = pm.response.json();",
 									"    ",
 									"    if (response.success && response.data) {",
-									"        console.log('✅ Winning goal recorded successfully!');",
+									"        console.log('✅ Shootout goal recorded successfully!');",
+									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"        console.log('   Match Status:', response.data.status);",
+									"    } else {",
+									"        console.log('❌ Goal recorded but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to record goal, status:', pm.response.code);",
+									"    console.log('Response:', pm.response.text());",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "07 - Shootout Goal 2-2 (Away Team)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"MatchId\": \"{{match3_id}}\",\n  \"TeamId\": \"{{team3_id}}\",\n  \"PlayerId\": \"{{team3_player2_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 1200,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🥅 Recording SHOOTOUT goal 2-2 (Away Team)...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Shootout goal recorded successfully!');",
+									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
+									"        console.log('   Match Status:', response.data.status);",
+									"    } else {",
+									"        console.log('❌ Goal recorded but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to record goal, status:', pm.response.code);",
+									"    console.log('Response:', pm.response.text());",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "08 - Shootout Goal 3-2 (Home Team Winner)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"MatchId\": \"{{match3_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player1_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 1200,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballMatchEvent", "goal"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🥅 Recording SHOOTOUT WINNING goal 3-2 (Home Team)...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ SHOOTOUT WINNER recorded successfully!');",
 									"        console.log('   Final Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
 									"        console.log('   Match Status:', response.data.status);",
+									"        console.log('   🥅 SHOOTOUT WIN ACHIEVED!');",
 									"    } else {",
 									"        console.log('❌ Goal recorded but unexpected response structure');",
 									"    }",
@@ -1694,7 +1990,7 @@
 					]
 				},
 				{
-					"name": "07 - Complete Match",
+					"name": "09 - Complete Match",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -1745,14 +2041,14 @@
 					]
 				},
 				{
-					"name": "08 - Get Match Details",
+					"name": "10 - Get Match Details",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/FloorballMatchEvent/match/{{match3_id}}",
+							"raw": "{{baseUrl}}/FloorballMatch/by-id/{{match3_id}}",
 							"host": ["{{baseUrl}}"],
-							"path": ["FloorballMatchEvent", "match", "{{match3_id}}"]
+							"path": ["FloorballMatch", "by-id", "{{match3_id}}"]
 						}
 					},
 					"response": [],
@@ -1981,7 +2277,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match4_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player1_id}}\",\n  \"AssisterId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 1,\n  \"TimeInSeconds\": 420,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}",
+							"raw": "{\n  \"MatchId\": \"{{match4_id}}\",\n  \"TeamId\": \"{{team4_id}}\",\n  \"PlayerId\": \"{{team4_player1_id}}\",\n  \"AssisterId\": \"{{team4_player2_id}}\",\n  \"PeriodNumber\": 1,\n  \"TimeInSeconds\": 300,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2001,7 +2297,7 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"console.log('⚽ Recording goal 1-0...');",
+									"console.log('⚽ Recording goal 1-0 (Period 1)...');",
 									"console.log('Response status:', pm.response.code);",
 									"",
 									"if (pm.response.code === 200) {",
@@ -2024,7 +2320,7 @@
 					]
 				},
 				{
-					"name": "05 - Goal 1-1 (Away Team Period 2)",
+					"name": "05 - Goal 1-1 (Away Team Period 1 - Final Goal)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -2035,7 +2331,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match4_id}}\",\n  \"TeamId\": \"{{away_team_id}}\",\n  \"PlayerId\": \"{{away_player1_id}}\",\n  \"PeriodNumber\": 2,\n  \"TimeInSeconds\": 720,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
+							"raw": "{\n  \"MatchId\": \"{{match4_id}}\",\n  \"TeamId\": \"{{away_team_id}}\",\n  \"PlayerId\": \"{{away_player1_id}}\",\n  \"PeriodNumber\": 1,\n  \"TimeInSeconds\": 600,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
@@ -2050,16 +2346,17 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"console.log('⚽ Recording goal 1-1...');",
+									"console.log('⚽ Recording FINAL goal 1-1 (Period 1 - Tie Game)...');",
 									"console.log('Response status:', pm.response.code);",
 									"",
 									"if (pm.response.code === 200) {",
 									"    const response = pm.response.json();",
 									"    ",
 									"    if (response.success && response.data) {",
-									"        console.log('✅ Goal recorded successfully!');",
+									"        console.log('✅ Final goal recorded successfully!');",
 									"        console.log('   Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
 									"        console.log('   Match Status:', response.data.status);",
+									"        console.log('   🤝 This will end in a TIE!');",
 									"    } else {",
 									"        console.log('❌ Goal recorded but unexpected response structure');",
 									"    }",
@@ -2073,56 +2370,7 @@
 					]
 				},
 				{
-					"name": "06 - Goal 2-1 (Home Team Period 3 Winner)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"MatchId\": \"{{match4_id}}\",\n  \"TeamId\": \"{{home_team_id}}\",\n  \"PlayerId\": \"{{home_player2_id}}\",\n  \"PeriodNumber\": 3,\n  \"TimeInSeconds\": 900,\n  \"WasInOvertime\": false,\n  \"WasInShootout\": false\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/FloorballMatchEvent/goal",
-							"host": ["{{baseUrl}}"],
-							"path": ["FloorballMatchEvent", "goal"]
-						}
-					},
-					"response": [],
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"console.log('⚽ Recording winning goal 2-1...');",
-									"console.log('Response status:', pm.response.code);",
-									"",
-									"if (pm.response.code === 200) {",
-									"    const response = pm.response.json();",
-									"    ",
-									"    if (response.success && response.data) {",
-									"        console.log('✅ Winning goal recorded successfully!');",
-									"        console.log('   Final Score: ' + response.data.homeScore + '-' + response.data.awayScore);",
-									"        console.log('   Match Status:', response.data.status);",
-									"    } else {",
-									"        console.log('❌ Goal recorded but unexpected response structure');",
-									"    }",
-									"} else {",
-									"    console.log('❌ Failed to record goal, status:', pm.response.code);",
-									"    console.log('Response:', pm.response.text());",
-									"}"
-								]
-							}
-						}
-					]
-				},
-				{
-					"name": "07 - Complete Match",
+					"name": "06 - Complete Match",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -2173,14 +2421,14 @@
 					]
 				},
 				{
-					"name": "08 - Get Match Details",
+					"name": "07 - Get Match Details",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/FloorballMatchEvent/match/{{match4_id}}",
+							"raw": "{{baseUrl}}/FloorballMatch/by-id/{{match4_id}}",
 							"host": ["{{baseUrl}}"],
-							"path": ["FloorballMatchEvent", "match", "{{match4_id}}"]
+							"path": ["FloorballMatch", "by-id", "{{match4_id}}"]
 						}
 					},
 					"response": [],
