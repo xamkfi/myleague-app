@@ -53,7 +53,7 @@
             align-items: center;
             padding: 0.1rem 0.2rem;
             border-radius: 8px;
-            background-color: #f0f7ff;
+            background-color: #f6f6f6;
             transition: background-color 0.15s ease;
             &:hover{
                background-color: #daecff;
@@ -78,7 +78,7 @@
 
             .team-score {
                font-weight: 600;
-               font-size: 0.95rem;
+               font-size: 1rem;
                color: #007bff;
                min-width: 25px;
                text-align: center;
@@ -188,8 +188,8 @@
    .season-header {
       display: flex;
       align-items: center;
-      background: #e9f4ff;
-      color: #004b8d;
+      background: #3094ff;
+      color: #f6fbff;
       font-weight: 600;
       padding: 0.4rem 0.75rem;
       border-radius: 6px;

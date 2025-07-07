@@ -13,14 +13,14 @@
 }
 
 .stats-header{
-   background-color: #007bff;
+   background-color: #548cc7;
    color: rgb(242, 249, 255);
    font-weight: map.get($font-weights, "bold");
 }
 
 .roster-position-container{
-   border: 1px solid $color-border;
-   box-shadow: 0 2px 4px $color-box-shadow;
+   // border: 1px solid $color-border;
+   // box-shadow: 0 2px 4px $color-box-shadow;
    margin-bottom: map.get($spacing, "base");
    border-radius: 6px;
    
@@ -28,25 +28,48 @@
 
 .roster-position-header{
    text-align: left;
+   background-color: hsl(212, 98%, 65%);
    font-size: map.get($font-sizes, "md");
    font-weight: map.get($font-weights, "bold");
-   margin: map.get($spacing, "base") 0;
-   color: $color-primary;
+   border-radius: 6px 6px 0 0;
+   padding:
+      map.get($spacing, "xs") 
+      map.get($spacing, "base");
+   color: $color-white;
 }
 
 .roster-player{
    // margin-bottom: map.get($spacing, "xs" );
+   border-radius: 6px;
    padding: 0.5rem 0;
-   transition: 
-            background-color 0.25s ease;
+   box-shadow: 0 0 0px rgba(0, 0, 0, 0);
+   transform: scale(1);
+
+   transition:
+      background-color 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.25s ease;
+
    &:nth-child(even){
       background-color: #eeeeee;
    }
+   &:nth-child(2){
+      border-radius: 0 0 6px 6px;
+   }
    &:hover{
-      background-color: #5e99d9;
+      background-color: #b5b5b5;
+      box-shadow: 0 0 32px rgba(0, 0, 0, 0.194);
+      transform: scale(1.005);
       color: #eeeeee;
       cursor: pointer;
+      z-index: 10;
+      position: relative;
    }
+}
+
+.seperator-line{
+   border-left: 1px solid rgb(183, 183, 183);
+
 }
 
 .roster-jersey{
@@ -63,8 +86,8 @@
 
 .roster-games-played{
    grid-area: gamesPlayed;
-}
 
+}
 
 .roster-goals{
    grid-area: goals;
@@ -73,18 +96,4 @@
 
 .roster-assists{
    grid-area: assists;
-}
-
-.roster-player-stats{
-   // display: flex;
-   // justify-content: flex-end;
-   grid-area: gamesPlayed;
-   text-align: center;
-   flex-grow: 1;
-   >*{
-      flex: 0 0 auto;
-      padding-left: map.get($spacing, "base");
-      padding-right: map.get($spacing, "base");
-
-   }
 }
