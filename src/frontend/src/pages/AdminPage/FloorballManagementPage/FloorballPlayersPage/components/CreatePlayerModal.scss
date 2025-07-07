@@ -206,15 +206,52 @@
   justify-content: center;
 }
 
+// Table Header
+.persons-table-header {
+  display: grid;
+  grid-template-columns: 100px 80px 2fr 140px;
+  gap: 1.5rem;
+  padding: 0.6rem 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem 0.25rem 0 0;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+
+  .header-birth-date {
+    justify-self: start;
+    align-self: center;
+  }
+
+  .header-registration {
+    justify-self: center;
+    align-self: center;
+  }
+
+  .header-name {
+    justify-self: start;
+    align-self: center;
+  }
+
+  .header-actions {
+    justify-self: center;
+    align-self: center;
+  }
+}
+
 .persons-list {
   display: flex;
   flex-direction: column;
-  gap: 1px;
   flex: 1;
   overflow-y: auto;
-  padding-right: 0.5rem;
   min-height: 0;
   width: 100%;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  border-radius: 0 0 0.25rem 0.25rem;
 
   // Custom scrollbar
   &::-webkit-scrollbar {
@@ -237,104 +274,126 @@
 }
 
 .person-item {
-  display: flex;
-  justify-content: space-between;
+  display: grid !important;
+  grid-template-columns: 100px 80px 2fr 140px !important;
+  gap: 1.5rem !important;
   align-items: center;
-  padding: 0.15rem 0.8rem;
-  border: 1px solid #dee2e6;
-  border-radius: 0.25rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #e9ecef;
   background-color: white;
   transition: all 0.2s ease-in-out;
-  width: 100%;
+  width: 100% !important;
   box-sizing: border-box;
+  min-height: 50px;
+  position: relative;
+  
+  /* Force grid to respect column widths */
+  grid-template-rows: auto;
+  overflow: visible;
+
+  &:last-child {
+    border-bottom: none;
+  }
 
   &:hover {
-    border-color: #0d6efd;
-    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.12);
-    transform: translateY(-1px);
+    background-color: #f8f9fa;
+    box-shadow: inset 0 0 0 1px #0d6efd;
   }
 
-  .person-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.05rem;
-
-    .person-name {
-      font-weight: 600;
-      color: #212529;
-      font-size: 0.9rem;
-      line-height: 1.1;
-      margin: 0;
-      padding: 0;
-    }
-
-    .person-details {
-      display: flex;
-      gap: 0.5rem;
-      font-size: 0.75rem;
-      color: #6c757d;
-      line-height: 1;
-      margin: 0;
-      padding: 0;
-
-      .birth-date {
-        color: #495057;
-        margin: 0;
-        padding: 0;
-        line-height: 1;
-      }
-
-              .registration-status {
-          font-weight: 500;
-          padding: 0.15rem 0.4rem;
-          border-radius: 0.2rem;
-          font-size: 0.65rem;
-          text-transform: uppercase;
-          line-height: 1;
-          margin: 0;
-
-        &.registered {
-          background-color: #d4edda;
-          color: #155724;
-        }
-
-        &.not-registered {
-          background-color: #f8d7da;
-          color: #721c24;
-        }
-      }
-    }
-  }
-
-  .create-player-btn {
-    padding: 0.6rem 0.75rem;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 0.2rem;
-    font-size: 0.75rem;
+  .person-birth-date {
+    font-size: 0.85rem;
+    color: #495057;
     font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    justify-self: start;
+    align-self: center;
+    width: 100px;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
-    line-height: 1;
+    box-sizing: border-box;
+  }
 
-    &:hover:not(:disabled) {
-      background-color: #218838;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+  .person-registration {
+    position: relative !important;
+    width: 80px !important;
+    height: 100% !important;
+    grid-column: 2 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    .registration-indicator {
+      position: absolute !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-weight: bold;
+      font-size: 0.8rem;
+
+      &.registered {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      &.not-registered {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
     }
+  }
 
-    &:active:not(:disabled) {
-      transform: translateY(0);
-    }
+  .person-name {
+    font-weight: 600;
+    color: #212529;
+    font-size: 0.9rem;
+    grid-column: 3 !important;
+    justify-self: center !important;
+    align-self: center;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+  }
 
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
+  .person-actions {
+    display: flex;
+    justify-content: center;
+
+    .create-player-btn {
+      padding: 0.4rem 0.6rem;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 0.2rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      white-space: nowrap;
+
+      &:hover:not(:disabled) {
+        background-color: #218838;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
     }
   }
 }
@@ -371,21 +430,48 @@
     padding: 0.75rem 1rem;
   }
 
-  .person-item {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-    padding: 0.4rem;
+  .persons-table-header {
+    display: none;
+  }
 
-    .person-details {
-      flex-direction: column;
-      gap: 0.25rem;
+  .person-item {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    border: 1px solid #dee2e6;
+    margin-bottom: 0.5rem;
+
+    .person-birth-date::before {
+      content: "Birth Date: ";
+      font-weight: 600;
+      color: #6c757d;
     }
 
-    .create-player-btn {
-      width: 100%;
-      padding: 0.5rem;
-      font-size: 0.8rem;
+    .person-registration {
+      justify-content: flex-start;
+      
+      &::before {
+        content: "Registration: ";
+        font-weight: 600;
+        color: #6c757d;
+        margin-right: 0.5rem;
+      }
+    }
+
+    .person-name {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .person-actions {
+      justify-content: stretch;
+
+      .create-player-btn {
+        width: 100%;
+        padding: 0.6rem;
+        font-size: 0.85rem;
+      }
     }
   }
 
@@ -428,16 +514,31 @@
   .persons-list {
     flex: 1;
     min-height: 0;
+    border: none;
+    border-radius: 0;
   }
 
   .person-item {
-    padding: 0.3rem;
-  }
+    padding: 0.5rem;
+    
+    .person-birth-date,
+    .person-registration {
+      font-size: 0.8rem;
+    }
 
-  .person-details {
-    .registration-status {
-      font-size: 0.6rem;
-      padding: 0.15rem 0.3rem;
+    .person-name {
+      font-size: 0.9rem;
+    }
+
+    .person-actions .create-player-btn {
+      font-size: 0.8rem;
+      padding: 0.5rem;
+    }
+
+    .registration-indicator {
+      width: 18px;
+      height: 18px;
+      font-size: 0.7rem;
     }
   }
 }
@@ -515,30 +616,22 @@
 // Newly Created Person Highlighting
 .person-item {
   &.newly-created {
-    border: 2px solid #28a745;
     background-color: #f8fff9;
+    border-left: 4px solid #28a745;
     animation: highlight-pulse 2s ease-out;
     
     .person-name {
       color: #155724;
       font-weight: 700;
+      
+      &::after {
+        content: " ✨ New";
+        font-size: 0.7rem;
+        color: #28a745;
+        font-weight: 600;
+        margin-left: 0.5rem;
+      }
     }
-    
-    &::before {
-      content: "✨ New";
-      position: absolute;
-      top: -8px;
-      right: 8px;
-      background: #28a745;
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 0.2rem 0.5rem;
-      border-radius: 0.25rem;
-      text-transform: uppercase;
-    }
-    
-    position: relative;
   }
 }
 

@@ -276,39 +276,49 @@ const CreatePlayerModal = ({
                       }</p>
                     </div>
                   ) : (
-                    <div className="persons-list">
-                      {filteredPersons.map((person) => (
-                        <div 
-                          key={person.id} 
-                          className={`person-item ${isPersonNewlyCreated(person) ? 'newly-created' : ''}`}
-                        >
-                          <div className="person-info">
-                            <div className="person-name">{person.fullName}</div>
-                            <div className="person-details">
-                              <span className="birth-date">
-                                {t('common.birthDate', 'Birth Date')}: {new Date(person.birthDate).toLocaleDateString()}
-                              </span>
-                              <span className={`registration-status ${person.isRegistered ? 'registered' : 'not-registered'}`}>
-                                {person.isRegistered ? 
-                                  t('common.registered', 'Registered') : 
-                                  t('common.notRegistered', 'Not Registered')
-                                }
+                    <>
+                      {/* Table Header */}
+                      <div className="persons-table-header">
+                        <div className="header-birth-date">{t('common.birthDate', 'BIRTH DATE')}</div>
+                        <div className="header-registration">{t('common.registration', 'REGISTRATION')}</div>
+                        <div className="header-name">{t('common.name', 'NAME')}</div>
+                        <div className="header-actions">{t('common.actions', 'ACTIONS')}</div>
+                      </div>
+                      
+                      {/* Persons List */}
+                      <div className="persons-list">
+                        {filteredPersons.map((person) => (
+                          <div 
+                            key={person.id} 
+                            className={`person-item ${isPersonNewlyCreated(person) ? 'newly-created' : ''}`}
+                          >
+                            <div className="person-birth-date">
+                              {new Date(person.birthDate).toLocaleDateString()}
+                            </div>
+                            <div className="person-registration">
+                              <span className={`registration-indicator ${person.isRegistered ? 'registered' : 'not-registered'}`}>
+                                {person.isRegistered ? '✓' : '✗'}
                               </span>
                             </div>
+                            <div className="person-name">
+                              {person.fullName}
+                            </div>
+                            <div className="person-actions">
+                              <button
+                                className="create-player-btn"
+                                onClick={() => handleCreatePlayer(person.id)}
+                                disabled={creating}
+                              >
+                                {creating ? 
+                                  t('common.creating', 'Creating...') : 
+                                  t('floorball.players.createPlayer', 'Create Player')
+                                }
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            className="create-player-btn"
-                            onClick={() => handleCreatePlayer(person.id)}
-                            disabled={creating}
-                          >
-                            {creating ? 
-                              t('common.creating', 'Creating...') : 
-                              t('floorball.players.createPlayer', 'Create Player')
-                            }
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               )}
