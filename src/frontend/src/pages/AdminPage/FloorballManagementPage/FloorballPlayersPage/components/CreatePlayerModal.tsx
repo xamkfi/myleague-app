@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { personApi } from '../../../../../api/admin/personApi';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import type { Person } from '../../../../../types/admin/personTypes';
+import PersonForm from '../../../PersonsPage/components/PersonForm/PersonForm';
 import './CreatePlayerModal.scss';
+
+type ModalMode = 'selectPerson' | 'createPerson';
 
 interface CreatePlayerModalProps {
   isOpen: boolean;
@@ -24,6 +27,10 @@ const CreatePlayerModal = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [successTimeoutId, setSuccessTimeoutId] = useState<number | null>(null);
+  
+  // Modal mode state for switching between person selection and creation
+  const [modalMode, setModalMode] = useState<ModalMode>('selectPerson');
+  const [newlyCreatedPersons, setNewlyCreatedPersons] = useState<Person[]>([]);
 
   // Fetch persons and filter out those who are already players
   useEffect(() => {
@@ -71,6 +78,8 @@ const CreatePlayerModal = ({
       setError(null);
       setSearchTerm('');
       setSuccessMessage(null);
+      setModalMode('selectPerson');
+      setNewlyCreatedPersons([]);
       // Clear any existing timeout when modal closes
       if (successTimeoutId) {
         clearTimeout(successTimeoutId);
@@ -79,12 +88,15 @@ const CreatePlayerModal = ({
     }
   }, [isOpen, successTimeoutId]);
 
-  // Filter available persons based on search term
+  // Filter available persons based on search term and highlight newly created ones
   const filteredPersons = availablePersons.filter(person =>
     person.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     person.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     person.lastName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const isPersonNewlyCreated = (person: Person) => 
+    newlyCreatedPersons.some(newPerson => newPerson.id === person.id);
 
   const handleCreatePlayer = async (personId: string) => {
     try {
@@ -133,6 +145,34 @@ const CreatePlayerModal = ({
     }
   };
 
+  // Handle person creation from embedded form
+  const handlePersonCreated = (newPerson: Person) => {
+    // Add to available persons list
+    setAvailablePersons(prev => [newPerson, ...prev]);
+    
+    // Track newly created persons for highlighting
+    setNewlyCreatedPersons(prev => [...prev, newPerson]);
+    
+    // Switch back to selection mode
+    setModalMode('selectPerson');
+    
+    // Show success message
+    const message = t('floorball.players.personCreated', '{{personName}} created successfully! You can now create a player from them.', { 
+      personName: newPerson.fullName 
+    });
+    setSuccessMessage(message);
+    
+    // Auto-hide success message after 3 seconds
+    if (successTimeoutId) {
+      clearTimeout(successTimeoutId);
+    }
+    const timeoutId = setTimeout(() => {
+      setSuccessMessage(null);
+      setSuccessTimeoutId(null);
+    }, 3000);
+    setSuccessTimeoutId(timeoutId);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -144,9 +184,14 @@ const CreatePlayerModal = ({
         </div>
       )}
       
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className={`create-player-modal-content ${modalMode === 'createPerson' ? 'create-person-mode' : 'select-person-mode'}`} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{t('floorball.players.createFromPerson', 'Create Player from Available Persons')}</h2>
+          <h2>
+            {modalMode === 'selectPerson' 
+              ? t('floorball.players.createFromPerson', 'Create Player from Available Persons')
+              : t('floorball.players.createNewPerson', 'Create New Person')
+            }
+          </h2>
           <button
             className="modal-close"
             onClick={onClose}
@@ -158,87 +203,132 @@ const CreatePlayerModal = ({
         </div>
 
         <div className="modal-body">
-          {/* Search Bar */}
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder={t('floorball.players.searchPersons', 'Search available persons...')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-          </div>
-
-          {/* Loading State */}
-          {loading && (
-            <div className="loading-container">
-              <p>{t('common.loading', 'Loading...')}</p>
-            </div>
+          {modalMode === 'selectPerson' ? (
+            <>
+              {/* Search Bar with Create Person Button */}
+              <div className="search-container">
+                <input
+                  type="text"
+                  placeholder={t('floorball.players.searchPersons', 'Search available persons...')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+                <button
+                  className="create-person-button"
+                  onClick={() => setModalMode('createPerson')}
+                  type="button"
+                >
+                  ➕ {t('floorball.players.createNewPerson', 'Create New Person')}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Back Button for Person Creation Mode */}
+              <div className="mode-header">
+                <button
+                  className="back-button"
+                  onClick={() => setModalMode('selectPerson')}
+                  type="button"
+                >
+                  ← {t('common.back', 'Back to Person Selection')}
+                </button>
+              </div>
+              
+              {/* Embedded PersonForm */}
+              <div className="person-form-container">
+                <PersonForm
+                  mode="embedded"
+                  showTeamAssignment={false}
+                  onSuccess={handlePersonCreated}
+                  onCancel={() => setModalMode('selectPerson')}
+                />
+              </div>
+            </>
           )}
 
-          {/* Error Message */}
-          {error && (
-            <div className="error-message">
-              <p>{error}</p>
-            </div>
-          )}
-
-          {/* Persons List */}
-          {!loading && !error && (
-            <div className="persons-container">
-              {filteredPersons.length === 0 ? (
-                <div className="no-persons">
-                  <p>{searchTerm ? 
-                    t('floorball.players.noPersonsFound', 'No persons found matching your search') :
-                    t('floorball.players.noPersonsAvailable', 'No available persons to convert to players. All persons are already players.')
-                  }</p>
-                </div>
-              ) : (
-                <div className="persons-list">
-                  {filteredPersons.map((person) => (
-                    <div key={person.id} className="person-item">
-                      <div className="person-info">
-                        <div className="person-name">{person.fullName}</div>
-                        <div className="person-details">
-                          <span className="birth-date">
-                            {t('common.birthDate', 'Birth Date')}: {new Date(person.birthDate).toLocaleDateString()}
-                          </span>
-                          <span className={`registration-status ${person.isRegistered ? 'registered' : 'not-registered'}`}>
-                            {person.isRegistered ? 
-                              t('common.registered', 'Registered') : 
-                              t('common.notRegistered', 'Not Registered')
-                            }
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        className="create-player-btn"
-                        onClick={() => handleCreatePlayer(person.id)}
-                        disabled={creating}
-                      >
-                        {creating ? 
-                          t('common.creating', 'Creating...') : 
-                          t('floorball.players.createPlayer', 'Create Player')
-                        }
-                      </button>
-                    </div>
-                  ))}
+          {/* Content for Select Person Mode */}
+          {modalMode === 'selectPerson' && (
+            <>
+              {/* Loading State */}
+              {loading && (
+                <div className="loading-container">
+                  <p>{t('common.loading', 'Loading...')}</p>
                 </div>
               )}
-            </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="error-message">
+                  <p>{error}</p>
+                </div>
+              )}
+
+              {/* Persons List */}
+              {!loading && !error && (
+                <div className="persons-container">
+                  {filteredPersons.length === 0 ? (
+                    <div className="no-persons">
+                      <p>{searchTerm ? 
+                        t('floorball.players.noPersonsFound', 'No persons found matching your search') :
+                        t('floorball.players.noPersonsAvailable', 'No available persons to convert to players. All persons are already players.')
+                      }</p>
+                    </div>
+                  ) : (
+                    <div className="persons-list">
+                      {filteredPersons.map((person) => (
+                        <div 
+                          key={person.id} 
+                          className={`person-item ${isPersonNewlyCreated(person) ? 'newly-created' : ''}`}
+                        >
+                          <div className="person-info">
+                            <div className="person-name">{person.fullName}</div>
+                            <div className="person-details">
+                              <span className="birth-date">
+                                {t('common.birthDate', 'Birth Date')}: {new Date(person.birthDate).toLocaleDateString()}
+                              </span>
+                              <span className={`registration-status ${person.isRegistered ? 'registered' : 'not-registered'}`}>
+                                {person.isRegistered ? 
+                                  t('common.registered', 'Registered') : 
+                                  t('common.notRegistered', 'Not Registered')
+                                }
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            className="create-player-btn"
+                            onClick={() => handleCreatePlayer(person.id)}
+                            disabled={creating}
+                          >
+                            {creating ? 
+                              t('common.creating', 'Creating...') : 
+                              t('floorball.players.createPlayer', 'Create Player')
+                            }
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        <div className="modal-footer">
-          <button
-            type="button"
-            onClick={onClose}
-            className="cancel-button"
-            disabled={creating}
-          >
-            {t('common.cancel', 'Cancel')}
-          </button>
-        </div>
+        {/* Footer only shown in select person mode */}
+        {modalMode === 'selectPerson' && (
+          <div className="modal-footer">
+            <button
+              type="button"
+              onClick={onClose}
+              className="cancel-button"
+              disabled={creating}
+            >
+              {t('common.cancel', 'Cancel')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
