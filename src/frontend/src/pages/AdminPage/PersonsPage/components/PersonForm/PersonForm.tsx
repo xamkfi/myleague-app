@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { PersonFormData, EnhancedPersonFormData } from '../../../../../types/admin/personTypes';
+import type { PersonFormData, EnhancedPersonFormData, Person } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
 import { floorballPlayerService } from '../../../../../api/floorball/floorballPlayerService';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
@@ -9,6 +9,14 @@ import { floorballTeamSearchService } from '../../../../../api/floorball/floorba
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import './PersonForm.scss';
+
+interface PersonFormProps {
+  mode?: 'standalone' | 'embedded';
+  onSuccess?: (createdPerson: Person) => void;
+  onCancel?: () => void;
+  showTeamAssignment?: boolean;
+  initialData?: Partial<EnhancedPersonFormData>;
+}
 
 const MAX_LENGTHS = {
   firstName: 100,
@@ -23,7 +31,13 @@ const MAX_LENGTHS = {
   alternativePhone: 50
 };
 
-const PersonForm = () => {
+const PersonForm = ({
+  mode = 'standalone',
+  onSuccess,
+  onCancel,
+  showTeamAssignment = true,
+  initialData
+}: PersonFormProps) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -32,27 +46,44 @@ const PersonForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
-  const [formData, setFormData] = useState<EnhancedPersonFormData>({
-    firstName: '',
-    lastName: '',
-    birthDate: '',
-    isRegistered: false,
-    address: {
-      street1: '',
-      street2: '',
-      city: '',
-      postalCode: '',
-      country: ''
-    },
-    contactInfo: {
-      email: '',
-      phone: '',
-      alternativePhone: ''
-    },
-    teamId: undefined,
-    position: undefined,
-    jerseyNumber: undefined
-  });
+  
+  // Initialize form data with defaults and merge with initialData if provided
+  const getInitialFormData = (): EnhancedPersonFormData => {
+    const defaultData: EnhancedPersonFormData = {
+      firstName: '',
+      lastName: '',
+      birthDate: '',
+      isRegistered: false,
+      address: {
+        street1: '',
+        street2: '',
+        city: '',
+        postalCode: '',
+        country: ''
+      },
+      contactInfo: {
+        email: '',
+        phone: '',
+        alternativePhone: ''
+      },
+      teamId: undefined,
+      position: undefined,
+      jerseyNumber: undefined
+    };
+    
+    if (initialData) {
+      return {
+        ...defaultData,
+        ...initialData,
+        address: { ...defaultData.address, ...initialData.address },
+        contactInfo: { ...defaultData.contactInfo, ...initialData.contactInfo }
+      };
+    }
+    
+    return defaultData;
+  };
+  
+  const [formData, setFormData] = useState<EnhancedPersonFormData>(getInitialFormData());
 
   useEffect(() => {
     const fetchPerson = async () => {
@@ -361,7 +392,12 @@ const PersonForm = () => {
         }
       }
 
-      navigate('/admin/persons');
+      // Handle success based on mode
+      if (mode === 'embedded' && onSuccess) {
+        onSuccess(createdPerson);
+      } else {
+        navigate('/admin/persons');
+      }
     } catch (error) {
       console.error('Failed to save person:', error);
       setError(t('admin.persons.errors.saveFailed', 'Failed to save person'));
@@ -371,7 +407,11 @@ const PersonForm = () => {
   };
 
   const handleCancel = () => {
-    navigate('/admin/persons');
+    if (mode === 'embedded' && onCancel) {
+      onCancel();
+    } else {
+      navigate('/admin/persons');
+    }
   };
 
   if (loading && isEditMode) {
@@ -613,8 +653,8 @@ const PersonForm = () => {
         </div>
       </div>
 
-      {/* Team Assignment Section - Only show for new persons */}
-      {!isEditMode && (
+      {/* Team Assignment Section - Only show for new persons and when enabled */}
+      {!isEditMode && showTeamAssignment && (
         <div className="form-section">
           <h3>{t('admin.persons.form.floorballAssignment', 'Floorball Team Assignment (Optional)')}</h3>
           <div className="form-row">
