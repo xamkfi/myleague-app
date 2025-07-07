@@ -193,7 +193,7 @@ const CreatePlayerModal = ({
             }
           </h2>
           <button
-            className="modal-close"
+            className="create-player-modal-close"
             onClick={onClose}
             type="button"
             aria-label="Close modal"
@@ -315,20 +315,6 @@ const CreatePlayerModal = ({
             </>
           )}
         </div>
-
-        {/* Footer only shown in select person mode */}
-        {modalMode === 'selectPerson' && (
-          <div className="modal-footer">
-            <button
-              type="button"
-              onClick={onClose}
-              className="cancel-button"
-              disabled={creating}
-            >
-              {t('common.cancel', 'Cancel')}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

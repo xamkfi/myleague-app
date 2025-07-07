@@ -41,24 +41,46 @@
     font-weight: 600;
   }
 
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #666;
+  .create-player-modal-close {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    font-size: 2.8rem;
+    color: #6c757d;
     cursor: pointer;
     padding: 0;
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     transition: all 0.2s ease;
+    font-weight: 300;
+    line-height: 1;
 
     &:hover {
-      background: #e9ecef;
-      color: #dc3545;
+      background: #dc3545;
+      border-color: #dc3545;
+      color: white;
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    &:active {
+      transform: scale(1.05);
+    }
+
+    // Responsive adjustments
+    @media (max-width: 768px) {
+      width: 36px;
+      height: 36px;
+      font-size: 2.2rem;
+    }
+
+    @media (max-width: 480px) {
+      width: 32px;
+      height: 32px;
+      font-size: 2rem;
     }
   }
 }
@@ -286,7 +308,7 @@
   }
 
   .create-player-btn {
-    padding: 0.3rem 0.75rem;
+    padding: 0.6rem 0.75rem;
     background-color: #28a745;
     color: white;
     border: none;
@@ -317,41 +339,7 @@
   }
 }
 
-.modal-footer {
-  padding: 0.5rem 1.25rem;
-  border-top: 1px solid #dee2e6;
-  background-color: #f8f9fa;
-  display: flex;
-  justify-content: flex-end;
-  flex-shrink: 0;
 
-  .cancel-button {
-    padding: 0.5rem 1rem;
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 0.25rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-
-    &:hover:not(:disabled) {
-      background-color: #5a6268;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    &:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-}
 
 // Responsive design
 @media (max-width: 768px) {
@@ -401,14 +389,7 @@
     }
   }
 
-  .modal-footer {
-    padding: 0.5rem 1rem;
 
-    .cancel-button {
-      width: 100%;
-      padding: 0.5rem;
-    }
-  }
 }
 
 @media (max-width: 1024px) and (min-width: 769px) {
