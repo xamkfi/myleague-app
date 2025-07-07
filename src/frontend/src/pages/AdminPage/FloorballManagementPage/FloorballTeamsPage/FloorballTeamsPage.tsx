@@ -181,6 +181,17 @@ const FloorballTeamsPage = () => {
           </div>
         )}
 
+        {/* Pagination */}
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+
+
         {/* Teams table */}
         <TeamsTable
           teams={teams}
@@ -198,6 +209,7 @@ const FloorballTeamsPage = () => {
           onPageSizeChange={handlePageSizeChange}
         />
 
+        
         {/* Back button */}
         <div className="back-button-container">
           <button

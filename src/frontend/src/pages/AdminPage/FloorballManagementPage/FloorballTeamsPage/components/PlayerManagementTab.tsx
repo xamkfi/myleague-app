@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import RosterPlayerItem from './RosterPlayerItem';
-import AvailablePlayerItem from './AvailablePlayerItem';
+import PlayerTransferList from './PlayerTransferList';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import type { FloorballTeamPlayer, FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 import './PlayerManagementTab.scss';
@@ -48,66 +47,21 @@ const PlayerManagementTab = ({
 
   return (
     <div className="players-management">
-      <div className="players-section">
-        <div className="current-roster">
-          <h3>{t('floorball.teams.currentRoster', 'Current Roster')} ({displayRoster.length})</h3>
-          <div className="players-list">
-            {displayRoster.length === 0 ? (
-              <p className="no-players">{t('floorball.teams.noPlayersInRoster', 'No players in roster')}</p>
-            ) : (
-              displayRoster.map(player => (
-                <RosterPlayerItem
-                  key={player.playerId}
-                  player={player}
-                  allPlayers={allPlayers}
-                  edits={playerEdits[player.playerId] || {}}
-                  isMarkedForRemoval={removedPlayers.has(player.playerId)}
-                  isNewlyAdded={addedPlayers.has(player.playerId) && !removedPlayers.has(player.playerId)}
-                  removePlayerFromTeam={removePlayerFromTeam}
-                  updatePlayerPosition={updatePlayerPosition}
-                  updatePlayerJerseyNumber={updatePlayerJerseyNumber}
-                  togglePlayerActive={togglePlayerActive}
-                />
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="available-players">
-          <h3>{t('floorball.teams.availablePlayers', 'Available Players')} ({availablePlayers.length})</h3>
-          {loadingPlayers ? (
-            <p>{t('common.loading', 'Loading...')}</p>
-          ) : (
-            <>
-              {allPlayers.length === 0 && (
-                <div className="no-players-error">
-                  <p>{t('floorball.teams.noAvailablePlayers', 'No available players')}</p>
-                  <button
-                    className="refresh-button"
-                    onClick={loadAllPlayers}
-                    disabled={loadingPlayers}
-                  >
-                    {loadingPlayers ? t('common.loading', 'Loading...') : t('common.retry', 'Retry')}
-                  </button>
-                </div>
-              )}
-              <div className="players-list">
-                {availablePlayers.length === 0 && allPlayers.length > 0 ? (
-                  <p className="no-players">{t('floorball.teams.noAvailablePlayers', 'All players are already assigned to teams')}</p>
-                ) : (
-                  availablePlayers.map(player => (
-                    <AvailablePlayerItem
-                      key={player.id}
-                      player={player}
-                      addPlayerToTeam={addPlayerToTeam}
-                    />
-                  ))
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+      <PlayerTransferList
+        displayRoster={displayRoster}
+        availablePlayers={availablePlayers}
+        allPlayers={allPlayers}
+        playerEdits={playerEdits}
+        removedPlayers={removedPlayers}
+        addedPlayers={addedPlayers}
+        loadingPlayers={loadingPlayers}
+        addPlayerToTeam={addPlayerToTeam}
+        removePlayerFromTeam={removePlayerFromTeam}
+        updatePlayerPosition={updatePlayerPosition}
+        updatePlayerJerseyNumber={updatePlayerJerseyNumber}
+        togglePlayerActive={togglePlayerActive}
+        loadAllPlayers={loadAllPlayers}
+      />
 
       <div className="form-actions">
         <button type="button" onClick={onClose} className="cancel-button">
