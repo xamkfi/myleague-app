@@ -172,7 +172,9 @@ function FloorballTeamPage() {
       case 'roster':
         return (
           <div className="roster-section">
-            <RosterSection></RosterSection>
+            <RosterSection
+              team={team}
+            ></RosterSection>
           </div>
         );
 

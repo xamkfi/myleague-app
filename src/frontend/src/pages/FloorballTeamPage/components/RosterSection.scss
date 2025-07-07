@@ -1,0 +1,90 @@
+@use 'sass:map';
+@use '../../../styles/variables' as *;
+@use '../../../styles/common' as *;
+
+.roster-container{
+   font-size: map.get($font-sizes, "sm");
+}
+
+.table{
+   display: grid;
+   grid-template-columns: minmax(40px, 50px) minmax(140px, 1fr) repeat(3, minmax(60px, 50px));
+   grid-template-areas: "jersey playerName gamesPlayed goals assists";
+}
+
+.stats-header{
+   background-color: #007bff;
+   color: rgb(242, 249, 255);
+   font-weight: map.get($font-weights, "bold");
+}
+
+.roster-position-container{
+   border: 1px solid $color-border;
+   box-shadow: 0 2px 4px $color-box-shadow;
+   margin-bottom: map.get($spacing, "base");
+   border-radius: 6px;
+   
+} 
+
+.roster-position-header{
+   text-align: left;
+   font-size: map.get($font-sizes, "md");
+   font-weight: map.get($font-weights, "bold");
+   margin: map.get($spacing, "base") 0;
+   color: $color-primary;
+}
+
+.roster-player{
+   // margin-bottom: map.get($spacing, "xs" );
+   padding: 0.5rem 0;
+   transition: 
+            background-color 0.25s ease;
+   &:nth-child(even){
+      background-color: #eeeeee;
+   }
+   &:hover{
+      background-color: #5e99d9;
+      color: #eeeeee;
+      cursor: pointer;
+   }
+}
+
+.roster-jersey{
+   grid-area: jersey;
+   font-weight: map.get($font-weights, "bold");
+
+}
+
+.roster-player-name{
+   grid-area: playerName;
+   text-align: left;
+   
+}
+
+.roster-games-played{
+   grid-area: gamesPlayed;
+}
+
+
+.roster-goals{
+   grid-area: goals;
+}
+
+
+.roster-assists{
+   grid-area: assists;
+}
+
+.roster-player-stats{
+   // display: flex;
+   // justify-content: flex-end;
+   grid-area: gamesPlayed;
+   text-align: center;
+   flex-grow: 1;
+   >*{
+      flex: 0 0 auto;
+      padding-left: map.get($spacing, "base");
+      padding-right: map.get($spacing, "base");
+
+   }
+}
