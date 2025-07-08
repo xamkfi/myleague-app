@@ -8,6 +8,7 @@ import CreatePlayerModal from './components/CreatePlayerModal';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import './FloorballPlayersPage.scss';
 import './components/CreatePlayerModal.scss';
+import BackButton from '../../../../components/BackButton/BackButton';
 
 const FloorballPlayersPage = () => {
   const navigate = useNavigate();
@@ -115,6 +116,13 @@ const FloorballPlayersPage = () => {
   return (
     <PageTemplate title={t('floorball.players.title', 'Manage Floorball Players')}>      
       <div className="floorball-players-container">
+
+        {/* Back button */}
+        <BackButton 
+          to="/admin/floorball" 
+          text={t('common.back', 'Back to Floorball Management')} 
+        />
+        
         {/* Header with actions */}
         <div className="floorball-players-header">
           <div className="players-count">
@@ -140,16 +148,6 @@ const FloorballPlayersPage = () => {
             players={players} 
             onDelete={handleDelete} 
           />
-        </div>
-
-        {/* Back button */}
-        <div className="back-button-container">
-          <button
-            className="back-button"
-            onClick={() => navigate('/admin/floorball')}
-          >
-            {t('common.back', 'Back to Floorball Management')}
-          </button>
         </div>
 
         {/* Create Player Modal */}

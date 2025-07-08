@@ -71,7 +71,7 @@
     }
   },
   "common": {
-    "back": "Back to Admin",
+    "back": "Back",
     "loading": "Loading...",
     "edit": "Edit",
     "delete": "Delete",

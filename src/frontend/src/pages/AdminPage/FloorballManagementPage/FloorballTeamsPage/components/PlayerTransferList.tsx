@@ -171,12 +171,7 @@ const PlayerTransferList = ({
                 className={`available-player-item ${selectedAvailablePlayers.has(player.id) ? 'selected' : ''}`}
                 onClick={() => handleSelectAvailablePlayer(player.id, !selectedAvailablePlayers.has(player.id))}
               >
-                <input
-                  type="checkbox"
-                  checked={selectedAvailablePlayers.has(player.id)}
-                  onChange={(e) => e.stopPropagation()} // Prevent double-triggering
-                  className="player-checkbox"
-                />
+                
                 <div className="player-info">
                   <span className="player-name">{player.person.fullName}</span>
                   <div className="player-details">
@@ -266,12 +261,7 @@ const PlayerTransferList = ({
                   handleSelectRosterPlayer(player.playerId, !selectedRosterPlayers.has(player.playerId));
                 }}
               >
-                <input
-                  type="checkbox"
-                  checked={selectedRosterPlayers.has(player.playerId)}
-                  onChange={(e) => e.stopPropagation()} // Prevent double-triggering
-                  className="player-checkbox"
-                />
+                
                 <div className="roster-player-content">
                   <RosterPlayerItem
                     player={player}
