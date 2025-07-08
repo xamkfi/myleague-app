@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
+import BackButton from '../../../../components/BackButton/BackButton';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import { getClubs, type Club } from '../../../../api/common/clubService';
 import type { FloorballTeam, PaginatedApiResponse, FloorballTeamRequest } from '../../../../types/floorball/floorballTypes';
@@ -159,6 +160,12 @@ const FloorballTeamsPage = () => {
   return (
     <PageTemplate title={t('floorball.teams.title', 'Manage Teams')}>
       <div className="floorball-teams-container">
+
+        {/* Back button */}
+        <BackButton 
+          to="/admin/floorball" 
+        />
+        
         {/* Header with actions */}
         <div className="floorball-teams-header">
           <div className="teams-count">
@@ -173,7 +180,7 @@ const FloorballTeamsPage = () => {
             </button>
           </div>
         </div>
-
+        
         {/* Error message */}
         {error && (
           <div className="error-message">
@@ -210,15 +217,7 @@ const FloorballTeamsPage = () => {
         />
 
         
-        {/* Back button */}
-        <div className="back-button-container">
-          <button
-            className="back-button"
-            onClick={() => navigate('/admin/floorball')}
-          >
-            {t('common.back', 'Back to Floorball Management')}
-          </button>
-        </div>
+        
 
         {/* Create Team Modal */}
         <CreateTeamModal

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { divisionService } from '../../../api/common/divisionService';
 import PageTemplate from '../../../components/PageTemplate/PageTemplate';
 import './FloorballManagementPage.scss';
+import BackButton from '../../../components/BackButton/BackButton';
 
 const FloorballManagementPage = () => {
   const navigate = useNavigate();
@@ -17,6 +18,12 @@ const FloorballManagementPage = () => {
   return (
     <PageTemplate title={t('floorball.management.title', 'Floorball Management')}>
       <div className="floorball-management-container">
+        {/* Back button */}
+        <BackButton 
+          to=".." 
+          text={t('common.back', 'Back to Admin')} 
+        />
+
         {/* Status Legend */}
         <div className="feature-status-legend">
           <div className="legend-item">
@@ -122,15 +129,7 @@ const FloorballManagementPage = () => {
           
 
         </div>
-        
-        <div className="back-button-container">
-          <button
-            className="back-button"
-            onClick={() => navigate('/admin')}
-          >
-            {t('common.back', 'Back to Admin')}
-          </button>
-        </div>
+      
       </div>
     </PageTemplate>
   );
