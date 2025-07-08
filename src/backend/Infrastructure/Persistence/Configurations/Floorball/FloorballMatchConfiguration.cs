@@ -81,6 +81,11 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .HasForeignKey(p => p.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Configure the backing field for PeriodScores so EF can populate it properly
+            builder.Navigation(m => m.PeriodScores)
+                .HasField("_periodScores")
+                .EnableLazyLoading(false);
+
             // Ignore complex event configurations for now to avoid navigationName issues
             builder.Ignore(m => m.Events);
             builder.Ignore(m => m.GoalEvents);
