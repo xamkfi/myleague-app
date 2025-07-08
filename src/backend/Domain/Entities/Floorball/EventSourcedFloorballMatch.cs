@@ -232,7 +232,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         Guid scoringPlayerId,
         int periodNumber,
         int timeInSeconds,
-        Guid? assistingPlayerId = null)
+        Guid? assistingPlayerId = null,
+        Guid? secondaryAssistingPlayerId = null)
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot record a goal for a match with status {Status}.");
@@ -250,7 +251,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             timeInSeconds,
             WentToOvertime,
             false,
-            assistingPlayerId);
+            assistingPlayerId,
+            secondaryAssistingPlayerId);
         ApplyEvent(goalScoredEvent);
     }
 

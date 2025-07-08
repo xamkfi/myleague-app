@@ -58,6 +58,11 @@ namespace WebAPI.Models.Floorball
         /// ID of the player who assisted the goal (if any)
         /// </summary>
         public Guid? AssisterId { get; set; }
+
+        /// <summary>
+        /// ID of the second player who assisted the goal (if any)
+        /// </summary>
+        public Guid? SecondaryAssisterId { get; set; }
     }
 
     /// <summary>

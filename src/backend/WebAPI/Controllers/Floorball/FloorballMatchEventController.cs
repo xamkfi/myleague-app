@@ -82,6 +82,7 @@ namespace WebAPI.Controllers.Floorball
                 request.TeamId,
                 request.PlayerId,
                 request.AssisterId,
+                request.SecondaryAssisterId,
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.WasInOvertime,

@@ -320,6 +320,7 @@ namespace WebAPI.Controllers.Floorball
                 request.ScoringTeamId,
                 request.ScoringPlayerId,
                 request.AssistingPlayerId,
+                request.SecondaryAssistingPlayerIs,
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.Description,

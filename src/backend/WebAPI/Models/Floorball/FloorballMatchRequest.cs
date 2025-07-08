@@ -162,6 +162,11 @@ public record RecordGoalRequest
     public Guid? AssistingPlayerId { get; init; }
 
     /// <summary>
+    /// Gets the second assisting player ID (optional)
+    /// </summary>
+    public Guid? SecondaryAssistingPlayerIs { get; init; }
+
+    /// <summary>
     /// Gets the period number
     /// </summary>
     [Required(ErrorMessage = "Period number is required")]

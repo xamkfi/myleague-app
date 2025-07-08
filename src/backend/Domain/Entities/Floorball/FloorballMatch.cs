@@ -312,6 +312,7 @@ public class FloorballMatch : AggregateRoot
         FloorballTeam scoringTeam, 
         FloorballPlayer scoringPlayer,
         FloorballPlayer? assistingPlayer,
+        FloorballPlayer? secondaryAssistingPlayer,
         int periodNumber,
         int timeInSeconds,
         string? description = null,
@@ -345,6 +346,13 @@ public class FloorballMatch : AggregateRoot
             if (!assistingPlayerOnTeam)
                 throw new ArgumentException("Assisting player is not on the scoring team's roster.", nameof(assistingPlayer));
         }
+        // Check if the assisting player is on the scoring team's roster
+        if (secondaryAssistingPlayer != null)
+        {
+            bool secondaryAssistingPlayerOnTeam = scoringTeam.Roster.Any(tp => tp.PlayerId == secondaryAssistingPlayer.Id);
+            if (!secondaryAssistingPlayerOnTeam)
+                throw new ArgumentException("Secondary Assisting player is not on the scoring team's roster.", nameof(assistingPlayer));
+        }
 
         // Record the goal event
         var goalEvent = new FloorballGoal(
@@ -352,6 +360,7 @@ public class FloorballMatch : AggregateRoot
             scoringTeam.Id,
             scoringPlayer.Id,
             assistingPlayer?.Id,
+            secondaryAssistingPlayer?.Id,
             periodNumber,
             timeInSeconds,
             null, // goalType as FloorballGoalType

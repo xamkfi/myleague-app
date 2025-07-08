@@ -16,6 +16,11 @@ public class FloorballGoal : FloorballMatchEvent
     /// Gets the ID of the player who assisted the goal
     /// </summary>
     public Guid? AssistingPlayerId { get; private set; }
+
+    /// <summary>
+    /// Gets the ID of the second player who assisted the goal
+    /// </summary>
+    public Guid? SecondaryAssistingPlayerId { get; private set; }
     
     /// <summary>
     /// Gets the type of goal scored
@@ -45,6 +50,7 @@ public class FloorballGoal : FloorballMatchEvent
         Guid teamId,
         Guid? scoringPlayerId,
         Guid? assistingPlayerId,
+        Guid? secondaryAssistingPlayerId,
         int periodNumber,
         int timeInSeconds,
         FloorballGoalType? goalType = null,
@@ -53,6 +59,7 @@ public class FloorballGoal : FloorballMatchEvent
     {
         ScoringPlayerId = scoringPlayerId;
         AssistingPlayerId = assistingPlayerId;
+        SecondaryAssistingPlayerId = secondaryAssistingPlayerId;
         GoalType = goalType;
     }
 } 

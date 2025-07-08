@@ -25,6 +25,7 @@ namespace Application.Commands.Floorball.MatchEvent
         Guid TeamId,
         Guid PlayerId,
         Guid? AssisterId,
+        Guid? SecondaryAssisterId,
         int PeriodNumber,
         int TimeInSeconds,
         bool WasInOvertime,
