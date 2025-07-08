@@ -212,6 +212,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             DateTime.UtcNow);
         
         ApplyEvent(matchStartedEvent);
+
     }
 
     /// <summary>
@@ -390,7 +391,32 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         
         ApplyEvent(statusChangedEvent);
     }
-    
+
+    public void EndPeriod(int periodNumber)
+    {
+        bool isLastRegularPeriod = periodNumber == 3;
+        FloorballPeriodEndedEvent floorballPeriodEndedEvent = new FloorballPeriodEndedEvent(
+            Id,
+            periodNumber,
+            HomeScore,
+            AwayScore,
+            isLastRegularPeriod);
+
+        ApplyEvent(floorballPeriodEndedEvent);
+    }
+
+    public void StartPeriod(int periodNumber)
+    {
+        bool isLastRegularPeriod = periodNumber == 3;
+        FloorballPeriodStartedEvent floorballPeriodStartedEvent = new FloorballPeriodStartedEvent(
+            Id,
+            periodNumber,
+            HomeScore,
+            AwayScore,
+            isLastRegularPeriod);
+
+        ApplyEvent(floorballPeriodStartedEvent);
+    }
     #endregion
     
     #region Apply Methods
