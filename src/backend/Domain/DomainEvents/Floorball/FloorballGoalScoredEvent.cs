@@ -87,4 +87,6 @@ public class FloorballGoalScoredEvent : FloorballDomainEvent
         IsPenaltyShot = isPenaltyShot;
         AssisterId = assisterId;
     }
+
+    private FloorballGoalScoredEvent() { }
 } 

@@ -2,8 +2,10 @@ using Domain.DomainEvents;
 using Domain.Entities.Floorball;
 using Domain.EventSourcing;
 using Domain.Repositories.Floorball;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MyLeague.Infrastructure.DomainEvents;
 using MyLeague.Infrastructure.Persistence.Contexts;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
@@ -14,6 +16,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
     public class EventSourcedFloorballMatchRepository : IEventSourcedFloorballMatchRepository
     {
         private readonly FloorballDbContext _dbContext;
+        private readonly IDomainEventDispatcher _domainEventDispatcher;
         private readonly IFloorballEventStore _eventStore;
         private readonly ILogger<EventSourcedFloorballMatchRepository> _logger;
 
@@ -26,11 +29,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public EventSourcedFloorballMatchRepository(
             FloorballDbContext dbContext,
             IFloorballEventStore eventStore,
-            ILogger<EventSourcedFloorballMatchRepository> logger)
+            ILogger<EventSourcedFloorballMatchRepository> logger,
+            IDomainEventDispatcher domainEventDispatcher)
         {
             _dbContext = dbContext;
             _eventStore = eventStore;
             _logger = logger;
+            _domainEventDispatcher = domainEventDispatcher;
         }
 
         /// <inheritdoc />
@@ -64,22 +69,39 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <inheritdoc />
         public async Task SaveAsync(EventSourcedFloorballMatch match, CancellationToken cancellationToken = default)
         {
-            // If the match is not in the database yet, add it
-            if (!await _dbContext.EventSourcedFloorballMatches.AnyAsync(m => m.Id == match.Id, cancellationToken))
+            // Ensure the aggregate is tracked so that its snapshot is inserted/updated
+            bool exists = await _dbContext.EventSourcedFloorballMatches
+                .AsNoTracking()
+                .AnyAsync(m => m.Id == match.Id, cancellationToken);
+
+            if (exists)
+            {
+                _dbContext.EventSourcedFloorballMatches.Update(match);
+            }
+            else
             {
                 _dbContext.EventSourcedFloorballMatches.Add(match);
             }
             
-            // Save all uncommitted events to the event store
+            // Use the latest version in the event store as the expected version
+            int expectedVersion = await _eventStore.GetAggregateVersionAsync(match.Id, cancellationToken);
+
+            // Save all uncommitted events to the event store with optimistic concurrency
             await _eventStore.SaveEventsAsync(
                 match.Id,
                 match.UncommittedEvents,
-                match.Version,
+                expectedVersion,
                 cancellationToken);
-            
+
+            //Send saved events to projections for database updates
+            await _domainEventDispatcher.DispatchAsync(match.UncommittedEvents);
+
             // Mark events as committed so they won't be saved again
             match.MarkEventsAsCommitted();
-            
+
+            //// Persist snapshot updates in case EventStore didn't already commit them (different DbContext instance)
+            //await _dbContext.SaveChangesAsync(cancellationToken);
+
             _logger.LogInformation("Saved event sourced floorball match {MatchId} with {EventCount} new events", 
                 match.Id, match.UncommittedEvents.Count);
         }

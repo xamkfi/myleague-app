@@ -26,11 +26,13 @@ public static class FloorballMatchMapper
         // Map officials from the match entity
         List<Guid> officials = match.Officials.Select(referee => referee.Id).ToList();
 
-        // Map period scores from the match entity
-        Dictionary<int, (int HomeScore, int AwayScore)> periodScores = match.PeriodScores.ToDictionary(
-            ps => ps.PeriodNumber,
-            ps => (ps.HomeScore, ps.AwayScore)
-        );
+        // Map period scores from the match entity, ordered by period number
+        Dictionary<int, PeriodScoreDto> periodScores = match.PeriodScores
+            .OrderBy(ps => ps.PeriodNumber)
+            .ToDictionary(
+                ps => ps.PeriodNumber,
+                ps => new PeriodScoreDto(ps.HomeScore, ps.AwayScore)
+            );
 
         return new FloorballMatchDto(
             match.Id,
@@ -65,6 +67,43 @@ public static class FloorballMatchMapper
             throw new ArgumentNullException(nameof(matches));
 
         return matches.Select(match => ToDto(match));
+    }
+
+    /// <summary>
+    /// Maps an EventSourcedFloorballMatch entity to a FloorballMatchDto
+    /// </summary>
+    /// <param name="match">The event-sourced match entity to map</param>
+    /// <param name="homeTeamName">The home team name (placeholder until team lookups are implemented)</param>
+    /// <param name="awayTeamName">The away team name (placeholder until team lookups are implemented)</param>
+    /// <returns>The mapped DTO</returns>
+    /// <exception cref="ArgumentNullException">Thrown when match is null</exception>
+    public static FloorballMatchDto ToDto(EventSourcedFloorballMatch match, string homeTeamName = "Home Team", string awayTeamName = "Away Team")
+    {
+        if (match == null)
+            throw new ArgumentNullException(nameof(match));
+
+        // Convert period scores from tuple format to PeriodScoreDto format
+        Dictionary<int, PeriodScoreDto> periodScores = ConvertPeriodScores(match.PeriodScores);
+
+        return new FloorballMatchDto(
+            match.Id,
+            match.SeasonId,
+            match.HomeTeamId,
+            homeTeamName,
+            match.AwayTeamId,
+            awayTeamName,
+            match.ScheduledDateTime,
+            match.Venue,
+            match.Status,
+            match.HomeScore,
+            match.AwayScore,
+            match.WentToOvertime,
+            match.WentToShootout,
+            periodScores,
+            match.OfficialIds,
+            new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed
+            new List<FloorballPenaltyEventDto>() // TODO: Map penalty events when needed
+        );
     }
 
     /// <summary>
@@ -125,5 +164,21 @@ public static class FloorballMatchMapper
         // Use the domain entity's Reschedule method to update scheduled date/time and venue
         // This properly handles business rules and domain events
         match.Reschedule(command.ScheduledDateTime, command.Venue);
+    }
+
+    /// <summary>
+    /// Converts period scores from tuple format to PeriodScoreDto format
+    /// </summary>
+    /// <param name="periodScores">The period scores in tuple format</param>
+    /// <returns>The period scores in PeriodScoreDto format</returns>
+    public static Dictionary<int, PeriodScoreDto> ConvertPeriodScores(IReadOnlyDictionary<int, (int HomeScore, int AwayScore)> periodScores)
+    {
+        if (periodScores == null)
+            return new Dictionary<int, PeriodScoreDto>();
+
+        return periodScores.ToDictionary(
+            kvp => kvp.Key,
+            kvp => new PeriodScoreDto(kvp.Value.HomeScore, kvp.Value.AwayScore)
+        );
     }
 } 

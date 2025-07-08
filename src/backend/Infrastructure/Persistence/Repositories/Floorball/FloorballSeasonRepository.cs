@@ -30,6 +30,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             return await _entities
                 .Include(s => s.Teams)
                 .Include(s => s.Matches)
+                    .ThenInclude(m => m.HomeTeam)
+                .Include(s => s.Matches)
+                    .ThenInclude(m => m.AwayTeam)
                 .FirstOrDefaultAsync(s => s.Id == id) ?? throw new KeyNotFoundException($"Season with ID {id} not found.");
         }
 
@@ -54,6 +57,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             return await _entities
                 .Include(s => s.Teams)
                 .Include(s => s.Matches)
+                    .ThenInclude(m => m.HomeTeam)
+                .Include(s => s.Matches)
+                    .ThenInclude(m => m.AwayTeam)
                 .FirstOrDefaultAsync(s => s.Name == name);
         }
 

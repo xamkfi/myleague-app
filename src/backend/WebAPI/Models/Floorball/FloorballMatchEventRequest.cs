@@ -102,4 +102,94 @@ namespace WebAPI.Models.Floorball
         [Required(ErrorMessage = "Event ID is required")]
         public Guid EventId { get; set; }
     }
+
+    /// <summary>
+    /// Request model for creating an event-sourced floorball match
+    /// </summary>
+    public class CreateEventSourcedFloorballMatchRequest
+    {
+        /// <summary>
+        /// ID of the season
+        /// </summary>
+        [Required(ErrorMessage = "Season ID is required")]
+        public Guid SeasonId { get; set; }
+
+        /// <summary>
+        /// ID of the home team
+        /// </summary>
+        [Required(ErrorMessage = "Home team ID is required")]
+        public Guid HomeTeamId { get; set; }
+
+        /// <summary>
+        /// ID of the away team
+        /// </summary>
+        [Required(ErrorMessage = "Away team ID is required")]
+        public Guid AwayTeamId { get; set; }
+
+        /// <summary>
+        /// Scheduled date and time of the match
+        /// </summary>
+        [Required(ErrorMessage = "Scheduled date and time is required")]
+        public string ScheduledDateTime { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Venue of the match
+        /// </summary>
+        [StringLength(200, ErrorMessage = "Venue cannot exceed 200 characters")]
+        public string? Venue { get; set; }
+    }
+
+    /// <summary>
+    /// Request model for match ID only operations
+    /// </summary>
+    public class MatchIdRequest
+    {
+        /// <summary>
+        /// ID of the match
+        /// </summary>
+        [Required(ErrorMessage = "Match ID is required")]
+        public Guid MatchId { get; set; }
+    }
+
+    /// <summary>
+    /// Request model for adding an official to a match
+    /// </summary>
+    public class AddOfficialToMatchRequest
+    {
+        /// <summary>
+        /// ID of the match
+        /// </summary>
+        [Required(ErrorMessage = "Match ID is required")]
+        public Guid MatchId { get; set; }
+
+        /// <summary>
+        /// ID of the referee
+        /// </summary>
+        [Required(ErrorMessage = "Referee ID is required")]
+        public Guid RefereeId { get; set; }
+    }
+
+    /// <summary>
+    /// Request model for rescheduling an event-sourced floorball match
+    /// </summary>
+    public class RescheduleEventSourcedFloorballMatchRequest
+    {
+        /// <summary>
+        /// ID of the match
+        /// </summary>
+        [Required(ErrorMessage = "Match ID is required")]
+        public Guid MatchId { get; set; }
+
+        /// <summary>
+        /// New date and time for the match
+        /// </summary>
+        [Required(ErrorMessage = "New date and time is required")]
+        public DateTime NewDateTime { get; set; }
+
+        /// <summary>
+        /// New venue for the match (optional)
+        /// </summary>
+        [StringLength(200, ErrorMessage = "Venue cannot exceed 200 characters")]
+        public string? NewVenue { get; set; }
+    }
 } 
