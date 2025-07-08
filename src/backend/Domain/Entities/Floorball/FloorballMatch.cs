@@ -519,8 +519,8 @@ public class FloorballMatch : AggregateRoot
         }
         
         // Add domain events
-        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
-        AddDomainEvent(new FloorballMatchCompletedEvent(Id, HomeScore, AwayScore, WentToOvertime, WentToShootout));
+        //AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
+        //AddDomainEvent(new FloorballMatchCompletedEvent(Id, HomeScore, AwayScore, WentToOvertime, WentToShootout));
     }
 
     /// <summary>
