@@ -5,6 +5,7 @@ using MyLeague.Infrastructure.DomainEvents;
 using MyLeague.Infrastructure.Persistence.Extensions;
 using MyLeague.Infrastructure.Persistence.Configurations.Floorball;
 using System.Reflection;
+using MyLeague.Infrastructure.Persistence.EventStores;
 
 namespace MyLeague.Infrastructure.Persistence.Contexts
 {
@@ -90,6 +91,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballTeamManager> FloorballTeamManagers { get; set; }
 
         /// <summary>
+        /// Gets or sets the FloorballStoredEvents DbSet.
+        /// </summary>
+        public DbSet<FloorballStoredEvent> FloorballStoredEvents { get; set; } = null!;
+
+        /// <summary>
         /// Saves changes to the database with domain event dispatching.
         /// </summary>
         /// <returns>The number of state entries written to the database.</returns>
@@ -144,6 +150,9 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchEventConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamManagerConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballStoredEventConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballGoalConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballPenaltyConfiguration());
         }
     }
 } 

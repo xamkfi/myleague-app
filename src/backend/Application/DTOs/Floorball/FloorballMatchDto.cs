@@ -9,6 +9,13 @@ using Domain.Enums.Floorball;
 namespace Application.DTOs.Floorball
 {
     /// <summary>
+    /// Data Transfer Object for period score
+    /// </summary>
+    /// <param name="HomeScore">The home team's score for this period</param>
+    /// <param name="AwayScore">The away team's score for this period</param>
+    public record PeriodScoreDto(int HomeScore, int AwayScore);
+
+    /// <summary>
     /// Data Transfer Object for FloorballMatch entity
     /// </summary>
     /// <param name="Id">The unique identifier of the match</param>
@@ -42,7 +49,7 @@ namespace Application.DTOs.Floorball
         int AwayScore,
         bool WentToOvertime,
         bool WentToShootout,
-        IReadOnlyDictionary<int, (int HomeScore, int AwayScore)> PeriodScores,
+        IReadOnlyDictionary<int, PeriodScoreDto> PeriodScores,
         IReadOnlyCollection<Guid> Officials,
         IReadOnlyCollection<FloorballGoalEventDto> GoalEvents,
         IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents);

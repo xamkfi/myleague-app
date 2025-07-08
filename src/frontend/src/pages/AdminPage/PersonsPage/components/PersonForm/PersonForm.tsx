@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { PersonFormData } from '../../../../../types/admin/personTypes';
+import type { PersonFormData, EnhancedPersonFormData, Person } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
+import { floorballPlayerService } from '../../../../../api/floorball/floorballPlayerService';
+import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
+import { floorballTeamSearchService } from '../../../../../api/floorball/floorballTeamSearchService';
+import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
+import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import './PersonForm.scss';
+
+interface PersonFormProps {
+  mode?: 'standalone' | 'embedded';
+  onSuccess?: (createdPerson: Person) => void;
+  onCancel?: () => void;
+  showTeamAssignment?: boolean;
+  initialData?: Partial<EnhancedPersonFormData>;
+}
 
 const MAX_LENGTHS = {
   firstName: 100,
@@ -18,7 +31,13 @@ const MAX_LENGTHS = {
   alternativePhone: 50
 };
 
-const PersonForm = () => {
+const PersonForm = ({
+  mode = 'standalone',
+  onSuccess,
+  onCancel,
+  showTeamAssignment = true,
+  initialData
+}: PersonFormProps) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -27,24 +46,44 @@ const PersonForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
-  const [formData, setFormData] = useState<PersonFormData>({
-    firstName: '',
-    lastName: '',
-    birthDate: '',
-    isRegistered: false,
-    address: {
-      street1: '',
-      street2: '',
-      city: '',
-      postalCode: '',
-      country: ''
-    },
-    contactInfo: {
-      email: '',
-      phone: '',
-      alternativePhone: ''
+  
+  // Initialize form data with defaults and merge with initialData if provided
+  const getInitialFormData = (): EnhancedPersonFormData => {
+    const defaultData: EnhancedPersonFormData = {
+      firstName: '',
+      lastName: '',
+      birthDate: '',
+      isRegistered: false,
+      address: {
+        street1: '',
+        street2: '',
+        city: '',
+        postalCode: '',
+        country: ''
+      },
+      contactInfo: {
+        email: '',
+        phone: '',
+        alternativePhone: ''
+      },
+      teamId: undefined,
+      position: undefined,
+      jerseyNumber: undefined
+    };
+    
+    if (initialData) {
+      return {
+        ...defaultData,
+        ...initialData,
+        address: { ...defaultData.address, ...initialData.address },
+        contactInfo: { ...defaultData.contactInfo, ...initialData.contactInfo }
+      };
     }
-  });
+    
+    return defaultData;
+  };
+  
+  const [formData, setFormData] = useState<EnhancedPersonFormData>(getInitialFormData());
 
   useEffect(() => {
     const fetchPerson = async () => {
@@ -126,8 +165,9 @@ const PersonForm = () => {
     return null;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     const [section, field] = name.split('.');
 
     // Clear field error when user starts typing
@@ -154,6 +194,24 @@ const PersonForm = () => {
       return;
     }
 
+    // Handle team assignment fields
+    if (name === 'position') {
+      setFormData(prev => ({
+        ...prev,
+        position: value || undefined
+      }));
+      return;
+    }
+
+    if (name === 'jerseyNumber') {
+      const numValue = value ? parseInt(value) : undefined;
+      setFormData(prev => ({
+        ...prev,
+        jerseyNumber: numValue
+      }));
+      return;
+    }
+
     if (section === 'address' || section === 'contactInfo') {
       setFormData(prev => ({
         ...prev,
@@ -176,6 +234,16 @@ const PersonForm = () => {
         [name]: value
       }));
     }
+  };
+
+  // Handle team selection from dropdown
+  const handleTeamChange = (teamId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      teamId: teamId || undefined
+    }));
+    // Clear field error when team selection changes
+    setFieldErrors(prev => ({ ...prev, teamId: '', position: '' }));
   };
 
   const validateForm = (): boolean => {
@@ -253,6 +321,15 @@ const PersonForm = () => {
       errors['contactInfo.alternativePhone'] = t('admin.persons.validation.alternativePhoneTooLong', 'Alternative phone number cannot exceed {{max}} characters', { max: MAX_LENGTHS.alternativePhone });
     }
 
+    // Team assignment validation (only for new persons, not edits)
+    if (!isEditMode && formData.teamId && !formData.position) {
+      errors.position = t('admin.persons.validation.positionRequired', 'Position is required when team is selected');
+    }
+
+    if (formData.jerseyNumber && (formData.jerseyNumber < 1 || formData.jerseyNumber > 99)) {
+      errors.jerseyNumber = t('admin.persons.validation.invalidJerseyNumber', 'Jersey number must be between 1 and 99');
+    }
+
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -272,18 +349,55 @@ const PersonForm = () => {
       const [day, month, year] = formData.birthDate.split('-').map(Number);
       const isoDate = new Date(year, month - 1, day).toISOString();
 
-      const submitData = {
-        ...formData,
-        birthDate: isoDate
+      // Prepare person data (excluding team assignment fields)
+      const personData: PersonFormData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        birthDate: isoDate,
+        isRegistered: formData.isRegistered,
+        address: formData.address,
+        contactInfo: formData.contactInfo
       };
 
+      let createdPerson;
       if (isEditMode) {
-        await personApi.update(id!, submitData);
+        createdPerson = await personApi.update(id!, personData);
       } else {
-        await personApi.create(submitData);
+        createdPerson = await personApi.create(personData);
       }
 
-      navigate('/admin/persons');
+      // Step 2: If team is selected, create FloorballPlayer and add to team
+      if (formData.teamId && formData.position && !isEditMode) {
+        try {
+          // Create FloorballPlayer
+          const createdPlayer = await floorballPlayerService.create({
+            personId: createdPerson.id
+          });
+
+          // Add player to team with position and optional jersey number
+          await floorballTeamService.addPlayerToTeam(
+            formData.teamId,
+            createdPlayer.id,
+            formData.position as FloorballPosition,
+            formData.jerseyNumber
+          );
+
+          // Success message could be enhanced here to show team assignment
+          console.log(`Person created and added to team with position ${formData.position}`);
+        } catch (teamAssignmentError) {
+          // Person was created but team assignment failed
+          console.warn('Team assignment failed:', teamAssignmentError);
+          setError(t('admin.persons.errors.teamAssignmentFailed', 'Person created, but team assignment failed'));
+          // Still navigate since person was created successfully
+        }
+      }
+
+      // Handle success based on mode
+      if (mode === 'embedded' && onSuccess) {
+        onSuccess(createdPerson);
+      } else {
+        navigate('/admin/persons');
+      }
     } catch (error) {
       console.error('Failed to save person:', error);
       setError(t('admin.persons.errors.saveFailed', 'Failed to save person'));
@@ -293,7 +407,11 @@ const PersonForm = () => {
   };
 
   const handleCancel = () => {
-    navigate('/admin/persons');
+    if (mode === 'embedded' && onCancel) {
+      onCancel();
+    } else {
+      navigate('/admin/persons');
+    }
   };
 
   if (loading && isEditMode) {
@@ -534,6 +652,82 @@ const PersonForm = () => {
           </div>
         </div>
       </div>
+
+      {/* Team Assignment Section - Only show for new persons and when enabled */}
+      {!isEditMode && showTeamAssignment && (
+        <div className="form-section">
+          <h3>{t('admin.persons.form.floorballAssignment', 'Floorball Team Assignment (Optional)')}</h3>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="teamId">
+                {t('admin.persons.form.team', 'Team')}
+              </label>
+              <SearchableInfiniteDropdown
+                placeholder={t('admin.persons.form.selectTeam', 'Select a team...')}
+                value={formData.teamId || ''}
+                onChange={handleTeamChange}
+                onSearch={floorballTeamSearchService.searchTeams}
+                emptyMessage={t('admin.persons.form.noTeams', 'No teams found')}
+                searchPlaceholder={t('admin.persons.form.searchTeams', 'Search teams...')}
+                className={fieldErrors.teamId ? 'error' : ''}
+              />
+              {fieldErrors.teamId && (
+                <div className="field-error">{fieldErrors.teamId}</div>
+              )}
+            </div>
+          </div>
+          
+          {formData.teamId && (
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="position">
+                  {t('admin.persons.form.position', 'Position')} <span className="required">*</span>
+                </label>
+                <select
+                  id="position"
+                  name="position"
+                  value={formData.position || ''}
+                  onChange={handleInputChange}
+                  required
+                  className={fieldErrors.position ? 'error' : ''}
+                >
+                  <option value="">{t('admin.persons.form.selectPosition', 'Select position...')}</option>
+                  {Object.values(FloorballPosition).map(pos => (
+                    <option key={pos} value={pos}>
+                      {t(`admin.persons.form.positions.${pos.toLowerCase()}`, pos)}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.position && (
+                  <div className="field-error">{fieldErrors.position}</div>
+                )}
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="jerseyNumber">
+                  {t('admin.persons.form.jerseyNumber', 'Jersey Number')}
+                </label>
+                <input
+                  type="number"
+                  id="jerseyNumber"
+                  name="jerseyNumber"
+                  value={formData.jerseyNumber || ''}
+                  onChange={handleInputChange}
+                  min="1"
+                  max="99"
+                  className={fieldErrors.jerseyNumber ? 'error' : ''}
+                />
+                {fieldErrors.jerseyNumber && (
+                  <div className="field-error">{fieldErrors.jerseyNumber}</div>
+                )}
+                <div className="field-hint">
+                  {t('admin.persons.form.jerseyNumberHint', 'Optional: 1-99')}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {error && <div className="form-error">{error}</div>}
 

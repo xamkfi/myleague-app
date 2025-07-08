@@ -124,13 +124,22 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             throw new ArgumentException("Home team and away team cannot be the same.");
         if (string.IsNullOrWhiteSpace(venue))
             throw new ArgumentException("Venue cannot be null or empty.", nameof(venue));
+
+        // Ensure the scheduled date is stored as UTC to match PostgreSQL 'timestamp with time zone'
+        DateTime utcScheduled = scheduledDateTime.Kind switch
+        {
+            DateTimeKind.Utc => scheduledDateTime,
+            DateTimeKind.Local => scheduledDateTime.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(scheduledDateTime, DateTimeKind.Utc)
+        };
+
         var match = new EventSourcedFloorballMatch();
         var createdEvent = new FloorballMatchCreatedEvent(
             id,
             seasonId,
             homeTeamId,
             awayTeamId,
-            scheduledDateTime,
+            utcScheduled,
             venue);
         match.ApplyEvent(createdEvent);
         return match;

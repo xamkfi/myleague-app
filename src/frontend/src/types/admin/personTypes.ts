@@ -30,4 +30,11 @@ export interface PersonFormData {
   isRegistered: boolean;
   address: Address;
   contactInfo: ContactInfo;
+}
+
+// Enhanced interface for person creation with optional team assignment
+export interface EnhancedPersonFormData extends PersonFormData {
+  teamId?: string;
+  position?: string; // Will use FloorballPosition enum values
+  jerseyNumber?: number;
 } 
