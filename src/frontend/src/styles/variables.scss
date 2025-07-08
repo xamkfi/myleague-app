@@ -17,6 +17,7 @@ $color-text-muted: #888;
 $color-border: #ddd;
 $color-sidebar: #ccc;
 $color-placeholder: #999;
+$color-box-shadow: #00000019;
 
 // Typography
 $font-sizes: (
@@ -30,8 +31,10 @@ $font-sizes: (
 );
 
 $font-weights: (
+  'ligth': 300,
   'medium': 500,
-  'bold': 600
+  'bold': 600,
+  'extrabold': 800
 );
 
 $letter-spacing-wide: 4px;

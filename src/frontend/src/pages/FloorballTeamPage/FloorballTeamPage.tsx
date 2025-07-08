@@ -1,18 +1,33 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import type { FloorballTeam } from '../../types/floorball/floorballTypes';
+import type { FloorballMatchDto, FloorballTeam } from '../../types/floorball/floorballTypes';
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
 import './FloorballTeamPage.scss';
+import { divisionService } from '../../api/common/divisionService';
+import type { DivisionType } from '../../types/common/divisionType';
+import { floorballMatchService } from '../../api/floorball/floorballMatchService';
+import TeamNavbar from './components/TeamNavbar';
+import ResultsSection from './components/ResultsSection';
+import { useTranslation } from 'react-i18next';
+import RosterSection from './components/RosterSection';
 
 function FloorballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [team, setTeam] = useState<FloorballTeam | null>(null);
+  const [division, setDivision] = useState<DivisionType | null>(null)
+  const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('results');
+  const [matchesLoading, setMatchesLoading] = useState(false);
+  const [matchesError, setMatchesError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchTeamData = async () => {
@@ -24,36 +39,69 @@ function FloorballTeamPage() {
 
       try {
         setLoading(true);
-        
+
         // Fetch all teams to enable slug resolution
         const teamsResponse = await floorballTeamService.getAll({});
         const allTeams = teamsResponse.data || [];
-        
+
         // Find team by slug
         const foundTeam = findTeamBySlug(allTeams, slug);
-        
+
         if (foundTeam) {
           setTeam(foundTeam);
+
+          // Fetch division the team is in
+          const divisionResponse = await divisionService.getById(foundTeam.divisionId)
+          setDivision(divisionResponse.data)
         } else {
           setError('Team not found');
         }
-        
+
         setLoading(false);
       } catch {
         setError('Failed to load team information. Please try again later.');
         setLoading(false);
       }
     };
-
     fetchTeamData();
   }, [slug]);
 
+  // Fetch matches with pagination when team changes or page changes
+  useEffect(() => {
+    const fetchMatches = async () => {
+      if (!team) return;
+
+      try {
+        setMatchesLoading(true);
+        setMatchesError(null);
+
+        const response = await floorballMatchService.getAll({
+          teamId: team.id,
+          page: currentPage,
+          pageSize: 10
+        });
+
+        setMatches(response.data || []);
+        setTotalPages(response.pagination.totalPages || 1);
+      } catch (error) {
+        console.error('Failed to fetch matches:', error);
+        setMatchesError('Failed to load matches');
+        setMatches([]);
+      } finally {
+        setMatchesLoading(false);
+      }
+    };
+    console.log("Matsit: ",matches)
+
+    fetchMatches();
+  }, [team, currentPage]);
+
   if (loading) {
     return (
-      <PageTemplate title="Loading...">
+      <PageTemplate title={t('common.loading')}>
         <div className="floorball-team-page">
           <div className="loading-state">
-            <h2>Loading team information...</h2>
+            <h2>{t('teamUserPage.loadingInfo')}</h2>
           </div>
         </div>
       </PageTemplate>
@@ -62,13 +110,13 @@ function FloorballTeamPage() {
 
   if (error) {
     return (
-      <PageTemplate title="Error">
+      <PageTemplate title={t('common.error')}>
         <div className="floorball-team-page">
           <div className="error-state">
-            <h2>Error</h2>
+            <h2>{t('common.error')}</h2>
             <p>{error}</p>
             <button onClick={() => navigate(-1)} className="back-button">
-              ← Go Back
+              ← {t('common.goBack')}
             </button>
           </div>
         </div>
@@ -78,13 +126,13 @@ function FloorballTeamPage() {
 
   if (!team) {
     return (
-      <PageTemplate title="Team Not Found">
+      <PageTemplate title={t('teamUserPage.notFoundTitle')}>
         <div className="floorball-team-page">
           <div className="not-found-state">
-            <h2>Team not found</h2>
-            <p>The team you are looking for does not exist.</p>
+            <h2>{t('teamUserPage.notFound')}</h2>
+            <p>{t('teamUserPage.notFoundDesc')}</p>
             <button onClick={() => navigate(-1)} className="back-button">
-              ← Go Back
+              ← {t('common.goBack')}
             </button>
           </div>
         </div>
@@ -92,29 +140,74 @@ function FloorballTeamPage() {
     );
   }
 
-  const getDivisionDisplayName = (division: string) => {
-    const divisionMap: Record<string, string> = {
-      'Premier': 'Premier Division',
-      'Division1': 'Division 1',
-      'Division2': 'Division 2',
-      'Division3': 'Division 3', 
-      'Division4': 'Division 4',
-      'Youth': 'Youth',
-      'Junior': 'Junior',
-      'Veterans': 'Veterans',
-      'None': 'Unassigned'
-    };
-    return divisionMap[division] || division;
-  };
-
   const handleBackToClub = () => {
     const clubSlug = createClubSlug(team.club);
     navigate(`/club/${clubSlug}`);
   };
 
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    console.log('Active tab changed to:', tabId);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'results':
+        return (
+          <ResultsSection
+            matchesLoading={matchesLoading}
+            matchesError={matchesError}
+            matches={matches}
+            team={team}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            handlePageChange={handlePageChange}
+          ></ResultsSection>
+        );
+
+      case 'roster':
+        return (
+          <div className="roster-section">
+            <RosterSection
+              team={team}
+            ></RosterSection>
+          </div>
+        );
+
+      case 'stats':
+        return (
+          <div className="stats-section">
+            <h3>🚧 Team Statistics</h3>
+            <p>Team statistics coming soon...</p>
+          </div>
+        );
+
+      case 'standings':
+        return (
+          <div className="standings-section">
+            <h3>🚧 League Standings</h3>
+            <p>League standings coming soon...</p>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="default-section">
+            <h3>Select a tab to view content</h3>
+          </div>
+        );
+    }
+  };
+
+
   return (
     <PageTemplate title={team.name}>
       <div className="floorball-team-page">
+
         {/* Breadcrumb Navigation */}
         <div className="breadcrumb">
           <button onClick={handleBackToClub} className="club-link">
@@ -124,96 +217,72 @@ function FloorballTeamPage() {
           <span className="current">{team.name}</span>
         </div>
 
-        {/* Team Header */}
-        <div className="team-header">
-          <div className="team-info">
-            <h1>{team.name}</h1>
-            <div className="team-meta">
-              <span className="division-badge">
-                {/* TODO: Get division name from divisionId */}
-                {getDivisionDisplayName(team.divisionId)}
-              </span>
-              <span className="arena">🏟️ {team.homeArena}</span>
-            </div>
-          </div>
-          
-          <div className="jersey-colors">
-            <div className="color-info">
-              <span>Jersey Colors:</span>
-              <div className="colors">
-                <div 
-                  className="color-swatch primary"
-                  style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
-                  title={`Primary: ${team.primaryJerseyColor}`}
-                ></div>
-                {team.secondaryJerseyColor && (
-                  <div 
-                    className="color-swatch secondary"
-                    style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
-                    title={`Secondary: ${team.secondaryJerseyColor}`}
-                  ></div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Coming Soon Content */}
-        <div className="coming-soon">
-          <div className="placeholder-content">
-            <h2>🚧 Team Page Under Construction</h2>
-            <p>
-              This team page is currently being developed by another team member. 
-              Soon you'll be able to see:
-            </p>
-            <ul>
-              <li>📋 Complete team roster with player details</li>
-              <li>📊 Team statistics and performance</li>
-              <li>📅 Match schedule and results</li>
-              <li>📰 Team news and updates</li>
-              <li>🏆 Season standings and achievements</li>
-            </ul>
-            
-            <div className="current-info">
-              <h3>Current Team Information:</h3>
-              <div className="info-grid">
-                <div className="info-item">
-                  <strong>Club:</strong> {team.club.name}
-                </div>
-                <div className="info-item">
-                  {/* TODO: Get division name from divisionId */}
-                  <strong>Division:</strong> {getDivisionDisplayName(team.divisionId)}
-                </div>
-                <div className="info-item">
-                  <strong>Home Arena:</strong> {team.homeArena}
-                </div>
-                <div className="info-item">
-                  <strong>Primary Jersey:</strong> {team.primaryJerseyColor}
-                </div>
-                {team.secondaryJerseyColor && (
-                  <div className="info-item">
-                    <strong>Secondary Jersey:</strong> {team.secondaryJerseyColor}
-                  </div>
-                )}
-                <div className="info-item">
-                  <strong>Active Roster:</strong> 
-                  {team.hasActiveMembers ? (
-                    <span className="status active">✅ Yes</span>
-                  ) : (
-                    <span className="status inactive">❌ No active members</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Navigation */}
         <div className="team-navigation">
           <button onClick={handleBackToClub} className="back-button">
-            ← Back to {team.club.name}
+            ← {team.club.name}
           </button>
         </div>
+
+        {/* Team Header */}
+        <div className="team-header">
+          <div className="header-content">
+
+            <div className="team-branding">
+              <div className="team-logo">
+                <div className="logo-placeholder">
+                  {/* Team logo would go here */}
+                </div>
+              </div>
+              <div className="jersey-colors">
+                <div className="color-info">
+                  <span>Jersey Colors:</span>
+                  <div className="colors">
+                    <div
+                      className="color-swatch primary"
+                      style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
+                      title={`Primary: ${team.primaryJerseyColor}`}
+                    ></div>
+                    {team.secondaryJerseyColor && (
+                      <div
+                        className="color-swatch secondary"
+                        style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
+                        title={`Secondary: ${team.secondaryJerseyColor}`}
+                      ></div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="team-info">
+              <h1>{team.name}</h1>
+              <div className="team-meta">
+                <span className="division-badge">
+                  {division?.name ? division.name : "Unknown"}
+                </span>
+                <span className="club-badge">
+                  Club: {team.club.name}
+                </span>
+                <span className="arena">Arena: {team.homeArena}</span>
+              </div>
+            </div>
+
+
+          </div>
+
+          <div className="header-navigation">
+            <TeamNavbar onTabChange={handleTabChange} />
+          </div>
+        </div>
+
+
+        {/* Tab Content */}
+        <div className="tab-content">
+          {renderTabContent()}
+        </div>
+
+
       </div>
     </PageTemplate>
   );
