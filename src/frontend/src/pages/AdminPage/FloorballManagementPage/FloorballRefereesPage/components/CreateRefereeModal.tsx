@@ -336,7 +336,7 @@ const CreateRefereeModal = ({
                   className="back-to-list-button"
                   disabled={creating}
                 >
-                  {t('common.back', 'Back')}
+                  {t('common.cancelSelection', 'Cancel Selection')}
                 </button>
                 <button
                   type="submit"

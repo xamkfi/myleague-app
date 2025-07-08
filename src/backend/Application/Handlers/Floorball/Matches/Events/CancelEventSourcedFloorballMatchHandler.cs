@@ -9,6 +9,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Application.Mappings.Floorball;
 
 namespace Application.Handlers.Floorball.Matches.Events;
 
@@ -55,25 +56,7 @@ public class CancelEventSourcedFloorballMatchHandler : IRequestHandler<CancelEve
             await _eventSourcedMatchRepository.SaveAsync(match, cancellationToken);
 
             // Create the DTO response
-            var matchDto = new FloorballMatchDto(
-                match.Id,
-                match.SeasonId,
-                match.HomeTeamId,
-                "Home Team", // Placeholder - in full implementation would fetch from repository
-                match.AwayTeamId,
-                "Away Team", // Placeholder - in full implementation would fetch from repository
-                match.ScheduledDateTime,
-                match.Venue,
-                match.Status,
-                match.HomeScore,
-                match.AwayScore,
-                match.WentToOvertime,
-                match.WentToShootout,
-                match.PeriodScores,
-                match.OfficialIds,
-                new List<FloorballGoalEventDto>(), // Empty for now
-                new List<FloorballPenaltyEventDto>() // Empty for now
-            );
+            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, "Home Team", "Away Team");
 
             _logger.LogInformation("Successfully canceled event-sourced floorball match: {MatchId}", request.MatchId);
 

@@ -15027,6 +15027,77 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Referees",
+			"item": [
+				{
+					"name": "Create Referee - Marcus Whistleblower-Referee",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Marcus\",\n  \"lastName\": \"Whistleblower-Referee\",\n  \"birthDate\": \"1975-04-12\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Referee Street 1071\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"01071\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"marcus.whistleblower.referee@example.com\",\n    \"phone\": \"+358403000771\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Referee - Diana Striped-Referee",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Diana\",\n  \"lastName\": \"Striped-Referee\",\n  \"birthDate\": \"1980-11-08\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Referee Street 1072\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"01072\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"diana.striped.referee@example.com\",\n    \"phone\": \"+358403000772\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Referee - Thomas Fairplay-Referee",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Thomas\",\n  \"lastName\": \"Fairplay-Referee\",\n  \"birthDate\": \"1977-09-25\",\n  \"isRegistered\": true,\n  \"address\": {\n    \"street1\": \"Referee Street 1073\",\n    \"city\": \"Helsinki\",\n    \"postalCode\": \"01073\",\n    \"country\": \"Finland\"\n  },\n  \"contactInfo\": {\n    \"email\": \"thomas.fairplay.referee@example.com\",\n    \"phone\": \"+358403000773\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 } 

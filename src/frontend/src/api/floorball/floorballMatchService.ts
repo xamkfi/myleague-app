@@ -171,12 +171,18 @@ export const floorballMatchService = {
     try {
       console.log('Creating match:', data);
       
+      // Convert empty refereeId to null for backend compatibility
+      const requestData = {
+        ...data,
+        refereeId: data.refereeId && data.refereeId.trim() !== '' ? data.refereeId : null
+      };
+      
       const response = await fetch(`${API_URL}/FloorballMatch`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(requestData),
       });
       
       console.log('Create response status:', response.status);
