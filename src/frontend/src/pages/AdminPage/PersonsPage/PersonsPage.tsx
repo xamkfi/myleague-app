@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../components/PageTemplate/PageTemplate';
 import PersonList from './components/PersonList/PersonList';
 import './PersonsPage.scss';
+import BackButton from '../../../components/BackButton/BackButton';
 
 const PersonsPage = () => {
   const { t } = useTranslation();
@@ -15,6 +16,11 @@ const PersonsPage = () => {
   return (
     <PageTemplate title={t('admin.persons.title', 'Person Management')}>
       <div className="persons-container">
+        {/* Back button */}
+        <BackButton 
+          to="/admin/" 
+          text={t('common.back', 'Back to Floorball Management')} 
+        />
         <div className="persons-header">
           <h2>{t('admin.persons.subtitle', 'Manage Persons')}</h2>
           <button 

@@ -20,7 +20,7 @@ const FloorballManagementPage = () => {
       <div className="floorball-management-container">
         {/* Back button */}
         <BackButton 
-          to=".." 
+          to="/admin" 
           text={t('common.back', 'Back to Admin')} 
         />
 

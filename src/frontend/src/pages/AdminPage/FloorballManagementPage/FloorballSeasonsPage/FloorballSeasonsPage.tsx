@@ -64,7 +64,7 @@ const FloorballSeasonsPage = () => {
 
         {/* Back button */}
         <BackButton 
-          to=".." 
+          to="/admin/floorball" 
           text={t('common.back', 'Back to Floorball Management')} 
         />
 
