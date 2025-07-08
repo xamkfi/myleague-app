@@ -82,6 +82,7 @@ namespace WebAPI.Controllers.Floorball
                 request.TeamId,
                 request.PlayerId,
                 request.AssisterId,
+                request.SecondaryAssisterId,
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.WasInOvertime,
@@ -571,6 +572,70 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to reschedule match";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Starts a specific period in an event-sourced floorball match
+        /// </summary>
+        /// <param name="matchId">ID of the match</param>
+        /// <param name="periodNumber">Period number (1-5)</param>
+        /// <returns>Updated match</returns>
+        [HttpPost("match/{matchId:guid}/period/{periodNumber:int}/start")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> StartPeriod(Guid matchId, int periodNumber)
+        {
+            _logger.LogInformation("Starting period {period} for match {matchId}", periodNumber, matchId);
+
+            StartPeriodEventCommand command = new StartPeriodEventCommand(matchId, periodNumber);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, $"Period {periodNumber} started successfully"));
+            }
+
+            string errorMessage = result.Error ?? $"Failed to start period {periodNumber}";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Ends a specific period in an event-sourced floorball match
+        /// </summary>
+        /// <param name="matchId">ID of the match</param>
+        /// <param name="periodNumber">Period number (1-5)</param>
+        /// <returns>Updated match</returns>
+        [HttpPost("match/{matchId:guid}/period/{periodNumber:int}/end")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> EndPeriod(Guid matchId, int periodNumber)
+        {
+            _logger.LogInformation("Ending period {period} for match {matchId}", periodNumber, matchId);
+
+            EndEventSourcedMatchPeriodCommand command = new EndEventSourcedMatchPeriodCommand(matchId, periodNumber);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, $"Period {periodNumber} ended successfully"));
+            }
+
+            string errorMessage = result.Error ?? $"Failed to end period {periodNumber}";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));

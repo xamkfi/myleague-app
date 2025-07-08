@@ -84,6 +84,7 @@ public class DeleteGoalEventHandler : IRequestHandler<DeleteGoalEventCommand, Re
                 goalToDelete.TeamId,
                 goalToDelete.ScoringPlayerId ?? Guid.Empty,
                 goalToDelete.AssistingPlayerId,
+                goalToDelete.SecondaryAssistingPlayerId,
                 goalToDelete.PeriodNumber,
                 goalToDelete.TimeInSeconds,
                 false, // WasInOvertime - this information might not be available in the current structure

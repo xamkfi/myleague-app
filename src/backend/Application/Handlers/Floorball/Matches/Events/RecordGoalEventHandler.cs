@@ -53,7 +53,8 @@ public class RecordGoalEventHandler : IRequestHandler<RecordGoalEventCommand, Re
                 request.PlayerId,
                 request.PeriodNumber,
                 request.TimeInSeconds,
-                request.AssisterId);
+                request.AssisterId,
+                request.SecondaryAssisterId);
 
             // Save the match with its new events
             await _eventSourcedMatchRepository.SaveAsync(match, cancellationToken);
@@ -63,6 +64,7 @@ public class RecordGoalEventHandler : IRequestHandler<RecordGoalEventCommand, Re
                 request.TeamId,
                 request.PlayerId,
                 request.AssisterId,
+                request.SecondaryAssisterId,
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.WasInOvertime,

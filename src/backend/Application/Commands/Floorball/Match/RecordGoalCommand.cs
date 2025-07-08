@@ -16,6 +16,7 @@ namespace Application.Commands.Floorball.Match
     /// <param name="ScoringTeamId"></param>
     /// <param name="ScoringPlayerId"></param>
     /// <param name="AssistingPlayerId"></param>
+    /// <param name="SecondaryAssistingPlayerId"></param>
     /// <param name="PeriodNumber"></param>
     /// <param name="TimeInSeconds"></param>
     /// <param name="Description"></param>
@@ -25,6 +26,7 @@ namespace Application.Commands.Floorball.Match
         Guid ScoringTeamId,
         Guid ScoringPlayerId,
         Guid? AssistingPlayerId,
+        Guid? SecondaryAssistingPlayerId,
         int PeriodNumber,
         int TimeInSeconds,
         string? Description,

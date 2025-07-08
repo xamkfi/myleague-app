@@ -35,22 +35,38 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
         /// <returns></returns>
         public async Task HandleAsync(FloorballOfficialAssignedEvent domainEvent)
         {
+            _logger.LogInformation("Handling FloorballOfficialAssignedEvent for match {MatchId}, referee {RefereeId}", domainEvent.MatchId, domainEvent.RefereeId);
 
-            FloorballMatch? match = await _floorballDbContext.FloorballMatches
-                .Include(m => m.Officials)
-                .FirstOrDefaultAsync(m => m.Id == domainEvent.MatchId);
+            try
+            {
+                FloorballMatch? match = await _floorballDbContext.FloorballMatches
+                    .Include(m => m.Officials)
+                    .FirstOrDefaultAsync(m => m.Id == domainEvent.MatchId);
 
-            FloorballReferee? referee = await _floorballDbContext.FloorballReferees
-                .FirstOrDefaultAsync(m => m.Id == domainEvent.RefereeId);
+                FloorballReferee? referee = await _floorballDbContext.FloorballReferees
+                    .FirstOrDefaultAsync(r => r.Id == domainEvent.RefereeId);
 
-            if (match == null || referee == null)
-                return;
+                if (match == null || referee == null)
+                {
+                    _logger.LogWarning("Match or referee not found – match {MatchId}, referee {RefereeId}", domainEvent.MatchId, domainEvent.RefereeId);
+                    return;
+                }
 
-            if (match.Officials.Any(o => o.Id == referee.Id))
-                return;
+                if (match.Officials.Any(o => o.Id == referee.Id))
+                {
+                    _logger.LogDebug("Referee {RefereeId} already assigned to match {MatchId}", domainEvent.RefereeId, domainEvent.MatchId);
+                    return;
+                }
 
-            match.AddOfficial(referee);
-            await _floorballDbContext.SaveChangesWithoutEventsAsync();
+                match.AddOfficial(referee);
+                await _floorballDbContext.SaveChangesWithoutEventsAsync();
+
+                _logger.LogInformation("Successfully added referee {RefereeId} to match {MatchId}", domainEvent.RefereeId, domainEvent.MatchId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Projection failed when adding referee {RefereeId} to match {MatchId}", domainEvent.RefereeId, domainEvent.MatchId);
+            }
         }
     }
 }

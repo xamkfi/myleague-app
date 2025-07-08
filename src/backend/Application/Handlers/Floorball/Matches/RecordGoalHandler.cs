@@ -92,11 +92,24 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
                 }
             }
 
+            // Get the second assisting player (optional)
+            FloorballPlayer? secondAssistingPlayer = null;
+            if (request.SecondaryAssistingPlayerId.HasValue)
+            {
+                secondAssistingPlayer = await _playerRepository.GetByIdAsync(request.SecondaryAssistingPlayerId.Value);
+                if (secondAssistingPlayer == null)
+                {
+                    _logger.LogWarning("Assisting player not found with ID: {PlayerId}", request.SecondaryAssistingPlayerId.Value);
+                    return Result<FloorballMatchDto>.Failure($"Assisting player with ID {request.SecondaryAssistingPlayerId.Value} not found.");
+                }
+            }
+
             _logger.LogInformation("Recording goal in match {MatchId} by player {PlayerId}", request.MatchId, request.ScoringPlayerId);
             match.RecordGoal(
                 scoringTeam, 
                 scoringPlayer, 
-                assistingPlayer!, 
+                assistingPlayer!,
+                secondAssistingPlayer,
                 request.PeriodNumber, 
                 request.TimeInSeconds, 
                 request.Description,

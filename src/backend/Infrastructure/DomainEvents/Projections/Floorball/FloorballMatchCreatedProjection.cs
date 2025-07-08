@@ -31,7 +31,8 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
         /// </summary>
         public async Task HandleAsync(FloorballMatchCreatedEvent domainEvent)
         {
-            // Idempotence: jos rivi on jo olemassa, ei tehdä mitään.
+            _logger.LogInformation("Handling FloorballMatchCreatedEvent for match {MatchId}", domainEvent.MatchId);
+
             bool exists = await _dbContext.FloorballMatches
                 .AsNoTracking()
                 .AnyAsync(m => m.Id == domainEvent.MatchId);
@@ -41,30 +42,35 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
                 return;
             }
 
-            // Luo uusi FloorballMatch-rivi. Käytämme parametrillista konstruktoria,
-            // joten haetaan tarvittavat navigaatio-entiteetit kevyesti.
-            FloorballSeason? season = await _dbContext.FloorballSeasons.FindAsync(domainEvent.SeasonId);
-            FloorballTeam? homeTeam = await _dbContext.FloorballTeams.FindAsync(domainEvent.HomeTeamId);
-            FloorballTeam? awayTeam = await _dbContext.FloorballTeams.FindAsync(domainEvent.AwayTeamId);
-
-            if (season == null || homeTeam == null || awayTeam == null)
+            try
             {
-                _logger.LogWarning("Projection failed – required entities missing for match {MatchId}", domainEvent.MatchId);
-                return; 
+                FloorballSeason? season = await _dbContext.FloorballSeasons.FindAsync(domainEvent.SeasonId);
+                FloorballTeam? homeTeam = await _dbContext.FloorballTeams.FindAsync(domainEvent.HomeTeamId);
+                FloorballTeam? awayTeam = await _dbContext.FloorballTeams.FindAsync(domainEvent.AwayTeamId);
+
+                if (season == null || homeTeam == null || awayTeam == null)
+                {
+                    _logger.LogWarning("Projection failed – required entities missing for match {MatchId}", domainEvent.MatchId);
+                    return;
+                }
+
+                FloorballMatch match = new FloorballMatch(
+                    domainEvent.MatchId,
+                    season,
+                    homeTeam,
+                    awayTeam,
+                    domainEvent.ScheduledDateTime,
+                    domainEvent.Venue);
+
+                _dbContext.FloorballMatches.Add(match);
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("Projection created FloorballMatch {MatchId}", domainEvent.MatchId);
             }
-
-            FloorballMatch match = new FloorballMatch(
-                domainEvent.MatchId,
-                season,
-                homeTeam,
-                awayTeam,
-                domainEvent.ScheduledDateTime,
-                domainEvent.Venue);
-
-            _dbContext.FloorballMatches.Add(match);
-            await _dbContext.SaveChangesAsync();
-
-            _logger.LogInformation("Projection created FloorballMatch {MatchId}", domainEvent.MatchId);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Projection failed when creating FloorballMatch {MatchId}", domainEvent.MatchId);
+            }
         }
     }
 }

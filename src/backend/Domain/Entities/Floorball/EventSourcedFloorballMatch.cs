@@ -212,6 +212,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             DateTime.UtcNow);
         
         ApplyEvent(matchStartedEvent);
+
+        StartPeriod(1);
     }
 
     /// <summary>
@@ -230,7 +232,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         Guid scoringPlayerId,
         int periodNumber,
         int timeInSeconds,
-        Guid? assistingPlayerId = null)
+        Guid? assistingPlayerId = null,
+        Guid? secondaryAssistingPlayerId = null)
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot record a goal for a match with status {Status}.");
@@ -248,7 +251,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             timeInSeconds,
             WentToOvertime,
             false,
-            assistingPlayerId);
+            assistingPlayerId,
+            secondaryAssistingPlayerId);
         ApplyEvent(goalScoredEvent);
     }
 
@@ -372,6 +376,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             WentToShootout);
         
         ApplyEvent(matchCompletedEvent);
+
+        EndPeriod(3);
     }
 
     /// <summary>
@@ -390,7 +396,32 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         
         ApplyEvent(statusChangedEvent);
     }
-    
+
+    public void EndPeriod(int periodNumber)
+    {
+        bool isLastRegularPeriod = periodNumber == 3;
+        FloorballPeriodEndedEvent floorballPeriodEndedEvent = new FloorballPeriodEndedEvent(
+            Id,
+            periodNumber,
+            HomeScore,
+            AwayScore,
+            isLastRegularPeriod);
+
+        ApplyEvent(floorballPeriodEndedEvent);
+    }
+
+    public void StartPeriod(int periodNumber)
+    {
+        bool isLastRegularPeriod = periodNumber == 3;
+        FloorballPeriodStartedEvent floorballPeriodStartedEvent = new FloorballPeriodStartedEvent(
+            Id,
+            periodNumber,
+            HomeScore,
+            AwayScore,
+            isLastRegularPeriod);
+
+        ApplyEvent(floorballPeriodStartedEvent);
+    }
     #endregion
     
     #region Apply Methods

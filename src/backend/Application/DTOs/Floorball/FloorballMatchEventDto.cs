@@ -17,6 +17,7 @@ namespace Application.DTOs.Floorball
         Guid TeamId,
         Guid PlayerId,
         Guid? AssisterId,
+        Guid? SecondaryAssisterId,
         int PeriodNumber,
         int TimeInSeconds,
         bool WasInOvertime,

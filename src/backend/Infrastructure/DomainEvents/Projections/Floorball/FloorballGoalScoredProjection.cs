@@ -86,6 +86,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
                     domainEvent.TeamId,
                     domainEvent.PlayerId,
                     domainEvent.AssisterId,
+                    domainEvent.SecondaryAssisterId,
                     domainEvent.PeriodNumber,
                     domainEvent.TimeInSeconds);
 
