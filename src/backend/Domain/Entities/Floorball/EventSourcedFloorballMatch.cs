@@ -213,6 +213,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         
         ApplyEvent(matchStartedEvent);
 
+        StartPeriod(1);
     }
 
     /// <summary>
@@ -373,6 +374,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             WentToShootout);
         
         ApplyEvent(matchCompletedEvent);
+
+        EndPeriod(3);
     }
 
     /// <summary>

@@ -25,6 +25,11 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
             _logger = logger;
         }
 
+        /// <summary>
+        /// Updating match status to shootouts 
+        /// </summary>
+        /// <param name="domainEvent"></param>
+        /// <returns></returns>
         public async Task HandleAsync(FloorballMatchShootoutStartedEvent domainEvent)
         {
             FloorballMatch? match = await _dbContext.FloorballMatches
