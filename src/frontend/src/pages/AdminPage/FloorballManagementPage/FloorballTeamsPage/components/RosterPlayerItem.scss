@@ -1,105 +1,120 @@
-// Editable player items for roster management
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+@use '../../../../../styles/common' as *;
+
 .player-item.editable {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  padding: 0.75rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
-  background: #fafafa;
+  gap: map.get($spacing, 'sm');
+  padding: map.get($spacing, 'sm');
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'md');
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 
-  .player-info {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    gap: 0.5rem;
+  &.newly-added {
+    background-color: #e6ffed;
+    border-left: 4px solid #28a745;
   }
 
-  .player-name {
-    font-weight: 500;
-    font-size: 0.9rem;
+  &.marked-for-removal {
+    background-color: #fff1f2;
+    border-left: 4px solid #dc3545;
+    opacity: 0.7;
+
+    .player-info, .player-controls {
+      text-decoration: line-through;
+    }
+  }
+
+  .player-info {
+    flex: 1;
+    min-width: 0;
+
+    .player-name {
+      font-weight: map.get($font-weights, 'medium');
+      font-size: map.get($font-sizes, 'sm');
+      color: $color-text-primary;
+    }
   }
 
   .player-controls {
     display: flex;
-    gap: 0.75rem;
-    align-items: end;
+    align-items: center;
+    gap: map.get($spacing, 'base');
   }
 
   .position-control, .jersey-control, .active-control {
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
 
     label {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: #666;
+      font-size: map.get($font-sizes, 'xs');
+      color: $color-text-muted;
       margin: 0;
+      white-space: nowrap;
     }
   }
 
   .position-select, .jersey-input {
-    padding: 0.375rem 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    width: 100px;
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    background-color: $color-background-light;
+    max-width: 120px;
+    
+    &:focus {
+      outline: none;
+      border-color: #86b7fe;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
   }
 
   .jersey-input {
     text-align: center;
-    width: 60px;
-  }
-
-  .jersey-display {
-    background: #007bff;
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 50%;
-    font-weight: bold;
-    font-size: 0.875rem;
-    min-width: 2rem;
-    text-align: center;
-    margin-right: 0.5rem;
+    max-width: 60px;
   }
 
   .active-toggle {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.75rem;
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+    border: none;
+    border-radius: map.get($border-radius, 'pill');
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'medium');
     cursor: pointer;
-    min-width: 70px;
+    min-width: 80px;
     text-align: center;
-    font-weight: 500;
+    transition: background-color 0.2s ease;
 
     &.active {
-      background: #4caf50;
-      color: white;
-      border-color: #4caf50;
+      background: #d1edff;
+      color: #0d6efd;
     }
-
+    
     &.inactive {
-      background: #f44336;
-      color: white;
-      border-color: #f44336;
+      background: #f8d7da;
+      color: #721c24;
     }
   }
 
   .remove-button {
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    background: #f44336;
-    color: white;
+    background: none;
     border: none;
-    border-radius: 4px;
+    color: #dc3545;
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: 1.25rem;
+    padding: 0 map.get($spacing, 'sm');
+    transition: color 0.2s ease;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
 
     &:hover {
-      background: #d32f2f;
+      color: #a71d2a;
     }
   }
 } 

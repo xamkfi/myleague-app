@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RosterPlayerItem from './RosterPlayerItem';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import type { FloorballTeamPlayer, FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 import './PlayerTransferList.scss';
+import ShowSelectedButton from './ShowSelectedButton';
 
 interface PlayerTransferListProps {
   displayRoster: FloorballTeamPlayer[];
@@ -39,23 +40,39 @@ const PlayerTransferList = ({
   const { t } = useTranslation();
   const [selectedAvailablePlayers, setSelectedAvailablePlayers] = useState<Set<string>>(new Set());
   const [selectedRosterPlayers, setSelectedRosterPlayers] = useState<Set<string>>(new Set());
+  const [showOnlySelectedAvailable, setShowOnlySelectedAvailable] = useState(false);
+  const [showOnlySelectedRoster, setShowOnlySelectedRoster] = useState(false);
 
   // Search terms
   const [availableSearch, setAvailableSearch] = useState('');
   const [rosterSearch, setRosterSearch] = useState('');
 
+  // Helper to get a roster player's display name (handles fallback from "Unknown Player")
+  const getRosterPlayerName = (player: FloorballTeamPlayer): string => {
+    const directName = player.playerName;
+    if (directName && directName.trim() !== '' && directName !== 'Unknown Player') {
+      return directName;
+    }
+    const ap = allPlayers.find(ap => ap.id === player.playerId);
+    return ap?.person.fullName ?? '';
+  };
+
   // Filtered player arrays based on search terms
-  const filteredAvailablePlayers = availablePlayers.filter(p =>
-    p.person.fullName.toLowerCase().includes(availableSearch.toLowerCase())
-  );
+  const filteredAvailablePlayers = availablePlayers
+    .filter(p =>
+      p.person.fullName.toLowerCase().includes(availableSearch.toLowerCase()) &&
+      (!showOnlySelectedAvailable || selectedAvailablePlayers.has(p.id))
+    )
+    .sort((a, b) => a.person.fullName.localeCompare(b.person.fullName));
 
-  const filteredRoster = displayRoster.filter(p =>
-    p.playerName?.toLowerCase().includes(rosterSearch.toLowerCase()) ||
-    // fallback: look into allPlayers for full name
-    (allPlayers.find(ap => ap.id === p.playerId)?.person.fullName.toLowerCase() || '')
-      .includes(rosterSearch.toLowerCase())
-  );
-
+  const filteredRoster = displayRoster
+    .filter(p =>
+      getRosterPlayerName(p).toLowerCase().includes(rosterSearch.toLowerCase()) &&
+      (!showOnlySelectedRoster || selectedRosterPlayers.has(p.playerId))
+    )
+    .slice() // avoid mutating
+    .sort((a, b) => getRosterPlayerName(a).localeCompare(getRosterPlayerName(b), 'fi', { sensitivity: 'base' }));
+  
   const handleSelectAvailablePlayer = (playerId: string, isSelected: boolean) => {
     setSelectedAvailablePlayers(prev => {
       const newSet = new Set(prev);
@@ -88,6 +105,7 @@ const PlayerTransferList = ({
       }
     });
     setSelectedAvailablePlayers(new Set());
+    setShowOnlySelectedAvailable(false);
   };
 
   const movePlayersToAvailable = () => {
@@ -95,6 +113,7 @@ const PlayerTransferList = ({
       removePlayerFromTeam(playerId);
     });
     setSelectedRosterPlayers(new Set());
+    setShowOnlySelectedRoster(false);
   };
 
   const selectAllAvailable = () => {
@@ -107,10 +126,12 @@ const PlayerTransferList = ({
 
   const clearAvailableSelection = () => {
     setSelectedAvailablePlayers(new Set());
+    setShowOnlySelectedAvailable(false);
   };
 
   const clearRosterSelection = () => {
     setSelectedRosterPlayers(new Set());
+    setShowOnlySelectedRoster(false);
   };
 
   return (
@@ -119,6 +140,11 @@ const PlayerTransferList = ({
       <div className="transfer-panel available-panel">
         <div className="panel-header">
           <h3>{t('floorball.teams.availablePlayers', 'Available Players')}</h3>
+          <ShowSelectedButton
+            showOnlySelected={showOnlySelectedAvailable}
+            onToggle={() => setShowOnlySelectedAvailable(!showOnlySelectedAvailable)}
+            selectionCount={selectedAvailablePlayers.size}
+          />
           <span className="player-count">({availablePlayers.length})</span>
         </div>
         
@@ -216,6 +242,11 @@ const PlayerTransferList = ({
       <div className="transfer-panel roster-panel">
         <div className="panel-header">
           <h3>{t('floorball.teams.currentRoster', 'Current Roster')}</h3>
+          <ShowSelectedButton
+            showOnlySelected={showOnlySelectedRoster}
+            onToggle={() => setShowOnlySelectedRoster(!showOnlySelectedRoster)}
+            selectionCount={selectedRosterPlayers.size}
+          />
           <span className="player-count">({displayRoster.length})</span>
         </div>
         
@@ -250,7 +281,7 @@ const PlayerTransferList = ({
             </div>
           ) : (
             filteredRoster.map(player => (
-              <div 
+                <div 
                 key={player.playerId}
                 className={`roster-player-container ${selectedRosterPlayers.has(player.playerId) ? 'selected' : ''}`}
                 onClick={(e) => {
@@ -260,7 +291,7 @@ const PlayerTransferList = ({
                   }
                   handleSelectRosterPlayer(player.playerId, !selectedRosterPlayers.has(player.playerId));
                 }}
-              >
+                >
                 
                 <div className="roster-player-content">
                   <RosterPlayerItem
@@ -273,7 +304,7 @@ const PlayerTransferList = ({
                     updatePlayerPosition={updatePlayerPosition}
                     updatePlayerJerseyNumber={updatePlayerJerseyNumber}
                     togglePlayerActive={togglePlayerActive}
-                  />
+                    />
                 </div>
               </div>
             ))

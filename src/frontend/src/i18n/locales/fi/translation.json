@@ -60,7 +60,7 @@
         "division": "Sarja",
         "homeArena": "Kotihalli",
         "activeMembers": "Aktiivisia Jäseniä",
-        "actions": "Toiminnot"
+        "actions": "Muut"
       }
     },
     "divisions": {
@@ -71,7 +71,7 @@
     }
   },
   "common": {
-    "back": "Takaisin Hallintaan",
+    "back": "Takaisin",
     "backTo": "Takaisin",
     "loading": "Ladataan...",
     "edit": "Muokkaa",
