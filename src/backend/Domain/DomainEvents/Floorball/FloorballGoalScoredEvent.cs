@@ -48,6 +48,11 @@ public class FloorballGoalScoredEvent : FloorballDomainEvent
     public Guid? AssisterId { get; }
 
     /// <summary>
+    /// Gets the ID of the second player who assisted (if any)
+    /// </summary>
+    public Guid? SecondaryAssisterId { get; }
+
+    /// <summary>
     /// Initializes a new instance of the FloorballGoalScoredEvent class
     /// </summary>
     /// <param name="matchId">The ID of the match</param>
@@ -66,7 +71,8 @@ public class FloorballGoalScoredEvent : FloorballDomainEvent
         int timeInSeconds,
         bool isOvertime = false,
         bool isPenaltyShot = false,
-        Guid? assisterId = null)
+        Guid? assisterId = null,
+        Guid? secondaryAssisterId = null)
     {
         if (periodNumber < 1)
         {
@@ -86,6 +92,7 @@ public class FloorballGoalScoredEvent : FloorballDomainEvent
         IsOvertime = isOvertime;
         IsPenaltyShot = isPenaltyShot;
         AssisterId = assisterId;
+        SecondaryAssisterId = secondaryAssisterId;
     }
 
     private FloorballGoalScoredEvent() { }

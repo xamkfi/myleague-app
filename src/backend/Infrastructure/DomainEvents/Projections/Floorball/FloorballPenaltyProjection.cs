@@ -29,18 +29,29 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
         /// </summary>
         public async Task HandleAsync(FloorballPenaltyAssignedEvent domainEvent)
         {
-            FloorballPenalty penalty = new FloorballPenalty(
-                domainEvent.MatchId,
-                domainEvent.TeamId,
-                domainEvent.PlayerId,
-                domainEvent.PenaltyType,
-                domainEvent.Minutes,
-                domainEvent.PeriodNumber,
-                domainEvent.TimeInSeconds,
-                domainEvent.Description);
+            _logger.LogInformation("Handling FloorballPenaltyAssignedEvent for match {MatchId}, period {PeriodNumber}", domainEvent.MatchId, domainEvent.PeriodNumber);
 
-            _dbContext.FloorballPenalties.Add(penalty);
-            await _dbContext.SaveChangesAsync();
+            try
+            {
+                FloorballPenalty penalty = new FloorballPenalty(
+                    domainEvent.MatchId,
+                    domainEvent.TeamId,
+                    domainEvent.PlayerId,
+                    domainEvent.PenaltyType,
+                    domainEvent.Minutes,
+                    domainEvent.PeriodNumber,
+                    domainEvent.TimeInSeconds,
+                    domainEvent.Description);
+
+                _dbContext.FloorballPenalties.Add(penalty);
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully added penalty for match {MatchId}, period {PeriodNumber}", domainEvent.MatchId, domainEvent.PeriodNumber);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Projection failed when adding penalty for match {MatchId}, period {PeriodNumber}", domainEvent.MatchId, domainEvent.PeriodNumber);
+            }
         }
     }
 }

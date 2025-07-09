@@ -14,6 +14,9 @@ using MyLeague.Infrastructure.Persistence.Contexts;
 
 namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
 {
+    /// <summary>
+    /// Projection for updating Match status to completed
+    /// </summary>
     public sealed class FloorballMatchCompletedProjection: IDomainEventHandler<FloorballMatchCompletedEvent>
     {
         private readonly FloorballDbContext _floorballDbContext;
@@ -27,17 +30,42 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
             _logger = logger;
         }
 
+        /// <summary>
+        /// Updating match status to completed
+        /// </summary>
+        /// <param name="domainEvent"></param>
+        /// <returns></returns>
         public async Task HandleAsync(FloorballMatchCompletedEvent domainEvent)
         {
-            FloorballMatch? match = await _floorballDbContext.FloorballMatches
-                .Include(m => m.Officials)
-                .FirstOrDefaultAsync(m => m.Id == domainEvent.MatchId);
+            _logger.LogInformation("Handling FloorballMatchCompletedEvent for match {MatchId}", domainEvent.MatchId);
 
-            if (match == null)
-                return;
+            try
+            {
+                FloorballMatch? match = await _floorballDbContext.FloorballMatches
+                    .Include(m => m.Officials)
+                    .FirstOrDefaultAsync(m => m.Id == domainEvent.MatchId);
 
-            match.Complete();
-            await _floorballDbContext.SaveChangesAsync();
+                if (match == null)
+                {
+                    _logger.LogWarning("Match not found – FloorballMatch {MatchId}", domainEvent.MatchId);
+                    return;
+                }
+
+                if (match.Status == Domain.Enums.Floorball.FloorballMatchStatus.Completed)
+                {
+                    _logger.LogDebug("Match {MatchId} already completed", domainEvent.MatchId);
+                    return;
+                }
+
+                match.Complete();
+                await _floorballDbContext.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully completed match {MatchId}", domainEvent.MatchId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Projection failed while completing FloorballMatch {MatchId}", domainEvent.MatchId);
+            }
         }
     }
 }

@@ -25,6 +25,11 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
             _logger = logger;
         }
 
+        /// <summary>
+        /// Updating match status to overtime
+        /// </summary>
+        /// <param name="domainEvent"></param>
+        /// <returns></returns>
         public async Task HandleAsync(FloorballMatchOvertimeStartedEvent domainEvent)
         {
             FloorballMatch? match = await _dbContext.FloorballMatches
