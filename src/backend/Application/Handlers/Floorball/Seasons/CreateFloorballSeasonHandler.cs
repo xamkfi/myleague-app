@@ -49,18 +49,6 @@ public class CreateFloorballSeasonHandler : IRequestHandler<CreateFloorballSeaso
     {
         try
         {
-            // Verify no overlapping season exists
-            IEnumerable<FloorballSeason> existingSeasons = await _seasonRepository.GetAllAsync();
-            bool overlappingSeasonExists = existingSeasons.Any(s => 
-                (request.StartDate < s.EndDate && request.EndDate > s.StartDate));
-            
-            if (overlappingSeasonExists)
-            {
-                _logger.LogWarning("Attempt to create season with overlapping dates: {StartDate} - {EndDate}", 
-                    request.StartDate, request.EndDate);
-                return Result<FloorballSeasonDto>.Failure("A season already exists that overlaps with the specified dates.");
-            }
-
             // Create the season entity
             FloorballSeason season = FloorballSeasonMapper.ToEntity(request);
 
