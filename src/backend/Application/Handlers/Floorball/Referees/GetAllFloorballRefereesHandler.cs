@@ -118,6 +118,7 @@ public class GetAllFloorballRefereesHandler : BasePagedQueryHandler<GetAllFloorb
                         "Person",
                         DateTime.MinValue,
                         "Unknown Person",
+                        Domain.Enums.Common.PersonRole.User,
                         false,
                         null,
                         null
