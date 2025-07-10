@@ -58,7 +58,7 @@
   }
   
   &:hover > .team-cell {
-    background-color: #e9ecef;
+    background-color: #e9ecef !important;
     //transform: translateY(-1px);
   }
   
@@ -502,4 +502,11 @@
       margin-bottom: map.get($spacing, 'xxs');
     }
   }
+} 
+
+.teams-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+  font-style: italic;
 } 

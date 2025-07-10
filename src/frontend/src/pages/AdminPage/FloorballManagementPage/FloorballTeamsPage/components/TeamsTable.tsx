@@ -10,11 +10,12 @@ import './TeamsTable.scss';
 
 interface TeamsTableProps {
   teams: FloorballTeam[];
+  loading: boolean;
   onEdit: (teamData: FloorballTeamRequest, teamId: string) => Promise<void>;
   onDelete: (teamId: string, teamName: string) => void;
 }
 
-const TeamsTable = ({ teams, onEdit, onDelete }: TeamsTableProps) => {
+const TeamsTable = ({ teams, loading, onEdit, onDelete }: TeamsTableProps) => {
   const { t } = useTranslation();
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [closingTeams, setClosingTeams] = useState<Set<string>>(new Set());
@@ -153,7 +154,11 @@ const TeamsTable = ({ teams, onEdit, onDelete }: TeamsTableProps) => {
           </div>
 
           {/* Teams Data */}
-          {!teams || teams.length === 0 ? (
+          {loading ? (
+            <div className="teams-loading">
+              {t('common.loading', 'Loading...')}
+            </div>
+          ) : !teams || teams.length === 0 ? (
             <div className="no-teams">
               {t('floorball.teams.noTeams', 'No teams found')}
             </div>

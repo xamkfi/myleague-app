@@ -15,10 +15,12 @@
     z-index: 1000;
     margin-top: map.get($spacing, 'lg');
     transform: translateX(-20%);
+    pointer-events: none;
   }
 }
 
 .back-button {
+  pointer-events: auto;
   padding: map.get($spacing, 'sm') map.get($spacing, 'lg');
   background-color: $color-button-secondary;
   color: $color-white;

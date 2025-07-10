@@ -199,6 +199,25 @@
   }
 }
 
+.teams-search-bar {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: flex-start;
+
+  .teams-search-input {
+    flex: 1;
+    max-width: 400px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+}
+
 // Team Players Row Styles
 .team-players-row {
   .team-players-cell {
