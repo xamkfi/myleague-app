@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { FloorballMatchStatus, type FloorballMatchDto, type FloorballGoalEventDto, type FloorballPenaltyEventDto } from '../../types/floorball/floorballTypes';
 import './MatchPage.scss';
-import { useSignalR } from '../../hooks/useSignalR';
-import type { MatchEvent } from '../../services/signalRService';
+import { signalRService, type MatchEvent } from '../../services/signalRService';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 
 // SignalR event names used by the backend. Consider centralising these to a constants file if reused elsewhere.
@@ -203,24 +202,56 @@ export default function MatchPage() {
     }
   };
 
-  // SignalR integration
-  useSignalR({
-    eventTypes: [GOAL_SCORED_EVENT, PENALTY_ASSIGNED_EVENT],
-    onEvent: (evt: MatchEvent) => {
-      // Narrow down to the events we care about
-      if (evt.eventType !== GOAL_SCORED_EVENT && evt.eventType !== PENALTY_ASSIGNED_EVENT) return;
+  // SignalR integration for match-specific events
+  useEffect(() => {
+    if (!id) return;
 
-      // The backend payload structure is known: it contains matchId.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const payload = evt.data as any;
-      if (!payload || payload.matchId !== id) return; // Not our match
+    let unsubscribeCallback: (() => void) | null = null;
 
-      // Simply reload the match so UI stays consistent.
-      // This avoids duplicating score-update logic client-side.
-      loadMatch();
-    },
-    autoConnect: true
-  });
+    const setupMatchSignalR = async () => {
+      try {
+        // Connect to SignalR and wait for connection to be established
+        await signalRService.connect();
+        
+        // Wait a bit for connection to stabilize
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Check if we're actually connected before subscribing
+        if (!signalRService.isConnected) {
+          throw new Error('SignalR connection not established');
+        }
+        
+        // Subscribe to this specific match
+        await signalRService.subscribeToMatch(id);
+        
+        // Listen for match-specific events
+        unsubscribeCallback = signalRService.onMatchEvent((evt: MatchEvent) => {
+          // These are events specific to our match, no need to filter by matchId
+          if (evt.eventType === GOAL_SCORED_EVENT || evt.eventType === PENALTY_ASSIGNED_EVENT) {
+            console.log(`Received match event for match ${id}:`, evt);
+            // Simply reload the match so UI stays consistent
+            loadMatch();
+          }
+        });
+        
+        console.log(`Successfully subscribed to match ${id} events`);
+      } catch (error) {
+        console.error('Failed to setup SignalR for match:', error);
+      }
+    };
+
+    setupMatchSignalR();
+
+    // Cleanup on unmount or when match ID changes
+    return () => {
+      if (unsubscribeCallback) {
+        unsubscribeCallback();
+      }
+      if (id) {
+        signalRService.unsubscribeFromMatch(id).catch(console.error);
+      }
+    };
+  }, [id, loadMatch]);
 
   useEffect(() => {
     const fetchMatch = async () => {

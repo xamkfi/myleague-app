@@ -70,9 +70,10 @@ public static class ServiceCollectionExtensions
         {
             options.AddPolicy("AllowAll", policy =>
             {
-                policy.AllowAnyOrigin()
+                policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:4200", "http://127.0.0.1:5173")
                       .AllowAnyMethod()
-                      .AllowAnyHeader();
+                      .AllowAnyHeader()
+                      .AllowCredentials(); // Required for SignalR
             });
 
             // You can add more specific policies here for production
