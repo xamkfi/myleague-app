@@ -1,0 +1,93 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+@use '../../styles/common' as *;
+
+.match-page {
+  padding: map.get($spacing, 'lg');
+  display: flex;
+  justify-content: center;
+}
+
+.match-card {
+  background-color: $color-white;
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'sm');
+  padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: map.get($spacing, 'md');
+  margin-bottom: map.get($spacing, 'lg');
+}
+
+.team-name {
+  font-size: map.get($font-sizes, 'lg');
+  font-weight: map.get($font-weights, 'bold');
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vs-text {
+  font-size: map.get($font-sizes, 'lg');
+  font-weight: map.get($font-weights, 'bold');
+  color: $color-text-muted;
+}
+
+.match-meta {
+  font-size: map.get($font-sizes, 'base');
+  color: $color-text-muted;
+}
+
+.venue {
+  margin-top: map.get($spacing, 'xs');
+}
+
+// Scoreboard styles
+.score-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: map.get($spacing, 'xs');
+  margin-bottom: map.get($spacing, 'md');
+}
+
+.score {
+  font-size: map.get($font-sizes, 'xl');
+  font-weight: map.get($font-weights, 'bold');
+}
+
+.separator {
+  font-size: map.get($font-sizes, 'lg');
+  font-weight: map.get($font-weights, 'bold');
+}
+
+.status {
+  margin-top: map.get($spacing, 'xs');
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'bold');
+
+  &.live {
+    color: $color-primary;
+  }
+
+  &.final {
+    color: $color-text-muted;
+  }
+}
+
+.cancelled-text,
+.postponed-text {
+  font-size: map.get($font-sizes, 'lg');
+  font-weight: map.get($font-weights, 'bold');
+  color: $color-text-muted;
+}
+
