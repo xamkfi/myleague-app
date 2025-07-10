@@ -320,5 +320,26 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Where(t => t.Roster.Any(r => r.PlayerId == playerId))
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// Gets teams filtered by name (case-insensitive, partial match)
+        /// </summary>
+        /// <param name="nameFilter">Optional name filter</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>A collection of matching floorball teams</returns>
+        public async Task<IEnumerable<FloorballTeam>> GetByNameFilterAsync(string? nameFilter, CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballTeam> query = _entities;
+
+            if (!string.IsNullOrWhiteSpace(nameFilter))
+            {
+                string loweredFilter = nameFilter.ToLower();
+                query = query.Where(t => t.Name.ToLower().Contains(loweredFilter));
+            }
+
+            return await query
+                .OrderBy(t => t.Name)
+                .ToListAsync(cancellationToken);
+        }
     }
 } 
