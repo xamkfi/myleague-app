@@ -31,7 +31,7 @@ namespace Domain.Entities.Common
         /// <summary>
         /// Matching person entity of the user
         /// </summary>
-        public Person Person { get; set; }
+        public Person? Person { get; set; }
 
         /// <summary>
         /// Protected constructor for EF Core
