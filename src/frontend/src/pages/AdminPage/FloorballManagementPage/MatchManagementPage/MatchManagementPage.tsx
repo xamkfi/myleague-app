@@ -15,10 +15,12 @@ import type {
   FloorballMatchStatus
 } from '../../../../types/floorball/floorballTypes';
 import './MatchManagementPage.scss';
-
+import BackButton from '../../../../components/BackButton/BackButton';
+import { useTranslation } from 'react-i18next';
+  
 const MatchManagementPage = () => {
   const navigate = useNavigate();
-  
+  const { t } = useTranslation();
   // State management
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
@@ -208,12 +210,10 @@ const MatchManagementPage = () => {
         {/* Header Section */}
         <div className="page-header">
           <div className="page-header__top">
-            <button 
-              onClick={() => navigate('/admin/floorball')}
-              className="back-button"
-            >
-              ← Back to Admin
-            </button>
+            <BackButton 
+              to="/admin/floorball" 
+              text={t('common.back', 'Back to Floorball Management')} 
+            />
           </div>
           <div className="page-header__main">
             <h1 className="page-title">Match Management</h1>

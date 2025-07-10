@@ -6,10 +6,11 @@ import type { FloorballTeam } from '../../../../../types/floorball/floorballType
 interface TeamPlayersRowProps {
   teamId: string;
   isExpanded: boolean;
+  isClosing: boolean;
   team?: FloorballTeam; // Add team data as fallback
 }
 
-const TeamPlayersRow = ({ teamId, isExpanded, team }: TeamPlayersRowProps) => {
+const TeamPlayersRow = ({ teamId, isExpanded, isClosing, team }: TeamPlayersRowProps) => {
   const { t } = useTranslation();
   const [players, setPlayers] = useState<FloorballPlayerDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -60,15 +61,11 @@ const TeamPlayersRow = ({ teamId, isExpanded, team }: TeamPlayersRowProps) => {
     }
   };
 
-  if (!isExpanded) return null;
-
-  // Prefer roster data when available (has jersey numbers), otherwise use API data
   const displayPlayers = team?.roster && team.roster.length > 0 ? team.roster : players;
   const playerCount = displayPlayers.length;
 
   return (
-    <tr className="team-players-row">
-      <td colSpan={6} className="team-players-cell">
+    <div className={`team-players-row ${isClosing ? 'is-closing' : ''}`}>
         <div className="team-players-container">
           <h4 className="players-title">
             {t('floorball.teams.players', 'Team Players')} ({playerCount})
@@ -190,8 +187,7 @@ const TeamPlayersRow = ({ teamId, isExpanded, team }: TeamPlayersRowProps) => {
             </div>
           )}
         </div>
-      </td>
-    </tr>
+    </div>
   );
 };
 

@@ -1,5 +1,4 @@
 .floorball-teams-container {
-  padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -197,6 +196,25 @@
       color: #888;
       font-style: normal;
     }
+  }
+}
+
+.teams-search-bar {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: flex-start;
+
+  .teams-search-input {
+    flex: 1;
+    max-width: 400px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
   }
 }
 
@@ -528,33 +546,7 @@
   }
 }
 
-.back-button-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-}
 
-.back-button {
-  padding: 0.75rem 2rem;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: #5a6268;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
 
 // Responsive design
 @media (max-width: 1200px) {

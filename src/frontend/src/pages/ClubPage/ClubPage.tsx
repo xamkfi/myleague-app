@@ -4,19 +4,21 @@ import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import type { Club } from '../../api/common/clubService';
 import { getClubs } from '../../api/common/clubService';
 import type { FloorballTeam } from '../../types/floorball/floorballTypes';
-import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findClubBySlug, getTeamSlug } from '../../utils/slugUtils';
 import { useDivisions } from '../../hooks/useDivisions';
 import './ClubPage.scss';
+import { useFloorballTeamsData } from '../../hooks/useTeamsData';
 
 function ClubPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { divisions } = useDivisions();
   const [clubs, setClubs] = useState<Club[]>([]);
-  const [teams, setTeams] = useState<FloorballTeam[]>([]);
+  const { 
+    teams, 
+    setParams: setTeamParams, 
+    isLoading: teamsLoading } = useFloorballTeamsData();
   const [loading, setLoading] = useState(true);
-  const [teamsLoading, setTeamsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,20 +40,10 @@ function ClubPage() {
           }
           
           if (foundClub) {
-            // Fetch teams for this club
-            setTeamsLoading(true);
-            try {
-              const teamsResponse = await floorballTeamService.getAll({ 
-                clubId: foundClub.id 
-              });
-              setTeams(teamsResponse.data || []);
-            } catch (teamsError) {
-              console.warn('Failed to load teams:', teamsError);
-              // Don't set error state - just show club without teams
-              setTeams([]);
-            } finally {
-              setTeamsLoading(false);
-            }
+            // Tell the teams-hook to (re)load teams for this club
+            setTeamParams({
+              clubId: foundClub.id
+            });
           }
         }
         
@@ -63,7 +55,7 @@ function ClubPage() {
     };
 
     fetchData();
-  }, [slug]);
+  }, [slug, setTeamParams]);
 
   if (loading) {
     return (

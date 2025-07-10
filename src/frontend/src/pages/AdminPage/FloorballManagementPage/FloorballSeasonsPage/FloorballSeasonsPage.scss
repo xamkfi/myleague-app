@@ -1,9 +1,9 @@
 // Import component-specific styles
-@import './components/SeasonsPageHeader.scss';
-@import './components/SeasonsFilters.scss';
-@import './components/ErrorMessage.scss';
-@import './components/LoadingState.scss';
-@import './components/BackButton.scss';
+@use './components/SeasonsPageHeader.scss';
+@use './components/SeasonsFilters.scss';
+@use './components/ErrorMessage.scss';
+@use './components/LoadingState.scss';
+@use './components/BackButton.scss';
 
 // Main container styles
 .floorball-seasons-container {
