@@ -117,23 +117,37 @@ const EditTeamModal = ({ isOpen, onClose, onSubmit, teamId }: EditTeamModalProps
   };
 
   const loadAllPlayers = async () => {
-    try {
-      setLoadingPlayers(true);
-      
-      const response = await floorballPlayerService.getAll({
-        pageSize: 50 // Use max allowed page size
-      });
-      
-      
-      if (response && response.data && Array.isArray(response.data)) {
-        setAllPlayers(response.data);
-      } else {
-        console.warn('Invalid players response format, setting empty array');
-          setAllPlayers([]);
+     try {
+       setLoadingPlayers(true);
+
+      // Fetch players page-by-page to ensure we receive the complete list even if
+      // backend does not support pageSize = 0.
+      const pageSize = 50;
+      let currentPage = 1;
+      let combined: FloorballPlayerDto[] = [];
+
+      while (true) {
+        const resp = await floorballPlayerService.getAll({ page: currentPage, pageSize });
+
+        if (resp?.data && Array.isArray(resp.data)) {
+          combined = combined.concat(resp.data);
+          // If the page returned fewer than pageSize items, we reached the last page
+          if (resp.data.length < pageSize) {
+            break;
+          }
+        } else {
+          // Unexpected format – stop looping to avoid infinite loop
+          console.warn('Unexpected players response format on page', currentPage);
+          break;
+        }
+
+        currentPage += 1;
       }
+
+      setAllPlayers(combined);
     } catch (err) {
       console.error('Error loading players:', err);
-        setAllPlayers([]);
+      setAllPlayers([]);
     } finally {
       setLoadingPlayers(false);
     }
@@ -294,9 +308,15 @@ const EditTeamModal = ({ isOpen, onClose, onSubmit, teamId }: EditTeamModalProps
       setPlayerEdits({});
       setRemovedPlayers(new Set());
       setAddedPlayers(new Set());
-      
-      // This will trigger a refresh in the parent and close the modal.
-      await onSubmit(formData);
+
+      // Build a sanitized team request (remove invalid secondaryJerseyColor)
+      const sanitizedTeamRequest: FloorballTeamRequest = { ...formData } as FloorballTeamRequest;
+      if (!sanitizedTeamRequest.secondaryJerseyColor || sanitizedTeamRequest.secondaryJerseyColor.length < 2 || sanitizedTeamRequest.secondaryJerseyColor.length > 50) {
+        delete (sanitizedTeamRequest as Partial<FloorballTeamRequest>).secondaryJerseyColor;
+      }
+
+      // Trigger a refresh in the parent and close the modal.
+      await onSubmit(sanitizedTeamRequest);
 
     } catch (error) {
       console.error('Error saving roster changes:', error);

@@ -1,0 +1,80 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+@use '../../styles/common' as *;
+
+.back-button-container {
+  display: flex;
+  justify-content: flex-start;
+  margin: map.get($spacing, 'lg') 0;
+  transition: all 0.3s ease-in-out;
+
+  &.floating {
+    position: sticky;
+    top: map.get($spacing, 'lg');
+    left: map.get($spacing, 'lg');
+    z-index: 1000;
+    margin-top: map.get($spacing, 'lg');
+    transform: translateX(-20%);
+    pointer-events: none;
+  }
+}
+
+.back-button {
+  pointer-events: auto;
+  padding: map.get($spacing, 'sm') map.get($spacing, 'lg');
+  background-color: $color-button-secondary;
+  color: $color-white;
+  border: none;
+  border-radius: map.get($border-radius, 'sm');
+  font-size: map.get($font-sizes, 'base');
+  font-weight: map.get($font-weights, 'medium');
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: darken($color-button-secondary, 10%);
+    transform: translateY(-1px);
+    color: $color-white !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .floating & {
+    border-radius: 50px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+      color: $color-white !important;
+    }
+
+    &:active {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+@keyframes fadeInUp {
+  from {    
+    transform: translateY(20px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .back-button {
+    .floating & {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      font-size: map.get($font-sizes, 'sm');
+    }
+  }
+} 
