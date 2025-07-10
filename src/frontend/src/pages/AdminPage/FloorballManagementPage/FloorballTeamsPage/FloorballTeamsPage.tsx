@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import BackButton from '../../../../components/BackButton/BackButton';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
@@ -14,7 +13,6 @@ import './components/CreateTeamModal.scss';
 import './components/EditTeamModal.scss';
 
 const FloorballTeamsPage = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   
   const [teams, setTeams] = useState<FloorballTeam[]>([]);
