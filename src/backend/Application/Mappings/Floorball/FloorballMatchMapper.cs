@@ -1,6 +1,7 @@
 using Application.Commands.Floorball.Match;
 using Application.DTOs.Floorball;
 using Domain.Entities.Floorball;
+using Domain.Entities.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +21,22 @@ public static class FloorballMatchMapper
     /// <exception cref="ArgumentNullException">Thrown when match is null</exception>
     public static FloorballMatchDto ToDto(FloorballMatch match)
     {
+        return ToDto(match, new Dictionary<Guid, Person>());
+    }
+
+    /// <summary>
+    /// Maps a FloorballMatch entity to a FloorballMatchDto with person lookup for player names
+    /// </summary>
+    /// <param name="match">The match entity to map</param>
+    /// <param name="playerPersonLookup">Dictionary mapping player IDs to their person data</param>
+    /// <returns>The mapped DTO</returns>
+    /// <exception cref="ArgumentNullException">Thrown when match is null</exception>
+    public static FloorballMatchDto ToDto(FloorballMatch match, Dictionary<Guid, Person> playerPersonLookup)
+    {
         if (match == null)
             throw new ArgumentNullException(nameof(match));
+
+        playerPersonLookup ??= new Dictionary<Guid, Person>();
 
         // Map officials from the match entity
         List<Guid> officials = match.Officials.Select(referee => referee.Id).ToList();
@@ -34,7 +49,7 @@ public static class FloorballMatchMapper
                 ps => new PeriodScoreDto(ps.HomeScore, ps.AwayScore)
             );
 
-        // Map goal events
+        // Map goal events with player names
         List<FloorballGoalEventDto> goalEvents = match.GoalEvents
             .Select(g => new FloorballGoalEventDto(
                 g.TeamId,
@@ -44,7 +59,23 @@ public static class FloorballMatchMapper
                 g.PeriodNumber,
                 g.TimeInSeconds,
                 match.WentToOvertime,
-                match.WentToShootout))
+                match.WentToShootout,
+                GetPlayerName(g.ScoringPlayerId, playerPersonLookup),
+                GetPlayerName(g.AssistingPlayerId, playerPersonLookup),
+                GetPlayerName(g.SecondaryAssistingPlayerId, playerPersonLookup)))
+            .ToList();
+
+        // Map penalty events with player names
+        List<FloorballPenaltyEventDto> penaltyEvents = match.PenaltyEvents
+            .Select(p => new FloorballPenaltyEventDto(
+                p.TeamId,
+                p.PlayerId,
+                p.PenaltyType,
+                p.DurationInMinutes,
+                p.PeriodNumber,
+                p.TimeInSeconds,
+                p.Description,
+                GetPlayerName(p.PlayerId, playerPersonLookup)))
             .ToList();
 
         return new FloorballMatchDto(
@@ -64,8 +95,7 @@ public static class FloorballMatchMapper
             periodScores,
             officials,
             goalEvents,
-            new List<FloorballPenaltyEventDto>() // TODO: Map penalty events when needed
-        );
+            penaltyEvents);
     }
 
     /// <summary>
@@ -193,5 +223,21 @@ public static class FloorballMatchMapper
             kvp => kvp.Key,
             kvp => new PeriodScoreDto(kvp.Value.HomeScore, kvp.Value.AwayScore)
         );
+    }
+
+    /// <summary>
+    /// Gets the player name from the person lookup dictionary
+    /// </summary>
+    /// <param name="playerId">The player ID</param>
+    /// <param name="playerPersonLookup">Dictionary mapping player IDs to their person data</param>
+    /// <returns>The player's full name or "Unknown Player" if not found</returns>
+    private static string GetPlayerName(Guid? playerId, Dictionary<Guid, Person> playerPersonLookup)
+    {
+        if (!playerId.HasValue || !playerPersonLookup.TryGetValue(playerId.Value, out Person? person))
+        {
+            return null;
+        }
+
+        return $"{person.FirstName} {person.LastName}";
     }
 } 
