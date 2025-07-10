@@ -34,6 +34,19 @@ public static class FloorballMatchMapper
                 ps => new PeriodScoreDto(ps.HomeScore, ps.AwayScore)
             );
 
+        // Map goal events
+        List<FloorballGoalEventDto> goalEvents = match.GoalEvents
+            .Select(g => new FloorballGoalEventDto(
+                g.TeamId,
+                g.ScoringPlayerId ?? Guid.Empty,
+                g.AssistingPlayerId,
+                g.SecondaryAssistingPlayerId,
+                g.PeriodNumber,
+                g.TimeInSeconds,
+                match.WentToOvertime,
+                match.WentToShootout))
+            .ToList();
+
         return new FloorballMatchDto(
             match.Id,
             match.SeasonId,
@@ -50,7 +63,7 @@ public static class FloorballMatchMapper
             match.WentToShootout,
             periodScores,
             officials,
-            new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed
+            goalEvents,
             new List<FloorballPenaltyEventDto>() // TODO: Map penalty events when needed
         );
     }

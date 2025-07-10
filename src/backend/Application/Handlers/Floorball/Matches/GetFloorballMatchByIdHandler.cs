@@ -10,6 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Queries.Floorball.Match;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -52,6 +53,7 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
                 _logger.LogWarning("Floorball match with ID {MatchId} not found", request.Id);
                 return Result<FloorballMatchDto>.NotFound("FloorballMatch", request.Id);
             }
+            _logger.LogInformation("Dataa!!: {data}", match.Events);
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             _logger.LogInformation("Successfully retrieved floorball match: {MatchId}", match.Id);

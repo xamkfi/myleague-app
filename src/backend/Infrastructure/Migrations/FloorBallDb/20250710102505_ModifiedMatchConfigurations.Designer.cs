@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 {
     [DbContext(typeof(FloorballDbContext))]
-    partial class FloorballDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250710102505_ModifiedMatchConfigurations")]
+    partial class ModifiedMatchConfigurations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -152,6 +155,9 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .HasMaxLength(21)
                         .HasColumnType("character varying(21)");
 
+                    b.Property<Guid?>("FloorballMatchId1")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("MatchId")
                         .HasColumnType("uuid");
 
@@ -168,6 +174,8 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FloorballMatchId1");
 
                     b.HasIndex("MatchId")
                         .HasDatabaseName("IX_FloorballMatchEvent_MatchId");
@@ -720,6 +728,10 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                 {
                     b.HasOne("Domain.Entities.Floorball.FloorballMatch", null)
                         .WithMany("Events")
+                        .HasForeignKey("FloorballMatchId1");
+
+                    b.HasOne("Domain.Entities.Floorball.FloorballMatch", null)
+                        .WithMany()
                         .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
