@@ -57,22 +57,6 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
                 return Result<FloorballSeasonDto>.NotFound("FloorballSeason", request.Id);
             }
 
-            // Check for overlapping seasons if dates are being updated
-            if (request.StartDate != existingSeason.StartDate || request.EndDate != existingSeason.EndDate)
-            {
-                IEnumerable<FloorballSeason> allSeasons = await _seasonRepository.GetAllAsync();
-                bool overlappingSeasonExists = allSeasons
-                    .Where(s => s.Id != request.Id) // Exclude the current season being updated
-                    .Any(s => (request.StartDate < s.EndDate && request.EndDate > s.StartDate));
-                
-                if (overlappingSeasonExists)
-                {
-                    _logger.LogWarning("Attempt to update season with overlapping dates: {StartDate} - {EndDate}", 
-                        request.StartDate, request.EndDate);
-                    return Result<FloorballSeasonDto>.Failure("A season already exists that overlaps with the specified dates.");
-                }
-            }
-
             // Update the season
             FloorballSeasonMapper.UpdateFromCommand(existingSeason, request);
             
