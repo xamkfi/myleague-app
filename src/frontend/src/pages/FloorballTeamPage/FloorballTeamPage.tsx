@@ -91,8 +91,6 @@ function FloorballTeamPage() {
         setMatchesLoading(false);
       }
     };
-    console.log("Matsit: ",matches)
-
     fetchMatches();
   }, [team, currentPage]);
 

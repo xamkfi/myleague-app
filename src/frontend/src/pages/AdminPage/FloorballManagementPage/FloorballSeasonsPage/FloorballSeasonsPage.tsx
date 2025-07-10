@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import './FloorballSeasonsPage.scss';
 import { useSeasonsManagement } from './hooks/useSeasonsManagement';
@@ -14,7 +13,6 @@ import { EditSeasonModal } from './components/EditSeasonModal';
 import { CreateSeasonModal } from './components/CreateSeasonModal';
 
 const FloorballSeasonsPage = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   
   const {

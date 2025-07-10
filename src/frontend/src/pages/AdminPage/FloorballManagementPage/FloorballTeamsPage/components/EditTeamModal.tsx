@@ -312,8 +312,7 @@ const EditTeamModal = ({ isOpen, onClose, onSubmit, teamId }: EditTeamModalProps
       // Build a sanitized team request (remove invalid secondaryJerseyColor)
       const sanitizedTeamRequest: FloorballTeamRequest = { ...formData } as FloorballTeamRequest;
       if (!sanitizedTeamRequest.secondaryJerseyColor || sanitizedTeamRequest.secondaryJerseyColor.length < 2 || sanitizedTeamRequest.secondaryJerseyColor.length > 50) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete (sanitizedTeamRequest as any).secondaryJerseyColor;
+        delete (sanitizedTeamRequest as Partial<FloorballTeamRequest>).secondaryJerseyColor;
       }
 
       // Trigger a refresh in the parent and close the modal.

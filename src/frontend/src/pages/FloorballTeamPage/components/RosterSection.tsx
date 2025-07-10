@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import './RosterSection.scss'
-import type { FloorballPlayerDto } from "../../../api/floorball/floorballPlayerService"
 import type { FloorballTeam, FloorballTeamPlayer } from "../../../types/floorball/floorballTypes"
 import { useNavigate } from "react-router-dom"
 
@@ -17,24 +16,20 @@ export default function RosterSection({ team }: RosterSectionProps) {
     navigate(`/pelaaja/${playerId}`)
   }
 
-  const filterPlayerPositions = () => {
+  const filterPlayerPositions = useCallback(() => {
     const posList = roster.map(p => p.position)
     return [...new Set(posList)]
-  }
+  }, [roster])
 
   useEffect(() => {
     setRoster(team.roster)
-  }, [])
+  }, [team])
 
   useEffect(() => {
     if (playerPositions.length < 1) {
       setPlayerPositions(filterPlayerPositions())
-      console.log(playerPositions)
-
     }
-    console.log(playerPositions)
-
-  }, [playerPositions])
+  }, [playerPositions, filterPlayerPositions])
 
   return (
     <div>

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import { floorballRefereeService, type FloorballRefereeDto } from '../../../../api/floorball/floorballRefereeService';
 import RefereesTable from './components/RefereesTable';
@@ -11,7 +10,6 @@ import './components/CreateRefereeModal.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 
 const FloorballRefereesPage = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const [referees, setReferees] = useState<FloorballRefereeDto[]>([]);
   const [loading, setLoading] = useState(true);

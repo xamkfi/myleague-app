@@ -29,7 +29,7 @@ export default function ResultsSection({
    const [seasons, setSeasons] = useState<FloorballSeasonDto[] | null>(null);
    const { teams, refetch } = useFloorballTeamsData();
    const { t, i18n } = useTranslation();
-   let navigate = useNavigate()
+   const navigate = useNavigate()
 
    // pick locale for date formatting based on current language
    const locale = i18n.language === 'fi' ? 'fi-FI' : 'en-GB';
@@ -45,9 +45,9 @@ export default function ResultsSection({
 
    // fetch seasons once
    useEffect(() => {
-      refetch()
+      refetch();
       fetchSeasons();
-   }, []);
+   }, [refetch]);
 
    const checkIfTeamWon = (match: FloorballMatchDto) => {
       return (match.homeTeamId === team?.id && match.homeScore > match.awayScore) ||

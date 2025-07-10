@@ -55,7 +55,7 @@ function ClubPage() {
     };
 
     fetchData();
-  }, [slug]);
+  }, [slug, setTeamParams]);
 
   if (loading) {
     return (
