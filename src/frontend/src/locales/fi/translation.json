@@ -37,7 +37,52 @@
     "title": "Hallintapaneeli",
     "personManagement": "Henkilöhallinta",
     "newsManagement": "Uutishallinta",
-    "floorballManagement": "Salibandyhallinta"
+    "floorballManagement": "Salibandyhallinta",
+    "persons": {
+      "title": "Henkilöhallinta",
+      "subtitle": "Hallitse henkilöitä",
+      "loading": "Ladataan henkilöitä...",
+      "noData": "Henkilöitä ei löytynyt",
+      "confirmDelete": "Haluatko varmasti poistaa tämän henkilön?",
+      "confirmRegister": "Haluatko varmasti rekisteröidä tämän henkilön?",
+      "confirmUnregister": "Haluatko varmasti poistaa tämän henkilön rekisteröinnin?",
+      "confirmRoleChange": "Haluatko varmasti vaihtaa tämän henkilön roolin: {{role}}?",
+      "table": {
+        "name": "Nimi",
+        "birthDate": "Syntymäaika",
+        "email": "Sähköposti",
+        "registered": "Rekisteröity",
+        "role": "Rooli",
+        "actions": "Toiminnot"
+      },
+      "actions": {
+        "add": "Lisää uusi henkilö",
+        "edit": "Muokkaa",
+        "delete": "Poista",
+        "toggleRegistration": "Klikkaa vaihtaaksesi rekisteröintitila",
+        "updateRole": "Päivitä rooli"
+      },
+      "status": {
+        "registered": "Kyllä",
+        "notRegistered": "Ei"
+      },
+      "roles": {
+        "user": "Käyttäjä",
+        "admin": "Ylläpitäjä",
+        "superadmin": "Pääylläpitäjä"
+      },
+      "success": {
+        "registered": "Henkilö rekisteröity onnistuneesti",
+        "unregistered": "Henkilön rekisteröinti poistettu onnistuneesti",
+        "roleUpdated": "Henkilön rooli päivitetty onnistuneesti"
+      },
+      "errors": {
+        "fetchFailed": "Henkilöiden haku epäonnistui",
+        "deleteFailed": "Henkilön poisto epäonnistui",
+        "updateRegistrationFailed": "Rekisteröintitilan päivitys epäonnistui",
+        "updateRoleFailed": "Henkilön roolin päivitys epäonnistui"
+      }
+    }
   },
   "floorball": {
     "management": {
