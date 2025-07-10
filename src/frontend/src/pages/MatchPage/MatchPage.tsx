@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
-import { FloorballMatchStatus, type FloorballMatchDto } from '../../types/floorball/floorballTypes';
+import { FloorballMatchStatus, type FloorballMatchDto, type FloorballGoalEventDto, type FloorballPenaltyEventDto } from '../../types/floorball/floorballTypes';
 import './MatchPage.scss';
-import { signalRService } from '../../services/signalRService';
+import { useSignalR } from '../../hooks/useSignalR';
 import type { MatchEvent } from '../../services/signalRService';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 
@@ -12,6 +12,13 @@ const GOAL_SCORED_EVENT = 'FloorballGoalScored';
 const PENALTY_ASSIGNED_EVENT = 'FloorballPenaltyAssigned';
 
 type TabType = 'summary' | 'stats' | 'h2h' | 'table';
+
+type MatchEventItem = {
+  type: 'goal' | 'penalty';
+  time: number;
+  periodNumber: number;
+  event: FloorballGoalEventDto | FloorballPenaltyEventDto;
+};
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -36,6 +43,145 @@ function getTeamInitials(name: string): string {
     .toUpperCase();
 }
 
+function formatTime(timeInSeconds: number): string {
+  const minutes = Math.floor(timeInSeconds / 60);
+  const seconds = timeInSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function getTeamName(teamId: string, match: FloorballMatchDto): string {
+  if (teamId === match.homeTeamId) return match.homeTeamName;
+  if (teamId === match.awayTeamId) return match.awayTeamName;
+  return 'Unknown Team';
+}
+
+interface MatchEventsProps {
+  match: FloorballMatchDto;
+}
+
+function MatchEvents({ match }: MatchEventsProps) {
+  // Combine all events and sort by time within each period
+  const allEvents: MatchEventItem[] = [
+    ...match.goalEvents.map(goal => ({
+      type: 'goal' as const,
+      time: goal.timeInSeconds,
+      periodNumber: goal.periodNumber,
+      event: goal
+    })),
+    ...match.penaltyEvents.map(penalty => ({
+      type: 'penalty' as const,
+      time: penalty.timeInSeconds,
+      periodNumber: penalty.periodNumber,
+      event: penalty
+    }))
+  ];
+
+  // Group events by period
+  const eventsByPeriod = allEvents.reduce((acc, event) => {
+    if (!acc[event.periodNumber]) {
+      acc[event.periodNumber] = [];
+    }
+    acc[event.periodNumber].push(event);
+    return acc;
+  }, {} as Record<number, MatchEventItem[]>);
+
+  // Sort events within each period by time
+  Object.keys(eventsByPeriod).forEach(period => {
+    eventsByPeriod[parseInt(period)].sort((a, b) => a.time - b.time);
+  });
+
+  const getPeriodScore = (period: number) => {
+    const scores = match.periodScores[period];
+    return scores ? `${scores.homeScore} - ${scores.awayScore}` : '0 - 0';
+  };
+
+  const getPeriodName = (period: number) => {
+    if (period <= 3) return `${period}${period === 1 ? 'ST' : period === 2 ? 'ND' : 'RD'} PERIOD`;
+    return `${period === 4 ? 'OVERTIME' : `PERIOD ${period}`}`;
+  };
+
+  const isHomeTeam = (teamId: string) => teamId === match.homeTeamId;
+
+  const renderGoalEvent = (event: FloorballGoalEventDto, isHome: boolean) => (
+    <div className={`event-row ${isHome ? 'home-event' : 'away-event'}`}>
+      <div className="event-left">
+        {isHome && (
+          <>
+            <span className="event-time">{Math.floor(event.timeInSeconds / 60)}</span>
+            <div className="event-icon goal">⚽</div>
+            <span className="event-score">{getPeriodScore(event.periodNumber)}</span>
+            <span className="event-player">{event.playerName || 'Unknown Player'}</span>
+            {event.assisterName && <span className="event-assist">{event.assisterName}</span>}
+          </>
+        )}
+      </div>
+      <div className="event-right">
+        {!isHome && (
+          <>
+            {event.assisterName && <span className="event-assist">{event.assisterName}</span>}
+            <span className="event-player">{event.playerName || 'Unknown Player'}</span>
+            <span className="event-score">{getPeriodScore(event.periodNumber)}</span>
+            <div className="event-icon goal">⚽</div>
+            <span className="event-time">{Math.floor(event.timeInSeconds / 60)}</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderPenaltyEvent = (event: FloorballPenaltyEventDto, isHome: boolean) => (
+    <div className={`event-row ${isHome ? 'home-event' : 'away-event'}`}>
+      <div className="event-left">
+        {isHome && (
+          <>
+            <span className="event-time">{Math.floor(event.timeInSeconds / 60)}</span>
+            <div className="event-icon penalty">🟨</div>
+            <span className="event-player">{event.playerName || 'Team penalty'}</span>
+          </>
+        )}
+      </div>
+      <div className="event-right">
+        {!isHome && (
+          <>
+            <span className="event-player">{event.playerName || 'Team penalty'}</span>
+            <div className="event-icon penalty">🟨</div>
+            <span className="event-time">{Math.floor(event.timeInSeconds / 60)}</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="match-events">
+      {Object.keys(eventsByPeriod)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .map(period => (
+          <div key={period} className="period-section">
+            <div className="period-header">
+              <span className="period-name">{getPeriodName(period)}</span>
+              <span className="period-score">{getPeriodScore(period)}</span>
+            </div>
+            <div className="period-events">
+              {eventsByPeriod[period].map((eventItem, index) => {
+                const isHome = isHomeTeam(eventItem.event.teamId);
+                return (
+                  <div key={index}>
+                    {eventItem.type === 'goal' 
+                      ? renderGoalEvent(eventItem.event as FloorballGoalEventDto, isHome)
+                      : renderPenaltyEvent(eventItem.event as FloorballPenaltyEventDto, isHome)
+                    }
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+    </div>
+  );
+}
+
 export default function MatchPage() {
   const { id } = useParams<{ id: string }>();
   const [match, setMatch] = useState<FloorballMatchDto | null>(null);
@@ -43,21 +189,40 @@ export default function MatchPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('summary');
 
-  useEffect(() => {
-    // Helper that loads the latest state of the match from the API.
-    const loadMatch = async () => {
-      if (!id) return;
-      try {
-        const response = await floorballMatchService.getById(id);
-        setMatch(response.data);
-      } catch (err) {
-        console.error(err);
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Helper that loads the latest state of the match from the API.
+  const loadMatch = async () => {
+    if (!id) return;
+    try {
+      const response = await floorballMatchService.getById(id);
+      setMatch(response.data);
+    } catch (err) {
+      console.error(err);
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // SignalR integration
+  useSignalR({
+    eventTypes: [GOAL_SCORED_EVENT, PENALTY_ASSIGNED_EVENT],
+    onEvent: (evt: MatchEvent) => {
+      // Narrow down to the events we care about
+      if (evt.eventType !== GOAL_SCORED_EVENT && evt.eventType !== PENALTY_ASSIGNED_EVENT) return;
+
+      // The backend payload structure is known: it contains matchId.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const payload = evt.data as any;
+      if (!payload || payload.matchId !== id) return; // Not our match
+
+      // Simply reload the match so UI stays consistent.
+      // This avoids duplicating score-update logic client-side.
+      loadMatch();
+    },
+    autoConnect: true
+  });
+
+  useEffect(() => {
     const fetchMatch = async () => {
       if (!id) return;
       try {
@@ -72,45 +237,6 @@ export default function MatchPage() {
     };
 
     fetchMatch();
-
-    // -------------------- SignalR Live Updates --------------------
-    let unsubscribe: () => void;
-
-    const setupSignalR = async () => {
-      try {
-        await signalRService.connect();
-
-        // Subscribe only to goal / penalty events.
-        await signalRService.subscribeToEventType(GOAL_SCORED_EVENT);
-        await signalRService.subscribeToEventType(PENALTY_ASSIGNED_EVENT);
-
-        // Register callback for incoming events.
-        unsubscribe = signalRService.onMatchEvent((evt: MatchEvent) => {
-          // Narrow down to the events we care about
-          if (evt.eventType !== GOAL_SCORED_EVENT && evt.eventType !== PENALTY_ASSIGNED_EVENT) return;
-
-          // The backend payload structure is known: it contains matchId.
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const payload = evt.data as any;
-          if (!payload || payload.matchId !== id) return; // Not our match
-
-          // Simply reload the match so UI stays consistent.
-          // This avoids duplicating score-update logic client-side.
-          loadMatch();
-        });
-      } catch (err) {
-        console.error('Error setting up SignalR on MatchPage:', err);
-      }
-    };
-
-    setupSignalR();
-
-    // Cleanup on unmount.
-    return () => {
-      if (unsubscribe) unsubscribe();
-      signalRService.unsubscribeFromEventType(GOAL_SCORED_EVENT);
-      signalRService.unsubscribeFromEventType(PENALTY_ASSIGNED_EVENT);
-    };
   }, [id]);
 
   if (loading) {
@@ -131,10 +257,10 @@ export default function MatchPage() {
 
   const renderBreadcrumb = () => (
     <div className="breadcrumb">
-      <span>🏆 JALKAPALLO</span>
-      <span>🇪🇺 EUROOPPA</span>
-      <span>EUROOPPA-LIIGA · KARSINTA · NELJÄNNESVÄLIERÄT</span>
-      <a href="#" className="settings-link">⚙️ Uusi ikkuna</a>
+      <span>🏒 FLOORBALL</span>
+      <span>🇫🇮 FINLAND</span>
+      <span>FLOORBALL LEAGUE · REGULAR SEASON</span>
+      <a href="#" className="settings-link">⚙️ Settings</a>
     </div>
   );
 
@@ -154,7 +280,7 @@ export default function MatchPage() {
 
         <div className="score-container">
           {match.status === FloorballMatchStatus.Scheduled ? (
-            <div className="vs-separator">—</div>
+            <div className="vs-separator">VS</div>
           ) : (
             <div className="match-score">
               <span className="home-score">{match.homeScore}</span>
@@ -174,10 +300,17 @@ export default function MatchPage() {
         </div>
       </div>
 
-      {match.status === FloorballMatchStatus.Scheduled && (
+      {match.status === FloorballMatchStatus.InProgress && (
         <div className="match-status">
-          <span className="status-indicator">⏰</span>
-          <span>1. osapuolli.</span>
+          <span className="status-indicator">🔴</span>
+          <span>LIVE</span>
+        </div>
+      )}
+      
+      {match.status === FloorballMatchStatus.Completed && (
+        <div className="match-status">
+          <span className="status-indicator">✅</span>
+          <span>FINAL</span>
         </div>
       )}
     </div>
@@ -189,13 +322,13 @@ export default function MatchPage() {
         className={`nav-tab ${activeTab === 'summary' ? 'active' : ''}`}
         onClick={() => setActiveTab('summary')}
       >
-        YHTEENVETO
+        SUMMARY
       </button>
       <button 
         className={`nav-tab ${activeTab === 'stats' ? 'active' : ''}`}
         onClick={() => setActiveTab('stats')}
       >
-        KERTOIMET
+        STATS
       </button>
       <button 
         className={`nav-tab ${activeTab === 'h2h' ? 'active' : ''}`}
@@ -207,7 +340,7 @@ export default function MatchPage() {
         className={`nav-tab ${activeTab === 'table' ? 'active' : ''}`}
         onClick={() => setActiveTab('table')}
       >
-        KAAVIO
+        TABLE
       </button>
     </div>
   );
@@ -227,17 +360,7 @@ export default function MatchPage() {
                 {match.wentToShootout && <p>🥅 Went to shootout</p>}
               </div>
               
-              {Object.keys(match.periodScores).length > 0 && (
-                <div className="period-scores">
-                  <h3>Period Scores</h3>
-                  {Object.entries(match.periodScores).map(([period, scores]) => (
-                    <div key={period} className="period-score">
-                      <span>Period {period}:</span>
-                      <span>{scores.homeScore} - {scores.awayScore}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <MatchEvents match={match} />
             </div>
           </div>
         );
@@ -246,8 +369,8 @@ export default function MatchPage() {
         return (
           <div className="tab-content">
             <div className="stats-placeholder">
-              <h3>Kertoimet</h3>
-              <p>Betting odds and statistics coming soon...</p>
+              <h3>Match Statistics</h3>
+              <p>Detailed match statistics coming soon...</p>
             </div>
           </div>
         );
@@ -266,7 +389,7 @@ export default function MatchPage() {
         return (
           <div className="tab-content">
             <div className="table-placeholder">
-              <h3>Kaavio</h3>
+              <h3>League Table</h3>
               <p>League table and standings coming soon...</p>
             </div>
           </div>
@@ -277,15 +400,14 @@ export default function MatchPage() {
     }
   };
 
-  return (<>
-    <PageTemplate title="Match Page">
-    <div className="match-page">
-      {renderBreadcrumb()}
-      {renderMatchHeader()}
-      {renderNavigation()}
-      {renderTabContent()}
-    </div>
+  return (
+    <PageTemplate title="Match Details">
+      <div className="match-page">
+        {renderBreadcrumb()}
+        {renderMatchHeader()}
+        {renderNavigation()}
+        {renderTabContent()}
+      </div>
     </PageTemplate>
-    </>
   );
 }
