@@ -12,6 +12,12 @@ export interface ContactInfo {
   alternativePhone: string;
 }
 
+export enum PersonRole {
+  User = 'User',
+  Admin = 'Admin',
+  SuperAdmin = 'SuperAdmin'
+}
+
 export interface Person {
   id: string;
   firstName: string;
@@ -19,6 +25,7 @@ export interface Person {
   birthDate: string;
   fullName: string;
   isRegistered: boolean;
+  role: PersonRole;
   address?: Address;
   contactInfo?: ContactInfo;
 }
@@ -28,6 +35,7 @@ export interface PersonFormData {
   lastName: string;
   birthDate: string;
   isRegistered: boolean;
+  role: PersonRole;
   address: Address;
   contactInfo: ContactInfo;
 }

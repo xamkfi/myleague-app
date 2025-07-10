@@ -36,6 +36,7 @@ public static class FloorballPlayerMapper
                 player.Person.LastName,
                 player.Person.BirthDate,
                 player.Person.FullName,
+                player.Person.role,
                 player.Person.IsRegistered,
                 player.Person.Address,
                 player.Person.ContactInfo
@@ -46,6 +47,7 @@ public static class FloorballPlayerMapper
                 "Player", 
                 DateTime.MinValue,
                 "Unknown Player",
+                Domain.Enums.Common.PersonRole.User,
                 false,
                 null,
                 null

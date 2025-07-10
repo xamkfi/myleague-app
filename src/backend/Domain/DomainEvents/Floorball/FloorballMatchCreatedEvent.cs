@@ -36,7 +36,7 @@ public class FloorballMatchCreatedEvent : FloorballDomainEvent
     /// <summary>
     /// Gets the venue
     /// </summary>
-    public string Venue { get; }
+    public string? Venue { get; }
     
     /// <summary>
     /// Initializes a new instance of the FloorballMatchCreatedEvent class
