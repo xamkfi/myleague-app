@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import Navbar from '../../../../components/Navigation/Navbar';
-import LiveMatchModal from './Components/LiveMatchModal';
+import LiveMatchModal from './Components/LiveMatchModal/LiveMatchModal';
 import CreateMatchModal from './Components/CreateMatchModal/CreateMatchModal';
 import MatchStatsCards from './Components/MatchStatsCards/MatchStatsCards';
 import MatchFilters from './Components/MatchFilters/MatchFilters';
@@ -35,12 +35,10 @@ const MatchManagementPage = () => {
   // Use the live match state hook
   const {
     liveMatches,
-    initializeLiveMatch,
     updateLiveMatchState,
     cancelLiveMatch,
     getLiveMatchState,
-    isMatchLive
-  } = useLiveMatchState();
+  }: ReturnType<typeof useLiveMatchState> = useLiveMatchState();
 
   // Form state
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -74,7 +72,7 @@ const MatchManagementPage = () => {
   }, []);
 
   // Filter and sort matches: upcoming first (ascending), then past (descending)
-  const filteredMatches = React.useMemo(() => {
+  const filteredMatches = useMemo(() => {
     const now = new Date();
     
     // First filter by season if selected
@@ -137,27 +135,8 @@ const MatchManagementPage = () => {
   };
 
   const handleLiveMatch = (match: FloorballMatchDto) => {
-    const isCurrentlyLive = isMatchLive(match.id);
-    
-    if (isCurrentlyLive) {
-      // If already live, open the live modal again
-      setLiveModalMatch(match);
-      setIsLiveModalOpen(true);
-    } else {
-      // If not live, initialize live state
-      initializeLiveMatch(match);
-      
-      // Update match status to InProgress
-      setMatches(prev => prev.map(m => 
-        m.id === match.id 
-          ? { ...m, status: 'InProgress' as FloorballMatchStatus }
-          : m
-      ));
-      
-      // Open the live match modal
-      setLiveModalMatch(match);
-      setIsLiveModalOpen(true);
-    }
+    setLiveModalMatch(match);
+    setIsLiveModalOpen(true);
   };
 
   const handleEditMatch = (match: FloorballMatchDto) => {
@@ -176,7 +155,7 @@ const MatchManagementPage = () => {
     cancelLiveMatch(matchId);
     
     // Update match status back to Scheduled
-    setMatches(prev => prev.map(m => 
+    setMatches((prev: FloorballMatchDto[]) => prev.map((m: FloorballMatchDto) => 
       m.id === matchId 
         ? { ...m, status: 'Scheduled' as FloorballMatchStatus }
         : m
@@ -273,7 +252,7 @@ const MatchManagementPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredMatches.map((match) => (
+                  {filteredMatches.map((match: FloorballMatchDto) => (
                     <tr key={match.id}>
                       <td className="match-cell">
                         <div className="match-teams">

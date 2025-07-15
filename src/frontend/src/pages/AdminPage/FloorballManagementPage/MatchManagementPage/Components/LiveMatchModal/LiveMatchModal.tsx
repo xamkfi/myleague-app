@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { signalRService, type MatchEvent } from '../../../../../services/signalRService';
+import { signalRService, type MatchEvent } from '../../../../../../services/signalRService';
 import { 
   floorballMatchEventService, 
   type RecordGoalEventRequest, 
   type RecordPenaltyEventRequest 
-} from '../../../../../api/floorball/floorballMatchEventService';
-import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
-import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
-import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floorball/floorballTypes';
-import type { LiveMatchState } from '../hooks/useLiveMatchState';
+} from '../../../../../../api/floorball/floorballMatchEventService';
+import { floorballTeamService } from '../../../../../../api/floorball/floorballTeamService';
+import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../../api/floorball/floorballPlayerService';
+import type { FloorballMatchDto, FloorballTeam } from '../../../../../../types/floorball/floorballTypes';
+import type { LiveMatchState } from '../../hooks/useLiveMatchState';
 import './LiveMatchModal.scss';
 
 interface LiveMatchModalProps {
