@@ -70,6 +70,7 @@ export interface FloorballTeam {
   homeArena: string;
   primaryJerseyColor: string;
   secondaryJerseyColor?: string;
+  logoUrl?: string;
   hasActiveMembers: boolean;
   roster: FloorballTeamPlayer[];
 }
@@ -115,6 +116,7 @@ export interface FloorballTeamRequest {
   primaryJerseyColor: string;
   category?: TeamCategory;
   secondaryJerseyColor?: string;
+  logoUrl?: string;
 } 
 
 // Team Player Management types
