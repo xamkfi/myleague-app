@@ -35,6 +35,7 @@ const MatchManagementPage = () => {
   // Use the live match state hook
   const {
     liveMatches,
+    initializeLiveMatch,
     updateLiveMatchState,
     cancelLiveMatch,
     getLiveMatchState,
@@ -150,20 +151,32 @@ const MatchManagementPage = () => {
 
 
 
-  const handleCancelLive = (matchId: string) => {
+  const handleGoLive = (matchId: string, updatedMatch?: FloorballMatchDto) => {
+    // Use the hook to initialize live match
+    initializeLiveMatch(liveModalMatch!);
+    
+    // Update match with the response from the backend
+    if (updatedMatch) {
+      setMatches((prev: FloorballMatchDto[]) => prev.map((m: FloorballMatchDto) => 
+        m.id === matchId ? updatedMatch : m
+      ));
+      setLiveModalMatch(updatedMatch);
+    }
+  };
+
+  const handleCompleteLive = (matchId: string, updatedMatch?: FloorballMatchDto) => {
     // Use the hook to cancel live match
     cancelLiveMatch(matchId);
     
-    // Update match status back to Scheduled
-    setMatches((prev: FloorballMatchDto[]) => prev.map((m: FloorballMatchDto) => 
-      m.id === matchId 
-        ? { ...m, status: 'Scheduled' as FloorballMatchStatus }
-        : m
-    ));
+    // Update match with the response from the backend
+    if (updatedMatch) {
+      setMatches((prev: FloorballMatchDto[]) => prev.map((m: FloorballMatchDto) => 
+        m.id === matchId ? updatedMatch : m
+      ));
+      setLiveModalMatch(updatedMatch);
+    }
     
-    // Close the modal
-    setIsLiveModalOpen(false);
-    setLiveModalMatch(null);
+    // Don't close the modal - let it stay open with "Match Finished" status
   };
 
 
@@ -284,7 +297,7 @@ const MatchManagementPage = () => {
                             className={liveMatches.has(match.id) ? "live-button" : "go-live-button"}
                             disabled={actionLoading !== null}
                           >
-                            {liveMatches.has(match.id) ? "🔴 Live" : "🟢 Go Live"}
+                            {liveMatches.has(match.id) ? "🔴 Live" : "📊 Manage"}
                           </button>
                           <button
                             onClick={() => handleEditMatch(match)}
@@ -313,14 +326,17 @@ const MatchManagementPage = () => {
 
         {/* Live Match Modal */}
         {liveModalMatch && (
-                  <LiveMatchModal
-          match={liveModalMatch}
-          isOpen={isLiveModalOpen}
-          onClose={handleCloseLiveModal}
-          onCancelLive={handleCancelLive}
-          liveState={getLiveMatchState(liveModalMatch.id)}
-          onStateUpdate={(updates) => updateLiveMatchState(liveModalMatch.id, updates)}
-        />
+          <LiveMatchModal
+            match={liveModalMatch}
+            isOpen={isLiveModalOpen}
+            onClose={handleCloseLiveModal}
+            onCompleteLive={handleCompleteLive}
+            onGoLive={handleGoLive}
+            liveState={getLiveMatchState(liveModalMatch.id)}
+            onStateUpdate={(updates) => updateLiveMatchState(liveModalMatch.id, updates)}
+            isLive={liveMatches.has(liveModalMatch.id)}
+            isFinished={liveModalMatch.status === 'Completed'}
+          />
         )}
       </div>
     </div>

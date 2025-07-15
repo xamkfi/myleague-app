@@ -171,13 +171,10 @@ export const floorballMatchService = {
     try {
       console.log('Creating match:', data);
       
-      // Convert empty refereeId to null for backend compatibility
-      const requestData = {
-        ...data,
-        refereeId: data.refereeId && data.refereeId.trim() !== '' ? data.refereeId : null
-      };
+      // Remove refereeId for event sourced endpoint (it's handled separately)
+      const { refereeId, ...requestData } = data;
       
-      const response = await fetch(`${API_URL}/FloorballMatch`, {
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -198,6 +195,36 @@ export const floorballMatchService = {
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to create floorball match');
+      }
+      
+      // If a referee was provided, add them to the match
+      if (refereeId && refereeId.trim() !== '') {
+        try {
+          console.log('Adding referee to match:', refereeId);
+          const addOfficialResponse = await fetch(`${API_URL}/FloorballMatchEvent/match/official`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              MatchId: apiResponse.data!.id,
+              RefereeId: refereeId
+            }),
+          });
+          
+          if (addOfficialResponse.ok) {
+            const addOfficialApiResponse: ApiResponse<FloorballMatchDto> = await addOfficialResponse.json();
+            if (addOfficialApiResponse.success && addOfficialApiResponse.data) {
+              // Return the updated match with the referee
+              return addOfficialApiResponse;
+            }
+          }
+          
+          console.warn('Failed to add referee to match, but match was created successfully');
+        } catch (error) {
+          console.error('Error adding referee to match:', error);
+          // Don't fail the entire operation if adding referee fails
+        }
       }
       
       return apiResponse;
@@ -247,8 +274,8 @@ export const floorballMatchService = {
     try {
       console.log('Starting match with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballMatch/start-match/${id}`, {
-        method: 'PUT',
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/start`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -279,8 +306,8 @@ export const floorballMatchService = {
     try {
       console.log('Completing match with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballMatch/complete-match/${id}`, {
-        method: 'PUT',
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/complete`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },

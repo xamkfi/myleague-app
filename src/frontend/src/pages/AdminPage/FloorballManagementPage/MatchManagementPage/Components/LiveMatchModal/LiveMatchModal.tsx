@@ -5,6 +5,7 @@ import {
   type RecordGoalEventRequest, 
   type RecordPenaltyEventRequest 
 } from '../../../../../../api/floorball/floorballMatchEventService';
+import { floorballMatchService } from '../../../../../../api/floorball/floorballMatchService';
 import { floorballTeamService } from '../../../../../../api/floorball/floorballTeamService';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../../api/floorball/floorballPlayerService';
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../../types/floorball/floorballTypes';
@@ -15,9 +16,12 @@ interface LiveMatchModalProps {
   match: FloorballMatchDto;
   isOpen: boolean;
   onClose: () => void;
-  onCancelLive?: (matchId: string) => void;
+  onCompleteLive?: (matchId: string, updatedMatch?: FloorballMatchDto) => void;
+  onGoLive?: (matchId: string, updatedMatch?: FloorballMatchDto) => void;
   liveState?: LiveMatchState;
   onStateUpdate?: (updates: Partial<LiveMatchState>) => void;
+  isLive?: boolean;
+  isFinished?: boolean;
 }
 
 interface GoalEventData {
@@ -42,9 +46,12 @@ const LiveMatchModal = ({
   match, 
   isOpen, 
   onClose, 
-  onCancelLive,
+  onCompleteLive,
+  onGoLive,
   liveState,
-  onStateUpdate
+  onStateUpdate,
+  isLive = false,
+  isFinished = false
 }: LiveMatchModalProps) => {
   // State management
   const [homeTeam, setHomeTeam] = useState<FloorballTeam | null>(null);
@@ -371,11 +378,55 @@ const LiveMatchModal = ({
     return teamId === match.homeTeamId ? homePlayers : awayPlayers;
   };
 
-  const handleCancelLive = () => {
-    if (onCancelLive) {
-      onCancelLive(match.id);
+  const handleGoLive = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Use the event sourced endpoint to start the match
+      const response = await floorballMatchService.start(match.id);
+      
+      if (response.success && response.data) {
+        // Update the match with the response from the backend
+        // This will include the updated status from the event sourced system
+        if (onGoLive) {
+          onGoLive(match.id, response.data);
+        }
+      } else {
+        setError('Failed to start match');
+      }
+    } catch (error) {
+      console.error('Error starting match:', error);
+      setError(error instanceof Error ? error.message : 'Failed to start match');
+    } finally {
+      setLoading(false);
     }
-    onClose();
+  };
+
+  const handleCompleteLive = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Use the event sourced endpoint to complete the match
+      const response = await floorballMatchService.complete(match.id);
+      
+      if (response.success && response.data) {
+        // Update the match with the response from the backend
+        // This will include the updated status from the event sourced system
+        if (onCompleteLive) {
+          onCompleteLive(match.id, response.data);
+        }
+      } else {
+        setError('Failed to complete match');
+      }
+    } catch (error) {
+      console.error('Error completing match:', error);
+      setError(error instanceof Error ? error.message : 'Failed to complete match');
+    } finally {
+      setLoading(false);
+    }
+    // Don't close the modal - let it stay open with "Match Finished" status
   };
 
   if (!isOpen) return null;
@@ -388,10 +439,28 @@ const LiveMatchModal = ({
           <div className="match-info">
             <h2>{homeTeam?.name || 'Home'} vs {awayTeam?.name || 'Away'}</h2>
             <div className="status-controls">
-              <span className="match-status">🔴 LIVE</span>
-              <button onClick={handleCancelLive} className="cancel-live-button" title="Stop live tracking and return to scheduled state">
-                ⏹️ Stop Live
-              </button>
+              {isFinished ? (
+                <>
+                  <span className="match-status">🏁 FINISHED</span>
+                  <button onClick={onClose} className="close-modal-button" title="Close the match modal">
+                    ✕ Close
+                  </button>
+                </>
+              ) : isLive ? (
+                <>
+                  <span className="match-status">🔴 LIVE</span>
+                  <button onClick={handleCompleteLive} className="cancel-live-button" title="Stop live tracking and mark match as finished">
+                    ⏹️ Finish Match
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="match-status">⏸️ READY</span>
+                  <button onClick={handleGoLive} className="go-live-button" title="Start live tracking for this match">
+                    🟢 Go Live
+                  </button>
+                </>
+              )}
             </div>
           </div>
           <button onClick={onClose} className="close-button">×</button>
@@ -407,25 +476,64 @@ const LiveMatchModal = ({
         )}
 
         <div className="modal-content">
+          <div className="left-section">
           {/* Clock and Score Section */}
           <div className="clock-score-section">
+            {isFinished && (
+              <div className="match-finished-notice">
+                <span className="notice-icon">🏁</span>
+                <span className="notice-text">Match has been finished. Live tracking has been stopped.</span>
+              </div>
+            )}
+            {!isLive && !isFinished && (
+              <div className="not-live-notice">
+                <span className="notice-icon">⏸️</span>
+                <span className="notice-text">Match is not live yet. Click "Go Live" to start tracking.</span>
+              </div>
+            )}
             <div className="match-clock">
               <div className="period">Period {clock.period}</div>
               <div className={`time-display ${isTimeOverLimit(clock.minutes, clock.seconds) ? 'time-over-limit' : ''}`}>
                 {formatTime(clock.minutes, clock.seconds)}
               </div>
               <div className="clock-controls">
-                <button onClick={toggleClock} className={clock.isRunning ? "pause-btn" : "start-btn"}>
+                <button 
+                  onClick={toggleClock} 
+                  className={clock.isRunning ? "pause-btn" : "start-btn"}
+                  disabled={!isLive || isFinished}
+                >
                   {clock.isRunning ? '⏸️ Pause' : '▶️ Start'}
                 </button>
-                <button onClick={resetClock} className="reset-btn">🔄 Reset</button>
-                <button onClick={nextPeriod} className="next-period-btn">⏭️ Next Period</button>
+                <button 
+                  onClick={resetClock} 
+                  className="reset-btn"
+                  disabled={!isLive || isFinished}
+                >
+                  🔄 Reset
+                </button>
+                <button 
+                  onClick={nextPeriod} 
+                  className="next-period-btn"
+                  disabled={!isLive || isFinished}
+                >
+                  ⏭️ Next Period
+                </button>
               </div>
               <div className="time-controls">
-                <button onClick={goBackTime} className="time-control-btn back-time-btn" title="Go back 5 seconds">
+                <button 
+                  onClick={goBackTime} 
+                  className="time-control-btn back-time-btn" 
+                  title="Go back 5 seconds"
+                  disabled={!isLive || isFinished}
+                >
                   ⏪ 5s
                 </button>
-                <button onClick={goAheadTime} className="time-control-btn ahead-time-btn" title="Go ahead 30 seconds (Debug)">
+                <button 
+                  onClick={goAheadTime} 
+                  className="time-control-btn ahead-time-btn" 
+                  title="Go ahead 30 seconds (Debug)"
+                  disabled={!isLive || isFinished}
+                >
                   ⏩ 30s
                 </button>
               </div>
@@ -449,14 +557,14 @@ const LiveMatchModal = ({
             <button 
               onClick={() => setShowGoalForm(true)} 
               className="action-btn goal-btn"
-              disabled={loading}
+              disabled={loading || !isLive || isFinished}
             >
               ⚽ Record Goal
             </button>
             <button 
               onClick={() => setShowPenaltyForm(true)} 
               className="action-btn penalty-btn"
-              disabled={loading}
+              disabled={loading || !isLive || isFinished}
             >
               🟨 Record Penalty
             </button>
@@ -584,42 +692,44 @@ const LiveMatchModal = ({
               </div>
             </div>
           )}
-
+          </div>
           {/* Events History */}
-          <div className="events-history">
-            <h3>Match Events</h3>
-            {events.length === 0 ? (
-              <div className="no-events">No events recorded yet</div>
-            ) : (
-              <div className="events-list">
-                {events.map(event => (
-                  <div key={event.id} className={`event-item ${event.type}`}>
-                    <div className="event-time">
-                      P{event.periodNumber} - {formatEventTime(event.timeInSeconds)}
+          <div className="right-section">
+            <div className="events-history">
+              <h3>Match Events</h3>
+              {events.length === 0 ? (
+                <div className="no-events">No events recorded yet</div>
+              ) : (
+                <div className="events-list">
+                  {events.map(event => (
+                    <div key={event.id} className={`event-item ${event.type}`}>
+                      <div className="event-time">
+                       P{event.periodNumber} - {formatEventTime(event.timeInSeconds)}
+                      </div>
+                      <div className="event-details">
+                        {event.type === 'goal' ? (
+                          <div className="goal-event">
+                            <span className="event-icon">⚽</span>
+                            <span className="event-text">
+                              <strong>{event.teamName}</strong> - Goal by {event.playerName}
+                              {event.assisterName && ` (Assist: ${event.assisterName})`}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="penalty-event">
+                            <span className="event-icon">🟨</span>
+                            <span className="event-text">
+                              <strong>{event.teamName}</strong> - {event.penaltyType} ({event.penaltyMinutes}min)
+                              {event.playerName && ` - ${event.playerName}`}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="event-details">
-                      {event.type === 'goal' ? (
-                        <div className="goal-event">
-                          <span className="event-icon">⚽</span>
-                          <span className="event-text">
-                            <strong>{event.teamName}</strong> - Goal by {event.playerName}
-                            {event.assisterName && ` (Assist: ${event.assisterName})`}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="penalty-event">
-                          <span className="event-icon">🟨</span>
-                          <span className="event-text">
-                            <strong>{event.teamName}</strong> - {event.penaltyType} ({event.penaltyMinutes}min)
-                            {event.playerName && ` - ${event.playerName}`}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+               </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
