@@ -129,7 +129,7 @@ const CreateMatchModal = ({
 
   return (
     <div className="modal-overlay">
-      <div className="modal">
+      <div className="modal create-match-modal">
         <div className="modal-header">
           <h2>Create New Match</h2>
           <button onClick={handleClose} className="modal-close">×</button>
@@ -144,103 +144,110 @@ const CreateMatchModal = ({
         )}
         
         <form onSubmit={handleSubmit} className="modal-form">
-          <div className="form-group">
+          <div className="form-group horizontal-layout">
             <label htmlFor="season">Season *</label>
-            <SearchableInfiniteDropdown
-              placeholder="Select Season"
-              value={createForm.seasonId}
-              onChange={(value) => setCreateForm(prev => ({ ...prev, seasonId: value }))}
-              onSearch={floorballSeasonSearchService.searchSeasons}
-              searchPlaceholder="Search seasons..."
-              emptyMessage="No seasons found"
-              required
-            />
+            <div className="input-wrapper">
+              <SearchableInfiniteDropdown
+                placeholder="Select Season"
+                value={createForm.seasonId}
+                onChange={(value) => setCreateForm(prev => ({ ...prev, seasonId: value }))}
+                onSearch={floorballSeasonSearchService.searchSeasons}
+                searchPlaceholder="Search seasons..."
+                emptyMessage="No seasons found"
+                required
+              />
+            </div>
           </div>
-          
-          <div className="form-group">
+          <div className="form-group horizontal-layout">
             <label htmlFor="homeTeam">Home Team *</label>
-            <SearchableInfiniteDropdown
-              placeholder="Select Home Team"
-              value={createForm.homeTeamId}
-              onChange={(value) => setCreateForm(prev => ({ ...prev, homeTeamId: value }))}
-              onSearch={floorballTeamNameSearchService.searchTeams}
-              searchPlaceholder="Search teams..."
-              emptyMessage="No teams found"
-              required
-            />
+            <div className="input-wrapper">
+              <SearchableInfiniteDropdown
+                placeholder="Select Home Team"
+                value={createForm.homeTeamId}
+                onChange={(value) => setCreateForm(prev => ({ ...prev, homeTeamId: value }))}
+                onSearch={floorballTeamNameSearchService.searchTeams}
+                searchPlaceholder="Search teams..."
+                emptyMessage="No teams found"
+                required
+              />
+            </div>
           </div>
-          
-          <div className="form-group">
+          <div className="form-group horizontal-layout">
             <label htmlFor="awayTeam">Away Team *</label>
-            <SearchableInfiniteDropdown
-              placeholder="Select Away Team"
-              value={createForm.awayTeamId}
-              onChange={(value) => setCreateForm(prev => ({ ...prev, awayTeamId: value }))}
-              onSearch={floorballTeamNameSearchService.searchTeams}
-              searchPlaceholder="Search teams..."
-              emptyMessage="No teams found"
-              required
-            />
+            <div className="input-wrapper">
+              <SearchableInfiniteDropdown
+                placeholder="Select Away Team"
+                value={createForm.awayTeamId}
+                onChange={(value) => setCreateForm(prev => ({ ...prev, awayTeamId: value }))}
+                onSearch={floorballTeamNameSearchService.searchTeams}
+                searchPlaceholder="Search teams..."
+                emptyMessage="No teams found"
+                required
+              />
+            </div>
           </div>
-
-          <div className="form-group">
+          <div className="form-group horizontal-layout">
             <label htmlFor="referee">Referee</label>
-            <SearchableInfiniteDropdown
-              placeholder="Select Referee"
-              value={createForm.refereeId}
-              onChange={(value) => setCreateForm(prev => ({ ...prev, refereeId: value }))}
-              onSearch={floorballRefereeSearchService.searchReferees}
-              searchPlaceholder="Search referees..."
-              emptyMessage="No referees found"
-            />
+            <div className="input-wrapper">
+              <SearchableInfiniteDropdown
+                placeholder="Select Referee"
+                value={createForm.refereeId}
+                onChange={(value) => setCreateForm(prev => ({ ...prev, refereeId: value }))}
+                onSearch={floorballRefereeSearchService.searchReferees}
+                searchPlaceholder="Search referees..."
+                emptyMessage="No referees found"
+              />
+            </div>
           </div>
-          
-          <div className="form-group">
+          <div className="form-group horizontal-layout">
             <label>Date & Time *</label>
-            <div className="datetime-input-group">
-              <div className="date-input">
-                <input
-                  type="date"
-                  value={dateInput}
-                  onChange={(e) => handleDateChange(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="time-input-group">
-                <input
-                  type="number"
-                  placeholder="HH"
-                  value={hoursInput}
-                  onChange={(e) => handleHoursChange(e.target.value)}
-                  min="0"
-                  max="23"
-                  className="time-input hours"
-                  required
-                />
-                <span className="time-separator">:</span>
-                <input
-                  type="number"
-                  placeholder="MM"
-                  value={minutesInput}
-                  onChange={(e) => handleMinutesChange(e.target.value)}
-                  min="0"
-                  max="59"
-                  className="time-input minutes"
-                  required
-                />
+            <div className="input-wrapper">
+              <div className="datetime-input-group">
+                <div className="date-input">
+                  <input
+                    type="date"
+                    value={dateInput}
+                    onChange={(e) => handleDateChange(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="time-input-group">
+                  <input
+                    type="number"
+                    placeholder="HH"
+                    value={hoursInput}
+                    onChange={(e) => handleHoursChange(e.target.value)}
+                    min="0"
+                    max="23"
+                    className="time-input hours"
+                    required
+                  />
+                  <span className="time-separator">:</span>
+                  <input
+                    type="number"
+                    placeholder="MM"
+                    value={minutesInput}
+                    onChange={(e) => handleMinutesChange(e.target.value)}
+                    min="0"
+                    max="59"
+                    className="time-input minutes"
+                    required
+                  />
+                </div>
               </div>
             </div>
           </div>
-          
-          <div className="form-group">
+          <div className="form-group horizontal-layout">
             <label htmlFor="venue">Venue</label>
-            <input
-              type="text"
-              id="venue"
-              value={createForm.venue}
-              onChange={(e) => setCreateForm(prev => ({ ...prev, venue: e.target.value }))}
-              placeholder="Enter venue (optional)"
-            />
+            <div className="input-wrapper">
+              <input
+                type="text"
+                id="venue"
+                value={createForm.venue}
+                onChange={(e) => setCreateForm(prev => ({ ...prev, venue: e.target.value }))}
+                placeholder="Enter venue (optional)"
+              />
+            </div>
           </div>
           
           <div className="modal-actions">

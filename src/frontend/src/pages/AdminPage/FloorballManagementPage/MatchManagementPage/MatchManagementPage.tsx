@@ -11,8 +11,7 @@ import { useLiveMatchState } from './hooks/useLiveMatchState';
 import { formatDateTime, getStatusBadge } from './utils/matchFormatters';
 import type { 
   FloorballMatchDto, 
-  CreateFloorballMatchRequest,
-  FloorballMatchStatus
+  CreateFloorballMatchRequest
 } from '../../../../types/floorball/floorballTypes';
 import './MatchManagementPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';

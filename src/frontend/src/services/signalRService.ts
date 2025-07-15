@@ -21,7 +21,9 @@ export class SignalRService {
       const apiUrl = import.meta.env.VITE_API_URL || '/api';
       
       this.connection = new HubConnectionBuilder()
-        .withUrl(`${apiUrl}/hubs/domainevent`)
+        .withUrl(`${apiUrl}/hubs/domainevent`, {
+          withCredentials: true
+        })
         .withAutomaticReconnect([0, 2000, 10000, 30000])
         .configureLogging(LogLevel.Information)
         .build();

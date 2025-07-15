@@ -2,6 +2,28 @@ import type {
   ApiResponse
 } from '../../types/floorball/floorballTypes';
 
+// Event DTOs
+export interface FloorballGoalEventDto {
+  teamId: string;
+  playerId: string;
+  assisterId?: string;
+  secondaryAssisterId?: string;
+  periodNumber: number;
+  timeInSeconds: number;
+  wasInOvertime: boolean;
+  wasInShootout: boolean;
+}
+
+export interface FloorballPenaltyEventDto {
+  teamId: string;
+  playerId?: string;
+  penaltyType: string;
+  minutes: number;
+  periodNumber: number;
+  timeInSeconds: number;
+  description: string;
+}
+
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Request interfaces matching backend models
@@ -76,6 +98,33 @@ const handleApiResponse = async <T>(response: Response): Promise<ApiResponse<T>>
 };
 
 export const floorballMatchEventService = {
+  /**
+   * Get match events (goals and penalties) for a match
+   */
+  getMatchEvents: async (matchId: string): Promise<ApiResponse<{
+    goals: FloorballGoalEventDto[];
+    penalties: FloorballPenaltyEventDto[];
+  }>> => {
+    try {
+      console.log('Fetching match events for match:', matchId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/${matchId}/history`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return await handleApiResponse<{
+        goals: FloorballGoalEventDto[];
+        penalties: FloorballPenaltyEventDto[];
+      }>(response);
+    } catch (error) {
+      console.error('Error fetching match events:', error);
+      throw error;
+    }
+  },
+
   /**
    * Record a goal event in a floorball match
    */

@@ -3,7 +3,9 @@ import { signalRService, type MatchEvent } from '../../../../../../services/sign
 import { 
   floorballMatchEventService, 
   type RecordGoalEventRequest, 
-  type RecordPenaltyEventRequest 
+  type RecordPenaltyEventRequest,
+  type FloorballGoalEventDto,
+  type FloorballPenaltyEventDto
 } from '../../../../../../api/floorball/floorballMatchEventService';
 import { floorballMatchService } from '../../../../../../api/floorball/floorballMatchService';
 import { floorballTeamService } from '../../../../../../api/floorball/floorballTeamService';
@@ -60,15 +62,18 @@ const LiveMatchModal = ({
   const [awayPlayers, setAwayPlayers] = useState<FloorballPlayerDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [matchEvents, setMatchEvents] = useState<{
+    goals: FloorballGoalEventDto[];
+    penalties: FloorballPenaltyEventDto[];
+  }>({ goals: [], penalties: [] });
+  
+  // Real match status from backend
+  const [currentMatch, setCurrentMatch] = useState<FloorballMatchDto>(match);
   
   // Use state from parent or default values
   const currentScore = useMemo(() => 
-    liveState?.currentScore || { home: match.homeScore, away: match.awayScore }, 
-    [liveState?.currentScore, match.homeScore, match.awayScore]
-  );
-  const events = useMemo(() => 
-    liveState?.events || [], 
-    [liveState?.events]
+    liveState?.currentScore || { home: currentMatch.homeScore, away: currentMatch.awayScore }, 
+    [liveState?.currentScore, currentMatch.homeScore, currentMatch.awayScore]
   );
   const clock = liveState?.clock || {
     period: 1,
@@ -80,6 +85,17 @@ const LiveMatchModal = ({
   // Event recording state
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showPenaltyForm, setShowPenaltyForm] = useState(false);
+
+  // Update penalty form with current time when form opens
+  const openPenaltyForm = () => {
+    setPenaltyForm(prev => ({
+      ...prev,
+      periodNumber: clock.period,
+      timeMinutes: clock.minutes,
+      timeSeconds: clock.seconds
+    }));
+    setShowPenaltyForm(true);
+  };
 
   // Form states
   const [goalForm, setGoalForm] = useState({
@@ -94,12 +110,17 @@ const LiveMatchModal = ({
     penaltyType: '',
     minutes: 2,
     description: '',
+    periodNumber: 1,
+    timeMinutes: 0,
+    timeSeconds: 0,
   });
 
   // Load team and player data
   useEffect(() => {
     if (isOpen) {
       loadTeamData();
+      loadMatchEvents();
+      loadCurrentMatchStatus();
       setupSignalR();
     }
     
@@ -138,26 +159,65 @@ const LiveMatchModal = ({
     }
   };
 
+  const loadCurrentMatchStatus = async () => {
+    try {
+      const response = await floorballMatchService.getById(match.id);
+      
+      if (response.success && response.data) {
+        setCurrentMatch(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading current match status:', error);
+      // Don't set error for status loading - it's not critical
+    }
+  };
+
+  const loadMatchEvents = async () => {
+    try {
+      const response = await floorballMatchEventService.getMatchEvents(match.id);
+      
+      if (response.success && response.data) {
+        setMatchEvents(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading match events:', error);
+      // Don't set error for events loading - it's not critical
+    }
+  };
+
   const setupSignalR = async () => {
     try {
+      // Connect to SignalR
       await signalRService.connect();
-      await signalRService.subscribeToEventType('FloorballGoalScoredEvent');
-      await signalRService.subscribeToEventType('FloorballPenaltyAssignedEvent');
       
-      const unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
+      // Wait a bit to ensure connection is stable
+      await new Promise(resolve => setTimeout(resolve, 100));
       
-      return unsubscribe;
+      // Only subscribe if connection is established
+      if (signalRService.isConnected) {
+        await signalRService.subscribeToEventType('FloorballGoalScoredEvent');
+        await signalRService.subscribeToEventType('FloorballPenaltyAssignedEvent');
+        
+        const unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
+        return unsubscribe;
+      } else {
+        console.warn('SignalR connection not established, skipping event subscriptions');
+      }
     } catch (error) {
       console.error('Error setting up SignalR:', error);
+      // Don't throw - SignalR is not critical for basic functionality
     }
   };
 
   const cleanupSignalR = async () => {
     try {
-      await signalRService.unsubscribeFromEventType('FloorballGoalScoredEvent');
-      await signalRService.unsubscribeFromEventType('FloorballPenaltyAssignedEvent');
+      if (signalRService.isConnected) {
+        await signalRService.unsubscribeFromEventType('FloorballGoalScoredEvent');
+        await signalRService.unsubscribeFromEventType('FloorballPenaltyAssignedEvent');
+      }
     } catch (error) {
       console.error('Error cleaning up SignalR:', error);
+      // Don't throw - cleanup errors are not critical
     }
   };
 
@@ -186,46 +246,20 @@ const LiveMatchModal = ({
       away: eventData.TeamId === match.awayTeamId ? currentScore.away + 1 : currentScore.away
     };
     
-    // Add to events history
-    const goalEvent = {
-      id: `goal-${Date.now()}`,
-      type: 'goal' as const,
-      teamId: eventData.TeamId,
-      teamName: eventData.TeamId === match.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
-      playerId: eventData.PlayerId,
-      assisterId: eventData.AssisterId,
-      periodNumber: eventData.PeriodNumber,
-      timeInSeconds: eventData.TimeInSeconds,
-      timestamp: new Date(),
-    };
-    
     onStateUpdate({
-      currentScore: newScore,
-      events: [goalEvent, ...events]
+      currentScore: newScore
     });
-  }, [onStateUpdate, match.homeTeamId, match.awayTeamId, currentScore, homeTeam?.name, awayTeam?.name, events]);
+    
+    // Refresh events from backend
+    loadMatchEvents();
+  }, [onStateUpdate, match.homeTeamId, match.awayTeamId, currentScore]);
 
   const handlePenaltyAssigned = useCallback((eventData: PenaltyEventData) => {
     if (!onStateUpdate) return;
     
-    const penaltyEvent = {
-      id: `penalty-${Date.now()}`,
-      type: 'penalty' as const,
-      teamId: eventData.TeamId,
-      teamName: eventData.TeamId === match.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
-      playerId: eventData.PlayerId,
-      periodNumber: eventData.PeriodNumber,
-      timeInSeconds: eventData.TimeInSeconds,
-      timestamp: new Date(),
-      penaltyType: eventData.PenaltyType,
-      penaltyMinutes: eventData.Minutes,
-      description: eventData.Description,
-    };
-    
-    onStateUpdate({
-      events: [penaltyEvent, ...events]
-    });
-  }, [onStateUpdate, match.homeTeamId, homeTeam?.name, awayTeam?.name, events]);
+    // Refresh events from backend
+    loadMatchEvents();
+  }, [onStateUpdate]);
 
   // Clock management
   const toggleClock = () => {
@@ -286,6 +320,38 @@ const LiveMatchModal = ({
     });
   };
 
+  const goBackOneSecond = () => {
+    if (!onStateUpdate) return;
+    const totalSeconds = clock.minutes * 60 + clock.seconds;
+    const newTotalSeconds = Math.max(0, totalSeconds - 1); // Don't go below 0
+    const newMinutes = Math.floor(newTotalSeconds / 60);
+    const newSeconds = newTotalSeconds % 60;
+    
+    onStateUpdate({
+      clock: { 
+        ...clock, 
+        minutes: newMinutes, 
+        seconds: newSeconds 
+      }
+    });
+  };
+
+  const goAheadOneSecond = () => {
+    if (!onStateUpdate) return;
+    const totalSeconds = clock.minutes * 60 + clock.seconds;
+    const newTotalSeconds = Math.min(1200, totalSeconds + 1); // Cap at 20 minutes (1200 seconds)
+    const newMinutes = Math.floor(newTotalSeconds / 60);
+    const newSeconds = newTotalSeconds % 60;
+    
+    onStateUpdate({
+      clock: { 
+        ...clock, 
+        minutes: newMinutes, 
+        seconds: newSeconds 
+      }
+    });
+  };
+
   // Clock is now managed by parent component with persistent background timer
 
   // Event recording functions
@@ -299,7 +365,7 @@ const LiveMatchModal = ({
       setLoading(true);
       
       const goalData: RecordGoalEventRequest = {
-        matchId: match.id,
+        matchId: currentMatch.id,
         teamId: goalForm.teamId,
         playerId: goalForm.playerId,
         assisterId: goalForm.assisterId || undefined,
@@ -310,6 +376,9 @@ const LiveMatchModal = ({
       };
       
       await floorballMatchEventService.recordGoal(goalData);
+      
+      // Refresh events from backend
+      await loadMatchEvents();
       
       // Reset form
       setGoalForm({ teamId: '', playerId: '', assisterId: '' });
@@ -334,20 +403,23 @@ const LiveMatchModal = ({
       setLoading(true);
       
       const penaltyData: RecordPenaltyEventRequest = {
-        matchId: match.id,
+        matchId: currentMatch.id,
         teamId: penaltyForm.teamId,
         playerId: penaltyForm.playerId || undefined,
         penaltyType: penaltyForm.penaltyType,
         durationMinutes: penaltyForm.minutes,
-        periodNumber: clock.period,
-        timeInSeconds: clock.minutes * 60 + clock.seconds,
+        periodNumber: penaltyForm.periodNumber,
+        timeInSeconds: penaltyForm.timeMinutes * 60 + penaltyForm.timeSeconds,
         description: penaltyForm.description,
       };
       
       await floorballMatchEventService.recordPenalty(penaltyData);
       
+      // Refresh events from backend
+      await loadMatchEvents();
+      
       // Reset form
-      setPenaltyForm({ teamId: '', playerId: '', penaltyType: '', minutes: 2, description: '' });
+      setPenaltyForm({ teamId: '', playerId: '', penaltyType: '', minutes: 2, description: '', periodNumber: 1, timeMinutes: 0, timeSeconds: 0 });
       setShowPenaltyForm(false);
       setError(null);
       
@@ -375,8 +447,52 @@ const LiveMatchModal = ({
   };
 
   const getPlayersForTeam = (teamId: string) => {
-    return teamId === match.homeTeamId ? homePlayers : awayPlayers;
+    return teamId === currentMatch.homeTeamId ? homePlayers : awayPlayers;
   };
+
+  // Combine and sort all events by time
+  const allEvents = useMemo(() => {
+    if (!matchEvents) {
+      return [];
+    }
+    
+    const events = [
+      ...(matchEvents.goals || []).map(goal => ({
+        id: `goal-${goal.teamId}-${goal.playerId}-${goal.periodNumber}-${goal.timeInSeconds}`,
+        type: 'goal' as const,
+        teamId: goal.teamId,
+        teamName: goal.teamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+        playerId: goal.playerId,
+        assisterId: goal.assisterId,
+        periodNumber: goal.periodNumber,
+        timeInSeconds: goal.timeInSeconds,
+        timestamp: new Date(), // We don't have actual timestamp from backend
+        wasInOvertime: goal.wasInOvertime,
+        wasInShootout: goal.wasInShootout
+      })),
+      ...(matchEvents.penalties || []).map(penalty => ({
+        id: `penalty-${penalty.teamId}-${penalty.playerId || 'team'}-${penalty.periodNumber}-${penalty.timeInSeconds}`,
+        type: 'penalty' as const,
+        teamId: penalty.teamId,
+        teamName: penalty.teamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+        playerId: penalty.playerId,
+        periodNumber: penalty.periodNumber,
+        timeInSeconds: penalty.timeInSeconds,
+        timestamp: new Date(), // We don't have actual timestamp from backend
+        penaltyType: penalty.penaltyType,
+        penaltyMinutes: penalty.minutes,
+        description: penalty.description
+      }))
+    ];
+
+    // Sort by period number, then by time in seconds (most recent first)
+    return events.sort((a, b) => {
+      if (a.periodNumber !== b.periodNumber) {
+        return b.periodNumber - a.periodNumber; // Most recent period first
+      }
+      return b.timeInSeconds - a.timeInSeconds; // Most recent time first
+    });
+  }, [matchEvents, currentMatch.homeTeamId, homeTeam?.name, awayTeam?.name]);
 
   const handleGoLive = async () => {
     try {
@@ -384,13 +500,16 @@ const LiveMatchModal = ({
       setError(null);
       
       // Use the event sourced endpoint to start the match
-      const response = await floorballMatchService.start(match.id);
+      const response = await floorballMatchService.start(currentMatch.id);
       
       if (response.success && response.data) {
+        // Update the current match with the response from the backend
+        setCurrentMatch(response.data);
+        
         // Update the match with the response from the backend
         // This will include the updated status from the event sourced system
         if (onGoLive) {
-          onGoLive(match.id, response.data);
+          onGoLive(currentMatch.id, response.data);
         }
       } else {
         setError('Failed to start match');
@@ -409,13 +528,16 @@ const LiveMatchModal = ({
       setError(null);
       
       // Use the event sourced endpoint to complete the match
-      const response = await floorballMatchService.complete(match.id);
+      const response = await floorballMatchService.complete(currentMatch.id);
       
       if (response.success && response.data) {
+        // Update the current match with the response from the backend
+        setCurrentMatch(response.data);
+        
         // Update the match with the response from the backend
         // This will include the updated status from the event sourced system
         if (onCompleteLive) {
-          onCompleteLive(match.id, response.data);
+          onCompleteLive(currentMatch.id, response.data);
         }
       } else {
         setError('Failed to complete match');
@@ -439,14 +561,14 @@ const LiveMatchModal = ({
           <div className="match-info">
             <h2>{homeTeam?.name || 'Home'} vs {awayTeam?.name || 'Away'}</h2>
             <div className="status-controls">
-              {isFinished ? (
+              {currentMatch.status === 'Completed' ? (
                 <>
                   <span className="match-status">🏁 FINISHED</span>
                   <button onClick={onClose} className="close-modal-button" title="Close the match modal">
                     ✕ Close
                   </button>
                 </>
-              ) : isLive ? (
+              ) : currentMatch.status === 'InProgress' ? (
                 <>
                   <span className="match-status">🔴 LIVE</span>
                   <button onClick={handleCompleteLive} className="cancel-live-button" title="Stop live tracking and mark match as finished">
@@ -479,13 +601,13 @@ const LiveMatchModal = ({
           <div className="left-section">
           {/* Clock and Score Section */}
           <div className="clock-score-section">
-            {isFinished && (
+            {currentMatch.status === 'Completed' && (
               <div className="match-finished-notice">
                 <span className="notice-icon">🏁</span>
                 <span className="notice-text">Match has been finished. Live tracking has been stopped.</span>
               </div>
             )}
-            {!isLive && !isFinished && (
+            {currentMatch.status !== 'InProgress' && currentMatch.status !== 'Completed' && (
               <div className="not-live-notice">
                 <span className="notice-icon">⏸️</span>
                 <span className="notice-text">Match is not live yet. Click "Go Live" to start tracking.</span>
@@ -500,39 +622,55 @@ const LiveMatchModal = ({
                 <button 
                   onClick={toggleClock} 
                   className={clock.isRunning ? "pause-btn" : "start-btn"}
-                  disabled={!isLive || isFinished}
+                  disabled={currentMatch.status !== 'InProgress'}
                 >
                   {clock.isRunning ? '⏸️ Pause' : '▶️ Start'}
                 </button>
                 <button 
                   onClick={resetClock} 
                   className="reset-btn"
-                  disabled={!isLive || isFinished}
+                  disabled={currentMatch.status !== 'InProgress'}
                 >
                   🔄 Reset
                 </button>
                 <button 
                   onClick={nextPeriod} 
                   className="next-period-btn"
-                  disabled={!isLive || isFinished}
+                  disabled={currentMatch.status !== 'InProgress'}
                 >
                   ⏭️ Next Period
                 </button>
               </div>
               <div className="time-controls">
                 <button 
+                  onClick={goBackOneSecond} 
+                  className="time-control-btn back-time-btn" 
+                  title="Go back 1 second"
+                  disabled={currentMatch.status !== 'InProgress'}
+                >
+                  ⏪ 1s
+                </button>
+                <button 
                   onClick={goBackTime} 
                   className="time-control-btn back-time-btn" 
                   title="Go back 5 seconds"
-                  disabled={!isLive || isFinished}
+                  disabled={currentMatch.status !== 'InProgress'}
                 >
                   ⏪ 5s
+                </button>
+                <button 
+                  onClick={goAheadOneSecond} 
+                  className="time-control-btn ahead-time-btn" 
+                  title="Go ahead 1 second"
+                  disabled={currentMatch.status !== 'InProgress'}
+                >
+                  ⏩ 1s
                 </button>
                 <button 
                   onClick={goAheadTime} 
                   className="time-control-btn ahead-time-btn" 
                   title="Go ahead 30 seconds (Debug)"
-                  disabled={!isLive || isFinished}
+                  disabled={currentMatch.status !== 'InProgress'}
                 >
                   ⏩ 30s
                 </button>
@@ -557,14 +695,14 @@ const LiveMatchModal = ({
             <button 
               onClick={() => setShowGoalForm(true)} 
               className="action-btn goal-btn"
-              disabled={loading || !isLive || isFinished}
+              disabled={loading || currentMatch.status !== 'InProgress'}
             >
               ⚽ Record Goal
             </button>
             <button 
-              onClick={() => setShowPenaltyForm(true)} 
+              onClick={openPenaltyForm} 
               className="action-btn penalty-btn"
-              disabled={loading || !isLive || isFinished}
+              disabled={loading || currentMatch.status !== 'InProgress'}
             >
               🟨 Record Penalty
             </button>
@@ -580,8 +718,8 @@ const LiveMatchModal = ({
                   onChange={(e) => setGoalForm(prev => ({ ...prev, teamId: e.target.value, playerId: '' }))}
                 >
                   <option value="">Select Team</option>
-                  <option value={match.homeTeamId}>{homeTeam?.name || 'Home'}</option>
-                  <option value={match.awayTeamId}>{awayTeam?.name || 'Away'}</option>
+                  <option value={currentMatch.homeTeamId}>{homeTeam?.name || 'Home'}</option>
+                  <option value={currentMatch.awayTeamId}>{awayTeam?.name || 'Away'}</option>
                 </select>
                 
                 {goalForm.teamId && (
@@ -634,8 +772,8 @@ const LiveMatchModal = ({
                   onChange={(e) => setPenaltyForm(prev => ({ ...prev, teamId: e.target.value, playerId: '' }))}
                 >
                   <option value="">Select Team</option>
-                  <option value={match.homeTeamId}>{homeTeam?.name || 'Home'}</option>
-                  <option value={match.awayTeamId}>{awayTeam?.name || 'Away'}</option>
+                  <option value={currentMatch.homeTeamId}>{homeTeam?.name || 'Home'}</option>
+                  <option value={currentMatch.awayTeamId}>{awayTeam?.name || 'Away'}</option>
                 </select>
                 
                 {penaltyForm.teamId && (
@@ -657,13 +795,8 @@ const LiveMatchModal = ({
                   onChange={(e) => setPenaltyForm(prev => ({ ...prev, penaltyType: e.target.value }))}
                 >
                   <option value="">Select Penalty Type</option>
-                  <option value="Tripping">Tripping</option>
-                  <option value="Slashing">Slashing</option>
-                  <option value="HighSticking">High Sticking</option>
-                  <option value="Roughing">Roughing</option>
-                  <option value="Boarding">Boarding</option>
-                  <option value="Interference">Interference</option>
-                  <option value="Unsportsmanlike">Unsportsmanlike Conduct</option>
+                  <option value="Minor">Minor</option>
+                  <option value="Major">Major</option>
                 </select>
                 
                 <select 
@@ -675,6 +808,50 @@ const LiveMatchModal = ({
                   <option value={10}>10 minutes</option>
                   <option value={20}>20 minutes</option>
                 </select>
+              </div>
+              
+              <div className="form-row compact-time-row">
+                <div className="compact-time-group">
+                  <label>P:</label>
+                  <input 
+                    type="number" 
+                    value={penaltyForm.periodNumber}
+                    onChange={(e) => setPenaltyForm(prev => ({ ...prev, periodNumber: parseInt(e.target.value) || 1 }))}
+                    min="1"
+                    max="10"
+                    className="compact-time-input"
+                  />
+                </div>
+                
+                <div className="compact-time-group">
+                  <label>M:</label>
+                  <input 
+                    type="number" 
+                    value={penaltyForm.timeMinutes}
+                    onChange={(e) => setPenaltyForm(prev => ({ ...prev, timeMinutes: parseInt(e.target.value) || 0 }))}
+                    min="0"
+                    max="20"
+                    placeholder={`${clock.minutes}`}
+                    className="compact-time-input"
+                  />
+                </div>
+                
+                <div className="compact-time-group">
+                  <label>S:</label>
+                  <input 
+                    type="number" 
+                    value={penaltyForm.timeSeconds}
+                    onChange={(e) => setPenaltyForm(prev => ({ ...prev, timeSeconds: parseInt(e.target.value) || 0 }))}
+                    min="0"
+                    max="59"
+                    placeholder={`${clock.seconds}`}
+                    className="compact-time-input"
+                  />
+                </div>
+                
+                <div className="time-hint-compact">
+                  Current: {formatTime(clock.minutes, clock.seconds)}
+                </div>
               </div>
               
               <textarea 
@@ -697,11 +874,11 @@ const LiveMatchModal = ({
           <div className="right-section">
             <div className="events-history">
               <h3>Match Events</h3>
-              {events.length === 0 ? (
+              {allEvents.length === 0 ? (
                 <div className="no-events">No events recorded yet</div>
               ) : (
                 <div className="events-list">
-                  {events.map(event => (
+                  {allEvents.map(event => (
                     <div key={event.id} className={`event-item ${event.type}`}>
                       <div className="event-time">
                        P{event.periodNumber} - {formatEventTime(event.timeInSeconds)}
@@ -711,8 +888,10 @@ const LiveMatchModal = ({
                           <div className="goal-event">
                             <span className="event-icon">⚽</span>
                             <span className="event-text">
-                              <strong>{event.teamName}</strong> - Goal by {event.playerName}
-                              {event.assisterName && ` (Assist: ${event.assisterName})`}
+                              <strong>{event.teamName}</strong> - Goal by {event.playerId}
+                              {event.assisterId && ` (Assist: ${event.assisterId})`}
+                              {event.wasInOvertime && ` (OT)`}
+                              {event.wasInShootout && ` (SO)`}
                             </span>
                           </div>
                         ) : (
@@ -720,7 +899,7 @@ const LiveMatchModal = ({
                             <span className="event-icon">🟨</span>
                             <span className="event-text">
                               <strong>{event.teamName}</strong> - {event.penaltyType} ({event.penaltyMinutes}min)
-                              {event.playerName && ` - ${event.playerName}`}
+                              {event.playerId && ` - ${event.playerId}`}
                             </span>
                           </div>
                         )}

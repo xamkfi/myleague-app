@@ -21,14 +21,20 @@
 
 .modal {
   background: white;
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 600px;
-  width: 90%;
+  max-width: 800px !important;
+  width: 95% !important;
   max-height: 90vh;
-  overflow: visible; // Allow dropdowns to extend outside modal
+  overflow: hidden; // Prevent double scrollbar
   animation: slideUp 0.3s ease-out;
   z-index: 1001; // Ensure modal is above other elements
+}
+
+.create-match-modal {
+  max-width: 800px !important;
+  width: 95% !important;
+  min-width: 600px;
 }
 
 @keyframes slideUp {
@@ -46,14 +52,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 8px 12px;
   border-bottom: 1px solid #e5e7eb;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 
   h2 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 600;
   }
 
@@ -80,12 +86,12 @@
 .error-alert {
   background: #fef2f2;
   border: 1px solid #fecaca;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin: 16px 24px;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 6px 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 
   .error-icon {
     color: #ef4444;
@@ -108,30 +114,61 @@
 }
 
 .modal-form {
-  padding: 24px;
+  padding: 12px;
   overflow-y: auto;
   overflow-x: visible; // Allow dropdowns to extend horizontally if needed
-  max-height: calc(90vh - 100px);
+  max-height: calc(90vh - 70px);
+  text-align: left;
 
   .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 8px;
+
+    &.horizontal-layout {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+
+      label {
+        min-width: 100px;
+        text-align: right;
+        margin: 0;
+        font-weight: 500;
+        color: #374151;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+      }
+
+      .input-wrapper {
+        flex: 1;
+        min-width: 0;
+        max-width: 260px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+
+        > * {
+          width: 100%;
+        }
+      }
+    }
 
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 3px;
       font-weight: 500;
       color: #374151;
-      font-size: 0.875rem;
+      font-size: 0.8rem;
     }
 
     select,
     input {
       width: 100%;
-      padding: 12px 16px;
+      padding: 8px 12px;
       border: 1px solid #d1d5db;
-      border-radius: 8px;
+      border-radius: 6px;
       background: white;
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       color: #374151;
       transition: border-color 0.2s, box-shadow 0.2s;
 
@@ -197,7 +234,7 @@
     // DateTime input group styling
     .datetime-input-group {
       display: flex;
-      gap: 12px;
+      gap: 6px;
       align-items: center;
 
       .date-input {
@@ -211,11 +248,11 @@
       .time-input-group {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 2px;
 
         .time-input {
-          width: 60px;
-          padding: 12px 8px;
+          width: 45px;
+          padding: 6px 4px;
           text-align: center;
 
           &.hours {
@@ -245,8 +282,8 @@
         .time-separator {
           font-weight: 600;
           color: #6b7280;
-          font-size: 1.2rem;
-          margin: 0 -2px;
+          font-size: 1rem;
+          margin: 0 -1px;
         }
       }
     }
@@ -297,6 +334,9 @@
     }
   }
 }
+
+// Additional form styles for CreateMatchModal
+
 
 // Responsive design
 @media (max-width: 768px) {
