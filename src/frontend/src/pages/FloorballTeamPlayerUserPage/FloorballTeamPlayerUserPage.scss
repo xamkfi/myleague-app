@@ -279,6 +279,39 @@
   }
 }
 
+.no-matches {
+  background-color: $color-background-light;
+  border-radius: map.get($border-radius, 'sm');
+  padding: map.get($spacing, 'lg');
+  text-align: center;
+  border: 1px solid $color-border;
+  
+  p {
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
+    
+    &:last-child {
+      margin-bottom: 0;
+      font-style: italic;
+    }
+  }
+}
+
+.stats-note {
+  margin-top: map.get($spacing, 'base');
+  padding: map.get($spacing, 'sm');
+  background-color: rgba(59, 130, 246, 0.05);
+  border-radius: map.get($border-radius, 'sm');
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  
+  p {
+    margin: 0;
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
+
 // Responsive design
 @media (max-width: 768px) {
   .stats {
