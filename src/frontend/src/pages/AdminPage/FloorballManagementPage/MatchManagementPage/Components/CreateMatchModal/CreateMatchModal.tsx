@@ -144,7 +144,7 @@ const CreateMatchModal = ({
         )}
         
         <form onSubmit={handleSubmit} className="modal-form">
-          <div className="form-group horizontal-layout">
+          <div className="form-group create-match-form-row">
             <label htmlFor="season">Season *</label>
             <div className="input-wrapper">
               <SearchableInfiniteDropdown
@@ -158,7 +158,7 @@ const CreateMatchModal = ({
               />
             </div>
           </div>
-          <div className="form-group horizontal-layout">
+          <div className="form-group create-match-form-row">
             <label htmlFor="homeTeam">Home Team *</label>
             <div className="input-wrapper">
               <SearchableInfiniteDropdown
@@ -172,7 +172,7 @@ const CreateMatchModal = ({
               />
             </div>
           </div>
-          <div className="form-group horizontal-layout">
+          <div className="form-group create-match-form-row">
             <label htmlFor="awayTeam">Away Team *</label>
             <div className="input-wrapper">
               <SearchableInfiniteDropdown
@@ -186,7 +186,7 @@ const CreateMatchModal = ({
               />
             </div>
           </div>
-          <div className="form-group horizontal-layout">
+          <div className="form-group create-match-form-row">
             <label htmlFor="referee">Referee</label>
             <div className="input-wrapper">
               <SearchableInfiniteDropdown
@@ -199,7 +199,7 @@ const CreateMatchModal = ({
               />
             </div>
           </div>
-          <div className="form-group horizontal-layout">
+          <div className="form-group create-match-form-row">
             <label>Date & Time *</label>
             <div className="input-wrapper">
               <div className="datetime-input-group">
@@ -237,7 +237,7 @@ const CreateMatchModal = ({
               </div>
             </div>
           </div>
-          <div className="form-group horizontal-layout">
+          <div className="form-group create-match-form-row">
             <label htmlFor="venue">Venue</label>
             <div className="input-wrapper">
               <input

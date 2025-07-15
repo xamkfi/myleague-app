@@ -24,10 +24,11 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  width: 90% !important;
-  max-width: 900px !important;
-  min-width: 600px;
-  max-height: 90vh;
+  width: 80% !important;
+  max-width: 700px !important;
+  min-width: 500px;
+  max-height: 95vh;
+  min-height: 600px;
   overflow: hidden; // Prevent double scrollbar
   animation: slideUp 0.3s ease-out;
   z-index: 1001; // Ensure modal is above other elements
@@ -110,29 +111,34 @@
 }
 
 .modal-overlay .modal.create-match-modal .modal-form {
-  padding: 12px;
+  padding: 20px;
   overflow-y: auto;
   overflow-x: visible; // Allow dropdowns to extend horizontally if needed
-  max-height: calc(90vh - 70px);
+  max-height: calc(95vh - 80px);
   text-align: left;
 
   .form-group {
-    margin-bottom: 8px;
+    margin-bottom: 16px;
 
-    &.horizontal-layout {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 10px;
+    &.create-match-form-row {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 20px;
+      margin-bottom: 16px;
 
       label {
+        display: inline-block !important;
         min-width: 100px;
         text-align: right;
-        margin: 0;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
         font-weight: 500;
         color: #374151;
         font-size: 0.95rem;
         flex-shrink: 0;
+        line-height: 1;
+        vertical-align: middle;
       }
 
       .input-wrapper {
