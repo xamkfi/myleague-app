@@ -187,6 +187,8 @@ export interface FloorballMatchDto {
   officials: string[];
   goalEvents: FloorballGoalEventDto[];
   penaltyEvents: FloorballPenaltyEventDto[];
+  homeClub?: Club;
+  awayClub?: Club;
 }
 
 export interface CreateFloorballMatchRequest {

@@ -3,6 +3,7 @@ using Application.DTOs.Floorball;
 using Application.Mappings.Common;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ public static class FloorballTeamMapper
     /// <param name="playerPersons">Dictionary of player persons keyed by player ID</param>
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when team is null</exception>
-    public static FloorballTeamDto ToDto(FloorballTeam team, Club? club = null, Dictionary<Guid, Person>? playerPersons = null)
+    public static FloorballTeamDto ToDto(FloorballTeam team, Club club, Dictionary<Guid, Person>? playerPersons)
     {
         if (team == null)
             throw new ArgumentNullException(nameof(team));
@@ -31,6 +32,9 @@ public static class FloorballTeamMapper
         // Use the provided club parameter, or throw an exception if it's null
         if (club == null)
             throw new ArgumentNullException(nameof(club), "Club must be provided since the Club navigation property is ignored in EF configuration");
+
+        if (playerPersons == null)
+            throw new ArgumentNullException(nameof(playerPersons));
 
         return new FloorballTeamDto(
             team.Id,
@@ -60,6 +64,9 @@ public static class FloorballTeamMapper
             }).ToList().AsReadOnly()
         );
     }
+    // Without player names (for existing handlers like Update)
+    public static FloorballTeamDto ToDto(FloorballTeam team, Club club)
+        => ToDto(team, club, new Dictionary<Guid, Person>());
 
     /// <summary>
     /// Maps a collection of FloorballTeam entities to FloorballTeamDtos

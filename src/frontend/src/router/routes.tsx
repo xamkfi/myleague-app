@@ -140,7 +140,6 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/admin/news',
-    element: <NewsCreateEditPage/>,
     children: [
       {
         index: true,
