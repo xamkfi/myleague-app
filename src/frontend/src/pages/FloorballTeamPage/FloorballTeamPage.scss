@@ -168,6 +168,21 @@
         margin: 1rem 0px;
         flex-shrink: 0;
         
+        img {
+          width: 120px;
+          height: 120px;
+          object-fit: contain;
+          border-radius: 12px;
+          border: 2px solid #dee2e6;
+          background: #f8f9fa;
+          padding: 8px;
+          transition: transform 0.3s ease;
+
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+        
         .logo-placeholder {
           width: 120px;
           height: 120px;
@@ -178,12 +193,10 @@
           align-items: center;
           justify-content: center;
           color: #6c757d;
-        font-size: map.get($font-sizes, 'base');
-
-          &::before {
-            content: "LOGO";
-            font-weight: 500;
-          }
+          font-size: map.get($font-sizes, 'base');
+          text-align: center;
+          padding: 8px;
+          font-weight: 500;
         }
       }
 

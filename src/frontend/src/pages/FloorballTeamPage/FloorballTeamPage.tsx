@@ -228,8 +228,42 @@ function FloorballTeamPage() {
 
             <div className="team-branding">
               <div className="team-logo">
-                <div className="logo-placeholder">
-                  {/* Team logo would go here */}
+                {team.logoUrl ? (
+                  <img 
+                    src={team.logoUrl} 
+                    alt={`${team.name} logo`}
+                    onError={(e) => {
+                      // If team logo fails to load, fallback to club logo
+                      const target = e.target as HTMLImageElement;
+                      if (team.club.logoUrl && target.src !== team.club.logoUrl) {
+                        target.src = team.club.logoUrl;
+                      } else {
+                        // If both fail, hide the img and show placeholder
+                        target.style.display = 'none';
+                        const placeholder = target.nextElementSibling as HTMLElement;
+                        if (placeholder) {
+                          placeholder.style.display = 'flex';
+                        }
+                      }
+                    }}
+                  />
+                ) : team.club.logoUrl ? (
+                  <img 
+                    src={team.club.logoUrl} 
+                    alt={`${team.club.name} logo`}
+                    onError={(e) => {
+                      // If club logo fails to load, hide and show placeholder
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const placeholder = target.nextElementSibling as HTMLElement;
+                      if (placeholder) {
+                        placeholder.style.display = 'flex';
+                      }
+                    }}
+                  />
+                ) : null}
+                <div className="logo-placeholder" style={{ display: (team.logoUrl || team.club.logoUrl) ? 'none' : 'flex' }}>
+                  {team.name}
                 </div>
               </div>
               <div className="jersey-colors">
