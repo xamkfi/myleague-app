@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import './MatchPage.scss';
@@ -24,7 +24,7 @@ export default function MatchPage() {
   const [activeTab, setActiveTab] = useState<TabType>('summary');
 
   // Helper that loads the latest state of the match from the API.
-  const loadMatch = async () => {
+  const loadMatch = useCallback(async () => {
     if (!id) return;
     try {
       const response = await floorballMatchService.getById(id);
@@ -35,7 +35,7 @@ export default function MatchPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   // SignalR integration for match-specific events
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function MatchPage() {
     };
 
     fetchMatch();
-  }, [id]);
+  }, [id, loadMatch]);
 
   if (loading) {
     return (
