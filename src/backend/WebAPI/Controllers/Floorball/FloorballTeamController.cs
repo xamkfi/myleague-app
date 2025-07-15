@@ -253,7 +253,8 @@ namespace WebAPI.Controllers.Floorball
                 request.HomeArena,
                 request.PrimaryJerseyColor,
                 request.Category,
-                request.SecondaryJerseyColor);
+                request.SecondaryJerseyColor,
+                request.LogoUrl);
 
             Result<FloorballTeamDto> result = await _mediator.Send(command);
 
@@ -427,6 +428,37 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update teams division";
+            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Updates the logo of a floorball team
+        /// </summary>
+        /// <param name="id">The ID of the team to update</param>
+        /// <param name="logoUrl">The new logo URL</param>
+        /// <returns>Updated team details</returns>
+        [HttpPatch("{id:guid}/logo")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballTeamDto>>> UpdateTeamLogo(Guid id, [FromBody] string? logoUrl)
+        {
+            _logger.LogInformation("Updating logo for team {teamId}", id);
+
+            UpdateFloorballTeamLogoCommand command = new UpdateFloorballTeamLogoCommand(id, logoUrl);
+            Result<FloorballTeamDto> result = await _mediator.Send(command);
+
+            if(result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Team logo updated successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to update team logo";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+            }
             return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
         }
     }

@@ -32,6 +32,9 @@ public static class FloorballTeamMapper
         if (club == null)
             throw new ArgumentNullException(nameof(club), "Club must be provided since the Club navigation property is ignored in EF configuration");
 
+        // Get the effective logo URL (team logo or club logo as fallback)
+        string? effectiveLogoUrl = team.GetEffectiveLogoUrl(club.LogoUrl)?.ToString();
+
         return new FloorballTeamDto(
             team.Id,
             team.Name,
@@ -40,6 +43,7 @@ public static class FloorballTeamMapper
             team.HomeArena,
             team.PrimaryJerseyColor,
             team.SecondaryJerseyColor,
+            effectiveLogoUrl,
             team.HasActiveMembers,
             team.Roster.Select(p => 
             {
@@ -129,5 +133,9 @@ public static class FloorballTeamMapper
         team.UpdateDivision(command.DivisionId);
         team.UpdateHomeArena(command.HomeArena);
         team.UpdateJerseyColors(command.PrimaryJerseyColor, command.SecondaryJerseyColor!);
+        
+        // Update logo URL
+        Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;
+        team.UpdateLogo(logoUri);
     }
 } 

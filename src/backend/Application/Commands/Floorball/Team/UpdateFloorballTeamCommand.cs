@@ -21,6 +21,7 @@ namespace Application.Commands.Floorball.Team
     /// <param name="PrimaryJerseyColor"></param>
     /// <param name="TeamCategory"></param>
     /// <param name="SecondaryJerseyColor"></param>
+    /// <param name="LogoUrl"></param>
     public record UpdateFloorballTeamCommand(
         Guid Id,
         string Name,
@@ -28,5 +29,6 @@ namespace Application.Commands.Floorball.Team
         string HomeArena,
         string PrimaryJerseyColor,
         TeamCategory TeamCategory,
-        string? SecondaryJerseyColor) : IRequest<Result<FloorballTeamDto>>;
+        string? SecondaryJerseyColor,
+        string? LogoUrl) : IRequest<Result<FloorballTeamDto>>;
 }
