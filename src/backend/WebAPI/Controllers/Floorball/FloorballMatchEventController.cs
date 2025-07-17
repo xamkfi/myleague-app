@@ -545,22 +545,93 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Reschedules an event-sourced floorball match
+        /// Changes the season of an event-sourced floorball match
         /// </summary>
-        /// <param name="request">Reschedule details</param>
+        /// <param name="request">Season change details</param>
         /// <returns>Updated match</returns>
-        [HttpPost("match/reschedule")]
+        [HttpPatch("match/season")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RescheduleMatch([FromBody] RescheduleEventSourcedFloorballMatchRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchSeason([FromBody] ChangeEventSourcedFloorballMatchSeasonRequest request)
         {
-            _logger.LogInformation("Rescheduling match {matchId} to {newDateTime}", request.MatchId, request.NewDateTime);
+            _logger.LogInformation("Changing season for match {matchId} to {newSeasonId}", request.MatchId, request.NewSeasonId);
 
-            RescheduleEventSourcedFloorballMatchCommand command = new RescheduleEventSourcedFloorballMatchCommand(
+            ChangeEventSourcedFloorballMatchSeasonCommand command = new ChangeEventSourcedFloorballMatchSeasonCommand(
                 request.MatchId,
-                request.NewDateTime,
+                request.NewSeasonId
+            );
+
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match season changed successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to change match season";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Changes the teams of an event-sourced floorball match
+        /// </summary>
+        /// <param name="request">Team change details</param>
+        /// <returns>Updated match</returns>
+        [HttpPatch("match/teams")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchTeams([FromBody] ChangeEventSourcedFloorballMatchTeamsRequest request)
+        {
+            _logger.LogInformation("Changing teams for match {matchId} to home: {homeTeamId}, away: {awayTeamId}", 
+                request.MatchId, request.NewHomeTeamId, request.NewAwayTeamId);
+
+            ChangeEventSourcedFloorballMatchTeamsCommand command = new ChangeEventSourcedFloorballMatchTeamsCommand(
+                request.MatchId,
+                request.NewHomeTeamId,
+                request.NewAwayTeamId
+            );
+
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match teams changed successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to change match teams";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Changes the venue of an event-sourced floorball match
+        /// </summary>
+        /// <param name="request">Venue change details</param>
+        /// <returns>Updated match</returns>
+        [HttpPatch("match/venue")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchVenue([FromBody] ChangeEventSourcedFloorballMatchVenueRequest request)
+        {
+            _logger.LogInformation("Changing venue for match {matchId} to {newVenue}", request.MatchId, request.NewVenue);
+
+            ChangeEventSourcedFloorballMatchVenueCommand command = new ChangeEventSourcedFloorballMatchVenueCommand(
+                request.MatchId,
                 request.NewVenue
             );
 
@@ -568,10 +639,45 @@ namespace WebAPI.Controllers.Floorball
 
             if (result.IsSuccess && result.Data != null)
             {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match rescheduled successfully"));
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match venue changed successfully"));
             }
 
-            string errorMessage = result.Error ?? "Failed to reschedule match";
+            string errorMessage = result.Error ?? "Failed to change match venue";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Changes the date/time of an event-sourced floorball match
+        /// </summary>
+        /// <param name="request">Date/time change details</param>
+        /// <returns>Updated match</returns>
+        [HttpPatch("match/datetime")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchDateTime([FromBody] ChangeEventSourcedFloorballMatchDateTimeRequest request)
+        {
+            _logger.LogInformation("Changing date/time for match {matchId} to {newDateTime}", request.MatchId, request.NewDateTime);
+
+            ChangeEventSourcedFloorballMatchDateTimeCommand command = new ChangeEventSourcedFloorballMatchDateTimeCommand(
+                request.MatchId,
+                request.NewDateTime
+            );
+
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match date/time changed successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to change match date/time";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));

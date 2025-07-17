@@ -133,8 +133,8 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             _ => DateTime.SpecifyKind(scheduledDateTime, DateTimeKind.Utc)
         };
 
-        var match = new EventSourcedFloorballMatch();
-        var createdEvent = new FloorballMatchCreatedEvent(
+        EventSourcedFloorballMatch match = new EventSourcedFloorballMatch();
+        FloorballMatchCreatedEvent createdEvent = new FloorballMatchCreatedEvent(
             id,
             seasonId,
             homeTeamId,
@@ -160,7 +160,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
             throw new InvalidOperationException($"Cannot reschedule a match with status {Status}.");
         
-        var rescheduledEvent = new FloorballMatchRescheduledEvent(
+        FloorballMatchRescheduledEvent rescheduledEvent = new FloorballMatchRescheduledEvent(
             Id,
             ScheduledDateTime,
             newDateTime,
@@ -179,7 +179,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         if (Status != FloorballMatchStatus.Scheduled)
             throw new InvalidOperationException($"Cannot postpone a match with status {Status}.");
         
-        var statusChangedEvent = new FloorballMatchStatusChangedEvent(
+        FloorballMatchStatusChangedEvent statusChangedEvent = new FloorballMatchStatusChangedEvent(
             Id,
             Status,
             FloorballMatchStatus.Postponed);
@@ -199,7 +199,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         if (_officialIds.Count == 0)
             throw new InvalidOperationException("Cannot start a match without officials.");
         
-        var statusChangedEvent = new FloorballMatchStatusChangedEvent(
+        FloorballMatchStatusChangedEvent statusChangedEvent = new FloorballMatchStatusChangedEvent(
             Id,
             Status,
             FloorballMatchStatus.InProgress);
@@ -207,7 +207,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         ApplyEvent(statusChangedEvent);
         
         // Also emit a match started event with more details
-        var matchStartedEvent = new FloorballMatchStartedEvent(
+        FloorballMatchStartedEvent matchStartedEvent = new FloorballMatchStartedEvent(
             Id,
             DateTime.UtcNow);
         
@@ -243,7 +243,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
         if (scoringTeamId != HomeTeamId && scoringTeamId != AwayTeamId)
             throw new ArgumentException("Scoring team must be either the home team or the away team.", nameof(scoringTeamId));
-        var goalScoredEvent = new FloorballGoalScoredEvent(
+        FloorballGoalScoredEvent goalScoredEvent = new FloorballGoalScoredEvent(
             Id,
             scoringTeamId,
             scoringPlayerId,
@@ -286,7 +286,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             throw new ArgumentOutOfRangeException(nameof(minutes), "Penalty minutes must be positive.");
         if (teamId != HomeTeamId && teamId != AwayTeamId)
             throw new ArgumentException("Team must be either the home team or the away team.", nameof(teamId));
-        var penaltyAssignedEvent = new FloorballPenaltyAssignedEvent(
+        FloorballPenaltyAssignedEvent penaltyAssignedEvent = new FloorballPenaltyAssignedEvent(
             Id,
             teamId,
             playerId,
@@ -311,7 +311,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         if (_officialIds.Contains(refereeId))
             return;
         
-        var officialAssignedEvent = new FloorballOfficialAssignedEvent(
+        FloorballOfficialAssignedEvent officialAssignedEvent = new FloorballOfficialAssignedEvent(
             Id,
             refereeId);
             
@@ -329,7 +329,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         if (WentToOvertime)
             return; // Already in overtime
         
-        var overtimeStartedEvent = new FloorballMatchOvertimeStartedEvent(Id);
+        FloorballMatchOvertimeStartedEvent overtimeStartedEvent = new FloorballMatchOvertimeStartedEvent(Id);
         ApplyEvent(overtimeStartedEvent);
     }
 
@@ -347,7 +347,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         if (WentToShootout)
             return; // Already in shootout
         
-        var shootoutStartedEvent = new FloorballMatchShootoutStartedEvent(Id);
+        FloorballMatchShootoutStartedEvent shootoutStartedEvent = new FloorballMatchShootoutStartedEvent(Id);
         ApplyEvent(shootoutStartedEvent);
     }
 
@@ -360,7 +360,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot complete a match with status {Status}.");
         
-        var statusChangedEvent = new FloorballMatchStatusChangedEvent(
+        FloorballMatchStatusChangedEvent statusChangedEvent = new FloorballMatchStatusChangedEvent(
             Id,
             Status,
             FloorballMatchStatus.Completed);
@@ -368,7 +368,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         ApplyEvent(statusChangedEvent);
         
         // Also emit a match completed event with the final score
-        var matchCompletedEvent = new FloorballMatchCompletedEvent(
+        FloorballMatchCompletedEvent matchCompletedEvent = new FloorballMatchCompletedEvent(
             Id,
             HomeScore,
             AwayScore,
@@ -389,12 +389,84 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         if (Status == FloorballMatchStatus.Completed)
             throw new InvalidOperationException("Cannot cancel a completed match.");
         
-        var statusChangedEvent = new FloorballMatchStatusChangedEvent(
+        FloorballMatchStatusChangedEvent statusChangedEvent = new FloorballMatchStatusChangedEvent(
             Id,
             Status,
             FloorballMatchStatus.Cancelled);
         
         ApplyEvent(statusChangedEvent);
+    }
+
+    /// <summary>
+    /// Changes the season of the match
+    /// </summary>
+    /// <param name="newSeasonId">The new season ID</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match status doesn't allow changing season</exception>
+    public void ChangeSeason(Guid newSeasonId)
+    {
+        if (Status != FloorballMatchStatus.Scheduled)
+            throw new InvalidOperationException($"Cannot change season for a match with status {Status}.");
+        
+        if (SeasonId == newSeasonId)
+            return; // No change needed
+        
+        FloorballMatchSeasonChangedEvent seasonChangedEvent = new FloorballMatchSeasonChangedEvent(
+            Id,
+            SeasonId,
+            newSeasonId);
+        
+        ApplyEvent(seasonChangedEvent);
+    }
+
+    /// <summary>
+    /// Changes the teams of the match
+    /// </summary>
+    /// <param name="newHomeTeamId">The new home team ID</param>
+    /// <param name="newAwayTeamId">The new away team ID</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match status doesn't allow changing teams</exception>
+    public void ChangeTeams(Guid newHomeTeamId, Guid newAwayTeamId)
+    {
+        if (Status != FloorballMatchStatus.Scheduled)
+            throw new InvalidOperationException($"Cannot change teams for a match with status {Status}.");
+        
+        if (newHomeTeamId == newAwayTeamId)
+            throw new ArgumentException("Home team and away team cannot be the same.", nameof(newAwayTeamId));
+        
+        if (HomeTeamId == newHomeTeamId && AwayTeamId == newAwayTeamId)
+            return; // No change needed
+        
+        FloorballMatchTeamsChangedEvent teamsChangedEvent = new FloorballMatchTeamsChangedEvent(
+            Id,
+            HomeTeamId,
+            newHomeTeamId,
+            AwayTeamId,
+            newAwayTeamId);
+        
+        ApplyEvent(teamsChangedEvent);
+    }
+
+    /// <summary>
+    /// Changes the venue of the match
+    /// </summary>
+    /// <param name="newVenue">The new venue</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match status doesn't allow changing venue</exception>
+    public void ChangeVenue(string newVenue)
+    {
+        if (Status != FloorballMatchStatus.Scheduled)
+            throw new InvalidOperationException($"Cannot change venue for a match with status {Status}.");
+        
+        if (string.IsNullOrWhiteSpace(newVenue))
+            throw new ArgumentException("Venue cannot be null or empty.", nameof(newVenue));
+        
+        if (Venue == newVenue)
+            return; // No change needed
+        
+        FloorballMatchVenueChangedEvent venueChangedEvent = new FloorballMatchVenueChangedEvent(
+            Id,
+            Venue,
+            newVenue);
+        
+        ApplyEvent(venueChangedEvent);
     }
 
     public void EndPeriod(int periodNumber)
@@ -558,6 +630,34 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     {
         // The status change is handled by the status changed event
         // This event just contains the final score which we already track
+    }
+    
+    /// <summary>
+    /// Applies a match season changed event
+    /// </summary>
+    /// <param name="event">The event to apply</param>
+    private void Apply(FloorballMatchSeasonChangedEvent @event)
+    {
+        SeasonId = @event.NewSeasonId;
+    }
+    
+    /// <summary>
+    /// Applies a match teams changed event
+    /// </summary>
+    /// <param name="event">The event to apply</param>
+    private void Apply(FloorballMatchTeamsChangedEvent @event)
+    {
+        HomeTeamId = @event.NewHomeTeamId;
+        AwayTeamId = @event.NewAwayTeamId;
+    }
+    
+    /// <summary>
+    /// Applies a match venue changed event
+    /// </summary>
+    /// <param name="event">The event to apply</param>
+    private void Apply(FloorballMatchVenueChangedEvent @event)
+    {
+        Venue = @event.NewVenue ?? string.Empty;
     }
     
     #endregion

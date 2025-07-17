@@ -175,9 +175,70 @@ namespace WebAPI.Models.Floorball
     }
 
     /// <summary>
-    /// Request model for rescheduling an event-sourced floorball match
+    /// Request model for changing the season of an event-sourced floorball match
     /// </summary>
-    public class RescheduleEventSourcedFloorballMatchRequest
+    public class ChangeEventSourcedFloorballMatchSeasonRequest
+    {
+        /// <summary>
+        /// ID of the match
+        /// </summary>
+        [Required(ErrorMessage = "Match ID is required")]
+        public Guid MatchId { get; set; }
+
+        /// <summary>
+        /// New season ID for the match
+        /// </summary>
+        [Required(ErrorMessage = "New season ID is required")]
+        public Guid NewSeasonId { get; set; }
+    }
+
+    /// <summary>
+    /// Request model for changing the teams of an event-sourced floorball match
+    /// </summary>
+    public class ChangeEventSourcedFloorballMatchTeamsRequest
+    {
+        /// <summary>
+        /// ID of the match
+        /// </summary>
+        [Required(ErrorMessage = "Match ID is required")]
+        public Guid MatchId { get; set; }
+
+        /// <summary>
+        /// New home team ID for the match
+        /// </summary>
+        [Required(ErrorMessage = "New home team ID is required")]
+        public Guid NewHomeTeamId { get; set; }
+
+        /// <summary>
+        /// New away team ID for the match
+        /// </summary>
+        [Required(ErrorMessage = "New away team ID is required")]
+        public Guid NewAwayTeamId { get; set; }
+    }
+
+    /// <summary>
+    /// Request model for changing the venue of an event-sourced floorball match
+    /// </summary>
+    public class ChangeEventSourcedFloorballMatchVenueRequest
+    {
+        /// <summary>
+        /// ID of the match
+        /// </summary>
+        [Required(ErrorMessage = "Match ID is required")]
+        public Guid MatchId { get; set; }
+
+        /// <summary>
+        /// New venue for the match
+        /// </summary>
+        [Required(ErrorMessage = "New venue is required")]
+        [StringLength(200, ErrorMessage = "Venue cannot exceed 200 characters")]
+        public string NewVenue { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Request model for changing the date/time of an event-sourced floorball match
+    /// </summary>
+    public class ChangeEventSourcedFloorballMatchDateTimeRequest
     {
         /// <summary>
         /// ID of the match
@@ -190,11 +251,5 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "New date and time is required")]
         public DateTime NewDateTime { get; set; }
-
-        /// <summary>
-        /// New venue for the match (optional)
-        /// </summary>
-        [StringLength(200, ErrorMessage = "Venue cannot exceed 200 characters")]
-        public string? NewVenue { get; set; }
     }
 } 
