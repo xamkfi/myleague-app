@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import type { 
   CreateFloorballMatchRequest,
   FloorballMatchDto,
@@ -40,7 +42,7 @@ const MatchFormModal = ({
     scheduledDateTime: '',
     venue: ''
   });
-  const [dateInput, setDateInput] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [hoursInput, setHoursInput] = useState('');
   const [minutesInput, setMinutesInput] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -126,7 +128,7 @@ const MatchFormModal = ({
         scheduledDateTime: initialData.scheduledDateTime,
         venue: initialData.venue || ''
       });
-      setDateInput(dateStr);
+      setSelectedDate(matchDate);
       setHoursInput(hoursStr);
       setMinutesInput(minutesStr);
       
@@ -145,7 +147,7 @@ const MatchFormModal = ({
         scheduledDateTime: '',
         venue: ''
       });
-      setDateInput('');
+      setSelectedDate(null);
       setHoursInput('');
       setMinutesInput('');
       
@@ -245,10 +247,11 @@ const MatchFormModal = ({
   }, [mode, initialData, initialAwayTeamOptions]);
 
   // Update scheduledDateTime when date or time changes
-  const updateScheduledDateTime = (date: string, hours: string, minutes: string) => {
+  const updateScheduledDateTime = (date: Date | null, hours: string, minutes: string) => {
     if (date && hours && minutes) {
-      // Create a local date object from the user input
-      const localDateTime = new Date(`${date}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`);
+      // Create a new date object with the selected date and time
+      const localDateTime = new Date(date);
+      localDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       
       // Convert to ISO string with timezone offset to ensure proper timezone handling
       const isoDateTime = localDateTime.toISOString();
@@ -258,9 +261,9 @@ const MatchFormModal = ({
     }
   };
 
-  const handleDateChange = (value: string) => {
-    setDateInput(value);
-    updateScheduledDateTime(value, hoursInput, minutesInput);
+  const handleDateChange = (date: Date | null) => {
+    setSelectedDate(date);
+    updateScheduledDateTime(date, hoursInput, minutesInput);
   };
 
   const handleHoursChange = (value: string) => {
@@ -268,7 +271,7 @@ const MatchFormModal = ({
     const numValue = parseInt(value);
     if (value === '' || (numValue >= 0 && numValue <= 23 && value.length <= 2)) {
       setHoursInput(value);
-      updateScheduledDateTime(dateInput, value, minutesInput);
+      updateScheduledDateTime(selectedDate, value, minutesInput);
     }
   };
 
@@ -277,7 +280,7 @@ const MatchFormModal = ({
     const numValue = parseInt(value);
     if (value === '' || (numValue >= 0 && numValue <= 59 && value.length <= 2)) {
       setMinutesInput(value);
-      updateScheduledDateTime(dateInput, hoursInput, value);
+      updateScheduledDateTime(selectedDate, hoursInput, value);
     }
   };
 
@@ -296,7 +299,7 @@ const MatchFormModal = ({
       }
 
       // Validate time inputs
-      if (!dateInput || !hoursInput || !minutesInput) {
+      if (!selectedDate || !hoursInput || !minutesInput) {
         setError('Please enter a valid date and time');
         return;
       }
@@ -314,7 +317,7 @@ const MatchFormModal = ({
           scheduledDateTime: '',
           venue: ''
         });
-        setDateInput('');
+        setSelectedDate(null);
         setHoursInput('');
         setMinutesInput('');
         
@@ -377,7 +380,7 @@ const MatchFormModal = ({
       scheduledDateTime: '',
       venue: ''
     });
-    setDateInput('');
+    setSelectedDate(null);
     setHoursInput('');
     setMinutesInput('');
     setError(null);
@@ -392,7 +395,7 @@ const MatchFormModal = ({
 
   return (
     <div className="modal-overlay">
-      <div className="modal create-match-modal">
+      <div className="modal create-match-modal" lang="fi">
         <div className="modal-header">
           <h2>{mode === 'create' ? 'Create New Match' : 'Edit Match'}</h2>
           <button onClick={handleClose} className="modal-close">×</button>
@@ -472,10 +475,12 @@ const MatchFormModal = ({
             <div className="input-wrapper">
               <div className="datetime-input-group">
                 <div className="date-input">
-                  <input
-                    type="date"
-                    value={dateInput}
-                    onChange={(e) => handleDateChange(e.target.value)}
+                  <DatePicker
+                    selected={selectedDate}
+                    onChange={handleDateChange}
+                    dateFormat="dd.MM.yyyy"
+                    placeholderText="DD.MM.YYYY"
+                    className="date-picker-input"
                     required
                   />
                 </div>
