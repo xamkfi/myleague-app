@@ -37,8 +37,11 @@ const CreateMatchModal = ({
   // Update scheduledDateTime when date or time changes
   const updateScheduledDateTime = (date: string, hours: string, minutes: string) => {
     if (date && hours && minutes) {
-      // Date input already provides yyyy-mm-dd format
-      const isoDateTime = `${date}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`;
+      // Create a local date object from the user input
+      const localDateTime = new Date(`${date}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`);
+      
+      // Convert to ISO string with timezone offset to ensure proper timezone handling
+      const isoDateTime = localDateTime.toISOString();
       setCreateForm(prev => ({ ...prev, scheduledDateTime: isoDateTime }));
     } else {
       setCreateForm(prev => ({ ...prev, scheduledDateTime: '' }));

@@ -121,7 +121,15 @@ const MatchManagementPage = () => {
       const response = await floorballMatchService.create(matchData);
       
       if (response.success && response.data) {
-        setMatches(prev => [...prev, response.data!]);
+        // Fetch the complete match data to ensure we have the correct team names
+        const completeMatchResponse = await floorballMatchService.getById(response.data.id);
+        
+        if (completeMatchResponse.success && completeMatchResponse.data) {
+          setMatches(prev => [...prev, completeMatchResponse.data!]);
+        } else {
+          // Fallback to the original response if fetching complete data fails
+          setMatches(prev => [...prev, response.data!]);
+        }
         setShowCreateForm(false);
       }
 
