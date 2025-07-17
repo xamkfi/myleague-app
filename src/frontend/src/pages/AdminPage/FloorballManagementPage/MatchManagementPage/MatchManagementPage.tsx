@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import Navbar from '../../../../components/Navigation/Navbar';
@@ -22,7 +21,6 @@ import BackButton from '../../../../components/BackButton/BackButton';
 import { useTranslation } from 'react-i18next';
   
 const MatchManagementPage = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   // State management
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
@@ -307,11 +305,7 @@ const MatchManagementPage = () => {
         />
 
         {/* Matches Table */}
-        <div className="matches-section">
-          <div className="section-header">
-            <h2>Matches</h2>
-          </div>
-          
+        <div className="matches-section">          
           {filteredMatches.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">📋</div>
