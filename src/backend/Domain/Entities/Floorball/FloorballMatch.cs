@@ -237,6 +237,45 @@ public class FloorballMatch : AggregateRoot
     }
 
     /// <summary>
+    /// Changes the season for this match
+    /// </summary>
+    /// <param name="season">The new season</param>
+    /// <exception cref="ArgumentNullException">Thrown when season is null</exception>
+    public void ChangeSeason(FloorballSeason season)
+    {
+        ArgumentNullException.ThrowIfNull(season);
+        Season = season;
+        SeasonId = season.Id;
+    }
+
+    /// <summary>
+    /// Changes the teams for this match
+    /// </summary>
+    /// <param name="homeTeam">The new home team</param>
+    /// <param name="awayTeam">The new away team</param>
+    /// <exception cref="ArgumentNullException">Thrown when homeTeam or awayTeam is null</exception>
+    public void ChangeTeams(FloorballTeam homeTeam, FloorballTeam awayTeam)
+    {
+        ArgumentNullException.ThrowIfNull(homeTeam);
+        ArgumentNullException.ThrowIfNull(awayTeam);
+        HomeTeam = homeTeam;
+        HomeTeamId = homeTeam.Id;
+        AwayTeam = awayTeam;
+        AwayTeamId = awayTeam.Id;
+    }
+
+    /// <summary>
+    /// Changes the venue for this match
+    /// </summary>
+    /// <param name="venue">The new venue</param>
+    /// <exception cref="ArgumentNullException">Thrown when venue is null</exception>
+    public void ChangeVenue(string venue)
+    {
+        ArgumentNullException.ThrowIfNull(venue);
+        Venue = venue;
+    }
+
+    /// <summary>
     /// Reschedules the match
     /// </summary>
     /// <param name="newDateTime">The new date and time</param>

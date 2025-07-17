@@ -4,14 +4,18 @@ import { floorballMatchService } from '../../../../api/floorball/floorballMatchS
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import Navbar from '../../../../components/Navigation/Navbar';
 import LiveMatchModal from './Components/LiveMatchModal/LiveMatchModal';
-import CreateMatchModal from './Components/CreateMatchModal/CreateMatchModal';
+import MatchFormModal from './Components/MatchFormModal/MatchFormModal';
 import MatchStatsCards from './Components/MatchStatsCards/MatchStatsCards';
 import MatchFilters from './Components/MatchFilters/MatchFilters';
 import { useLiveMatchState } from './hooks/useLiveMatchState';
 import { formatDateTime, getStatusBadge } from './utils/matchFormatters';
 import type { 
   FloorballMatchDto, 
-  CreateFloorballMatchRequest
+  CreateFloorballMatchRequest,
+  ChangeMatchSeasonRequest,
+  ChangeMatchTeamsRequest,
+  ChangeMatchVenueRequest,
+  ChangeMatchDateTimeRequest
 } from '../../../../types/floorball/floorballTypes';
 import './MatchManagementPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
@@ -41,7 +45,9 @@ const MatchManagementPage = () => {
   }: ReturnType<typeof useLiveMatchState> = useLiveMatchState();
 
   // Form state
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+  const [editMatch, setEditMatch] = useState<FloorballMatchDto | undefined>(undefined);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
 
   // Fetch all required data
@@ -130,12 +136,51 @@ const MatchManagementPage = () => {
           // Fallback to the original response if fetching complete data fails
           setMatches(prev => [...prev, response.data!]);
         }
-        setShowCreateForm(false);
+        setShowForm(false);
       }
 
     } catch (error) {
       console.error('Error creating match:', error);
       setError(error instanceof Error ? error.message : 'Failed to create match');
+      throw error; // Re-throw so the modal can handle it
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleUpdateMatch = async (updateData: ChangeMatchSeasonRequest | ChangeMatchTeamsRequest | ChangeMatchVenueRequest | ChangeMatchDateTimeRequest) => {
+    if (!editMatch) return;
+
+    try {
+      setActionLoading('edit');
+      setError(null);
+
+      let response;
+      
+      if ('seasonId' in updateData) {
+        response = await floorballMatchService.changeSeason(editMatch.id, updateData.seasonId);
+      } else if ('homeTeamId' in updateData && 'awayTeamId' in updateData) {
+        response = await floorballMatchService.changeTeams(editMatch.id, updateData.homeTeamId, updateData.awayTeamId);
+      } else if ('venue' in updateData) {
+        response = await floorballMatchService.changeVenue(editMatch.id, updateData.venue);
+      } else if ('scheduledDateTime' in updateData) {
+        response = await floorballMatchService.changeDateTime(editMatch.id, updateData.scheduledDateTime);
+      } else {
+        throw new Error('Invalid update data');
+      }
+
+      if (response.success && response.data) {
+        // Update the match in the list
+        setMatches(prev => prev.map(match => 
+          match.id === editMatch.id ? response.data! : match
+        ));
+        setShowForm(false);
+        setEditMatch(undefined);
+      }
+
+    } catch (error) {
+      console.error('Error updating match:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update match');
       throw error; // Re-throw so the modal can handle it
     } finally {
       setActionLoading(null);
@@ -148,15 +193,35 @@ const MatchManagementPage = () => {
   };
 
   const handleEditMatch = (match: FloorballMatchDto) => {
-    navigate(`/admin/floorball/matches/${match.id}/edit`);
+    setEditMatch(match);
+    setFormMode('edit');
+    setShowForm(true);
+  };
+
+  const handleCreateNew = () => {
+    setEditMatch(undefined);
+    setFormMode('create');
+    setShowForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditMatch(undefined);
+    setFormMode('create');
+  };
+
+  const handleFormSubmit = async (matchData: CreateFloorballMatchRequest | ChangeMatchSeasonRequest | ChangeMatchTeamsRequest | ChangeMatchVenueRequest | ChangeMatchDateTimeRequest) => {
+    if (formMode === 'create') {
+      await handleCreateMatch(matchData as CreateFloorballMatchRequest);
+    } else {
+      await handleUpdateMatch(matchData);
+    }
   };
 
   const handleCloseLiveModal = () => {
     setIsLiveModalOpen(false);
     setLiveModalMatch(null);
   };
-
-
 
   const handleGoLive = (matchId: string, updatedMatch?: FloorballMatchDto) => {
     // Use the hook to initialize live match
@@ -185,8 +250,6 @@ const MatchManagementPage = () => {
     
     // Don't close the modal - let it stay open with "Match Finished" status
   };
-
-
 
   if (loading) {
     return (
@@ -234,7 +297,7 @@ const MatchManagementPage = () => {
           allMatches={matches}
           filteredMatches={filteredMatches}
           selectedSeasonId={selectedSeasonId}
-          onCreateNew={() => setShowCreateForm(true)}
+          onCreateNew={handleCreateNew}
         />
 
         <MatchFilters 
@@ -254,7 +317,7 @@ const MatchManagementPage = () => {
               <div className="empty-icon">📋</div>
               <h3>No matches found</h3>
               <p>{selectedSeasonId ? 'No matches found for the selected season' : 'Create your first match to get started'}</p>
-              <button onClick={() => setShowCreateForm(true)} className="create-button">
+              <button onClick={handleCreateNew} className="create-button">
                 Create New Match
               </button>
             </div>
@@ -323,12 +386,14 @@ const MatchManagementPage = () => {
           )}
         </div>
 
-        {/* Create Match Modal */}
-        <CreateMatchModal
-          isOpen={showCreateForm}
-          onClose={() => setShowCreateForm(false)}
-          onSubmit={handleCreateMatch}
-          loading={actionLoading === 'create'}
+        {/* Match Form Modal */}
+        <MatchFormModal
+          isOpen={showForm}
+          onClose={handleCloseForm}
+          mode={formMode}
+          initialData={editMatch}
+          onSubmit={handleFormSubmit}
+          loading={actionLoading !== null}
         />
 
         {/* Live Match Modal */}

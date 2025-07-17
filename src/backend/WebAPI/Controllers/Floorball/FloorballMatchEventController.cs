@@ -547,19 +547,20 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Changes the season of an event-sourced floorball match
         /// </summary>
+        /// <param name="matchId">Match identifier</param>
         /// <param name="request">Season change details</param>
         /// <returns>Updated match</returns>
-        [HttpPatch("match/season")]
+        [HttpPatch("match/{matchId:guid}/season")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchSeason([FromBody] ChangeEventSourcedFloorballMatchSeasonRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchSeason(Guid matchId, [FromBody] ChangeEventSourcedFloorballMatchSeasonRequest request)
         {
-            _logger.LogInformation("Changing season for match {matchId} to {newSeasonId}", request.MatchId, request.NewSeasonId);
+            _logger.LogInformation("Changing season for match {matchId} to {newSeasonId}", matchId, request.NewSeasonId);
 
             ChangeEventSourcedFloorballMatchSeasonCommand command = new ChangeEventSourcedFloorballMatchSeasonCommand(
-                request.MatchId,
+                matchId,
                 request.NewSeasonId
             );
 
@@ -582,20 +583,21 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Changes the teams of an event-sourced floorball match
         /// </summary>
+        /// <param name="matchId">Match identifier</param>
         /// <param name="request">Team change details</param>
         /// <returns>Updated match</returns>
-        [HttpPatch("match/teams")]
+        [HttpPatch("match/{matchId:guid}/teams")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchTeams([FromBody] ChangeEventSourcedFloorballMatchTeamsRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchTeams(Guid matchId, [FromBody] ChangeEventSourcedFloorballMatchTeamsRequest request)
         {
             _logger.LogInformation("Changing teams for match {matchId} to home: {homeTeamId}, away: {awayTeamId}", 
-                request.MatchId, request.NewHomeTeamId, request.NewAwayTeamId);
+                matchId, request.NewHomeTeamId, request.NewAwayTeamId);
 
             ChangeEventSourcedFloorballMatchTeamsCommand command = new ChangeEventSourcedFloorballMatchTeamsCommand(
-                request.MatchId,
+                matchId,
                 request.NewHomeTeamId,
                 request.NewAwayTeamId
             );
@@ -619,19 +621,20 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Changes the venue of an event-sourced floorball match
         /// </summary>
+        /// <param name="matchId">Match identifier</param>
         /// <param name="request">Venue change details</param>
         /// <returns>Updated match</returns>
-        [HttpPatch("match/venue")]
+        [HttpPatch("match/{matchId:guid}/venue")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchVenue([FromBody] ChangeEventSourcedFloorballMatchVenueRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchVenue(Guid matchId, [FromBody] ChangeEventSourcedFloorballMatchVenueRequest request)
         {
-            _logger.LogInformation("Changing venue for match {matchId} to {newVenue}", request.MatchId, request.NewVenue);
+            _logger.LogInformation("Changing venue for match {matchId} to {newVenue}", matchId, request.NewVenue);
 
             ChangeEventSourcedFloorballMatchVenueCommand command = new ChangeEventSourcedFloorballMatchVenueCommand(
-                request.MatchId,
+                matchId,
                 request.NewVenue
             );
 
@@ -654,19 +657,20 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Changes the date/time of an event-sourced floorball match
         /// </summary>
+        /// <param name="matchId">Match identifier</param>
         /// <param name="request">Date/time change details</param>
         /// <returns>Updated match</returns>
-        [HttpPatch("match/datetime")]
+        [HttpPatch("match/{matchId:guid}/datetime")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchDateTime([FromBody] ChangeEventSourcedFloorballMatchDateTimeRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeMatchDateTime(Guid matchId, [FromBody] ChangeEventSourcedFloorballMatchDateTimeRequest request)
         {
-            _logger.LogInformation("Changing date/time for match {matchId} to {newDateTime}", request.MatchId, request.NewDateTime);
+            _logger.LogInformation("Changing date/time for match {matchId} to {newDateTime}", matchId, request.NewDateTime);
 
             ChangeEventSourcedFloorballMatchDateTimeCommand command = new ChangeEventSourcedFloorballMatchDateTimeCommand(
-                request.MatchId,
+                matchId,
                 request.NewDateTime
             );
 

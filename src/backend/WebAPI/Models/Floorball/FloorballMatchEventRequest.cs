@@ -180,12 +180,6 @@ namespace WebAPI.Models.Floorball
     public class ChangeEventSourcedFloorballMatchSeasonRequest
     {
         /// <summary>
-        /// ID of the match
-        /// </summary>
-        [Required(ErrorMessage = "Match ID is required")]
-        public Guid MatchId { get; set; }
-
-        /// <summary>
         /// New season ID for the match
         /// </summary>
         [Required(ErrorMessage = "New season ID is required")]
@@ -197,12 +191,6 @@ namespace WebAPI.Models.Floorball
     /// </summary>
     public class ChangeEventSourcedFloorballMatchTeamsRequest
     {
-        /// <summary>
-        /// ID of the match
-        /// </summary>
-        [Required(ErrorMessage = "Match ID is required")]
-        public Guid MatchId { get; set; }
-
         /// <summary>
         /// New home team ID for the match
         /// </summary>
@@ -222,12 +210,6 @@ namespace WebAPI.Models.Floorball
     public class ChangeEventSourcedFloorballMatchVenueRequest
     {
         /// <summary>
-        /// ID of the match
-        /// </summary>
-        [Required(ErrorMessage = "Match ID is required")]
-        public Guid MatchId { get; set; }
-
-        /// <summary>
         /// New venue for the match
         /// </summary>
         [Required(ErrorMessage = "New venue is required")]
@@ -240,12 +222,6 @@ namespace WebAPI.Models.Floorball
     /// </summary>
     public class ChangeEventSourcedFloorballMatchDateTimeRequest
     {
-        /// <summary>
-        /// ID of the match
-        /// </summary>
-        [Required(ErrorMessage = "Match ID is required")]
-        public Guid MatchId { get; set; }
-
         /// <summary>
         /// New date and time for the match
         /// </summary>
