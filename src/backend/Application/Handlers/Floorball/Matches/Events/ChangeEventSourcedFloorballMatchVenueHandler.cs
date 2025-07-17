@@ -19,18 +19,22 @@ namespace Application.Handlers.Floorball.Matches.Events;
 public class ChangeEventSourcedFloorballMatchVenueHandler : IRequestHandler<ChangeEventSourcedFloorballMatchVenueCommand, Result<FloorballMatchDto>>
 {
     private readonly IEventSourcedFloorballMatchRepository _eventSourcedMatchRepository;
+    private readonly IFloorballTeamRepository _teamRepository;
     private readonly ILogger<ChangeEventSourcedFloorballMatchVenueHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the ChangeEventSourcedFloorballMatchVenueHandler class
     /// </summary>
     /// <param name="eventSourcedMatchRepository">The event sourced match repository</param>
+    /// <param name="teamRepository">The team repository</param>
     /// <param name="logger">The logger</param>
     public ChangeEventSourcedFloorballMatchVenueHandler(
         IEventSourcedFloorballMatchRepository eventSourcedMatchRepository,
+        IFloorballTeamRepository teamRepository,
         ILogger<ChangeEventSourcedFloorballMatchVenueHandler> logger)
     {
         _eventSourcedMatchRepository = eventSourcedMatchRepository;
+        _teamRepository = teamRepository;
         _logger = logger;
     }
 
@@ -55,8 +59,14 @@ public class ChangeEventSourcedFloorballMatchVenueHandler : IRequestHandler<Chan
             // Save the match with its new events
             await _eventSourcedMatchRepository.SaveAsync(match, cancellationToken);
 
-            // Create the DTO response
-            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, "Home Team", "Away Team");
+            // Fetch the actual team names
+            FloorballTeam? homeTeam = await _teamRepository.GetByIdAsync(match.HomeTeamId);
+            FloorballTeam? awayTeam = await _teamRepository.GetByIdAsync(match.AwayTeamId);
+
+            // Create the DTO response with actual team names
+            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, 
+                homeTeam?.Name ?? "Unknown Home Team", 
+                awayTeam?.Name ?? "Unknown Away Team");
 
             _logger.LogInformation("Successfully changed venue for event-sourced floorball match: {MatchId}", request.MatchId);
 

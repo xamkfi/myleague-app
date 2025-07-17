@@ -156,47 +156,37 @@ const MatchFormModal = ({
 
   // Custom search functions that include initial options
   const searchSeasonsWithInitial = useCallback(async (query: string, page: number) => {
-    // If we're in edit mode and this is the first page, fetch the real season name
+    // Get all seasons from the search service
+    const result = await floorballSeasonSearchService.searchSeasons(query, page);
+    
+    // If we're in edit mode and this is the first page, try to get the real season name
     if (mode === 'edit' && page === 1 && initialData) {
       try {
-        // Fetch the real season data to get the name
-        const seasonResult = await floorballSeasonSearchService.searchSeasons('', 1);
-        const matchingSeason = seasonResult.data.find(season => season.id === initialData.seasonId);
+        // Find the matching season in the search results to get the real name
+        const matchingSeason = result.data.find(season => season.id === initialData.seasonId);
         
         if (matchingSeason) {
-          const initialOption = {
+          // Update the initial season option with the real name
+          const updatedInitialOptions = [{
             id: initialData.seasonId,
-            name: matchingSeason.name // Use the real season name
-          };
+            name: matchingSeason.name
+          }];
           
-          // If there's a query, filter the initial option
-          if (query.trim()) {
-            if (initialOption.name.toLowerCase().includes(query.toLowerCase())) {
-              return {
-                data: [initialOption],
-                pagination: { hasNextPage: false, totalCount: 1 }
-              };
-            } else {
-              return {
-                data: [],
-                pagination: { hasNextPage: false, totalCount: 0 }
-              };
-            }
-          }
+          const filteredInitial = updatedInitialOptions.filter(option => 
+            option.name.toLowerCase().includes(query.toLowerCase())
+          );
           
-          // Return initial option for first load
           return {
-            data: [initialOption],
-            pagination: { hasNextPage: false, totalCount: 1 }
+            data: [...filteredInitial, ...result.data.filter(item => 
+              !updatedInitialOptions.some(initial => initial.id === item.id)
+            )],
+            pagination: result.pagination
           };
         }
       } catch (error) {
         console.error('Error fetching season name:', error);
       }
     }
-    
-    // For subsequent pages or create mode, use the real search
-    const result = await floorballSeasonSearchService.searchSeasons(query, page);
     
     // If we're in edit mode and this is the first page, include initial options
     if (mode === 'edit' && page === 1 && initialSeasonOptions.length > 0) {
@@ -215,36 +205,7 @@ const MatchFormModal = ({
   }, [mode, initialData, initialSeasonOptions]);
 
   const searchHomeTeamsWithInitial = useCallback(async (query: string, page: number) => {
-    // If we're in edit mode and this is the first page, return initial options immediately
-    if (mode === 'edit' && page === 1 && initialData) {
-      const initialOption = {
-        id: initialData.homeTeamId,
-        name: initialData.homeTeamName
-      };
-      
-      // If there's a query, filter the initial option
-      if (query.trim()) {
-        if (initialOption.name.toLowerCase().includes(query.toLowerCase())) {
-          return {
-            data: [initialOption],
-            pagination: { hasNextPage: false, totalCount: 1 }
-          };
-        } else {
-          return {
-            data: [],
-            pagination: { hasNextPage: false, totalCount: 0 }
-          };
-        }
-      }
-      
-      // Return initial option for first load
-      return {
-        data: [initialOption],
-        pagination: { hasNextPage: false, totalCount: 1 }
-      };
-    }
-    
-    // For subsequent pages or create mode, use the real search
+    // Get all teams from the search service
     const result = await floorballTeamNameSearchService.searchTeams(query, page);
     
     // If we're in edit mode and this is the first page, include initial options
@@ -264,36 +225,7 @@ const MatchFormModal = ({
   }, [mode, initialData, initialHomeTeamOptions]);
 
   const searchAwayTeamsWithInitial = useCallback(async (query: string, page: number) => {
-    // If we're in edit mode and this is the first page, return initial options immediately
-    if (mode === 'edit' && page === 1 && initialData) {
-      const initialOption = {
-        id: initialData.awayTeamId,
-        name: initialData.awayTeamName
-      };
-      
-      // If there's a query, filter the initial option
-      if (query.trim()) {
-        if (initialOption.name.toLowerCase().includes(query.toLowerCase())) {
-          return {
-            data: [initialOption],
-            pagination: { hasNextPage: false, totalCount: 1 }
-          };
-        } else {
-          return {
-            data: [],
-            pagination: { hasNextPage: false, totalCount: 0 }
-          };
-        }
-      }
-      
-      // Return initial option for first load
-      return {
-        data: [initialOption],
-        pagination: { hasNextPage: false, totalCount: 1 }
-      };
-    }
-    
-    // For subsequent pages or create mode, use the real search
+    // Get all teams from the search service
     const result = await floorballTeamNameSearchService.searchTeams(query, page);
     
     // If we're in edit mode and this is the first page, include initial options
