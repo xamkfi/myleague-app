@@ -31,10 +31,14 @@
     }
 
     .role-cell {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      vertical-align: middle;
       min-width: 140px;
+      position: relative;
+
+      .loading-spinner {
+        margin-left: 0.5rem;
+        vertical-align: middle;
+      }
     }
   }
 }
@@ -137,6 +141,7 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   min-width: 120px;
+  vertical-align: middle;
 
   &:hover:not(:disabled) {
     border-color: #0d6efd;
