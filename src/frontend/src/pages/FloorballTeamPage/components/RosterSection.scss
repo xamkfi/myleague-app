@@ -13,7 +13,7 @@
 }
 
 .stats-header{
-   background-color: #548cc7;
+   background: $color-gradient-blue;
    color: rgb(242, 249, 255);
    font-weight: map.get($font-weights, "bold");
 }
@@ -28,7 +28,7 @@
 
 .roster-position-header{
    text-align: left;
-   background-color: hsl(212, 98%, 65%);
+   background: $color-gradient-blue;
    font-size: map.get($font-sizes, "md");
    font-weight: map.get($font-weights, "bold");
    border-radius: 6px 6px 0 0;

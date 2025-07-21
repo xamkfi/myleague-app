@@ -12,6 +12,7 @@ import TeamNavbar from './components/TeamNavbar';
 import ResultsSection from './components/ResultsSection';
 import { useTranslation } from 'react-i18next';
 import RosterSection from './components/RosterSection';
+import SummarySection from './components/SummarySection';
 
 function FloorballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -23,7 +24,7 @@ function FloorballTeamPage() {
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('results');
+  const [activeTab, setActiveTab] = useState<string>('summary');
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [matchesError, setMatchesError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -154,6 +155,14 @@ function FloorballTeamPage() {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'summary':
+        return (
+          <SummarySection
+            team={team}
+            matches={matches || []}
+          ></SummarySection>
+        );
+
       case 'results':
         return (
           <ResultsSection
@@ -201,113 +210,108 @@ function FloorballTeamPage() {
     }
   };
 
-
   return (
     <PageTemplate title={team.name}>
       <div className="floorball-team-page">
 
-        {/* Breadcrumb Navigation */}
-        <div className="breadcrumb">
-          <button onClick={handleBackToClub} className="club-link">
-            {team.club.name}
-          </button>
-          <span className="separator">›</span>
-          <span className="current">{team.name}</span>
-        </div>
+        {/* Hero Image Background */}
+        <div className="hero-image-container">
+          <div className="hero-image"></div>
+          
 
-        {/* Navigation */}
-        <div className="team-navigation">
-          <button onClick={handleBackToClub} className="back-button">
-            ← {team.club.name}
-          </button>
-        </div>
 
-        {/* Team Header */}
-        <div className="team-header">
-          <div className="header-content">
+          {/* Team Header */}
+          <div className="team-header">
 
-            <div className="team-branding">
-              <div className="team-logo">
-                {team.logoUrl ? (
-                  <img 
-                    src={team.logoUrl} 
-                    alt={`${team.name} logo`}
-                    onError={(e) => {
-                      // If team logo fails to load, fallback to club logo
-                      const target = e.target as HTMLImageElement;
-                      if (team.club.logoUrl && target.src !== team.club.logoUrl) {
-                        target.src = team.club.logoUrl;
-                      } else {
-                        // If both fail, hide the img and show placeholder
+
+            {/* Left-aligned navigation container */}
+            <div className="left-navigation-container">
+              {/* Breadcrumb Navigation */}
+              <div className="breadcrumb">
+                <button onClick={handleBackToClub} className="club-link">
+                  {team.club.name}
+                </button>
+                <span className="separator">›</span>
+                <span className="current">{team.name}</span>
+              </div>
+
+              {/* Navigation */}
+              <div className="team-navigation">
+                <button onClick={handleBackToClub} className="back-button">
+                  ← {team.club.name}
+                </button>
+              </div>
+            </div>
+            
+            <div className="header-content">
+              <div className="team-branding">
+                <div className="team-logo">
+                  {team.logoUrl ? (
+                    <img 
+                      // TODO: Use real logo when possible
+                      src={"http://www.mahl.fi/media/com_joomleague/clubs/small/myry21_1683621904.jpg"} 
+                      alt={`${team.name} logo`}
+                      onError={(e) => {
+                        // If team logo fails to load, fallback to club logo
+                        const target = e.target as HTMLImageElement;
+                        if (team.club.logoUrl && target.src !== team.club.logoUrl) {
+                          target.src = team.club.logoUrl;
+                        } else {
+                          // If both fail, hide the img and show placeholder
+                          target.style.display = 'none';
+                          const placeholder = target.nextElementSibling as HTMLElement;
+                          if (placeholder) {
+                            placeholder.style.display = 'flex';
+                          }
+                        }
+                      }}
+                    />
+                  ) : team.club.logoUrl ? (
+                    <img 
+                      src={team.club.logoUrl} 
+                      alt={`${team.club.name} logo`}
+                      onError={(e) => {
+                        // If club logo fails to load, hide and show placeholder
+                        const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                         const placeholder = target.nextElementSibling as HTMLElement;
                         if (placeholder) {
                           placeholder.style.display = 'flex';
                         }
-                      }
-                    }}
-                  />
-                ) : team.club.logoUrl ? (
-                  <img 
-                    src={team.club.logoUrl} 
-                    alt={`${team.club.name} logo`}
-                    onError={(e) => {
-                      // If club logo fails to load, hide and show placeholder
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const placeholder = target.nextElementSibling as HTMLElement;
-                      if (placeholder) {
-                        placeholder.style.display = 'flex';
-                      }
-                    }}
-                  />
-                ) : null}
-                <div className="logo-placeholder" style={{ display: (team.logoUrl || team.club.logoUrl) ? 'none' : 'flex' }}>
-                  {team.name}
-                </div>
+                      }}
+                    />
+                  ) : null}
+                  <div className="logo-placeholder" style={{ display: (team.logoUrl || team.club.logoUrl) ? 'none' : 'flex' }}>
+                    {team.name}
+                  </div>
+                </div>                
               </div>
-              <div className="jersey-colors">
-                <div className="color-info">
-                  <span>Jersey Colors:</span>
-                  <div className="colors">
-                    <div
-                      className="color-swatch primary"
-                      style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
-                      title={`Primary: ${team.primaryJerseyColor}`}
-                    ></div>
-                    {team.secondaryJerseyColor && (
-                      <div
-                        className="color-swatch secondary"
-                        style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
-                        title={`Secondary: ${team.secondaryJerseyColor}`}
-                      ></div>
-                    )}
+
+              <div className="team-info">
+                {/* Team Info */}
+                <div className="team-info-container">
+                  <h1>{team.name}</h1>
+                  <div className="team-meta">
+                    <span className="division-badge">
+                      {division?.name ? division.name : "Unknown"}
+                    </span>
+                    <span className="club-badge">
+                      {team.club.name}
+                    </span>
+                    <span className="arena">{team.homeArena}</span>
                   </div>
                 </div>
+                  
+                <div className="header-navigation">
+                  <TeamNavbar currentTab={activeTab} onTabChange={handleTabChange} />
+                </div>
+
               </div>
+              
             </div>
 
-            <div className="team-info">
-              <h1>{team.name}</h1>
-              <div className="team-meta">
-                <span className="division-badge">
-                  {division?.name ? division.name : "Unknown"}
-                </span>
-                <span className="club-badge">
-                  Club: {team.club.name}
-                </span>
-                <span className="arena">Arena: {team.homeArena}</span>
-              </div>
-            </div>
-
-
-          </div>
-
-          <div className="header-navigation">
-            <TeamNavbar onTabChange={handleTabChange} />
           </div>
         </div>
-
 
         {/* Tab Content */}
         <div className="tab-content">

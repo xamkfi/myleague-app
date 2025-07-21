@@ -3,14 +3,16 @@ import './TeamNavbar.scss'
 import { useTranslation } from 'react-i18next';
 
 interface TeamNavbarProps {
+   currentTab: string;
    onTabChange?: (activeTab: string) => void;
 }
 
-export default function TeamNavbar({ onTabChange }: TeamNavbarProps) {
-   const [activeTab, setActiveTab] = useState<string>('results');
+export default function TeamNavbar({ currentTab, onTabChange }: TeamNavbarProps) {
+   const [activeTab, setActiveTab] = useState<string>(currentTab);
    const { t } = useTranslation();
 
    const tabs = [
+      { id: 'summary', label: t('teamUserPage.summary'), icon: '🏠' },
       { id: 'results', label: t('teamUserPage.results') , icon: '📅' },
       { id: 'roster', label: t('teamUserPage.roster'), icon: '📋' },
       { id: 'stats', label: t('teamUserPage.stats'), icon: '📊' },

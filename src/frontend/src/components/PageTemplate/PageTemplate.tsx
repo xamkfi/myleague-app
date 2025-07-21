@@ -12,7 +12,7 @@ function PageTemplate({ title, children }: PageTemplateProps) {
     <div className="page-container">
       <Navbar />
       <div className="page-content">
-        <h1 className="page-title">{title}</h1>
+        {/* <h1 className="page-title">{title}</h1> */}
         <div className="page-body">
           {children || (
             <p className="placeholder-text">This page is under construction.</p>

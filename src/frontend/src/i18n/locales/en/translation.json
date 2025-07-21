@@ -105,10 +105,12 @@
     "notFoundTitle": "Team Not Found",
     "notFound": "Team not found",
     "notFoundDesc": "The team you are looking for does not exist.",
+    "summary": "Summary",
     "results": "Results",
     "roster": "Roster",
     "stats": "Stats",
-    "standings": "Standings"
+    "standings": "Standings",
+    "todaysMatches": "Today's Matches"
   },
   "matches": {
     "loading": "Loading matches…",

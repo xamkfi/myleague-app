@@ -1,0 +1,154 @@
+@use 'sass:map';
+@use '../../../styles/variables' as *;
+@use '../../../styles/common' as *;
+
+.summary-container{
+   font-size: map.get($font-sizes, "sm");
+}
+
+.summary-table{
+   display: grid;
+   color: $color-neutral-black;
+   grid-template-columns: minmax(100px, 120px) minmax(60px, 400px) repeat(3, minmax(100px, 110px));
+   grid-template-areas: "date homeTeam awayTeam score seperator status";
+}
+
+.stats-header{
+   background-color: #548cc7;
+   color: rgb(242, 249, 255);
+   font-weight: map.get($font-weights, "bold");
+}
+
+.summary-season-container{
+   // border: 1px solid $color-border;
+   // box-shadow: 0 2px 4px $color-box-shadow;
+   margin-bottom: map.get($spacing, "base");
+   
+} 
+
+.summary-season-header{
+   text-align: left;
+   border-radius: map.get($border-radius, "sm");
+   background: $color-gradient-blue;
+   font-size: map.get($font-sizes, "md");
+   font-weight: map.get($font-weights, "bold");
+   padding:
+      map.get($spacing, "xs") 
+      map.get($spacing, "base");
+   color: $color-white;
+}
+
+.summary-season-header-today{
+   text-align: left;
+   border-radius: map.get($border-radius, "sm");
+   margin-bottom: map.get($spacing, "sm");
+   color: $color-blue-deep;
+   font-size: map.get($font-sizes, "lg");
+   font-weight: map.get($font-weights, "bold");
+}
+
+.summary-teams-container{
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: flex-start;
+}
+
+.summary-match{
+   // margin-bottom: map.get($spacing, "xs" );
+   padding: map.get($spacing, "xs") 0;
+   box-shadow: 0 0 0px rgba(0, 0, 0, 0);
+   transform: scale(1);
+   border-bottom: 1px solid $color-neutral-medium-grey;
+
+   transition:
+      background-color 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.25s ease;
+
+   // Every other match has a different background color
+   //&:nth-child(even){
+   //   background-color: #eeeeee;
+   //}
+
+   &:hover{
+      background-color: #b5b5b5;
+      box-shadow: 0 0 32px rgba(0, 0, 0, 0.194);
+      transform: scale(1.005);
+      color: #eeeeee;
+      cursor: pointer;
+      z-index: 10;
+      position: relative;
+   }
+}
+
+.seperator-line{
+   border-left: 1px solid $color-neutral-medium-grey;
+}
+
+.summary-date{
+   display: flex;
+   gap: map.get($spacing, "xs");
+   flex-direction: row;
+   align-items: center;
+   justify-content: center;
+
+   color: $color-neutral-dark-grey;
+   
+   grid-area: date;
+   text-align: left;
+}
+
+.summary-home-team{
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+   gap: map.get($spacing, "sm");
+   justify-content: flex-start;
+   grid-area: homeTeam;
+   text-align: left;
+   
+}
+
+.summary-away-team{
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+   gap: map.get($spacing, "sm");
+   justify-content: flex-start;
+   grid-area: awayTeam;
+
+}
+
+.summary-total-score-container{
+   display: flex;
+   flex-direction: column;
+   align-items: flex-end;
+   justify-content: center;
+}
+
+.summary-home-total-score{
+   font-weight: map.get($font-weights, "bold");
+   grid-area: homeScore;
+}
+
+.summary-away-total-score{
+   font-weight: map.get($font-weights, "bold");
+   grid-area: awayScore;
+}
+
+.summary-period-score-container{
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+   justify-content: center;
+}
+
+.summary-match-status{
+   grid-area: status;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+

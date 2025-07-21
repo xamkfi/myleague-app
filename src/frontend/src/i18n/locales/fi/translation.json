@@ -105,10 +105,12 @@
     "notFoundTitle": "Joukkuetta ei löydy",
     "notFound": "Joukkuetta ei löytynyt",
     "notFoundDesc": "Etsimääsi joukkuetta ei ole olemassa.",
+    "summary": "Yhteenveto",
     "results": "Tulokset",
     "roster": "Kokoonpano",
     "stats": "Tilastot",
-    "standings": "Sarjataulukko"
+    "standings": "Sarjataulukko",
+    "todaysMatches": "Tämän päivän ottelut"
   },
   "matches": {
     "loading": "Otteluita ladataan…",

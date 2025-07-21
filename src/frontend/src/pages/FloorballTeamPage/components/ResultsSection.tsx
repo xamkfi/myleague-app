@@ -113,7 +113,7 @@ export default function ResultsSection({
                                           {checkIfTeamWon(match) ? 'W' : 'L'}
                                        </span>
                                     ) : (
-                                       <span className="status-badge">{match.status}</span>
+                                       <span>?</span>
                                     )}
                                  </div>
                               </div>
