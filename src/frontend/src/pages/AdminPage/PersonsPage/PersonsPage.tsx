@@ -14,27 +14,29 @@ const PersonsPage = () => {
   };
 
   return (
-    <PageTemplate title={t('admin.persons.title', 'Person Management')}>
-      <div className="persons-container">
-        {/* Back button */}
-        <BackButton 
-          to="/admin/" 
-          text={t('common.back', 'Back to Floorball Management')} 
-        />
-        <div className="persons-header">
-          <h2>{t('admin.persons.subtitle', 'Manage Persons')}</h2>
-          <button 
-            className="persons-add-button"
-            onClick={handleAddPerson}
-          >
-            {t('admin.persons.actions.add', 'Add New Person')}
-          </button>
+    <div className="persons-page-wrapper">
+      <PageTemplate title={t('admin.persons.title', 'Person Management')}>
+        <div className="persons-container">
+          {/* Back button */}
+          <BackButton 
+            to="/admin/" 
+            text={t('common.back', 'Back to Floorball Management')} 
+          />
+          <div className="persons-header">
+            <h2>{t('admin.persons.subtitle', 'Manage Persons')}</h2>
+            <button 
+              className="persons-add-button"
+              onClick={handleAddPerson}
+            >
+              {t('admin.persons.actions.add', 'Add New Person')}
+            </button>
+          </div>
+          <div className="persons-content">
+            <PersonList />
+          </div>
         </div>
-        <div className="persons-content">
-          <PersonList />
-        </div>
-      </div>
-    </PageTemplate>
+      </PageTemplate>
+    </div>
   );
 };
 

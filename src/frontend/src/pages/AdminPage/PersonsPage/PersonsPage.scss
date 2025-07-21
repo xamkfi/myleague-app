@@ -1,18 +1,20 @@
-// Override ALL width constraints to make page much wider
-.page-container {
-  max-width: none !important;
-}
+// Override width constraints ONLY for PersonsPage using the unique wrapper
+.persons-page-wrapper {
+  .page-container {
+    max-width: none !important;
+  }
 
-.page-content {
-  max-width: 1800px !important;
-}
+  .page-content {
+    max-width: 1800px !important;
+  }
 
-.page-body {
-  max-width: 1800px !important;
-}
+  .page-body {
+    max-width: 1800px !important;
+  }
 
-.page-body > * {
-  max-width: 1800px !important;
+  .page-body > * {
+    max-width: 1800px !important;
+  }
 }
 
 .persons-container {

@@ -2,6 +2,11 @@
   width: 100%;
   overflow-x: auto;
 
+  // Add spacing between pagination and table
+  .pagination-container + table {
+    margin-top: 1rem;
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
