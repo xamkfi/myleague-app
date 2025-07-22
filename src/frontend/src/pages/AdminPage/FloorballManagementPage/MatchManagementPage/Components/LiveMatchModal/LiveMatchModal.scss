@@ -187,8 +187,6 @@
 }
 
 .clock-score-section {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
   gap: 16px;
   margin-bottom: 12px;
   padding: 12px;
@@ -199,26 +197,34 @@
 
 .match-clock {
   text-align: center;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
   .period {
-    font-size: 1rem;
+    font-size: 1.5rem;
     font-weight: 600;
-    color: #475569;
+    color: #374151;
     margin-bottom: 4px;
   }
 
   .time-display {
-    font-size: 2.5rem;
+    font-size: 4rem;
     font-weight: 700;
-    color: #1e293b;
     font-family: 'Courier New', monospace;
-    margin-bottom: 8px;
+    color: #1e293b;
+    margin: 8px 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: color 0.3s ease;
 
     &.time-over-limit {
-      color: #ef4444;
-      animation: timeAlert 1s ease-in-out infinite alternate;
+      color: #dc2626;
+      text-shadow: 0 2px 8px rgba(220, 38, 38, 0.6);
     }
   }
 
@@ -231,76 +237,24 @@
     }
   }
 
-  .clock-controls {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    flex-wrap: wrap;
-
-    button {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-
-      &.start-btn {
-        background: #10b981;
-        color: white;
-
-        &:hover {
-          background: #059669;
-        }
-      }
-
-      &.pause-btn {
-        background: #f59e0b;
-        color: white;
-
-        &:hover {
-          background: #d97706;
-        }
-      }
-
-      &.reset-btn {
-        background: #6b7280;
-        color: white;
-
-        &:hover {
-          background: #4b5563;
-        }
-      }
-
-      &.next-period-btn {
-        background: #3b82f6;
-        color: white;
-
-        &:hover {
-          background: #2563eb;
-        }
-      }
-    }
-  }
-
   .time-controls {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     justify-content: center;
     margin-top: 8px;
 
     .time-control-btn {
-      padding: 4px 8px;
+      padding: 8px 12px;
       border: none;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 500;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
+      min-width: 60px;
 
       &.back-time-btn {
         background: #8b5cf6;
@@ -327,6 +281,103 @@
 
         &:active {
           transform: translateY(0);
+        }
+      }
+    }
+  }
+
+  .clock-start-reset {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 8px 0;
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 120px;
+
+      &.start-btn {
+        background: #10b981;
+        color: white;
+
+        &:hover {
+          background: #059669;
+          transform: translateY(-2px);
+        }
+      }
+
+      &.pause-btn {
+        background: #f59e0b;
+        color: white;
+
+        &:hover {
+          background: #d97706;
+          transform: translateY(-2px);
+        }
+      }
+
+      &.reset-btn {
+        background: #6b7280;
+        color: white;
+
+        &:hover {
+          background: #4b5563;
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
+
+  .previous-next-period {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 8px 0;
+
+    .period-control-btn {
+      padding: 8px 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #f8fafc;
+      color: #475569;
+      min-width: 100px;
+
+      &:hover {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f1f5f9;
+        border-color: #e2e8f0;
+        color: #94a3b8;
+
+        &:hover {
+          transform: none;
+          background: #f1f5f9;
+          border-color: #e2e8f0;
         }
       }
     }
@@ -363,6 +414,77 @@
     font-size: 3rem;
     font-weight: 300;
     color: #94a3b8;
+  }
+}
+
+.period-management {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 2px;
+  padding: 2px;
+  background: #f8fafc;
+
+
+  .period-control-btn {
+    padding: 4px 8px;
+    border: 2px solid;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 80px;
+    justify-content: center;
+
+    &.start-period-btn {
+      background: #dcfce7;
+      border-color: #bbf7d0;
+      color: #166534;
+
+      &:hover {
+        background: #bbf7d0;
+        border-color: #86efac;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    &.end-period-btn {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #dc2626;
+
+      &:hover {
+        background: #fecaca;
+        border-color: #f87171;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+      color: #94a3b8;
+
+      &:hover {
+        transform: none;
+        background: #f1f5f9;
+        border-color: #e2e8f0;
+      }
+    }
   }
 }
 
@@ -640,7 +762,6 @@
   }
 
   .clock-score-section {
-    grid-template-columns: 1fr;
     gap: 16px;
     padding: 16px;
   }

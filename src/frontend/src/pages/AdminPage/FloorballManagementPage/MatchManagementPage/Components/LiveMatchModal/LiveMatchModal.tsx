@@ -312,16 +312,90 @@ const LiveMatchModal = ({
     });
   };
 
-  const nextPeriod = () => {
+  /**
+   * Starts the current period by sending API call
+   * This is separate from clock control
+   */
+  const startPeriod = async () => {
+    try {
+      await floorballMatchEventService.startPeriod(currentMatch.id, clock.period);
+      console.log(`Started period ${clock.period} for match ${currentMatch.id}`);
+      setError(null);
+    } catch (error) {
+      console.error('Error starting period:', error);
+      setError(error instanceof Error ? error.message : 'Failed to start period');
+    }
+  };
+
+  /**
+   * Ends the current period by sending API call
+   * This is separate from clock control
+   */
+  const endPeriod = async () => {
+    try {
+      await floorballMatchEventService.endPeriod(currentMatch.id, clock.period);
+      console.log(`Ended period ${clock.period} for match ${currentMatch.id}`);
+      setError(null);
+    } catch (error) {
+      console.error('Error ending period:', error);
+      setError(error instanceof Error ? error.message : 'Failed to end period');
+    }
+  };
+
+  const previousPeriod = async () => {
+    if (!onStateUpdate || clock.period <= 1) return;
+    
+    try {
+      // End current period if it's running
+      await floorballMatchEventService.endPeriod(currentMatch.id, clock.period);
+      console.log(`Ended period ${clock.period} for match ${currentMatch.id}`);
+      
+      const newPeriod = clock.period - 1;
+      
+      // Start the previous period
+      await floorballMatchEventService.startPeriod(currentMatch.id, newPeriod);
+      console.log(`Started period ${newPeriod} for match ${currentMatch.id}`);
+      
+      onStateUpdate({
+        clock: { 
+          period: newPeriod, 
+          minutes: 0, 
+          seconds: 0, 
+          isRunning: false 
+        }
+      });
+    } catch (error) {
+      console.error('Error going to previous period:', error);
+      setError(error instanceof Error ? error.message : 'Failed to go to previous period');
+    }
+  };
+
+  const nextPeriod = async () => {
     if (!onStateUpdate) return;
-    onStateUpdate({
-      clock: { 
-        period: clock.period + 1, 
-        minutes: 0, 
-        seconds: 0, 
-        isRunning: false 
-      }
-    });
+    
+    try {
+      // End current period if it's running
+      await floorballMatchEventService.endPeriod(currentMatch.id, clock.period);
+      console.log(`Ended period ${clock.period} for match ${currentMatch.id}`);
+      
+      const newPeriod = clock.period + 1;
+      
+      // Start the next period
+      await floorballMatchEventService.startPeriod(currentMatch.id, newPeriod);
+      console.log(`Started period ${newPeriod} for match ${currentMatch.id}`);
+      
+      onStateUpdate({
+        clock: { 
+          period: newPeriod, 
+          minutes: 0, 
+          seconds: 0, 
+          isRunning: false 
+        }
+      });
+    } catch (error) {
+      console.error('Error going to next period:', error);
+      setError(error instanceof Error ? error.message : 'Failed to go to next period');
+    }
   };
 
   const goBackTime = () => {
@@ -716,11 +790,47 @@ const LiveMatchModal = ({
               </div>
             )}
             <div className="match-clock">
+              <div className="period-management">
+                <button 
+                  onClick={startPeriod} 
+                  className="period-control-btn start-period-btn"
+                  title="Start the current period"
+                  disabled={currentMatch.status !== 'InProgress'}
+                >
+                  🟢 Start Period
+                </button>
+                <button 
+                  onClick={endPeriod} 
+                  className="period-control-btn end-period-btn"
+                  title="End the current period"
+                  disabled={currentMatch.status !== 'InProgress'}
+                >
+                  🔴 End Period
+                </button>
+              </div>
+              <div className="previous-next-period">
+                <button 
+                  onClick={previousPeriod} 
+                  className="period-control-btn" 
+                  title="Go to previous period"
+                  disabled={currentMatch.status !== 'InProgress' || clock.period <= 1}
+                >
+                  ⬅️ Previous Period
+                </button>
+                <button 
+                  onClick={nextPeriod} 
+                  className="period-control-btn"
+                  title="Go to next period"
+                  disabled={currentMatch.status !== 'InProgress'}
+                >
+                  ➡️ Next Period
+                </button>
+              </div>
               <div className="period">Period {clock.period}</div>
               <div className={`time-display ${isTimeOverLimit(clock.minutes, clock.seconds) ? 'time-over-limit' : ''}`}>
                 {formatTime(clock.minutes, clock.seconds)}
               </div>
-              <div className="clock-controls">
+              <div className="clock-start-reset">
                 <button 
                   onClick={toggleClock} 
                   className={clock.isRunning ? "pause-btn" : "start-btn"}
@@ -734,13 +844,6 @@ const LiveMatchModal = ({
                   disabled={currentMatch.status !== 'InProgress'}
                 >
                   🔄 Reset
-                </button>
-                <button 
-                  onClick={nextPeriod} 
-                  className="next-period-btn"
-                  disabled={currentMatch.status !== 'InProgress'}
-                >
-                  ⏭️ Next Period
                 </button>
               </div>
               <div className="time-controls">
@@ -778,18 +881,6 @@ const LiveMatchModal = ({
                 </button>
               </div>
             </div>
-            
-            <div className="scoreboard">
-              <div className="team-score">
-                <div className="team-name">{homeTeam?.name || 'Home'}</div>
-                <div className="score">{currentScore.home}</div>
-              </div>
-              <div className="score-separator">-</div>
-              <div className="team-score">
-                <div className="team-name">{awayTeam?.name || 'Away'}</div>
-                <div className="score">{currentScore.away}</div>
-              </div>
-            </div>
           </div>
 
           {/* Quick Actions */}
@@ -808,6 +899,61 @@ const LiveMatchModal = ({
             >
               🟨 Record Penalty
             </button>
+          </div>
+          </div>
+          
+          {/* Right Section - Scoreboard, Period Management, and Events History */}
+          <div className="right-section">
+            <div className="scoreboard">
+              <div className="team-score">
+                <div className="team-name">{homeTeam?.name || 'Home'}</div>
+                <div className="score">{currentScore.home}</div>
+              </div>
+              <div className="score-separator">-</div>
+              <div className="team-score">
+                <div className="team-name">{awayTeam?.name || 'Away'}</div>
+                <div className="score">{currentScore.away}</div>
+              </div>
+            </div>
+
+            {/* Events History */}
+            <div className="events-history">
+              <h3>Match Events</h3>
+              {allEvents.length === 0 ? (
+                <div className="no-events">No events recorded yet</div>
+              ) : (
+                <div className="events-list">
+                  {allEvents.map(event => (
+                    <div key={event.id} className={`event-item ${event.type}`}>
+                      <div className="event-time">
+                       P{event.periodNumber} - {formatEventTime(event.timeInSeconds)}
+                      </div>
+                      <div className="event-details">
+                        {event.type === 'goal' ? (
+                          <div className="goal-event">
+                            <span className="event-icon">⚽</span>
+                            <span className="event-text">
+                              <strong>{event.teamName}</strong> - Goal by {event.playerName}
+                              {event.assisterName && ` (Assist: ${event.assisterName})`}
+                              {event.wasInOvertime && ` (OT)`}
+                              {event.wasInShootout && ` (SO)`}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="penalty-event">
+                            <span className="event-icon">🟨</span>
+                            <span className="event-text">
+                              <strong>{event.teamName}</strong> - {event.penaltyType} ({event.penaltyMinutes}min)
+                              {event.playerName && ` - ${event.playerName}`}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+               </div>
+              )}
+            </div>
           </div>
 
           {/* Goal Recording Form */}
@@ -971,47 +1117,6 @@ const LiveMatchModal = ({
               </div>
             </div>
           )}
-          </div>
-          {/* Events History */}
-          <div className="right-section">
-            <div className="events-history">
-              <h3>Match Events</h3>
-              {allEvents.length === 0 ? (
-                <div className="no-events">No events recorded yet</div>
-              ) : (
-                <div className="events-list">
-                  {allEvents.map(event => (
-                    <div key={event.id} className={`event-item ${event.type}`}>
-                      <div className="event-time">
-                       P{event.periodNumber} - {formatEventTime(event.timeInSeconds)}
-                      </div>
-                      <div className="event-details">
-                        {event.type === 'goal' ? (
-                          <div className="goal-event">
-                            <span className="event-icon">⚽</span>
-                            <span className="event-text">
-                              <strong>{event.teamName}</strong> - Goal by {event.playerName}
-                              {event.assisterName && ` (Assist: ${event.assisterName})`}
-                              {event.wasInOvertime && ` (OT)`}
-                              {event.wasInShootout && ` (SO)`}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="penalty-event">
-                            <span className="event-icon">🟨</span>
-                            <span className="event-text">
-                              <strong>{event.teamName}</strong> - {event.penaltyType} ({event.penaltyMinutes}min)
-                              {event.playerName && ` - ${event.playerName}`}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-               </div>
-              )}
-            </div>
-          </div>
         </div>
       </div>
     </div>

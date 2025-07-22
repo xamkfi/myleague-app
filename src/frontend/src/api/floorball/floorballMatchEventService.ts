@@ -229,5 +229,47 @@ export const floorballMatchEventService = {
       console.error('Error deleting event:', error);
       throw error;
     }
+  },
+
+  /**
+   * Start a period in a floorball match
+   */
+  startPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<void>> => {
+    try {
+      console.log('Starting period:', periodNumber, 'for match:', matchId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/period/${periodNumber}/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return await handleApiResponse<void>(response);
+    } catch (error) {
+      console.error('Error starting period:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * End a period in a floorball match
+   */
+  endPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<void>> => {
+    try {
+      console.log('Ending period:', periodNumber, 'for match:', matchId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/period/${periodNumber}/end`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return await handleApiResponse<void>(response);
+    } catch (error) {
+      console.error('Error ending period:', error);
+      throw error;
+    }
   }
 }; 
