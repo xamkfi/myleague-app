@@ -116,7 +116,6 @@ const MatchFormModal = ({
   useEffect(() => {
     if (mode === 'edit' && initialData) {
       const matchDate = new Date(initialData.scheduledDateTime);
-      const dateStr = matchDate.toISOString().split('T')[0];
       const hoursStr = matchDate.getHours().toString().padStart(2, '0');
       const minutesStr = matchDate.getMinutes().toString().padStart(2, '0');
 
@@ -518,7 +517,7 @@ const MatchFormModal = ({
                 id="venue"
                 value={formData.venue}
                 onChange={(e) => setFormData(prev => ({ ...prev, venue: e.target.value }))}
-                placeholder="Enter venue (optional)"
+                placeholder="Enter venue"
               />
             </div>
           </div>

@@ -200,10 +200,17 @@
 
 // Matches Section
 .matches-section {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  // Remove the background and border since each section has its own styling
+  // The individual sections will handle their own styling
+  
+  // Add some spacing between sections
+  .collapsible-match-section {
+    margin-bottom: 0.75rem;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 }
 
 
