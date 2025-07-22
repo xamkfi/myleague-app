@@ -900,61 +900,6 @@ const LiveMatchModal = ({
               🟨 Record Penalty
             </button>
           </div>
-          </div>
-          
-          {/* Right Section - Scoreboard, Period Management, and Events History */}
-          <div className="right-section">
-            <div className="scoreboard">
-              <div className="team-score">
-                <div className="team-name">{homeTeam?.name || 'Home'}</div>
-                <div className="score">{currentScore.home}</div>
-              </div>
-              <div className="score-separator">-</div>
-              <div className="team-score">
-                <div className="team-name">{awayTeam?.name || 'Away'}</div>
-                <div className="score">{currentScore.away}</div>
-              </div>
-            </div>
-
-            {/* Events History */}
-            <div className="events-history">
-              <h3>Match Events</h3>
-              {allEvents.length === 0 ? (
-                <div className="no-events">No events recorded yet</div>
-              ) : (
-                <div className="events-list">
-                  {allEvents.map(event => (
-                    <div key={event.id} className={`event-item ${event.type}`}>
-                      <div className="event-time">
-                       P{event.periodNumber} - {formatEventTime(event.timeInSeconds)}
-                      </div>
-                      <div className="event-details">
-                        {event.type === 'goal' ? (
-                          <div className="goal-event">
-                            <span className="event-icon">⚽</span>
-                            <span className="event-text">
-                              <strong>{event.teamName}</strong> - Goal by {event.playerName}
-                              {event.assisterName && ` (Assist: ${event.assisterName})`}
-                              {event.wasInOvertime && ` (OT)`}
-                              {event.wasInShootout && ` (SO)`}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="penalty-event">
-                            <span className="event-icon">🟨</span>
-                            <span className="event-text">
-                              <strong>{event.teamName}</strong> - {event.penaltyType} ({event.penaltyMinutes}min)
-                              {event.playerName && ` - ${event.playerName}`}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-               </div>
-              )}
-            </div>
-          </div>
 
           {/* Goal Recording Form */}
           {showGoalForm && (
@@ -1059,45 +1004,47 @@ const LiveMatchModal = ({
               </div>
               
               <div className="form-row compact-time-row">
-                <div className="compact-time-group">
-                  <label>P:</label>
-                  <input 
-                    type="number" 
-                    value={penaltyForm.periodNumber}
-                    onChange={(e) => setPenaltyForm(prev => ({ ...prev, periodNumber: parseInt(e.target.value) || 1 }))}
-                    min="1"
-                    max="10"
-                    className="compact-time-input"
-                  />
+                <div className="time-inputs-container">
+                  <div className="time-input-group">
+                    <label>Period:</label>
+                    <input 
+                      type="number" 
+                      value={penaltyForm.periodNumber}
+                      onChange={(e) => setPenaltyForm(prev => ({ ...prev, periodNumber: parseInt(e.target.value) || 1 }))}
+                      min="1"
+                      max="10"
+                      className="time-input period-input"
+                    />
+                  </div>
+                  
+                  <div className="time-input-group">
+                    <label>Minutes:</label>
+                    <input 
+                      type="number" 
+                      value={penaltyForm.timeMinutes}
+                      onChange={(e) => setPenaltyForm(prev => ({ ...prev, timeMinutes: parseInt(e.target.value) || 0 }))}
+                      min="0"
+                      max="20"
+                      placeholder={`${clock.minutes}`}
+                      className="time-input minutes-input"
+                    />
+                  </div>
+                  
+                  <div className="time-input-group">
+                    <label>Seconds:</label>
+                    <input 
+                      type="number" 
+                      value={penaltyForm.timeSeconds}
+                      onChange={(e) => setPenaltyForm(prev => ({ ...prev, timeSeconds: parseInt(e.target.value) || 0 }))}
+                      min="0"
+                      max="59"
+                      placeholder={`${clock.seconds}`}
+                      className="time-input seconds-input"
+                    />
+                  </div>
                 </div>
                 
-                <div className="compact-time-group">
-                  <label>M:</label>
-                  <input 
-                    type="number" 
-                    value={penaltyForm.timeMinutes}
-                    onChange={(e) => setPenaltyForm(prev => ({ ...prev, timeMinutes: parseInt(e.target.value) || 0 }))}
-                    min="0"
-                    max="20"
-                    placeholder={`${clock.minutes}`}
-                    className="compact-time-input"
-                  />
-                </div>
-                
-                <div className="compact-time-group">
-                  <label>S:</label>
-                  <input 
-                    type="number" 
-                    value={penaltyForm.timeSeconds}
-                    onChange={(e) => setPenaltyForm(prev => ({ ...prev, timeSeconds: parseInt(e.target.value) || 0 }))}
-                    min="0"
-                    max="59"
-                    placeholder={`${clock.seconds}`}
-                    className="compact-time-input"
-                  />
-                </div>
-                
-                <div className="time-hint-compact">
+                <div className="time-hint">
                   Current: {formatTime(clock.minutes, clock.seconds)}
                 </div>
               </div>
@@ -1117,6 +1064,61 @@ const LiveMatchModal = ({
               </div>
             </div>
           )}
+          </div>
+          
+          {/* Right Section - Scoreboard, Period Management, and Events History */}
+          <div className="right-section">
+            <div className="scoreboard">
+              <div className="team-score">
+                <div className="team-name">{homeTeam?.name || 'Home'}</div>
+                <div className="score">{currentScore.home}</div>
+              </div>
+              <div className="score-separator">-</div>
+              <div className="team-score">
+                <div className="team-name">{awayTeam?.name || 'Away'}</div>
+                <div className="score">{currentScore.away}</div>
+              </div>
+            </div>
+
+            {/* Events History */}
+            <div className="events-history">
+              <h3>Match Events</h3>
+              {allEvents.length === 0 ? (
+                <div className="no-events">No events recorded yet</div>
+              ) : (
+                <div className="events-list">
+                  {allEvents.map(event => (
+                    <div key={event.id} className={`event-item ${event.type}`}>
+                      <div className="event-time">
+                       P{event.periodNumber} - {formatEventTime(event.timeInSeconds)}
+                      </div>
+                      <div className="event-details">
+                        {event.type === 'goal' ? (
+                          <div className="goal-event">
+                            <span className="event-icon">⚽</span>
+                            <span className="event-text">
+                              <strong>{event.teamName}</strong> - Goal by {event.playerName}
+                              {event.assisterName && ` (Assist: ${event.assisterName})`}
+                              {event.wasInOvertime && ` (OT)`}
+                              {event.wasInShootout && ` (SO)`}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="penalty-event">
+                            <span className="event-icon">🟨</span>
+                            <span className="event-text">
+                              <strong>{event.teamName}</strong> - {event.penaltyType} ({event.penaltyMinutes}min)
+                              {event.playerName && ` - ${event.playerName}`}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+               </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

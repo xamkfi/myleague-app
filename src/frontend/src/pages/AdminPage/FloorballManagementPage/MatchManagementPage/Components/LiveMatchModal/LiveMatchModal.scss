@@ -197,34 +197,34 @@
 
 .match-clock {
   text-align: center;
-  padding: 16px;
+  padding: 8px;
   background: #f8fafc;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
-  margin-bottom: 16px;
-  min-height: 280px;
+  margin-bottom: 12px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 
   .period {
-    font-size: 1.5rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #374151;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
 
   .time-display {
-    font-size: 4rem;
+    font-size: 2.5rem;
     font-weight: 700;
     font-family: 'Courier New', monospace;
     color: #1e293b;
-    margin: 8px 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 4px 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 
     &.time-over-limit {
       color: #dc2626;
-      text-shadow: 0 2px 8px rgba(220, 38, 38, 0.6);
+      text-shadow: 0 1px 4px rgba(220, 38, 38, 0.6);
     }
   }
 
@@ -239,22 +239,22 @@
 
   .time-controls {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     justify-content: center;
-    margin-top: 8px;
+    margin-top: 4px;
 
     .time-control-btn {
-      padding: 8px 12px;
+      padding: 4px 8px;
       border: none;
-      border-radius: 6px;
-      font-size: 0.9rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
       align-items: center;
-      gap: 4px;
-      min-width: 60px;
+      gap: 2px;
+      min-width: 40px;
 
       &.back-time-btn {
         background: #8b5cf6;
@@ -288,20 +288,20 @@
 
   .clock-start-reset {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     justify-content: center;
     flex-wrap: wrap;
-    margin: 8px 0;
+    margin: 4px 0;
 
     button {
-      padding: 10px 16px;
+      padding: 6px 12px;
       border: none;
-      border-radius: 8px;
-      font-size: 1rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
-      min-width: 120px;
+      min-width: 80px;
 
       &.start-btn {
         background: #10b981;
@@ -309,7 +309,7 @@
 
         &:hover {
           background: #059669;
-          transform: translateY(-2px);
+          transform: translateY(-1px);
         }
       }
 
@@ -319,7 +319,7 @@
 
         &:hover {
           background: #d97706;
-          transform: translateY(-2px);
+          transform: translateY(-1px);
         }
       }
 
@@ -329,7 +329,7 @@
 
         &:hover {
           background: #4b5563;
-          transform: translateY(-2px);
+          transform: translateY(-1px);
         }
       }
     }
@@ -337,25 +337,25 @@
 
   .previous-next-period {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     justify-content: center;
     flex-wrap: wrap;
-    margin: 8px 0;
+    margin: 4px 0;
 
     .period-control-btn {
-      padding: 8px 12px;
+      padding: 4px 8px;
       border: 2px solid #e2e8f0;
-      border-radius: 6px;
-      font-size: 0.9rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
       background: #f8fafc;
       color: #475569;
-      min-width: 100px;
+      min-width: 70px;
 
       &:hover {
         background: #e2e8f0;
@@ -419,25 +419,24 @@
 
 .period-management {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
-  margin-top: 2px;
-  padding: 2px;
+  margin-top: 8px;
+  padding: 6px;
   background: #f8fafc;
 
-
   .period-control-btn {
-    padding: 4px 8px;
+    padding: 3px 6px;
     border: 2px solid;
     border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.7rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     align-items: center;
-    gap: 4px;
-    min-width: 80px;
+    gap: 3px;
+    min-width: 60px;
     justify-content: center;
 
     &.start-period-btn {
@@ -866,48 +865,71 @@
 // Compact time input styles
 .compact-time-row {
   display: flex;
-  align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
-}
-
-.compact-time-group {
-  display: flex;
   align-items: center;
-  gap: 4px;
+  flex-wrap: wrap;
+  margin: 8px 0;
 
-  label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #374151;
-    min-width: 16px;
+  .time-inputs-container {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
   }
 
-  .compact-time-input {
-    width: 40px;
-    padding: 4px 6px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    background: white;
-    text-align: center;
-    transition: border-color 0.2s;
+  .time-input-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    min-width: auto;
 
-    &:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #374151;
+      text-align: left;
+      white-space: nowrap;
     }
 
-    &::placeholder {
-      color: #9ca3af;
+    .time-input {
+      padding: 4px 6px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: white;
+      color: #374151;
+      text-align: center;
+      transition: border-color 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      }
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+
+      &.period-input {
+        width: 35px;
+      }
+
+      &.minutes-input {
+        width: 40px;
+      }
+
+      &.seconds-input {
+        width: 45px;
+      }
     }
   }
-}
 
-.time-hint-compact {
-  font-size: 0.7rem;
-  color: #6b7280;
-  font-style: italic;
-  margin-left: auto;
+  .time-hint {
+    font-size: 0.7rem;
+    color: #6b7280;
+    font-style: italic;
+    margin-left: auto;
+  }
 } 
