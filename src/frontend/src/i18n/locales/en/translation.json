@@ -71,13 +71,22 @@
     }
   },
   "common": {
-    "back": "Back to Admin",
-    "loading": "Loading...",
+    "back": "Back",
+    "backTo": "Back to",
+    "loading": "Loading…",
     "edit": "Edit",
     "delete": "Delete",
     "previous": "Previous",
     "next": "Next",
-    "pageInfo": "Page {{current}} of {{total}}"
+    "pageInfo": "Page {{current}} of {{total}}",
+    "error": "Error",
+    "goBack": "Go Back",
+    "retry": "Retry",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {{current}} of {{total}}"
+    }
   },
   "newsPage":{
     "category": {
@@ -90,5 +99,19 @@
     },
     "search": "Search",
     "searchPlaceholder": "Search news..."
+  },
+  "teamUserPage": {
+    "loadingInfo": "Loading team information…",
+    "notFoundTitle": "Team Not Found",
+    "notFound": "Team not found",
+    "notFoundDesc": "The team you are looking for does not exist.",
+    "results": "Results",
+    "roster": "Roster",
+    "stats": "Stats",
+    "standings": "Standings"
+  },
+  "matches": {
+    "loading": "Loading matches…",
+    "noMatches": "No matches found for this team."
   }
 } 

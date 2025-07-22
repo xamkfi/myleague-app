@@ -27,6 +27,11 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
             builder.Property(p => p.BirthDate)
                 .IsRequired();
 
+            builder.Property(p => p.role)
+                .IsRequired()
+                .HasDefaultValue(Domain.Enums.Common.PersonRole.User)
+                .HasConversion<int>();
+
             builder.Property(x => x.IsRegistered)
                 .HasDefaultValue(false)
                 .IsRequired();

@@ -150,6 +150,31 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Gets floorball team names filtered by name
+        /// </summary>
+        /// <param name="nameFilter">Optional filter string to search team names</param>
+        /// <returns>List of matching team names</returns>
+        [HttpGet("names")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamNameDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballTeamNameDto>>>> GetTeamNames([FromQuery] string? nameFilter)
+        {
+            _logger.LogInformation("Getting floorball team names filtered by: {nameFilter}", nameFilter);
+
+            GetTeamNamesQuery query = new GetTeamNamesQuery(nameFilter);
+            Result<List<FloorballTeamNameDto>> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<List<FloorballTeamNameDto>>.SuccessResponse(result.Data.ToList(), "Filtered team names retrieved successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to retrieve team names";
+            return BadRequest(ApiResponse<List<FloorballTeamNameDto>>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Creates a new floorball team
         /// </summary>
         /// <param name="request">Create team request</param>
@@ -228,7 +253,8 @@ namespace WebAPI.Controllers.Floorball
                 request.HomeArena,
                 request.PrimaryJerseyColor,
                 request.Category,
-                request.SecondaryJerseyColor);
+                request.SecondaryJerseyColor,
+                request.LogoUrl);
 
             Result<FloorballTeamDto> result = await _mediator.Send(command);
 
@@ -402,6 +428,37 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update teams division";
+            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Updates the logo of a floorball team
+        /// </summary>
+        /// <param name="id">The ID of the team to update</param>
+        /// <param name="logoUrl">The new logo URL</param>
+        /// <returns>Updated team details</returns>
+        [HttpPatch("{id:guid}/logo")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballTeamDto>>> UpdateTeamLogo(Guid id, [FromBody] string? logoUrl)
+        {
+            _logger.LogInformation("Updating logo for team {teamId}", id);
+
+            UpdateFloorballTeamLogoCommand command = new UpdateFloorballTeamLogoCommand(id, logoUrl);
+            Result<FloorballTeamDto> result = await _mediator.Send(command);
+
+            if(result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Team logo updated successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to update team logo";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+            }
             return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
         }
     }

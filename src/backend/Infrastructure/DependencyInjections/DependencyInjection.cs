@@ -59,6 +59,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
             services.AddScoped<IPersonRepository, PersonRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
             services.AddScoped<IDivisionRepository, DivisionRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();

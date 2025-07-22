@@ -15,6 +15,7 @@ namespace Application.DTOs.Floorball
     /// <param name="HomeArena">The team's home arena</param>
     /// <param name="PrimaryJerseyColor">The team's primary jersey color</param>
     /// <param name="SecondaryJerseyColor">The team's secondary jersey color</param>
+    /// <param name="LogoUrl">The team's logo URL</param>
     /// <param name="HasActiveMembers">Whether the team has any active members</param>
     /// <param name="Roster">The team's roster of players</param>
     public record FloorballTeamDto(
@@ -25,6 +26,7 @@ namespace Application.DTOs.Floorball
         string HomeArena,
         string PrimaryJerseyColor,
         string SecondaryJerseyColor,
+        string? LogoUrl,
         bool HasActiveMembers,
         IReadOnlyCollection<FloorballTeamPlayerDto> Roster);
 }

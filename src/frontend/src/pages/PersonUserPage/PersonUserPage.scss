@@ -76,7 +76,7 @@
 .teams {
   &-section {
     width: 100%;
-    padding-top: map.get($spacing, 'base');
+    //padding-top: map.get($spacing, 'base');
 
     h3 {
       font-size: map.get($font-sizes, 'lg');

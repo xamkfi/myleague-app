@@ -29,6 +29,148 @@
   ],
   "item": [
     {
+      "name": "Create Divisions",
+      "item": [
+        {
+          "name": "Create Premier Division",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Premier Division\",\n  \"description\": \"The highest competitive level for elite professional teams\",\n  \"level\": 1,\n  \"sportType\": \"Floorball\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions"]
+            },
+            "description": "Create the Premier Division - highest level (Level 1)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create First Division",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"First Division\",\n  \"description\": \"Second tier competitive level for professional teams\",\n  \"level\": 2,\n  \"sportType\": \"Floorball\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions"]
+            },
+            "description": "Create the First Division - second tier (Level 2)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Second Division",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Second Division\",\n  \"description\": \"Third tier competitive level for semi-professional teams\",\n  \"level\": 3,\n  \"sportType\": \"Floorball\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions"]
+            },
+            "description": "Create the Second Division - third tier (Level 3)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Third Division",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Third Division\",\n  \"description\": \"Entry level competitive division for amateur teams\",\n  \"level\": 4,\n  \"sportType\": \"Floorball\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/divisions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "divisions"]
+            },
+            "description": "Create the Third Division - entry level (Level 4)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Collection of requests to create all 4 division levels"
+    },
+    {
       "name": "Get All Divisions",
       "request": {
         "method": "GET",
@@ -200,121 +342,6 @@
             }
           ],
           "body": "{\n  \"success\": true,\n  \"message\": \"Divisions for Floorball retrieved successfully\",\n  \"data\": [\n    {\n      \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"name\": \"First Division\",\n      \"description\": \"The highest competitive level for professional teams\",\n      \"level\": 1,\n      \"sportType\": \"Floorball\",\n      \"isActive\": true,\n      \"createdDate\": \"2024-01-15T10:30:00Z\"\n    }\n  ],\n  \"errors\": null\n}"
-        }
-      ]
-    },
-    {
-      "name": "Create Division",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Accept",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"First Division\",\n  \"description\": \"The highest competitive level for professional teams\",\n  \"level\": 1,\n  \"sportType\": \"Floorball\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/divisions",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8080",
-          "path": ["api", "divisions"]
-        },
-        "description": "Create a new division"
-      },
-      "response": [
-        {
-          "name": "Created Response",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"First Division\",\n  \"description\": \"The highest competitive level for professional teams\",\n  \"level\": 1,\n  \"sportType\": \"Floorball\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/divisions",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "divisions"]
-            }
-          },
-          "status": "Created",
-          "code": 201,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Location",
-              "value": "{{baseUrl}}/api/divisions/550e8400-e29b-41d4-a716-446655440000"
-            }
-          ],
-          "body": "{\n  \"success\": true,\n  \"message\": \"Division created successfully\",\n  \"data\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"name\": \"First Division\",\n    \"description\": \"The highest competitive level for professional teams\",\n    \"level\": 1,\n    \"sportType\": \"Floorball\",\n    \"isActive\": true,\n    \"createdDate\": \"2024-01-15T10:30:00Z\"\n  },\n  \"errors\": null\n}"
-        },
-        {
-          "name": "Validation Error Response",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"\",\n  \"description\": \"\",\n  \"level\": 0,\n  \"sportType\": \"\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/divisions",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "divisions"]
-            }
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"success\": false,\n  \"message\": null,\n  \"data\": null,\n  \"errors\": [\n    \"Division name is required\",\n    \"Division description is required\",\n    \"Division level must be between 1 and 10\",\n    \"Sport type is required\"\n  ]\n}"
         }
       ]
     },

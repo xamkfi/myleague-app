@@ -1,7 +1,9 @@
 .edit-team-modal {
-  max-width: 900px;
-  width: 90vw;
-  max-height: 90vh;
+  max-width: 1200px;
+  width: 95vw;
+  min-width: 1000px; // roomy on desktop
+  max-height: 95vh;
+  min-height: 80vh;
   overflow-y: auto;
 
   .modal-header {
@@ -78,26 +80,51 @@
     }
   }
 
+  .players-management {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
   // Responsive design
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     width: 95vw;
     max-height: 95vh;
+    padding: 0.5rem;
+  }
 
-    .modal-header {
-      padding: 1rem;
-
-      h2 {
-        font-size: 1.3rem;
-      }
-    }
-
-    .team-form, .players-management {
-      padding: 1rem;
-    }
-
+  @media (max-width: 900px) {
     .tab-navigation .tab-button {
-      padding: 0.75rem 1rem;
+      padding: 0.75rem 0.5rem;
       font-size: 0.9rem;
+    }
+
+    .players-management {
+      padding: 0.5rem;
+    }
+  }
+
+  @media (max-width: 600px) {
+    max-width: 100vw;
+    width: 100vw;
+    border-radius: 0;
+    .modal-header {
+      padding: 0.75rem;
+      h2 { font-size: 1rem; }
+    }
+    .tab-navigation .tab-button {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.8rem;
     }
   }
 }
+
+// loosen the min-width when viewport narrower than desktop
+@media (max-width: 1199px) {
+  .edit-team-modal {
+    min-width: 90vw;
+  }
+}
+
+// keep previous small-screen rules (min-width effectively becomes 320 via width)

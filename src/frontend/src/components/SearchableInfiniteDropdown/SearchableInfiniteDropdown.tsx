@@ -26,7 +26,7 @@ interface SearchableInfiniteDropdownProps {
   onEnterSelect?: () => void; // Callback for moving to next field
 }
 
-const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
+const SearchableInfiniteDropdown = ({
   placeholder = "Select an option",
   value,
   onChange,
@@ -37,7 +37,7 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
   emptyMessage = "No options found",
   searchPlaceholder = "Search...",
   onEnterSelect
-}) => {
+}: SearchableInfiniteDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [options, setOptions] = useState<DropdownOption[]>([]);

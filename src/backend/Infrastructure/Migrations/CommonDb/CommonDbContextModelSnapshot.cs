@@ -241,6 +241,11 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasColumnType("timestamp with time zone")
                         .HasComment("UTC timestamp when the entity was last updated");
 
+                    b.Property<int>("role")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt")
@@ -255,6 +260,56 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasDatabaseName("IX_Person_Audit");
 
                     b.ToTable("Persons", "common");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Common.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasComment("Unique identifier for the entity");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_User_CreatedAt");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("IX_User_PersonId");
+
+                    b.HasIndex("UpdatedAt")
+                        .HasDatabaseName("IX_User_UpdatedAt")
+                        .HasFilter("\"UpdatedAt\" IS NOT NULL");
+
+                    b.HasIndex("Username")
+                        .IsUnique()
+                        .HasDatabaseName("IX_User_Username");
+
+                    b.HasIndex("CreatedAt", "UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_User_Audit");
+
+                    b.ToTable("Users", "common");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>
@@ -322,6 +377,17 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.Navigation("Address");
 
                     b.Navigation("ContactInfo");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Common.User", b =>
+                {
+                    b.HasOne("Domain.Entities.Common.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Person");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import './FloorballSeasonsPage.scss';
 import { useSeasonsManagement } from './hooks/useSeasonsManagement';
@@ -8,13 +7,12 @@ import { SeasonsFilters } from './components/SeasonsFilters';
 import { ErrorMessage } from './components/ErrorMessage';
 import { LoadingState } from './components/LoadingState';
 import { SeasonsContent } from './components/SeasonsContent';
-import { BackButton } from './components/BackButton';
+import BackButton from '../../../../components/BackButton/BackButton';
 import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
 import { EditSeasonModal } from './components/EditSeasonModal';
 import { CreateSeasonModal } from './components/CreateSeasonModal';
 
 const FloorballSeasonsPage = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   
   const {
@@ -61,6 +59,13 @@ const FloorballSeasonsPage = () => {
   return (
     <PageTemplate title={t('floorball.seasons.title', 'Manage Seasons')}>
       <div className="floorball-seasons-container">
+
+        {/* Back button */}
+        <BackButton 
+          to="/admin/floorball" 
+          text={t('common.back', 'Back to Floorball Management')} 
+        />
+
         <SeasonsPageHeader
           seasonsCount={seasons.length}
           onCreateSeason={() => setShowCreateModal(true)}
@@ -84,8 +89,6 @@ const FloorballSeasonsPage = () => {
           onComplete={handleCompleteSeason}
           operationLoading={operationLoading}
         />
-
-        <BackButton onBack={() => navigate('/admin/floorball')} />
 
         {/* Modals */}
         {showCreateModal && (

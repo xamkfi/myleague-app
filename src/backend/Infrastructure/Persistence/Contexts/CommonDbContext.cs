@@ -35,6 +35,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<Person> Persons { get; set; }
 
         /// <summary>
+        /// Gets or sets the Users DbSet.
+        /// </summary>
+        public DbSet<User> Users { get; set; }
+
+        /// <summary>
         /// Gets or sets the Clubs DbSet.
         /// </summary>
         public DbSet<Club> Clubs { get; set; }
@@ -95,6 +100,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
 
             // Apply only Common configurations to avoid cross-context conflicts
             modelBuilder.ApplyConfiguration(new PersonConfiguration());
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new ClubConfiguration());
             modelBuilder.ApplyConfiguration(new NewsArticleConfiguration());
             modelBuilder.ApplyConfiguration(new DivisionConfiguration());
