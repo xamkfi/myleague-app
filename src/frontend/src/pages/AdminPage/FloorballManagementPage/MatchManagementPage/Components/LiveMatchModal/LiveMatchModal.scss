@@ -425,6 +425,18 @@
   padding: 6px;
   background: #f8fafc;
 
+  .period-status {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #374151;
+    text-align: center;
+    margin-bottom: 4px;
+    padding: 2px 4px;
+    background: white;
+    border-radius: 3px;
+    border: 1px solid #d1d5db;
+  }
+
   .period-control-btn {
     padding: 3px 6px;
     border: 2px solid;

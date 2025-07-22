@@ -59,6 +59,10 @@ const LiveMatchModal = ({
   const [error, setError] = useState<string | null>(null);
   const [matchEvents, setMatchEvents] = useState<FloorballDomainEventDto[]>([]);
   
+  // Period state management
+  const [periodStates, setPeriodStates] = useState<Record<number, 'not_started' | 'started' | 'ended'>>({});
+  const [periodLoading, setPeriodLoading] = useState<Record<number, boolean>>({});
+  
   // Real match status from backend
   const [currentMatch, setCurrentMatch] = useState<FloorballMatchDto>(match);
   
@@ -318,12 +322,18 @@ const LiveMatchModal = ({
    */
   const startPeriod = async () => {
     try {
+      setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
       await floorballMatchEventService.startPeriod(currentMatch.id, clock.period);
       console.log(`Started period ${clock.period} for match ${currentMatch.id}`);
+      
+      // Update period state
+      setPeriodStates(prev => ({ ...prev, [clock.period]: 'started' }));
       setError(null);
     } catch (error) {
       console.error('Error starting period:', error);
       setError(error instanceof Error ? error.message : 'Failed to start period');
+    } finally {
+      setPeriodLoading(prev => ({ ...prev, [clock.period]: false }));
     }
   };
 
@@ -333,12 +343,18 @@ const LiveMatchModal = ({
    */
   const endPeriod = async () => {
     try {
+      setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
       await floorballMatchEventService.endPeriod(currentMatch.id, clock.period);
       console.log(`Ended period ${clock.period} for match ${currentMatch.id}`);
+      
+      // Update period state
+      setPeriodStates(prev => ({ ...prev, [clock.period]: 'ended' }));
       setError(null);
     } catch (error) {
       console.error('Error ending period:', error);
       setError(error instanceof Error ? error.message : 'Failed to end period');
+    } finally {
+      setPeriodLoading(prev => ({ ...prev, [clock.period]: false }));
     }
   };
 
@@ -548,6 +564,48 @@ const LiveMatchModal = ({
   const isTimeOverLimit = (minutes: number, seconds: number) => {
     const totalSeconds = minutes * 60 + seconds;
     return totalSeconds >= 1200; // 20 minutes = 1200 seconds
+  };
+
+  /**
+   * Determines if the Start Period button should be enabled
+   * @returns true if the period can be started
+   */
+  const canStartPeriod = () => {
+    const currentPeriodState = periodStates[clock.period];
+    return currentMatch.status === 'InProgress' && 
+           !periodLoading[clock.period] && 
+           currentPeriodState !== 'started' && 
+           currentPeriodState !== 'ended';
+  };
+
+  /**
+   * Determines if the End Period button should be enabled
+   * @returns true if the period can be ended
+   */
+  const canEndPeriod = () => {
+    const currentPeriodState = periodStates[clock.period];
+    return currentMatch.status === 'InProgress' && 
+           !periodLoading[clock.period] && 
+           currentPeriodState === 'started';
+  };
+
+  /**
+   * Gets the current period status for display
+   * @returns A string describing the current period status
+   */
+  const getPeriodStatus = () => {
+    const currentPeriodState = periodStates[clock.period];
+    if (periodLoading[clock.period]) {
+      return 'Processing...';
+    }
+    switch (currentPeriodState) {
+      case 'started':
+        return '🟢 Started';
+      case 'ended':
+        return '🔴 Ended';
+      default:
+        return '⏸️ Not Started';
+    }
   };
 
   const formatEventTime = (timeInSeconds: number) => {
@@ -791,21 +849,24 @@ const LiveMatchModal = ({
             )}
             <div className="match-clock">
               <div className="period-management">
+                <div className="period-status">
+                  Period {clock.period}: {getPeriodStatus()}
+                </div>
                 <button 
                   onClick={startPeriod} 
                   className="period-control-btn start-period-btn"
                   title="Start the current period"
-                  disabled={currentMatch.status !== 'InProgress'}
+                  disabled={!canStartPeriod()}
                 >
-                  🟢 Start Period
+                  {periodLoading[clock.period] ? 'Starting...' : '🟢 Start Period'}
                 </button>
                 <button 
                   onClick={endPeriod} 
                   className="period-control-btn end-period-btn"
                   title="End the current period"
-                  disabled={currentMatch.status !== 'InProgress'}
+                  disabled={!canEndPeriod()}
                 >
-                  🔴 End Period
+                  {periodLoading[clock.period] ? 'Ending...' : '🔴 End Period'}
                 </button>
               </div>
               <div className="previous-next-period">
