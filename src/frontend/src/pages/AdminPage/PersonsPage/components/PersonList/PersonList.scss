@@ -2,6 +2,15 @@
   width: 100%;
   overflow-x: auto;
 
+  // Add spacing between elements
+  .pagination-container + table {
+    margin-top: 1rem;
+  }
+
+  .persons-search-bar + .pagination-container {
+    margin-top: 1rem;
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
@@ -31,10 +40,14 @@
     }
 
     .role-cell {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      vertical-align: middle;
       min-width: 140px;
+      position: relative;
+
+      .loading-spinner {
+        margin-left: 0.5rem;
+        vertical-align: middle;
+      }
     }
   }
 }
@@ -137,6 +150,7 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   min-width: 120px;
+  vertical-align: middle;
 
   &:hover:not(:disabled) {
     border-color: #0d6efd;
@@ -186,4 +200,64 @@
 
 .persons-error {
   color: #dc3545;
+}
+
+// Search functionality styles
+.persons-search-bar {
+  position: relative;
+  margin-bottom: 1rem;
+
+  .persons-search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    padding-right: 2.5rem; // Space for clear button
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 400;
+    background-color: white;
+    transition: all 0.2s ease-in-out;
+
+    &:focus {
+      outline: none;
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+    }
+
+    &::placeholder {
+      color: #6c757d;
+      font-style: italic;
+    }
+  }
+
+  .search-clear-button {
+    position: absolute;
+    top: 50%;
+    right: 0.75rem;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    transition: all 0.2s ease-in-out;
+    
+    &:hover {
+      background-color: #f8f9fa;
+      color: #dc3545;
+    }
+  }
+}
+
+.no-search-results {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+  font-size: 1.1rem;
+  font-style: italic;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
 } 

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Person } from '../../../../../types/admin/personTypes';
 import { PersonRole } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
+import PaginationControls from '../PaginationControls/PaginationControls';
 import './PersonList.scss';
 
 const PersonList = () => {
@@ -14,6 +15,13 @@ const PersonList = () => {
   const [error, setError] = useState<string | null>(null);
   const [updatingRegistration, setUpdatingRegistration] = useState<string | null>(null);
   const [updatingRole, setUpdatingRole] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  
+  // Search state
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchPersons = async () => {
@@ -103,6 +111,35 @@ const PersonList = () => {
     }
   };
 
+  // Search filtering
+  const filteredPersons = persons.filter(person =>
+    person.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Pagination calculations (applied to filtered results)
+  const totalCount = filteredPersons.length;
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedPersons = filteredPersons.slice(startIndex, endIndex);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
   if (loading) {
     return <div className="persons-loading">{t('admin.persons.loading', 'Loading persons...')}</div>;
   }
@@ -113,6 +150,36 @@ const PersonList = () => {
 
   return (
     <div className="persons-list">
+      {/* Search Bar */}
+      <div className="persons-search-bar">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          placeholder={t('admin.persons.searchPlaceholder', 'Search persons by name...') as string}
+          className="persons-search-input"
+        />
+        {searchTerm && (
+          <button
+            className="search-clear-button"
+            onClick={() => setSearchTerm('')}
+            title={t('admin.persons.clearSearch', 'Clear search')}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      {/* Pagination Controls - Top */}
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
+
       <table>
         <thead>
           <tr>
@@ -125,7 +192,7 @@ const PersonList = () => {
           </tr>
         </thead>
         <tbody>
-          {persons.map(person => (
+          {paginatedPersons.map(person => (
             <tr key={person.id}>
               <td>{person.fullName}</td>
               <td>{new Date(person.birthDate).toLocaleDateString()}</td>
@@ -195,9 +262,26 @@ const PersonList = () => {
           ))}
         </tbody>
       </table>
+
+      {/* Pagination Controls - Bottom */}
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
+
       {persons.length === 0 && (
         <div className="no-data">
           {t('admin.persons.noData', 'No persons found')}
+        </div>
+      )}
+
+      {persons.length > 0 && filteredPersons.length === 0 && (
+        <div className="no-search-results">
+          {t('admin.persons.noSearchResults', 'No persons found matching "{{searchTerm}}"', { searchTerm })}
         </div>
       )}
     </div>
