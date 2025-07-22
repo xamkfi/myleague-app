@@ -68,7 +68,8 @@ public class RecordPenaltyEventHandler : IRequestHandler<RecordPenaltyEventComma
                 request.Minutes,
                 request.PeriodNumber,
                 request.TimeInSeconds,
-                request.Description);
+                request.Description,
+                request.PlayerId.HasValue ? "Unknown Player" : null); // PlayerName - would need player lookup for actual name
 
             _logger.LogInformation("Successfully recorded penalty event for match: {MatchId}", request.MatchId);
 

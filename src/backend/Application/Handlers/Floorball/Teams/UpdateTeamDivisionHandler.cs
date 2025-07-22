@@ -66,6 +66,10 @@ namespace Application.Handlers.Floorball.Teams
 
                 //Get club for the DTO object
                 Club? club = await _clubRepository.GetByIdAsync(team.ClubId);
+                if (club == null)
+                {
+                    return Result<FloorballTeamDto>.NotFound("Club not found", team.ClubId);
+                }
                 //Save changes to database
                 await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
