@@ -74,7 +74,7 @@ public static class FloorballMatchMapper
                 p.DurationInMinutes,
                 p.PeriodNumber,
                 p.TimeInSeconds,
-                p.Description,
+                p.Description ?? string.Empty,
                 GetPlayerName(p.PlayerId, playerPersonLookup)))
             .ToList();
 
@@ -239,7 +239,7 @@ public static class FloorballMatchMapper
     {
         if (!playerId.HasValue || !playerPersonLookup.TryGetValue(playerId.Value, out Person? person))
         {
-            return null;
+            return "Unknown Player";
         }
 
         return $"{person.FirstName} {person.LastName}";
