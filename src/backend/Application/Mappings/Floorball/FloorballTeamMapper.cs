@@ -36,6 +36,7 @@ public static class FloorballTeamMapper
         if (playerPersons == null)
             throw new ArgumentNullException(nameof(playerPersons));
 
+        var effectiveLogoUrl = team.GetEffectiveLogoUrl(club.LogoUrl)?.ToString();
 
         return new FloorballTeamDto(
             team.Id,
