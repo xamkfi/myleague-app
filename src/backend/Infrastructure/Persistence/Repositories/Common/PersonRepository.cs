@@ -31,6 +31,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
+        /// Gets multiple persons by their IDs
+        /// </summary>
+        /// <param name="ids">The person IDs</param>
+        /// <returns>A collection of persons found with the specified IDs</returns>
+        public async Task<IEnumerable<Person>> GetByIdsAsync(IEnumerable<Guid> ids)
+        {
+            return await _entities
+                .Where(p => ids.Contains(p.Id))
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Gets a person by full name
         /// </summary>
         /// <param name="firstName">The first name</param>

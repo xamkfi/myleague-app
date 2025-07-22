@@ -101,5 +101,56 @@ namespace MyLeague.Infrastructure.SignalR
             await _hubContext.Groups.RemoveFromGroupAsync(connectionId, eventType);
             _logger.LogInformation("Client {ConnectionId} unsubscribed from event type {EventType}", connectionId, eventType);
         }
+
+        /// <summary>
+        /// Notifies clients in a specific match group of an event
+        /// </summary>
+        /// <param name="matchId">The match ID</param>
+        /// <param name="eventName">The name of the event</param>
+        /// <param name="payload">The payload to send</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task NotifyMatchAsync(Guid matchId, string eventName, object payload)
+        {
+            try
+            {
+                string payloadJson = JsonSerializer.Serialize(payload);
+                string groupName = $"Match_{matchId}";
+                
+                _logger.LogInformation("Notifying match {MatchId} clients of event {EventName}", matchId, eventName);
+                
+                // Notify clients in the specific match group
+                await _hubContext.Clients.Group(groupName).SendAsync("MatchEvent", eventName, payloadJson);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error notifying match {MatchId} clients of event {EventName}", matchId, eventName);
+            }
+        }
+
+        /// <summary>
+        /// Subscribes a client to a specific match
+        /// </summary>
+        /// <param name="connectionId">The connection ID</param>
+        /// <param name="matchId">The match ID to subscribe to</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task SubscribeToMatchAsync(string connectionId, Guid matchId)
+        {
+            string groupName = $"Match_{matchId}";
+            await _hubContext.Groups.AddToGroupAsync(connectionId, groupName);
+            _logger.LogInformation("Client {ConnectionId} subscribed to match {MatchId}", connectionId, matchId);
+        }
+
+        /// <summary>
+        /// Unsubscribes a client from a specific match
+        /// </summary>
+        /// <param name="connectionId">The connection ID</param>
+        /// <param name="matchId">The match ID to unsubscribe from</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task UnsubscribeFromMatchAsync(string connectionId, Guid matchId)
+        {
+            string groupName = $"Match_{matchId}";
+            await _hubContext.Groups.RemoveFromGroupAsync(connectionId, groupName);
+            _logger.LogInformation("Client {ConnectionId} unsubscribed from match {MatchId}", connectionId, matchId);
+        }
     }
 } 

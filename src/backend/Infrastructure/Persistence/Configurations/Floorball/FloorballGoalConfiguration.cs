@@ -17,6 +17,7 @@ public class FloorballGoalConfiguration : IEntityTypeConfiguration<FloorballGoal
     {
         b.Property(g => g.ScoringPlayerId).IsRequired(false);
         b.Property(g => g.AssistingPlayerId).IsRequired(false);
+        b.Property(g => g.SecondaryAssistingPlayerId).IsRequired(false);
         b.Property(g => g.GoalType).IsRequired(false);
 
 
@@ -25,6 +26,9 @@ public class FloorballGoalConfiguration : IEntityTypeConfiguration<FloorballGoal
 
         b.HasIndex(g => g.AssistingPlayerId)
          .HasDatabaseName("IX_FloorballMatchEvent_AssistingPlayerId");
+
+        b.HasIndex(g => g.SecondaryAssistingPlayerId)
+         .HasDatabaseName("IX_FloorballMatchEvent_SecondaryAssistingPlayerId");
 
         b.HasIndex(g => g.GoalType)
          .HasDatabaseName("IX_FloorballMatchEvent_GoalType");
