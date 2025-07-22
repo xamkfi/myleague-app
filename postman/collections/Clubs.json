@@ -486,7 +486,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"TestiClubi Phoenixs\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{testiclubi_id}}\",\r\n  \"homeArena\": \"Helsinki Central Arena\",\r\n  \"primaryJerseyColor\": \"Red\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"TestiClubi Phoenixs\",\r\n  \"divisionId\": \"{{team1_divisionId}}\",\r\n  \"clubId\": \"{{testiclubi_id}}\",\r\n  \"homeArena\": \"Helsinki Central Arena\",\r\n  \"primaryJerseyColor\": \"Red\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -515,7 +515,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"TestiClubi Ravens\",\r\n  \"division\": 2,\r\n  \"clubId\": \"{{testiclubi_id}}\",\r\n  \"homeArena\": \"Helsinki Sports Center\",\r\n  \"primaryJerseyColor\": \"Black\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"TestiClubi Ravens\",\r\n  \"divisionId\": \"{{team2_divisionId}}\",\r\n  \"clubId\": \"{{testiclubi_id}}\",\r\n  \"homeArena\": \"Helsinki Sports Center\",\r\n  \"primaryJerseyColor\": \"Black\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -544,7 +544,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"TestiClubi Titans\",\r\n  \"division\": 3,\r\n  \"clubId\": \"{{testiclubi_id}}\",\r\n  \"homeArena\": \"Helsinki Olympic Hall\",\r\n  \"primaryJerseyColor\": \"Blue\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"TestiClubi Titans\",\r\n  \"divisionId\": \"{{team3_divisionId}}\",\r\n  \"clubId\": \"{{testiclubi_id}}\",\r\n  \"homeArena\": \"Helsinki Olympic Hall\",\r\n  \"primaryJerseyColor\": \"Blue\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -573,7 +573,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Sunrise United Dynamo\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{sunriseunited_id}}\",\r\n  \"homeArena\": \"Manchester United Arena\",\r\n  \"primaryJerseyColor\": \"Maroon\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Sunrise United Dynamo\",\r\n  \"divisionId\": \"{{team4_divisionId}}\",\r\n  \"clubId\": \"{{sunriseunited_id}}\",\r\n  \"homeArena\": \"Manchester United Arena\",\r\n  \"primaryJerseyColor\": \"Maroon\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -602,7 +602,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Sunrise United Rovers\",\r\n  \"division\": 6,\r\n  \"clubId\": \"{{sunriseunited_id}}\",\r\n  \"homeArena\": \"Manchester Sports Complex\",\r\n  \"primaryJerseyColor\": \"Yellow\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Sunrise United Rovers\",\r\n  \"divisionId\": \"{{team5_divisionId}}\",\r\n  \"clubId\": \"{{sunriseunited_id}}\",\r\n  \"homeArena\": \"Manchester Sports Complex\",\r\n  \"primaryJerseyColor\": \"Yellow\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -631,7 +631,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Sunrise United Rangers\",\r\n  \"division\": 2,\r\n  \"clubId\": \"{{sunriseunited_id}}\",\r\n  \"homeArena\": \"Manchester City Hall\",\r\n  \"primaryJerseyColor\": \"Forest Green\",\r\n  \"secondaryJerseyColor\": \"Orange\",\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Sunrise United Rangers\",\r\n  \"divisionId\": \"{{team6_divisionId}}\",\r\n  \"clubId\": \"{{sunriseunited_id}}\",\r\n  \"homeArena\": \"Manchester City Hall\",\r\n  \"primaryJerseyColor\": \"Forest Green\",\r\n  \"secondaryJerseyColor\": \"Orange\",\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -660,7 +660,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Barcelona Eagles Condors\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{barcelonaeagles_id}}\",\r\n  \"homeArena\": \"Barcelona Sports Palace\",\r\n  \"primaryJerseyColor\": \"Crimson\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Barcelona Eagles Condors\",\r\n  \"divisionId\": \"{{team7_divisionId}}\",\r\n  \"clubId\": \"{{barcelonaeagles_id}}\",\r\n  \"homeArena\": \"Barcelona Sports Palace\",\r\n  \"primaryJerseyColor\": \"Crimson\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -689,7 +689,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Barcelona Eagles Hawks\",\r\n  \"division\": 7,\r\n  \"clubId\": \"{{barcelonaeagles_id}}\",\r\n  \"homeArena\": \"Barcelona Olympic Center\",\r\n  \"primaryJerseyColor\": \"Royal Blue\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Barcelona Eagles Hawks\",\r\n  \"divisionId\": \"{{team8_divisionId}}\",\r\n  \"clubId\": \"{{barcelonaeagles_id}}\",\r\n  \"homeArena\": \"Barcelona Olympic Center\",\r\n  \"primaryJerseyColor\": \"Royal Blue\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -718,7 +718,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Barcelona Eagles Falcons\",\r\n  \"division\": 4,\r\n  \"clubId\": \"{{barcelonaeagles_id}}\",\r\n  \"homeArena\": \"Barcelona Arena del Mar\",\r\n  \"primaryJerseyColor\": \"Orange\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Barcelona Eagles Falcons\",\r\n  \"divisionId\": \"{{team9_divisionId}}\",\r\n  \"clubId\": \"{{barcelonaeagles_id}}\",\r\n  \"homeArena\": \"Barcelona Arena del Mar\",\r\n  \"primaryJerseyColor\": \"Orange\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -747,7 +747,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Berlin Thunder Storm\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{berlinthunder_id}}\",\r\n  \"homeArena\": \"Berlin Lightning Arena\",\r\n  \"primaryJerseyColor\": \"Electric Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Berlin Thunder Storm\",\r\n  \"divisionId\": \"{{team10_divisionId}}\",\r\n  \"clubId\": \"{{berlinthunder_id}}\",\r\n  \"homeArena\": \"Berlin Lightning Arena\",\r\n  \"primaryJerseyColor\": \"Electric Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -776,7 +776,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Berlin Thunder Bolts\",\r\n  \"division\": 6,\r\n  \"clubId\": \"{{berlinthunder_id}}\",\r\n  \"homeArena\": \"Berlin Youth Center\",\r\n  \"primaryJerseyColor\": \"Purple\",\r\n  \"secondaryJerseyColor\": \"Yellow\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Berlin Thunder Bolts\",\r\n  \"divisionId\": \"{{team11_divisionId}}\",\r\n  \"clubId\": \"{{berlinthunder_id}}\",\r\n  \"homeArena\": \"Berlin Youth Center\",\r\n  \"primaryJerseyColor\": \"Purple\",\r\n  \"secondaryJerseyColor\": \"Yellow\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -805,7 +805,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Berlin Thunder Lightning\",\r\n  \"division\": 3,\r\n  \"clubId\": \"{{berlinthunder_id}}\",\r\n  \"homeArena\": \"Berlin Metropolitan Hall\",\r\n  \"primaryJerseyColor\": \"Dark Gray\",\r\n  \"secondaryJerseyColor\": \"Electric Blue\",\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Berlin Thunder Lightning\",\r\n  \"divisionId\": \"{{team12_divisionId}}\",\r\n  \"clubId\": \"{{berlinthunder_id}}\",\r\n  \"homeArena\": \"Berlin Metropolitan Hall\",\r\n  \"primaryJerseyColor\": \"Dark Gray\",\r\n  \"secondaryJerseyColor\": \"Electric Blue\",\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -834,7 +834,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Milano Dragons Fire\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{milanodragons_id}}\",\r\n  \"homeArena\": \"Milano Arena Drago\",\r\n  \"primaryJerseyColor\": \"Emerald Green\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Milano Dragons Fire\",\r\n  \"divisionId\": \"{{team13_divisionId}}\",\r\n  \"clubId\": \"{{milanodragons_id}}\",\r\n  \"homeArena\": \"Milano Arena Drago\",\r\n  \"primaryJerseyColor\": \"Emerald Green\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -863,7 +863,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Milano Dragons Wyverns\",\r\n  \"division\": 7,\r\n  \"clubId\": \"{{milanodragons_id}}\",\r\n  \"homeArena\": \"Milano Junior Stadium\",\r\n  \"primaryJerseyColor\": \"Deep Red\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Milano Dragons Wyverns\",\r\n  \"divisionId\": \"{{team14_divisionId}}\",\r\n  \"clubId\": \"{{milanodragons_id}}\",\r\n  \"homeArena\": \"Milano Junior Stadium\",\r\n  \"primaryJerseyColor\": \"Deep Red\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -892,7 +892,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Milano Dragons Scales\",\r\n  \"division\": 2,\r\n  \"clubId\": \"{{milanodragons_id}}\",\r\n  \"homeArena\": \"Milano Sports Complex\",\r\n  \"primaryJerseyColor\": \"Teal\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Milano Dragons Scales\",\r\n  \"divisionId\": \"{{team15_divisionId}}\",\r\n  \"clubId\": \"{{milanodragons_id}}\",\r\n  \"homeArena\": \"Milano Sports Complex\",\r\n  \"primaryJerseyColor\": \"Teal\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -921,7 +921,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Paris Wolves Pack\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{pariswolves_id}}\",\r\n  \"homeArena\": \"Palais des Sports Paris\",\r\n  \"primaryJerseyColor\": \"Midnight Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Paris Wolves Pack\",\r\n  \"divisionId\": \"{{team16_divisionId}}\",\r\n  \"clubId\": \"{{pariswolves_id}}\",\r\n  \"homeArena\": \"Palais des Sports Paris\",\r\n  \"primaryJerseyColor\": \"Midnight Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -950,7 +950,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Paris Wolves Cubs\",\r\n  \"division\": 6,\r\n  \"clubId\": \"{{pariswolves_id}}\",\r\n  \"homeArena\": \"Paris Youth Arena\",\r\n  \"primaryJerseyColor\": \"Gray\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Paris Wolves Cubs\",\r\n  \"divisionId\": \"{{team17_divisionId}}\",\r\n  \"clubId\": \"{{pariswolves_id}}\",\r\n  \"homeArena\": \"Paris Youth Arena\",\r\n  \"primaryJerseyColor\": \"Gray\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -979,7 +979,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Paris Wolves Alpha\",\r\n  \"division\": 8,\r\n  \"clubId\": \"{{pariswolves_id}}\",\r\n  \"homeArena\": \"Stade Charlety\",\r\n  \"primaryJerseyColor\": \"Burgundy\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Paris Wolves Alpha\",\r\n  \"divisionId\": \"{{team18_divisionId}}\",\r\n  \"clubId\": \"{{pariswolves_id}}\",\r\n  \"homeArena\": \"Stade Charlety\",\r\n  \"primaryJerseyColor\": \"Burgundy\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1008,7 +1008,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Amsterdam Lions Pride\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{amsterdamlions_id}}\",\r\n  \"homeArena\": \"Amsterdam Sports Palace\",\r\n  \"primaryJerseyColor\": \"Orange\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Amsterdam Lions Pride\",\r\n  \"divisionId\": \"{{team19_divisionId}}\",\r\n  \"clubId\": \"{{amsterdamlions_id}}\",\r\n  \"homeArena\": \"Amsterdam Sports Palace\",\r\n  \"primaryJerseyColor\": \"Orange\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1037,7 +1037,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Amsterdam Lions Mane\",\r\n  \"division\": 7,\r\n  \"clubId\": \"{{amsterdamlions_id}}\",\r\n  \"homeArena\": \"Vondelpark Arena\",\r\n  \"primaryJerseyColor\": \"Golden Yellow\",\r\n  \"secondaryJerseyColor\": \"Brown\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Amsterdam Lions Mane\",\r\n  \"divisionId\": \"{{team20_divisionId}}\",\r\n  \"clubId\": \"{{amsterdamlions_id}}\",\r\n  \"homeArena\": \"Vondelpark Arena\",\r\n  \"primaryJerseyColor\": \"Golden Yellow\",\r\n  \"secondaryJerseyColor\": \"Brown\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1066,7 +1066,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Amsterdam Lions Roar\",\r\n  \"division\": 4,\r\n  \"clubId\": \"{{amsterdamlions_id}}\",\r\n  \"homeArena\": \"Dam Square Sports Center\",\r\n  \"primaryJerseyColor\": \"Royal Blue\",\r\n  \"secondaryJerseyColor\": \"Orange\",\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Amsterdam Lions Roar\",\r\n  \"divisionId\": \"{{team21_divisionId}}\",\r\n  \"clubId\": \"{{amsterdamlions_id}}\",\r\n  \"homeArena\": \"Dam Square Sports Center\",\r\n  \"primaryJerseyColor\": \"Royal Blue\",\r\n  \"secondaryJerseyColor\": \"Orange\",\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1095,7 +1095,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Stockholm Vikings Berserkers\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{stockholmvikings_id}}\",\r\n  \"homeArena\": \"Viking Hall Stockholm\",\r\n  \"primaryJerseyColor\": \"Navy Blue\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Stockholm Vikings Berserkers\",\r\n  \"divisionId\": \"{{team22_divisionId}}\",\r\n  \"clubId\": \"{{stockholmvikings_id}}\",\r\n  \"homeArena\": \"Viking Hall Stockholm\",\r\n  \"primaryJerseyColor\": \"Navy Blue\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1124,7 +1124,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Stockholm Vikings Shields\",\r\n  \"division\": 6,\r\n  \"clubId\": \"{{stockholmvikings_id}}\",\r\n  \"homeArena\": \"Gamla Stan Arena\",\r\n  \"primaryJerseyColor\": \"Steel Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Stockholm Vikings Shields\",\r\n  \"divisionId\": \"{{team23_divisionId}}\",\r\n  \"clubId\": \"{{stockholmvikings_id}}\",\r\n  \"homeArena\": \"Gamla Stan Arena\",\r\n  \"primaryJerseyColor\": \"Steel Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1153,7 +1153,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Stockholm Vikings Valkyries\",\r\n  \"division\": 2,\r\n  \"clubId\": \"{{stockholmvikings_id}}\",\r\n  \"homeArena\": \"Stockholm Olympic Stadium\",\r\n  \"primaryJerseyColor\": \"Crimson Red\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Stockholm Vikings Valkyries\",\r\n  \"divisionId\": \"{{team24_divisionId}}\",\r\n  \"clubId\": \"{{stockholmvikings_id}}\",\r\n  \"homeArena\": \"Stockholm Olympic Stadium\",\r\n  \"primaryJerseyColor\": \"Crimson Red\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1182,7 +1182,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Dublin Shamrocks Clover\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{dublinshamrocks_id}}\",\r\n  \"homeArena\": \"Croke Park Arena\",\r\n  \"primaryJerseyColor\": \"Emerald Green\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Dublin Shamrocks Clover\",\r\n  \"divisionId\": \"{{team25_divisionId}}\",\r\n  \"clubId\": \"{{dublinshamrocks_id}}\",\r\n  \"homeArena\": \"Croke Park Arena\",\r\n  \"primaryJerseyColor\": \"Emerald Green\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1211,7 +1211,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Dublin Shamrocks Leprechauns\",\r\n  \"division\": 7,\r\n  \"clubId\": \"{{dublinshamrocks_id}}\",\r\n  \"homeArena\": \"Temple Bar Sports Hall\",\r\n  \"primaryJerseyColor\": \"Kelly Green\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Dublin Shamrocks Leprechauns\",\r\n  \"divisionId\": \"{{team26_divisionId}}\",\r\n  \"clubId\": \"{{dublinshamrocks_id}}\",\r\n  \"homeArena\": \"Temple Bar Sports Hall\",\r\n  \"primaryJerseyColor\": \"Kelly Green\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1240,7 +1240,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Dublin Shamrocks Trinity\",\r\n  \"division\": 5,\r\n  \"clubId\": \"{{dublinshamrocks_id}}\",\r\n  \"homeArena\": \"Phoenix Park Center\",\r\n  \"primaryJerseyColor\": \"Forest Green\",\r\n  \"secondaryJerseyColor\": \"Orange\",\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Dublin Shamrocks Trinity\",\r\n  \"divisionId\": \"{{team27_divisionId}}\",\r\n  \"clubId\": \"{{dublinshamrocks_id}}\",\r\n  \"homeArena\": \"Phoenix Park Center\",\r\n  \"primaryJerseyColor\": \"Forest Green\",\r\n  \"secondaryJerseyColor\": \"Orange\",\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1269,7 +1269,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Vienna Hawks Talons\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{viennahawks_id}}\",\r\n  \"homeArena\": \"Wiener Stadthalle\",\r\n  \"primaryJerseyColor\": \"Burgundy\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Vienna Hawks Talons\",\r\n  \"divisionId\": \"{{team28_divisionId}}\",\r\n  \"clubId\": \"{{viennahawks_id}}\",\r\n  \"homeArena\": \"Wiener Stadthalle\",\r\n  \"primaryJerseyColor\": \"Burgundy\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1298,7 +1298,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Vienna Hawks Feathers\",\r\n  \"division\": 6,\r\n  \"clubId\": \"{{viennahawks_id}}\",\r\n  \"homeArena\": \"Schönbrunn Sports Complex\",\r\n  \"primaryJerseyColor\": \"Brown\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Vienna Hawks Feathers\",\r\n  \"divisionId\": \"{{team29_divisionId}}\",\r\n  \"clubId\": \"{{viennahawks_id}}\",\r\n  \"homeArena\": \"Schönbrunn Sports Complex\",\r\n  \"primaryJerseyColor\": \"Brown\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1327,7 +1327,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Vienna Hawks Wings\",\r\n  \"division\": 8,\r\n  \"clubId\": \"{{viennahawks_id}}\",\r\n  \"homeArena\": \"Prater Arena\",\r\n  \"primaryJerseyColor\": \"Dark Red\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Vienna Hawks Wings\",\r\n  \"divisionId\": \"{{team30_divisionId}}\",\r\n  \"clubId\": \"{{viennahawks_id}}\",\r\n  \"homeArena\": \"Prater Arena\",\r\n  \"primaryJerseyColor\": \"Dark Red\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1356,7 +1356,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Prague Panthers Shadows\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{praguepanthers_id}}\",\r\n  \"homeArena\": \"O2 Arena Prague\",\r\n  \"primaryJerseyColor\": \"Black\",\r\n  \"secondaryJerseyColor\": \"Purple\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Prague Panthers Shadows\",\r\n  \"divisionId\": \"{{team31_divisionId}}\",\r\n  \"clubId\": \"{{praguepanthers_id}}\",\r\n  \"homeArena\": \"O2 Arena Prague\",\r\n  \"primaryJerseyColor\": \"Black\",\r\n  \"secondaryJerseyColor\": \"Purple\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1385,7 +1385,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Prague Panthers Prowlers\",\r\n  \"division\": 6,\r\n  \"clubId\": \"{{praguepanthers_id}}\",\r\n  \"homeArena\": \"Wenceslas Square Center\",\r\n  \"primaryJerseyColor\": \"Dark Purple\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Prague Panthers Prowlers\",\r\n  \"divisionId\": \"{{team32_divisionId}}\",\r\n  \"clubId\": \"{{praguepanthers_id}}\",\r\n  \"homeArena\": \"Wenceslas Square Center\",\r\n  \"primaryJerseyColor\": \"Dark Purple\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1414,7 +1414,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Prague Panthers Claws\",\r\n  \"division\": 3,\r\n  \"clubId\": \"{{praguepanthers_id}}\",\r\n  \"homeArena\": \"Prague Castle Arena\",\r\n  \"primaryJerseyColor\": \"Charcoal Gray\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Prague Panthers Claws\",\r\n  \"divisionId\": \"{{team33_divisionId}}\",\r\n  \"clubId\": \"{{praguepanthers_id}}\",\r\n  \"homeArena\": \"Prague Castle Arena\",\r\n  \"primaryJerseyColor\": \"Charcoal Gray\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1443,7 +1443,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Oslo Polar Bears Arctic\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{oslopolarbears_id}}\",\r\n  \"homeArena\": \"Oslo Ice Palace\",\r\n  \"primaryJerseyColor\": \"Ice Blue\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Oslo Polar Bears Arctic\",\r\n  \"divisionId\": \"{{team34_divisionId}}\",\r\n  \"clubId\": \"{{oslopolarbears_id}}\",\r\n  \"homeArena\": \"Oslo Ice Palace\",\r\n  \"primaryJerseyColor\": \"Ice Blue\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1472,7 +1472,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Oslo Polar Bears Cubs\",\r\n  \"division\": 7,\r\n  \"clubId\": \"{{oslopolarbears_id}}\",\r\n  \"homeArena\": \"Vigeland Park Arena\",\r\n  \"primaryJerseyColor\": \"Polar White\",\r\n  \"secondaryJerseyColor\": \"Light Blue\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Oslo Polar Bears Cubs\",\r\n  \"divisionId\": \"{{team35_divisionId}}\",\r\n  \"clubId\": \"{{oslopolarbears_id}}\",\r\n  \"homeArena\": \"Vigeland Park Arena\",\r\n  \"primaryJerseyColor\": \"Polar White\",\r\n  \"secondaryJerseyColor\": \"Light Blue\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1501,7 +1501,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Oslo Polar Bears Frost\",\r\n  \"division\": 4,\r\n  \"clubId\": \"{{oslopolarbears_id}}\",\r\n  \"homeArena\": \"Holmenkollen Sports Center\",\r\n  \"primaryJerseyColor\": \"Arctic Blue\",\r\n  \"secondaryJerseyColor\": \"Gray\",\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Oslo Polar Bears Frost\",\r\n  \"divisionId\": \"{{team36_divisionId}}\",\r\n  \"clubId\": \"{{oslopolarbears_id}}\",\r\n  \"homeArena\": \"Holmenkollen Sports Center\",\r\n  \"primaryJerseyColor\": \"Arctic Blue\",\r\n  \"secondaryJerseyColor\": \"Gray\",\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1530,7 +1530,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Copenhagen Serpents Venom\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{copenhagenserpents_id}}\",\r\n  \"homeArena\": \"Parken Stadium Complex\",\r\n  \"primaryJerseyColor\": \"Viper Green\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Copenhagen Serpents Venom\",\r\n  \"divisionId\": \"{{team37_divisionId}}\",\r\n  \"clubId\": \"{{copenhagenserpents_id}}\",\r\n  \"homeArena\": \"Parken Stadium Complex\",\r\n  \"primaryJerseyColor\": \"Viper Green\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1559,7 +1559,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Copenhagen Serpents Scales\",\r\n  \"division\": 6,\r\n  \"clubId\": \"{{copenhagenserpents_id}}\",\r\n  \"homeArena\": \"Tivoli Gardens Arena\",\r\n  \"primaryJerseyColor\": \"Emerald\",\r\n  \"secondaryJerseyColor\": \"Yellow\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Copenhagen Serpents Scales\",\r\n  \"divisionId\": \"{{team38_divisionId}}\",\r\n  \"clubId\": \"{{copenhagenserpents_id}}\",\r\n  \"homeArena\": \"Tivoli Gardens Arena\",\r\n  \"primaryJerseyColor\": \"Emerald\",\r\n  \"secondaryJerseyColor\": \"Yellow\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1588,7 +1588,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Copenhagen Serpents Coils\",\r\n  \"division\": 8,\r\n  \"clubId\": \"{{copenhagenserpents_id}}\",\r\n  \"homeArena\": \"Nyhavn Sports Hall\",\r\n  \"primaryJerseyColor\": \"Forest Green\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Copenhagen Serpents Coils\",\r\n  \"divisionId\": \"{{team39_divisionId}}\",\r\n  \"clubId\": \"{{copenhagenserpents_id}}\",\r\n  \"homeArena\": \"Nyhavn Sports Hall\",\r\n  \"primaryJerseyColor\": \"Forest Green\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1617,7 +1617,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Zurich Falcons Soar\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{zurichfalcons_id}}\",\r\n  \"homeArena\": \"Zurich Sports Arena\",\r\n  \"primaryJerseyColor\": \"Sky Blue\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Zurich Falcons Soar\",\r\n  \"divisionId\": \"{{team40_divisionId}}\",\r\n  \"clubId\": \"{{zurichfalcons_id}}\",\r\n  \"homeArena\": \"Zurich Sports Arena\",\r\n  \"primaryJerseyColor\": \"Sky Blue\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1646,7 +1646,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Zurich Falcons Flight\",\r\n  \"division\": 7,\r\n  \"clubId\": \"{{zurichfalcons_id}}\",\r\n  \"homeArena\": \"Lake Zurich Center\",\r\n  \"primaryJerseyColor\": \"Royal Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Zurich Falcons Flight\",\r\n  \"divisionId\": \"{{team41_divisionId}}\",\r\n  \"clubId\": \"{{zurichfalcons_id}}\",\r\n  \"homeArena\": \"Lake Zurich Center\",\r\n  \"primaryJerseyColor\": \"Royal Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1675,7 +1675,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Zurich Falcons Wings\",\r\n  \"division\": 2,\r\n  \"clubId\": \"{{zurichfalcons_id}}\",\r\n  \"homeArena\": \"Swiss Alpine Arena\",\r\n  \"primaryJerseyColor\": \"Steel Blue\",\r\n  \"secondaryJerseyColor\": \"Red\",\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Zurich Falcons Wings\",\r\n  \"divisionId\": \"{{team42_divisionId}}\",\r\n  \"clubId\": \"{{zurichfalcons_id}}\",\r\n  \"homeArena\": \"Swiss Alpine Arena\",\r\n  \"primaryJerseyColor\": \"Steel Blue\",\r\n  \"secondaryJerseyColor\": \"Red\",\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1704,7 +1704,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Brussels Titans Force\",\r\n  \"division\": 1,\r\n  \"clubId\": \"{{brusselstitans_id}}\",\r\n  \"homeArena\": \"Brussels Europa Complex\",\r\n  \"primaryJerseyColor\": \"Gold\",\r\n  \"secondaryJerseyColor\": \"Blue\",\r\n  \"category\": 0\r\n}",
+							"raw": "{\r\n  \"name\": \"Brussels Titans Force\",\r\n  \"divisionId\": \"{{team43_divisionId}}\",\r\n  \"clubId\": \"{{brusselstitans_id}}\",\r\n  \"homeArena\": \"Brussels Europa Complex\",\r\n  \"primaryJerseyColor\": \"Gold\",\r\n  \"secondaryJerseyColor\": \"Blue\",\r\n  \"category\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1733,7 +1733,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Brussels Titans Power\",\r\n  \"division\": 6,\r\n  \"clubId\": \"{{brusselstitans_id}}\",\r\n  \"homeArena\": \"Atomium Sports Center\",\r\n  \"primaryJerseyColor\": \"Bronze\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 1\r\n}",
+							"raw": "{\r\n  \"name\": \"Brussels Titans Power\",\r\n  \"divisionId\": \"{{team44_divisionId}}\",\r\n  \"clubId\": \"{{brusselstitans_id}}\",\r\n  \"homeArena\": \"Atomium Sports Center\",\r\n  \"primaryJerseyColor\": \"Bronze\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1762,7 +1762,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Brussels Titans Strength\",\r\n  \"division\": 5,\r\n  \"clubId\": \"{{brusselstitans_id}}\",\r\n  \"homeArena\": \"Grand Place Arena\",\r\n  \"primaryJerseyColor\": \"Dark Gold\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"raw": "{\r\n  \"name\": \"Brussels Titans Strength\",\r\n  \"divisionId\": \"{{team45_divisionId}}\",\r\n  \"clubId\": \"{{brusselstitans_id}}\",\r\n  \"homeArena\": \"Grand Place Arena\",\r\n  \"primaryJerseyColor\": \"Dark Gold\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1792,7 +1792,7 @@
 						"type": "text/javascript",
 						"packages": {},
 						"exec": [
-							"// Folder-level pre-request script - runs before ANY request in this folder\r",
+							"// Fetch clubs first\r",
 							"pm.sendRequest({\r",
 							"    url: \"http://localhost:8080/api/Clubs\",\r",
 							"    method: 'GET'\r",
@@ -1804,7 +1804,6 @@
 							"    \r",
 							"    const clubs = response.json();\r",
 							"    if (clubs.success && clubs.data) {\r",
-							"        // Store club IDs by exact name for easy reference\r",
 							"        clubs.data.forEach(club => {\r",
 							"            switch(club.name) {\r",
 							"                case 'TestiClubi':\r",
@@ -1855,6 +1854,52 @@
 							"            }\r",
 							"        });\r",
 							"        console.log('All club IDs fetched and stored!');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Fetch divisions dynamically\r",
+							"pm.sendRequest({\r",
+							"    url: \"http://localhost:8080/api/Divisions/sport/Floorball?activeOnly=true\",\r",
+							"    method: 'GET'\r",
+							"}, function (err, response) {\r",
+							"    if (err) {\r",
+							"        console.log('Error fetching divisions:', err);\r",
+							"        return;\r",
+							"    }\r",
+							"    \r",
+							"    const result = response.json();\r",
+							"    if (result.success && result.data && result.data.length > 0) {\r",
+							"        const divisions = result.data;\r",
+							"        \r",
+							"        // Sort divisions by level for consistent ordering\r",
+							"        divisions.sort((a, b) => a.level - b.level);\r",
+							"        \r",
+							"        console.log(`Found ${divisions.length} active Floorball divisions`);\r",
+							"        \r",
+							"        // Clear any existing team division variables\r",
+							"        for (let i = 1; i <= 45; i++) {\r",
+							"            pm.globals.unset(`team${i}_divisionId`);\r",
+							"        }\r",
+							"        \r",
+							"        // Create cycling team-specific division assignments\r",
+							"        const totalTeams = 45;\r",
+							"        for (let teamNum = 1; teamNum <= totalTeams; teamNum++) {\r",
+							"            const divisionIndex = (teamNum - 1) % divisions.length;\r",
+							"            const division = divisions[divisionIndex];\r",
+							"            const variableName = `team${teamNum}_divisionId`;\r",
+							"            pm.globals.set(variableName, division.id);\r",
+							"            console.log(`Team ${teamNum} -> ${division.name} (${division.id})`);\r",
+							"        }\r",
+							"        \r",
+							"        pm.globals.set('totalDivisions', divisions.length);\r",
+							"        console.log(`Cycling division assignment complete. ${totalTeams} teams distributed across ${divisions.length} divisions.`);\r",
+							"        \r",
+							"    } else {\r",
+							"        console.log('No active Floorball divisions found! Team creation will fail.');\r",
+							"        for (let i = 1; i <= 45; i++) {\r",
+							"            pm.globals.unset(`team${i}_divisionId`);\r",
+							"        }\r",
+							"        pm.globals.unset('totalDivisions');\r",
 							"    }\r",
 							"});"
 						]

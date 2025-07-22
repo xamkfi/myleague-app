@@ -40,6 +40,11 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(t => t.SecondaryJerseyColor)
                 .HasMaxLength(50);
 
+            builder.Property(t => t.LogoUrl)
+                .HasConversion(
+                    v => v != null ? v.ToString() : null,
+                    v => v != null ? new Uri(v) : null);
+
             builder.Property(x => x.TeamCategory)
                 .IsRequired()
                 .HasConversion<string>();

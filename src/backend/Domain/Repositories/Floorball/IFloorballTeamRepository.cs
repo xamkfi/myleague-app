@@ -130,4 +130,12 @@ public interface IFloorballTeamRepository
     /// <param name="playerId">The player ID</param>
     /// <returns>A collection of floorball teams the player is in</returns>
     Task<IEnumerable<FloorballTeam>> GetTeamsByPlayerIdAsync(Guid playerId);
+
+    /// <summary>
+    /// Filters floorball teams only by and for name for lightweight queries
+    /// </summary>
+    /// <param name="nameFilter"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IEnumerable<FloorballTeam>> GetByNameFilterAsync(string?  nameFilter, CancellationToken cancellationToken);
 } 

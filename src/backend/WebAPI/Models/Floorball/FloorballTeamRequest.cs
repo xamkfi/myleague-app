@@ -78,6 +78,13 @@ namespace WebAPI.Models.Floorball
         public string? SecondaryJerseyColor { get; set; }
 
         /// <summary>
+        /// The logo URL of the team (optional)
+        /// </summary>
+        [Url(ErrorMessage = "Please provide a valid logo URL")]
+        [StringLength(500, ErrorMessage = "Logo URL cannot exceed 500 characters")]
+        public string? LogoUrl { get; set; }
+
+        /// <summary>
         /// The category of the team (Adult, Youth, Women)
         /// </summary>
         [Required(ErrorMessage = "Team category is required")]

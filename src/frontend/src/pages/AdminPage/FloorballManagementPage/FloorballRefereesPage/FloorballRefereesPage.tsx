@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import { floorballRefereeService, type FloorballRefereeDto } from '../../../../api/floorball/floorballRefereeService';
 import RefereesTable from './components/RefereesTable';
@@ -8,9 +7,9 @@ import CreateRefereeModal from './components/CreateRefereeModal';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import './FloorballRefereesPage.scss';
 import './components/CreateRefereeModal.scss';
+import BackButton from '../../../../components/BackButton/BackButton';
 
 const FloorballRefereesPage = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const [referees, setReferees] = useState<FloorballRefereeDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -129,6 +128,12 @@ const FloorballRefereesPage = () => {
   return (
     <PageTemplate title={t('floorball.referees.title', 'Manage Floorball Referees')}>      
       <div className="floorball-referees-container">
+        {/* Back button */}
+        <BackButton 
+          to="/admin/floorball" 
+          text={t('common.back', 'Back to Floorball Management')} 
+        />
+
         {/* Header with actions */}
         <div className="floorball-referees-header">
           <div className="referees-count">
@@ -155,17 +160,7 @@ const FloorballRefereesPage = () => {
             onDelete={handleDelete} 
           />
         </div>
-
-        {/* Back button */}
-        <div className="back-button-container">
-          <button
-            className="back-button"
-            onClick={() => navigate('/admin/floorball')}
-          >
-            {t('common.back', 'Back to Floorball Management')}
-          </button>
-        </div>
-
+        
         {/* Create Referee Modal */}
         <CreateRefereeModal
           isOpen={isCreateModalOpen}

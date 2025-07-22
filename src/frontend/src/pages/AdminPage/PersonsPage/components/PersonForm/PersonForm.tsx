@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { PersonFormData, EnhancedPersonFormData, Person } from '../../../../../types/admin/personTypes';
+import { PersonRole } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
 import { floorballPlayerService } from '../../../../../api/floorball/floorballPlayerService';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
@@ -54,6 +55,7 @@ const PersonForm = ({
       lastName: '',
       birthDate: '',
       isRegistered: false,
+      role: PersonRole.User,
       address: {
         street1: '',
         street2: '',
@@ -102,6 +104,7 @@ const PersonForm = ({
           lastName: person.lastName,
           birthDate: formattedDate,
           isRegistered: person.isRegistered,
+          role: person.role,
           address: person.address || {
             street1: '',
             street2: '',
@@ -113,7 +116,10 @@ const PersonForm = ({
             email: '',
             phone: '',
             alternativePhone: ''
-          }
+          },
+          teamId: undefined,
+          position: undefined,
+          jerseyNumber: undefined
         });
       } catch (error) {
         console.error('Failed to fetch person:', error);
@@ -355,6 +361,7 @@ const PersonForm = ({
         lastName: formData.lastName,
         birthDate: isoDate,
         isRegistered: formData.isRegistered,
+        role: formData.role,
         address: formData.address,
         contactInfo: formData.contactInfo
       };

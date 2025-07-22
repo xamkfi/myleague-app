@@ -439,7 +439,7 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         HomeTeamId = @event.HomeTeamId;
         AwayTeamId = @event.AwayTeamId;
         ScheduledDateTime = @event.ScheduledDateTime;
-        Venue = @event.Venue;
+        Venue = @event.Venue ?? string.Empty;
         Status = FloorballMatchStatus.Scheduled;
         HomeScore = 0;
         AwayScore = 0;

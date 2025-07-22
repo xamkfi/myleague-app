@@ -3,7 +3,8 @@ import type {
   CreateFloorballMatchRequest
 } from '../../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
-import { floorballTeamSearchService, floorballSeasonSearchService } from '../../../../../../api/floorball/floorballTeamSearchService';
+import { floorballSeasonSearchService } from '../../../../../../api/floorball/floorballTeamSearchService';
+import { floorballTeamNameSearchService } from '../../../../../../api/floorball/floorballTeamNameSearchService';
 import { floorballRefereeSearchService } from '../../../../../../api/floorball/floorballRefereeSearchService';
 import './CreateMatchModal.scss';
 
@@ -162,7 +163,7 @@ const CreateMatchModal = ({
               placeholder="Select Home Team"
               value={createForm.homeTeamId}
               onChange={(value) => setCreateForm(prev => ({ ...prev, homeTeamId: value }))}
-              onSearch={floorballTeamSearchService.searchTeams}
+              onSearch={floorballTeamNameSearchService.searchTeams}
               searchPlaceholder="Search teams..."
               emptyMessage="No teams found"
               required
@@ -175,7 +176,7 @@ const CreateMatchModal = ({
               placeholder="Select Away Team"
               value={createForm.awayTeamId}
               onChange={(value) => setCreateForm(prev => ({ ...prev, awayTeamId: value }))}
-              onSearch={floorballTeamSearchService.searchTeams}
+              onSearch={floorballTeamNameSearchService.searchTeams}
               searchPlaceholder="Search teams..."
               emptyMessage="No teams found"
               required

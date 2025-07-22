@@ -1,3 +1,7 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+@use '../../styles/common' as *;
+
 .floorball-team-page {
   padding: 2rem;
   max-width: 1200px;
@@ -24,7 +28,7 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 1rem;
+      font-size: map.get($font-sizes, 'base');
       transition: background-color 0.2s ease;
 
       &:hover {
@@ -39,7 +43,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.9rem;
+    font-size: map.get($font-sizes, 'sm');
 
     .club-link {
       background: none;
@@ -70,101 +74,177 @@
   .team-header {
     background: #ffffff;
     border-radius: 8px;
-    padding: 2rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 2rem;
+    padding-bottom: 0;
+    overflow: hidden;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 2rem;
+    flex-direction: column;
+
+    .header-content {
+      padding: 2rem;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-self: flex-start;
+    }
+
+    .header-navigation {
+      // Navigation positioned at bottom of header
+      width: 100%;
+      margin-top: auto;
+    }
 
     .team-info {
-      flex: 1;
-      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
 
       h1 {
         color: #333;
         margin: 0 0 1rem 0;
-        font-size: 2.5rem;
+        font-size: 1.75rem;
         font-weight: 700;
+        text-align: left;
       }
 
       .team-meta {
         display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        align-items: center;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
 
         .division-badge {
           background: #007bff;
           color: white;
-          padding: 0.5rem 1rem;
-          border-radius: 20px;
-          font-weight: 500;
-          font-size: 0.9rem;
+          padding: 0.25rem 0.875rem;
+          border-radius: 25px;
+          font-weight: 600;
+          font-size: 0.75rem;
+          display: inline-block;
+          box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+          border: none;
+          text-transform: capitalize;
+        }
+
+        .club-badge {
+          background: #495057;
+          color: white;
+          padding: 0.25rem 0.875rem;
+          border-radius: 25px;
+          font-weight: 600;
+          font-size: 0.75rem;
+          display: inline-block;
+          box-shadow: 0 2px 4px rgba(73, 80, 87, 0.2);
+          border: none;
         }
 
         .arena {
-          color: #666;
-          font-size: 1rem;
+          background: #6c757d;
+          color: white;
+          padding: 0.25rem 0.875rem;
+          border-radius: 25px;
+          font-weight: 600;
+          font-size: 0.75rem;
+          display: inline-block;
+          box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+          border: none;
         }
       }
     }
+  }
 
-    .jersey-colors {
-      .color-info {
-        text-align: center;
+  // Restoring team branding block
+    .team-branding {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
+      .team-logo {
+        width: 120px;
+        margin: 1rem 0px;
+        flex-shrink: 0;
+        
+        img {
+          width: 120px;
+          height: 120px;
+          object-fit: contain;
+          border-radius: 12px;
+          border: 2px solid #dee2e6;
+          background: #f8f9fa;
+          padding: 8px;
+          transition: transform 0.3s ease;
+
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+        
+        .logo-placeholder {
+          width: 120px;
+          height: 120px;
+          background: #f8f9fa;
+          border: 2px solid #dee2e6;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #6c757d;
+          font-size: map.get($font-sizes, 'base');
+          text-align: center;
+          padding: 8px;
+          font-weight: 500;
+        }
+      }
+
+      .jersey-colors {
+        .color-info {
+          text-align: center;
 
         > span {
-          display: block;
-          margin-bottom: 0.5rem;
-          color: #666;
-          font-size: 0.9rem;
-        }
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #666;
+          font-size: map.get($font-sizes, 'sm');
+          }
 
-        .colors {
-          display: flex;
-          gap: 0.5rem;
-          justify-content: center;
+          .colors {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
 
-          .color-swatch {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 3px solid #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            .color-swatch {
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              border: 3px solid #fff;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 
-            &.primary {
-              position: relative;
+            &.primary,
+            &.secondary {
+                position: relative;
 
-              &::after {
-                content: "P";
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                color: white;
-                font-size: 0.7rem;
-                font-weight: bold;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+                &::after {
+                  position: absolute;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%);
+                  color: white;
+                  font-size: 0.7rem;
+                  font-weight: bold;
+                  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+                }
               }
+
+            &.primary::after {
+              content: "P";
             }
 
-            &.secondary {
-              position: relative;
-
-              &::after {
-                content: "S";
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                color: white;
-                font-size: 0.7rem;
-                font-weight: bold;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-              }
+            &.secondary::after {
+                  content: "S";
             }
           }
         }
@@ -172,101 +252,56 @@
     }
   }
 
-  // Coming Soon Section
-  .coming-soon {
+  // Tab Content Section
+  .tab-content {
     background: #ffffff;
     border-radius: 8px;
-    padding: 2rem;
+    padding: 0rem 2rem;
+    min-height: 250px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 2rem;
 
-    .placeholder-content {
-      text-align: center;
+    h3 {
+      color: #333;
+      margin-bottom: 1.5rem;
+      font-size: map.get($font-sizes, 'lg');
+      font-weight: 600;
+    }
 
-      h2 {
+    // Other sections (roster, stats, standings)
+    .roster-section,
+    .stats-section,
+    .standings-section,
+    .default-section {
+      text-align: center;
+      padding: 1rem 1rem;
+      color: #666;
+
+      h3 {
         color: #333;
         margin-bottom: 1rem;
-        font-size: 2rem;
       }
 
       p {
-        color: #666;
         font-size: 1.1rem;
-        margin-bottom: 2rem;
         line-height: 1.6;
-      }
-
-      ul {
-        text-align: left;
-        display: inline-block;
-        margin-bottom: 3rem;
-        
-        li {
-          margin-bottom: 0.75rem;
-          color: #555;
-          font-size: 1rem;
-        }
-      }
-
-      .current-info {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-top: 2rem;
-
-        h3 {
-          color: #333;
-          margin-bottom: 1.5rem;
-          text-align: center;
-        }
-
-        .info-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 1rem;
-
-          .info-item {
-            background: white;
-            padding: 1rem;
-            border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            text-align: left;
-
-            strong {
-              color: #555;
-              display: block;
-              margin-bottom: 0.5rem;
-            }
-
-            .status {
-              font-weight: 500;
-
-              &.active {
-                color: #28a745;
-              }
-
-              &.inactive {
-                color: #ffc107;
-              }
-            }
-          }
-        }
       }
     }
   }
 
   // Navigation
   .team-navigation {
-    text-align: center;
+    text-align: left;
+    margin-bottom: 2rem;
 
     .back-button {
-      padding: 0.75rem 2rem;
+      padding: 0.4rem 1rem;
       background: #6c757d;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 1rem;
+      font-size: map.get($font-sizes, 'sm');
       transition: background-color 0.2s ease;
 
       &:hover {
@@ -276,26 +311,24 @@
   }
 
   // Responsive Design
-  @media (max-width: 768px) {
+}
+
+@media (max-width: 768px) {
+  .floorball-team-page {
     padding: 1rem;
 
     .team-header {
-      flex-direction: column;
-      text-align: center;
-
-      .team-info h1 {
-        font-size: 2rem;
+      .header-content {
+        flex-direction: column;
       }
 
-      .jersey-colors {
-        align-self: center;
+      .team-info {
+        h1 { font-size: 2rem; }
       }
+
+      .jersey-colors { align-self: center; }
     }
 
-    .coming-soon .placeholder-content {
-      .current-info .info-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    .tab-content { padding: 1rem; }
   }
-} 
+}
