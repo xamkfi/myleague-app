@@ -1,6 +1,7 @@
 using Application.Configuration;
 using Application.DependencyInjections;
 using MyLeague.Infrastructure.DependencyInjections;
+using MyLeague.Infrastructure.SignalR;
 using WebAPI.Middlewares;
 using WebAPI.DependencyInjections;
 using Serilog;
@@ -76,6 +77,9 @@ app.UseAuthorization();
 
 // Map controllers
 app.MapControllers();
+
+// Map SignalR hub
+app.MapHub<DomainEventHub>("/api/hubs/domainevent");
 
 // Map health check endpoints with detailed responses
 app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

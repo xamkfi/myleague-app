@@ -4,8 +4,7 @@ import {
   floorballMatchEventService, 
   type RecordGoalEventRequest, 
   type RecordPenaltyEventRequest,
-  type FloorballGoalEventDto,
-  type FloorballPenaltyEventDto
+  type FloorballDomainEventDto
 } from '../../../../../../api/floorball/floorballMatchEventService';
 import { floorballMatchService } from '../../../../../../api/floorball/floorballMatchService';
 import { floorballTeamService } from '../../../../../../api/floorball/floorballTeamService';
@@ -22,8 +21,6 @@ interface LiveMatchModalProps {
   onGoLive?: (matchId: string, updatedMatch?: FloorballMatchDto) => void;
   liveState?: LiveMatchState;
   onStateUpdate?: (updates: Partial<LiveMatchState>) => void;
-  isLive?: boolean;
-  isFinished?: boolean;
 }
 
 interface GoalEventData {
@@ -51,9 +48,7 @@ const LiveMatchModal = ({
   onCompleteLive,
   onGoLive,
   liveState,
-  onStateUpdate,
-  isLive = false,
-  isFinished = false
+  onStateUpdate
 }: LiveMatchModalProps) => {
   // State management
   const [homeTeam, setHomeTeam] = useState<FloorballTeam | null>(null);
@@ -62,10 +57,7 @@ const LiveMatchModal = ({
   const [awayPlayers, setAwayPlayers] = useState<FloorballPlayerDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [matchEvents, setMatchEvents] = useState<{
-    goals: FloorballGoalEventDto[];
-    penalties: FloorballPenaltyEventDto[];
-  }>({ goals: [], penalties: [] });
+  const [matchEvents, setMatchEvents] = useState<FloorballDomainEventDto[]>([]);
   
   // Real match status from backend
   const [currentMatch, setCurrentMatch] = useState<FloorballMatchDto>(match);
@@ -159,6 +151,10 @@ const LiveMatchModal = ({
     }
   };
 
+  /**
+   * Loads the current match status from the backend
+   * This ensures we have the most up-to-date match information
+   */
   const loadCurrentMatchStatus = async () => {
     try {
       const response = await floorballMatchService.getById(match.id);
@@ -172,12 +168,21 @@ const LiveMatchModal = ({
     }
   };
 
+  /**
+   * Loads all match events (goals and penalties) from the backend
+   * The backend returns domain events in a flat array structure
+   * This function fetches the events and stores them for processing
+   */
   const loadMatchEvents = async () => {
     try {
+      console.log('loadMatchEvents called for match:', match.id);
       const response = await floorballMatchEventService.getMatchEvents(match.id);
       
+      console.log('loadMatchEvents response:', response);
+      
       if (response.success && response.data) {
-        setMatchEvents(response.data);
+        console.log('Setting match events:', response.data);
+        setMatchEvents(response.data as FloorballDomainEventDto[]);
       }
     } catch (error) {
       console.error('Error loading match events:', error);
@@ -185,6 +190,11 @@ const LiveMatchModal = ({
     }
   };
 
+  /**
+   * Sets up SignalR connection for real-time updates
+   * Subscribes to goal and penalty events for this specific match
+   * This enables live updates when events are recorded
+   */
   const setupSignalR = async () => {
     try {
       // Connect to SignalR
@@ -195,8 +205,8 @@ const LiveMatchModal = ({
       
       // Only subscribe if connection is established
       if (signalRService.isConnected) {
-        await signalRService.subscribeToEventType('FloorballGoalScoredEvent');
-        await signalRService.subscribeToEventType('FloorballPenaltyAssignedEvent');
+        await signalRService.subscribeToEventType('FloorballGoalScored');
+        await signalRService.subscribeToEventType('FloorballPenaltyAssigned');
         
         const unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
         return unsubscribe;
@@ -209,11 +219,15 @@ const LiveMatchModal = ({
     }
   };
 
+  /**
+   * Cleans up SignalR subscriptions when the modal is closed
+   * This prevents memory leaks and unnecessary network traffic
+   */
   const cleanupSignalR = async () => {
     try {
       if (signalRService.isConnected) {
-        await signalRService.unsubscribeFromEventType('FloorballGoalScoredEvent');
-        await signalRService.unsubscribeFromEventType('FloorballPenaltyAssignedEvent');
+        await signalRService.unsubscribeFromEventType('FloorballGoalScored');
+        await signalRService.unsubscribeFromEventType('FloorballPenaltyAssigned');
       }
     } catch (error) {
       console.error('Error cleaning up SignalR:', error);
@@ -221,6 +235,11 @@ const LiveMatchModal = ({
     }
   };
 
+  /**
+   * Handles real-time SignalR events for this match
+   * Filters events to only process those relevant to this match
+   * Updates the UI immediately when events are received
+   */
   const handleSignalREvent = useCallback((event: MatchEvent) => {
     console.log('Received match event:', event);
     
@@ -229,15 +248,26 @@ const LiveMatchModal = ({
       return; // Event is not for this match
     }
     
-    if (event.eventType === 'FloorballGoalScoredEvent') {
+    if (event.eventType === 'FloorballGoalScored') {
       handleGoalScored(event.data as GoalEventData);
-    } else if (event.eventType === 'FloorballPenaltyAssignedEvent') {
+    } else if (event.eventType === 'FloorballPenaltyAssigned') {
       handlePenaltyAssigned(event.data as PenaltyEventData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [match.id]);
 
+  /**
+   * Handles real-time goal events from SignalR
+   * Updates the score immediately and refreshes the events list
+   * This provides instant feedback when goals are recorded
+   */
   const handleGoalScored = useCallback((eventData: GoalEventData) => {
+    console.log('handleGoalScored called with eventData:', eventData);
+    console.log('onStateUpdate available:', !!onStateUpdate);
+    console.log('currentScore:', currentScore);
+    console.log('match.homeTeamId:', match.homeTeamId);
+    console.log('match.awayTeamId:', match.awayTeamId);
+    
     if (!onStateUpdate) return;
     
     // Update score
@@ -245,6 +275,8 @@ const LiveMatchModal = ({
       home: eventData.TeamId === match.homeTeamId ? currentScore.home + 1 : currentScore.home,
       away: eventData.TeamId === match.awayTeamId ? currentScore.away + 1 : currentScore.away
     };
+    
+    console.log('Calculated newScore:', newScore);
     
     onStateUpdate({
       currentScore: newScore
@@ -254,7 +286,11 @@ const LiveMatchModal = ({
     loadMatchEvents();
   }, [onStateUpdate, match.homeTeamId, match.awayTeamId, currentScore]);
 
-  const handlePenaltyAssigned = useCallback((eventData: PenaltyEventData) => {
+  /**
+   * Handles real-time penalty events from SignalR
+   * Refreshes the events list to show the new penalty
+   */
+  const handlePenaltyAssigned = useCallback((_eventData: PenaltyEventData) => {
     if (!onStateUpdate) return;
     
     // Refresh events from backend
@@ -446,53 +482,119 @@ const LiveMatchModal = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  /**
+   * Gets all players for a specific team (home or away)
+   * @param teamId - The team ID to get players for
+   * @returns Array of players for the specified team
+   */
   const getPlayersForTeam = (teamId: string) => {
     return teamId === currentMatch.homeTeamId ? homePlayers : awayPlayers;
   };
 
-  // Combine and sort all events by time
+  /**
+   * Looks up a player's full name by their ID using the loaded player data
+   * This avoids making additional API calls since we already have the player data
+   * @param playerId - The player's unique identifier
+   * @returns The player's full name (firstName + lastName) or a fallback if not found
+   */
+  const getPlayerNameById = (playerId: string): string => {
+    const allPlayers = [...homePlayers, ...awayPlayers];
+    const player = allPlayers.find(p => p.id === playerId);
+    return player ? `${player.person.firstName} ${player.person.lastName}` : `Player ${playerId.slice(0, 8)}...`;
+  };
+
+  /**
+   * Processes and combines all match events (goals and penalties) from the backend
+   * The backend returns domain events, so we need to extract and format the relevant data
+   * This includes:
+   * - Converting domain events to displayable events
+   * - Adding player names using the loaded player data
+   * - Sorting events by period and time (most recent first)
+   * - Handling missing or malformed data gracefully
+   */
   const allEvents = useMemo(() => {
+    console.log('allEvents useMemo called with matchEvents:', matchEvents);
+    
     if (!matchEvents) {
+      console.log('No matchEvents, returning empty array');
       return [];
     }
     
-    const events = [
-      ...(matchEvents.goals || []).map(goal => ({
-        id: `goal-${goal.teamId}-${goal.playerId}-${goal.periodNumber}-${goal.timeInSeconds}`,
-        type: 'goal' as const,
-        teamId: goal.teamId,
-        teamName: goal.teamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
-        playerId: goal.playerId,
-        assisterId: goal.assisterId,
-        periodNumber: goal.periodNumber,
-        timeInSeconds: goal.timeInSeconds,
-        timestamp: new Date(), // We don't have actual timestamp from backend
-        wasInOvertime: goal.wasInOvertime,
-        wasInShootout: goal.wasInShootout
-      })),
-      ...(matchEvents.penalties || []).map(penalty => ({
-        id: `penalty-${penalty.teamId}-${penalty.playerId || 'team'}-${penalty.periodNumber}-${penalty.timeInSeconds}`,
-        type: 'penalty' as const,
-        teamId: penalty.teamId,
-        teamName: penalty.teamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
-        playerId: penalty.playerId,
-        periodNumber: penalty.periodNumber,
-        timeInSeconds: penalty.timeInSeconds,
-        timestamp: new Date(), // We don't have actual timestamp from backend
-        penaltyType: penalty.penaltyType,
-        penaltyMinutes: penalty.minutes,
-        description: penalty.description
-      }))
-    ];
+    // Process domain events from backend into displayable events
+    const events = matchEvents
+      .filter((event): event is FloorballDomainEventDto => event !== null && event !== undefined)
+      .map((event: FloorballDomainEventDto) => {
+        console.log('Processing event:', event);
+        console.log('Event type:', event.eventType);
+        console.log('Event data:', event.data);
+        
+        // Handle goal events
+        if (event.eventType === 'FloorballGoalScoredEvent') {
+          const goalData = event.data as any;
+          console.log('Goal data structure:', goalData);
+          console.log('Goal data keys:', Object.keys(goalData));
+          
+          // Extract player IDs with fallback property names (handles both camelCase and PascalCase)
+          const playerId = goalData.PlayerId || goalData.playerId;
+          const assisterId = goalData.AssisterId || goalData.assisterId;
+          
+          return {
+            id: `goal-${goalData.TeamId || goalData.teamId || 'unknown'}-${playerId || 'unknown'}-${goalData.PeriodNumber || goalData.periodNumber || 1}-${goalData.TimeInSeconds || goalData.timeInSeconds || 0}`,
+            type: 'goal' as const,
+            teamId: goalData.TeamId || goalData.teamId,
+            teamName: (goalData.TeamId || goalData.teamId) === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+            playerId: playerId || 'Unknown Player',
+            playerName: getPlayerNameById(playerId), // Look up player name from loaded data
+            assisterId: assisterId,
+            assisterName: assisterId ? getPlayerNameById(assisterId) : undefined, // Look up assister name
+            periodNumber: goalData.PeriodNumber || goalData.periodNumber || 1,
+            timeInSeconds: goalData.TimeInSeconds || goalData.timeInSeconds || 0,
+            timestamp: new Date(event.occurredOn),
+            wasInOvertime: goalData.WasInOvertime || goalData.wasInOvertime || false,
+            wasInShootout: goalData.WasInShootout || goalData.wasInShootout || false
+          };
+        } 
+        // Handle penalty events
+        else if (event.eventType === 'FloorballPenaltyAssignedEvent') {
+          const penaltyData = event.data as any;
+          console.log('Penalty data structure:', penaltyData);
+          console.log('Penalty data keys:', Object.keys(penaltyData));
+          
+          const playerId = penaltyData.PlayerId || penaltyData.playerId;
+          
+          return {
+            id: `penalty-${penaltyData.TeamId || penaltyData.teamId || 'unknown'}-${playerId || 'team'}-${penaltyData.PeriodNumber || penaltyData.periodNumber || 1}-${penaltyData.TimeInSeconds || penaltyData.timeInSeconds || 0}`,
+            type: 'penalty' as const,
+            teamId: penaltyData.TeamId || penaltyData.teamId,
+            teamName: (penaltyData.TeamId || penaltyData.teamId) === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+            playerId: playerId,
+            playerName: playerId ? getPlayerNameById(playerId) : 'Team Penalty', // Handle team penalties
+            periodNumber: penaltyData.PeriodNumber || penaltyData.periodNumber || 1,
+            timeInSeconds: penaltyData.TimeInSeconds || penaltyData.timeInSeconds || 0,
+            timestamp: new Date(event.occurredOn),
+            penaltyType: penaltyData.PenaltyType || penaltyData.penaltyType || 'Unknown',
+            penaltyMinutes: penaltyData.Minutes || penaltyData.minutes || 2,
+            description: penaltyData.Description || penaltyData.description || ''
+          };
+        }
+        return null;
+      })
+      .filter((event): event is NonNullable<typeof event> => event !== null);
 
-    // Sort by period number, then by time in seconds (most recent first)
-    return events.sort((a, b) => {
+    console.log('Processed events array:', events);
+
+    // Sort events by period number (descending), then by time in seconds (descending)
+    // This shows the most recent events first
+    const sortedEvents = events.sort((a, b) => {
       if (a.periodNumber !== b.periodNumber) {
         return b.periodNumber - a.periodNumber; // Most recent period first
       }
       return b.timeInSeconds - a.timeInSeconds; // Most recent time first
     });
-  }, [matchEvents, currentMatch.homeTeamId, homeTeam?.name, awayTeam?.name]);
+
+    console.log('Final sorted events:', sortedEvents);
+    return sortedEvents;
+  }, [matchEvents, currentMatch.homeTeamId, homeTeam?.name, awayTeam?.name, homePlayers, awayPlayers]);
 
   const handleGoLive = async () => {
     try {
@@ -888,8 +990,8 @@ const LiveMatchModal = ({
                           <div className="goal-event">
                             <span className="event-icon">⚽</span>
                             <span className="event-text">
-                              <strong>{event.teamName}</strong> - Goal by {event.playerId}
-                              {event.assisterId && ` (Assist: ${event.assisterId})`}
+                              <strong>{event.teamName}</strong> - Goal by {event.playerName}
+                              {event.assisterName && ` (Assist: ${event.assisterName})`}
                               {event.wasInOvertime && ` (OT)`}
                               {event.wasInShootout && ` (SO)`}
                             </span>
@@ -899,7 +1001,7 @@ const LiveMatchModal = ({
                             <span className="event-icon">🟨</span>
                             <span className="event-text">
                               <strong>{event.teamName}</strong> - {event.penaltyType} ({event.penaltyMinutes}min)
-                              {event.playerId && ` - ${event.playerId}`}
+                              {event.playerName && ` - ${event.playerName}`}
                             </span>
                           </div>
                         )}

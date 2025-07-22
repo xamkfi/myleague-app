@@ -24,6 +24,12 @@ export interface FloorballPenaltyEventDto {
   description: string;
 }
 
+export interface FloorballDomainEventDto {
+  eventType: string;
+  occurredOn: string;
+  data: any;
+}
+
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Request interfaces matching backend models
@@ -101,10 +107,7 @@ export const floorballMatchEventService = {
   /**
    * Get match events (goals and penalties) for a match
    */
-  getMatchEvents: async (matchId: string): Promise<ApiResponse<{
-    goals: FloorballGoalEventDto[];
-    penalties: FloorballPenaltyEventDto[];
-  }>> => {
+  getMatchEvents: async (matchId: string): Promise<ApiResponse<FloorballDomainEventDto[]>> => {
     try {
       console.log('Fetching match events for match:', matchId);
       
@@ -115,10 +118,7 @@ export const floorballMatchEventService = {
         },
       });
       
-      return await handleApiResponse<{
-        goals: FloorballGoalEventDto[];
-        penalties: FloorballPenaltyEventDto[];
-      }>(response);
+      return await handleApiResponse<FloorballDomainEventDto[]>(response);
     } catch (error) {
       console.error('Error fetching match events:', error);
       throw error;

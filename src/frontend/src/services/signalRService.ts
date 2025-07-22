@@ -9,6 +9,9 @@ export class SignalRService {
   private connection: HubConnection | null = null;
   private matchEventCallbacks: ((event: MatchEvent) => void)[] = [];
   private isConnecting = false;
+  private subscribedEventTypes = new Set<string>();
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
 
   async connect(): Promise<void> {
     if (this.connection?.state === HubConnectionState.Connected || this.isConnecting) {
@@ -51,14 +54,19 @@ export class SignalRService {
       // Handle connection state changes
       this.connection.onreconnecting(() => {
         console.log('SignalR reconnecting...');
+        this.reconnectAttempts++;
       });
 
       this.connection.onreconnected(() => {
         console.log('SignalR reconnected');
+        this.reconnectAttempts = 0;
+        // Resubscribe to all event types after reconnection
+        this.resubscribeToAllEvents();
       });
 
       this.connection.onclose(() => {
         console.log('SignalR connection closed');
+        this.reconnectAttempts = 0;
       });
 
       await this.connection.start();
@@ -71,6 +79,21 @@ export class SignalRService {
     }
   }
 
+  private async resubscribeToAllEvents(): Promise<void> {
+    if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    try {
+      for (const eventType of this.subscribedEventTypes) {
+        await this.connection.invoke('SubscribeToEventTypeAsync', this.connection.connectionId, eventType);
+        console.log(`Resubscribed to event type: ${eventType}`);
+      }
+    } catch (error) {
+      console.error('Error resubscribing to events after reconnection:', error);
+    }
+  }
+
   async subscribeToEventType(eventType: string): Promise<void> {
     if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
       await this.connect();
@@ -78,6 +101,7 @@ export class SignalRService {
 
     try {
       await this.connection!.invoke('SubscribeToEventTypeAsync', this.connection!.connectionId, eventType);
+      this.subscribedEventTypes.add(eventType);
       console.log(`Subscribed to event type: ${eventType}`);
     } catch (error) {
       console.error(`Error subscribing to event type ${eventType}:`, error);
@@ -92,6 +116,7 @@ export class SignalRService {
 
     try {
       await this.connection.invoke('UnsubscribeFromEventTypeAsync', this.connection.connectionId, eventType);
+      this.subscribedEventTypes.delete(eventType);
       console.log(`Unsubscribed from event type: ${eventType}`);
     } catch (error) {
       console.error(`Error unsubscribing from event type ${eventType}:`, error);
@@ -120,16 +145,21 @@ export class SignalRService {
       } finally {
         this.connection = null;
         this.matchEventCallbacks = [];
+        this.subscribedEventTypes.clear();
       }
     }
+  }
+
+  get isConnected(): boolean {
+    return this.connection?.state === HubConnectionState.Connected;
   }
 
   get connectionState(): HubConnectionState | null {
     return this.connection?.state || null;
   }
 
-  get isConnected(): boolean {
-    return this.connection?.state === HubConnectionState.Connected;
+  get subscribedEvents(): string[] {
+    return Array.from(this.subscribedEventTypes);
   }
 }
 

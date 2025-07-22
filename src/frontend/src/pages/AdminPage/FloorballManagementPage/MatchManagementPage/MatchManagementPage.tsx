@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
+import { signalRService, type MatchEvent } from '../../../../services/signalRService';
 import Navbar from '../../../../components/Navigation/Navbar';
 import LiveMatchModal from './Components/LiveMatchModal/LiveMatchModal';
 import MatchFormModal from './Components/MatchFormModal/MatchFormModal';
@@ -54,6 +55,9 @@ const MatchManagementPage = () => {
     scheduled: false,
     completed: false
   });
+
+  // Real-time connection status
+  const [signalRConnected, setSignalRConnected] = useState(false);
 
   // Fetch all required data
   const fetchData = useCallback(async () => {
@@ -124,6 +128,132 @@ const MatchManagementPage = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // SignalR subscription management
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+
+    // Handle match status changes
+    const handleMatchStatusChange = (eventData: any) => {
+      const { MatchId, NewStatus } = eventData;
+      
+      setMatches(prev => prev.map(match => {
+        if (match.id === MatchId) {
+          return { ...match, status: NewStatus };
+        }
+        return match;
+      }));
+      
+      console.log(`Match ${MatchId} status changed to ${NewStatus}`);
+    };
+
+    // Handle goal scored events
+    const handleGoalScored = (eventData: any) => {
+      const { MatchId, TeamId } = eventData;
+      
+      setMatches(prev => prev.map(match => {
+        if (match.id === MatchId) {
+          const isHomeTeam = match.homeTeamId === TeamId;
+          return {
+            ...match,
+            homeScore: isHomeTeam ? match.homeScore + 1 : match.homeScore,
+            awayScore: !isHomeTeam ? match.awayScore + 1 : match.awayScore
+          };
+        }
+        return match;
+      }));
+      
+      console.log(`Goal scored for match ${MatchId} by team ${TeamId}`);
+    };
+
+    // Handle penalty assigned events
+    const handlePenaltyAssigned = (eventData: any) => {
+      const { MatchId } = eventData;
+      
+      // For now, we just log the penalty - the events list will be updated
+      // when the modal refreshes the events
+      console.log(`Penalty assigned for match ${MatchId}`);
+    };
+
+    // Handle real-time SignalR events
+    const handleSignalREvent = (event: MatchEvent) => {
+      console.log('Received SignalR event in MatchManagementPage:', event);
+      
+      const eventData = event.data as any;
+      
+      switch (event.eventType) {
+        case 'FloorballMatchStatusChangedEvent':
+          handleMatchStatusChange(eventData);
+          break;
+        case 'FloorballGoalScored':
+          handleGoalScored(eventData);
+          break;
+        case 'FloorballPenaltyAssigned':
+          handlePenaltyAssigned(eventData);
+          break;
+        default:
+          // Ignore other event types
+          break;
+      }
+    };
+
+    const setupSignalR = async () => {
+      try {
+        // Connect to SignalR
+        await signalRService.connect();
+        
+        // Update connection status
+        setSignalRConnected(signalRService.isConnected);
+        
+        // Subscribe to match status change events
+        await signalRService.subscribeToEventType('FloorballMatchStatusChangedEvent');
+        
+        // Subscribe to goal and penalty events for real-time updates
+        await signalRService.subscribeToEventType('FloorballGoalScored');
+        await signalRService.subscribeToEventType('FloorballPenaltyAssigned');
+        
+        // Set up event handler
+        unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
+        
+        // Set up connection state monitoring
+        const checkConnectionStatus = () => {
+          setSignalRConnected(signalRService.isConnected);
+        };
+        
+        // Check connection status every 5 seconds
+        const connectionInterval = setInterval(checkConnectionStatus, 5000);
+        
+        console.log('SignalR subscriptions set up for MatchManagementPage');
+        
+        return () => {
+          clearInterval(connectionInterval);
+        };
+      } catch (error) {
+        console.error('Error setting up SignalR subscriptions:', error);
+        setSignalRConnected(false);
+        // Don't set error - SignalR is not critical for basic functionality
+      }
+    };
+
+    setupSignalR().then(cleanupInterval => {
+      return () => {
+        // Cleanup SignalR subscriptions
+        if (unsubscribe) {
+          unsubscribe();
+        }
+        
+        // Cleanup connection interval
+        if (cleanupInterval) {
+          cleanupInterval();
+        }
+        
+        // Unsubscribe from event types
+        signalRService.unsubscribeFromEventType('FloorballMatchStatusChangedEvent');
+        signalRService.unsubscribeFromEventType('FloorballGoalScored');
+        signalRService.unsubscribeFromEventType('FloorballPenaltyAssigned');
+      };
+    });
+  }, []);
 
   const handleCreateMatch = async (matchData: CreateFloorballMatchRequest) => {
     try {
@@ -316,6 +446,13 @@ const MatchManagementPage = () => {
               to="/admin/floorball" 
               text={t('common.back', 'Back to Floorball Management')} 
             />
+            {/* Real-time Status Indicator */}
+            <div className={`realtime-status ${signalRConnected ? 'connected' : 'disconnected'}`}>
+              <span className="status-dot"></span>
+              <span className="status-text">
+                {signalRConnected ? 'Real-time updates active' : 'Real-time updates offline'}
+              </span>
+            </div>
           </div>
           <div className="page-header__main">
             <h1 className="page-title">Match Management</h1>
@@ -422,8 +559,6 @@ const MatchManagementPage = () => {
             onGoLive={handleGoLive}
             liveState={getLiveMatchState(liveModalMatch.id)}
             onStateUpdate={(updates) => updateLiveMatchState(liveModalMatch.id, updates)}
-            isLive={liveMatches.has(liveModalMatch.id)}
-            isFinished={liveModalMatch.status === 'Completed'}
           />
         )}
       </div>
