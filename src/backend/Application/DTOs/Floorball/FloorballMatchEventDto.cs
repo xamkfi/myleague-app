@@ -9,10 +9,14 @@ namespace Application.DTOs.Floorball
     /// <param name="TeamId">The ID of the team that scored</param>
     /// <param name="PlayerId">The ID of the player who scored</param>
     /// <param name="AssisterId">The ID of the player who assisted (optional)</param>
+    /// <param name="SecondaryAssisterId">The ID of the player who provided secondary assist (optional)</param>
     /// <param name="PeriodNumber">The period number when the goal was scored</param>
     /// <param name="TimeInSeconds">The time in seconds when the goal was scored</param>
     /// <param name="WasInOvertime">Whether the goal was scored in overtime</param>
     /// <param name="WasInShootout">Whether the goal was scored in shootout</param>
+    /// <param name="PlayerName">The name of the player who scored</param>
+    /// <param name="AssisterName">The name of the player who assisted (optional)</param>
+    /// <param name="SecondaryAssisterName">The name of the player who provided secondary assist (optional)</param>
     public record FloorballGoalEventDto(
         Guid TeamId,
         Guid PlayerId,
@@ -21,7 +25,10 @@ namespace Application.DTOs.Floorball
         int PeriodNumber,
         int TimeInSeconds,
         bool WasInOvertime,
-        bool WasInShootout);
+        bool WasInShootout,
+        string PlayerName,
+        string? AssisterName,
+        string? SecondaryAssisterName);
 
     /// <summary>
     /// Data Transfer Object for a penalty in a floorball match
@@ -33,6 +40,7 @@ namespace Application.DTOs.Floorball
     /// <param name="PeriodNumber">The period number when the penalty was given</param>
     /// <param name="TimeInSeconds">The time in seconds when the penalty was given</param>
     /// <param name="Description">Description of the penalty</param>
+    /// <param name="PlayerName">The name of the player who received the penalty (optional for team penalties)</param>
     public record FloorballPenaltyEventDto(
         Guid TeamId,
         Guid? PlayerId,
@@ -40,5 +48,6 @@ namespace Application.DTOs.Floorball
         int Minutes,
         int PeriodNumber,
         int TimeInSeconds,
-        string Description);
+        string Description,
+        string? PlayerName);
 } 

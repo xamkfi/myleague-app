@@ -144,6 +144,32 @@ export interface AddPlayerToTeamRequest {
   jerseyNumber?: number;
 }
 
+// Match Event types
+export interface FloorballGoalEventDto {
+  teamId: string;
+  playerId: string;
+  assisterId?: string;
+  secondaryAssisterId?: string;
+  periodNumber: number;
+  timeInSeconds: number;
+  wasInOvertime: boolean;
+  wasInShootout: boolean;
+  playerName?: string;
+  assisterName?: string;
+  secondaryAssisterName?: string;
+}
+
+export interface FloorballPenaltyEventDto {
+  teamId: string;
+  playerId?: string;
+  penaltyType: string;
+  minutes: number;
+  periodNumber: number;
+  timeInSeconds: number;
+  description: string;
+  playerName?: string;
+}
+
 // Match-related interfaces
 export interface FloorballMatchDto {
   id: string;
@@ -161,8 +187,10 @@ export interface FloorballMatchDto {
   wentToShootout: boolean;
   periodScores: Record<number, { homeScore: number; awayScore: number }>;
   officials: string[];
-  goalEvents: unknown[];
-  penaltyEvents: unknown[];
+  goalEvents: FloorballGoalEventDto[];
+  penaltyEvents: FloorballPenaltyEventDto[];
+  homeClub?: Club;
+  awayClub?: Club;
 }
 
 export interface CreateFloorballMatchRequest {

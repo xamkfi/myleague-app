@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Domain.DomainEvents.Floorball
 {
-    internal class FloorballPeriodStartedEvent : FloorballDomainEvent
+    internal sealed class FloorballPeriodStartedEvent : FloorballDomainEvent
     {
         /// <summary>
         /// Gets the ID of the match

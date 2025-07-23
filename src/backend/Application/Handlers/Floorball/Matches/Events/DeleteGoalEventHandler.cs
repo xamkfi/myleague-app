@@ -88,8 +88,10 @@ public class DeleteGoalEventHandler : IRequestHandler<DeleteGoalEventCommand, Re
                 goalToDelete.PeriodNumber,
                 goalToDelete.TimeInSeconds,
                 false, // WasInOvertime - this information might not be available in the current structure
-                false  // WasInShootout - this information might not be available in the current structure
-            );
+                false, // WasInShootout - this information might not be available in the current structure
+                "Unknown Player", // PlayerName - would need player lookup for actual name
+                goalToDelete.AssistingPlayerId.HasValue ? "Unknown Player" : null, // AssisterName
+                goalToDelete.SecondaryAssistingPlayerId.HasValue ? "Unknown Player" : null); // SecondaryAssisterName
 
             // Delete the goal event from the match
             FloorballGoal deletedGoal = matchWithGoal.DeleteGoalEvent(request.Id);

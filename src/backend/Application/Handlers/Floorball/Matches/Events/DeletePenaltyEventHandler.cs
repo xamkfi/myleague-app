@@ -79,8 +79,8 @@ public class DeletePenaltyEventHandler : IRequestHandler<DeletePenaltyEventComma
                 penaltyToDelete.DurationInMinutes,
                 penaltyToDelete.PeriodNumber,
                 penaltyToDelete.TimeInSeconds,
-                penaltyToDelete.Description ?? string.Empty
-            );
+                penaltyToDelete.Description ?? string.Empty,
+                penaltyToDelete.PlayerId.HasValue ? "Unknown Player" : null); // PlayerName - would need player lookup for actual name
 
             // Delete the penalty event from the match
             FloorballPenalty deletedPenalty = matchWithPenalty.DeletePenaltyEvent(request.Id);

@@ -18,21 +18,36 @@ export class SignalRService {
     this.isConnecting = true;
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      // SignalR hubs are at root level, not under /api proxy
+      // In development: directly to backend at localhost:8080
+      // In production: use the same base URL as API but without /api path
+      let signalRUrl: string;
+      
+      if (import.meta.env.DEV) {
+        // Development: direct connection to backend
+        signalRUrl = 'http://localhost:8080/domainEventHub';
+      } else {
+        // Production: construct from API URL
+        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const baseUrl = apiUrl.replace('/api', '');
+        signalRUrl = `${baseUrl}/domainEventHub`;
+      }
+      
+      console.log(`Connecting to SignalR at: ${signalRUrl}`);
       
       this.connection = new HubConnectionBuilder()
-        .withUrl(`${apiUrl}/hubs/domainevent`)
+        .withUrl(signalRUrl)
         .withAutomaticReconnect([0, 2000, 10000, 30000])
         .configureLogging(LogLevel.Information)
         .build();
 
-      // Handle incoming domain events
+      // Handle incoming domain events (global events)
       this.connection.on('DomainEvent', (eventType: string, eventData: string) => {
         try {
           const parsedEvent = JSON.parse(eventData);
           const matchEvent: MatchEvent = { eventType, data: parsedEvent };
           
-          console.log('Received SignalR event:', matchEvent);
+          console.log('Received SignalR domain event:', matchEvent);
           
           this.matchEventCallbacks.forEach(callback => {
             try {
@@ -43,6 +58,26 @@ export class SignalRService {
           });
         } catch (error) {
           console.error('Error parsing SignalR event data:', error);
+        }
+      });
+
+      // Handle incoming match-specific events
+      this.connection.on('MatchEvent', (eventType: string, eventData: string) => {
+        try {
+          const parsedEvent = JSON.parse(eventData);
+          const matchEvent: MatchEvent = { eventType, data: parsedEvent };
+          
+          console.log('Received SignalR match event:', matchEvent);
+          
+          this.matchEventCallbacks.forEach(callback => {
+            try {
+              callback(matchEvent);
+            } catch (error) {
+              console.error('Error in SignalR match event callback:', error);
+            }
+          });
+        } catch (error) {
+          console.error('Error parsing SignalR match event data:', error);
         }
       });
 
@@ -75,7 +110,7 @@ export class SignalRService {
     }
 
     try {
-      await this.connection!.invoke('SubscribeToEventTypeAsync', this.connection!.connectionId, eventType);
+      await this.connection!.invoke('SubscribeToEventTypeAsync', eventType);
       console.log(`Subscribed to event type: ${eventType}`);
     } catch (error) {
       console.error(`Error subscribing to event type ${eventType}:`, error);
@@ -89,10 +124,37 @@ export class SignalRService {
     }
 
     try {
-      await this.connection.invoke('UnsubscribeFromEventTypeAsync', this.connection.connectionId, eventType);
+      await this.connection.invoke('UnsubscribeFromEventTypeAsync', eventType);
       console.log(`Unsubscribed from event type: ${eventType}`);
     } catch (error) {
       console.error(`Error unsubscribing from event type ${eventType}:`, error);
+    }
+  }
+
+  async subscribeToMatch(matchId: string): Promise<void> {
+    if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+      await this.connect();
+    }
+
+    try {
+      await this.connection!.invoke('SubscribeToMatchAsync', matchId);
+      console.log(`Subscribed to match: ${matchId}`);
+    } catch (error) {
+      console.error(`Error subscribing to match ${matchId}:`, error);
+      throw error;
+    }
+  }
+
+  async unsubscribeFromMatch(matchId: string): Promise<void> {
+    if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    try {
+      await this.connection.invoke('UnsubscribeFromMatchAsync', matchId);
+      console.log(`Unsubscribed from match: ${matchId}`);
+    } catch (error) {
+      console.error(`Error unsubscribing from match ${matchId}:`, error);
     }
   }
 
