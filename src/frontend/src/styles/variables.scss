@@ -1,3 +1,5 @@
+@use "sass:map";
+
 /**
  * Global SCSS Variables
  * 
@@ -41,6 +43,12 @@ $color-blue-light: #4A679F;
 $color-blue-background: #CFDAEF;
 
 $color-gradient-blue: linear-gradient(270deg, var(--Colour-Medium, #2A4A83) 0%, var(--Colour-Light, #4A679F) 100%);
+
+// Box Shadow
+$box-shadow-drop-1: 0 5px 25px 0 rgba(57, 62, 99, 0.15);
+
+// Common styles
+$border-radius-default: 8px;
 
 // Extra Colors
 $color-red: #EC3935;
@@ -87,6 +95,7 @@ $max-width-page: 1200px;
 $sidebar-width: 280px;
 $border-radius: (
   'sm': 4px,
+  'lg': 8px,
   'full': 50%
 );
 
@@ -104,9 +113,19 @@ $transition-filter: filter 300ms;
 @mixin container {
   width: 100%;
   max-width: $max-width-container;
+  padding: map.get($spacing, "md");
   margin: 0 auto;
+  box-shadow: $box-shadow-drop-1;
+  border-radius: $border-radius-default;
+  background: $color-neutral-white;
 }
 
 @mixin transition($property: all) {
   transition: $property $transition-default;
+}
+
+@mixin card-style($shadow: $box-shadow-drop-1) {
+  border-radius: $border-radius-default;
+  background: $background-white;
+  box-shadow: $shadow;
 } 

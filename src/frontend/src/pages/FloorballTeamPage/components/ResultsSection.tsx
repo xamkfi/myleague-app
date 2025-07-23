@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createTeamSlug } from '../../../utils/slugUtils';
 import { useFloorballTeamsData } from '../../../hooks/useTeamsData'
+import MatchRow from '../../../components/MatchRow';
+import React from 'react';
 
 interface ResultsSectionProps {
    matchesLoading: boolean,
@@ -63,95 +65,93 @@ export default function ResultsSection({
       }
    }
 
-   // ----- RENDER -----
+   // Custom status component for win/loss badges
+   const MatchStatusComponent = ({ match }: { match: FloorballMatchDto }) => {
+      if (match.status === 'Completed') {
+         const isWin = checkIfTeamWon(match);
+         return (
+            <span className={`result-badge ${isWin ? 'win' : 'loss'}`}>
+               {isWin ? 'W' : 'L'}
+            </span>
+         );
+      }
+      return <span>?</span>;
+   };
+
    return (
       <div className="results-section">
-         {matchesLoading ? (
-            <div className="loading-state">{t('matches.loading')}</div>
-         ) : matchesError ? (
-            <div className="error-state">
-               <p>{matchesError}</p>
-               <button onClick={() => handlePageChange(1)} className="retry-button">
-                  {t('common.retry')}
-               </button>
-            </div>
-         ) : matches && matches.length > 0 ? (
-            <>
-               <div className="matches-grid">
-                  {seasons && matches && seasons.map((season) => {
-                     const seasonMatches = matches.filter(m => m.seasonId === season.id);
-                     if (seasonMatches.length === 0) return null;
-                     return (
-                        <>
-                           <div key={season.id} className="season-header"><span>{season.name}</span></div>
-                           {seasonMatches.map(match => (
-                              <div key={match.id} className="match-row">
-                                 <div className="match-date">
-                                    {new Date(match.scheduledDateTime).toLocaleDateString(locale, {
-                                       day: '2-digit',
-                                       month: '2-digit',
-                                    })} {new Date(match.scheduledDateTime).toLocaleTimeString(locale, {
-                                       hour: '2-digit',
-                                       minute: '2-digit'
-                                    })}
-                                 </div>
-
-                                 <div className="teams-section">
-                                    <div className="team home-team" onClick={() => navigateToTeamPage(match.homeTeamId)}>
-                                       <span className="team-name">{match.homeTeamName}</span>
-                                       <span className="team-score">{match.homeScore}</span>
-                                    </div>
-                                    <div className="team away-team" onClick={() => navigateToTeamPage(match.awayTeamId)}>
-                                       <span className="team-name">{match.awayTeamName}</span>
-                                       <span className="team-score">{match.awayScore}</span>
-                                    </div>
-                                 </div>
-
-                                 <div className="match-status">
-                                    {match.status === 'Completed' ? (
-                                       <span className={`result-badge ${checkIfTeamWon(match) ? 'win' : 'loss'}`}>
-                                          {checkIfTeamWon(match) ? 'W' : 'L'}
-                                       </span>
-                                    ) : (
-                                       <span>?</span>
-                                    )}
-                                 </div>
-                              </div>
-                           ))}
-                        </>
-                     );
-                  })}
+         <div className="results-container">
+            {matchesLoading ? (
+               <div className="loading-state">{t('matches.loading')}</div>
+            ) : matchesError ? (
+               <div className="error-state">
+                  <p>{matchesError}</p>
+                  <button onClick={() => handlePageChange(1)} className="retry-button">
+                     {t('common.retry')}
+                  </button>
                </div>
+            ) : matches && matches.length > 0 ? (
+               <>
+                  <div className="matches-grid">
+                     <div className="results-header">
+                        {t('teamUserPage.resultsTitle')}
+                     </div>
+                     {seasons && matches && seasons.map((season) => {
+                        const seasonMatches = matches.filter(m => m.seasonId === season.id);
+                        if (seasonMatches.length === 0) return null;
+                        return (
 
-               {totalPages > 1 && (
-                  <div className="pagination">
-                     <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="pagination-btn"
-                     >
-                        {t('common.pagination.previous')}
-                     </button>
-
-                     <span className="page-info">
-                        {t('common.pagination.pageOf', { current: currentPage, total: totalPages })}
-                     </span>
-
-                     <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="pagination-btn"
-                     >
-                        {t('common.pagination.next')}
-                     </button>
+                           <React.Fragment key={season.id}>
+                              <div className="results-season-header"><span>{season.name}</span></div>
+                              {seasonMatches.map(match => (
+                                 <MatchRow
+                                    key={match.id}
+                                    id={match.id}
+                                    scheduledDateTime={match.scheduledDateTime}
+                                    homeTeamName={match.homeTeamName}
+                                    awayTeamName={match.awayTeamName}
+                                    homeScore={match.homeScore}
+                                    awayScore={match.awayScore}
+                                    periodCount={3}
+                                    statusComponent={<MatchStatusComponent match={match} />}
+                                    onClick={() => navigateToTeamPage(match.homeTeamId)}
+                                 />
+                              ))}
+                           </React.Fragment>
+                        );
+                     })}
                   </div>
-               )}
-            </>
-         ) : (
-            <div className="no-matches">
-               <p>{t('matches.noMatches')}</p>
-            </div>
-         )}
+
+                  {totalPages > 1 && (
+                     <div className="pagination">
+                        <button
+                           onClick={() => handlePageChange(currentPage - 1)}
+                           disabled={currentPage === 1}
+                           className="pagination-btn"
+                        >
+                           {t('common.pagination.previous')}
+                        </button>
+
+                        <span className="page-info">
+                           {t('common.pagination.pageOf', { current: currentPage, total: totalPages })}
+                        </span>
+
+                        <button
+                           onClick={() => handlePageChange(currentPage + 1)}
+                           disabled={currentPage === totalPages}
+                           className="pagination-btn"
+                        >
+                           {t('common.pagination.next')}
+                        </button>
+                     </div>
+                  )}
+               </>
+            ) : (
+               <div className="no-matches">
+                  <p>{t('matches.noMatches')}</p>
+               </div>
+            )}
+         </div>
       </div>
    )
 }

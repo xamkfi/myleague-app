@@ -1,21 +1,66 @@
 /**
- * Formats a date string to a localized format
+ * Formats a date string to a localized format in UTC (D.M.YYYY)
  * @param dateString Date string to format
  * @returns Formatted date string
  */
 export function formatDate(dateString: string): string {
   try {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fi-FI', {
-      day: 'numeric',
-      month: 'numeric',
-      year: 'numeric'
-    }).format(date);
+    const day = date.getUTCDate();
+    const month = date.getUTCMonth() + 1; // getUTCMonth is 0-indexed
+    const year = date.getUTCFullYear();
+    return `${day}.${month}.${year}`;
   } catch (error) {
     console.error('Error formatting date:', error);
     return dateString;
   }
 }
+
+/**
+ * Formats a date/time string to return date and time in DD/MM HH:MM format
+ * 
+ * @param dateTime - ISO date string or Date object
+ * @returns Array with [date, time] where date is "DD/MM" and time is "HH:MM"
+ */
+export const formatMatchDateTime = (dateTime: string | Date): [string, string] => {
+   const date = new Date(dateTime);
+   
+   const day = date.getUTCDate().toString().padStart(2, '0');
+   const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+   const formattedDate = `${day}/${month}`;
+   
+   const hours = date.getUTCHours().toString().padStart(2, '0');
+   const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+   const formattedTime = `${hours}:${minutes}`;
+   
+   return [formattedDate, formattedTime];
+};
+
+/**
+ * Formats only the date part (DD/MM format without year)
+ * 
+ * @param dateTime - ISO date string or Date object
+ * @returns Date string in "DD/MM" format
+ */
+export const formatMatchDate = (dateTime: string | Date): string => {
+   const date = new Date(dateTime);
+   const day = date.getUTCDate().toString().padStart(2, '0');
+   const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+   return `${day}/${month}`;
+};
+
+/**
+ * Formats only the time part (HH:MM format)
+ * 
+ * @param dateTime - ISO date string or Date object
+ * @returns Time string in "HH:MM" format
+ */
+export const formatMatchTime = (dateTime: string | Date): string => {
+   const date = new Date(dateTime);
+   const hours = date.getUTCHours().toString().padStart(2, '0');
+   const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+   return `${hours}:${minutes}`;
+};
 
 /**
  * Truncates a text to a specified length

@@ -79,7 +79,8 @@ function FloorballTeamPage() {
         const response = await floorballMatchService.getAll({
           teamId: team.id,
           page: currentPage,
-          pageSize: 10
+          pageSize: 10,
+          sortOrder: 'asc'
         });
 
         setMatches(response.data || []);
@@ -245,7 +246,7 @@ function FloorballTeamPage() {
             
             <div className="header-content">
               <div className="team-branding">
-                <div className="team-logo">
+                <div className="floorball-page-team-logo">
                   {team.logoUrl ? (
                     <img 
                       // TODO: Use real logo when possible
@@ -314,8 +315,8 @@ function FloorballTeamPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="tab-content">
-          {renderTabContent()}
+        <div className="tab-content-container">
+            {renderTabContent()}
         </div>
 
 

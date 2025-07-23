@@ -55,6 +55,7 @@ export const floorballMatchService = {
       if (params?.teamId) searchParams.append('teamId', params.teamId);
       if (params?.startDate) searchParams.append('startDate', params.startDate);
       if (params?.endDate) searchParams.append('endDate', params.endDate);
+      if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
 
       const url = `${API_URL}/FloorballMatch?${searchParams.toString()}`;
       console.log('Fetching matches from URL:', url);
@@ -132,6 +133,34 @@ export const floorballMatchService = {
       return apiResponse;
     } catch (error) {
       console.error('Error in floorballMatchService.getByTeam:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get today's matches by team ID
+   */
+  getTodaysMatchesByTeam: async (teamId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {
+    try {
+      const url = `${API_URL}/FloorballMatch/by-team/${teamId}/today`;
+      console.log('Fetching today\'s matches by team from URL:', url);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch today\'s matches by team');
+        throw new Error(errorMessage);
+      }
+      
+      const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
+      
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch today\'s matches by team');
+      }
+      
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.getTodaysMatchesByTeam:', error);
       throw error;
     }
   },

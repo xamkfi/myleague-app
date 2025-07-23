@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import './RosterSection.scss'
 import type { FloorballTeam, FloorballTeamPlayer } from "../../../types/floorball/floorballTypes"
 import { useNavigate } from "react-router-dom"
@@ -9,80 +10,82 @@ interface RosterSectionProps {
 
 export default function RosterSection({ team }: RosterSectionProps) {
   const [roster, setRoster] = useState<FloorballTeamPlayer[]>([])
-  const [playerPositions, setPlayerPositions] = useState<string[]>([])
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const navigateToPlayerPage = (playerId: string) => {
     navigate(`/pelaaja/${playerId}`)
   }
 
-  const filterPlayerPositions = useCallback(() => {
-    const posList = roster.map(p => p.position)
-    return [...new Set(posList)]
-  }, [roster])
-
   useEffect(() => {
-    setRoster(team.roster)
-  }, [team])
-
-  useEffect(() => {
-    if (playerPositions.length < 1) {
-      setPlayerPositions(filterPlayerPositions())
+    if (team.roster.length > 0) {
+      setRoster(team.roster)
     }
-  }, [playerPositions, filterPlayerPositions])
+  }, [team.roster])
+
+  // Get unique positions and sort them in the correct order
+  const positionOrder = ['Goalkeeper', 'Defender', 'Center', 'Forward']
+  const playerPositions = [...new Set(roster.map(p => p.position))]
+    .sort((a, b) => positionOrder.indexOf(a) - positionOrder.indexOf(b))
 
   return (
-    <div>
-      
-       {/* Playing positions */}
-         {playerPositions.map((pos, key) => (
+    <div className="roster-section">
+
+      {/* Playing positions */}
+      {playerPositions.map((pos, key) => (
+        <div className="roster-container">
           <div key={key}>
             <div className="roster-position-header">
-              {pos}
+              {t(`roster.positions.${pos}`)}
             </div>
-            
+
             <div className="roster-position-container">
               <div className="table stats-header ">
-                <div className="roster-jersey" title="Jersey number">#</div>
-                <div className="roster-player-name">Name</div>
-                <div className="roster-games-played" title="Matches played">MP</div>
-                <div className="roster-goals" title="Goals">G</div>
-                <div className="roster-assists" title="Assists">A</div>
+                <div className="roster-jersey" title={t('roster.tooltips.jerseyNumber')}>{t('roster.jerseyNumber')}</div>
+                <div className="roster-player-name">{t('roster.name')}</div>
+                <div className="roster-age" title={t('roster.tooltips.age')}>{t('roster.age')}</div>
+                <div className="roster-games-played" title={t('roster.tooltips.matchesPlayed')}>{t('roster.matchesPlayed')}</div>
+                <div className="roster-goals" title={t('roster.tooltips.goals')}>{t('roster.goals')}</div>
+                <div className="roster-assists" title={t('roster.tooltips.assists')}>{t('roster.assists')}</div>
               </div>
               {roster
                 .filter(player => player.position === pos)
-                .map((player) => 
-                <div 
-                  className="table roster-player" 
-                  onClick={() => navigateToPlayerPage(player.playerId)}
-                >
+                .map((player) =>
+                  <div
+                    className="table roster-player"
+                    onClick={() => navigateToPlayerPage(player.playerId)}
+                  >
 
-                  <div className="roster-jersey">
-                    {player.jerseyNumber}
+                    <div className="roster-jersey row">
+                      {player.jerseyNumber}
+                    </div>
+
+                    <div className="roster-player-name">
+                      {player.playerName}
+                    </div>
+
+                    <div className="roster-age">
+                      {player.age ?? 99}
+                    </div>
+
+                    <div className="roster-games-played">
+                      {player.gamesPlayed}
+                    </div>
+
+                    <div className="roster-goals">
+                      {player.goals ?? "-"}
+                    </div>
+
+                    <div className="roster-assists">
+                      {player.assists ?? "-"}
+                    </div>
+
                   </div>
-
-                  <div className="roster-player-name">
-                    {player.playerName}
-                  </div>                   
-
-                  <div className="roster-games-played seperator-line">
-                    {player.gamesPlayed}
-                  </div>
-
-                  <div className="roster-goals">
-                    {player.goals}
-                  </div>
-
-                  <div className="roster-assists">
-                    {player.assists}
-                  </div>
-
-                </div>
-              )}
+                )}
             </div>
           </div>
-        ))}
-
+        </div>
+      ))}
     </div>
   )
 }

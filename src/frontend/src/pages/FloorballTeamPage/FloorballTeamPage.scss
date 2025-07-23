@@ -125,7 +125,7 @@
           min-width: 192px;
           min-height: 192px;
         }
-        .team-logo {          
+        .floorball-page-team-logo {          
           flex-shrink: 0;
           
           img {
@@ -241,6 +241,12 @@
   }
 
 
+
+  // Tab Content Container
+  .tab-content-container {
+    background: transparent;
+    padding: map.get($spacing, 'lg');
+  }
 
   // Tab Content Section
   .tab-content {

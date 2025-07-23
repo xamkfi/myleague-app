@@ -107,13 +107,47 @@
     "notFoundDesc": "The team you are looking for does not exist.",
     "summary": "Summary",
     "results": "Results",
+    "resultsTitle": "RESULTS",
     "roster": "Roster",
     "stats": "Stats",
     "standings": "Standings",
-    "todaysMatches": "Today's Matches"
+    "todaysMatches": "TODAY'S MATCHES",
+    "latestMatches": "Latest Matches",
+    "scheduled": "SCHEDULED"
   },
   "matches": {
     "loading": "Loading matches…",
-    "noMatches": "No matches found for this team."
+    "noMatches": "No matches found."
+  },
+  "results": {
+    "title": "RESULTS",
+    "loading": "Loading results…",
+    "noResults": "No results found."
+  },
+  "roster": {
+    "jerseyNumber": "#",
+    "name": "Name",
+    "age": "Age",
+    "matchesPlayed": "Matches played",
+    "goals": "Goals",
+    "assists": "Assists",
+    "yellowCards": "Yellow cards",
+    "redCards": "Red cards",
+    "positions": {
+      "None": "NONE",
+      "Goalkeeper": "GOALKEEPER",
+      "Defender": "DEFENDER",
+      "Center": "CENTER",
+      "Forward": "FORWARD"
+    },
+    "tooltips": {
+      "jerseyNumber": "Jersey number",
+      "age": "Age",
+      "matchesPlayed": "Matches played",
+      "goals": "Goals",
+      "assists": "Assists",
+      "yellowCards": "Yellow cards",
+      "redCards": "Red cards"
+    }
   }
 } 

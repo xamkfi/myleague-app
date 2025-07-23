@@ -107,13 +107,47 @@
     "notFoundDesc": "Etsimääsi joukkuetta ei ole olemassa.",
     "summary": "Yhteenveto",
     "results": "Tulokset",
+    "resultsTitle": "TULOKSET",
     "roster": "Kokoonpano",
     "stats": "Tilastot",
     "standings": "Sarjataulukko",
-    "todaysMatches": "Tämän päivän ottelut"
+    "todaysMatches": "TÄNÄÄN",
+    "latestMatches": "VIIMEISIMMÄT",
+    "scheduled": "TULEVAT"
   },
   "matches": {
     "loading": "Otteluita ladataan…",
-    "noMatches": "Tälle joukkueelle ei löytynyt otteluita."
+    "noMatches": "Otteluita ei löytynyt."
+  },
+  "results": {
+    "title": "Tulokset",
+    "loading": "Tuloksia ladataan…",
+    "noResults": "Tuloksia ei löytynyt."
+  },
+  "roster": {
+    "jerseyNumber": "#",
+    "name": "Nimi",
+    "age": "Ikä",
+    "matchesPlayed": "Pelatut ottelut",
+    "goals": "Maalit",
+    "assists": "Syötöt",
+    "yellowCards": "Keltaiset kortit",
+    "redCards": "Punaiset kortit",
+    "positions": {
+      "None": "EI ROOLIA",
+      "Goalkeeper": "MAAALIVAHTI",
+      "Defender": "PUOLUSTAJA",
+      "Center": "KESKIKENTTÄ",
+      "Forward": "HYÖKKÄÄJÄ"
+    },
+    "tooltips": {
+      "jerseyNumber": "Pelinumero",
+      "age": "Ikä",
+      "matchesPlayed": "Pelatut ottelut",
+      "goals": "Maalit",
+      "assists": "Syötöt",
+      "yellowCards": "Keltaiset kortit",
+      "redCards": "Punaiset kortit"
+    }
   }
 } 

@@ -51,10 +51,13 @@ export interface FloorballTeamPlayer {
   position: FloorballPosition;
   jerseyNumber?: number;
   isActive: boolean;
+  age?: number;
   gamesPlayed: number;
   goals: number;
   assists: number;
   penaltyMinutes: number;
+  yellowCards: number;
+  redCards: number;
 }
 
 export interface FloorballReferee {
@@ -215,4 +218,5 @@ export interface GetFloorballMatchesRequest {
   teamId?: string;
   startDate?: string;
   endDate?: string;
+  sortOrder?: string;
 } 
