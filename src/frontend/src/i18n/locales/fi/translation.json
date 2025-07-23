@@ -36,12 +36,17 @@
       "subtitle": "Hallitse Henkilöitä",
       "searchPlaceholder": "Etsi henkilöitä nimellä...",
       "clearSearch": "Tyhjennä etsintä",
+      "noData": "Ei löytynyt henkilöitä",
+      "noSearchResults": "Ei nimeä vastaavia henkilöitä",
       "actions":{
         "add": "Lisää Uusi Henkilö",
         "confirmDelete": "Halatko varmasti poistaa henkilön?",
         "confirmUnregister": "Haluatko varmasti poistaa henkilön rekisteröinnin?",
         "confirmRegister": "Haluatko varmasti rekisteröidä henkilön?",
-        "toggleRegistration": "Klikkaa vaihtaaksesi rekisteröintistatuksen."
+        "toggleRegistration": "Klikkaa vaihtaaksesi rekisteröintistatuksen.",
+        "updateRole": "Päivitä Rooli",
+        "edit": "Muokkaa",
+        "delete": "Poista"
       },
       "status":{
         "registered": "Kyllä",
@@ -63,6 +68,9 @@
         "registered": "Rekisteröity",
         "role": "Rooli",
         "actions": "Toiminnot"
+      },
+      "roles":{
+        "user": "Käyttäjä"
       }
     }
   },
