@@ -169,6 +169,15 @@
   "floorball": {
     "management": {
       "title": "Floorball Management",
+      "legend": {
+        "availableNow": "Available Now",
+        "comingSoon": "Coming Soon"
+      },
+      "badges": {
+        "ready": "✨ Ready!",
+        "soon": "🚧 Soon"
+      },
+      "comingSoonAlert": "🚧 {{featureName}} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯",
       "actions": {
         "teams": "Manage Teams",
         "players": "Manage Players",
@@ -184,9 +193,24 @@
       "title": "Manage Teams",
       "totalCount": "Total: {{count}} teams",
       "createNew": "Create New Team",
+      "searchPlaceholder": "Search teams by name...",
       "noTeams": "No teams found",
       "hasMembers": "Yes",
       "noMembers": "No",
+      "primary": "Primary",
+      "secondary": "Secondary", 
+      "name": "Team Name",
+      "namePlaceholder": "Enter team name",
+      "club": "Club",
+      "selectClub": "Select a club",
+      "division": "Division",
+      "selectDivision": "Select division...",
+      "category": "Category",
+      "homeArena": "Home Arena",
+      "homeArenaPlaceholder": "Enter home arena",
+      "optional": "Optional",
+      "secondaryColorTooShort": "Secondary color must be at least 2 characters",
+      "secondaryColorTooLong": "Secondary color must be no more than 50 characters",
       "confirmDelete": "Are you sure you want to delete team \"{{name}}\"?",
       "table": {
         "name": "Team Name",
@@ -202,6 +226,165 @@
       "women": "Women",
       "youth": "Youth",
       "junior": "Junior"
+    },
+    "players": {
+      "title": "Manage Floorball Players",
+      "totalCount": "{{count}} players",
+      "createNew": "Create New Player",
+      "noPlayers": "No players found.",
+      "createFromPerson": "Create Player from Available Persons",
+      "createNewPerson": "Create New Person",
+      "searchPersons": "Search available persons...",
+      "createPlayer": "Create Player",
+      "playerCreated": "{{personName}} is now a floorball player!",
+      "personCreated": "{{personName}} created successfully! You can now create a player from them.",
+      "noPersonsFound": "No persons found matching your search",
+      "noPersonsAvailable": "No available persons to convert to players. All persons are already players.",
+      "backToPersonSelection": "Back to Person Selection",
+      "table": {
+        "name": "Name",
+        "position": "Position",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "confirmDelete": {
+        "title": "Confirm Deletion",
+        "message": "Are you sure you want to delete {{playerName}}?",
+        "warning": "This action cannot be undone."
+      },
+      "errors": {
+        "loadPlayers": "Failed to load players. Please try again.",
+        "deleteFailed": "Failed to delete player. Please try again."
+      }
+    },
+    "positions": {
+      "center": "Center",
+      "winger": "Winger",
+      "defender": "Defender",
+      "goalkeeper": "Goalkeeper"
+    },
+    "seasons": {
+      "title": "Manage Seasons",
+      "totalCount": "{{count}} seasons",
+      "createNew": "Create New Season",
+      "showActiveOnly": "Show Active Only",
+      "division": "Division",
+      "fields": {
+        "name": "Name",
+        "division": "Division",
+        "startDate": "Starts",
+        "endDate": "Ends",
+        "teams": "Teams"
+      },
+            "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "completed": "Completed"
+      },
+      "create": {
+        "title": "Create New Season",
+        "info": "The season will be created as inactive by default"
+      },
+      "placeholders": {
+        "name": "Enter season name",
+        "selectDivision": "Select division"
+      },
+      "errors": {
+        "networkError": "Network error. Please check your connection and try again.",
+        "validationError": "Invalid data provided. Please check your input and try again.",
+        "conflictError": "A season with overlapping dates already exists.",
+        "serverError": "Server error. Please try again later.",
+        "overlappingDates": "A season already exists that overlaps with the specified dates."
+      },
+      "validation": {
+        "nameRequired": "Season name is required.",
+        "nameTooLong": "Season name cannot exceed 100 characters.",
+        "divisionRequired": "Please select a valid division.",
+        "startDateRequired": "Start date is required.",
+        "endDateRequired": "End date is required."
+      }
+    },
+    "categories": {
+      "adult": "Adult",
+      "youth": "Youth", 
+      "women": "Women"
+    },
+    "referees": {
+      "title": "Manage Floorball Referees",
+      "totalCount": "{{count}} referees",
+      "createNew": "Create New Referee",
+      "createFromPerson": "Create Referee from Available Persons",
+      "createRefereeFor": "Create Referee for {{name}}",
+      "searchPersons": "Search available persons...",
+      "selectPerson": "Select",
+      "createReferee": "Create Referee",
+      "refereeCreated": "{{personName}} is now a floorball referee!",
+      "noPersonsFound": "No persons found matching your search",
+      "noPersonsAvailable": "No available persons to convert to referees. All persons are already referees.",
+      "licenseIssueDate": "License Issue Date",
+      "licenseExpiryDate": "License Expiry Date",
+      "errors": {
+        "loadReferees": "Failed to load referees. Please try again.",
+        "deleteFailed": "Failed to delete referee. Please try again."
+      }
+    },
+    "matches": {
+      "title": "Match Management",
+      "subtitle": "Manage your floorball matches, track live games, and organize your season",
+      "loading": "Loading matches...",
+      "noMatchesFound": "No matches found",
+      "noMatchesForSeason": "No matches found for the selected season",
+      "createFirstMatch": "Create your first match to get started",
+      "createNewMatch": "Create New Match",
+      "goLive": "🟢 Go Live",
+      "live": "🔴 Live",
+      "edit": "✏️ Edit",
+      "tbd": "TBD",
+      "noScore": "-",
+      "table": {
+        "match": "Match",
+        "dateTime": "Date & Time",
+        "venue": "Venue",
+        "score": "Score",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "sections": {
+        "matches": "Matches"
+      },
+      "create": {
+        "title": "Create New Match",
+        "season": "Season",
+        "homeTeam": "Home Team",
+        "awayTeam": "Away Team",
+        "referee": "Referee",
+        "dateTime": "Date & Time",
+        "venue": "Venue",
+        "createMatch": "Create Match"
+      },
+      "placeholders": {
+        "selectSeason": "Select Season",
+        "selectHomeTeam": "Select Home Team",
+        "selectAwayTeam": "Select Away Team", 
+        "selectReferee": "Select Referee",
+        "searchSeasons": "Search seasons...",
+        "searchTeams": "Search teams...", 
+        "searchReferees": "Search referees...",
+        "hoursPlaceholder": "HH",
+        "minutesPlaceholder": "MM",
+        "venuePlaceholder": "Enter venue (optional)"
+      },
+      "validation": {
+        "fillRequired": "Please fill in all required fields",
+        "sameTeams": "Home team and away team cannot be the same",
+        "validDateTime": "Please enter a valid date and time",
+        "createFailed": "Failed to create match"
+      },
+      "emptyStates": {
+        "noSeasons": "No seasons found",
+        "noTeams": "No teams found",
+        "noReferees": "No referees found"
+      }
     }
   },
   "common": {
@@ -210,13 +393,31 @@
     "loading": "Loading…",
     "edit": "Edit",
     "delete": "Delete",
+    "deleting": "Deleting...",
+    "cancel": "Cancel",
+    "active": "Active",
+    "inactive": "Inactive",
     "add": "Add",
+    "creating": "Creating...",
+    "birthDate": "Birth Date",
+    "registration": "Registration",
+    "name": "Name",
+    "actions": "Actions",
+    "registered": "Registered",
+    "notRegistered": "Not Registered",
+    "cancelSelection": "Cancel Selection",
     "previous": "Previous",
     "next": "Next",
     "pageInfo": "Page {{current}} of {{total}}",
+    "itemsPerPage": "Items per page:",
+    "showingItems": "Showing {{start}}-{{end}} of {{total}} items",
+    "noItemsToShow": "No items to show",
     "error": "Error",
     "goBack": "Go Back",
     "retry": "Retry",
+    "all": "All",
+    "create": "Create",
+    "close": "Close",
     "pagination": {
       "previous": "Previous",
       "next": "Next",

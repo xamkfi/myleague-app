@@ -196,7 +196,7 @@ const MatchManagementPage = () => {
         <div className="match-management__content">
           <div className="loading-spinner">
             <div className="spinner"></div>
-            <p>Loading matches...</p>
+            <p>{t('floorball.matches.loading', 'Loading matches...')}</p>
           </div>
         </div>
       </div>
@@ -216,8 +216,8 @@ const MatchManagementPage = () => {
             />
           </div>
           <div className="page-header__main">
-            <h1 className="page-title">Match Management</h1>
-            <p className="page-subtitle">Manage your floorball matches, track live games, and organize your season</p>
+            <h1 className="page-title">{t('floorball.matches.title', 'Match Management')}</h1>
+            <p className="page-subtitle">{t('floorball.matches.subtitle', 'Manage your floorball matches, track live games, and organize your season')}</p>
           </div>
         </div>
 
@@ -247,16 +247,16 @@ const MatchManagementPage = () => {
         {/* Matches Table */}
         <div className="matches-section">
           <div className="section-header">
-            <h2>Matches</h2>
+            <h2>{t('floorball.matches.sections.matches', 'Matches')}</h2>
           </div>
           
           {filteredMatches.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">📋</div>
-              <h3>No matches found</h3>
-              <p>{selectedSeasonId ? 'No matches found for the selected season' : 'Create your first match to get started'}</p>
+              <h3>{t('floorball.matches.noMatchesFound', 'No matches found')}</h3>
+              <p>{selectedSeasonId ? t('floorball.matches.noMatchesForSeason', 'No matches found for the selected season') : t('floorball.matches.createFirstMatch', 'Create your first match to get started')}</p>
               <button onClick={() => setShowCreateForm(true)} className="create-button">
-                Create New Match
+                {t('floorball.matches.createNewMatch', 'Create New Match')}
               </button>
             </div>
           ) : (
@@ -264,12 +264,12 @@ const MatchManagementPage = () => {
               <table className="matches-table">
                 <thead>
                   <tr>
-                    <th>Match</th>
-                    <th>Date & Time</th>
-                    <th>Venue</th>
-                    <th>Score</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>{t('floorball.matches.table.match', 'Match')}</th>
+                    <th>{t('floorball.matches.table.dateTime', 'Date & Time')}</th>
+                    <th>{t('floorball.matches.table.venue', 'Venue')}</th>
+                    <th>{t('floorball.matches.table.score', 'Score')}</th>
+                    <th>{t('floorball.matches.table.status', 'Status')}</th>
+                    <th>{t('floorball.matches.table.actions', 'Actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -284,11 +284,11 @@ const MatchManagementPage = () => {
                         {formatDateTime(match.scheduledDateTime)}
                       </td>
                       <td className="venue-cell">
-                        {match.venue || <span className="tbd">TBD</span>}
+                        {match.venue || <span className="tbd">{t('floorball.matches.tbd', 'TBD')}</span>}
                       </td>
                       <td className="score-cell">
                         {match.status === 'Scheduled' ? (
-                          <span className="no-score">-</span>
+                          <span className="no-score">{t('floorball.matches.noScore', '-')}</span>
                         ) : (
                           <span className="score">{match.homeScore} - {match.awayScore}</span>
                         )}
@@ -305,14 +305,14 @@ const MatchManagementPage = () => {
                             className={liveMatches.has(match.id) ? "live-button" : "go-live-button"}
                             disabled={actionLoading !== null}
                           >
-                            {liveMatches.has(match.id) ? "🔴 Live" : "🟢 Go Live"}
+                            {liveMatches.has(match.id) ? t('floorball.matches.live', '🔴 Live') : t('floorball.matches.goLive', '🟢 Go Live')}
                           </button>
                           <button
                             onClick={() => handleEditMatch(match)}
                             className="edit-button"
                             disabled={actionLoading !== null}
                           >
-                            ✏️ Edit
+                            {t('floorball.matches.edit', '✏️ Edit')}
                           </button>
                         </div>
                       </td>

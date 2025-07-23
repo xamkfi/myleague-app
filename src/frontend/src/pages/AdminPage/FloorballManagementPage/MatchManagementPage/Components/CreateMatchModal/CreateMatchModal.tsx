@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { 
   CreateFloorballMatchRequest
 } from '../../../../../../types/floorball/floorballTypes';
@@ -21,6 +22,7 @@ const CreateMatchModal = ({
   onSubmit,
   loading = false
 }: CreateMatchModalProps) => {
+  const { t } = useTranslation();
   const [createForm, setCreateForm] = useState<CreateFloorballMatchRequest>({
     seasonId: '',
     homeTeamId: '',
@@ -72,18 +74,18 @@ const CreateMatchModal = ({
     e.preventDefault();
     
     if (!createForm.seasonId || !createForm.homeTeamId || !createForm.awayTeamId || !createForm.scheduledDateTime) {
-      setError('Please fill in all required fields');
+      setError(t('floorball.matches.validation.fillRequired', 'Please fill in all required fields'));
       return;
     }
 
     if (createForm.homeTeamId === createForm.awayTeamId) {
-      setError('Home team and away team cannot be the same');
+      setError(t('floorball.matches.validation.sameTeams', 'Home team and away team cannot be the same'));
       return;
     }
 
     // Validate time inputs
     if (!dateInput || !hoursInput || !minutesInput) {
-      setError('Please enter a valid date and time');
+      setError(t('floorball.matches.validation.validDateTime', 'Please enter a valid date and time'));
       return;
     }
 
@@ -105,7 +107,7 @@ const CreateMatchModal = ({
       setMinutesInput('');
     } catch (error) {
       console.error('Error creating match:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create match');
+      setError(error instanceof Error ? error.message : t('floorball.matches.validation.createFailed', 'Failed to create match'));
     }
   };
 
@@ -131,7 +133,7 @@ const CreateMatchModal = ({
     <div className="modal-overlay">
       <div className="modal">
         <div className="modal-header">
-          <h2>Create New Match</h2>
+          <h2>{t('floorball.matches.create.title', 'Create New Match')}</h2>
           <button onClick={handleClose} className="modal-close">×</button>
         </div>
         
@@ -145,58 +147,58 @@ const CreateMatchModal = ({
         
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
-            <label htmlFor="season">Season *</label>
+            <label htmlFor="season">{t('floorball.matches.create.season', 'Season')} *</label>
             <SearchableInfiniteDropdown
-              placeholder="Select Season"
+              placeholder={t('floorball.matches.placeholders.selectSeason', 'Select Season')}
               value={createForm.seasonId}
               onChange={(value) => setCreateForm(prev => ({ ...prev, seasonId: value }))}
               onSearch={floorballSeasonSearchService.searchSeasons}
-              searchPlaceholder="Search seasons..."
-              emptyMessage="No seasons found"
+              searchPlaceholder={t('floorball.matches.placeholders.searchSeasons', 'Search seasons...')}
+              emptyMessage={t('floorball.matches.emptyStates.noSeasons', 'No seasons found')}
               required
             />
           </div>
           
           <div className="form-group">
-            <label htmlFor="homeTeam">Home Team *</label>
+            <label htmlFor="homeTeam">{t('floorball.matches.create.homeTeam', 'Home Team')} *</label>
             <SearchableInfiniteDropdown
-              placeholder="Select Home Team"
+              placeholder={t('floorball.matches.placeholders.selectHomeTeam', 'Select Home Team')}
               value={createForm.homeTeamId}
               onChange={(value) => setCreateForm(prev => ({ ...prev, homeTeamId: value }))}
               onSearch={floorballTeamNameSearchService.searchTeams}
-              searchPlaceholder="Search teams..."
-              emptyMessage="No teams found"
+              searchPlaceholder={t('floorball.matches.placeholders.searchTeams', 'Search teams...')}
+              emptyMessage={t('floorball.matches.emptyStates.noTeams', 'No teams found')}
               required
             />
           </div>
           
           <div className="form-group">
-            <label htmlFor="awayTeam">Away Team *</label>
+            <label htmlFor="awayTeam">{t('floorball.matches.create.awayTeam', 'Away Team')} *</label>
             <SearchableInfiniteDropdown
-              placeholder="Select Away Team"
+              placeholder={t('floorball.matches.placeholders.selectAwayTeam', 'Select Away Team')}
               value={createForm.awayTeamId}
               onChange={(value) => setCreateForm(prev => ({ ...prev, awayTeamId: value }))}
               onSearch={floorballTeamNameSearchService.searchTeams}
-              searchPlaceholder="Search teams..."
-              emptyMessage="No teams found"
+              searchPlaceholder={t('floorball.matches.placeholders.searchTeams', 'Search teams...')}
+              emptyMessage={t('floorball.matches.emptyStates.noTeams', 'No teams found')}
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="referee">Referee</label>
+            <label htmlFor="referee">{t('floorball.matches.create.referee', 'Referee')}</label>
             <SearchableInfiniteDropdown
-              placeholder="Select Referee"
+              placeholder={t('floorball.matches.placeholders.selectReferee', 'Select Referee')}
               value={createForm.refereeId}
               onChange={(value) => setCreateForm(prev => ({ ...prev, refereeId: value }))}
               onSearch={floorballRefereeSearchService.searchReferees}
-              searchPlaceholder="Search referees..."
-              emptyMessage="No referees found"
+              searchPlaceholder={t('floorball.matches.placeholders.searchReferees', 'Search referees...')}
+              emptyMessage={t('floorball.matches.emptyStates.noReferees', 'No referees found')}
             />
           </div>
           
           <div className="form-group">
-            <label>Date & Time *</label>
+            <label>{t('floorball.matches.create.dateTime', 'Date & Time')} *</label>
             <div className="datetime-input-group">
               <div className="date-input">
                 <input
@@ -209,7 +211,7 @@ const CreateMatchModal = ({
               <div className="time-input-group">
                 <input
                   type="number"
-                  placeholder="HH"
+                  placeholder={t('floorball.matches.placeholders.hoursPlaceholder', 'HH')}
                   value={hoursInput}
                   onChange={(e) => handleHoursChange(e.target.value)}
                   min="0"
@@ -220,7 +222,7 @@ const CreateMatchModal = ({
                 <span className="time-separator">:</span>
                 <input
                   type="number"
-                  placeholder="MM"
+                  placeholder={t('floorball.matches.placeholders.minutesPlaceholder', 'MM')}
                   value={minutesInput}
                   onChange={(e) => handleMinutesChange(e.target.value)}
                   min="0"
@@ -233,22 +235,22 @@ const CreateMatchModal = ({
           </div>
           
           <div className="form-group">
-            <label htmlFor="venue">Venue</label>
+            <label htmlFor="venue">{t('floorball.matches.create.venue', 'Venue')}</label>
             <input
               type="text"
               id="venue"
               value={createForm.venue}
               onChange={(e) => setCreateForm(prev => ({ ...prev, venue: e.target.value }))}
-              placeholder="Enter venue (optional)"
+              placeholder={t('floorball.matches.placeholders.venuePlaceholder', 'Enter venue (optional)')}
             />
           </div>
           
           <div className="modal-actions">
             <button type="button" onClick={handleClose} className="cancel-button">
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </button>
             <button type="submit" disabled={loading} className="submit-button">
-              {loading ? 'Creating...' : 'Create Match'}
+              {loading ? t('common.creating', 'Creating...') : t('floorball.matches.create.createMatch', 'Create Match')}
             </button>
           </div>
         </form>
