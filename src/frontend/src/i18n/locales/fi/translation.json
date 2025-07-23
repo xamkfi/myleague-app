@@ -323,6 +323,19 @@
       "noPersonsAvailable": "Ei saatavilla olevia henkilöitä muutettavaksi tuomareiksi. Kaikki henkilöt ovat jo tuomareita.",
       "licenseIssueDate": "Lisenssin Myöntämispäivä",
       "licenseExpiryDate": "Lisenssin Vanhentumispäivä",
+      "noReferees": "Tuomareita ei löytynyt.",
+      "table": {
+        "name": "Nimi",
+        "status": "Tila",
+        "licenseExpiry": "Lisenssin Vanhentuminen",
+        "matchesOfficiated": "Ottelut",
+        "actions": "Toiminnot"
+      },
+      "license": {
+        "valid": "Voimassa",
+        "expired": "Vanhentunut",
+        "expiring": "Vanhenee Pian"
+      },
       "errors": {
         "loadReferees": "Tuomareiden lataus epäonnistui. Yritä uudelleen.",
         "deleteFailed": "Tuomarin poisto epäonnistui. Yritä uudelleen."
@@ -384,6 +397,25 @@
         "noSeasons": "Kausia ei löytynyt",
         "noTeams": "Joukkueita ei löytynyt",
         "noReferees": "Tuomareita ei löytynyt"
+      },
+      "stats": {
+        "totalMatches": "Otteluita Yhteensä",
+        "seasonMatches": "Kauden Ottelut",
+        "completed": "Päättyneet",
+        "scheduled": "Aikataulutetut",
+        "inProgress": "Käynnissä",
+        "createNew": "Luo Uusi"
+      },
+      "filters": {
+        "filterBySeason": "Suodata Kauden Mukaan:",
+        "allSeasons": "Kaikki Kaudet"
+      },
+      "status": {
+        "Scheduled": "Aikataulutettu",
+        "InProgress": "Käynnissä",
+        "Completed": "Päättynyt",
+        "Cancelled": "Peruttu",
+        "Postponed": "Lykätty"
       }
     }
   },

@@ -323,6 +323,19 @@
       "noPersonsAvailable": "No available persons to convert to referees. All persons are already referees.",
       "licenseIssueDate": "License Issue Date",
       "licenseExpiryDate": "License Expiry Date",
+      "noReferees": "No referees found.",
+      "table": {
+        "name": "Name",
+        "status": "Status",
+        "licenseExpiry": "License Expiry",
+        "matchesOfficiated": "Matches",
+        "actions": "Actions"
+      },
+      "license": {
+        "valid": "Valid",
+        "expired": "Expired",
+        "expiring": "Expiring Soon"
+      },
       "errors": {
         "loadReferees": "Failed to load referees. Please try again.",
         "deleteFailed": "Failed to delete referee. Please try again."
@@ -384,6 +397,25 @@
         "noSeasons": "No seasons found",
         "noTeams": "No teams found",
         "noReferees": "No referees found"
+      },
+      "stats": {
+        "totalMatches": "Total Matches",
+        "seasonMatches": "Season Matches",
+        "completed": "Completed",
+        "scheduled": "Scheduled",
+        "inProgress": "In Progress",
+        "createNew": "Create New"
+      },
+      "filters": {
+        "filterBySeason": "Filter by Season:",
+        "allSeasons": "All Seasons"
+      },
+      "status": {
+        "Scheduled": "Scheduled",
+        "InProgress": "In Progress", 
+        "Completed": "Completed",
+        "Cancelled": "Cancelled",
+        "Postponed": "Postponed"
       }
     }
   },

@@ -21,6 +21,12 @@ import { useTranslation } from 'react-i18next';
 const MatchManagementPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  
+  // Helper function to translate match status
+  const getTranslatedStatus = (status: FloorballMatchStatus): string => {
+    return t(`floorball.matches.status.${status}`, status);
+  };
+  
   // State management
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
@@ -295,7 +301,7 @@ const MatchManagementPage = () => {
                       </td>
                       <td className="status-cell">
                         <span className={getStatusBadge(match.status)}>
-                          {match.status}
+                          {getTranslatedStatus(match.status)}
                         </span>
                       </td>
                       <td className="actions-cell">
