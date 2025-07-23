@@ -72,6 +72,12 @@
       "roles":{
         "user": "User"
       }
+    },
+    "news":{
+      "pageTitle": "News Management",
+      "createNew": "Create New",
+      "title": "Title",
+      "title_placeholder": "Enter compelling article title..."
     }
   },
   "floorball": {

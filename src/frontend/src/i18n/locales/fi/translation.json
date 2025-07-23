@@ -72,6 +72,12 @@
       "roles":{
         "user": "Käyttäjä"
       }
+    },
+    "news":{
+      "pageTitle": "Uutisten Hallinta",
+      "createNew": "Luo Uusi",
+      "title": "Otsikko",
+      "title_placeholder": "Lisää artikkelin nimi..."
     }
   },
   "floorball": {
