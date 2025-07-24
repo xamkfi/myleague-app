@@ -240,8 +240,15 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot record a goal for a match with status {Status}.");
-        if (_periodScores.Count == 0 || periodNumber < 1 || periodNumber > _periodScores.Count)
-            throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {_periodScores.Count}.");
+        
+        // Validate period number based on match state
+        int maxAllowedPeriod = 3; // Default max for regular periods
+        if (WentToOvertime) maxAllowedPeriod = 4; // Allow period 4 if match went to overtime
+        if (WentToShootout) maxAllowedPeriod = 5; // Allow period 5 if match went to shootout
+        
+        if (periodNumber < 1 || periodNumber > maxAllowedPeriod)
+            throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {maxAllowedPeriod}.");
+        
         if (timeInSeconds < 0 || timeInSeconds > 1200)
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
         if (scoringTeamId != HomeTeamId && scoringTeamId != AwayTeamId)
@@ -283,8 +290,15 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot record a penalty for a match with status {Status}.");
-        if (_periodScores.Count == 0 || periodNumber < 1 || periodNumber > _periodScores.Count)
-            throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {_periodScores.Count}.");
+        
+        // Validate period number based on match state
+        int maxAllowedPeriod = 3; // Default max for regular periods
+        if (WentToOvertime) maxAllowedPeriod = 4; // Allow period 4 if match went to overtime
+        if (WentToShootout) maxAllowedPeriod = 5; // Allow period 5 if match went to shootout
+        
+        if (periodNumber < 1 || periodNumber > maxAllowedPeriod)
+            throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {maxAllowedPeriod}.");
+        
         if (timeInSeconds < 0 || timeInSeconds > 1200)
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
         if (minutes <= 0)

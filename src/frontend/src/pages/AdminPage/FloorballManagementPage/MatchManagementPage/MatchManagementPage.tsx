@@ -35,6 +35,7 @@ const MatchManagementPage = () => {
   // Live match modal state
   const [liveModalMatch, setLiveModalMatch] = useState<FloorballMatchDto | null>(null);
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
+  const [isResumedMatch, setIsResumedMatch] = useState(false);
   
   // Use the live match state hook
   const {
@@ -335,6 +336,7 @@ const MatchManagementPage = () => {
   const handleLiveMatch = (match: FloorballMatchDto) => {
     setLiveModalMatch(match);
     setIsLiveModalOpen(true);
+    setIsResumedMatch(true); // This is a resumed match (Live button was clicked)
   };
 
   const handleEditMatch = (match: FloorballMatchDto) => {
@@ -443,6 +445,7 @@ const MatchManagementPage = () => {
       };
       
       setLiveModalMatch(preservedUpdatedMatch);
+      setIsResumedMatch(false); // This is a fresh start, not a resumed match
       
       // Use the preserved match data to initialize live match state
       initializeLiveMatch(preservedUpdatedMatch);
@@ -607,6 +610,7 @@ const MatchManagementPage = () => {
             liveState={getLiveMatchState(liveModalMatch.id)}
             onStateUpdate={handleStateUpdate}
             onMatchUpdated={handleMatchUpdated}
+            isResumedMatch={isResumedMatch}
           />
         )}
       </div>

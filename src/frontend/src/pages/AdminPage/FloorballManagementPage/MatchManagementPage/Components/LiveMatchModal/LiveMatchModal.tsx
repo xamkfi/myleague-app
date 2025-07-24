@@ -22,6 +22,7 @@ interface LiveMatchModalProps {
   liveState?: LiveMatchState;
   onStateUpdate?: (updates: Partial<LiveMatchState>) => void;
   onMatchUpdated?: (updatedMatch: FloorballMatchDto) => void;
+  isResumedMatch?: boolean;
 }
 
 interface PeriodEventData {
@@ -68,7 +69,8 @@ const LiveMatchModal = ({
   onGoLive,
   liveState,
   onStateUpdate,
-  onMatchUpdated
+  onMatchUpdated,
+  isResumedMatch
 }: LiveMatchModalProps) => {
   // State management
   const [homeTeam, setHomeTeam] = useState<FloorballTeam | null>(null);
@@ -203,18 +205,6 @@ const LiveMatchModal = ({
     setDomainEvents([]);
   }, [match.id]);
 
-  // Initialize started periods when component loads
-  useEffect(() => {
-    if (currentMatch.status === 'InProgress') {
-      // If match is in progress, assume period 1 has been started
-      setStartedPeriods(new Set([1]));
-    } else {
-      // Reset started periods for new matches
-      setStartedPeriods(new Set());
-      setEndedPeriods(new Set());
-    }
-  }, [currentMatch.status]);
-
   const loadTeamData = async () => {
     try {
       setLoading(true);
@@ -244,13 +234,23 @@ const LiveMatchModal = ({
     }
   };
 
+  // State for preventing rapid API calls
+  const [isLoadingMatchStatus, setIsLoadingMatchStatus] = useState(false);
+
   /**
    * Loads the current match status from the backend
    * This ensures we have the most up-to-date match information
    */
   const loadCurrentMatchStatus = useCallback(async () => {
+    // Prevent rapid calls
+    if (isLoadingMatchStatus) {
+      console.log('Skipping loadCurrentMatchStatus - already loading');
+      return;
+    }
+    
     try {
-      console.log('Loading current match status for match:', match.id);
+      setIsLoadingMatchStatus(true);
+      console.log('Loading current match status for match:', match.id, 'at:', new Date().toISOString());
       const response = await floorballMatchService.getById(match.id);
       
       console.log('Match status response:', response);
@@ -285,8 +285,10 @@ const LiveMatchModal = ({
     } catch (error) {
       console.error('Error loading current match status:', error);
       // Don't set error for status loading - it's not critical
+    } finally {
+      setIsLoadingMatchStatus(false);
     }
-  }, [match.id, onStateUpdate, onMatchUpdated]);
+  }, [match.id, onStateUpdate, onMatchUpdated, isLoadingMatchStatus]);
 
   /**
    * Loads all match events (goals and penalties) from the backend
@@ -309,6 +311,142 @@ const LiveMatchModal = ({
       // Don't set error for events loading - it's not critical
     }
   }, [match.id]);
+
+  /**
+   * Analyzes domain events to extract period state information
+   * This function processes all events to determine which periods have been started/ended
+   * and what the current period should be
+   */
+  const analyzePeriodEvents = useCallback((events: FloorballDomainEventDto[]) => {
+    console.log('Analyzing period events from:', events.length, 'events');
+    
+    const startedPeriods = new Set<number>();
+    const endedPeriods = new Set<number>();
+    let currentPeriod = 1;
+    let lastEventTime = '';
+    
+    // Process events chronologically
+    const sortedEvents = [...events].sort((a, b) => 
+      new Date(a.occurredOn).getTime() - new Date(b.occurredOn).getTime()
+    );
+    
+    sortedEvents.forEach(event => {
+      console.log('Processing event:', event.eventType, 'data:', event.data);
+      lastEventTime = event.occurredOn;
+      
+      if (event.eventType === 'FloorballPeriodStartedEvent') {
+        const periodNumber = (event.data as any).PeriodNumber || (event.data as any).periodNumber;
+        if (periodNumber && typeof periodNumber === 'number') {
+          console.log('Period started:', periodNumber);
+          startedPeriods.add(periodNumber);
+          currentPeriod = Math.max(currentPeriod, periodNumber);
+        }
+      } else if (event.eventType === 'FloorballPeriodEndedEvent') {
+        const periodNumber = (event.data as any).PeriodNumber || (event.data as any).periodNumber;
+        if (periodNumber && typeof periodNumber === 'number') {
+          console.log('Period ended:', periodNumber);
+          endedPeriods.add(periodNumber);
+        }
+      }
+    });
+    
+    console.log('Period analysis results:', {
+      startedPeriods: Array.from(startedPeriods),
+      endedPeriods: Array.from(endedPeriods),
+      currentPeriod,
+      lastEventTime
+    });
+    
+    return { startedPeriods, endedPeriods, currentPeriod, lastEventTime };
+  }, []);
+
+  /**
+   * Reconstructs the match state from backend domain events
+   * This function fetches events from the backend and uses them to determine
+   * the actual state of the match (which periods are started/ended, current period, etc.)
+   */
+  const reconstructMatchStateFromEvents = useCallback(async () => {
+    try {
+      console.log('Reconstructing match state from backend events for match:', match.id);
+      
+      // Fetch all domain events from the backend
+      const response = await floorballMatchEventService.getMatchEvents(match.id);
+      
+      if (!response.success || !response.data) {
+        console.warn('Failed to fetch match events for state reconstruction');
+        return;
+      }
+      
+      const events = response.data as FloorballDomainEventDto[];
+      console.log('Fetched', events.length, 'events for state reconstruction');
+      
+      // Analyze the events to determine period state
+      const { startedPeriods, endedPeriods, currentPeriod, lastEventTime } = analyzePeriodEvents(events);
+      
+      // Update local state with the reconstructed information
+      console.log('Updating local state with reconstructed data:', {
+        startedPeriods: Array.from(startedPeriods),
+        endedPeriods: Array.from(endedPeriods),
+        currentPeriod
+      });
+      
+      setStartedPeriods(startedPeriods);
+      setEndedPeriods(endedPeriods);
+      
+      // Update clock period if it differs from the reconstructed current period
+      if (onStateUpdate && currentPeriod !== clock.period) {
+        console.log('Updating clock period from', clock.period, 'to', currentPeriod);
+        onStateUpdate({
+          clock: { ...clock, period: currentPeriod }
+        });
+      }
+      
+      // Determine if clock should be running based on current period state
+      const currentPeriodStarted = startedPeriods.has(currentPeriod);
+      const currentPeriodEnded = endedPeriods.has(currentPeriod);
+      
+      console.log('Clock state analysis:', {
+        currentPeriod,
+        currentPeriodStarted,
+        currentPeriodEnded,
+        clockIsRunning: clock.isRunning
+      });
+      
+      // Auto-manage clock state based on period status
+      if (currentPeriodStarted && !currentPeriodEnded && !clock.isRunning) {
+        // Period is started but not ended, clock should be running
+        console.log('Starting clock - period is active but clock is not running');
+        if (onStateUpdate) {
+          onStateUpdate({
+            clock: { ...clock, isRunning: true }
+          });
+        }
+      } else if (currentPeriodEnded && clock.isRunning) {
+        // Period is ended but clock is still running, should pause
+        console.log('Pausing clock - period has ended');
+        if (onStateUpdate) {
+          onStateUpdate({
+            clock: { ...clock, isRunning: false }
+          });
+        }
+      }
+      
+      console.log('Match state reconstruction completed successfully');
+      
+    } catch (error) {
+      console.error('Error reconstructing match state from events:', error);
+      // Don't set error - state reconstruction failure is not critical
+      // The modal will still work with default state
+    }
+  }, [match.id, analyzePeriodEvents, clock.period, clock.isRunning, onStateUpdate]);
+
+  // Reconstruct state when isResumedMatch is true
+  useEffect(() => {
+    if (isOpen && isResumedMatch) {
+      console.log('Reconstructing state for resumed match');
+      reconstructMatchStateFromEvents();
+    }
+  }, [isOpen, isResumedMatch, reconstructMatchStateFromEvents]);
 
   /**
    * Sets up SignalR connection for real-time updates
@@ -510,7 +648,6 @@ const LiveMatchModal = ({
   }, [onStateUpdate, match.id, loadMatchEvents]);
 
   /**
-   * Handles real-time SignalR events for this match
    * Filters events to only process those relevant to this match
    * Updates the UI immediately when events are received
    */
@@ -523,6 +660,7 @@ const LiveMatchModal = ({
     console.log('Extracted MatchId from event data:', eventData?.MatchId);
     console.log('Current match ID:', match.id);
     
+    // Check if this event is for our match
     if (eventData?.MatchId !== match.id) {
       console.log('Event is not for this match, ignoring');
       return; // Event is not for this match
@@ -574,7 +712,24 @@ const LiveMatchModal = ({
         }
       }
       
-      // Step 2: Start the current period if it hasn't been started yet
+      // Step 2: Record overtime/shootout if needed before starting the period
+      if (clock.period === 4 && !currentMatch.wentToOvertime) {
+        console.log('Recording overtime before starting period 4...');
+        await floorballMatchEventService.recordOvertime(currentMatch.id);
+        console.log('Recorded overtime for match', currentMatch.id);
+        
+        // Refresh match status to get updated flags
+        await loadCurrentMatchStatus();
+      } else if (clock.period === 5 && !currentMatch.wentToShootout) {
+        console.log('Recording shootout before starting period 5...');
+        await floorballMatchEventService.recordShootout(currentMatch.id);
+        console.log('Recorded shootout for match', currentMatch.id);
+        
+        // Refresh match status to get updated flags
+        await loadCurrentMatchStatus();
+      }
+      
+      // Step 3: Start the current period if it hasn't been started yet
       if (!startedPeriods.has(clock.period)) {
         console.log(`Starting period ${clock.period}...`);
         setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
@@ -588,13 +743,13 @@ const LiveMatchModal = ({
         console.log(`Period ${clock.period} already started, skipping start command`);
       }
       
-      // Step 3: Start the clock
+      // Step 4: Start the clock
       console.log('Starting clock...');
       onStateUpdate({
         clock: { ...clock, isRunning: true }
       });
       
-      // Step 4: Refresh match status to ensure UI is up to date
+      // Step 5: Refresh match status to ensure UI is up to date
       await loadCurrentMatchStatus();
       
       setError(null);
@@ -827,6 +982,17 @@ const LiveMatchModal = ({
       setLoading(true);
       setError(null);
       
+      // First, ensure overtime is recorded if it hasn't been yet
+      if (!currentMatch.wentToOvertime) {
+        console.log('Recording overtime before shootout...');
+        await floorballMatchEventService.recordOvertime(currentMatch.id);
+        
+        // Refresh match status to get updated wentToOvertime flag
+        await loadCurrentMatchStatus();
+      }
+      
+      // Now record shootout
+      console.log('Recording shootout...');
       await floorballMatchEventService.recordShootout(currentMatch.id);
       
       // Start the shootout period (period 5)
