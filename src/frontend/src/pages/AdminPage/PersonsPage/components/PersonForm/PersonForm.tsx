@@ -13,6 +13,7 @@ import './PersonForm.scss';
 
 interface PersonFormProps {
   mode?: 'standalone' | 'embedded';
+  personId?: string; // For embedded mode when editing
   onSuccess?: (createdPerson: Person) => void;
   onCancel?: () => void;
   showTeamAssignment?: boolean;
@@ -34,14 +35,18 @@ const MAX_LENGTHS = {
 
 const PersonForm = ({
   mode = 'standalone',
+  personId: propPersonId,
   onSuccess,
   onCancel,
   showTeamAssignment = true,
   initialData
 }: PersonFormProps) => {
-  const { id } = useParams<{ id: string }>();
+  const { id: urlId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  
+  // Use personId prop in embedded mode, fallback to URL param in standalone mode
+  const id = mode === 'embedded' ? propPersonId : urlId;
   const isEditMode = Boolean(id);
 
   const [loading, setLoading] = useState(false);

@@ -22,7 +22,6 @@ const CollapsibleMatchSection = ({
   onLiveMatch,
   onEditMatch,
   actionLoading,
-  liveMatches,
   sectionType
 }: CollapsibleMatchSectionProps) => {
   if (matches.length === 0) {
