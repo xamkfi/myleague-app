@@ -43,23 +43,9 @@
         "editTitle": "Edit Person",
         "close": "Close"
       },
-      "actions":{
-        "add": "Add New Person",
-        "confirmDelete": "Are you sure you want to delete this person?",
-        "confirmUnregister": "Are you sure you want to unregister this person?",
-        "confirmRegister": "Are you sure you want to register this person?",
-        "toggleRegistration": "Click to toggle registration status.",
-        "updateRole": "Update Role",
-        "edit": "Edit",
-        "delete": "Delete"
-      },
       "status":{
         "registered": "Yes",
         "notRegistered": "No"
-      },
-      "errors":{
-        "deleteFailed": "Failed to delete person.",
-        "updateRoleFailed": "Failed to update person role"
       },
       "success":{
         "registered": "Person registered successfully.",
@@ -114,7 +100,15 @@
         "cancel": "Cancel",
         "create": "Create Person",
         "update": "Update Person",
-        "saving": "Saving..."
+        "saving": "Saving...",
+        "add": "Add New Person",
+        "confirmDelete": "Are you sure you want to delete this person?",
+        "confirmUnregister": "Are you sure you want to unregister this person?",
+        "confirmRegister": "Are you sure you want to register this person?",
+        "toggleRegistration": "Click to toggle registration status.",
+        "updateRole": "Update Role",
+        "edit": "Edit",
+        "delete": "Delete"
       },
       "validation": {
         "firstNameRequired": "First name is required",
@@ -144,7 +138,9 @@
       "errors": {
         "fetchFailed": "Failed to fetch person details",
         "saveFailed": "Failed to save person",
-        "teamAssignmentFailed": "Person created, but team assignment failed"
+        "teamAssignmentFailed": "Person created, but team assignment failed",
+        "deleteFailed": "Failed to delete person.",
+        "updateRoleFailed": "Failed to update person role"
       }
     },
     "news":{
