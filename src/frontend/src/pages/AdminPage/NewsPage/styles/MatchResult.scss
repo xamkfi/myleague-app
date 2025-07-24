@@ -51,17 +51,12 @@
 }
 
 .match-result-date {
-  color: #8b6464;
-  font-weight: 500;
-  min-width: 160px;
-  max-width: 160px;
-  flex: 0 0 160px;
-  margin-right: 1.5rem;
-  text-align: left;
+  font-size: 0.80em;
+  color: #888;
 }
 
 .match-result-teams {
-  font-weight: 600;
+  font-weight: 500;
   color: #1e293b;
   flex: 1 1 200px;
   min-width: 200px;
@@ -74,6 +69,8 @@
   margin-right: auto;
   justify-content: center;
   display: flex;
+  font-size: 0.90em;
+
 }
 
 .match-result-status {

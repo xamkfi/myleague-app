@@ -50,6 +50,7 @@ namespace WebAPI.Controllers.Common
                 request.PageSize,
                 request.Category,
                 request.SportCategory,
+                request.Search,
                 request.Author,
                 request.IncludeArchived
             );
@@ -617,6 +618,24 @@ namespace WebAPI.Controllers.Common
                 _logger.LogError(ex, "Unexpected error during image deletion");
                 return StatusCode(500, ApiResponse<string>.ErrorResponse("An unexpected error occurred during image deletion"));
             }
+        }
+
+        /// <summary>
+        /// Gets the newest news as a main news
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("main-news")]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<NewsArticleDto>>> GetMainNews()
+        {
+            GetMainNewsQuery query = new GetMainNewsQuery();
+            Result<NewsArticleDto> response = await _mediator.Send(query);
+
+            if (response == null || response.Data == null || response.IsFailure)
+                return NotFound(ApiResponse<NewsArticleDto>.ErrorResponse("No main news found."));
+
+            return Ok(ApiResponse<NewsArticleDto>.SuccessResponse(response.Data, "Main news retrieved successfully"));
         }
     }
 }

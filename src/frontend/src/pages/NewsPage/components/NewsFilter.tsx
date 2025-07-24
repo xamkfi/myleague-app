@@ -9,6 +9,27 @@ interface NewsFilterProps {
   }) => void;
 }
 
+export const NewsCategory = {
+  None: 0,
+  General: 1,
+  MatchReports: 2,
+  LeagueNews: 3,
+  PlayerUpdates: 4,
+  TeamNews: 5,
+  Announcements: 6,
+  Events: 7,
+  Transfers: 8,
+  Injuries: 9,
+  Awards: 10,
+};
+
+export const SportsCategory = {
+  None: 0,
+  Floorball: 1,
+  Icehockey: 2,
+  Football: 3,
+};
+
 export default function NewsFilter({onFilterChange}: NewsFilterProps) {
 
   const { t } = useTranslation();
@@ -16,8 +37,8 @@ export default function NewsFilter({onFilterChange}: NewsFilterProps) {
   const [sportCategory, setSportCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-    const categories = ["Transfer", "GameResult", "Announcement"];
-    const sportCategories = ["Floorball", "Hockey", "Football"];
+    const categories = Object.values(NewsCategory).filter(value => value !== NewsCategory.None);
+    const sportCategories = Object.values(SportsCategory).filter(value => value !== SportsCategory.None);
 
   const handleFilterChange = (
     updated: Partial<{ category: string; sportCategory: string; searchTerm: string }>
@@ -37,7 +58,7 @@ export default function NewsFilter({onFilterChange}: NewsFilterProps) {
 
 
   return (
-    <div className="news-filter-panel p-4 bg-white rounded shadow-md flex flex-wrap gap-4 items-center">
+    <div className="news-filter-panel p-4 bg-white rounded shadow-md flex flex-wrap gap-6 items-center">
       {/* Category dropdown */}
       <select
         value={category}

@@ -15,6 +15,7 @@ public record GetAllNewsArticlesQuery(
     int PageSize = 0, // 0 means use default from configuration
     string? Category = null,
     string? SportCategory = null,
+    string? Search = null,
     string? Author = null,
     bool IncludeArchived = false) : IRequest<Result<PagedResult<NewsArticleListDto>>>
 {

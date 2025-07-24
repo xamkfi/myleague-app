@@ -4,14 +4,14 @@ import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './NewsPage.scss';
 import NewsCard from './components/NewsCard';
 import NewsFilter from './components/NewsFilter';
-import { newsService, type NewsArticleDto, type NewsParameters } from '../../api/news/newsService';
-
+import { newsService, type NewsArticleDto, type NewsParameters, getMainNewsArticle } from '../../api/news/newsService';
+import { useNavigate } from 'react-router-dom';
 
 function NewsPage() {
-
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [newsList, setNewsList] = useState<NewsArticleDto[]>([]);
-  
+  const [mainNews, setMainNews] = useState<NewsArticleDto | null>(null);
   const [filters, setFilters] = useState<NewsParameters>({
     category: '',
     sportCategory: '',
@@ -19,25 +19,54 @@ function NewsPage() {
   });
 
   const RetrieveNews = useCallback(async () => {
-    console.log("Filters changed:", filters);
     const response = await newsService(filters);
     setNewsList(response);
   }, [filters]);
 
   useEffect(() => {
-    //Fetch new data when categories change.
     RetrieveNews();
   }, [RetrieveNews]);
 
+  useEffect(() => {
+    getMainNewsArticle().then(setMainNews);
+  }, []);
+
+  // Exclude mainNews from otherNews if present
+  const otherNews = mainNews
+    ? newsList.filter((item) => item.id !== mainNews.id)
+    : newsList;
+
   return (
-    <PageTemplate title={t('nav.news')}>
+    <PageTemplate title={t('nav.news')} >
+      <div className="news-main-bg">
+        <div className="news-main-section">
+          {mainNews && (
+            <div className="main-news-card">
+              <div className="main-news-image-container">
+                {mainNews.mainImage && (
+                  <img src={mainNews.mainImage} alt={mainNews.title} className="main-news-image" />
+                )}
+              </div>
+              <div className="main-news-content">
+                <div className="main-news-category">{mainNews.sportCategory}</div>
+                <h2 className="main-news-title">{mainNews.title}</h2>
+                <div className="main-news-summary">{mainNews.summary}</div>
+                <button className="main-news-button" onClick={() => navigate(`/uutiset/${mainNews.id}`)}>
+                  {t('newsPage.readMore', 'Lue lisää')}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
-      <div className="space-y-10">
-        <NewsFilter onFilterChange={setFilters}/>
-
-        {newsList.map((item) => (
-          <NewsCard key={item.id} news={item}/>
-        ))}
+      <div className="news-list-section">
+        <NewsFilter onFilterChange={setFilters} />
+        <div className="news-grid">
+          {otherNews.map((item) => (
+            <NewsCard key={item.id} news={item} />
+          ))}
+        </div>
       </div>
     </PageTemplate>
   );

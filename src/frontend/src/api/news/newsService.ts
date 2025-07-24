@@ -103,3 +103,18 @@ export async function restoreNewsService(id: string) {
     throw error;
   }
 }
+
+export async function getMainNewsArticle() {
+  try {
+    const response = await fetch(`${API_URL}/News/main-news`, { method: 'GET' });
+    if (!response.ok) {
+      return null;
+    }
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Failed to fetch main news:', error);
+    return null;
+  }
+}
+

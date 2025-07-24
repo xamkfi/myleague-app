@@ -49,7 +49,7 @@ export class MatchResultTableBlot extends BlockEmbed {
         <span class="match-result-date">${new Date(match.date).toLocaleString("fi-FI", {year: "numeric", month: "numeric", day: 'numeric', hour: '2-digit', minute: '2-digit'})}</span>
         <span class="match-result-teams">${teamsHtml}</span>
         <span class="match-result-status"><span class="status-badge status-${match.status}">${match.status}</span></span>
-        <span class="match-result-link"><a href="${match.link}" target="_blank" rel="noopener noreferrer">View Details</a></span>
+        <span class="match-result-link"><a href="/match/${match.link}" target="_blank" rel="noopener noreferrer">View Details</a></span>
       </div>`;
     }).join('');
     node.innerHTML = `<div class="match-result-list">
