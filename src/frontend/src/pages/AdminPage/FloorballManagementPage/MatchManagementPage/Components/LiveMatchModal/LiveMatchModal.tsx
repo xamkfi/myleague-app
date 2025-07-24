@@ -34,13 +34,6 @@ interface PeriodEventData {
   occurredOn: string;
 }
 
-interface MatchState {
-  currentPeriod: number;
-  periodStates: Record<number, 'not_started' | 'started' | 'ended'>;
-  scores: Record<number, { home: number; away: number }>;
-  lastEventTime: string;
-}
-
 interface GoalEventData {
   MatchId: string;
   TeamId: string;
@@ -112,14 +105,6 @@ const LiveMatchModal = ({
   const [showEndPeriodConfirmation, setShowEndPeriodConfirmation] = useState(false);
   const [pendingEndPeriodAction, setPendingEndPeriodAction] = useState<(() => void) | null>(null);
   
-  // State for reconstructing match state from domain events
-  const [reconstructedMatchState, setReconstructedMatchState] = useState<MatchState>({
-    currentPeriod: 1,
-    periodStates: { 1: 'not_started', 2: 'not_started', 3: 'not_started', 4: 'not_started', 5: 'not_started' },
-    scores: { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } },
-    lastEventTime: ''
-  });
-  const [domainEvents, setDomainEvents] = useState<PeriodEventData[]>([]);
   const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false);
   const [showShootoutConfirmation, setShowShootoutConfirmation] = useState(false);
 
@@ -187,23 +172,7 @@ const LiveMatchModal = ({
     }
   }, [onStateUpdate, liveState?.clock]);
 
-  // Initialize reconstructed match state when component loads
-  useEffect(() => {
-    console.log('Initializing reconstructed match state for match:', match.id);
-    
-    // For now, we'll start with a default state
-    // In a real implementation, we would fetch domain events from the backend
-    // and reconstruct the state from those events
-    const initialState: MatchState = {
-      currentPeriod: 1,
-      periodStates: { 1: 'not_started', 2: 'not_started', 3: 'not_started', 4: 'not_started', 5: 'not_started' },
-      scores: { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } },
-      lastEventTime: ''
-    };
-    
-    setReconstructedMatchState(initialState);
-    setDomainEvents([]);
-  }, [match.id]);
+
 
   const loadTeamData = async () => {
     try {
@@ -312,141 +281,7 @@ const LiveMatchModal = ({
     }
   }, [match.id]);
 
-  /**
-   * Analyzes domain events to extract period state information
-   * This function processes all events to determine which periods have been started/ended
-   * and what the current period should be
-   */
-  const analyzePeriodEvents = useCallback((events: FloorballDomainEventDto[]) => {
-    console.log('Analyzing period events from:', events.length, 'events');
-    
-    const startedPeriods = new Set<number>();
-    const endedPeriods = new Set<number>();
-    let currentPeriod = 1;
-    let lastEventTime = '';
-    
-    // Process events chronologically
-    const sortedEvents = [...events].sort((a, b) => 
-      new Date(a.occurredOn).getTime() - new Date(b.occurredOn).getTime()
-    );
-    
-    sortedEvents.forEach(event => {
-      console.log('Processing event:', event.eventType, 'data:', event.data);
-      lastEventTime = event.occurredOn;
-      
-      if (event.eventType === 'FloorballPeriodStartedEvent') {
-        const periodNumber = (event.data as any).PeriodNumber || (event.data as any).periodNumber;
-        if (periodNumber && typeof periodNumber === 'number') {
-          console.log('Period started:', periodNumber);
-          startedPeriods.add(periodNumber);
-          currentPeriod = Math.max(currentPeriod, periodNumber);
-        }
-      } else if (event.eventType === 'FloorballPeriodEndedEvent') {
-        const periodNumber = (event.data as any).PeriodNumber || (event.data as any).periodNumber;
-        if (periodNumber && typeof periodNumber === 'number') {
-          console.log('Period ended:', periodNumber);
-          endedPeriods.add(periodNumber);
-        }
-      }
-    });
-    
-    console.log('Period analysis results:', {
-      startedPeriods: Array.from(startedPeriods),
-      endedPeriods: Array.from(endedPeriods),
-      currentPeriod,
-      lastEventTime
-    });
-    
-    return { startedPeriods, endedPeriods, currentPeriod, lastEventTime };
-  }, []);
 
-  /**
-   * Reconstructs the match state from backend domain events
-   * This function fetches events from the backend and uses them to determine
-   * the actual state of the match (which periods are started/ended, current period, etc.)
-   */
-  const reconstructMatchStateFromEvents = useCallback(async () => {
-    try {
-      console.log('Reconstructing match state from backend events for match:', match.id);
-      
-      // Fetch all domain events from the backend
-      const response = await floorballMatchEventService.getMatchEvents(match.id);
-      
-      if (!response.success || !response.data) {
-        console.warn('Failed to fetch match events for state reconstruction');
-        return;
-      }
-      
-      const events = response.data as FloorballDomainEventDto[];
-      console.log('Fetched', events.length, 'events for state reconstruction');
-      
-      // Analyze the events to determine period state
-      const { startedPeriods, endedPeriods, currentPeriod, lastEventTime } = analyzePeriodEvents(events);
-      
-      // Update local state with the reconstructed information
-      console.log('Updating local state with reconstructed data:', {
-        startedPeriods: Array.from(startedPeriods),
-        endedPeriods: Array.from(endedPeriods),
-        currentPeriod
-      });
-      
-      setStartedPeriods(startedPeriods);
-      setEndedPeriods(endedPeriods);
-      
-      // Update clock period if it differs from the reconstructed current period
-      if (onStateUpdate && currentPeriod !== clock.period) {
-        console.log('Updating clock period from', clock.period, 'to', currentPeriod);
-        onStateUpdate({
-          clock: { ...clock, period: currentPeriod }
-        });
-      }
-      
-      // Determine if clock should be running based on current period state
-      const currentPeriodStarted = startedPeriods.has(currentPeriod);
-      const currentPeriodEnded = endedPeriods.has(currentPeriod);
-      
-      console.log('Clock state analysis:', {
-        currentPeriod,
-        currentPeriodStarted,
-        currentPeriodEnded,
-        clockIsRunning: clock.isRunning
-      });
-      
-      // Auto-manage clock state based on period status
-      if (currentPeriodStarted && !currentPeriodEnded && !clock.isRunning) {
-        // Period is started but not ended, clock should be running
-        console.log('Starting clock - period is active but clock is not running');
-        if (onStateUpdate) {
-          onStateUpdate({
-            clock: { ...clock, isRunning: true }
-          });
-        }
-      } else if (currentPeriodEnded && clock.isRunning) {
-        // Period is ended but clock is still running, should pause
-        console.log('Pausing clock - period has ended');
-        if (onStateUpdate) {
-          onStateUpdate({
-            clock: { ...clock, isRunning: false }
-          });
-        }
-      }
-      
-      console.log('Match state reconstruction completed successfully');
-      
-    } catch (error) {
-      console.error('Error reconstructing match state from events:', error);
-      // Don't set error - state reconstruction failure is not critical
-      // The modal will still work with default state
-    }
-  }, [match.id, analyzePeriodEvents, clock.period, clock.isRunning, onStateUpdate]);
-
-  // Reconstruct state when isResumedMatch is true
-  useEffect(() => {
-    if (isOpen && isResumedMatch) {
-      console.log('Reconstructing state for resumed match');
-      reconstructMatchStateFromEvents();
-    }
-  }, [isOpen, isResumedMatch, reconstructMatchStateFromEvents]);
 
   /**
    * Sets up SignalR connection for real-time updates
@@ -514,65 +349,8 @@ const LiveMatchModal = ({
   };
 
   /**
-   * Reconstructs the match state from domain events
-   * This determines the current period, period states, and scores based on events
-   */
-  const reconstructMatchState = useCallback((events: PeriodEventData[]): MatchState => {
-    console.log('Reconstructing match state from events:', events);
-    
-    const initialState: MatchState = {
-      currentPeriod: 1,
-      periodStates: { 1: 'not_started', 2: 'not_started', 3: 'not_started', 4: 'not_started', 5: 'not_started' },
-      scores: { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } },
-      lastEventTime: ''
-    };
-    
-    if (events.length === 0) {
-      console.log('No events found, using default state');
-      return initialState;
-    }
-    
-    // Sort events by occurrence time
-    const sortedEvents = [...events].sort((a, b) => 
-      new Date(a.occurredOn).getTime() - new Date(b.occurredOn).getTime()
-    );
-    
-    let currentState = { ...initialState };
-    let currentPeriod = 1;
-    let lastEventTime = '';
-    
-    // Process each event to build the state
-    for (const event of sortedEvents) {
-      console.log('Processing event:', event);
-      lastEventTime = event.occurredOn;
-      
-      if (event.periodNumber >= 1 && event.periodNumber <= 5) {
-        // Update period state based on event type
-        // For now, we'll assume any event means the period was started
-        // In a more sophisticated implementation, we'd distinguish between start/end events
-        currentState.periodStates[event.periodNumber] = 'started';
-        
-        // Update scores for this period
-        currentState.scores[event.periodNumber] = {
-          home: event.homeTeamScore,
-          away: event.awayTeamScore
-        };
-        
-        // Update current period to the highest period that has been started
-        currentPeriod = Math.max(currentPeriod, event.periodNumber);
-      }
-    }
-    
-    currentState.currentPeriod = currentPeriod;
-    currentState.lastEventTime = lastEventTime;
-    
-    console.log('Reconstructed match state:', currentState);
-    return currentState;
-  }, []);
-
-  /**
    * Handles real-time period started events from SignalR
-   * Updates the reconstructed match state based on the new event
+   * Updates the period state based on the new event
    */
   const handlePeriodStarted = useCallback((eventData: PeriodEventData) => {
     console.log('handlePeriodStarted called with eventData:', eventData);
@@ -584,16 +362,7 @@ const LiveMatchModal = ({
     
     // Mark this period as started in our local state
     setStartedPeriods(prev => new Set([...prev, eventData.periodNumber]));
-    
-    // Add the event to our collection and reconstruct state in one operation
-    setDomainEvents(prev => {
-      const newEvents = [...prev, eventData];
-      const newState = reconstructMatchState(newEvents);
-      setReconstructedMatchState(newState);
-      console.log('Updated reconstructed match state:', newState);
-      return newEvents;
-    });
-  }, [match.id, reconstructMatchState]);
+  }, [match.id]);
 
   /**
    * Handles real-time goal events from SignalR
