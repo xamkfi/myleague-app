@@ -87,11 +87,12 @@ public class FloorballMatchEventConfiguration : IEntityTypeConfiguration<Floorba
         //    .IsRequired(false);
 
         // Foreign key relationships
-        builder.HasOne<FloorballMatch>()
-            .WithMany()
-            .HasForeignKey(e => e.MatchId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
+        // Comment out this relationship to avoid conflicts with FloorballMatchConfiguration
+        // builder.HasOne<FloorballMatch>()
+        //     .WithMany()
+        //     .HasForeignKey(e => e.MatchId)
+        //     .OnDelete(DeleteBehavior.Cascade)
+        //     .IsRequired();
 
         builder.HasOne<FloorballTeam>()
             .WithMany()

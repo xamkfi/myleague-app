@@ -86,10 +86,19 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .HasField("_periodScores")
                 .EnableLazyLoading(false);
 
-            // Ignore complex event configurations for now to avoid navigationName issues
-            builder.Ignore(m => m.Events);
-            builder.Ignore(m => m.GoalEvents);
-            builder.Ignore(m => m.PenaltyEvents);
+            //// Ignore complex event configurations for now to avoid navigationName issues
+            //builder.Ignore(m => m.Events);
+            //builder.Ignore(m => m.GoalEvents);
+            //builder.Ignore(m => m.PenaltyEvents);
+
+            builder.HasMany(m => m.Events)
+               .WithOne()                        // no back-link on the event entity
+               .HasForeignKey("MatchId")         // ← Explicitly specify the column name
+               .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Navigation(m => m.Events)
+                .HasField("_events")
+                .EnableLazyLoading(false);        // optional
         }
     }
 } 

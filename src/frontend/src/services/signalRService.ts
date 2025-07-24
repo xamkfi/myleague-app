@@ -21,24 +21,29 @@ export class SignalRService {
     this.isConnecting = true;
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '/api';
-      
+      let signalRUrl: string;
+
+      if (import.meta.env.DEV) {
+        signalRUrl = 'http://localhost:8080/hubs/domainevent';
+      } else {
+        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const baseUrl = apiUrl.replace('/api', '');
+        signalRUrl = `${baseUrl}/hubs/domainevent`;
+      }
+
+      console.log(`Connecting to SignalR at: ${signalRUrl}`);
+
       this.connection = new HubConnectionBuilder()
-        .withUrl(`${apiUrl}/hubs/domainevent`, {
-          withCredentials: true
-        })
+        .withUrl(signalRUrl, { withCredentials: true })
         .withAutomaticReconnect([0, 2000, 10000, 30000])
         .configureLogging(LogLevel.Information)
         .build();
 
-      // Handle incoming domain events
       this.connection.on('DomainEvent', (eventType: string, eventData: string) => {
         try {
           const parsedEvent = JSON.parse(eventData);
           const matchEvent: MatchEvent = { eventType, data: parsedEvent };
-          
-          console.log('Received SignalR event:', matchEvent);
-          
+          console.log('Received SignalR domain event:', matchEvent);
           this.matchEventCallbacks.forEach(callback => {
             try {
               callback(matchEvent);
@@ -51,7 +56,23 @@ export class SignalRService {
         }
       });
 
-      // Handle connection state changes
+      this.connection.on('MatchEvent', (eventType: string, eventData: string) => {
+        try {
+          const parsedEvent = JSON.parse(eventData);
+          const matchEvent: MatchEvent = { eventType, data: parsedEvent };
+          console.log('Received SignalR match event:', matchEvent);
+          this.matchEventCallbacks.forEach(callback => {
+            try {
+              callback(matchEvent);
+            } catch (error) {
+              console.error('Error in SignalR match event callback:', error);
+            }
+          });
+        } catch (error) {
+          console.error('Error parsing SignalR match event data:', error);
+        }
+      });
+
       this.connection.onreconnecting(() => {
         console.log('SignalR reconnecting...');
         this.reconnectAttempts++;
@@ -60,7 +81,6 @@ export class SignalRService {
       this.connection.onreconnected(() => {
         console.log('SignalR reconnected');
         this.reconnectAttempts = 0;
-        // Resubscribe to all event types after reconnection
         this.resubscribeToAllEvents();
       });
 
@@ -86,7 +106,7 @@ export class SignalRService {
 
     try {
       for (const eventType of this.subscribedEventTypes) {
-        await this.connection.invoke('SubscribeToEventTypeAsync', this.connection.connectionId, eventType);
+        await this.connection.invoke('SubscribeToEventTypeAsync', eventType);
         console.log(`Resubscribed to event type: ${eventType}`);
       }
     } catch (error) {
@@ -100,7 +120,7 @@ export class SignalRService {
     }
 
     try {
-      await this.connection!.invoke('SubscribeToEventTypeAsync', this.connection!.connectionId, eventType);
+      await this.connection!.invoke('SubscribeToEventTypeAsync', eventType);
       this.subscribedEventTypes.add(eventType);
       console.log(`Subscribed to event type: ${eventType}`);
     } catch (error) {
@@ -115,7 +135,7 @@ export class SignalRService {
     }
 
     try {
-      await this.connection.invoke('UnsubscribeFromEventTypeAsync', this.connection.connectionId, eventType);
+      await this.connection.invoke('UnsubscribeFromEventTypeAsync', eventType);
       this.subscribedEventTypes.delete(eventType);
       console.log(`Unsubscribed from event type: ${eventType}`);
     } catch (error) {
@@ -123,10 +143,35 @@ export class SignalRService {
     }
   }
 
+  async subscribeToMatch(matchId: string): Promise<void> {
+    if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+      await this.connect();
+    }
+
+    try {
+      await this.connection!.invoke('SubscribeToMatchAsync', matchId);
+      console.log(`Subscribed to match: ${matchId}`);
+    } catch (error) {
+      console.error(`Error subscribing to match ${matchId}:`, error);
+      throw error;
+    }
+  }
+
+  async unsubscribeFromMatch(matchId: string): Promise<void> {
+    if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    try {
+      await this.connection.invoke('UnsubscribeFromMatchAsync', matchId);
+      console.log(`Unsubscribed from match: ${matchId}`);
+    } catch (error) {
+      console.error(`Error unsubscribing from match ${matchId}:`, error);
+    }
+  }
+
   onMatchEvent(callback: (event: MatchEvent) => void): () => void {
     this.matchEventCallbacks.push(callback);
-    
-    // Return unsubscribe function
     return () => {
       const index = this.matchEventCallbacks.indexOf(callback);
       if (index > -1) {
@@ -164,4 +209,4 @@ export class SignalRService {
 }
 
 // Singleton instance
-export const signalRService = new SignalRService(); 
+export const signalRService = new SignalRService();

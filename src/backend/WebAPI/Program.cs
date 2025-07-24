@@ -54,7 +54,7 @@ if (app.Environment.IsDevelopment())
 {
     // Map OpenAPI endpoint at the traditional Swagger location for compatibility
     app.MapOpenApi("/swagger/v1/swagger.json");
-    
+
     // Configure Scalar UI
     app.MapScalarApiReference(options =>
     {
@@ -87,7 +87,7 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "application/json";
-        
+
         var response = new
         {
             Status = report.Status.ToString(),
@@ -143,4 +143,4 @@ app.Logger.LogInformation("  - Detailed: /health");
 app.Logger.LogInformation("  - Ready: /health/ready");
 app.Logger.LogInformation("  - Live: /health/live");
 
-app.Run(); 
+app.Run();

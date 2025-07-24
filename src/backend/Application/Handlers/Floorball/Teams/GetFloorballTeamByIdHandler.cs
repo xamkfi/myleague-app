@@ -22,7 +22,9 @@ public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQ
 {
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IClubRepository _clubRepository;
+    private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetFloorballTeamByIdHandler> _logger;
+    private readonly IFloorballPlayerRepository _floorballPlayerRepository;
 
     /// <summary>
     /// Initializes a new instance of the GetFloorballTeamByIdHandler class
@@ -33,11 +35,15 @@ public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQ
     public GetFloorballTeamByIdHandler(
         IFloorballTeamRepository teamRepository,
         IClubRepository clubRepository,
-        ILogger<GetFloorballTeamByIdHandler> logger)
+        ILogger<GetFloorballTeamByIdHandler> logger,
+        IPersonRepository personRepository,
+        IFloorballPlayerRepository floorballPlayerRepository)
     {
         _teamRepository = teamRepository;
         _clubRepository = clubRepository;
         _logger = logger;
+        _personRepository = personRepository;
+        _floorballPlayerRepository = floorballPlayerRepository;
     }
 
     /// <summary>
@@ -67,7 +73,27 @@ public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQ
                 return Result<FloorballTeamDto>.Failure("Associated club not found");
             }
 
-            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club);
+            //Load Person using player ids.
+            List<Guid> playerIds = team.Roster.Select(t => t.PlayerId).ToList();
+            Dictionary<Guid, Person> playerPersons = new Dictionary<Guid, Person>();
+
+            if (playerIds.Any())
+            {
+                foreach (Guid playerId in playerIds)
+                {
+                    FloorballPlayer? floorballPlayer = await _floorballPlayerRepository.GetByIdAsync(playerId);
+                    if (floorballPlayer != null)
+                    {
+                        Person? person = await _personRepository.GetByIdAsync(floorballPlayer.PersonId);
+                        if (person != null)
+                        {
+                            playerPersons[playerId] = person;
+                        }
+                    }
+                }
+            }
+
+            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club, playerPersons);
             _logger.LogInformation("Successfully retrieved floorball team: {TeamId}", team.Id);
 
             return Result<FloorballTeamDto>.Success(teamDto);
