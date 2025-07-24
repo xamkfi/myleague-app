@@ -40,7 +40,8 @@ public static class DependencyInjection
         
         // Register application services
         services.AddScoped<IPaginationService, PaginationService>();
-        
+        services.AddSingleton<IMatchClockManager, MatchClockManager>();
+
         return services;
     }
 } 
