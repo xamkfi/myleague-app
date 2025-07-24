@@ -66,7 +66,7 @@ export default function PreviewNews({ value, newsData }: PreviewNewsProps) {
         <div className="preview-news__image-section">
           <img
             src={newsData.mainPicture}
-            alt={newsData.title || 'News image'}
+            alt={newsData.title || t('admin.news.news_image', 'News image')}
             className="preview-news__main-image"
             onError={(e) => {
               const target = e.target as HTMLImageElement;

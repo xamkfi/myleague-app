@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { FloorballMatchDto } from '../../../../../../types/floorball/floorballTypes';
 import './MatchStatsCards.scss';
 
@@ -18,6 +19,7 @@ const MatchStatsCards = ({
   selectedSeasonId,
   onCreateNew
 }: MatchStatsCardsProps) => {
+  const { t } = useTranslation();
   const getMatchCountByStatus = (status: string) => {
     return allMatches.filter(m => m.status === status).length;
   };
@@ -30,22 +32,22 @@ const MatchStatsCards = ({
       </div>
       <div className="stat-card">
         <div className="stat-number">{getMatchCountByStatus('Completed')}</div>
-        <div className="stat-label">Completed</div>
+        <div className="stat-label">{t('floorball.matches.stats.completed', 'Completed')}</div>
         <div className="stat-indicator completed"></div>
       </div>
       <div className="stat-card">
         <div className="stat-number">{getMatchCountByStatus('Scheduled')}</div>
-        <div className="stat-label">Scheduled</div>
+        <div className="stat-label">{t('floorball.matches.stats.scheduled', 'Scheduled')}</div>
         <div className="stat-indicator scheduled"></div>
       </div>
       <div className="stat-card">
         <div className="stat-number">{getMatchCountByStatus('InProgress')}</div>
-        <div className="stat-label">In Progress</div>
+        <div className="stat-label">{t('floorball.matches.stats.inProgress', 'In Progress')}</div>
         <div className="stat-indicator progress"></div>
       </div>
       <div className="stat-card stat-card--create" onClick={onCreateNew}>
         <div className="stat-number stat-number--plus">+</div>
-        <div className="stat-label">Create New</div>
+        <div className="stat-label">{t('floorball.matches.stats.createNew', 'Create New')}</div>
       </div>
     </div>
   );

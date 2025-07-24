@@ -212,7 +212,7 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
               <div className="relative group">
                 <img
                   src={data.mainPicture}
-                  alt="Main picture preview"
+                  alt={t('admin.news.main_picture_preview', 'Main picture preview')}
                   className="w-full h-64 object-cover rounded-lg border border-gray-200"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;

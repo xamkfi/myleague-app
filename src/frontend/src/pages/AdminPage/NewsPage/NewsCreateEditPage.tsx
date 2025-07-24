@@ -211,7 +211,7 @@ export default function NewsCreateEditPage() {
       <PageTemplate title={t('admin.news.loading', 'Loading...')}>
         <div className="flex justify-center items-center min-h-screen">
           <LoadingSpinner />
-          <span className="ml-2">Loading article...</span>
+          <span className="ml-2">{t('admin.news.loading_article', 'Loading article...')}</span>
         </div>
       </PageTemplate>
     );
@@ -226,10 +226,10 @@ export default function NewsCreateEditPage() {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                  Preview Mode
+                  {t('admin.news.preview_mode', 'Preview Mode')}
                 </span>
                 <span className="text-gray-600 text-sm">
-                  This is how your article will appear to readers
+                  {t('admin.news.preview_description', 'This is how your article will appear to readers')}
                 </span>
               </div>
               
@@ -266,10 +266,10 @@ export default function NewsCreateEditPage() {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                  {isEditMode ? 'Edit Mode' : 'Create Mode'}
+                  {isEditMode ? t('admin.news.edit_mode', 'Edit Mode') : t('admin.news.create_mode', 'Create Mode')}
                 </span>
                 <span className="text-gray-600 text-sm">
-                  {isEditMode ? 'Edit existing news article' : 'Create a new news article'}
+                  {isEditMode ? t('admin.news.edit_description', 'Edit existing news article') : t('admin.news.create_description', 'Create a new news article')}
                 </span>
               </div>
               
