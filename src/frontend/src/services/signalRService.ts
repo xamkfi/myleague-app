@@ -149,7 +149,7 @@ export class SignalRService {
   async subscribeToEventType(eventType: string): Promise<void> {
     if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
       try {
-        await this.connect();
+      await this.connect();
       } catch (error) {
         console.error(`Failed to connect to SignalR before subscribing to ${eventType}:`, error);
         throw new Error(`Cannot subscribe to event type ${eventType}: Connection failed`);

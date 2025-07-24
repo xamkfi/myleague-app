@@ -9,6 +9,7 @@ import MatchStatsCards from './Components/MatchStatsCards/MatchStatsCards';
 import MatchFilters from './Components/MatchFilters/MatchFilters';
 import CollapsibleMatchSection from './Components/CollapsibleMatchSection/CollapsibleMatchSection';
 import { useLiveMatchState } from './hooks/useLiveMatchState';
+import type { LiveMatchState } from './hooks/useLiveMatchState';
 import type { 
   FloorballMatchDto, 
   CreateFloorballMatchRequest,
@@ -151,19 +152,11 @@ const MatchManagementPage = () => {
     const handleGoalScored = (eventData: any) => {
       const { MatchId, TeamId } = eventData;
       
-      setMatches(prev => prev.map(match => {
-        if (match.id === MatchId) {
-          const isHomeTeam = match.homeTeamId === TeamId;
-          return {
-            ...match,
-            homeScore: isHomeTeam ? match.homeScore + 1 : match.homeScore,
-            awayScore: !isHomeTeam ? match.awayScore + 1 : match.awayScore
-          };
-        }
-        return match;
-      }));
-      
-      console.log(`Goal scored for match ${MatchId} by team ${TeamId}`);
+      // Don't update scores locally - let the LiveMatchModal handle score updates
+      // by refreshing from the backend to avoid duplicate updates
+      // The LiveMatchModal will call loadCurrentMatchStatus() which gets the accurate
+      // score from the backend and notifies the parent via onMatchUpdated callback
+      console.log(`Goal scored for match ${MatchId} by team ${TeamId} - score will be updated by modal`);
     };
 
     // Handle penalty assigned events
@@ -374,6 +367,25 @@ const MatchManagementPage = () => {
     setLiveModalMatch(null);
   };
 
+  const handleMatchUpdated = (updatedMatch: FloorballMatchDto) => {
+    // Update the match in the matches list with the latest data from backend
+    setMatches(prev => prev.map(match => 
+      match.id === updatedMatch.id ? updatedMatch : match
+    ));
+    
+    // Also update the live modal match if it's the same match
+    if (liveModalMatch?.id === updatedMatch.id) {
+      setLiveModalMatch(updatedMatch);
+    }
+  };
+
+  // Memoize the onStateUpdate callback to prevent infinite loops
+  const handleStateUpdate = useCallback((updates: Partial<LiveMatchState>) => {
+    if (liveModalMatch) {
+      updateLiveMatchState(liveModalMatch.id, updates);
+    }
+  }, [liveModalMatch?.id, updateLiveMatchState]);
+
   const toggleSection = (section: keyof typeof collapsedSections) => {
     setCollapsedSections(prev => ({
       ...prev,
@@ -573,7 +585,8 @@ const MatchManagementPage = () => {
             onCompleteLive={handleCompleteLive}
             onGoLive={handleGoLive}
             liveState={getLiveMatchState(liveModalMatch.id)}
-            onStateUpdate={(updates) => updateLiveMatchState(liveModalMatch.id, updates)}
+            onStateUpdate={handleStateUpdate}
+            onMatchUpdated={handleMatchUpdated}
           />
         )}
       </div>

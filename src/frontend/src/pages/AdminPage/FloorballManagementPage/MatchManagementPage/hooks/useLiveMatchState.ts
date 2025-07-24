@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 
 export interface LiveMatchState {
@@ -89,7 +89,7 @@ export const useLiveMatchState = () => {
     };
   };
 
-  const updateLiveMatchState = (matchId: string, updates: Partial<LiveMatchState>) => {
+  const updateLiveMatchState = useCallback((matchId: string, updates: Partial<LiveMatchState>) => {
     setLiveMatchStates(prev => {
       const newMap = new Map(prev);
       const currentState = newMap.get(matchId);
@@ -98,9 +98,9 @@ export const useLiveMatchState = () => {
       }
       return newMap;
     });
-  };
+  }, []);
 
-  const initializeLiveMatch = (match: FloorballMatchDto) => {
+  const initializeLiveMatch = useCallback((match: FloorballMatchDto) => {
     setLiveMatches(prev => new Set([...prev, match.id]));
     
     setLiveMatchStates(prev => {
@@ -108,9 +108,9 @@ export const useLiveMatchState = () => {
       newMap.set(match.id, initializeLiveMatchState(match));
       return newMap;
     });
-  };
+  }, []);
 
-  const cancelLiveMatch = (matchId: string) => {
+  const cancelLiveMatch = useCallback((matchId: string) => {
     // Remove from live matches
     setLiveMatches(prev => {
       const newSet = new Set(prev);
@@ -124,15 +124,15 @@ export const useLiveMatchState = () => {
       newMap.delete(matchId);
       return newMap;
     });
-  };
+  }, []);
 
-  const getLiveMatchState = (matchId: string): LiveMatchState | undefined => {
+  const getLiveMatchState = useCallback((matchId: string): LiveMatchState | undefined => {
     return liveMatchStates.get(matchId);
-  };
+  }, [liveMatchStates]);
 
-  const isMatchLive = (matchId: string): boolean => {
+  const isMatchLive = useCallback((matchId: string): boolean => {
     return liveMatches.has(matchId);
-  };
+  }, [liveMatches]);
 
   return {
     liveMatches,

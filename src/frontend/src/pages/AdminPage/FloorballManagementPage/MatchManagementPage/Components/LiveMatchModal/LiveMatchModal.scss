@@ -836,11 +836,12 @@
   }
 
   .events-list {
-    max-height: 250px;
+    flex: 1;
     overflow-y: auto;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
     background: white;
+    min-height: 0; // This is important for flex-grow to work properly
   }
 
   .event-item {

@@ -21,24 +21,43 @@ interface LiveMatchModalProps {
   onGoLive?: (matchId: string, updatedMatch?: FloorballMatchDto) => void;
   liveState?: LiveMatchState;
   onStateUpdate?: (updates: Partial<LiveMatchState>) => void;
+  onMatchUpdated?: (updatedMatch: FloorballMatchDto) => void;
+}
+
+interface PeriodEventData {
+  matchId: string;
+  periodNumber: number;
+  homeTeamScore: number;
+  awayTeamScore: number;
+  isLastRegularPeriod: boolean;
+  occurredOn: string;
+}
+
+interface MatchState {
+  currentPeriod: number;
+  periodStates: Record<number, 'not_started' | 'started' | 'ended'>;
+  scores: Record<number, { home: number; away: number }>;
+  lastEventTime: string;
 }
 
 interface GoalEventData {
+  MatchId: string;
   TeamId: string;
   PlayerId: string;
-  AssisterId?: string;
   PeriodNumber: number;
-  TimeInSeconds: number;
+  EventTime: string;
+  HomeTeam: { Id: string; Name: string };
+  AwayTeam: { Id: string; Name: string };
 }
 
 interface PenaltyEventData {
+  MatchId: string;
+  EventTime: string;
+  PenaltyType: string;
   TeamId: string;
   PlayerId: string;
-  PenaltyType: string;
-  Minutes: number;
-  PeriodNumber: number;
-  TimeInSeconds: number;
-  Description: string;
+  HomeTeam: { Id: string; Name: string };
+  AwayTeam: { Id: string; Name: string };
 }
 
 const LiveMatchModal = ({ 
@@ -48,7 +67,8 @@ const LiveMatchModal = ({
   onCompleteLive,
   onGoLive,
   liveState,
-  onStateUpdate
+  onStateUpdate,
+  onMatchUpdated
 }: LiveMatchModalProps) => {
   // State management
   const [homeTeam, setHomeTeam] = useState<FloorballTeam | null>(null);
@@ -60,17 +80,23 @@ const LiveMatchModal = ({
   const [matchEvents, setMatchEvents] = useState<FloorballDomainEventDto[]>([]);
   
   // Period state management
-  const [periodStates, setPeriodStates] = useState<Record<number, 'not_started' | 'started' | 'ended'>>({});
   const [periodLoading, setPeriodLoading] = useState<Record<number, boolean>>({});
   
   // Real match status from backend
   const [currentMatch, setCurrentMatch] = useState<FloorballMatchDto>(match);
   
   // Use state from parent or default values
-  const currentScore = useMemo(() => 
-    liveState?.currentScore || { home: currentMatch.homeScore, away: currentMatch.awayScore }, 
-    [liveState?.currentScore, currentMatch.homeScore, currentMatch.awayScore]
-  );
+  const currentScore = useMemo(() => {
+    // Always use the current match data as the source of truth
+    const baseScore = { home: currentMatch.homeScore, away: currentMatch.awayScore };
+    
+    // If we have liveState.currentScore, use it as an override for real-time updates
+    if (liveState?.currentScore) {
+      return liveState.currentScore;
+    }
+    
+    return baseScore;
+  }, [liveState?.currentScore, currentMatch.homeScore, currentMatch.awayScore]);
   const clock = liveState?.clock || {
     period: 1,
     minutes: 0,
@@ -83,6 +109,15 @@ const LiveMatchModal = ({
   const [showPenaltyForm, setShowPenaltyForm] = useState(false);
   const [showEndPeriodConfirmation, setShowEndPeriodConfirmation] = useState(false);
   const [pendingEndPeriodAction, setPendingEndPeriodAction] = useState<(() => void) | null>(null);
+  
+  // State for reconstructing match state from domain events
+  const [reconstructedMatchState, setReconstructedMatchState] = useState<MatchState>({
+    currentPeriod: 1,
+    periodStates: { 1: 'not_started', 2: 'not_started', 3: 'not_started', 4: 'not_started', 5: 'not_started' },
+    scores: { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } },
+    lastEventTime: ''
+  });
+  const [domainEvents, setDomainEvents] = useState<PeriodEventData[]>([]);
   const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false);
   const [showShootoutConfirmation, setShowShootoutConfirmation] = useState(false);
 
@@ -130,6 +165,44 @@ const LiveMatchModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, match.id]);
 
+  // Update currentMatch when match prop changes
+  useEffect(() => {
+    setCurrentMatch(match);
+  }, [match]);
+
+  // Initialize clock and period states
+  useEffect(() => {
+    if (onStateUpdate && !liveState?.clock) {
+      // Only initialize if we don't already have a clock state
+      onStateUpdate({
+        clock: {
+          period: 1,
+          minutes: 0,
+          seconds: 0,
+          isRunning: false
+        }
+      });
+    }
+  }, [onStateUpdate, liveState?.clock]);
+
+  // Initialize reconstructed match state when component loads
+  useEffect(() => {
+    console.log('Initializing reconstructed match state for match:', match.id);
+    
+    // For now, we'll start with a default state
+    // In a real implementation, we would fetch domain events from the backend
+    // and reconstruct the state from those events
+    const initialState: MatchState = {
+      currentPeriod: 1,
+      periodStates: { 1: 'not_started', 2: 'not_started', 3: 'not_started', 4: 'not_started', 5: 'not_started' },
+      scores: { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } },
+      lastEventTime: ''
+    };
+    
+    setReconstructedMatchState(initialState);
+    setDomainEvents([]);
+  }, [match.id]);
+
   const loadTeamData = async () => {
     try {
       setLoading(true);
@@ -163,25 +236,52 @@ const LiveMatchModal = ({
    * Loads the current match status from the backend
    * This ensures we have the most up-to-date match information
    */
-  const loadCurrentMatchStatus = async () => {
+  const loadCurrentMatchStatus = useCallback(async () => {
     try {
+      console.log('Loading current match status for match:', match.id);
       const response = await floorballMatchService.getById(match.id);
       
+      console.log('Match status response:', response);
+      
       if (response.success && response.data) {
-        setCurrentMatch(response.data);
+        const updatedMatch = response.data;
+        console.log('Updated match data:', updatedMatch);
+        console.log('Current scores - Home:', updatedMatch.homeScore, 'Away:', updatedMatch.awayScore);
+        
+        setCurrentMatch(updatedMatch);
+        
+        // Update the liveState with the new score from backend
+        if (onStateUpdate) {
+          const newScore = {
+            home: updatedMatch.homeScore,
+            away: updatedMatch.awayScore
+          };
+          console.log('Updating liveState with new score:', newScore);
+          onStateUpdate({
+            currentScore: newScore
+          });
+        }
+        
+        // Notify parent component about the updated match data
+        if (onMatchUpdated) {
+          console.log('Notifying parent component about updated match data');
+          onMatchUpdated(updatedMatch);
+        }
+      } else {
+        console.warn('Failed to load match status:', response.message || 'Unknown error');
       }
     } catch (error) {
       console.error('Error loading current match status:', error);
       // Don't set error for status loading - it's not critical
     }
-  };
+  }, [match.id, onStateUpdate, onMatchUpdated]);
 
   /**
    * Loads all match events (goals and penalties) from the backend
    * The backend returns domain events in a flat array structure
    * This function fetches the events and stores them for processing
    */
-  const loadMatchEvents = async () => {
+  const loadMatchEvents = useCallback(async () => {
     try {
       console.log('loadMatchEvents called for match:', match.id);
       const response = await floorballMatchEventService.getMatchEvents(match.id);
@@ -196,7 +296,7 @@ const LiveMatchModal = ({
       console.error('Error loading match events:', error);
       // Don't set error for events loading - it's not critical
     }
-  };
+  }, [match.id]);
 
   /**
    * Sets up SignalR connection for real-time updates
@@ -222,7 +322,12 @@ const LiveMatchModal = ({
       
       // Only subscribe if connection is established
       if (signalRService.isConnected) {
-        console.log('SignalR connected, subscribing to events...');
+        console.log('SignalR connected, subscribing to match events...');
+        
+        // Subscribe to this specific match for all match-related events
+        await signalRService.subscribeToMatch(match.id);
+        
+        // Also subscribe to specific event types for broader coverage
         await signalRService.subscribeToEventType('FloorballGoalScored');
         await signalRService.subscribeToEventType('FloorballPenaltyAssigned');
         
@@ -245,6 +350,10 @@ const LiveMatchModal = ({
   const cleanupSignalR = async () => {
     try {
       if (signalRService.isConnected) {
+        // Unsubscribe from match-specific events
+        await signalRService.unsubscribeFromMatch(match.id);
+        
+        // Unsubscribe from event types
         await signalRService.unsubscribeFromEventType('FloorballGoalScored');
         await signalRService.unsubscribeFromEventType('FloorballPenaltyAssigned');
       }
@@ -255,74 +364,170 @@ const LiveMatchModal = ({
   };
 
   /**
+   * Reconstructs the match state from domain events
+   * This determines the current period, period states, and scores based on events
+   */
+  const reconstructMatchState = useCallback((events: PeriodEventData[]): MatchState => {
+    console.log('Reconstructing match state from events:', events);
+    
+    const initialState: MatchState = {
+      currentPeriod: 1,
+      periodStates: { 1: 'not_started', 2: 'not_started', 3: 'not_started', 4: 'not_started', 5: 'not_started' },
+      scores: { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } },
+      lastEventTime: ''
+    };
+    
+    if (events.length === 0) {
+      console.log('No events found, using default state');
+      return initialState;
+    }
+    
+    // Sort events by occurrence time
+    const sortedEvents = [...events].sort((a, b) => 
+      new Date(a.occurredOn).getTime() - new Date(b.occurredOn).getTime()
+    );
+    
+    let currentState = { ...initialState };
+    let currentPeriod = 1;
+    let lastEventTime = '';
+    
+    // Process each event to build the state
+    for (const event of sortedEvents) {
+      console.log('Processing event:', event);
+      lastEventTime = event.occurredOn;
+      
+      if (event.periodNumber >= 1 && event.periodNumber <= 5) {
+        // Update period state based on event type
+        // For now, we'll assume any event means the period was started
+        // In a more sophisticated implementation, we'd distinguish between start/end events
+        currentState.periodStates[event.periodNumber] = 'started';
+        
+        // Update scores for this period
+        currentState.scores[event.periodNumber] = {
+          home: event.homeTeamScore,
+          away: event.awayTeamScore
+        };
+        
+        // Update current period to the highest period that has been started
+        currentPeriod = Math.max(currentPeriod, event.periodNumber);
+      }
+    }
+    
+    currentState.currentPeriod = currentPeriod;
+    currentState.lastEventTime = lastEventTime;
+    
+    console.log('Reconstructed match state:', currentState);
+    return currentState;
+  }, []);
+
+  /**
+   * Handles real-time period started events from SignalR
+   * Updates the reconstructed match state based on the new event
+   */
+  const handlePeriodStarted = useCallback((eventData: PeriodEventData) => {
+    console.log('handlePeriodStarted called with eventData:', eventData);
+    
+    if (eventData.matchId !== match.id) {
+      console.log('Period started event is for different match, ignoring');
+      return;
+    }
+    
+    // Add the event to our collection and reconstruct state in one operation
+    setDomainEvents(prev => {
+      const newEvents = [...prev, eventData];
+      const newState = reconstructMatchState(newEvents);
+      setReconstructedMatchState(newState);
+      console.log('Updated reconstructed match state:', newState);
+      return newEvents;
+    });
+  }, [match.id, reconstructMatchState]);
+
+  /**
+   * Handles real-time goal events from SignalR
+   * Refreshes the match data from backend to get accurate score
+   */
+  const handleGoalScored = useCallback((eventData: GoalEventData) => {
+    console.log('handleGoalScored called with eventData:', eventData);
+    
+    if (!onStateUpdate) return;
+    
+    // Verify this event is for our match
+    if (eventData.MatchId !== match.id) {
+      console.log('Goal event is for different match, ignoring');
+      return;
+    }
+    
+    console.log('Goal scored for team:', eventData.TeamId);
+    console.log('Player ID:', eventData.PlayerId);
+    console.log('Period number:', eventData.PeriodNumber);
+    console.log('Event time:', eventData.EventTime);
+    console.log('Home team:', eventData.HomeTeam);
+    console.log('Away team:', eventData.AwayTeam);
+    
+    // Refresh match data from backend to get accurate score
+    loadCurrentMatchStatus();
+    
+    // Refresh events list
+    loadMatchEvents();
+  }, [onStateUpdate, match.id, loadCurrentMatchStatus, loadMatchEvents]);
+
+  /**
+   * Handles real-time penalty events from SignalR
+   * Refreshes the events list to show the new penalty
+   */
+  const handlePenaltyAssigned = useCallback((eventData: PenaltyEventData) => {
+    console.log('handlePenaltyAssigned called with eventData:', eventData);
+    
+    if (!onStateUpdate) return;
+    
+    // Verify this event is for our match
+    if (eventData.MatchId !== match.id) {
+      console.log('Penalty event is for different match, ignoring');
+      return;
+    }
+    
+    console.log('Penalty assigned for team:', eventData.TeamId);
+    console.log('Penalty type:', eventData.PenaltyType);
+    console.log('Player ID:', eventData.PlayerId);
+    
+    // Refresh events list
+    loadMatchEvents();
+  }, [onStateUpdate, match.id, loadMatchEvents]);
+
+  /**
    * Handles real-time SignalR events for this match
    * Filters events to only process those relevant to this match
    * Updates the UI immediately when events are received
    */
   const handleSignalREvent = useCallback((event: MatchEvent) => {
     console.log('Received match event:', event);
+    console.log('Event type:', event.eventType);
+    console.log('Event data:', event.data);
     
     const eventData = event.data as { MatchId?: string };
+    console.log('Extracted MatchId from event data:', eventData?.MatchId);
+    console.log('Current match ID:', match.id);
+    
     if (eventData?.MatchId !== match.id) {
+      console.log('Event is not for this match, ignoring');
       return; // Event is not for this match
     }
     
+    console.log('Processing event for this match');
+    
     if (event.eventType === 'FloorballGoalScored') {
+      console.log('Handling goal scored event');
       handleGoalScored(event.data as GoalEventData);
     } else if (event.eventType === 'FloorballPenaltyAssigned') {
+      console.log('Handling penalty assigned event');
       handlePenaltyAssigned(event.data as PenaltyEventData);
+    } else if (event.eventType === 'FloorballPeriodStartedEvent') {
+      console.log('Handling period started event');
+      handlePeriodStarted(event.data as PeriodEventData);
+    } else {
+      console.log('Unknown event type:', event.eventType);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [match.id]);
-
-  /**
-   * Handles real-time goal events from SignalR
-   * Updates the score immediately and refreshes the events list
-   * This provides instant feedback when goals are recorded
-   */
-  const handleGoalScored = useCallback((eventData: GoalEventData) => {
-    console.log('handleGoalScored called with eventData:', eventData);
-    console.log('onStateUpdate available:', !!onStateUpdate);
-    console.log('currentScore:', currentScore);
-    console.log('match.homeTeamId:', match.homeTeamId);
-    console.log('match.awayTeamId:', match.awayTeamId);
-    
-    if (!onStateUpdate) return;
-    
-    // Update score
-    const newScore = {
-      home: eventData.TeamId === match.homeTeamId ? currentScore.home + 1 : currentScore.home,
-      away: eventData.TeamId === match.awayTeamId ? currentScore.away + 1 : currentScore.away
-    };
-    
-    console.log('Calculated newScore:', newScore);
-    
-    onStateUpdate({
-      currentScore: newScore
-    });
-    
-    // Refresh events from backend
-    loadMatchEvents();
-  }, [onStateUpdate, match.homeTeamId, match.awayTeamId, currentScore]);
-
-  /**
-   * Handles real-time penalty events from SignalR
-   * Refreshes the events list to show the new penalty
-   */
-  const handlePenaltyAssigned = useCallback((_eventData: PenaltyEventData) => {
-    if (!onStateUpdate) return;
-    
-    // Refresh events from backend
-    loadMatchEvents();
-  }, [onStateUpdate]);
-
-  // Clock management
-  const toggleClock = () => {
-    if (!onStateUpdate) return;
-    onStateUpdate({
-      clock: { ...clock, isRunning: !clock.isRunning }
-    });
-  };
+  }, [match.id, handleGoalScored, handlePenaltyAssigned, handlePeriodStarted]);
 
   /**
    * Combined function that handles starting the match, period, and clock
@@ -350,24 +555,21 @@ const LiveMatchModal = ({
         }
       }
       
-      // Step 2: Start the current period if not already started
-      const currentPeriodState = periodStates[clock.period];
-      if (currentPeriodState !== 'started' && currentPeriodState !== 'ended') {
-        console.log(`Starting period ${clock.period}...`);
-        setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
-        
-        await floorballMatchEventService.startPeriod(currentMatch.id, clock.period);
-        console.log(`Started period ${clock.period} for match ${currentMatch.id}`);
-        
-        // Update period state
-        setPeriodStates(prev => ({ ...prev, [clock.period]: 'started' }));
-      }
+      // Step 2: Start the current period
+      console.log(`Starting period ${clock.period}...`);
+      setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
+      
+      await floorballMatchEventService.startPeriod(currentMatch.id, clock.period);
+      console.log(`Started period ${clock.period} for match ${currentMatch.id}`);
       
       // Step 3: Start the clock
       console.log('Starting clock...');
       onStateUpdate({
         clock: { ...clock, isRunning: true }
       });
+      
+      // Step 4: Refresh match status to ensure UI is up to date
+      await loadCurrentMatchStatus();
       
       setError(null);
     } catch (error) {
@@ -382,113 +584,71 @@ const LiveMatchModal = ({
   /**
    * Pause the clock (only when clock is running)
    */
-  const handlePauseClock = () => {
+  const handlePauseClock = useCallback(() => {
     if (!onStateUpdate) return;
     onStateUpdate({
       clock: { ...clock, isRunning: false }
     });
-  };
+  }, [onStateUpdate, clock]);
 
   /**
-   * Determines if the combined start button should be enabled
-   * @returns true if the button can be used
+   * Resume the clock (only when clock is paused)
    */
-  const canStartMatchAndPeriod = () => {
-    // Can start if:
-    // 1. Match is not completed
-    // 2. Not currently loading
-    // 3. Clock is not running (if clock is running, we show pause button)
-    // 4. Current period is not ended
-    const currentPeriodState = periodStates[clock.period];
-    return currentMatch.status !== 'Completed' && 
-           !loading && 
-           !clock.isRunning && 
-           currentPeriodState !== 'ended';
-  };
+  const handleResumeClock = useCallback(() => {
+    if (!onStateUpdate) return;
+    onStateUpdate({
+      clock: { ...clock, isRunning: true }
+    });
+  }, [onStateUpdate, clock]);
 
   /**
-   * Determines if the pause button should be enabled
-   * @returns true if the pause button can be used
+   * Determines the button text and functionality based on the current match state
    */
-  const canPauseClock = () => {
-    // Can pause if:
-    // 1. Match is not completed
-    // 2. Not currently loading
-    // 3. Clock is running
-    return currentMatch.status !== 'Completed' && 
-           !loading && 
-           clock.isRunning;
-  };
+  const startButtonInfo = useMemo(() => {
+    // If match is not in progress, show "Start Match & Clock"
+    if (currentMatch.status !== 'InProgress') {
+      return {
+        text: 'Start Match & Clock',
+        onClick: handleStartMatchAndPeriod,
+        disabled: loading
+      };
+    }
+    
+    // If match is in progress, check clock state
+    if (clock.isRunning) {
+      return {
+        text: 'Pause',
+        onClick: handlePauseClock,
+        disabled: false
+      };
+    } else {
+      return {
+        text: 'Resume',
+        onClick: handleResumeClock,
+        disabled: false
+      };
+    }
+  }, [currentMatch.status, clock.isRunning, loading, handleStartMatchAndPeriod, handlePauseClock, handleResumeClock]);
 
   /**
    * Determines if the main clock button should be enabled
-   * @returns true if the button can be used
    */
   const canUseMainClockButton = () => {
-    if (clock.isRunning) {
-      return canPauseClock();
-    } else {
-      return canStartMatchAndPeriod();
-    }
-  };
-
-  /**
-   * Gets the button text based on current state
-   * @returns The appropriate button text
-   */
-  const getStartButtonText = () => {
-    if (clock.isRunning) {
-      return '⏸️ Pause';
-    }
-    
+    // If match is not in progress, only enable if not loading
     if (currentMatch.status !== 'InProgress') {
-      return '🟢 Start Match & 1st Period';
+      return !loading;
     }
     
-    // Check if we're in overtime
-    if (isInOvertime()) {
-      const currentPeriodState = periodStates[clock.period];
-      if (currentPeriodState === 'started') {
-        return '▶️ Start Clock';
-      }
-      return '⏰ Start Overtime';
-    }
-    
-    // Check if we're in shootout
-    if (isInShootout()) {
-      const currentPeriodState = periodStates[clock.period];
-      if (currentPeriodState === 'started') {
-        return '▶️ Start Clock';
-      }
-      return '🎯 Start Shootout';
-    }
-    
-    const currentPeriodState = periodStates[clock.period];
-    if (currentPeriodState === 'started') {
-      return '▶️ Start Clock';
-    }
-    
-    return '🟢 Start Period & Clock';
+    // If match is in progress, always enable (can pause/resume)
+    return true;
   };
 
   /**
    * Handles the main start/pause button click
    */
   const handleMainClockButton = () => {
-    if (clock.isRunning) {
-      // If clock is running, pause it
-      handlePauseClock();
-    } else {
-      // If clock is not running, start match/period/clock
-      handleStartMatchAndPeriod();
-    }
-  };
-
-  const resetClock = () => {
-    if (!onStateUpdate) return;
-    onStateUpdate({
-      clock: { ...clock, minutes: 0, seconds: 0, isRunning: false }
-    });
+    // Use the button info to determine what to do
+    startButtonInfo.onClick();
   };
 
   /**
@@ -500,9 +660,6 @@ const LiveMatchModal = ({
       setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
       await floorballMatchEventService.endPeriod(currentMatch.id, clock.period);
       console.log(`Ended period ${clock.period} for match ${currentMatch.id}`);
-      
-      // Update period state
-      setPeriodStates(prev => ({ ...prev, [clock.period]: 'ended' }));
       
       // If we're ending overtime (period 4), show shootout button
       if (clock.period === 4 && currentMatch.wentToOvertime) {
@@ -923,10 +1080,8 @@ const LiveMatchModal = ({
    * @returns true if the period can be ended
    */
   const canEndPeriod = () => {
-    const currentPeriodState = periodStates[clock.period];
     return currentMatch.status === 'InProgress' && 
-           !periodLoading[clock.period] && 
-           currentPeriodState === 'started';
+           !periodLoading[clock.period];
   };
 
   /**
@@ -934,17 +1089,16 @@ const LiveMatchModal = ({
    * @returns A string describing the current period status
    */
   const getPeriodStatus = () => {
-    const currentPeriodState = periodStates[clock.period];
     if (periodLoading[clock.period]) {
       return 'Processing...';
     }
-    switch (currentPeriodState) {
-      case 'started':
-        return '🟢 Started';
-      case 'ended':
-        return '🔴 Ended';
-      default:
-        return '⏸️ Not Started';
+    
+    if (currentMatch.status === 'InProgress') {
+      return '🟢 In Progress';
+    } else if (currentMatch.status === 'Completed') {
+      return '🔴 Completed';
+    } else {
+      return '⏸️ Not Started';
     }
   };
 
@@ -1298,7 +1452,7 @@ const LiveMatchModal = ({
                   className={`start-pause-btn ${clock.isRunning ? 'pause' : ''}`}
                   disabled={!canUseMainClockButton()}
                 >
-                  {getStartButtonText()}
+                  {startButtonInfo.text}
                 </button>
                 <button 
                   onClick={handleEndPeriodClick} 
