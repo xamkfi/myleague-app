@@ -36,9 +36,16 @@ function NewsPage() {
     ? newsList.filter((item) => item.id !== mainNews.id)
     : newsList;
 
+  const mainNewsBgStyle = mainNews && mainNews.mainImage
+    ? { ['--main-news-image' as any]: `url('${mainNews.mainImage}')` } as React.CSSProperties
+    : undefined;
+
   return (
     <PageTemplate title={t('nav.news')} >
-      <div className="news-main-bg">
+      <div
+        className={`news-main-bg${mainNews && mainNews.mainImage ? ' has-main-image' : ''}`}
+        style={mainNewsBgStyle}
+      >
         <div className="news-main-section">
           {mainNews && (
             <div className="main-news-card">

@@ -12,7 +12,6 @@ import PlayerPage from '../pages/PlayerPage/PlayerPage';
 import AdminPage from '../pages/AdminPage/AdminPage';
 import PersonsPage from '../pages/AdminPage/PersonsPage/PersonsPage';
 import PersonForm from '../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm';
-import TeamPage from '../pages/TeamPage/TeamPage';
 import PersonUserPage from '../pages/PersonUserPage/PersonUserPage';
 import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
 import NewsCreateEditPage from '../pages/AdminPage/NewsPage/NewsCreateEditPage';
@@ -63,10 +62,6 @@ export const routes: RouteObject[] = [
   {
     path: '/lajit',
     element: <SportsPage />
-  },
-  {
-    path: '/team',
-    element: <TeamPage/>
   },
   {
     path: '/club/:slug',
