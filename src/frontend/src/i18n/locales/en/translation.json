@@ -38,6 +38,11 @@
       "clearSearch": "Clear search",
       "noData": "No persons found",
       "noSearchResults": "No matching persons found",
+      "modal": {
+        "createTitle": "Create New Person",
+        "editTitle": "Edit Person",
+        "close": "Close"
+      },
       "actions":{
         "add": "Add New Person",
         "confirmDelete": "Are you sure you want to delete this person?",
@@ -71,6 +76,75 @@
       },
       "roles":{
         "user": "User"
+      },
+      "form": {
+        "basicInfo": "Basic Information",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "birthDate": "Birth Date",
+        "isRegistered": "Registered",
+        "dateFormat": "Format: dd-mm-yyyy",
+        "address": "Address",
+        "street1": "Street Address",
+        "street2": "Street Address 2",
+        "city": "City",
+        "postalCode": "Postal Code",
+        "country": "Country",
+        "contact": "Contact Information",
+        "email": "Email",
+        "phone": "Phone",
+        "alternativePhone": "Alternative Phone",
+        "floorballAssignment": "Floorball Team Assignment (Optional)",
+        "team": "Team",
+        "selectTeam": "Select a team...",
+        "searchTeams": "Search teams...",
+        "noTeams": "No teams found",
+        "position": "Position",
+        "selectPosition": "Select position...",
+        "jerseyNumber": "Jersey Number",
+        "jerseyNumberHint": "Optional: 1-99",
+        "positions": {
+          "center": "Center",
+          "winger": "Winger",
+          "defender": "Defender",
+          "goalkeeper": "Goalkeeper"
+        }
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Person",
+        "update": "Update Person",
+        "saving": "Saving..."
+      },
+      "validation": {
+        "firstNameRequired": "First name is required",
+        "firstNameTooLong": "First name cannot exceed {{max}} characters",
+        "lastNameRequired": "Last name is required", 
+        "lastNameTooLong": "Last name cannot exceed {{max}} characters",
+        "birthDateRequired": "Birth date is required",
+        "invalidDate": "Invalid date format",
+        "birthDateFuture": "Birth date cannot be in the future",
+        "birthDateTooOld": "Birth date is too far in the past",
+        "street1Required": "Street address is required",
+        "street1TooLong": "Street address cannot exceed {{max}} characters",
+        "street2TooLong": "Street address 2 cannot exceed {{max}} characters",
+        "cityRequired": "City is required",
+        "cityTooLong": "City cannot exceed {{max}} characters", 
+        "postalCodeRequired": "Postal code is required",
+        "postalCodeTooLong": "Postal code cannot exceed {{max}} characters",
+        "countryRequired": "Country is required",
+        "countryTooLong": "Country cannot exceed {{max}} characters",
+        "invalidEmail": "Invalid email format",
+        "emailTooLong": "Email cannot exceed {{max}} characters",
+        "phoneTooLong": "Phone number cannot exceed {{max}} characters",
+        "alternativePhoneTooLong": "Alternative phone number cannot exceed {{max}} characters",
+        "positionRequired": "Position is required when team is selected",
+        "invalidJerseyNumber": "Jersey number must be between 1 and 99"
+      },
+      "errors": {
+        "fetchFailed": "Failed to fetch person details",
+        "saveFailed": "Failed to save person",
+        "teamAssignmentFailed": "Person created, but team assignment failed"
       }
     },
     "news":{

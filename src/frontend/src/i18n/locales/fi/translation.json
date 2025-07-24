@@ -38,6 +38,11 @@
       "clearSearch": "Tyhjennä etsintä",
       "noData": "Ei löytynyt henkilöitä",
       "noSearchResults": "Ei nimeä vastaavia henkilöitä",
+      "modal": {
+        "createTitle": "Luo Uusi Henkilö",
+        "editTitle": "Muokkaa Henkilöä",
+        "close": "Sulje"
+      },
       "actions":{
         "add": "Lisää Uusi Henkilö",
         "confirmDelete": "Halatko varmasti poistaa henkilön?",
@@ -71,6 +76,75 @@
       },
       "roles":{
         "user": "Käyttäjä"
+      },
+      "form": {
+        "basicInfo": "Perustiedot",
+        "firstName": "Etunimi",
+        "lastName": "Sukunimi", 
+        "birthDate": "Syntymäpäivä",
+        "isRegistered": "Rekisteröity",
+        "dateFormat": "Muoto: pp-kk-vvvv",
+        "address": "Osoite",
+        "street1": "Katuosoite",
+        "street2": "Katuosoite 2",
+        "city": "Kaupunki",
+        "postalCode": "Postinumero",
+        "country": "Maa",
+        "contact": "Yhteystiedot",
+        "email": "Sähköposti",
+        "phone": "Puhelin",
+        "alternativePhone": "Vaihtoehtoinen puhelin",
+        "floorballAssignment": "Salibandy joukkuemääritys (Valinnainen)",
+        "team": "Joukkue",
+        "selectTeam": "Valitse joukkue...",
+        "searchTeams": "Etsi joukkueita...",
+        "noTeams": "Joukkueita ei löytynyt",
+        "position": "Pelipaikka",
+        "selectPosition": "Valitse pelipaikka...",
+        "jerseyNumber": "Pelinumero",
+        "jerseyNumberHint": "Valinnainen: 1-99",
+        "positions": {
+          "center": "Keskihyökkääjä",
+          "winger": "Laitahyökkääjä", 
+          "defender": "Puolustaja",
+          "goalkeeper": "Maalivahti"
+        }
+      },
+      "actions": {
+        "cancel": "Peruuta",
+        "create": "Luo henkilö",
+        "update": "Päivitä henkilö",
+        "saving": "Tallennetaan..."
+      },
+      "validation": {
+        "firstNameRequired": "Etunimi on pakollinen",
+        "firstNameTooLong": "Etunimi ei voi olla yli {{max}} merkkiä",
+        "lastNameRequired": "Sukunimi on pakollinen",
+        "lastNameTooLong": "Sukunimi ei voi olla yli {{max}} merkkiä", 
+        "birthDateRequired": "Syntymäpäivä on pakollinen",
+        "invalidDate": "Virheellinen päivämäärämuoto",
+        "birthDateFuture": "Syntymäpäivä ei voi olla tulevaisuudessa",
+        "birthDateTooOld": "Syntymäpäivä on liian kaukana menneisyydessä",
+        "street1Required": "Katuosoite on pakollinen",
+        "street1TooLong": "Katuosoite ei voi olla yli {{max}} merkkiä",
+        "street2TooLong": "Katuosoite 2 ei voi olla yli {{max}} merkkiä",
+        "cityRequired": "Kaupunki on pakollinen",
+        "cityTooLong": "Kaupunki ei voi olla yli {{max}} merkkiä",
+        "postalCodeRequired": "Postinumero on pakollinen", 
+        "postalCodeTooLong": "Postinumero ei voi olla yli {{max}} merkkiä",
+        "countryRequired": "Maa on pakollinen",
+        "countryTooLong": "Maa ei voi olla yli {{max}} merkkiä",
+        "invalidEmail": "Virheellinen sähköpostiosoite",
+        "emailTooLong": "Sähköpostiosoite ei voi olla yli {{max}} merkkiä",
+        "phoneTooLong": "Puhelinnumero ei voi olla yli {{max}} merkkiä",
+        "alternativePhoneTooLong": "Vaihtoehtoinen puhelinnumero ei voi olla yli {{max}} merkkiä",
+        "positionRequired": "Pelipaikka on pakollinen kun joukkue on valittu",
+        "invalidJerseyNumber": "Pelinumeron tulee olla väliltä 1-99"
+      },
+      "errors": {
+        "fetchFailed": "Henkilötietojen haku epäonnistui",
+        "saveFailed": "Henkilön tallennus epäonnistui",
+        "teamAssignmentFailed": "Henkilö luotu, mutta joukkuemääritys epäonnistui"
       }
     },
     "news":{

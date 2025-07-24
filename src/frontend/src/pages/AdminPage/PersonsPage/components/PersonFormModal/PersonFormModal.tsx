@@ -48,15 +48,15 @@ const PersonFormModal = ({
             <span className="header-icon">⚠️</span>
             <h2>
               {mode === 'create' 
-                ? t('admin.persons.modal.createTitle', 'Create New Person')
-                : t('admin.persons.modal.editTitle', 'Edit Person')
+                ? t('admin.persons.modal.createTitle')
+                : t('admin.persons.modal.editTitle')
               }
             </h2>
           </div>
           <button 
             className="person-form-modal-close" 
             onClick={onClose}
-            aria-label={t('common.close', 'Close')}
+            aria-label={t('admin.persons.modal.close')}
           >
             ×
           </button>
