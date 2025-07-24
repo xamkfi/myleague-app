@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace MyLeague.Infrastructure.SignalR
 {
@@ -7,13 +10,18 @@ namespace MyLeague.Infrastructure.SignalR
     /// </summary>
     public class DomainEventHub : Hub
     {
+        private readonly DomainEventNotifier _notifier;
+        private readonly ILogger<DomainEventHub> _logger;
+
         /// <summary>
         /// Initializes a new instance of the DomainEventHub class
         /// </summary>
-        public DomainEventHub() 
+        public DomainEventHub(DomainEventNotifier notifier, ILogger<DomainEventHub> logger)
         {
+            _notifier = notifier;
+            _logger = logger;
         }
-        
+
         /// <summary>
         /// Connection ID for the current connection
         /// </summary>
@@ -24,23 +32,25 @@ namespace MyLeague.Infrastructure.SignalR
         }
 
         /// <summary>
-        /// Subscribes the current connection to a specific event type group
+        /// Subscribes the current connection to a specific event type group using the notifier
         /// </summary>
         /// <param name="eventType">The event type to subscribe to</param>
         /// <returns>A task representing the asynchronous operation</returns>
         public async Task SubscribeToEventTypeAsync(string eventType)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, eventType);
+            await _notifier.SubscribeToEventTypeAsync(Context.ConnectionId, eventType);
+            _logger.LogInformation("Client {ConnectionId} subscribed to event type {EventType}", Context.ConnectionId, eventType);
         }
 
         /// <summary>
-        /// Unsubscribes the current connection from a specific event type group
+        /// Unsubscribes the current connection from a specific event type group using the notifier
         /// </summary>
         /// <param name="eventType">The event type to unsubscribe from</param>
         /// <returns>A task representing the asynchronous operation</returns>
         public async Task UnsubscribeFromEventTypeAsync(string eventType)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, eventType);
+            await _notifier.UnsubscribeFromEventTypeAsync(Context.ConnectionId, eventType);
+            _logger.LogInformation("Client {ConnectionId} unsubscribed from event type {EventType}", Context.ConnectionId, eventType);
         }
 
         /// <summary>
@@ -65,4 +75,4 @@ namespace MyLeague.Infrastructure.SignalR
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
         }
     }
-} 
+}

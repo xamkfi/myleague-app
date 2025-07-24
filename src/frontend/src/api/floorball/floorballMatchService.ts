@@ -200,13 +200,10 @@ export const floorballMatchService = {
     try {
       console.log('Creating match:', data);
       
-      // Convert empty refereeId to null for backend compatibility
-      const requestData = {
-        ...data,
-        refereeId: data.refereeId && data.refereeId.trim() !== '' ? data.refereeId : null
-      };
+      // Remove refereeId for event sourced endpoint (it's handled separately)
+      const { refereeId, ...requestData } = data;
       
-      const response = await fetch(`${API_URL}/FloorballMatch`, {
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -227,6 +224,36 @@ export const floorballMatchService = {
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to create floorball match');
+      }
+      
+      // If a referee was provided, add them to the match
+      if (refereeId && refereeId.trim() !== '') {
+        try {
+          console.log('Adding referee to match:', refereeId);
+          const addOfficialResponse = await fetch(`${API_URL}/FloorballMatchEvent/match/official`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              MatchId: apiResponse.data!.id,
+              RefereeId: refereeId
+            }),
+          });
+          
+          if (addOfficialResponse.ok) {
+            const addOfficialApiResponse: ApiResponse<FloorballMatchDto> = await addOfficialResponse.json();
+            if (addOfficialApiResponse.success && addOfficialApiResponse.data) {
+              // Return the updated match with the referee
+              return addOfficialApiResponse;
+            }
+          }
+          
+          console.warn('Failed to add referee to match, but match was created successfully');
+        } catch (error) {
+          console.error('Error adding referee to match:', error);
+          // Don't fail the entire operation if adding referee fails
+        }
       }
       
       return apiResponse;
@@ -276,8 +303,8 @@ export const floorballMatchService = {
     try {
       console.log('Starting match with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballMatch/start-match/${id}`, {
-        method: 'PUT',
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/start`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -308,8 +335,8 @@ export const floorballMatchService = {
     try {
       console.log('Completing match with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballMatch/complete-match/${id}`, {
-        method: 'PUT',
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/complete`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -329,6 +356,138 @@ export const floorballMatchService = {
       return apiResponse;
     } catch (error) {
       console.error('Error in floorballMatchService.complete:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Change match season
+   */
+  changeSeason: async (id: string, seasonId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      console.log('Changing season for match with ID:', id, 'to season:', seasonId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/season`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newSeasonId: seasonId }),
+      });
+      
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to change match season');
+        throw new Error(errorMessage);
+      }
+      
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+      
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match season');
+      }
+      
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.changeSeason:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Change match teams
+   */
+  changeTeams: async (id: string, homeTeamId: string, awayTeamId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      console.log('Changing teams for match with ID:', id, 'home:', homeTeamId, 'away:', awayTeamId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/teams`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newHomeTeamId: homeTeamId, newAwayTeamId: awayTeamId }),
+      });
+      
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to change match teams');
+        throw new Error(errorMessage);
+      }
+      
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+      
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match teams');
+      }
+      
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.changeTeams:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Change match venue
+   */
+  changeVenue: async (id: string, venue: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      console.log('Changing venue for match with ID:', id, 'to venue:', venue);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/venue`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newVenue: venue }),
+      });
+      
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to change match venue');
+        throw new Error(errorMessage);
+      }
+      
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+      
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match venue');
+      }
+      
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.changeVenue:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Change match date/time
+   */
+  changeDateTime: async (id: string, scheduledDateTime: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      console.log('Changing date/time for match with ID:', id, 'to:', scheduledDateTime);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/datetime`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newDateTime: scheduledDateTime }),
+      });
+      
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to change match date/time');
+        throw new Error(errorMessage);
+      }
+      
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+      
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match date/time');
+      }
+      
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.changeDateTime:', error);
       throw error;
     }
   }
