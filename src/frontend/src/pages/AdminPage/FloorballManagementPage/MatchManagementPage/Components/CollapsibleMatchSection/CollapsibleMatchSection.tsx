@@ -10,7 +10,6 @@ interface CollapsibleMatchSectionProps {
   onLiveMatch: (match: FloorballMatchDto) => void;
   onEditMatch: (match: FloorballMatchDto) => void;
   actionLoading: string | null;
-  liveMatches: Set<string>;
   sectionType?: 'ongoing' | 'scheduled' | 'completed';
 }
 
@@ -22,7 +21,6 @@ const CollapsibleMatchSection = ({
   onLiveMatch,
   onEditMatch,
   actionLoading,
-  liveMatches,
   sectionType
 }: CollapsibleMatchSectionProps) => {
   if (matches.length === 0) {

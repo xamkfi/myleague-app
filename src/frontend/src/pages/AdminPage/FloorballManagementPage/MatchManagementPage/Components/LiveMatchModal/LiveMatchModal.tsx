@@ -31,15 +31,7 @@ interface GoalEventData {
   TimeInSeconds: number;
 }
 
-interface PenaltyEventData {
-  TeamId: string;
-  PlayerId: string;
-  PenaltyType: string;
-  Minutes: number;
-  PeriodNumber: number;
-  TimeInSeconds: number;
-  Description: string;
-}
+
 
 const LiveMatchModal = ({ 
   match, 
@@ -177,7 +169,7 @@ const LiveMatchModal = ({
    * The backend returns domain events in a flat array structure
    * This function fetches the events and stores them for processing
    */
-  const loadMatchEvents = async () => {
+  const loadMatchEvents = useCallback(async () => {
     try {
       console.log('loadMatchEvents called for match:', match.id);
       const response = await floorballMatchEventService.getMatchEvents(match.id);
@@ -192,7 +184,7 @@ const LiveMatchModal = ({
       console.error('Error loading match events:', error);
       // Don't set error for events loading - it's not critical
     }
-  };
+  }, [match.id]);
 
   /**
    * Sets up SignalR connection for real-time updates
@@ -255,7 +247,7 @@ const LiveMatchModal = ({
     if (event.eventType === 'FloorballGoalScored') {
       handleGoalScored(event.data as GoalEventData);
     } else if (event.eventType === 'FloorballPenaltyAssigned') {
-      handlePenaltyAssigned(event.data as PenaltyEventData);
+      handlePenaltyAssigned();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [match.id]);
@@ -288,18 +280,18 @@ const LiveMatchModal = ({
     
     // Refresh events from backend
     loadMatchEvents();
-  }, [onStateUpdate, match.homeTeamId, match.awayTeamId, currentScore]);
+  }, [onStateUpdate, match.homeTeamId, match.awayTeamId, currentScore, loadMatchEvents]);
 
   /**
    * Handles real-time penalty events from SignalR
    * Refreshes the events list to show the new penalty
    */
-  const handlePenaltyAssigned = useCallback((_eventData: PenaltyEventData) => {
+  const handlePenaltyAssigned = useCallback(() => {
     if (!onStateUpdate) return;
     
     // Refresh events from backend
     loadMatchEvents();
-  }, [onStateUpdate]);
+  }, [onStateUpdate, loadMatchEvents]);
 
   // Clock management
   const toggleClock = () => {
@@ -629,11 +621,11 @@ const LiveMatchModal = ({
    * @param playerId - The player's unique identifier
    * @returns The player's full name (firstName + lastName) or a fallback if not found
    */
-  const getPlayerNameById = (playerId: string): string => {
+  const getPlayerNameById = useCallback((playerId: string): string => {
     const allPlayers = [...homePlayers, ...awayPlayers];
     const player = allPlayers.find(p => p.id === playerId);
     return player ? `${player.person.firstName} ${player.person.lastName}` : `Player ${playerId.slice(0, 8)}...`;
-  };
+  }, [homePlayers, awayPlayers]);
 
   /**
    * Processes and combines all match events (goals and penalties) from the backend
@@ -662,51 +654,51 @@ const LiveMatchModal = ({
         
         // Handle goal events
         if (event.eventType === 'FloorballGoalScoredEvent') {
-          const goalData = event.data as any;
+          const goalData = event.data as Record<string, unknown>;
           console.log('Goal data structure:', goalData);
           console.log('Goal data keys:', Object.keys(goalData));
           
           // Extract player IDs with fallback property names (handles both camelCase and PascalCase)
-          const playerId = goalData.PlayerId || goalData.playerId;
-          const assisterId = goalData.AssisterId || goalData.assisterId;
+          const playerId = (goalData.PlayerId as string) || (goalData.playerId as string);
+          const assisterId = (goalData.AssisterId as string) || (goalData.assisterId as string);
           
           return {
             id: `goal-${goalData.TeamId || goalData.teamId || 'unknown'}-${playerId || 'unknown'}-${goalData.PeriodNumber || goalData.periodNumber || 1}-${goalData.TimeInSeconds || goalData.timeInSeconds || 0}`,
             type: 'goal' as const,
-            teamId: goalData.TeamId || goalData.teamId,
-            teamName: (goalData.TeamId || goalData.teamId) === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+            teamId: (goalData.TeamId as string) || (goalData.teamId as string),
+            teamName: ((goalData.TeamId as string) || (goalData.teamId as string)) === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
             playerId: playerId || 'Unknown Player',
             playerName: getPlayerNameById(playerId), // Look up player name from loaded data
             assisterId: assisterId,
             assisterName: assisterId ? getPlayerNameById(assisterId) : undefined, // Look up assister name
-            periodNumber: goalData.PeriodNumber || goalData.periodNumber || 1,
-            timeInSeconds: goalData.TimeInSeconds || goalData.timeInSeconds || 0,
+            periodNumber: (goalData.PeriodNumber as number) || (goalData.periodNumber as number) || 1,
+            timeInSeconds: (goalData.TimeInSeconds as number) || (goalData.timeInSeconds as number) || 0,
             timestamp: new Date(event.occurredOn),
-            wasInOvertime: goalData.WasInOvertime || goalData.wasInOvertime || false,
-            wasInShootout: goalData.WasInShootout || goalData.wasInShootout || false
+            wasInOvertime: (goalData.WasInOvertime as boolean) || (goalData.wasInOvertime as boolean) || false,
+            wasInShootout: (goalData.WasInShootout as boolean) || (goalData.wasInShootout as boolean) || false
           };
         } 
         // Handle penalty events
         else if (event.eventType === 'FloorballPenaltyAssignedEvent') {
-          const penaltyData = event.data as any;
+          const penaltyData = event.data as Record<string, unknown>;
           console.log('Penalty data structure:', penaltyData);
           console.log('Penalty data keys:', Object.keys(penaltyData));
           
-          const playerId = penaltyData.PlayerId || penaltyData.playerId;
+          const playerId = (penaltyData.PlayerId as string) || (penaltyData.playerId as string);
           
           return {
             id: `penalty-${penaltyData.TeamId || penaltyData.teamId || 'unknown'}-${playerId || 'team'}-${penaltyData.PeriodNumber || penaltyData.periodNumber || 1}-${penaltyData.TimeInSeconds || penaltyData.timeInSeconds || 0}`,
             type: 'penalty' as const,
-            teamId: penaltyData.TeamId || penaltyData.teamId,
-            teamName: (penaltyData.TeamId || penaltyData.teamId) === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+            teamId: (penaltyData.TeamId as string) || (penaltyData.teamId as string),
+            teamName: ((penaltyData.TeamId as string) || (penaltyData.teamId as string)) === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
             playerId: playerId,
             playerName: playerId ? getPlayerNameById(playerId) : 'Team Penalty', // Handle team penalties
-            periodNumber: penaltyData.PeriodNumber || penaltyData.periodNumber || 1,
-            timeInSeconds: penaltyData.TimeInSeconds || penaltyData.timeInSeconds || 0,
+            periodNumber: (penaltyData.PeriodNumber as number) || (penaltyData.periodNumber as number) || 1,
+            timeInSeconds: (penaltyData.TimeInSeconds as number) || (penaltyData.timeInSeconds as number) || 0,
             timestamp: new Date(event.occurredOn),
-            penaltyType: penaltyData.PenaltyType || penaltyData.penaltyType || 'Unknown',
-            penaltyMinutes: penaltyData.Minutes || penaltyData.minutes || 2,
-            description: penaltyData.Description || penaltyData.description || ''
+            penaltyType: (penaltyData.PenaltyType as string) || (penaltyData.penaltyType as string) || 'Unknown',
+            penaltyMinutes: (penaltyData.Minutes as number) || (penaltyData.minutes as number) || 2,
+            description: (penaltyData.Description as string) || (penaltyData.description as string) || ''
           };
         }
         return null;
@@ -726,7 +718,7 @@ const LiveMatchModal = ({
 
     console.log('Final sorted events:', sortedEvents);
     return sortedEvents;
-  }, [matchEvents, currentMatch.homeTeamId, homeTeam?.name, awayTeam?.name, homePlayers, awayPlayers]);
+  }, [matchEvents, currentMatch.homeTeamId, homeTeam?.name, awayTeam?.name, getPlayerNameById]);
 
   const handleGoLive = async () => {
     try {
