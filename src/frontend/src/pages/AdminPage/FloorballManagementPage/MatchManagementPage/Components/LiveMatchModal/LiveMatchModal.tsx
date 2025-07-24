@@ -203,6 +203,18 @@ const LiveMatchModal = ({
     setDomainEvents([]);
   }, [match.id]);
 
+  // Initialize started periods when component loads
+  useEffect(() => {
+    if (currentMatch.status === 'InProgress') {
+      // If match is in progress, assume period 1 has been started
+      setStartedPeriods(new Set([1]));
+    } else {
+      // Reset started periods for new matches
+      setStartedPeriods(new Set());
+      setEndedPeriods(new Set());
+    }
+  }, [currentMatch.status]);
+
   const loadTeamData = async () => {
     try {
       setLoading(true);
@@ -432,6 +444,9 @@ const LiveMatchModal = ({
       return;
     }
     
+    // Mark this period as started in our local state
+    setStartedPeriods(prev => new Set([...prev, eventData.periodNumber]));
+    
     // Add the event to our collection and reconstruct state in one operation
     setDomainEvents(prev => {
       const newEvents = [...prev, eventData];
@@ -529,6 +544,10 @@ const LiveMatchModal = ({
     }
   }, [match.id, handleGoalScored, handlePenaltyAssigned, handlePeriodStarted]);
 
+  // State for tracking which periods have been started and ended
+  const [startedPeriods, setStartedPeriods] = useState<Set<number>>(new Set());
+  const [endedPeriods, setEndedPeriods] = useState<Set<number>>(new Set());
+
   /**
    * Combined function that handles starting the match, period, and clock
    * This replaces the separate Go Live, Start Period, and Start Clock buttons
@@ -555,12 +574,19 @@ const LiveMatchModal = ({
         }
       }
       
-      // Step 2: Start the current period
-      console.log(`Starting period ${clock.period}...`);
-      setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
-      
-      await floorballMatchEventService.startPeriod(currentMatch.id, clock.period);
-      console.log(`Started period ${clock.period} for match ${currentMatch.id}`);
+      // Step 2: Start the current period if it hasn't been started yet
+      if (!startedPeriods.has(clock.period)) {
+        console.log(`Starting period ${clock.period}...`);
+        setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
+        
+        await floorballMatchEventService.startPeriod(currentMatch.id, clock.period);
+        console.log(`Started period ${clock.period} for match ${currentMatch.id}`);
+        
+        // Mark this period as started
+        setStartedPeriods(prev => new Set([...prev, clock.period]));
+      } else {
+        console.log(`Period ${clock.period} already started, skipping start command`);
+      }
       
       // Step 3: Start the clock
       console.log('Starting clock...');
@@ -605,41 +631,45 @@ const LiveMatchModal = ({
    * Determines the button text and functionality based on the current match state
    */
   const startButtonInfo = useMemo(() => {
-    // If match is not in progress, show "Start Match & Clock"
     if (currentMatch.status !== 'InProgress') {
-      return {
-        text: 'Start Match & Clock',
-        onClick: handleStartMatchAndPeriod,
-        disabled: loading
-      };
+      return { text: 'Start Match & Clock', onClick: handleStartMatchAndPeriod, disabled: loading };
     }
     
-    // If match is in progress, check clock state
-    if (clock.isRunning) {
-      return {
-        text: 'Pause',
-        onClick: handlePauseClock,
-        disabled: false
-      };
-    } else {
-      return {
-        text: 'Resume',
-        onClick: handleResumeClock,
-        disabled: false
-      };
+    // If we're on a period that hasn't been started yet, show appropriate start text
+    if (!startedPeriods.has(clock.period)) {
+      if (clock.period === 4) {
+        return { text: 'Start Overtime & Clock', onClick: handleStartMatchAndPeriod, disabled: loading };
+      } else if (clock.period === 5) {
+        return { text: 'Start Shootout & Clock', onClick: handleStartMatchAndPeriod, disabled: loading };
+      } else {
+        return { text: 'Start Period & Clock', onClick: handleStartMatchAndPeriod, disabled: loading };
+      }
     }
-  }, [currentMatch.status, clock.isRunning, loading, handleStartMatchAndPeriod, handlePauseClock, handleResumeClock]);
+    
+    // If the current period is started and clock is running, show "Pause"
+    if (clock.isRunning) {
+      return { text: 'Pause', onClick: handlePauseClock, disabled: false };
+    } else {
+      // If the current period is started but clock is not running, show "Resume"
+      return { text: 'Resume', onClick: handleResumeClock, disabled: false };
+    }
+  }, [currentMatch.status, clock.isRunning, clock.period, startedPeriods, loading, handleStartMatchAndPeriod, handlePauseClock, handleResumeClock]);
 
   /**
    * Determines if the main clock button should be enabled
+   * @returns true if the button can be used
    */
   const canUseMainClockButton = () => {
-    // If match is not in progress, only enable if not loading
     if (currentMatch.status !== 'InProgress') {
       return !loading;
     }
     
-    // If match is in progress, always enable (can pause/resume)
+    // If we're on a period that hasn't been started, allow starting it
+    if (!startedPeriods.has(clock.period)) {
+      return !loading;
+    }
+    
+    // If period is started, allow pause/resume
     return true;
   };
 
@@ -661,10 +691,49 @@ const LiveMatchModal = ({
       await floorballMatchEventService.endPeriod(currentMatch.id, clock.period);
       console.log(`Ended period ${clock.period} for match ${currentMatch.id}`);
       
-      // If we're ending overtime (period 4), show shootout button
-      if (clock.period === 4 && currentMatch.wentToOvertime) {
-        // The shootout button will be available after ending overtime
-        console.log('Overtime ended, shootout button will be available');
+      // Mark this period as ended
+      setEndedPeriods(prev => new Set([...prev, clock.period]));
+      
+      // Check if we just ended period 3 (regular periods)
+      if (clock.period === 3) {
+        // Transition to overtime state
+        console.log('Regular periods ended, transitioning to overtime');
+        if (onStateUpdate) {
+          onStateUpdate({
+            clock: { 
+              period: 4, // Overtime period
+              minutes: 0, 
+              seconds: 0, 
+              isRunning: false 
+            }
+          });
+        }
+      } else if (clock.period === 4) {
+        // Transition to shootout state
+        console.log('Overtime ended, transitioning to shootout');
+        if (onStateUpdate) {
+          onStateUpdate({
+            clock: { 
+              period: 5, // Shootout period
+              minutes: 0, 
+              seconds: 0, 
+              isRunning: false 
+            }
+          });
+        }
+      } else {
+        // For other periods, move to the next period normally
+        const nextPeriod = clock.period + 1;
+        if (onStateUpdate) {
+          onStateUpdate({
+            clock: { 
+              period: nextPeriod, 
+              minutes: 0, 
+              seconds: 0, 
+              isRunning: false 
+            }
+          });
+        }
       }
       
       setError(null);
@@ -802,22 +871,22 @@ const LiveMatchModal = ({
    */
   const shouldShowShootoutButton = () => {
     return currentMatch.status === 'InProgress' && 
-           currentMatch.wentToOvertime && 
-           !currentMatch.wentToShootout;
+           clock.period === 4 &&
+           endedPeriods.has(4); // Overtime (period 4) has been ended
   };
 
   /**
    * Determines if we're currently in overtime
    */
   const isInOvertime = () => {
-    return currentMatch.wentToOvertime && clock.period > 3;
+    return clock.period === 4;
   };
 
   /**
    * Determines if we're currently in shootout
    */
   const isInShootout = () => {
-    return currentMatch.wentToShootout && clock.period > 4;
+    return clock.period === 5;
   };
 
   /**
@@ -870,57 +939,33 @@ const LiveMatchModal = ({
   const previousPeriod = async () => {
     if (!onStateUpdate || clock.period <= 1) return;
     
-    try {
-      // End current period if it's running
-      await floorballMatchEventService.endPeriod(currentMatch.id, clock.period);
-      console.log(`Ended period ${clock.period} for match ${currentMatch.id}`);
-      
-      const newPeriod = clock.period - 1;
-      
-      // Start the previous period
-      await floorballMatchEventService.startPeriod(currentMatch.id, newPeriod);
-      console.log(`Started period ${newPeriod} for match ${currentMatch.id}`);
-      
-      onStateUpdate({
-        clock: { 
-          period: newPeriod, 
-          minutes: 0, 
-          seconds: 0, 
-          isRunning: false 
-        }
-      });
-    } catch (error) {
-      console.error('Error going to previous period:', error);
-      setError(error instanceof Error ? error.message : 'Failed to go to previous period');
-    }
+    const newPeriod = clock.period - 1;
+    
+    // Only update the clock period locally, don't send backend commands
+    onStateUpdate({
+      clock: { 
+        period: newPeriod, 
+        minutes: 0, 
+        seconds: 0, 
+        isRunning: false 
+      }
+    });
   };
 
   const nextPeriod = async () => {
     if (!onStateUpdate) return;
     
-    try {
-      // End current period if it's running
-      await floorballMatchEventService.endPeriod(currentMatch.id, clock.period);
-      console.log(`Ended period ${clock.period} for match ${currentMatch.id}`);
-      
-      const newPeriod = clock.period + 1;
-      
-      // Start the next period
-      await floorballMatchEventService.startPeriod(currentMatch.id, newPeriod);
-      console.log(`Started period ${newPeriod} for match ${currentMatch.id}`);
-      
-      onStateUpdate({
-        clock: { 
-          period: newPeriod, 
-          minutes: 0, 
-          seconds: 0, 
-          isRunning: false 
-        }
-      });
-    } catch (error) {
-      console.error('Error going to next period:', error);
-      setError(error instanceof Error ? error.message : 'Failed to go to next period');
-    }
+    const newPeriod = clock.period + 1;
+    
+    // Only update the clock period locally, don't send backend commands
+    onStateUpdate({
+      clock: { 
+        period: newPeriod, 
+        minutes: 0, 
+        seconds: 0, 
+        isRunning: false 
+      }
+    });
   };
 
   const goBackTime = () => {
@@ -1081,7 +1126,9 @@ const LiveMatchModal = ({
    */
   const canEndPeriod = () => {
     return currentMatch.status === 'InProgress' && 
-           !periodLoading[clock.period];
+           !periodLoading[clock.period] &&
+           startedPeriods.has(clock.period) &&
+           !endedPeriods.has(clock.period);
   };
 
   /**
@@ -1093,13 +1140,39 @@ const LiveMatchModal = ({
       return 'Processing...';
     }
     
-    if (currentMatch.status === 'InProgress') {
-      return '🟢 In Progress';
-    } else if (currentMatch.status === 'Completed') {
+    if (currentMatch.status === 'Completed') {
       return '🔴 Completed';
-    } else {
-      return '⏸️ Not Started';
     }
+    
+    if (currentMatch.status === 'InProgress') {
+      if (endedPeriods.has(clock.period)) {
+        if (clock.period === 4) {
+          return '🔴 Overtime Ended';
+        } else if (clock.period === 5) {
+          return '🔴 Shootout Ended';
+        } else {
+          return '🔴 Ended';
+        }
+      } else if (startedPeriods.has(clock.period)) {
+        if (clock.period === 4) {
+          return '🟢 Overtime Started';
+        } else if (clock.period === 5) {
+          return '🟢 Shootout Started';
+        } else {
+          return '🟢 Started';
+        }
+      } else {
+        if (clock.period === 4) {
+          return '⏸️ Overtime Not Started';
+        } else if (clock.period === 5) {
+          return '⏸️ Shootout Not Started';
+        } else {
+          return '⏸️ Not Started';
+        }
+      }
+    }
+    
+    return '⏸️ Not Started';
   };
 
   const formatEventTime = (timeInSeconds: number) => {
@@ -1405,7 +1478,7 @@ const LiveMatchModal = ({
         <div className="modal-content">
           <div className="left-section">
           {/* Clock and Score Section */}
-          <div className={`clock-score-section ${isInOvertime() ? 'overtime' : ''}`}>
+          <div className={`clock-score-section ${isInOvertime() ? 'overtime' : ''} ${isInShootout() ? 'shootout' : ''}`}>
             {currentMatch.status === 'Completed' && (
               <div className="match-finished-notice">
                 <span className="notice-icon">🏁</span>
@@ -1443,7 +1516,7 @@ const LiveMatchModal = ({
                 </button>
               </div>
               <div className="period">Period {clock.period}</div>
-              <div className={`time-display ${isTimeOverLimit(clock.minutes, clock.seconds) ? 'time-over-limit' : ''} ${isInOvertime() ? 'overtime' : ''}`}>
+              <div className={`time-display ${isTimeOverLimit(clock.minutes, clock.seconds) ? 'time-over-limit' : ''} ${isInOvertime() ? 'overtime' : ''} ${isInShootout() ? 'shootout' : ''}`}>
                 {formatTime(clock.minutes, clock.seconds)}
               </div>
               <div className="clock-start-reset">

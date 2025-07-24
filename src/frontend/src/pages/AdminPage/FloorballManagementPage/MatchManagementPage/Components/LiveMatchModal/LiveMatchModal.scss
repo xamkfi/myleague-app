@@ -313,6 +313,12 @@
     border: 2px solid #f59e0b;
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
   }
+
+  &.shootout {
+    background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+    border: 2px solid #ec4899;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+  }
 }
 
 .match-clock {
@@ -350,6 +356,11 @@
     &.overtime {
       color: #d97706;
       text-shadow: 0 1px 4px rgba(217, 119, 6, 0.6);
+    }
+
+    &.shootout {
+      color: #ec4899;
+      text-shadow: 0 1px 4px rgba(236, 72, 153, 0.6);
     }
   }
 
