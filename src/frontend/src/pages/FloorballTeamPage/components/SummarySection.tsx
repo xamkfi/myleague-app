@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next'
 import './SummarySection.scss'
 import type { FloorballMatchDto, FloorballTeam } from "../../../types/floorball/floorballTypes"
 import { floorballSeasonService, type FloorballSeasonDto } from "../../../api/floorball/floorballSeasonService"
@@ -18,19 +18,19 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
 
    const [todaysMatches, setTodaysMatches] = useState<FloorballMatchDto[] | null>(null);
 
-   const fetchTodaysMatches = async () => {
+   const fetchTodaysMatches = useCallback(async () => {
       const response = await floorballMatchService.getTodaysMatchesByTeam(team.id);
       setTodaysMatches(response.data);
-   }
+   }, [team.id]);
 
-   const fetchSeasons = async () => {
+   const fetchSeasons = useCallback(async () => {
       try {
          const seasonsResponse = await floorballSeasonService.getAll();
          setSeasons(seasonsResponse.data);
       } catch {
          setSeasons([]); // fallback
       }
-   }
+   }, []);
 
    const handleMatchClick = (matchId: string) => {
       // TODO: Navigate to match page
@@ -42,7 +42,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
       if (todaysMatches === null) {
          fetchTodaysMatches();
       }
-   }, [todaysMatches]);
+   }, [todaysMatches, fetchTodaysMatches, fetchSeasons]);
 
    return (
       <div>

@@ -2,6 +2,7 @@ import React from 'react';
 import './MatchRow.scss';
 import ResultUnknown from '../MatchResultIcons/ResultUnknown';
 import { formatMatchDateTime } from '../../utils/helpers';
+import { useNavigate } from 'react-router-dom';
 
 export interface MatchRowProps {
   id: string;
@@ -29,16 +30,18 @@ export default function MatchRow({
   awayScore = 0,
   periodCount = 3,
   statusComponent,
-  onClick,
   className = ''
 }: MatchRowProps) {
   const [formattedDate, formattedTime] = formatMatchDateTime(scheduledDateTime);
   const periods = Array.from({ length: periodCount }, (_, i) => i + 1);
+  const navigate = useNavigate();
 
   const handleClick = () => {
-    if (onClick) {
-      onClick();
-    }
+//    if (onClick) {
+//      onClick();
+//    } else {
+      navigate(`/match/${id}`);
+//    }
   };
 
   return (

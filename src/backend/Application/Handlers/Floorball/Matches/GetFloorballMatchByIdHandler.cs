@@ -71,8 +71,7 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
             var playerIds = match.GoalEvents
                 .SelectMany(g => new[] { g.ScoringPlayerId, g.AssistingPlayerId, g.SecondaryAssistingPlayerId })
                 .Concat(match.PenaltyEvents.Select(p => p.PlayerId))
-                .Where(id => id.HasValue)
-                .Select(id => id.Value)
+                .OfType<Guid>()
                 .Distinct()
                 .ToList();
 

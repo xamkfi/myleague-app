@@ -30,11 +30,8 @@ export default function ResultsSection({
 }: ResultsSectionProps) {
    const [seasons, setSeasons] = useState<FloorballSeasonDto[] | null>(null);
    const { teams, refetch } = useFloorballTeamsData();
-   const { t, i18n } = useTranslation();
+   const { t } = useTranslation();
    const navigate = useNavigate()
-
-   // pick locale for date formatting based on current language
-   const locale = i18n.language === 'fi' ? 'fi-FI' : 'en-GB';
 
    const fetchSeasons = async () => {
       try {

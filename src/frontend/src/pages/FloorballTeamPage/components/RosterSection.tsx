@@ -14,7 +14,7 @@ export default function RosterSection({ team }: RosterSectionProps) {
   const { t } = useTranslation()
 
   const navigateToPlayerPage = (playerId: string) => {
-    navigate(`/pelaaja/${playerId}`)
+    navigate(`/floorballplayer/${playerId}`)
   }
 
   useEffect(() => {
