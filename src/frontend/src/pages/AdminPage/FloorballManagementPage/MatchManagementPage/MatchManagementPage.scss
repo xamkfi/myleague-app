@@ -37,6 +37,60 @@
   }
 }
 
+// Real-time Status Indicator
+.realtime-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.connected {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+
+    .status-dot {
+      background-color: #22c55e;
+      animation: pulse 2s infinite;
+    }
+  }
+
+  &.disconnected {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+
+    .status-dot {
+      background-color: #ef4444;
+    }
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .status-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 .page-title {
   font-size: 2rem;
   font-weight: 700;
@@ -200,23 +254,20 @@
 
 // Matches Section
 .matches-section {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.section-header {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-
-  h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1f2937;
+  // Remove the background and border since each section has its own styling
+  // The individual sections will handle their own styling
+  
+  // Add some spacing between sections
+  .collapsible-match-section {
+    margin-bottom: 0.75rem;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 }
+
+
 
 // Empty State
 .empty-state {
@@ -442,7 +493,7 @@
 
 
 
-// Modal Styles
+// Modal Styles - Base styling for all modals
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -452,6 +503,7 @@
   justify-content: center;
   z-index: 50;
   padding: 1rem;
+  backdrop-filter: blur(4px);
 }
 
 .modal {
@@ -459,7 +511,7 @@
   border-radius: 12px;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
   width: 100%;
-  max-width: 500px;
+  max-width: 900px;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -468,12 +520,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid #e5e7eb;
 
   h2 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 600;
     color: #1f2937;
   }
@@ -493,104 +545,9 @@
   }
 }
 
-.modal-form {
-  padding: 2rem;
-
-  .form-group {
-    margin-bottom: 1.5rem;
-
-    label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #374151;
-      margin-bottom: 0.5rem;
-    }
-
-    input,
-    select {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      transition: border-color 0.2s ease;
-
-      &:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-      }
-    }
-
-    input::placeholder {
-      color: #9ca3af;
-    }
-  }
-}
-
-.modal-actions {
-  display: flex;
-  gap: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
-
-  .cancel-button {
-    flex: 1;
-    padding: 0.75rem 1.5rem;
-    background-color: #f3f4f6;
-    color: #374151;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background-color: #e5e7eb;
-    }
-  }
-
-  .submit-button {
-    flex: 1;
-    padding: 0.75rem 1.5rem;
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover:not(:disabled) {
-      background-color: #2563eb;
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-  }
-}
-
 // Responsive Design
 @media (max-width: 640px) {
   .matches-table {
     min-width: 800px;
-  }
-
-  .modal {
-    margin: 0.5rem;
-    max-width: none;
-  }
-
-  .modal-form {
-    padding: 1.5rem;
-  }
-
-  .modal-header {
-    padding: 1rem 1.5rem;
   }
 } 
