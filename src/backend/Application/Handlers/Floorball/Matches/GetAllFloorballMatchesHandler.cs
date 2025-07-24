@@ -78,6 +78,7 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
                 startDate: request.StartDate,
                 endDate: request.EndDate,
                 status: null, // Not used in this query
+                sortOrder: request.SortOrder,
                 cancellationToken: cancellationToken);
 
             // Check for cancellation after database operations

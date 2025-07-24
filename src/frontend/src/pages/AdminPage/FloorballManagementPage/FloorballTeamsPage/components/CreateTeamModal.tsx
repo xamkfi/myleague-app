@@ -95,14 +95,14 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className="create-team-modal-overlay" onClick={onClose}>
+      <div className="create-team-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="create-team-modal-header">
           <h2>{t('floorball.teams.createNew', 'Create New Team')}</h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="team-form">
+        <form onSubmit={handleSubmit} className="create-team-form">
           <div className="form-group">
             <label htmlFor="teamName">{t('floorball.teams.name', 'Team Name')} *</label>
             <input
@@ -130,7 +130,7 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
             </select>
           </div>
 
-          <div className="form-row">
+          <div className="create-team-form-row">
             <div className="form-group">
               <label htmlFor="division">{t('floorball.teams.division', 'Division')} *</label>
               <select
@@ -139,9 +139,9 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
                 onChange={(e) => handleInputChange('divisionId', e.target.value)}
                 required
               >
-                <option>{t('floorball.divisions.premier', 'Select division...')}</option>
+                <option value="">{t('floorball.teams.selectDivision', 'Select division...')}</option>
                 {divisions.map(division => (
-                  <option key={division.id} value={division.id}>{t('floorball.divisions.premier', division.name)}</option>
+                  <option key={division.id} value={division.id}>{division.name}</option>
                 ))}
               </select>
             </div>
@@ -173,10 +173,10 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
             />
           </div>
 
-          <div className="form-row">
+          <div className="create-team-form-row">
             <div className="form-group">
               <label htmlFor="primaryColor">{t('floorball.teams.primary', 'Primary Jersey Color')} *</label>
-              <div className="color-input-group">
+              <div className="create-team-color-input-group">
                 <input
                   id="primaryColor"
                   type="color"
@@ -195,7 +195,7 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
 
             <div className="form-group">
               <label htmlFor="secondaryColor">{t('floorball.teams.secondary', 'Secondary Jersey Color')}</label>
-              <div className="color-input-group">
+              <div className="create-team-color-input-group">
                 <input
                   id="secondaryColor"
                   type="color"
@@ -224,7 +224,7 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
             </div>
           </div>
 
-          <div className="form-actions">
+          <div className="create-team-form-actions">
             <button type="button" onClick={onClose} className="cancel-button">
               {t('common.cancel', 'Cancel')}
             </button>

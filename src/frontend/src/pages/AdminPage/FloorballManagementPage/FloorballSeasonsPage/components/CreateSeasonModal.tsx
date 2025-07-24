@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CreateFloorballSeasonRequest } from '../../../../../api/floorball/floorballSeasonService';
 import { useDivisions } from '../../../../../hooks/useDivisions';
+import './CreateSeasonModal.scss';
 
 interface CreateSeasonModalProps {
   onSave: (seasonData: CreateFloorballSeasonRequest) => Promise<void>;
@@ -156,9 +157,9 @@ export const CreateSeasonModal = ({
   }, [defaultStartDate, defaultEndDate, formData.startDate, formData.endDate]);
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
+    <div className="create-season-modal-overlay">
+      <div className="create-season-modal-content">
+        <div className="create-season-modal-header">
           <h3>{t('floorball.seasons.create.title', 'Create New Season')}</h3>
           <button 
             className="modal-close-btn"
@@ -170,7 +171,7 @@ export const CreateSeasonModal = ({
         </div>
         
         <form onSubmit={handleSubmit}>
-          <div className="modal-body">
+          <div className="create-season-modal-body">
             {error && (
               <div className="error-message">
                 <i className="fas fa-exclamation-circle"></i>
@@ -213,7 +214,7 @@ export const CreateSeasonModal = ({
               </select>
             </div>
 
-            <div className="form-row">
+            <div className="create-season-form-row">
               <div className="form-group">
                 <label htmlFor="create-startDate">
                   {t('floorball.seasons.fields.startDate', 'Start Date')} *
@@ -252,7 +253,7 @@ export const CreateSeasonModal = ({
             </div>
           </div>
           
-          <div className="modal-footer">
+          <div className="create-season-modal-footer">
             <button 
               type="button"
               className="btn btn-secondary"

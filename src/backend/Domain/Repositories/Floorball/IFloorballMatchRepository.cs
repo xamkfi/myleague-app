@@ -42,6 +42,7 @@ public interface IFloorballMatchRepository
         DateTime? startDate = null,
         DateTime? endDate = null,
         FloorballMatchStatus? status = null,
+        string sortOrder = "desc",
         CancellationToken cancellationToken = default);
         
     /// <summary>
@@ -119,6 +120,14 @@ public interface IFloorballMatchRepository
     /// <param name="venue">The venue name</param>
     /// <returns>A collection of matches at the venue</returns>
     Task<IEnumerable<FloorballMatch>> GetByVenueAsync(string venue);
+
+    /// <summary>
+    /// Gets today's matches for a specified team
+    /// </summary>
+    /// <param name="teamId">The team ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A collection of today's matches involving the team</returns>
+    Task<IEnumerable<FloorballMatch>> GetTodaysMatchesByTeamAsync(Guid teamId, CancellationToken cancellationToken);
     
     /// <summary>
     /// Adds a new floorball match

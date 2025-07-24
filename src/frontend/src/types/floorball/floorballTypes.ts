@@ -51,10 +51,13 @@ export interface FloorballTeamPlayer {
   position: FloorballPosition;
   jerseyNumber?: number;
   isActive: boolean;
+  age?: number;
   gamesPlayed: number;
   goals: number;
   assists: number;
   penaltyMinutes: number;
+  yellowCards: number;
+  redCards: number;
 }
 
 export interface FloorballReferee {
@@ -208,6 +211,24 @@ export interface UpdateFloorballMatchRequest {
   venue?: string;
 }
 
+// New types for edit match functionality
+export interface ChangeMatchSeasonRequest {
+  seasonId: string;
+}
+
+export interface ChangeMatchTeamsRequest {
+  homeTeamId: string;
+  awayTeamId: string;
+}
+
+export interface ChangeMatchVenueRequest {
+  venue: string;
+}
+
+export interface ChangeMatchDateTimeRequest {
+  scheduledDateTime: string;
+}
+
 export interface GetFloorballMatchesRequest {
   page?: number;
   pageSize?: number;
@@ -215,4 +236,5 @@ export interface GetFloorballMatchesRequest {
   teamId?: string;
   startDate?: string;
   endDate?: string;
+  sortOrder?: string;
 } 

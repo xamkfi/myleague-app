@@ -275,7 +275,7 @@ const CreatePlayerModal = ({
                   onClick={() => setModalMode('selectPerson')}
                   type="button"
                 >
-                  ← {t('common.back', 'Back to Person Selection')}
+                  ← {t('floorball.players.backToPersonSelection', 'Back to Person Selection')}
                 </button>
               </div>
               

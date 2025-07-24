@@ -24,7 +24,7 @@ public static class FloorballTeamMapper
     /// <param name="playerPersons">Dictionary of player persons keyed by player ID</param>
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when team is null</exception>
-    public static FloorballTeamDto ToDto(FloorballTeam team, Club club, Dictionary<Guid, Person>? playerPersons)
+    public static FloorballTeamDto ToDto(FloorballTeam team, Club? club, Dictionary<Guid, Person>? playerPersons)
     {
         if (team == null)
             throw new ArgumentNullException(nameof(team));
@@ -36,7 +36,7 @@ public static class FloorballTeamMapper
         if (playerPersons == null)
             throw new ArgumentNullException(nameof(playerPersons));
 
-        var effectiveLogoUrl = team.GetEffectiveLogoUrl(club.LogoUrl)?.ToString();
+        string? effectiveLogoUrl = team.GetEffectiveLogoUrl(club.LogoUrl)?.ToString();
 
         return new FloorballTeamDto(
             team.Id,

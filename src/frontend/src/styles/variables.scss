@@ -1,3 +1,5 @@
+@use "sass:map";
+
 /**
  * Global SCSS Variables
  * 
@@ -19,6 +21,40 @@ $color-sidebar: #ccc;
 $color-placeholder: #999;
 $color-box-shadow: #00000019;
 
+// Neutral Colors
+$color-neutral-black: #1C1C1E;
+$color-neutral-dark-grey: #6E6D75;
+$color-neutral-medium-grey: #D1D0D6;
+$color-neutral-light-grey: #F1F2F7;
+$color-neutral-white: #FBFBFD;
+
+// Neutral Colors with 0.25 alpha
+$color-neutral-black-alpha: #1C1C1E40;
+$color-neutral-dark-grey-alpha: #6E6D7540;
+$color-neutral-medium-grey-alpha: #D1D0D640;
+$color-neutral-light-grey-alpha: #F1F2F740;
+$color-neutral-white-alpha: #FBFBFD40;
+
+// Colour (Blue Spectrum)
+$color-blue-darkest: #0C1D3E;
+$color-blue-deep: #16346B;
+$color-blue-medium: #2A4A63;
+$color-blue-light: #4A679F;
+$color-blue-background: #CFDAEF;
+
+$color-gradient-blue: linear-gradient(270deg, var(--Colour-Medium, #2A4A83) 0%, var(--Colour-Light, #4A679F) 100%);
+
+// Box Shadow
+$box-shadow-drop-1: 0 5px 25px 0 rgba(57, 62, 99, 0.15);
+
+// Common styles
+$border-radius-default: 8px;
+
+// Extra Colors
+$color-red: #EC3935;
+$color-yellow: #FFBB29;
+$color-green: #09AD4C;
+
 // Typography
 $font-sizes: (
   'xs': 0.6rem,
@@ -32,10 +68,10 @@ $font-sizes: (
 );
 
 $font-weights: (
-  'ligth': 300,
+  'light': 400,
   'medium': 500,
   'bold': 600,
-  'extrabold': 800
+  'extrabold': 800,
 );
 
 $letter-spacing-wide: 4px;
@@ -59,6 +95,7 @@ $max-width-page: 1200px;
 $sidebar-width: 280px;
 $border-radius: (
   'sm': 4px,
+  'lg': 8px,
   'full': 50%
 );
 
@@ -76,9 +113,19 @@ $transition-filter: filter 300ms;
 @mixin container {
   width: 100%;
   max-width: $max-width-container;
+  padding: map.get($spacing, "md");
   margin: 0 auto;
+  box-shadow: $box-shadow-drop-1;
+  border-radius: $border-radius-default;
+  background: $color-neutral-white;
 }
 
 @mixin transition($property: all) {
   transition: $property $transition-default;
+}
+
+@mixin card-style($shadow: $box-shadow-drop-1) {
+  border-radius: $border-radius-default;
+  background: $background-white;
+  box-shadow: $shadow;
 } 
