@@ -313,5 +313,26 @@ export const floorballMatchEventService = {
       console.error('Error recording shootout:', error);
       throw error;
     }
+  },
+
+  /**
+   * Cancel a floorball match
+   */
+  cancelMatch: async (matchId: string): Promise<ApiResponse<any>> => {
+    try {
+      console.log('Canceling match:', matchId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return await handleApiResponse<any>(response);
+    } catch (error) {
+      console.error('Error canceling match:', error);
+      throw error;
+    }
   }
 }; 

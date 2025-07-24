@@ -23,6 +23,7 @@ interface MatchFormModalProps {
   mode: MatchFormMode;
   initialData?: FloorballMatchDto;
   onSubmit: (matchData: CreateFloorballMatchRequest | ChangeMatchSeasonRequest | ChangeMatchTeamsRequest | ChangeMatchVenueRequest | ChangeMatchDateTimeRequest) => Promise<void>;
+  onCancelMatch?: (matchId: string) => Promise<void>;
   loading?: boolean;
 }
 
@@ -32,6 +33,7 @@ const MatchFormModal = ({
   mode,
   initialData,
   onSubmit,
+  onCancelMatch,
   loading = false
 }: MatchFormModalProps) => {
   const [formData, setFormData] = useState<CreateFloorballMatchRequest>({
@@ -46,6 +48,7 @@ const MatchFormModal = ({
   const [hoursInput, setHoursInput] = useState('');
   const [minutesInput, setMinutesInput] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
   
   // State for pre-loaded dropdown options
   const [initialSeasonOptions, setInitialSeasonOptions] = useState<Array<{id: string, name: string}>>([]);
@@ -390,6 +393,25 @@ const MatchFormModal = ({
     onClose();
   };
 
+  const handleCancelMatch = async () => {
+    if (!initialData || !onCancelMatch) return;
+    
+    try {
+      setCancelLoading(true);
+      setError(null);
+      
+      await onCancelMatch(initialData.id);
+      
+      // Close the modal after successful cancellation
+      handleClose();
+    } catch (error) {
+      console.error('Error canceling match:', error);
+      setError(error instanceof Error ? error.message : 'Failed to cancel match');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -526,6 +548,16 @@ const MatchFormModal = ({
             <button type="button" onClick={handleClose} className="cancel-button">
               Cancel
             </button>
+            {mode === 'edit' && initialData && onCancelMatch && (
+              <button 
+                type="button" 
+                onClick={handleCancelMatch} 
+                disabled={cancelLoading || initialData.status === 'Cancelled' || initialData.status === 'Completed'}
+                className="cancel-match-button"
+              >
+                {cancelLoading ? 'Cancelling...' : 'Cancel Match'}
+              </button>
+            )}
             <button type="submit" disabled={loading} className="submit-button">
               {loading ? (mode === 'create' ? 'Creating...' : 'Updating...') : (mode === 'create' ? 'Create Match' : 'Update Match')}
             </button>

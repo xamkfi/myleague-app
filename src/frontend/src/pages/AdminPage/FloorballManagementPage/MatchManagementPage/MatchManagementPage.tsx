@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
+import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import { signalRService, type MatchEvent } from '../../../../services/signalRService';
 import Navbar from '../../../../components/Navigation/Navbar';
@@ -362,6 +363,24 @@ const MatchManagementPage = () => {
     }
   };
 
+  const handleCancelMatch = async (matchId: string) => {
+    try {
+      setActionLoading('cancelling');
+      setError(null);
+      
+      await floorballMatchEventService.cancelMatch(matchId);
+      
+      // Refresh the matches list to get the updated status
+      await fetchData();
+      
+    } catch (error) {
+      console.error('Error canceling match:', error);
+      setError(error instanceof Error ? error.message : 'Failed to cancel match');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handleCloseLiveModal = () => {
     setIsLiveModalOpen(false);
     setLiveModalMatch(null);
@@ -573,6 +592,7 @@ const MatchManagementPage = () => {
           mode={formMode}
           initialData={editMatch}
           onSubmit={handleFormSubmit}
+          onCancelMatch={handleCancelMatch}
           loading={actionLoading !== null}
         />
 
