@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Person } from '../../../../../types/admin/personTypes';
 import { PersonRole } from '../../../../../types/admin/personTypes';
@@ -26,7 +26,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchPersons = async () => {
+  const fetchPersons = useCallback(async () => {
     try {
       setLoading(true);
       const data = await personApi.getAll();
@@ -38,11 +38,11 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchPersons();
-  }, [t, refreshTrigger]); // Added refreshTrigger dependency
+  }, [fetchPersons, refreshTrigger]);
 
   const handleEdit = (id: string) => {
     if (onEditPerson) {

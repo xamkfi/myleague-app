@@ -38,6 +38,11 @@ public record GetFloorballMatchesRequest
     /// Gets the end date filter (matches on or before this date)
     /// </summary>
     public DateTime? EndDate { get; init; }
+
+    /// <summary>
+    /// Gets the sort order ("asc" or "desc")
+    /// </summary>
+    public string SortOrder { get; init; } = "desc";
 }
 
 /// <summary>

@@ -43,23 +43,9 @@
         "editTitle": "Muokkaa Henkilöä",
         "close": "Sulje"
       },
-      "actions":{
-        "add": "Lisää Uusi Henkilö",
-        "confirmDelete": "Halatko varmasti poistaa henkilön?",
-        "confirmUnregister": "Haluatko varmasti poistaa henkilön rekisteröinnin?",
-        "confirmRegister": "Haluatko varmasti rekisteröidä henkilön?",
-        "toggleRegistration": "Klikkaa vaihtaaksesi rekisteröintistatuksen.",
-        "updateRole": "Päivitä Rooli",
-        "edit": "Muokkaa",
-        "delete": "Poista"
-      },
       "status":{
         "registered": "Kyllä",
         "notRegistered": "Ei"
-      },
-      "errors":{
-        "deleteFailed": "Henkilön poisto epäonnistui.",
-        "updateRoleFailed": "Henkilön roolin päivitys epäonnistui."
       },
       "success":{
         "registered": "Henkilö rekisteröity.",
@@ -114,7 +100,15 @@
         "cancel": "Peruuta",
         "create": "Luo henkilö",
         "update": "Päivitä henkilö",
-        "saving": "Tallennetaan..."
+        "saving": "Tallennetaan...",
+        "add": "Lisää Uusi Henkilö",
+        "confirmDelete": "Halatko varmasti poistaa henkilön?",
+        "confirmUnregister": "Haluatko varmasti poistaa henkilön rekisteröinnin?",
+        "confirmRegister": "Haluatko varmasti rekisteröidä henkilön?",
+        "toggleRegistration": "Klikkaa vaihtaaksesi rekisteröintistatuksen.",
+        "updateRole": "Päivitä Rooli",
+        "edit": "Muokkaa",
+        "delete": "Poista"
       },
       "validation": {
         "firstNameRequired": "Etunimi on pakollinen",
@@ -144,7 +138,9 @@
       "errors": {
         "fetchFailed": "Henkilötietojen haku epäonnistui",
         "saveFailed": "Henkilön tallennus epäonnistui",
-        "teamAssignmentFailed": "Henkilö luotu, mutta joukkuemääritys epäonnistui"
+        "teamAssignmentFailed": "Henkilö luotu, mutta joukkuemääritys epäonnistui",
+        "deleteFailed": "Henkilön poisto epäonnistui.",
+        "updateRoleFailed": "Henkilön roolin päivitys epäonnistui."
       }
     },
     "news":{
@@ -547,13 +543,49 @@
     "notFoundTitle": "Joukkuetta ei löydy",
     "notFound": "Joukkuetta ei löytynyt",
     "notFoundDesc": "Etsimääsi joukkuetta ei ole olemassa.",
+    "summary": "Yhteenveto",
     "results": "Tulokset",
+    "resultsTitle": "TULOKSET",
     "roster": "Kokoonpano",
     "stats": "Tilastot",
-    "standings": "Sarjataulukko"
+    "standings": "Sarjataulukko",
+    "todaysMatches": "TÄNÄÄN",
+    "latestMatches": "VIIMEISIMMÄT",
+    "scheduled": "TULEVAT OTTELUT"
   },
   "matches": {
     "loading": "Otteluita ladataan…",
-    "noMatches": "Tälle joukkueelle ei löytynyt otteluita."
+    "noMatches": "Otteluita ei löytynyt."
+  },
+  "results": {
+    "title": "Tulokset",
+    "loading": "Tuloksia ladataan…",
+    "noResults": "Tuloksia ei löytynyt."
+  },
+  "roster": {
+    "jerseyNumber": "#",
+    "name": "Nimi",
+    "age": "Ikä",
+    "matchesPlayed": "Pelatut ottelut",
+    "goals": "Maalit",
+    "assists": "Syötöt",
+    "yellowCards": "Keltaiset kortit",
+    "redCards": "Punaiset kortit",
+    "positions": {
+      "None": "EI ROOLIA",
+      "Goalkeeper": "MAALIVAHTI",
+      "Defender": "PUOLUSTAJA",
+      "Center": "KESKIKENTTÄ",
+      "Forward": "HYÖKKÄÄJÄ"
+    },
+    "tooltips": {
+      "jerseyNumber": "Pelinumero",
+      "age": "Ikä",
+      "matchesPlayed": "Pelatut ottelut",
+      "goals": "Maalit",
+      "assists": "Syötöt",
+      "yellowCards": "Keltaiset kortit",
+      "redCards": "Punaiset kortit"
+    }
   }
 } 

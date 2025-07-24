@@ -1,0 +1,16 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+
+.result-unknown{
+   font-size: 12px;
+   font-weight: bold;
+   color: $color-neutral-light-grey;
+   background-color: $color-neutral-medium-grey;
+   border-radius: map.get($border-radius, "sm");
+   
+   width: 20px;
+   height: 20px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
