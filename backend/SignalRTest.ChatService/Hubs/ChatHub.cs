@@ -12,7 +12,7 @@ namespace SignalRTest.ChatService.Hubs
         {
             _sharedDb = sharedDb;
         }
-
+        //asd
         public async Task JoinChat(UserConnection conn)
         {
             await Clients.All.SendAsync("ReceiveMessage", "admin", $"{conn.Username} has joined");
