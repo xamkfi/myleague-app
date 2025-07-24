@@ -44,12 +44,15 @@ const PersonFormModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="person-form-modal-header">
-          <h2>
-            {mode === 'create' 
-              ? t('admin.persons.modal.createTitle', 'Create New Person')
-              : t('admin.persons.modal.editTitle', 'Edit Person')
-            }
-          </h2>
+          <div className="header-content">
+            <span className="header-icon">⚠️</span>
+            <h2>
+              {mode === 'create' 
+                ? t('admin.persons.modal.createTitle', 'Create New Person')
+                : t('admin.persons.modal.editTitle', 'Edit Person')
+              }
+            </h2>
+          </div>
           <button 
             className="person-form-modal-close" 
             onClick={onClose}
