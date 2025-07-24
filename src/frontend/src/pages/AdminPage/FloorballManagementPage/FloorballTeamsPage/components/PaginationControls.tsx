@@ -63,8 +63,12 @@ const PaginationControls = ({
       <div className="pagination-summary">
         <span>
           {totalCount > 0 
-            ? `Showing ${Math.min((currentPage - 1) * pageSize + 1, totalCount)}-${Math.min(currentPage * pageSize, totalCount)} of ${totalCount} items`
-            : 'No items to show'
+            ? t('common.showingItems', 'Showing {{start}}-{{end}} of {{total}} items', {
+                start: Math.min((currentPage - 1) * pageSize + 1, totalCount),
+                end: Math.min(currentPage * pageSize, totalCount),
+                total: totalCount
+              })
+            : t('common.noItemsToShow', 'No items to show')
           }
         </span>
       </div>

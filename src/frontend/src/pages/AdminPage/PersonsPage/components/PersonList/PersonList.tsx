@@ -45,7 +45,7 @@ const PersonList = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm(t('admin.persons.confirmDelete', 'Are you sure you want to delete this person?'))) {
+    if (window.confirm(t('admin.persons.actions.confirmDelete', 'Are you sure you want to delete this person?'))) {
       try {
         await personApi.delete(id);
         setPersons(persons.filter(person => person.id !== id));
@@ -58,8 +58,8 @@ const PersonList = () => {
 
   const handleToggleRegistration = async (id: string, currentStatus: boolean) => {
     const confirmMessage = currentStatus 
-      ? t('admin.persons.confirmUnregister', 'Are you sure you want to unregister this person?')
-      : t('admin.persons.confirmRegister', 'Are you sure you want to register this person?');
+      ? t('admin.persons.actions.confirmUnregister', 'Are you sure you want to unregister this person?')
+      : t('admin.persons.actions.confirmRegister', 'Are you sure you want to register this person?');
     
     if (window.confirm(confirmMessage)) {
       setUpdatingRegistration(id);

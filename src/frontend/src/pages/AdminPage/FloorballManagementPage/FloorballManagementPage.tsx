@@ -12,7 +12,7 @@ const FloorballManagementPage = () => {
   const handleComingSoonClick = async (featureName: string) => {
     const division = (await divisionService.getById("b851ac37-219c-4fa9-a76f-d8620066151d")).data.name;
     console.log(division);
-    alert(`🚧 ${featureName} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯`);
+    alert(t('floorball.management.comingSoonAlert', '🚧 {{featureName}} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯', { featureName }));
   };
 
   return (
@@ -28,11 +28,11 @@ const FloorballManagementPage = () => {
         <div className="feature-status-legend">
           <div className="legend-item">
             <span className="status-indicator available"></span>
-            <span>Available Now</span>
+            <span>{t('floorball.management.legend.availableNow', 'Available Now')}</span>
           </div>
           <div className="legend-item">
             <span className="status-indicator coming-soon"></span>
-            <span>Coming Soon</span>
+            <span>{t('floorball.management.legend.comingSoon', 'Coming Soon')}</span>
           </div>
         </div>
 
@@ -45,7 +45,7 @@ const FloorballManagementPage = () => {
             <div className="button-content">
               <span className="emoji">👥</span>
               <span className="text">{t('floorball.management.actions.teams', 'Manage Teams')}</span>
-              <div className="status-badge available">✨ Ready!</div>
+              <div className="status-badge available">{t('floorball.management.badges.ready', '✨ Ready!')}</div>
             </div>
           </button>
           
@@ -56,7 +56,7 @@ const FloorballManagementPage = () => {
             <div className="button-content">
               <span className="emoji">🏃‍♂️</span>
               <span className="text">{t('floorball.management.actions.players', 'Manage Players')}</span>
-              <div className="status-badge available">✨ Ready!</div>
+              <div className="status-badge available">{t('floorball.management.badges.ready', '✨ Ready!')}</div>
             </div>
           </button>
           
@@ -67,7 +67,7 @@ const FloorballManagementPage = () => {
             <div className="button-content">
               <span className="emoji">📅</span>
               <span className="text">{t('floorball.management.actions.seasons', 'Manage Seasons')}</span>
-              <div className="status-badge available">✨ Ready!</div>
+              <div className="status-badge available">{t('floorball.management.badges.ready', '✨ Ready!')}</div>
             </div>
           </button>
           
@@ -78,7 +78,7 @@ const FloorballManagementPage = () => {
             <div className="button-content">
               <span className="emoji">⚔️</span>
               <span className="text">{t('floorball.management.actions.matches', 'Manage Matches')}</span>
-              <div className="status-badge available">✨ Ready!</div>
+              <div className="status-badge available">{t('floorball.management.badges.ready', '✨ Ready!')}</div>
             </div>
           </button>
           
@@ -90,7 +90,7 @@ const FloorballManagementPage = () => {
             <div className="button-content">
               <span className="emoji">👨‍🏫</span>
               <span className="text">{t('floorball.management.actions.coaches', 'Manage Coaches')}</span>
-              <div className="status-badge coming-soon">🚧 Soon</div>
+              <div className="status-badge coming-soon">{t('floorball.management.badges.soon', '🚧 Soon')}</div>
             </div>
           </button>
           
@@ -101,7 +101,7 @@ const FloorballManagementPage = () => {
             <div className="button-content">
               <span className="emoji">👔</span>
               <span className="text">{t('floorball.management.actions.teamManagers', 'Manage Team Managers')}</span>
-              <div className="status-badge coming-soon">🚧 Soon</div>
+              <div className="status-badge coming-soon">{t('floorball.management.badges.soon', '🚧 Soon')}</div>
             </div>
           </button>
           
@@ -112,7 +112,7 @@ const FloorballManagementPage = () => {
             <div className="button-content">
               <span className="emoji">👨‍⚖️</span>
               <span className="text">{t('floorball.management.actions.referees', 'Manage Referees')}</span>
-              <div className="status-badge available">✨ Ready!</div>
+              <div className="status-badge available">{t('floorball.management.badges.ready', '✨ Ready!')}</div>
             </div>
           </button>
           
@@ -123,7 +123,7 @@ const FloorballManagementPage = () => {
             <div className="button-content">
               <span className="emoji">📊</span>
               <span className="text">{t('floorball.management.actions.matchEvents', 'Manage Match Events')}</span>
-              <div className="status-badge coming-soon">🚧 Soon</div>
+              <div className="status-badge coming-soon">{t('floorball.management.badges.soon', '🚧 Soon')}</div>
             </div>
           </button>
           

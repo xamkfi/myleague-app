@@ -30,11 +30,154 @@
       "managePerson": "Muokkaa/Lisää Henkilö",
       "news": "Luo Uutinen",
       "floorball": "Salibandyn Hallinta"
+    },
+    "persons":{
+      "title": "Henkilöiden hallinta",
+      "subtitle": "Hallitse Henkilöitä",
+      "searchPlaceholder": "Etsi henkilöitä nimellä...",
+      "clearSearch": "Tyhjennä etsintä",
+      "noData": "Ei löytynyt henkilöitä",
+      "noSearchResults": "Ei nimeä vastaavia henkilöitä",
+      "actions":{
+        "add": "Lisää Uusi Henkilö",
+        "confirmDelete": "Halatko varmasti poistaa henkilön?",
+        "confirmUnregister": "Haluatko varmasti poistaa henkilön rekisteröinnin?",
+        "confirmRegister": "Haluatko varmasti rekisteröidä henkilön?",
+        "toggleRegistration": "Klikkaa vaihtaaksesi rekisteröintistatuksen.",
+        "updateRole": "Päivitä Rooli",
+        "edit": "Muokkaa",
+        "delete": "Poista"
+      },
+      "status":{
+        "registered": "Kyllä",
+        "notRegistered": "Ei"
+      },
+      "errors":{
+        "deleteFailed": "Henkilön poisto epäonnistui.",
+        "updateRoleFailed": "Henkilön roolin päivitys epäonnistui."
+      },
+      "success":{
+        "registered": "Henkilö rekisteröity.",
+        "unregister": "Henkilön rekisteröinti poistettu.",
+        "roleUpdated": "Henkilön rooli päivitetty."
+      },
+      "table":{
+        "name": "Nimi",
+        "birthDate": "Syntymäpäivä",
+        "email": "Sähköposti",
+        "registered": "Rekisteröity",
+        "role": "Rooli",
+        "actions": "Toiminnot"
+      },
+      "roles":{
+        "user": "Käyttäjä"
+      }
+    },
+    "news":{
+      "pageTitle": "Uutisten Hallinta",
+      "createNew": "Luo Uusi",
+      "create": "Luo Uutisartikkeli",
+      "edit": "Muokkaa Uutisartikkelia",
+      "loading": "Ladataan...",
+      "title": "Otsikko",
+      "title_placeholder": "Lisää houkutteleva artikkelin otsikko...",
+      "summary": "Yhteenveto",
+      "summary_placeholder": "Kirjoita lyhyt yhteenveto, joka kuvaa artikkelisi ydinsanomaa...",
+      "main_picture": "Pääkuva",
+      "author": "Tekijä",
+      "author_placeholder": "Anna tekijän nimi...",
+      "category": "Kategoria",
+      "sport_category": "Urheilulaji",
+      "select_category": "Valitse kategoria",
+      "select_sport": "Valitse urheilulaji",
+      "tags": "Tägit",
+      "add_tag_placeholder": "Kirjoita tägi ja paina Enter...",
+      "no_tags": "Tägejä ei ole vielä lisätty. Tägit auttavat luokittelemaan artikkelisi.",
+      "content": "Artikkelin Sisältö",
+      "article_details": "Artikkelin Tiedot",
+      "characters": "merkkiä",
+      "summary_too_long": "Yhteenvedon tulisi olla alle 200 merkkiä",
+      "uploading": "Ladataan...",
+      "click_to_upload": "Klikkaa ladataksesi",
+      "or_drag_drop": "tai vedä ja pudota",
+      "up_to": "enintään",
+      "image_uploaded": "Kuva ladattu onnistuneesti",
+      "replace": "Korvaa",
+      "remove_image": "Poista kuva",
+      "publish": "Julkaise",
+      "update": "Päivitä Artikkeli",
+      "preview": "Esikatselu",
+      "edit_content": "Muokkaa Sisältöä",
+      "untitled": "Nimetön Artikkeli", 
+      "no_content": "Sisältöä ei ole vielä kirjoitettu...",
+      "loading_article": "Ladataan artikkelia...",
+      "preview_mode": "Esikatselutila",
+      "edit_mode": "Muokkaustila",
+      "create_mode": "Luontitila",
+      "preview_description": "Näin artikkelisi näyttää lukijoille",
+      "edit_description": "Muokkaa olemassa olevaa uutisartikkelia",
+      "create_description": "Luo uusi uutisartikkeli",
+      "main_picture_preview": "Pääkuvan esikatselu",
+      "news_image": "Uutiskuva",
+      "noData": "Uutisartikkeleita ei löytynyt",
+      "confirmDelete": "Oletko varma, että haluat poistaa tämän uutisartikkelin?",
+      "confirmArchive": "Oletko varma, että haluat arkistoida tämän uutisartikkelin?",
+      "confirmUnarchive": "Oletko varma, että haluat palauttaa tämän uutisartikkelin arkistosta?",
+      "confirm_publish": "Oletko varma, että haluat julkaista tämän uutisartikkelin?",
+      "confirm_update": "Oletko varma, että haluat päivittää tämän uutisartikkelin?",
+      "table": {
+        "title": "Otsikko",
+        "author": "Tekijä",
+        "category": "Kategoria",
+        "createdAt": "Luotu",
+        "archived": "Arkistoitu",
+        "actions": "Toiminnot"
+      },
+      "actions": {
+        "edit": "Muokkaa",
+        "delete": "Poista",
+        "toggleArchive": "Klikkaa vaihtaaksesi arkistointitilaa"
+      },
+      "status": {
+        "archived": "Kyllä",
+        "notArchived": "Ei"
+      },
+      "success": {
+        "archived": "Uutisartikkeli arkistoitu onnistuneesti",
+        "unarchived": "Uutisartikkeli palautettu arkistosta onnistuneesti",
+        "deleted": "Uutisartikkeli poistettu onnistuneesti",
+        "publish_success": "Uutisartikkeli julkaistu onnistuneesti!",
+        "update_success": "Uutisartikkeli päivitetty onnistuneesti!"
+      },
+      "errors": {
+        "fetchFailed": "Uutisartikkeleiden haku epäonnistui",
+        "deleteFailed": "Uutisartikkelin poisto epäonnistui",
+        "updateArchiveFailed": "Arkistointistatuksen päivitys epäonnistui",
+        "publish_error": "Uutisartikkelin julkaisu epäonnistui. Yritä uudelleen.",
+        "update_error": "Uutisartikkelin päivitys epäonnistui. Yritä uudelleen.",
+        "title_required": "Otsikko on pakollinen",
+        "title_too_short": "Otsikon tulee olla vähintään 5 merkkiä pitkä",
+        "title_too_long": "Otsikko ei voi ylittää 200 merkkiä",
+        "content_required": "Artikkelin sisältö on pakollinen",
+        "author_too_long": "Tekijän nimi ei voi ylittää 50 merkkiä",
+        "summary_too_long": "Yhteenveto ei voi ylittää 200 merkkiä",
+        "invalid_image": "Valitse kelvollinen kuvatiedosto",
+        "image_too_large": "Kuvatiedoston tulee olla alle 5MB"
+      }
     }
   },
   "floorball": {
     "management": {
       "title": "Salibandyn Hallinta",
+      "legend": {
+        "availableNow": "Saatavilla Nyt",
+        "comingSoon": "Tulossa Pian"
+      },
+      "badges": {
+        "ready": "✨ Valmis!",
+        "soon": "🚧 Pian"
+      },
+      "comingSoonAlert": "🚧 {{featureName}} tulossa pian! 🚧\n\nKehitystiimimme työskentelee kovasti tuodakseen sinulle tämän ominaisuuden. Pysy kuulolla päivityksistä! 🎯",
       "actions": {
         "teams": "Hallitse Joukkueita",
         "players": "Hallitse Pelaajia",
@@ -50,9 +193,24 @@
       "title": "Hallitse Joukkueita",
       "totalCount": "Yhteensä: {{count}} joukkuetta",
       "createNew": "Luo Uusi Joukkue",
+      "searchPlaceholder": "Hae joukkueita nimellä...",
       "noTeams": "Joukkueita ei löytynyt",
       "hasMembers": "Kyllä",
       "noMembers": "Ei",
+      "primary": "Ensisijainen",
+      "secondary": "Toissijainen",
+      "name": "Joukkueen Nimi", 
+      "namePlaceholder": "Anna joukkueen nimi",
+      "club": "Seura",
+      "selectClub": "Valitse seura",
+      "division": "Sarja",
+      "selectDivision": "Valitse sarja...",
+      "category": "Kategoria",
+      "homeArena": "Kotikenttä",
+      "homeArenaPlaceholder": "Anna kotikenttä",
+      "optional": "Valinnainen",
+      "secondaryColorTooShort": "Toissijaisen värin tulee olla vähintään 2 merkkiä",
+      "secondaryColorTooLong": "Toissijaisen värin tulee olla enintään 50 merkkiä",
       "confirmDelete": "Oletko varma että haluat poistaa joukkueen \"{{name}}\"?",
       "table": {
         "name": "Joukkueen Nimi",
@@ -68,6 +226,197 @@
       "women": "Naiset",
       "youth": "Nuoret",
       "junior": "Juniorit"
+    },
+    "players": {
+      "title": "Hallitse Salibandypelaajia",
+      "totalCount": "{{count}} pelaajaa",
+      "createNew": "Luo Uusi Pelaaja",
+      "noPlayers": "Pelaajia ei löytynyt.",
+      "createFromPerson": "Luo Pelaaja Olemassaolevista Henkilöistä",
+      "createNewPerson": "Luo Uusi Henkilö",
+      "searchPersons": "Hae saatavilla olevia henkilöitä...",
+      "createPlayer": "Luo Pelaaja",
+      "playerCreated": "{{personName}} on nyt salibandypelaaja!",
+      "personCreated": "{{personName}} luotu onnistuneesti! Voit nyt luoda heistä pelaajan.",
+      "noPersonsFound": "Hakua vastaavia henkilöitä ei löytynyt",
+      "noPersonsAvailable": "Ei saatavilla olevia henkilöitä muutettavaksi pelaajiksi. Kaikki henkilöt ovat jo pelaajia.",
+      "backToPersonSelection": "Takaisin Henkilövalintaan",
+      "table": {
+        "name": "Nimi",
+        "position": "Pelipaikka",
+        "status": "Tila",
+        "actions": "Toiminnot"
+      },
+      "confirmDelete": {
+        "title": "Vahvista Poisto",
+        "message": "Oletko varma että haluat poistaa pelaajan {{playerName}}?",
+        "warning": "Tätä toimintoa ei voi perua."
+      },
+      "errors": {
+        "loadPlayers": "Pelaajien lataus epäonnistui. Yritä uudelleen.",
+        "deleteFailed": "Pelaajan poisto epäonnistui. Yritä uudelleen."
+      }
+    },
+    "positions": {
+      "center": "Keskushyökkääjä",
+      "winger": "Laitahyökkääjä",
+      "defender": "Puolustaja",
+      "goalkeeper": "Maalivahti"
+    },
+    "seasons": {
+      "title": "Hallitse Kausia",
+      "totalCount": "{{count}} kautta",
+      "createNew": "Luo Uusi Kausi",
+      "showActiveOnly": "Näytä Vain Aktiiviset",
+      "division": "Sarja",
+      "fields": {
+        "name": "Nimi",
+        "division": "Sarja",
+        "startDate": "Alkaa",
+        "endDate": "Päättyy",
+        "teams": "Joukkueet"
+      },
+      "status": {
+        "active": "Aktiivinen",
+        "inactive": "Ei-aktiivinen",
+        "completed": "Päättynyt"
+      },
+      "create": {
+        "title": "Luo Uusi Kausi",
+        "info": "Kausi luodaan oletuksena ei-aktiivisena"
+      },
+      "placeholders": {
+        "name": "Anna kauden nimi",
+        "selectDivision": "Valitse sarja"
+      },
+      "errors": {
+        "networkError": "Verkkovirhe. Tarkista yhteytesi ja yritä uudelleen.",
+        "validationError": "Virheellistä tietoa annettu. Tarkista syötteesi ja yritä uudelleen.",
+        "conflictError": "Kausi päällekkäisillä päivämäärillä on jo olemassa.",
+        "serverError": "Palvelinvirhe. Yritä myöhemmin uudelleen.",
+        "overlappingDates": "Kausi on jo olemassa, joka menee päällekkäin määritettyjen päivämäärien kanssa."
+      },
+      "validation": {
+        "nameRequired": "Kauden nimi on pakollinen.",
+        "nameTooLong": "Kauden nimi ei voi ylittää 100 merkkiä.",
+        "divisionRequired": "Valitse kelvollinen sarja.",
+        "startDateRequired": "Aloituspäivä on pakollinen.",
+        "endDateRequired": "Päättymispäivä on pakollinen."
+      }
+    },
+    "categories": {
+      "adult": "Aikuiset",
+      "youth": "Nuoret",
+      "women": "Naiset"
+    },
+    "referees": {
+      "title": "Hallitse Salibandytuomareita",
+      "totalCount": "{{count}} tuomaria",
+      "createNew": "Luo Uusi Tuomari",
+      "createFromPerson": "Luo Tuomari Olemassaolevista Henkilöistä",
+      "createRefereeFor": "Luo Tuomari Henkilölle {{name}}",
+      "searchPersons": "Hae saatavilla olevia henkilöitä...",
+      "selectPerson": "Valitse",
+      "createReferee": "Luo Tuomari",
+      "refereeCreated": "{{personName}} on nyt salibandytuomari!",
+      "noPersonsFound": "Hakua vastaavia henkilöitä ei löytynyt",
+      "noPersonsAvailable": "Ei saatavilla olevia henkilöitä muutettavaksi tuomareiksi. Kaikki henkilöt ovat jo tuomareita.",
+      "licenseIssueDate": "Lisenssin Myöntämispäivä",
+      "licenseExpiryDate": "Lisenssin Vanhentumispäivä",
+      "noReferees": "Tuomareita ei löytynyt.",
+      "table": {
+        "name": "Nimi",
+        "status": "Tila",
+        "licenseExpiry": "Lisenssin Vanhentuminen",
+        "matchesOfficiated": "Ottelut",
+        "actions": "Toiminnot"
+      },
+      "license": {
+        "valid": "Voimassa",
+        "expired": "Vanhentunut",
+        "expiring": "Vanhenee Pian"
+      },
+      "errors": {
+        "loadReferees": "Tuomareiden lataus epäonnistui. Yritä uudelleen.",
+        "deleteFailed": "Tuomarin poisto epäonnistui. Yritä uudelleen."
+      }
+    },
+    "matches": {
+      "title": "Otteluiden Hallinta",
+      "subtitle": "Hallitse salibandyotteluita, seuraa live-pelejä ja organisoi kautesi",
+      "loading": "Ladataan otteluita...",
+      "noMatchesFound": "Otteluita ei löytynyt",
+      "noMatchesForSeason": "Valitulle kaudelle ei löytynyt otteluita",
+      "createFirstMatch": "Luo ensimmäinen ottelusi aloittaaksesi",
+      "createNewMatch": "Luo Uusi Ottelu",
+      "goLive": "🟢 Aloita Live",
+      "live": "🔴 Live",
+      "edit": "✏️ Muokkaa",
+      "tbd": "TBD",
+      "noScore": "-",
+      "table": {
+        "match": "Ottelu",
+        "dateTime": "Päiväys & Aika",
+        "venue": "Paikka",
+        "score": "Tulos",
+        "status": "Tila",
+        "actions": "Toiminnot"
+      },
+      "sections": {
+        "matches": "Ottelut"
+      },
+      "create": {
+        "title": "Luo Uusi Ottelu",
+        "season": "Kausi",
+        "homeTeam": "Kotijoukkue",
+        "awayTeam": "Vierasjoukkue",
+        "referee": "Tuomari",
+        "dateTime": "Päiväys & Aika",
+        "venue": "Paikka",
+        "createMatch": "Luo Ottelu"
+      },
+      "placeholders": {
+        "selectSeason": "Valitse Kausi",
+        "selectHomeTeam": "Valitse Kotijoukkue",
+        "selectAwayTeam": "Valitse Vierasjoukkue",
+        "selectReferee": "Valitse Tuomari",
+        "searchSeasons": "Hae kausia...",
+        "searchTeams": "Hae joukkueita...",
+        "searchReferees": "Hae tuomareita...",
+        "hoursPlaceholder": "TT",
+        "minutesPlaceholder": "MM", 
+        "venuePlaceholder": "Anna paikka (valinnainen)"
+      },
+      "validation": {
+        "fillRequired": "Täytä kaikki pakolliset kentät",
+        "sameTeams": "Koti- ja vierasjoukkue eivät voi olla sama",
+        "validDateTime": "Anna kelvollinen päiväys ja aika",
+        "createFailed": "Ottelun luominen epäonnistui"
+      },
+      "emptyStates": {
+        "noSeasons": "Kausia ei löytynyt",
+        "noTeams": "Joukkueita ei löytynyt",
+        "noReferees": "Tuomareita ei löytynyt"
+      },
+      "stats": {
+        "totalMatches": "Otteluita Yhteensä",
+        "seasonMatches": "Kauden Ottelut",
+        "completed": "Päättyneet",
+        "scheduled": "Aikataulutetut",
+        "inProgress": "Käynnissä",
+        "createNew": "Luo Uusi"
+      },
+      "filters": {
+        "filterBySeason": "Suodata Kauden Mukaan:",
+        "allSeasons": "Kaikki Kaudet"
+      },
+      "status": {
+        "Scheduled": "Aikataulutettu",
+        "InProgress": "Käynnissä",
+        "Completed": "Päättynyt",
+        "Cancelled": "Peruttu",
+        "Postponed": "Lykätty"
+      }
     }
   },
   "common": {
@@ -76,12 +425,31 @@
     "loading": "Ladataan...",
     "edit": "Muokkaa",
     "delete": "Poista",
+    "deleting": "Poistetaan...",
+    "cancel": "Peruuta",
+    "active": "Aktiivinen",
+    "inactive": "Ei-aktiivinen",
+    "add": "Lisää",
+    "creating": "Luodaan...",
+    "birthDate": "Syntymäpäivä",
+    "registration": "Rekisteröinti",
+    "name": "Nimi",
+    "actions": "Toiminnot",
+    "registered": "Rekisteröity",
+    "notRegistered": "Ei Rekisteröity",
+    "cancelSelection": "Peruuta Valinta",
     "previous": "Edellinen",
     "next": "Seuraava",
     "pageInfo": "Sivu {{current}} / {{total}}",
+    "itemsPerPage": "Kohdetta per sivu:",
+    "showingItems": "Näytetään {{start}}-{{end}} / {{total}} kohdetta",
+    "noItemsToShow": "Ei näytettäviä kohteita",
     "error": "Virhe",
     "goBack": "Palaa takaisin",
     "retry": "Yritä uudelleen",
+    "all": "Kaikki",
+    "create": "Luo",
+    "close": "Sulje",
     "pagination": {
       "previous": "Edellinen",
       "next": "Seuraava",

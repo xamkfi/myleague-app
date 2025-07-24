@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { FloorballSeasonDto } from '../../../../../../api/floorball/floorballSeasonService';
 import { formatSeasonDisplayName } from '../../utils/matchFormatters';
 import './MatchFilters.scss';
@@ -13,16 +14,17 @@ const MatchFilters = ({
   selectedSeasonId,
   onSeasonChange
 }: MatchFiltersProps) => {
+  const { t } = useTranslation();
   return (
     <div className="filter-section">
-      <label htmlFor="season-filter">Filter by Season:</label>
+      <label htmlFor="season-filter">{t('floorball.matches.filters.filterBySeason', 'Filter by Season:')}</label>
       <select
         id="season-filter"
         value={selectedSeasonId}
         onChange={(e) => onSeasonChange(e.target.value)}
         className="season-filter"
       >
-        <option value="">All Seasons</option>
+        <option value="">{t('floorball.matches.filters.allSeasons', 'All Seasons')}</option>
         {seasons.map(season => (
           <option key={season.id} value={season.id}>
             {formatSeasonDisplayName(season)}

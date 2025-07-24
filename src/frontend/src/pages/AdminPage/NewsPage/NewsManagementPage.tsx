@@ -13,10 +13,10 @@ const NewsManagementPage = () => {
   };
 
   return (
-    <PageTemplate title={t('admin.news.title', 'News Management')}>
+    <PageTemplate title={t('admin.news.pageTitle', 'News Management')}>
     <div className="news-management-page">
       <div className="page-header">
-        <h1>{t('admin.news.title', 'News Management')}</h1>
+        <h1>{t('admin.news.pageTitle', 'News Management')}</h1>
         <button 
           className="create-new-button"
           onClick={handleCreateNew}
