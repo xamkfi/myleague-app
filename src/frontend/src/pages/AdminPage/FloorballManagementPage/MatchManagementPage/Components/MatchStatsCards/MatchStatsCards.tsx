@@ -4,7 +4,11 @@ import './MatchStatsCards.scss';
 
 interface MatchStatsCardsProps {
   allMatches: FloorballMatchDto[];
-  filteredMatches: FloorballMatchDto[];
+  filteredMatches: {
+    ongoing: FloorballMatchDto[];
+    scheduled: FloorballMatchDto[];
+    completed: FloorballMatchDto[];
+  };
   selectedSeasonId: string;
   onCreateNew?: () => void;
 }
@@ -23,13 +27,8 @@ const MatchStatsCards = ({
   return (
     <div className="stats-grid">
       <div className="stat-card">
-        <div className="stat-number">{filteredMatches.length}</div>
-        <div className="stat-label">
-          {selectedSeasonId 
-            ? t('floorball.matches.stats.seasonMatches', 'Season Matches') 
-            : t('floorball.matches.stats.totalMatches', 'Total Matches')
-          }
-        </div>
+        <div className="stat-number">{filteredMatches.ongoing.length + filteredMatches.scheduled.length + filteredMatches.completed.length}</div>
+        <div className="stat-label">{selectedSeasonId ? 'Season Matches' : 'Total Matches'}</div>
       </div>
       <div className="stat-card">
         <div className="stat-number">{getMatchCountByStatus('Completed')}</div>

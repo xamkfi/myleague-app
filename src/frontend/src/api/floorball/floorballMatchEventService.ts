@@ -2,6 +2,34 @@ import type {
   ApiResponse
 } from '../../types/floorball/floorballTypes';
 
+// Event DTOs
+export interface FloorballGoalEventDto {
+  teamId: string;
+  playerId: string;
+  assisterId?: string;
+  secondaryAssisterId?: string;
+  periodNumber: number;
+  timeInSeconds: number;
+  wasInOvertime: boolean;
+  wasInShootout: boolean;
+}
+
+export interface FloorballPenaltyEventDto {
+  teamId: string;
+  playerId?: string;
+  penaltyType: string;
+  minutes: number;
+  periodNumber: number;
+  timeInSeconds: number;
+  description: string;
+}
+
+export interface FloorballDomainEventDto {
+  eventType: string;
+  occurredOn: string;
+  data: any;
+}
+
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Request interfaces matching backend models
@@ -76,6 +104,27 @@ const handleApiResponse = async <T>(response: Response): Promise<ApiResponse<T>>
 };
 
 export const floorballMatchEventService = {
+  /**
+   * Get match events (goals and penalties) for a match
+   */
+  getMatchEvents: async (matchId: string): Promise<ApiResponse<FloorballDomainEventDto[]>> => {
+    try {
+      console.log('Fetching match events for match:', matchId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/${matchId}/history`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return await handleApiResponse<FloorballDomainEventDto[]>(response);
+    } catch (error) {
+      console.error('Error fetching match events:', error);
+      throw error;
+    }
+  },
+
   /**
    * Record a goal event in a floorball match
    */
@@ -178,6 +227,48 @@ export const floorballMatchEventService = {
       return await handleApiResponse<void>(response);
     } catch (error) {
       console.error('Error deleting event:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Start a period in a floorball match
+   */
+  startPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<void>> => {
+    try {
+      console.log('Starting period:', periodNumber, 'for match:', matchId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/period/${periodNumber}/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return await handleApiResponse<void>(response);
+    } catch (error) {
+      console.error('Error starting period:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * End a period in a floorball match
+   */
+  endPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<void>> => {
+    try {
+      console.log('Ending period:', periodNumber, 'for match:', matchId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/period/${periodNumber}/end`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return await handleApiResponse<void>(response);
+    } catch (error) {
+      console.error('Error ending period:', error);
       throw error;
     }
   }

@@ -86,6 +86,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             // Use the latest version in the event store as the expected version
             int expectedVersion = await _eventStore.GetAggregateVersionAsync(match.Id, cancellationToken);
 
+            // Capture the events before they're marked as committed
+            List<IDomainEvent> eventsToDispatch = match.UncommittedEvents.ToList();
+
             // Save all uncommitted events to the event store with optimistic concurrency
             await _eventStore.SaveEventsAsync(
                 match.Id,
@@ -93,11 +96,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 expectedVersion,
                 cancellationToken);
 
-            //Send saved events to projections for database updates
-            await _domainEventDispatcher.DispatchAsync(match.UncommittedEvents);
-
             // Mark events as committed so they won't be saved again
             match.MarkEventsAsCommitted();
+
+            // Send saved events to projections for database updates (after events are committed)
+            await _domainEventDispatcher.DispatchAsync(eventsToDispatch);
 
             //// Persist snapshot updates in case EventStore didn't already commit them (different DbContext instance)
             //await _dbContext.SaveChangesAsync(cancellationToken);
