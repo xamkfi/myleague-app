@@ -81,6 +81,10 @@ const LiveMatchModal = ({
   // Event recording state
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showPenaltyForm, setShowPenaltyForm] = useState(false);
+  const [showEndPeriodConfirmation, setShowEndPeriodConfirmation] = useState(false);
+  const [pendingEndPeriodAction, setPendingEndPeriodAction] = useState<(() => void) | null>(null);
+  const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false);
+  const [showShootoutConfirmation, setShowShootoutConfirmation] = useState(false);
 
   // Update penalty form with current time when form opens
   const openPenaltyForm = () => {
@@ -201,6 +205,15 @@ const LiveMatchModal = ({
    */
   const setupSignalR = async () => {
     try {
+      console.log('Setting up SignalR connection...');
+      
+      // Test backend accessibility first
+      const isBackendAccessible = await signalRService.testBackendAccessibility();
+      if (!isBackendAccessible) {
+        console.warn('Backend is not accessible, skipping SignalR setup');
+        return;
+      }
+      
       // Connect to SignalR
       await signalRService.connect();
       
@@ -209,10 +222,12 @@ const LiveMatchModal = ({
       
       // Only subscribe if connection is established
       if (signalRService.isConnected) {
+        console.log('SignalR connected, subscribing to events...');
         await signalRService.subscribeToEventType('FloorballGoalScored');
         await signalRService.subscribeToEventType('FloorballPenaltyAssigned');
         
         const unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
+        console.log('SignalR setup completed successfully');
         return unsubscribe;
       } else {
         console.warn('SignalR connection not established, skipping event subscriptions');
@@ -309,32 +324,171 @@ const LiveMatchModal = ({
     });
   };
 
+  /**
+   * Combined function that handles starting the match, period, and clock
+   * This replaces the separate Go Live, Start Period, and Start Clock buttons
+   */
+  const handleStartMatchAndPeriod = async () => {
+    if (!onStateUpdate) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Step 1: Start the match if not already live
+      if (currentMatch.status !== 'InProgress') {
+        console.log('Starting match...');
+        const response = await floorballMatchService.start(currentMatch.id);
+        
+        if (response.success && response.data) {
+          setCurrentMatch(response.data);
+          if (onGoLive) {
+            onGoLive(currentMatch.id, response.data);
+          }
+        } else {
+          throw new Error('Failed to start match');
+        }
+      }
+      
+      // Step 2: Start the current period if not already started
+      const currentPeriodState = periodStates[clock.period];
+      if (currentPeriodState !== 'started' && currentPeriodState !== 'ended') {
+        console.log(`Starting period ${clock.period}...`);
+        setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
+        
+        await floorballMatchEventService.startPeriod(currentMatch.id, clock.period);
+        console.log(`Started period ${clock.period} for match ${currentMatch.id}`);
+        
+        // Update period state
+        setPeriodStates(prev => ({ ...prev, [clock.period]: 'started' }));
+      }
+      
+      // Step 3: Start the clock
+      console.log('Starting clock...');
+      onStateUpdate({
+        clock: { ...clock, isRunning: true }
+      });
+      
+      setError(null);
+    } catch (error) {
+      console.error('Error starting match and period:', error);
+      setError(error instanceof Error ? error.message : 'Failed to start match and period');
+    } finally {
+      setLoading(false);
+      setPeriodLoading(prev => ({ ...prev, [clock.period]: false }));
+    }
+  };
+
+  /**
+   * Pause the clock (only when clock is running)
+   */
+  const handlePauseClock = () => {
+    if (!onStateUpdate) return;
+    onStateUpdate({
+      clock: { ...clock, isRunning: false }
+    });
+  };
+
+  /**
+   * Determines if the combined start button should be enabled
+   * @returns true if the button can be used
+   */
+  const canStartMatchAndPeriod = () => {
+    // Can start if:
+    // 1. Match is not completed
+    // 2. Not currently loading
+    // 3. Clock is not running (if clock is running, we show pause button)
+    // 4. Current period is not ended
+    const currentPeriodState = periodStates[clock.period];
+    return currentMatch.status !== 'Completed' && 
+           !loading && 
+           !clock.isRunning && 
+           currentPeriodState !== 'ended';
+  };
+
+  /**
+   * Determines if the pause button should be enabled
+   * @returns true if the pause button can be used
+   */
+  const canPauseClock = () => {
+    // Can pause if:
+    // 1. Match is not completed
+    // 2. Not currently loading
+    // 3. Clock is running
+    return currentMatch.status !== 'Completed' && 
+           !loading && 
+           clock.isRunning;
+  };
+
+  /**
+   * Determines if the main clock button should be enabled
+   * @returns true if the button can be used
+   */
+  const canUseMainClockButton = () => {
+    if (clock.isRunning) {
+      return canPauseClock();
+    } else {
+      return canStartMatchAndPeriod();
+    }
+  };
+
+  /**
+   * Gets the button text based on current state
+   * @returns The appropriate button text
+   */
+  const getStartButtonText = () => {
+    if (clock.isRunning) {
+      return '⏸️ Pause';
+    }
+    
+    if (currentMatch.status !== 'InProgress') {
+      return '🟢 Start Match & 1st Period';
+    }
+    
+    // Check if we're in overtime
+    if (isInOvertime()) {
+      const currentPeriodState = periodStates[clock.period];
+      if (currentPeriodState === 'started') {
+        return '▶️ Start Clock';
+      }
+      return '⏰ Start Overtime';
+    }
+    
+    // Check if we're in shootout
+    if (isInShootout()) {
+      const currentPeriodState = periodStates[clock.period];
+      if (currentPeriodState === 'started') {
+        return '▶️ Start Clock';
+      }
+      return '🎯 Start Shootout';
+    }
+    
+    const currentPeriodState = periodStates[clock.period];
+    if (currentPeriodState === 'started') {
+      return '▶️ Start Clock';
+    }
+    
+    return '🟢 Start Period & Clock';
+  };
+
+  /**
+   * Handles the main start/pause button click
+   */
+  const handleMainClockButton = () => {
+    if (clock.isRunning) {
+      // If clock is running, pause it
+      handlePauseClock();
+    } else {
+      // If clock is not running, start match/period/clock
+      handleStartMatchAndPeriod();
+    }
+  };
+
   const resetClock = () => {
     if (!onStateUpdate) return;
     onStateUpdate({
       clock: { ...clock, minutes: 0, seconds: 0, isRunning: false }
     });
-  };
-
-  /**
-   * Starts the current period by sending API call
-   * This is separate from clock control
-   */
-  const startPeriod = async () => {
-    try {
-      setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
-      await floorballMatchEventService.startPeriod(currentMatch.id, clock.period);
-      console.log(`Started period ${clock.period} for match ${currentMatch.id}`);
-      
-      // Update period state
-      setPeriodStates(prev => ({ ...prev, [clock.period]: 'started' }));
-      setError(null);
-    } catch (error) {
-      console.error('Error starting period:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start period');
-    } finally {
-      setPeriodLoading(prev => ({ ...prev, [clock.period]: false }));
-    }
   };
 
   /**
@@ -349,12 +503,210 @@ const LiveMatchModal = ({
       
       // Update period state
       setPeriodStates(prev => ({ ...prev, [clock.period]: 'ended' }));
+      
+      // If we're ending overtime (period 4), show shootout button
+      if (clock.period === 4 && currentMatch.wentToOvertime) {
+        // The shootout button will be available after ending overtime
+        console.log('Overtime ended, shootout button will be available');
+      }
+      
       setError(null);
     } catch (error) {
       console.error('Error ending period:', error);
       setError(error instanceof Error ? error.message : 'Failed to end period');
     } finally {
       setPeriodLoading(prev => ({ ...prev, [clock.period]: false }));
+    }
+  };
+
+  /**
+   * Handles the end period button click with validation
+   */
+  const handleEndPeriodClick = () => {
+    const totalSeconds = clock.minutes * 60 + clock.seconds;
+    const isUnder20Minutes = totalSeconds < 1200; // 20 minutes = 1200 seconds
+    
+    if (isUnder20Minutes) {
+      // Show confirmation dialog for periods under 20 minutes
+      setShowEndPeriodConfirmation(true);
+      setPendingEndPeriodAction(() => endPeriod);
+    } else {
+      // End period immediately if 20 minutes or more
+      endPeriod();
+    }
+  };
+
+  /**
+   * Confirms the end period action
+   */
+  const confirmEndPeriod = () => {
+    if (pendingEndPeriodAction) {
+      pendingEndPeriodAction();
+      setPendingEndPeriodAction(null);
+    }
+    setShowEndPeriodConfirmation(false);
+  };
+
+  /**
+   * Cancels the end period action
+   */
+  const cancelEndPeriod = () => {
+    setPendingEndPeriodAction(null);
+    setShowEndPeriodConfirmation(false);
+  };
+
+  /**
+   * Records overtime for the current match
+   */
+  const recordOvertime = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      await floorballMatchEventService.recordOvertime(currentMatch.id);
+      
+      // Start the overtime period (period 4)
+      await floorballMatchEventService.startPeriod(currentMatch.id, 4);
+      
+      // Update the clock to period 4
+      if (onStateUpdate) {
+        onStateUpdate({
+          clock: { 
+            period: 4, 
+            minutes: 0, 
+            seconds: 0, 
+            isRunning: false 
+          }
+        });
+      }
+      
+      // Refresh match status from backend
+      await loadCurrentMatchStatus();
+      setError(null);
+      setShowOvertimeConfirmation(false);
+      
+    } catch (error) {
+      console.error('Error recording overtime:', error);
+      setError(error instanceof Error ? error.message : 'Failed to record overtime');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Records shootout for the current match
+   */
+  const recordShootout = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      await floorballMatchEventService.recordShootout(currentMatch.id);
+      
+      // Start the shootout period (period 5)
+      await floorballMatchEventService.startPeriod(currentMatch.id, 5);
+      
+      // Update the clock to period 5
+      if (onStateUpdate) {
+        onStateUpdate({
+          clock: { 
+            period: 5, 
+            minutes: 0, 
+            seconds: 0, 
+            isRunning: false 
+          }
+        });
+      }
+      
+      // Refresh match status from backend
+      await loadCurrentMatchStatus();
+      setError(null);
+      setShowShootoutConfirmation(false);
+      
+    } catch (error) {
+      console.error('Error recording shootout:', error);
+      setError(error instanceof Error ? error.message : 'Failed to record shootout');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Determines if we should show overtime button instead of next period
+   */
+  const shouldShowOvertimeButton = () => {
+    return currentMatch.status === 'InProgress' && 
+           clock.period >= 3 && 
+           !currentMatch.wentToOvertime;
+  };
+
+  /**
+   * Determines if we should show shootout button instead of next period
+   */
+  const shouldShowShootoutButton = () => {
+    return currentMatch.status === 'InProgress' && 
+           currentMatch.wentToOvertime && 
+           !currentMatch.wentToShootout;
+  };
+
+  /**
+   * Determines if we're currently in overtime
+   */
+  const isInOvertime = () => {
+    return currentMatch.wentToOvertime && clock.period > 3;
+  };
+
+  /**
+   * Determines if we're currently in shootout
+   */
+  const isInShootout = () => {
+    return currentMatch.wentToShootout && clock.period > 4;
+  };
+
+  /**
+   * Gets the text for the end period button
+   */
+  const getEndPeriodButtonText = () => {
+    if (periodLoading[clock.period]) {
+      return 'Ending...';
+    }
+    
+    if (isInOvertime()) {
+      return '🔴 End Overtime';
+    }
+    
+    if (isInShootout()) {
+      return '🔴 End Shootout';
+    }
+    
+    return '🔴 End Period';
+  };
+
+  /**
+   * Gets the text for the next period button
+   */
+  const getNextPeriodButtonText = () => {
+    if (shouldShowOvertimeButton()) {
+      return '⏰ Overtime';
+    }
+    
+    if (shouldShowShootoutButton()) {
+      return '🎯 Shootout';
+    }
+    
+    return '➡️ Next Period';
+  };
+
+  /**
+   * Handles the next period/overtime/shootout button click
+   */
+  const handleNextPeriodClick = () => {
+    if (shouldShowOvertimeButton()) {
+      setShowOvertimeConfirmation(true);
+    } else if (shouldShowShootoutButton()) {
+      setShowShootoutConfirmation(true);
+    } else {
+      nextPeriod();
     }
   };
 
@@ -497,8 +849,8 @@ const LiveMatchModal = ({
         assisterId: goalForm.assisterId || undefined,
         periodNumber: clock.period,
         timeInSeconds: clock.minutes * 60 + clock.seconds,
-        wasInOvertime: clock.period > 3,
-        wasInShootout: false, // TODO: Add shootout support
+        wasInOvertime: currentMatch.wentToOvertime || clock.period > 3,
+        wasInShootout: currentMatch.wentToShootout || clock.period > 4,
       };
       
       await floorballMatchEventService.recordGoal(goalData);
@@ -564,18 +916,6 @@ const LiveMatchModal = ({
   const isTimeOverLimit = (minutes: number, seconds: number) => {
     const totalSeconds = minutes * 60 + seconds;
     return totalSeconds >= 1200; // 20 minutes = 1200 seconds
-  };
-
-  /**
-   * Determines if the Start Period button should be enabled
-   * @returns true if the period can be started
-   */
-  const canStartPeriod = () => {
-    const currentPeriodState = periodStates[clock.period];
-    return currentMatch.status === 'InProgress' && 
-           !periodLoading[clock.period] && 
-           currentPeriodState !== 'started' && 
-           currentPeriodState !== 'ended';
   };
 
   /**
@@ -728,34 +1068,6 @@ const LiveMatchModal = ({
     return sortedEvents;
   }, [matchEvents, currentMatch.homeTeamId, homeTeam?.name, awayTeam?.name, homePlayers, awayPlayers]);
 
-  const handleGoLive = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Use the event sourced endpoint to start the match
-      const response = await floorballMatchService.start(currentMatch.id);
-      
-      if (response.success && response.data) {
-        // Update the current match with the response from the backend
-        setCurrentMatch(response.data);
-        
-        // Update the match with the response from the backend
-        // This will include the updated status from the event sourced system
-        if (onGoLive) {
-          onGoLive(currentMatch.id, response.data);
-        }
-      } else {
-        setError('Failed to start match');
-      }
-    } catch (error) {
-      console.error('Error starting match:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start match');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleCompleteLive = async () => {
     try {
       setLoading(true);
@@ -812,9 +1124,6 @@ const LiveMatchModal = ({
               ) : (
                 <>
                   <span className="match-status">⏸️ READY</span>
-                  <button onClick={handleGoLive} className="go-live-button" title="Start live tracking for this match">
-                    🟢 Go Live
-                  </button>
                 </>
               )}
             </div>
@@ -831,10 +1140,118 @@ const LiveMatchModal = ({
           </div>
         )}
 
+        {/* End Period Confirmation Dialog */}
+        {showEndPeriodConfirmation && (
+          <div className="confirmation-dialog-overlay">
+            <div className="confirmation-dialog">
+              <div className="confirmation-header">
+                <span className="confirmation-icon">⚠️</span>
+                <h3>Confirm End Period</h3>
+              </div>
+              <div className="confirmation-content">
+                <p>
+                  Are you sure you want to end period {clock.period} at {formatTime(clock.minutes, clock.seconds)}?
+                </p>
+                <p className="confirmation-warning">
+                  This action cannot be undone.
+                </p>
+              </div>
+              <div className="confirmation-actions">
+                <button 
+                  onClick={confirmEndPeriod} 
+                  className="confirm-btn"
+                  disabled={periodLoading[clock.period]}
+                >
+                  {periodLoading[clock.period] ? 'Ending...' : 'End Period'}
+                </button>
+                <button 
+                  onClick={cancelEndPeriod} 
+                  className="cancel-btn"
+                  disabled={periodLoading[clock.period]}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Overtime Confirmation Dialog */}
+        {showOvertimeConfirmation && (
+          <div className="confirmation-dialog-overlay">
+            <div className="confirmation-dialog">
+              <div className="confirmation-header">
+                <span className="confirmation-icon">⏰</span>
+                <h3>Start Overtime</h3>
+              </div>
+              <div className="confirmation-content">
+                <p>
+                  Are you sure you want to start overtime for this match?
+                </p>
+                <p className="confirmation-warning">
+                  This will begin the overtime period. The clock will be reset to 0:00.
+                </p>
+              </div>
+              <div className="confirmation-actions">
+                <button 
+                  onClick={recordOvertime} 
+                  className="confirm-btn"
+                  disabled={loading}
+                >
+                  {loading ? 'Starting...' : 'Start Overtime'}
+                </button>
+                <button 
+                  onClick={() => setShowOvertimeConfirmation(false)} 
+                  className="cancel-btn"
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Shootout Confirmation Dialog */}
+        {showShootoutConfirmation && (
+          <div className="confirmation-dialog-overlay">
+            <div className="confirmation-dialog">
+              <div className="confirmation-header">
+                <span className="confirmation-icon">🎯</span>
+                <h3>Start Shootout</h3>
+              </div>
+              <div className="confirmation-content">
+                <p>
+                  Are you sure you want to start a shootout for this match?
+                </p>
+                <p className="confirmation-warning">
+                  Shootout does not use time keeping. Goals will be recorded without time.
+                </p>
+              </div>
+              <div className="confirmation-actions">
+                <button 
+                  onClick={recordShootout} 
+                  className="confirm-btn"
+                  disabled={loading}
+                >
+                  {loading ? 'Starting...' : 'Start Shootout'}
+                </button>
+                <button 
+                  onClick={() => setShowShootoutConfirmation(false)} 
+                  className="cancel-btn"
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="modal-content">
           <div className="left-section">
           {/* Clock and Score Section */}
-          <div className="clock-score-section">
+          <div className={`clock-score-section ${isInOvertime() ? 'overtime' : ''}`}>
             {currentMatch.status === 'Completed' && (
               <div className="match-finished-notice">
                 <span className="notice-icon">🏁</span>
@@ -844,7 +1261,7 @@ const LiveMatchModal = ({
             {currentMatch.status !== 'InProgress' && currentMatch.status !== 'Completed' && (
               <div className="not-live-notice">
                 <span className="notice-icon">⏸️</span>
-                <span className="notice-text">Match is not live yet. Click "Go Live" to start tracking.</span>
+                <span className="notice-text">Match is not live yet. Use the clock button to start the match and first period.</span>
               </div>
             )}
             <div className="match-clock">
@@ -852,22 +1269,6 @@ const LiveMatchModal = ({
                 <div className="period-status">
                   Period {clock.period}: {getPeriodStatus()}
                 </div>
-                <button 
-                  onClick={startPeriod} 
-                  className="period-control-btn start-period-btn"
-                  title="Start the current period"
-                  disabled={!canStartPeriod()}
-                >
-                  {periodLoading[clock.period] ? 'Starting...' : '🟢 Start Period'}
-                </button>
-                <button 
-                  onClick={endPeriod} 
-                  className="period-control-btn end-period-btn"
-                  title="End the current period"
-                  disabled={!canEndPeriod()}
-                >
-                  {periodLoading[clock.period] ? 'Ending...' : '🔴 End Period'}
-                </button>
               </div>
               <div className="previous-next-period">
                 <button 
@@ -879,32 +1280,33 @@ const LiveMatchModal = ({
                   ⬅️ Previous Period
                 </button>
                 <button 
-                  onClick={nextPeriod} 
+                  onClick={handleNextPeriodClick} 
                   className="period-control-btn"
-                  title="Go to next period"
+                  title="Go to next period or overtime/shootout"
                   disabled={currentMatch.status !== 'InProgress'}
                 >
-                  ➡️ Next Period
+                  {getNextPeriodButtonText()}
                 </button>
               </div>
               <div className="period">Period {clock.period}</div>
-              <div className={`time-display ${isTimeOverLimit(clock.minutes, clock.seconds) ? 'time-over-limit' : ''}`}>
+              <div className={`time-display ${isTimeOverLimit(clock.minutes, clock.seconds) ? 'time-over-limit' : ''} ${isInOvertime() ? 'overtime' : ''}`}>
                 {formatTime(clock.minutes, clock.seconds)}
               </div>
               <div className="clock-start-reset">
                 <button 
-                  onClick={toggleClock} 
-                  className={clock.isRunning ? "pause-btn" : "start-btn"}
-                  disabled={currentMatch.status !== 'InProgress'}
+                  onClick={handleMainClockButton} 
+                  className={`start-pause-btn ${clock.isRunning ? 'pause' : ''}`}
+                  disabled={!canUseMainClockButton()}
                 >
-                  {clock.isRunning ? '⏸️ Pause' : '▶️ Start'}
+                  {getStartButtonText()}
                 </button>
                 <button 
-                  onClick={resetClock} 
-                  className="reset-btn"
-                  disabled={currentMatch.status !== 'InProgress'}
+                  onClick={handleEndPeriodClick} 
+                  className="end-period-btn"
+                  title="End the current period"
+                  disabled={!canEndPeriod()}
                 >
-                  🔄 Reset
+                  {getEndPeriodButtonText()}
                 </button>
               </div>
               <div className="time-controls">

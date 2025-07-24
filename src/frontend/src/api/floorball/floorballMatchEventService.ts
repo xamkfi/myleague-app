@@ -271,5 +271,47 @@ export const floorballMatchEventService = {
       console.error('Error ending period:', error);
       throw error;
     }
+  },
+
+  /**
+   * Record overtime in a floorball match
+   */
+  recordOvertime: async (matchId: string): Promise<ApiResponse<any>> => {
+    try {
+      console.log('Recording overtime for match:', matchId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/overtime`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return await handleApiResponse<any>(response);
+    } catch (error) {
+      console.error('Error recording overtime:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Record shootout in a floorball match
+   */
+  recordShootout: async (matchId: string): Promise<ApiResponse<any>> => {
+    try {
+      console.log('Recording shootout for match:', matchId);
+      
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/shootout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return await handleApiResponse<any>(response);
+    } catch (error) {
+      console.error('Error recording shootout:', error);
+      throw error;
+    }
   }
 }; 

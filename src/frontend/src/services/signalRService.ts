@@ -13,6 +13,30 @@ export class SignalRService {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
 
+  /**
+   * Tests if the backend API is accessible
+   * @returns Promise<boolean> - true if accessible, false otherwise
+   */
+  async testBackendAccessibility(): Promise<boolean> {
+    try {
+      const apiUrl = import.meta.env.DEV 
+        ? 'http://localhost:8080/api/health/ready'
+        : `${import.meta.env.VITE_API_URL}/health/ready`;
+      
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return response.ok;
+    } catch (error) {
+      console.error('Backend accessibility test failed:', error);
+      return false;
+    }
+  }
+
   async connect(): Promise<void> {
     if (this.connection?.state === HubConnectionState.Connected || this.isConnecting) {
       return;
@@ -21,14 +45,20 @@ export class SignalRService {
     this.isConnecting = true;
 
     try {
+      // Test if backend is accessible first
+      const isBackendAccessible = await this.testBackendAccessibility();
+      if (!isBackendAccessible) {
+        throw new Error('Backend API is not accessible. Please ensure the backend is running.');
+      }
+
       let signalRUrl: string;
 
       if (import.meta.env.DEV) {
-        signalRUrl = 'http://localhost:8080/hubs/domainevent';
+        signalRUrl = 'http://localhost:8080/api/hubs/domainevent';
       } else {
         const apiUrl = import.meta.env.VITE_API_URL || '';
         const baseUrl = apiUrl.replace('/api', '');
-        signalRUrl = `${baseUrl}/hubs/domainevent`;
+        signalRUrl = `${baseUrl}/api/hubs/domainevent`;
       }
 
       console.log(`Connecting to SignalR at: ${signalRUrl}`);
@@ -89,10 +119,12 @@ export class SignalRService {
         this.reconnectAttempts = 0;
       });
 
+      console.log('Starting SignalR connection...');
       await this.connection.start();
       console.log('SignalR connected successfully');
     } catch (error) {
       console.error('Error connecting to SignalR:', error);
+      this.connection = null;
       throw error;
     } finally {
       this.isConnecting = false;
@@ -116,7 +148,16 @@ export class SignalRService {
 
   async subscribeToEventType(eventType: string): Promise<void> {
     if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
-      await this.connect();
+      try {
+        await this.connect();
+      } catch (error) {
+        console.error(`Failed to connect to SignalR before subscribing to ${eventType}:`, error);
+        throw new Error(`Cannot subscribe to event type ${eventType}: Connection failed`);
+      }
+    }
+
+    if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+      throw new Error(`Cannot send data if the connection is not in the 'Connected' State`);
     }
 
     try {

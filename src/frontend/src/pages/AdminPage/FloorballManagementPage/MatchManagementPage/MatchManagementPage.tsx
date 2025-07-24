@@ -199,11 +199,26 @@ const MatchManagementPage = () => {
 
     const setupSignalR = async () => {
       try {
+        console.log('Setting up SignalR connection for MatchManagementPage...');
+        
+        // Test backend accessibility first
+        const isBackendAccessible = await signalRService.testBackendAccessibility();
+        if (!isBackendAccessible) {
+          console.warn('Backend is not accessible, skipping SignalR setup');
+          setSignalRConnected(false);
+          return;
+        }
+        
         // Connect to SignalR
         await signalRService.connect();
         
         // Update connection status
         setSignalRConnected(signalRService.isConnected);
+        
+        if (!signalRService.isConnected) {
+          console.warn('SignalR connection failed, skipping subscriptions');
+          return;
+        }
         
         // Subscribe to match status change events
         await signalRService.subscribeToEventType('FloorballMatchStatusChangedEvent');
