@@ -46,7 +46,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
 
             builder.Property(t => t.LastUpdated)
                 .IsRequired()
-                .HasDefaultValueSql("GETUTCDATE()");
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // Indexes
             builder.HasIndex(t => t.IsRunning)

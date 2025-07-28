@@ -63,6 +63,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         {
             try
             {
+                _logger.LogInformation("=== SAVING TIMER STATE ===");
+                _logger.LogInformation("Match ID: {MatchId}", matchId);
+                _logger.LogInformation("IsRunning: {IsRunning}", timerState.IsRunning);
+                _logger.LogInformation("StartedAt: {StartedAt}", timerState.StartedAt);
+                _logger.LogInformation("PausedAt: {PausedAt}", timerState.PausedAt);
+                _logger.LogInformation("TotalPausedDuration: {TotalPausedDuration}", timerState.TotalPausedDuration);
+                _logger.LogInformation("LastUpdated: {LastUpdated}", timerState.LastUpdated);
+                
                 timerState.MatchId = matchId;
                 timerState.LastUpdated = DateTime.UtcNow;
 
@@ -76,11 +84,25 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 }
                 else
                 {
+                    _logger.LogInformation("Updating existing timer state for match {MatchId}", matchId);
+                    _logger.LogInformation("Existing - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}", 
+                        existingState.IsRunning, existingState.StartedAt, existingState.PausedAt);
+                    _logger.LogInformation("New - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}", 
+                        timerState.IsRunning, timerState.StartedAt, timerState.PausedAt);
+                    
                     _dbContext.Entry(existingState).CurrentValues.SetValues(timerState);
                     _logger.LogInformation("Updated timer state for match {MatchId}", matchId);
                 }
 
                 await _dbContext.SaveChangesAsync();
+                _logger.LogInformation("Database save completed for match {MatchId}", matchId);
+                
+                // Verify the save worked by reading it back
+                TimerState? savedState = await _dbContext.TimerStates
+                    .FirstOrDefaultAsync(t => t.MatchId == matchId);
+                _logger.LogInformation("Verification - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}", 
+                    savedState?.IsRunning, savedState?.StartedAt, savedState?.PausedAt);
+                _logger.LogInformation("=== TIMER STATE SAVE COMPLETE ===");
             }
             catch (Exception ex)
             {
@@ -127,11 +149,21 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         {
             try
             {
+                _logger.LogInformation("=== GETTING ACTIVE TIMERS ===");
+                
                 List<TimerState> activeTimers = await _dbContext.TimerStates
                     .Where(t => t.IsRunning)
                     .ToListAsync();
 
-                _logger.LogDebug("Retrieved {Count} active timers", activeTimers.Count);
+                _logger.LogInformation("Found {Count} active timers", activeTimers.Count);
+                
+                foreach (TimerState timer in activeTimers)
+                {
+                    _logger.LogInformation("Active timer - MatchId: {MatchId}, IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}", 
+                        timer.MatchId, timer.IsRunning, timer.StartedAt, timer.PausedAt);
+                }
+                
+                _logger.LogInformation("=== ACTIVE TIMERS RETRIEVAL COMPLETE ===");
                 return activeTimers;
             }
             catch (Exception ex)

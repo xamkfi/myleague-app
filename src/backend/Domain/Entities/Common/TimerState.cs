@@ -10,6 +10,7 @@ namespace Domain.Entities.Common
         public Guid MatchId { get; set; }
         public int? PeriodNumber { get; set; }
         public DateTime? StartedAt { get; set; }
+        public DateTime? LastResumedAt { get; set; } // When timer was last resumed
         public DateTime? PausedAt { get; set; }
         public TimeSpan TotalPausedDuration { get; set; }
         public bool IsRunning { get; set; }
@@ -23,16 +24,22 @@ namespace Domain.Entities.Common
             get
             {
                 if (!StartedAt.HasValue)
+                    return TimeSpan.Zero;
+
+                DateTime now = DateTime.UtcNow;
+
+                if (IsRunning)
+                {
+                    return (now - StartedAt.Value) - TotalPausedDuration;
+                }
+                else if (PausedAt.HasValue)
+                {
+                    return (PausedAt.Value - StartedAt.Value) - TotalPausedDuration;
+                }
+                else
                 {
                     return TimeSpan.Zero;
                 }
-
-                DateTime now = DateTime.UtcNow;
-                TimeSpan totalRunningTime = IsRunning
-                ? now - StartedAt.Value
-                : (PausedAt ?? now) - StartedAt.Value;
-
-                return totalRunningTime - TotalPausedDuration;
             }
         }
 
@@ -44,15 +51,20 @@ namespace Domain.Entities.Common
         public TimeSpan GetElapsedTimeAsOf(DateTime asOf)
         {
             if (!StartedAt.HasValue)
+                return TimeSpan.Zero;
+
+            if (IsRunning)
+            {
+                return (asOf - StartedAt.Value) - TotalPausedDuration;
+            }
+            else if (PausedAt.HasValue)
+            {
+                return (PausedAt.Value - StartedAt.Value) - TotalPausedDuration;
+            }
+            else
             {
                 return TimeSpan.Zero;
             }
-
-            TimeSpan totalRunningTime = IsRunning 
-                ? asOf - StartedAt.Value 
-                : (PausedAt ?? asOf) - StartedAt.Value;
-
-            return totalRunningTime - TotalPausedDuration;
         }
     }
 } 

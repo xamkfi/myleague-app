@@ -9,12 +9,12 @@ export interface TimerStatusResponse {
 }
 
 export interface TimerUpdate {
-  matchId: string;
-  periodNumber?: number;
-  elapsedTime: string;
-  isRunning: boolean;
-  lastUpdated: string;
-  eventType: string;
+  MatchId: string; // Backend sends with PascalCase
+  PeriodNumber?: number;
+  ElapsedTime: string;
+  IsRunning: boolean;
+  LastUpdated: string;
+  EventType: string;
 }
 
 export const timerService = {
@@ -39,10 +39,16 @@ export const timerService = {
    * Starts the timer for a match
    */
   startTimer: async (matchId: string, periodNumber?: number): Promise<void> => {
+    console.log('=== timerService.startTimer CALLED ===');
+    console.log('Match ID:', matchId);
+    console.log('Period Number:', periodNumber);
+    
     const url = new URL(`${API_URL}/matches/${matchId}/timer/start`);
     if (periodNumber !== undefined) {
       url.searchParams.append('periodNumber', periodNumber.toString());
     }
+    
+    console.log('Start timer API URL:', url.toString());
 
     const response = await fetch(url.toString(), {
       method: 'POST',
@@ -51,16 +57,26 @@ export const timerService = {
       },
     });
 
+    console.log('Start timer response status:', response.status);
+    console.log('Start timer response ok:', response.ok);
+
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Start timer error response:', errorText);
       throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to start timer'}`);
     }
+
+    console.log('=== timerService.startTimer SUCCESS ===');
   },
 
   /**
    * Stops the timer for a match
    */
   stopTimer: async (matchId: string): Promise<void> => {
+    console.log('=== timerService.stopTimer CALLED ===');
+    console.log('Match ID:', matchId);
+    console.log('API URL:', `${API_URL}/matches/${matchId}/timer/stop`);
+    
     const response = await fetch(`${API_URL}/matches/${matchId}/timer/stop`, {
       method: 'POST',
       headers: {
@@ -68,10 +84,16 @@ export const timerService = {
       },
     });
 
+    console.log('Stop timer response status:', response.status);
+    console.log('Stop timer response ok:', response.ok);
+
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Stop timer error response:', errorText);
       throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to stop timer'}`);
     }
+
+    console.log('=== timerService.stopTimer SUCCESS ===');
   },
 
   /**

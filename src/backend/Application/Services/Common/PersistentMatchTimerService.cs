@@ -79,6 +79,8 @@ namespace Application.Services.Common
         {
             try
             {
+                _logger.LogInformation("Starting timer for match {MatchId} with period {PeriodNumber}", matchId, periodNumber);
+                
                 TimerState? timerState = await _timerRepository.GetTimerStateAsync(matchId);
                 if (timerState == null)
                 {
@@ -101,14 +103,43 @@ namespace Application.Services.Common
                 if (timerState.StartedAt == null)
                 {
                     timerState.StartedAt = now;
+                    _logger.LogInformation("Set StartedAt to {StartedAt} for match {MatchId}", now, matchId);
                 }
+                else
+                {
+                    _logger.LogInformation("Timer already has StartedAt {StartedAt} for match {MatchId}", timerState.StartedAt, matchId);
+                }
+                
+                // Set LastResumedAt to track when timer was last resumed
+                timerState.LastResumedAt = now;
+                
+                // If timer was paused, add the pause duration to TotalPausedDuration
+                if (timerState.PausedAt.HasValue)
+                {
+                    TimeSpan pauseDuration = now - timerState.PausedAt.Value;
+                    timerState.TotalPausedDuration += pauseDuration;
+                    _logger.LogInformation("Added pause duration {PauseDuration} to TotalPausedDuration for match {MatchId}", pauseDuration, matchId);
+                }
+                
+                // Clear PausedAt when starting (timer is no longer paused)
+                timerState.PausedAt = null;
                 
                 timerState.PeriodNumber = periodNumber;
                 timerState.LastUpdated = now;
 
+                _logger.LogInformation("Timer state after start - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}, TotalPausedDuration: {TotalPausedDuration}", 
+                    timerState.IsRunning, timerState.StartedAt, timerState.PausedAt, timerState.TotalPausedDuration);
+
                 await _timerRepository.SaveTimerStateAsync(matchId, timerState);
+                _logger.LogInformation("Saved timer state for match {MatchId}", matchId);
+
+                // Add a small delay to ensure the database transaction is fully committed
+                // before the TimerBackgroundService reads it again (race condition fix)
+                await Task.Delay(100); // 100ms delay
 
                 TimeSpan elapsedTime = timerState.ElapsedTime;
+                _logger.LogInformation("Calculated elapsed time {ElapsedTime} for match {MatchId}", elapsedTime, matchId);
+                
                 TimerUpdate update = TimerUpdate.CreateStarted(matchId, periodNumber, elapsedTime);
                 await NotifyTimerUpdateAsync(matchId, update);
 
@@ -130,28 +161,51 @@ namespace Application.Services.Common
         {
             try
             {
+                _logger.LogInformation("Stopping timer for match {MatchId}", matchId);
                 TimerState? timerState = await _timerRepository.GetTimerStateAsync(matchId);
+                
                 if (timerState == null)
                 {
-                    _logger.LogWarning("Timer does not exist for match {MatchId}", matchId);
+                    _logger.LogWarning("Timer state not found for match {MatchId}", matchId);
                     return;
                 }
 
                 if (!timerState.IsRunning)
                 {
-                    _logger.LogWarning("Timer is not running for match {MatchId}", matchId);
+                    _logger.LogInformation("Timer is already stopped for match {MatchId}", matchId);
                     return;
                 }
 
+                _logger.LogInformation("Timer state before stop - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}, TotalPausedDuration: {TotalPausedDuration}", 
+                    timerState.IsRunning, timerState.StartedAt, timerState.PausedAt, timerState.TotalPausedDuration);
+
                 DateTime now = DateTime.UtcNow;
-                timerState.IsRunning = false;
+                
+                // When stopping, just set PausedAt to mark when it was paused
+                // Don't add to TotalPausedDuration - that's for previous pauses
                 timerState.PausedAt = now;
-                timerState.TotalPausedDuration += now - (timerState.StartedAt ?? now);
+                timerState.IsRunning = false;
                 timerState.LastUpdated = now;
 
+                _logger.LogInformation("Timer state after stop - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}, TotalPausedDuration: {TotalPausedDuration}", 
+                    timerState.IsRunning, timerState.StartedAt, timerState.PausedAt, timerState.TotalPausedDuration);
+
                 await _timerRepository.SaveTimerStateAsync(matchId, timerState);
+                _logger.LogInformation("Saved stopped timer state for match {MatchId}", matchId);
+
+                // Add a small delay to ensure the database transaction is fully committed
+                // before the TimerBackgroundService reads it again (race condition fix)
+                await Task.Delay(100); // 100ms delay
+
+                // Verify the save worked by reading it back
+                TimerState? savedState = await _timerRepository.GetTimerStateAsync(matchId);
+                _logger.LogInformation("Verified saved state - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}, TotalPausedDuration: {TotalPausedDuration}", 
+                    savedState?.IsRunning, savedState?.StartedAt, savedState?.PausedAt, savedState?.TotalPausedDuration);
 
                 TimeSpan elapsedTime = timerState.ElapsedTime;
+                _logger.LogInformation("Calculated elapsed time {ElapsedTime} for stopped timer match {MatchId}", elapsedTime, matchId);
+
+                // Notify clients of the timer update
                 TimerUpdate update = TimerUpdate.CreateStopped(matchId, timerState.PeriodNumber, elapsedTime);
                 await NotifyTimerUpdateAsync(matchId, update);
 

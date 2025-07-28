@@ -18,9 +18,9 @@ namespace Application.DTOs.Common
         public int? PeriodNumber { get; set; }
 
         /// <summary>
-        /// The calculated elapsed time
+        /// The calculated elapsed time as a formatted string
         /// </summary>
-        public TimeSpan ElapsedTime { get; set; }
+        public string ElapsedTime { get; set; } = string.Empty;
 
         /// <summary>
         /// Whether the timer is currently running
@@ -50,7 +50,7 @@ namespace Application.DTOs.Common
             {
                 MatchId = matchId,
                 PeriodNumber = periodNumber,
-                ElapsedTime = elapsedTime,
+                ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss"),
                 IsRunning = true,
                 LastUpdated = DateTime.UtcNow,
                 EventType = "TimerStarted"
@@ -70,7 +70,7 @@ namespace Application.DTOs.Common
             {
                 MatchId = matchId,
                 PeriodNumber = periodNumber,
-                ElapsedTime = elapsedTime,
+                ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss"),
                 IsRunning = false,
                 LastUpdated = DateTime.UtcNow,
                 EventType = "TimerStopped"
@@ -89,7 +89,7 @@ namespace Application.DTOs.Common
             {
                 MatchId = matchId,
                 PeriodNumber = periodNumber,
-                ElapsedTime = TimeSpan.Zero,
+                ElapsedTime = TimeSpan.Zero.ToString(@"hh\:mm\:ss"),
                 IsRunning = false,
                 LastUpdated = DateTime.UtcNow,
                 EventType = "TimerReset"
@@ -110,7 +110,7 @@ namespace Application.DTOs.Common
             {
                 MatchId = matchId,
                 PeriodNumber = periodNumber,
-                ElapsedTime = elapsedTime,
+                ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss"),
                 IsRunning = isRunning,
                 LastUpdated = DateTime.UtcNow,
                 EventType = "TimerUpdate"

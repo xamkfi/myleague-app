@@ -38,19 +38,18 @@ namespace MyLeague.Infrastructure.Services.Common
         {
             try
             {
-                _logger.LogDebug("Sending timer update for match {MatchId}: {EventType}", matchId, update.EventType);
+                _logger.LogInformation("TimerNotificationService: Sending timer update for match {MatchId}: {EventType}", matchId, update.EventType);
+                _logger.LogInformation("TimerNotificationService: Timer update details: IsRunning={IsRunning}, ElapsedTime={ElapsedTime}, PeriodNumber={PeriodNumber}", 
+                    update.IsRunning, update.ElapsedTime, update.PeriodNumber);
 
                 // Send to match-specific group
                 await _notifier.NotifyMatchAsync(matchId, "TimerUpdateEvent", update);
-
-                // Send to general timer event subscribers
-                await _notifier.NotifyAsync("TimerUpdateEvent", update);
-
-                _logger.LogDebug("Successfully sent timer update for match {MatchId}", matchId);
+                
+                _logger.LogInformation("TimerNotificationService: Successfully sent timer update for match {MatchId}", matchId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error sending timer update for match {MatchId}", matchId);
+                _logger.LogError(ex, "TimerNotificationService: Failed to send timer update for match {MatchId}", matchId);
                 throw;
             }
         }

@@ -11,6 +11,8 @@ import { floorballTeamService } from '../../../../../../api/floorball/floorballT
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../../api/floorball/floorballPlayerService';
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../../types/floorball/floorballTypes';
 import type { LiveMatchState } from '../../hooks/useLiveMatchState';
+
+import { Timer } from '../../../../../../components/Timer/Timer';
 import './LiveMatchModal.scss';
 
 interface LiveMatchModalProps {
@@ -33,12 +35,7 @@ interface PeriodEventData {
   occurredOn: string;
 }
 
-interface MatchState {
-  currentPeriod: number;
-  periodStates: Record<number, 'not_started' | 'started' | 'ended'>;
-  scores: Record<number, { home: number; away: number }>;
-  lastEventTime: string;
-}
+
 
 interface GoalEventData {
   MatchId: string;
@@ -85,6 +82,12 @@ const LiveMatchModal = ({
   // Real match status from backend
   const [currentMatch, setCurrentMatch] = useState<FloorballMatchDto>(match);
   
+  // Timer state tracking for accurate time calculations
+  const [currentTimerElapsedTime, setCurrentTimerElapsedTime] = useState<number>(0);
+  const [getCurrentTimeFromTimer, setGetCurrentTimeFromTimer] = useState<(() => string) | null>(null);
+  
+
+  
   // Use state from parent or default values
   const currentScore = useMemo(() => {
     // Always use the current match data as the source of truth
@@ -97,6 +100,8 @@ const LiveMatchModal = ({
     
     return baseScore;
   }, [liveState?.currentScore, currentMatch.homeScore, currentMatch.awayScore]);
+  
+  // Legacy clock state for backward compatibility during transition
   const clock = liveState?.clock || {
     period: 1,
     minutes: 0,
@@ -110,24 +115,20 @@ const LiveMatchModal = ({
   const [showEndPeriodConfirmation, setShowEndPeriodConfirmation] = useState(false);
   const [pendingEndPeriodAction, setPendingEndPeriodAction] = useState<(() => void) | null>(null);
   
-  // State for reconstructing match state from domain events
-  const [reconstructedMatchState, setReconstructedMatchState] = useState<MatchState>({
-    currentPeriod: 1,
-    periodStates: { 1: 'not_started', 2: 'not_started', 3: 'not_started', 4: 'not_started', 5: 'not_started' },
-    scores: { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } },
-    lastEventTime: ''
-  });
-  const [domainEvents, setDomainEvents] = useState<PeriodEventData[]>([]);
+
   const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false);
   const [showShootoutConfirmation, setShowShootoutConfirmation] = useState(false);
 
   // Update penalty form with current time when form opens
   const openPenaltyForm = () => {
+    const currentMinutes = Math.floor(currentTimerElapsedTime / 60);
+    const currentSeconds = currentTimerElapsedTime % 60;
+    
     setPenaltyForm(prev => ({
       ...prev,
       periodNumber: clock.period,
-      timeMinutes: clock.minutes,
-      timeSeconds: clock.seconds
+      timeMinutes: currentMinutes,
+      timeSeconds: currentSeconds
     }));
     setShowPenaltyForm(true);
   };
@@ -185,35 +186,24 @@ const LiveMatchModal = ({
     }
   }, [onStateUpdate, liveState?.clock]);
 
-  // Initialize reconstructed match state when component loads
-  useEffect(() => {
-    console.log('Initializing reconstructed match state for match:', match.id);
-    
-    // For now, we'll start with a default state
-    // In a real implementation, we would fetch domain events from the backend
-    // and reconstruct the state from those events
-    const initialState: MatchState = {
-      currentPeriod: 1,
-      periodStates: { 1: 'not_started', 2: 'not_started', 3: 'not_started', 4: 'not_started', 5: 'not_started' },
-      scores: { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } },
-      lastEventTime: ''
-    };
-    
-    setReconstructedMatchState(initialState);
-    setDomainEvents([]);
-  }, [match.id]);
+
 
   // Initialize started periods when component loads
   useEffect(() => {
     if (currentMatch.status === 'InProgress') {
       // If match is in progress, assume period 1 has been started
       setStartedPeriods(new Set([1]));
+      // Set next period to start as period 2
+      setNextPeriodToStart(2);
     } else {
       // Reset started periods for new matches
       setStartedPeriods(new Set());
       setEndedPeriods(new Set());
+      setNextPeriodToStart(1);
     }
   }, [currentMatch.status]);
+
+
 
   const loadTeamData = async () => {
     try {
@@ -342,6 +332,7 @@ const LiveMatchModal = ({
         // Also subscribe to specific event types for broader coverage
         await signalRService.subscribeToEventType('FloorballGoalScored');
         await signalRService.subscribeToEventType('FloorballPenaltyAssigned');
+        await signalRService.subscribeToEventType('FloorballPeriodStartedEvent');
         
         const unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
         console.log('SignalR setup completed successfully');
@@ -368,6 +359,7 @@ const LiveMatchModal = ({
         // Unsubscribe from event types
         await signalRService.unsubscribeFromEventType('FloorballGoalScored');
         await signalRService.unsubscribeFromEventType('FloorballPenaltyAssigned');
+        await signalRService.unsubscribeFromEventType('FloorballPeriodStartedEvent');
       }
     } catch (error) {
       console.error('Error cleaning up SignalR:', error);
@@ -375,62 +367,7 @@ const LiveMatchModal = ({
     }
   };
 
-  /**
-   * Reconstructs the match state from domain events
-   * This determines the current period, period states, and scores based on events
-   */
-  const reconstructMatchState = useCallback((events: PeriodEventData[]): MatchState => {
-    console.log('Reconstructing match state from events:', events);
-    
-    const initialState: MatchState = {
-      currentPeriod: 1,
-      periodStates: { 1: 'not_started', 2: 'not_started', 3: 'not_started', 4: 'not_started', 5: 'not_started' },
-      scores: { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } },
-      lastEventTime: ''
-    };
-    
-    if (events.length === 0) {
-      console.log('No events found, using default state');
-      return initialState;
-    }
-    
-    // Sort events by occurrence time
-    const sortedEvents = [...events].sort((a, b) => 
-      new Date(a.occurredOn).getTime() - new Date(b.occurredOn).getTime()
-    );
-    
-    let currentState = { ...initialState };
-    let currentPeriod = 1;
-    let lastEventTime = '';
-    
-    // Process each event to build the state
-    for (const event of sortedEvents) {
-      console.log('Processing event:', event);
-      lastEventTime = event.occurredOn;
-      
-      if (event.periodNumber >= 1 && event.periodNumber <= 5) {
-        // Update period state based on event type
-        // For now, we'll assume any event means the period was started
-        // In a more sophisticated implementation, we'd distinguish between start/end events
-        currentState.periodStates[event.periodNumber] = 'started';
-        
-        // Update scores for this period
-        currentState.scores[event.periodNumber] = {
-          home: event.homeTeamScore,
-          away: event.awayTeamScore
-        };
-        
-        // Update current period to the highest period that has been started
-        currentPeriod = Math.max(currentPeriod, event.periodNumber);
-      }
-    }
-    
-    currentState.currentPeriod = currentPeriod;
-    currentState.lastEventTime = lastEventTime;
-    
-    console.log('Reconstructed match state:', currentState);
-    return currentState;
-  }, []);
+
 
   /**
    * Handles real-time period started events from SignalR
@@ -447,15 +384,9 @@ const LiveMatchModal = ({
     // Mark this period as started in our local state
     setStartedPeriods(prev => new Set([...prev, eventData.periodNumber]));
     
-    // Add the event to our collection and reconstruct state in one operation
-    setDomainEvents(prev => {
-      const newEvents = [...prev, eventData];
-      const newState = reconstructMatchState(newEvents);
-      setReconstructedMatchState(newState);
-      console.log('Updated reconstructed match state:', newState);
-      return newEvents;
-    });
-  }, [match.id, reconstructMatchState]);
+    // Event handled - no need to reconstruct state since we're using backend timer
+    console.log('Period started event handled');
+  }, [match.id]);
 
   /**
    * Handles real-time goal events from SignalR
@@ -530,6 +461,12 @@ const LiveMatchModal = ({
     
     console.log('Processing event for this match');
     
+    // IGNORE timer events - let the Timer component handle them
+    if (event.eventType === 'TimerUpdateEvent') {
+      console.log('Ignoring timer event - Timer component will handle it');
+      return;
+    }
+    
     if (event.eventType === 'FloorballGoalScored') {
       console.log('Handling goal scored event');
       handleGoalScored(event.data as GoalEventData);
@@ -547,24 +484,23 @@ const LiveMatchModal = ({
   // State for tracking which periods have been started and ended
   const [startedPeriods, setStartedPeriods] = useState<Set<number>>(new Set());
   const [endedPeriods, setEndedPeriods] = useState<Set<number>>(new Set());
-
+  
+  // State for tracking the next period to start
+  const [nextPeriodToStart, setNextPeriodToStart] = useState<number>(1);
+ 
   /**
-   * Combined function that handles starting the match, period, and clock
-   * This replaces the separate Go Live, Start Period, and Start Clock buttons
+   * Simple function that only starts the match
    */
-  const handleStartMatchAndPeriod = async () => {
-    if (!onStateUpdate) return;
-    
+  const handleStartMatch = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Step 1: Start the match if not already live
-      if (currentMatch.status !== 'InProgress') {
         console.log('Starting match...');
         const response = await floorballMatchService.start(currentMatch.id);
         
         if (response.success && response.data) {
+        console.log('Match started successfully, updating state...');
           setCurrentMatch(response.data);
           if (onGoLive) {
             onGoLive(currentMatch.id, response.data);
@@ -572,168 +508,63 @@ const LiveMatchModal = ({
         } else {
           throw new Error('Failed to start match');
         }
-      }
-      
-      // Step 2: Start the current period if it hasn't been started yet
-      if (!startedPeriods.has(clock.period)) {
-        console.log(`Starting period ${clock.period}...`);
-        setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
-        
-        await floorballMatchEventService.startPeriod(currentMatch.id, clock.period);
-        console.log(`Started period ${clock.period} for match ${currentMatch.id}`);
-        
-        // Mark this period as started
-        setStartedPeriods(prev => new Set([...prev, clock.period]));
-      } else {
-        console.log(`Period ${clock.period} already started, skipping start command`);
-      }
-      
-      // Step 3: Start the clock
-      console.log('Starting clock...');
-      onStateUpdate({
-        clock: { ...clock, isRunning: true }
-      });
-      
-      // Step 4: Refresh match status to ensure UI is up to date
-      await loadCurrentMatchStatus();
       
       setError(null);
     } catch (error) {
-      console.error('Error starting match and period:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start match and period');
+      console.error('Error starting match:', error);
+      setError(error instanceof Error ? error.message : 'Failed to start match');
     } finally {
       setLoading(false);
-      setPeriodLoading(prev => ({ ...prev, [clock.period]: false }));
     }
-  };
-
-  /**
-   * Pause the clock (only when clock is running)
-   */
-  const handlePauseClock = useCallback(() => {
-    if (!onStateUpdate) return;
-    onStateUpdate({
-      clock: { ...clock, isRunning: false }
-    });
-  }, [onStateUpdate, clock]);
-
-  /**
-   * Resume the clock (only when clock is paused)
-   */
-  const handleResumeClock = useCallback(() => {
-    if (!onStateUpdate) return;
-    onStateUpdate({
-      clock: { ...clock, isRunning: true }
-    });
-  }, [onStateUpdate, clock]);
-
-  /**
-   * Determines the button text and functionality based on the current match state
-   */
-  const startButtonInfo = useMemo(() => {
-    if (currentMatch.status !== 'InProgress') {
-      return { text: 'Start Match & Clock', onClick: handleStartMatchAndPeriod, disabled: loading };
-    }
-    
-    // If we're on a period that hasn't been started yet, show appropriate start text
-    if (!startedPeriods.has(clock.period)) {
-      if (clock.period === 4) {
-        return { text: 'Start Overtime & Clock', onClick: handleStartMatchAndPeriod, disabled: loading };
-      } else if (clock.period === 5) {
-        return { text: 'Start Shootout & Clock', onClick: handleStartMatchAndPeriod, disabled: loading };
-      } else {
-        return { text: 'Start Period & Clock', onClick: handleStartMatchAndPeriod, disabled: loading };
-      }
-    }
-    
-    // If the current period is started and clock is running, show "Pause"
-    if (clock.isRunning) {
-      return { text: 'Pause', onClick: handlePauseClock, disabled: false };
-    } else {
-      // If the current period is started but clock is not running, show "Resume"
-      return { text: 'Resume', onClick: handleResumeClock, disabled: false };
-    }
-  }, [currentMatch.status, clock.isRunning, clock.period, startedPeriods, loading, handleStartMatchAndPeriod, handlePauseClock, handleResumeClock]);
-
-  /**
-   * Determines if the main clock button should be enabled
-   * @returns true if the button can be used
-   */
-  const canUseMainClockButton = () => {
-    if (currentMatch.status !== 'InProgress') {
-      return !loading;
-    }
-    
-    // If we're on a period that hasn't been started, allow starting it
-    if (!startedPeriods.has(clock.period)) {
-      return !loading;
-    }
-    
-    // If period is started, allow pause/resume
-    return true;
-  };
-
-  /**
-   * Handles the main start/pause button click
-   */
-  const handleMainClockButton = () => {
-    // Use the button info to determine what to do
-    startButtonInfo.onClick();
   };
 
   /**
    * Ends the current period by sending API call
-   * This is separate from clock control
+   * Now passes the actual elapsed time to the backend
    */
   const endPeriod = async () => {
     try {
       setPeriodLoading(prev => ({ ...prev, [clock.period]: true }));
+      
+      // Pass the current elapsed time to the backend for accurate period ending
+      const elapsedTimeInSeconds = currentTimerElapsedTime;
+      console.log(`Ending period ${clock.period} at ${elapsedTimeInSeconds} seconds for match ${currentMatch.id}`);
+      
       await floorballMatchEventService.endPeriod(currentMatch.id, clock.period);
       console.log(`Ended period ${clock.period} for match ${currentMatch.id}`);
       
       // Mark this period as ended
       setEndedPeriods(prev => new Set([...prev, clock.period]));
       
-      // Check if we just ended period 3 (regular periods)
+      // Calculate the next period to start
+      let nextPeriod = clock.period + 1;
+      
+      // Allow progression to overtime and shootout regardless of score
       if (clock.period === 3) {
-        // Transition to overtime state
+        nextPeriod = 4; // Overtime
         console.log('Regular periods ended, transitioning to overtime');
-        if (onStateUpdate) {
-          onStateUpdate({
-            clock: { 
-              period: 4, // Overtime period
-              minutes: 0, 
-              seconds: 0, 
-              isRunning: false 
-            }
-          });
-        }
       } else if (clock.period === 4) {
-        // Transition to shootout state
+        nextPeriod = 5; // Shootout
         console.log('Overtime ended, transitioning to shootout');
-        if (onStateUpdate) {
-          onStateUpdate({
-            clock: { 
-              period: 5, // Shootout period
-              minutes: 0, 
-              seconds: 0, 
-              isRunning: false 
-            }
-          });
-        }
-      } else {
-        // For other periods, move to the next period normally
-        const nextPeriod = clock.period + 1;
-        if (onStateUpdate) {
-          onStateUpdate({
-            clock: { 
-              period: nextPeriod, 
-              minutes: 0, 
-              seconds: 0, 
-              isRunning: false 
-            }
-          });
-        }
+      } else if (clock.period === 5) {
+        // After shootout, no more periods
+        nextPeriod = 0;
+        console.log('Shootout ended, match is complete');
+      }
+      
+      // Set the next period to start
+      setNextPeriodToStart(nextPeriod);
+      
+      // Update the clock to the next period
+      if (onStateUpdate && nextPeriod > 0) {
+        onStateUpdate({
+          clock: { 
+            period: nextPeriod, 
+            minutes: 0, 
+            seconds: 0, 
+            isRunning: false 
+          }
+        });
       }
       
       setError(null);
@@ -746,19 +577,99 @@ const LiveMatchModal = ({
   };
 
   /**
-   * Handles the end period button click with validation
+   * Starts a new period
    */
-  const handleEndPeriodClick = () => {
-    const totalSeconds = clock.minutes * 60 + clock.seconds;
-    const isUnder20Minutes = totalSeconds < 1200; // 20 minutes = 1200 seconds
-    
-    if (isUnder20Minutes) {
-      // Show confirmation dialog for periods under 20 minutes
-      setShowEndPeriodConfirmation(true);
-      setPendingEndPeriodAction(() => endPeriod);
+  const startPeriod = async () => {
+    try {
+      setPeriodLoading(prev => ({ ...prev, [nextPeriodToStart]: true }));
+      
+      console.log(`Starting period ${nextPeriodToStart} for match ${currentMatch.id}`);
+      
+      // Start the period via API
+      await floorballMatchEventService.startPeriod(currentMatch.id, nextPeriodToStart);
+      console.log(`Started period ${nextPeriodToStart} for match ${currentMatch.id}`);
+      
+      // Mark this period as started
+      setStartedPeriods(prev => new Set([...prev, nextPeriodToStart]));
+      
+      // Update the clock to the new period
+      if (onStateUpdate) {
+        onStateUpdate({
+          clock: { 
+            period: nextPeriodToStart, 
+            minutes: 0, 
+            seconds: 0, 
+            isRunning: false 
+          }
+        });
+      }
+      
+      // Calculate the next period to start (for when this period ends)
+      const nextPeriod = nextPeriodToStart + 1;
+      setNextPeriodToStart(nextPeriod);
+      
+      setError(null);
+    } catch (error) {
+      console.error('Error starting period:', error);
+      setError(error instanceof Error ? error.message : 'Failed to start period');
+    } finally {
+      setPeriodLoading(prev => ({ ...prev, [nextPeriodToStart]: false }));
+    }
+  };
+
+  /**
+   * Handles the period control button click (End Period or Start Period)
+   * Gets current time directly from the timer component
+   */
+  const handlePeriodControlClick = () => {
+    // If we have a period that can be ended, handle end period logic
+    if (canEndPeriod()) {
+      // Get current time directly from the timer component
+      let currentTime = '00:00';
+      let totalSeconds = 0;
+      
+      if (getCurrentTimeFromTimer) {
+        currentTime = getCurrentTimeFromTimer();
+        console.log(`Got current time from timer: ${currentTime}`);
+        
+        // Parse the time string (format: "MM:SS" or "HH:MM:SS")
+        const timeParts = currentTime.split(':');
+        if (timeParts.length === 2) {
+          // Format: "MM:SS"
+          const minutes = parseInt(timeParts[0]) || 0;
+          const seconds = parseInt(timeParts[1]) || 0;
+          totalSeconds = minutes * 60 + seconds;
+        } else if (timeParts.length === 3) {
+          // Format: "HH:MM:SS"
+          const hours = parseInt(timeParts[0]) || 0;
+          const minutes = parseInt(timeParts[1]) || 0;
+          const seconds = parseInt(timeParts[2]) || 0;
+          totalSeconds = hours * 3600 + minutes * 60 + seconds;
+        }
+      } else {
+        // Fallback to stored elapsed time if timer function not available
+        totalSeconds = currentTimerElapsedTime;
+        console.log(`Using fallback elapsed time: ${totalSeconds}s`);
+      }
+      
+      const isUnder20Minutes = totalSeconds < 1200; // 20 minutes = 1200 seconds
+      
+      console.log(`End period validation - Current time: ${currentTime}, Total seconds: ${totalSeconds}s, Under 20min: ${isUnder20Minutes}`);
+      
+      // Store the current time for use in confirmation dialog
+      setCurrentTimerElapsedTime(totalSeconds);
+      
+      if (isUnder20Minutes) {
+        // Show confirmation dialog for periods under 20 minutes
+        setShowEndPeriodConfirmation(true);
+        setPendingEndPeriodAction(() => endPeriod);
+      } else {
+        // End period immediately if 20 minutes or more
+        endPeriod();
+      }
     } else {
-      // End period immediately if 20 minutes or more
-      endPeriod();
+      // Start a new period
+      startPeriod();
     }
   };
 
@@ -857,23 +768,7 @@ const LiveMatchModal = ({
     }
   };
 
-  /**
-   * Determines if we should show overtime button instead of next period
-   */
-  const shouldShowOvertimeButton = () => {
-    return currentMatch.status === 'InProgress' && 
-           clock.period >= 3 && 
-           !currentMatch.wentToOvertime;
-  };
 
-  /**
-   * Determines if we should show shootout button instead of next period
-   */
-  const shouldShowShootoutButton = () => {
-    return currentMatch.status === 'InProgress' && 
-           clock.period === 4 &&
-           endedPeriods.has(4); // Overtime (period 4) has been ended
-  };
 
   /**
    * Determines if we're currently in overtime
@@ -890,147 +785,45 @@ const LiveMatchModal = ({
   };
 
   /**
-   * Gets the text for the end period button
+   * Gets the text for the period control button
    */
-  const getEndPeriodButtonText = () => {
-    if (periodLoading[clock.period]) {
-      return 'Ending...';
-    }
-    
-    if (isInOvertime()) {
-      return '🔴 End Overtime';
-    }
-    
-    if (isInShootout()) {
-      return '🔴 End Shootout';
-    }
-    
-    return '🔴 End Period';
-  };
-
-  /**
-   * Gets the text for the next period button
-   */
-  const getNextPeriodButtonText = () => {
-    if (shouldShowOvertimeButton()) {
-      return '⏰ Overtime';
-    }
-    
-    if (shouldShowShootoutButton()) {
-      return '🎯 Shootout';
-    }
-    
-    return '➡️ Next Period';
-  };
-
-  /**
-   * Handles the next period/overtime/shootout button click
-   */
-  const handleNextPeriodClick = () => {
-    if (shouldShowOvertimeButton()) {
-      setShowOvertimeConfirmation(true);
-    } else if (shouldShowShootoutButton()) {
-      setShowShootoutConfirmation(true);
+  const getPeriodControlButtonText = () => {
+    // If we can end a period, show end period text
+    if (canEndPeriod()) {
+      if (periodLoading[clock.period]) {
+        return 'Ending...';
+      }
+      
+      if (isInOvertime()) {
+        return '🔴 End Overtime';
+      }
+      
+      if (isInShootout()) {
+        return '🔴 End Shootout';
+      }
+      
+      return '🔴 End Period';
     } else {
-      nextPeriod();
+      // Show start period text
+      if (periodLoading[nextPeriodToStart]) {
+        return 'Starting...';
+      }
+      
+      if (nextPeriodToStart === 4) {
+        return '⏰ Start Overtime';
+      }
+      
+      if (nextPeriodToStart === 5) {
+        return '🎯 Start Shootout';
+      }
+      
+      return `🟢 Start Period ${nextPeriodToStart}`;
     }
   };
 
-  const previousPeriod = async () => {
-    if (!onStateUpdate || clock.period <= 1) return;
-    
-    const newPeriod = clock.period - 1;
-    
-    // Only update the clock period locally, don't send backend commands
-    onStateUpdate({
-      clock: { 
-        period: newPeriod, 
-        minutes: 0, 
-        seconds: 0, 
-        isRunning: false 
-      }
-    });
-  };
 
-  const nextPeriod = async () => {
-    if (!onStateUpdate) return;
-    
-    const newPeriod = clock.period + 1;
-    
-    // Only update the clock period locally, don't send backend commands
-    onStateUpdate({
-      clock: { 
-        period: newPeriod, 
-        minutes: 0, 
-        seconds: 0, 
-        isRunning: false 
-      }
-    });
-  };
 
-  const goBackTime = () => {
-    if (!onStateUpdate) return;
-    const totalSeconds = clock.minutes * 60 + clock.seconds;
-    const newTotalSeconds = Math.max(0, totalSeconds - 5); // Don't go below 0
-    const newMinutes = Math.floor(newTotalSeconds / 60);
-    const newSeconds = newTotalSeconds % 60;
-    
-    onStateUpdate({
-      clock: { 
-        ...clock, 
-        minutes: newMinutes, 
-        seconds: newSeconds 
-      }
-    });
-  };
 
-  const goAheadTime = () => {
-    if (!onStateUpdate) return;
-    const totalSeconds = clock.minutes * 60 + clock.seconds;
-    const newTotalSeconds = Math.min(1200, totalSeconds + 30); // Cap at 20 minutes (1200 seconds)
-    const newMinutes = Math.floor(newTotalSeconds / 60);
-    const newSeconds = newTotalSeconds % 60;
-    
-    onStateUpdate({
-      clock: { 
-        ...clock, 
-        minutes: newMinutes, 
-        seconds: newSeconds 
-      }
-    });
-  };
-
-  const goBackOneSecond = () => {
-    if (!onStateUpdate) return;
-    const totalSeconds = clock.minutes * 60 + clock.seconds;
-    const newTotalSeconds = Math.max(0, totalSeconds - 1); // Don't go below 0
-    const newMinutes = Math.floor(newTotalSeconds / 60);
-    const newSeconds = newTotalSeconds % 60;
-    
-    onStateUpdate({
-      clock: { 
-        ...clock, 
-        minutes: newMinutes, 
-        seconds: newSeconds 
-      }
-    });
-  };
-
-  const goAheadOneSecond = () => {
-    if (!onStateUpdate) return;
-    const totalSeconds = clock.minutes * 60 + clock.seconds;
-    const newTotalSeconds = Math.min(1200, totalSeconds + 1); // Cap at 20 minutes (1200 seconds)
-    const newMinutes = Math.floor(newTotalSeconds / 60);
-    const newSeconds = newTotalSeconds % 60;
-    
-    onStateUpdate({
-      clock: { 
-        ...clock, 
-        minutes: newMinutes, 
-        seconds: newSeconds 
-      }
-    });
-  };
 
   // Clock is now managed by parent component with persistent background timer
 
@@ -1115,10 +908,7 @@ const LiveMatchModal = ({
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const isTimeOverLimit = (minutes: number, seconds: number) => {
-    const totalSeconds = minutes * 60 + seconds;
-    return totalSeconds >= 1200; // 20 minutes = 1200 seconds
-  };
+
 
   /**
    * Determines if the End Period button should be enabled
@@ -1128,7 +918,8 @@ const LiveMatchModal = ({
     return currentMatch.status === 'InProgress' && 
            !periodLoading[clock.period] &&
            startedPeriods.has(clock.period) &&
-           !endedPeriods.has(clock.period);
+           !endedPeriods.has(clock.period) &&
+           nextPeriodToStart > 0; // Only allow ending if there's a next period to start
   };
 
   /**
@@ -1196,7 +987,11 @@ const LiveMatchModal = ({
    * @param playerId - The player's unique identifier
    * @returns The player's full name (firstName + lastName) or a fallback if not found
    */
-  const getPlayerNameById = (playerId: string): string => {
+  const getPlayerNameById = (playerId: string | undefined | null): string => {
+    if (!playerId) {
+      return 'Unknown Player';
+    }
+    
     const allPlayers = [...homePlayers, ...awayPlayers];
     const player = allPlayers.find(p => p.id === playerId);
     return player ? `${player.person.firstName} ${player.person.lastName}` : `Player ${playerId.slice(0, 8)}...`;
@@ -1229,51 +1024,65 @@ const LiveMatchModal = ({
         
         // Handle goal events
         if (event.eventType === 'FloorballGoalScoredEvent') {
-          const goalData = event.data as any;
+          const goalData = event.data as {
+            MatchId: string;
+            TeamId: string;
+            PlayerId: string;
+            PeriodNumber: number;
+            TimeInSeconds: number;
+            IsOvertime: boolean;
+            IsPenaltyShot: boolean;
+            IsShootout: boolean;
+            AssisterId?: string;
+            SecondaryAssisterId?: string;
+          };
           console.log('Goal data structure:', goalData);
           console.log('Goal data keys:', Object.keys(goalData));
           
-          // Extract player IDs with fallback property names (handles both camelCase and PascalCase)
-          const playerId = goalData.PlayerId || goalData.playerId;
-          const assisterId = goalData.AssisterId || goalData.assisterId;
-          
           return {
-            id: `goal-${goalData.TeamId || goalData.teamId || 'unknown'}-${playerId || 'unknown'}-${goalData.PeriodNumber || goalData.periodNumber || 1}-${goalData.TimeInSeconds || goalData.timeInSeconds || 0}`,
+            id: `goal-${goalData.TeamId}-${goalData.PlayerId}-${goalData.PeriodNumber}-${goalData.TimeInSeconds}`,
             type: 'goal' as const,
-            teamId: goalData.TeamId || goalData.teamId,
-            teamName: (goalData.TeamId || goalData.teamId) === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
-            playerId: playerId || 'Unknown Player',
-            playerName: getPlayerNameById(playerId), // Look up player name from loaded data
-            assisterId: assisterId,
-            assisterName: assisterId ? getPlayerNameById(assisterId) : undefined, // Look up assister name
-            periodNumber: goalData.PeriodNumber || goalData.periodNumber || 1,
-            timeInSeconds: goalData.TimeInSeconds || goalData.timeInSeconds || 0,
+            teamId: goalData.TeamId,
+            teamName: goalData.TeamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+            playerId: goalData.PlayerId,
+            playerName: getPlayerNameById(goalData.PlayerId), // Look up player name from loaded data
+            assisterId: goalData.AssisterId,
+            assisterName: goalData.AssisterId ? getPlayerNameById(goalData.AssisterId) : undefined, // Look up assister name
+            periodNumber: goalData.PeriodNumber,
+            timeInSeconds: goalData.TimeInSeconds,
             timestamp: new Date(event.occurredOn),
-            wasInOvertime: goalData.WasInOvertime || goalData.wasInOvertime || false,
-            wasInShootout: goalData.WasInShootout || goalData.wasInShootout || false
+            wasInOvertime: goalData.IsOvertime,
+            wasInShootout: goalData.IsShootout
           };
         } 
         // Handle penalty events
         else if (event.eventType === 'FloorballPenaltyAssignedEvent') {
-          const penaltyData = event.data as any;
+          const penaltyData = event.data as {
+            MatchId: string;
+            TeamId: string;
+            PlayerId?: string;
+            PeriodNumber: number;
+            TimeInSeconds: number;
+            PenaltyType: string;
+            Minutes: number;
+            Description: string;
+          };
           console.log('Penalty data structure:', penaltyData);
           console.log('Penalty data keys:', Object.keys(penaltyData));
           
-          const playerId = penaltyData.PlayerId || penaltyData.playerId;
-          
           return {
-            id: `penalty-${penaltyData.TeamId || penaltyData.teamId || 'unknown'}-${playerId || 'team'}-${penaltyData.PeriodNumber || penaltyData.periodNumber || 1}-${penaltyData.TimeInSeconds || penaltyData.timeInSeconds || 0}`,
+            id: `penalty-${penaltyData.TeamId}-${penaltyData.PlayerId || 'team'}-${penaltyData.PeriodNumber}-${penaltyData.TimeInSeconds}`,
             type: 'penalty' as const,
-            teamId: penaltyData.TeamId || penaltyData.teamId,
-            teamName: (penaltyData.TeamId || penaltyData.teamId) === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
-            playerId: playerId,
-            playerName: playerId ? getPlayerNameById(playerId) : 'Team Penalty', // Handle team penalties
-            periodNumber: penaltyData.PeriodNumber || penaltyData.periodNumber || 1,
-            timeInSeconds: penaltyData.TimeInSeconds || penaltyData.timeInSeconds || 0,
+            teamId: penaltyData.TeamId,
+            teamName: penaltyData.TeamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+            playerId: penaltyData.PlayerId,
+            playerName: penaltyData.PlayerId ? getPlayerNameById(penaltyData.PlayerId) : 'Team Penalty', // Handle team penalties
+            periodNumber: penaltyData.PeriodNumber,
+            timeInSeconds: penaltyData.TimeInSeconds,
             timestamp: new Date(event.occurredOn),
-            penaltyType: penaltyData.PenaltyType || penaltyData.penaltyType || 'Unknown',
-            penaltyMinutes: penaltyData.Minutes || penaltyData.minutes || 2,
-            description: penaltyData.Description || penaltyData.description || ''
+            penaltyType: penaltyData.PenaltyType,
+            penaltyMinutes: penaltyData.Minutes,
+            description: penaltyData.Description
           };
         }
         return null;
@@ -1377,7 +1186,7 @@ const LiveMatchModal = ({
               </div>
               <div className="confirmation-content">
                 <p>
-                  Are you sure you want to end period {clock.period} at {formatTime(clock.minutes, clock.seconds)}?
+                  Are you sure you want to end period {clock.period} at {formatTime(Math.floor(currentTimerElapsedTime / 60), currentTimerElapsedTime % 60)}?
                 </p>
                 <p className="confirmation-warning">
                   This action cannot be undone.
@@ -1491,85 +1300,66 @@ const LiveMatchModal = ({
                 <span className="notice-text">Match is not live yet. Use the clock button to start the match and first period.</span>
               </div>
             )}
-            <div className="match-clock">
-              <div className="period-management">
-                <div className="period-status">
-                  Period {clock.period}: {getPeriodStatus()}
+            
+            {/* Period Management - Simplified */}
+            <div className="period-management">
+              <div className="period-status">
+                Period {clock.period}: {getPeriodStatus()}
+              </div>
+            </div>
+            
+            {/* Timer Component */}
+            <div className="timer-container">
+              {currentMatch.status === 'Scheduled' ? (
+                <div className="start-match-container">
+                  <button 
+                    onClick={handleStartMatch}
+                    disabled={loading}
+                    className="start-match-btn"
+                  >
+                    🏁 Start Match
+                  </button>
+                  <div className="start-match-hint">
+                    Click to start the match. After starting, you can use the timer controls below.
+                  </div>
                 </div>
-              </div>
-              <div className="previous-next-period">
-                <button 
-                  onClick={previousPeriod} 
-                  className="period-control-btn" 
-                  title="Go to previous period"
-                  disabled={currentMatch.status !== 'InProgress' || clock.period <= 1}
-                >
-                  ⬅️ Previous Period
-                </button>
-                <button 
-                  onClick={handleNextPeriodClick} 
-                  className="period-control-btn"
-                  title="Go to next period or overtime/shootout"
-                  disabled={currentMatch.status !== 'InProgress'}
-                >
-                  {getNextPeriodButtonText()}
-                </button>
-              </div>
-              <div className="period">Period {clock.period}</div>
-              <div className={`time-display ${isTimeOverLimit(clock.minutes, clock.seconds) ? 'time-over-limit' : ''} ${isInOvertime() ? 'overtime' : ''} ${isInShootout() ? 'shootout' : ''}`}>
-                {formatTime(clock.minutes, clock.seconds)}
-              </div>
-              <div className="clock-start-reset">
-                <button 
-                  onClick={handleMainClockButton} 
-                  className={`start-pause-btn ${clock.isRunning ? 'pause' : ''}`}
-                  disabled={!canUseMainClockButton()}
-                >
-                  {startButtonInfo.text}
-                </button>
-                <button 
-                  onClick={handleEndPeriodClick} 
-                  className="end-period-btn"
-                  title="End the current period"
-                  disabled={!canEndPeriod()}
-                >
-                  {getEndPeriodButtonText()}
-                </button>
-              </div>
-              <div className="time-controls">
-                <button 
-                  onClick={goBackOneSecond} 
-                  className="time-control-btn back-time-btn" 
-                  title="Go back 1 second"
-                  disabled={currentMatch.status !== 'InProgress'}
-                >
-                  ⏪ 1s
-                </button>
-                <button 
-                  onClick={goBackTime} 
-                  className="time-control-btn back-time-btn" 
-                  title="Go back 5 seconds"
-                  disabled={currentMatch.status !== 'InProgress'}
-                >
-                  ⏪ 5s
-                </button>
-                <button 
-                  onClick={goAheadOneSecond} 
-                  className="time-control-btn ahead-time-btn" 
-                  title="Go ahead 1 second"
-                  disabled={currentMatch.status !== 'InProgress'}
-                >
-                  ⏩ 1s
-                </button>
-                <button 
-                  onClick={goAheadTime} 
-                  className="time-control-btn ahead-time-btn" 
-                  title="Go ahead 30 seconds (Debug)"
-                  disabled={currentMatch.status !== 'InProgress'}
-                >
-                  ⏩ 30s
-                </button>
-              </div>
+              ) : currentMatch.status === 'InProgress' ? (
+                <Timer 
+                  key={`timer-${currentMatch.id}-${currentMatch.status}`}
+                  matchId={currentMatch.id} 
+                  periodNumber={clock.period}
+                  onTimerUpdate={(update) => {
+                    console.log('Timer update in LiveMatchModal:', update);
+                    // Update our local timer state for accurate time calculations
+                    if (update.ElapsedTime) {
+                      const timeParts = update.ElapsedTime.split(':');
+                      const minutes = parseInt(timeParts[0]) || 0;
+                      const seconds = parseInt(timeParts[1]) || 0;
+                      const totalSeconds = minutes * 60 + seconds;
+                      setCurrentTimerElapsedTime(totalSeconds);
+                    }
+                  }}
+                  onGetCurrentTime={(getTime) => {
+                    setGetCurrentTimeFromTimer(() => getTime);
+                  }}
+                />
+              ) : (
+                <div className="timer-loading">
+                  <div>00:00</div>
+                </div>
+              )}
+            </div>
+            
+            {/* Period Control Button - End Period or Start Period */}
+            <div className="clock-start-reset">
+              <button 
+                onClick={handlePeriodControlClick} 
+                className="period-control-btn"
+                title={canEndPeriod() ? "End the current period" : "Start the next period"}
+                disabled={periodLoading[canEndPeriod() ? clock.period : nextPeriodToStart]}
+              >
+                {getPeriodControlButtonText()}
+              </button>
             </div>
           </div>
 
@@ -1735,7 +1525,7 @@ const LiveMatchModal = ({
                 </div>
                 
                 <div className="time-hint">
-                  Current: {formatTime(clock.minutes, clock.seconds)}
+                  Current: {formatTime(Math.floor(currentTimerElapsedTime / 60), currentTimerElapsedTime % 60)}
                 </div>
               </div>
               

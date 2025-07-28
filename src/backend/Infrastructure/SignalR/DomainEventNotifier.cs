@@ -116,14 +116,18 @@ namespace MyLeague.Infrastructure.SignalR
                 string payloadJson = JsonSerializer.Serialize(payload);
                 string groupName = $"Match_{matchId}";
                 
-                _logger.LogInformation("Notifying match {MatchId} clients of event {EventName}", matchId, eventName);
+                _logger.LogInformation("DomainEventNotifier: Notifying match {MatchId} clients of event {EventName}", matchId, eventName);
+                _logger.LogInformation("DomainEventNotifier: Sending to group {GroupName}", groupName);
+                _logger.LogInformation("DomainEventNotifier: Payload: {Payload}", payloadJson);
                 
                 // Notify clients in the specific match group
                 await _hubContext.Clients.Group(groupName).SendAsync("MatchEvent", eventName, payloadJson);
+                
+                _logger.LogInformation("DomainEventNotifier: Successfully sent event to group {GroupName}", groupName);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying match {MatchId} clients of event {EventName}", matchId, eventName);
+                _logger.LogError(ex, "DomainEventNotifier: Error notifying match {MatchId} clients of event {EventName}", matchId, eventName);
             }
         }
 

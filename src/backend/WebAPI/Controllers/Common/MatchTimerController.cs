@@ -167,7 +167,7 @@ namespace WebAPI.Controllers.Common
                 {
                     Exists = true,
                     IsRunning = isRunning,
-                    ElapsedTime = elapsedTime
+                    ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss")
                 };
                 
                 return Ok(ApiResponse<TimerStatusResponse>.SuccessResponse(status, "Timer status retrieved successfully"));
@@ -248,8 +248,8 @@ namespace WebAPI.Controllers.Common
         public bool IsRunning { get; set; }
 
         /// <summary>
-        /// The elapsed time
+        /// The elapsed time as a formatted string
         /// </summary>
-        public TimeSpan ElapsedTime { get; set; }
+        public string ElapsedTime { get; set; } = string.Empty;
     }
 } 
