@@ -139,18 +139,20 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <summary>
         /// Searches for persons by name
         /// </summary>
-        /// <param name="searchTerm">The search term</param>
-        /// <returns>A collection of persons matching the search term</returns>
-        public async Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm)
+        /// <param name="searchTerm">The search term.</param>
+        /// <param name="count">The maximum number of results to return.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A collection of persons matching the search term.</returns>
+        public async Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default)
         {
-            string lowerSearchTerm = searchTerm.ToLower();
-
+            string lowercasedTerm = searchTerm.ToLower();
             return await _entities
-                .Where(p => p.FirstName.Contains(lowerSearchTerm) || 
-                           p.LastName.Contains(lowerSearchTerm) ||
-                           EF.Functions.ILike((p.FirstName + " " + p.LastName), $"%{lowerSearchTerm}%") ||
-                           EF.Functions.ILike(p.LastName + " " + p.FirstName, $"%{lowerSearchTerm}%"))
-                .ToListAsync();
+                .Where(p => (p.FirstName.ToLower() + " " + p.LastName.ToLower()).Contains(lowercasedTerm) ||
+                            (p.LastName.ToLower() + " " + p.FirstName.ToLower()).Contains(lowercasedTerm))
+                .OrderBy(p => p.LastName)
+                .ThenBy(p => p.FirstName)
+                .Take(count)
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>

@@ -15,6 +15,14 @@ public interface IClubRepository
     Task<Club?> GetByIdAsync(Guid id);
     
     /// <summary>
+    /// Gets multiple clubs by their IDs.
+    /// </summary>
+    /// <param name="ids">The collection of club IDs.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A dictionary mapping club IDs to their respective clubs.</returns>
+    Task<Dictionary<Guid, Club>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets a club by name
     /// </summary>
     /// <param name="name">The club name</param>
@@ -60,11 +68,13 @@ public interface IClubRepository
     Task DeleteAsync(Guid id);
     
     /// <summary>
-    /// Searches for clubs by name
+    /// Searches for clubs by name, returning a specified number of results.
     /// </summary>
-    /// <param name="searchTerm">The search term</param>
-    /// <returns>A collection of clubs matching the search term</returns>
-    Task<IEnumerable<Club>> SearchByNameAsync(string searchTerm);
+    /// <param name="searchTerm">The search term.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A collection of clubs matching the search term.</returns>
+    Task<IEnumerable<Club>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Checks if a club exists

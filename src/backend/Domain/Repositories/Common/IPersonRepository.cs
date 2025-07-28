@@ -84,11 +84,13 @@ public interface IPersonRepository
     Task DeleteAsync(Guid id);
     
     /// <summary>
-    /// Searches for persons by name
+    /// Searches for persons by name.
     /// </summary>
-    /// <param name="searchTerm">The search term</param>
-    /// <returns>A collection of persons matching the search term</returns>
-    Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm);
+    /// <param name="searchTerm">The search term.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A collection of persons matching the search term.</returns>
+    Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Checks if a person exists

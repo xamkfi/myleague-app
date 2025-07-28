@@ -40,7 +40,8 @@ public interface IFloorballTeamRepository
     /// <returns>Paginated collection of floorball teams</returns>
     Task<PagedResult<FloorballTeam>> GetPagedAsync(
         int page, 
-        int pageSize, 
+        int pageSize,
+        string searchTerm = "",
         Guid? clubId = null,
         Guid? divisionId = null,
         CancellationToken cancellationToken = default);
@@ -111,11 +112,13 @@ public interface IFloorballTeamRepository
     Task DeleteAsync(Guid id);
     
     /// <summary>
-    /// Searches for floorball teams by name
+    /// Searches for floorball teams by name.
     /// </summary>
-    /// <param name="searchTerm">The search term</param>
-    /// <returns>A collection of floorball teams matching the search term</returns>
-    Task<IEnumerable<FloorballTeam>> SearchByNameAsync(string searchTerm);
+    /// <param name="searchTerm">The search term.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A collection of floorball teams matching the search term.</returns>
+    Task<IEnumerable<FloorballTeam>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Checks if a floorball team exists
@@ -130,6 +133,14 @@ public interface IFloorballTeamRepository
     /// <param name="playerId">The player ID</param>
     /// <returns>A collection of floorball teams the player is in</returns>
     Task<IEnumerable<FloorballTeam>> GetTeamsByPlayerIdAsync(Guid playerId);
+
+    /// <summary>
+    /// Gets all teams for a collection of player IDs.
+    /// </summary>
+    /// <param name="playerIds">The collection of player IDs.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A dictionary mapping player IDs to their respective teams.</returns>
+    Task<Dictionary<Guid, FloorballTeam>> GetTeamsByPlayerIdsAsync(IEnumerable<Guid> playerIds, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Filters floorball teams only by and for name for lightweight queries

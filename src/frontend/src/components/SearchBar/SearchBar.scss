@@ -46,7 +46,9 @@
       background-color: $color-neutral-white;
       box-shadow: 0 6px 10px $color-neutral-black-alpha;
       border-radius: map.get($border-radius, 'lg');
-      transition: all 0.2s ease;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
 
       .search-result-item {
          text-align: left;
@@ -65,4 +67,38 @@
          }
       }
    }
+}
+
+.search-no-results {
+   text-align: center;
+   color: $color-neutral-medium-grey;
+   font-style: italic;
+   
+   .search-result-item-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
+   }
+}
+
+.search-section-header {
+   padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+   background-color: $color-neutral-light-grey;
+   border-bottom: 1px solid $color-neutral-medium-grey;
+   margin: 0;
+   
+   h4 {
+     margin: 0;
+     font-size: map.get($font-sizes, 'sm');
+     font-weight: map.get($font-weights, 'bold');
+     color: $color-neutral-dark-grey;
+     text-transform: uppercase;
+     letter-spacing: $letter-spacing-wide * 0.125;
+   }
+ }
+
+.search-results.is-open {
+  opacity: 1;
+  transform: translateY(0);
 }
