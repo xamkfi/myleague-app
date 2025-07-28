@@ -12,7 +12,9 @@ using MyLeague.Infrastructure.Persistence.EventStores;
 using MyLeague.Infrastructure.Persistence.UnitOfWork;
 using MyLeague.Infrastructure.HealthChecks;
 using Application.Interfaces.Common;
+using Application.Services.Common;
 using MyLeague.Infrastructure.Services.ImageStorage;
+using MyLeague.Infrastructure.Services.Common;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -70,6 +72,10 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
             services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
             services.AddScoped<IImageStorageService, AzureBlobImageStorageService>();
+            
+            // Add timer services
+            services.AddScoped<ITimerRepository, TimerRepository>();
+            services.AddScoped<ITimerNotificationService, TimerNotificationService>();
 
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
