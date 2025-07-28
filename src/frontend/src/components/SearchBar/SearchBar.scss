@@ -1,0 +1,68 @@
+@use '../../styles/variables' as *;
+@use 'sass:map';
+
+.search-bar-container {
+   display: flex;
+   background-color: $color-neutral-white;
+   color: $color-neutral-dark-grey;
+   border-radius: map.get($border-radius, 'lg');
+   margin: 0 map.get($spacing, 'xs');
+   position: relative;
+   >* {
+      padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
+   }
+   .search-bar-input {
+      outline: none;
+      transition: outline 0.2s ease;
+      &:focus {
+         outline: 4px solid $color-blue-medium;
+      }
+   }
+   .search-bar-button {
+      background-color: $color-blue-medium;
+      color: $color-neutral-white;
+      outline: none;
+      border-radius: 
+         0
+         map.get($border-radius, 'lg')
+         map.get($border-radius, 'lg')
+         0;
+      transition: outline 0.2s ease;
+      &:active {
+         background-color: $color-neutral-medium-grey;
+      }
+      &:focus {
+         outline: 6px solid $color-blue-medium;
+      }
+   }
+
+   .search-results {
+      position: absolute;
+      z-index: 10000;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      padding: map.get($spacing, 'xs') 0;
+      background-color: $color-neutral-white;
+      box-shadow: 0 6px 10px $color-neutral-black-alpha;
+      border-radius: map.get($border-radius, 'lg');
+      transition: all 0.2s ease;
+
+      .search-result-item {
+         text-align: left;
+         transition: background-color 0.2s ease;
+         &:hover {
+            cursor: pointer;
+            background-color: $color-neutral-light-grey;
+         }
+         &:focus {
+            opacity: 0.5;
+         }
+         .search-result-item-content {
+            display: flex;
+            align-items: center;
+            padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
+         }
+      }
+   }
+}
