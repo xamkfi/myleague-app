@@ -119,17 +119,8 @@ const LiveMatchModal = ({
   const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false);
   const [showShootoutConfirmation, setShowShootoutConfirmation] = useState(false);
 
-  // Update penalty form with current time when form opens
+  // Open penalty form
   const openPenaltyForm = () => {
-    const currentMinutes = Math.floor(currentTimerElapsedTime / 60);
-    const currentSeconds = currentTimerElapsedTime % 60;
-    
-    setPenaltyForm(prev => ({
-      ...prev,
-      periodNumber: clock.period,
-      timeMinutes: currentMinutes,
-      timeSeconds: currentSeconds
-    }));
     setShowPenaltyForm(true);
   };
 
@@ -604,9 +595,8 @@ const LiveMatchModal = ({
         });
       }
       
-      // Calculate the next period to start (for when this period ends)
-      const nextPeriod = nextPeriodToStart + 1;
-      setNextPeriodToStart(nextPeriod);
+      // Don't increment nextPeriodToStart yet - wait until this period ends
+      // The nextPeriodToStart will be calculated when endPeriod() is called
       
       setError(null);
     } catch (error) {
@@ -843,7 +833,7 @@ const LiveMatchModal = ({
         playerId: goalForm.playerId,
         assisterId: goalForm.assisterId || undefined,
         periodNumber: clock.period,
-        timeInSeconds: clock.minutes * 60 + clock.seconds,
+        timeInSeconds: currentTimerElapsedTime,
         wasInOvertime: currentMatch.wentToOvertime || clock.period > 3,
         wasInShootout: currentMatch.wentToShootout || clock.period > 4,
       };
@@ -881,8 +871,8 @@ const LiveMatchModal = ({
         playerId: penaltyForm.playerId || undefined,
         penaltyType: penaltyForm.penaltyType,
         durationMinutes: penaltyForm.minutes,
-        periodNumber: penaltyForm.periodNumber,
-        timeInSeconds: penaltyForm.timeMinutes * 60 + penaltyForm.timeSeconds,
+        periodNumber: clock.period,
+        timeInSeconds: currentTimerElapsedTime,
         description: penaltyForm.description,
       };
       
@@ -967,6 +957,12 @@ const LiveMatchModal = ({
   };
 
   const formatEventTime = (timeInSeconds: number) => {
+    // Handle invalid inputs
+    if (timeInSeconds === undefined || timeInSeconds === null || isNaN(timeInSeconds)) {
+      console.warn('formatEventTime received invalid timeInSeconds:', timeInSeconds);
+      return '00:00';
+    }
+    
     const mins = Math.floor(timeInSeconds / 60);
     const secs = timeInSeconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -1024,66 +1020,118 @@ const LiveMatchModal = ({
         
         // Handle goal events
         if (event.eventType === 'FloorballGoalScoredEvent') {
+          console.log('Processing FloorballGoalScoredEvent');
+          console.log('Raw event data:', event.data);
+          console.log('Event data type:', typeof event.data);
+          console.log('Event data keys:', Object.keys(event.data || {}));
+          
           const goalData = event.data as {
-            MatchId: string;
-            TeamId: string;
-            PlayerId: string;
-            PeriodNumber: number;
-            TimeInSeconds: number;
-            IsOvertime: boolean;
-            IsPenaltyShot: boolean;
-            IsShootout: boolean;
+            MatchId?: string;
+            TeamId?: string;
+            PlayerId?: string;
+            PeriodNumber?: number;
+            TimeInSeconds?: number;
+            IsOvertime?: boolean;
+            IsPenaltyShot?: boolean;
+            IsShootout?: boolean;
             AssisterId?: string;
             SecondaryAssisterId?: string;
+            // Handle camelCase field names from JSON serialization
+            matchId?: string;
+            teamId?: string;
+            playerId?: string;
+            periodNumber?: number;
+            timeInSeconds?: number;
+            isOvertime?: boolean;
+            isPenaltyShot?: boolean;
+            isShootout?: boolean;
+            assisterId?: string;
+            secondaryAssisterId?: string;
           };
           console.log('Goal data structure:', goalData);
           console.log('Goal data keys:', Object.keys(goalData));
+          console.log('TimeInSeconds value:', goalData.TimeInSeconds);
+          console.log('TimeInSeconds type:', typeof goalData.TimeInSeconds);
           
-          return {
-            id: `goal-${goalData.TeamId}-${goalData.PlayerId}-${goalData.PeriodNumber}-${goalData.TimeInSeconds}`,
-            type: 'goal' as const,
-            teamId: goalData.TeamId,
-            teamName: goalData.TeamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
-            playerId: goalData.PlayerId,
-            playerName: getPlayerNameById(goalData.PlayerId), // Look up player name from loaded data
-            assisterId: goalData.AssisterId,
-            assisterName: goalData.AssisterId ? getPlayerNameById(goalData.AssisterId) : undefined, // Look up assister name
-            periodNumber: goalData.PeriodNumber,
-            timeInSeconds: goalData.TimeInSeconds,
-            timestamp: new Date(event.occurredOn),
-            wasInOvertime: goalData.IsOvertime,
-            wasInShootout: goalData.IsShootout
-          };
+                      // Handle both PascalCase and camelCase field names
+            const timeInSeconds = goalData.TimeInSeconds ?? goalData.timeInSeconds ?? 0;
+            const periodNumber = goalData.PeriodNumber ?? goalData.periodNumber ?? 1;
+            const teamId = goalData.TeamId ?? goalData.teamId ?? '';
+            const playerId = goalData.PlayerId ?? goalData.playerId ?? '';
+            const isOvertime = goalData.IsOvertime ?? goalData.isOvertime ?? false;
+            const isShootout = goalData.IsShootout ?? goalData.isShootout ?? false;
+            const assisterId = goalData.AssisterId ?? goalData.assisterId;
+            
+            return {
+              id: `goal-${teamId}-${playerId}-${periodNumber}-${timeInSeconds}`,
+              type: 'goal' as const,
+              teamId: teamId,
+              teamName: teamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+              playerId: playerId,
+              playerName: getPlayerNameById(playerId), // Look up player name from loaded data
+              assisterId: assisterId,
+              assisterName: assisterId ? getPlayerNameById(assisterId) : undefined, // Look up assister name
+              periodNumber: periodNumber,
+              timeInSeconds: timeInSeconds,
+              timestamp: new Date(event.occurredOn),
+              wasInOvertime: isOvertime,
+              wasInShootout: isShootout
+            };
         } 
         // Handle penalty events
         else if (event.eventType === 'FloorballPenaltyAssignedEvent') {
+          console.log('Processing FloorballPenaltyAssignedEvent');
+          console.log('Raw penalty event data:', event.data);
+          console.log('Penalty event data type:', typeof event.data);
+          console.log('Penalty event data keys:', Object.keys(event.data || {}));
+          
           const penaltyData = event.data as {
-            MatchId: string;
-            TeamId: string;
+            MatchId?: string;
+            TeamId?: string;
             PlayerId?: string;
-            PeriodNumber: number;
-            TimeInSeconds: number;
-            PenaltyType: string;
-            Minutes: number;
-            Description: string;
+            PeriodNumber?: number;
+            TimeInSeconds?: number;
+            PenaltyType?: string;
+            Minutes?: number;
+            Description?: string;
+            // Handle camelCase field names from JSON serialization
+            matchId?: string;
+            teamId?: string;
+            playerId?: string;
+            periodNumber?: number;
+            timeInSeconds?: number;
+            penaltyType?: string;
+            minutes?: number;
+            description?: string;
           };
           console.log('Penalty data structure:', penaltyData);
           console.log('Penalty data keys:', Object.keys(penaltyData));
+          console.log('TimeInSeconds value:', penaltyData.TimeInSeconds);
+          console.log('TimeInSeconds type:', typeof penaltyData.TimeInSeconds);
           
-          return {
-            id: `penalty-${penaltyData.TeamId}-${penaltyData.PlayerId || 'team'}-${penaltyData.PeriodNumber}-${penaltyData.TimeInSeconds}`,
-            type: 'penalty' as const,
-            teamId: penaltyData.TeamId,
-            teamName: penaltyData.TeamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
-            playerId: penaltyData.PlayerId,
-            playerName: penaltyData.PlayerId ? getPlayerNameById(penaltyData.PlayerId) : 'Team Penalty', // Handle team penalties
-            periodNumber: penaltyData.PeriodNumber,
-            timeInSeconds: penaltyData.TimeInSeconds,
-            timestamp: new Date(event.occurredOn),
-            penaltyType: penaltyData.PenaltyType,
-            penaltyMinutes: penaltyData.Minutes,
-            description: penaltyData.Description
-          };
+            // Handle both PascalCase and camelCase field names for penalty
+            const penaltyTimeInSeconds = penaltyData.TimeInSeconds ?? penaltyData.timeInSeconds ?? 0;
+            const penaltyPeriodNumber = penaltyData.PeriodNumber ?? penaltyData.periodNumber ?? 1;
+            const penaltyTeamId = penaltyData.TeamId ?? penaltyData.teamId ?? '';
+            const penaltyPlayerId = penaltyData.PlayerId ?? penaltyData.playerId;
+            const penaltyType = penaltyData.PenaltyType ?? penaltyData.penaltyType ?? '';
+            const penaltyMinutes = penaltyData.Minutes ?? penaltyData.minutes ?? 0;
+            const penaltyDescription = penaltyData.Description ?? penaltyData.description ?? '';
+            
+            return {
+              id: `penalty-${penaltyTeamId}-${penaltyPlayerId || 'team'}-${penaltyPeriodNumber}-${penaltyTimeInSeconds}`,
+              type: 'penalty' as const,
+              teamId: penaltyTeamId,
+              teamName: penaltyTeamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+              playerId: penaltyPlayerId,
+              playerName: penaltyPlayerId ? getPlayerNameById(penaltyPlayerId) : 'Team Penalty', // Handle team penalties
+              periodNumber: penaltyPeriodNumber,
+              timeInSeconds: penaltyTimeInSeconds,
+              timestamp: new Date(event.occurredOn),
+              penaltyType: penaltyType,
+              penaltyMinutes: penaltyMinutes,
+              description: penaltyDescription
+            };
         }
         return null;
       })
@@ -1333,10 +1381,20 @@ const LiveMatchModal = ({
                     // Update our local timer state for accurate time calculations
                     if (update.ElapsedTime) {
                       const timeParts = update.ElapsedTime.split(':');
-                      const minutes = parseInt(timeParts[0]) || 0;
-                      const seconds = parseInt(timeParts[1]) || 0;
-                      const totalSeconds = minutes * 60 + seconds;
-                      setCurrentTimerElapsedTime(totalSeconds);
+                      if (timeParts.length === 3) {
+                        // Parse hh:mm:ss format
+                        const hours = parseInt(timeParts[0]) || 0;
+                        const minutes = parseInt(timeParts[1]) || 0;
+                        const seconds = parseInt(timeParts[2]) || 0;
+                        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                        setCurrentTimerElapsedTime(totalSeconds);
+                      } else if (timeParts.length === 2) {
+                        // Parse mm:ss format (fallback)
+                        const minutes = parseInt(timeParts[0]) || 0;
+                        const seconds = parseInt(timeParts[1]) || 0;
+                        const totalSeconds = minutes * 60 + seconds;
+                        setCurrentTimerElapsedTime(totalSeconds);
+                      }
                     }
                   }}
                   onGetCurrentTime={(getTime) => {
@@ -1426,6 +1484,17 @@ const LiveMatchModal = ({
                 )}
               </div>
               
+              <div className="form-row compact-time-row">
+                <div className="time-info">
+                  <div className="time-display">
+                    <label>Current Time:</label>
+                    <span className="current-time">
+                      Period {clock.period} - {formatTime(Math.floor(currentTimerElapsedTime / 60), currentTimerElapsedTime % 60)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
               <div className="form-actions">
                 <button onClick={recordGoal} disabled={loading} className="submit-btn">
                   {loading ? 'Recording...' : 'Record Goal'}
@@ -1484,48 +1553,13 @@ const LiveMatchModal = ({
               </div>
               
               <div className="form-row compact-time-row">
-                <div className="time-inputs-container">
-                  <div className="time-input-group">
-                    <label>Period:</label>
-                    <input 
-                      type="number" 
-                      value={penaltyForm.periodNumber}
-                      onChange={(e) => setPenaltyForm(prev => ({ ...prev, periodNumber: parseInt(e.target.value) || 1 }))}
-                      min="1"
-                      max="10"
-                      className="time-input period-input"
-                    />
+                <div className="time-info">
+                  <div className="time-display">
+                    <label>Current Time:</label>
+                    <span className="current-time">
+                      Period {clock.period} - {formatTime(Math.floor(currentTimerElapsedTime / 60), currentTimerElapsedTime % 60)}
+                    </span>
                   </div>
-                  
-                  <div className="time-input-group">
-                    <label>Minutes:</label>
-                    <input 
-                      type="number" 
-                      value={penaltyForm.timeMinutes}
-                      onChange={(e) => setPenaltyForm(prev => ({ ...prev, timeMinutes: parseInt(e.target.value) || 0 }))}
-                      min="0"
-                      max="20"
-                      placeholder={`${clock.minutes}`}
-                      className="time-input minutes-input"
-                    />
-                  </div>
-                  
-                  <div className="time-input-group">
-                    <label>Seconds:</label>
-                    <input 
-                      type="number" 
-                      value={penaltyForm.timeSeconds}
-                      onChange={(e) => setPenaltyForm(prev => ({ ...prev, timeSeconds: parseInt(e.target.value) || 0 }))}
-                      min="0"
-                      max="59"
-                      placeholder={`${clock.seconds}`}
-                      className="time-input seconds-input"
-                    />
-                  </div>
-                </div>
-                
-                <div className="time-hint">
-                  Current: {formatTime(Math.floor(currentTimerElapsedTime / 60), currentTimerElapsedTime % 60)}
                 </div>
               </div>
               

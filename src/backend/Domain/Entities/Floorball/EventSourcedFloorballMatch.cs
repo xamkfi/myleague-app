@@ -665,5 +665,18 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         Venue = @event.NewVenue ?? string.Empty;
     }
     
+    /// <summary>
+    /// Applies a period started event
+    /// </summary>
+    /// <param name="event">The event to apply</param>
+    private void Apply(FloorballPeriodStartedEvent @event)
+    {
+        // Add the period to period scores if it doesn't exist yet
+        if (!_periodScores.ContainsKey(@event.PeriodNumber))
+        {
+            _periodScores[@event.PeriodNumber] = (0, 0);
+        }
+    }
+    
     #endregion
 } 

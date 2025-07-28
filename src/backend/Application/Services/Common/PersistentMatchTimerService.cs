@@ -204,7 +204,7 @@ namespace Application.Services.Common
 
                 TimeSpan elapsedTime = timerState.ElapsedTime;
                 _logger.LogInformation("Calculated elapsed time {ElapsedTime} for stopped timer match {MatchId}", elapsedTime, matchId);
-
+                
                 // Notify clients of the timer update
                 TimerUpdate update = TimerUpdate.CreateStopped(matchId, timerState.PeriodNumber, elapsedTime);
                 await NotifyTimerUpdateAsync(matchId, update);

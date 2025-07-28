@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useTimer } from '../../hooks/useTimer';
 import { floorballMatchEventService } from '../../api/floorball/floorballMatchEventService';
 import './Timer.scss';
@@ -78,6 +78,19 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime }
     console.log('=== TIMER RESET COMPLETED ===');
   };
 
+  // Memoize button disabled states to prevent blinking during SignalR updates
+  const buttonStates = useMemo(() => {
+    const startDisabled = loading || timerState.isRunning;
+    const stopDisabled = loading || !timerState.isRunning;
+    const resetDisabled = loading;
+    
+    return {
+      startDisabled,
+      stopDisabled,
+      resetDisabled
+    };
+  }, [loading, timerState.isRunning]);
+
   return (
     <div className="timer-component">
       <div className="timer-display">
@@ -89,7 +102,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime }
       <div className="timer-controls">
         <button
           onClick={handleStart}
-          disabled={loading || timerState.isRunning}
+          disabled={buttonStates.startDisabled}
           className="timer-button start"
         >
           Start
@@ -97,7 +110,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime }
         
         <button
           onClick={handleStop}
-          disabled={loading || !timerState.isRunning}
+          disabled={buttonStates.stopDisabled}
           className="timer-button stop"
         >
           Stop
@@ -105,7 +118,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime }
         
         <button
           onClick={handleReset}
-          disabled={loading}
+          disabled={buttonStates.resetDisabled}
           className="timer-button reset"
         >
           Reset

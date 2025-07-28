@@ -25,8 +25,12 @@ export function useTimer(options: UseTimerOptions) {
   });
   
   const [loading, setLoading] = useState(false);
+  
+
   const [error, setError] = useState<string | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
+
+
 
   // Load initial timer status
   const loadTimerStatus = useCallback(async () => {
@@ -38,10 +42,24 @@ export function useTimer(options: UseTimerOptions) {
       const status = await timerService.getTimerStatus(matchId);
       console.log('Timer status received:', status);
       
-      // Format the elapsed time: show mm:ss for initial state, hh:mm:ss for running time
+      // Format the elapsed time to only show hours when needed
       let formattedTime = status.elapsedTime;
-      if (status.elapsedTime === '00:00:00') {
-        formattedTime = '00:00';
+      if (status.elapsedTime && status.elapsedTime.includes(':')) {
+        const parts = status.elapsedTime.split(':');
+        if (parts.length === 3) {
+          const [hours, minutes, seconds] = parts;
+          const hoursNum = parseInt(hours) || 0;
+          const minutesNum = parseInt(minutes) || 0;
+          const secondsNum = parseInt(seconds) || 0;
+          
+          // If hours is 0, only show mm:ss
+          if (hoursNum === 0) {
+            formattedTime = `${minutesNum.toString().padStart(2, '0')}:${secondsNum.toString().padStart(2, '0')}`;
+          } else {
+            // If hours > 0, show hh:mm:ss
+            formattedTime = `${hoursNum.toString().padStart(2, '0')}:${minutesNum.toString().padStart(2, '0')}:${secondsNum.toString().padStart(2, '0')}`;
+          }
+        }
       }
       
       setTimerState({
@@ -72,10 +90,8 @@ export function useTimer(options: UseTimerOptions) {
       await timerService.startTimer(matchId, periodNumber);
       console.log('timerService.startTimer completed successfully');
       
-      // Reload timer status after starting
-      console.log('Reloading timer status...');
-      await loadTimerStatus();
-      console.log('Timer status reloaded');
+      // Don't reload timer status - let SignalR handle the update
+      console.log('Skipping loadTimerStatus - letting SignalR handle update');
       console.log('=== useTimer startTimer COMPLETED ===');
     } catch (err) {
       console.error('=== useTimer startTimer FAILED ===');
@@ -84,7 +100,7 @@ export function useTimer(options: UseTimerOptions) {
     } finally {
       setLoading(false);
     }
-  }, [matchId, loadTimerStatus]);
+  }, [matchId]);
 
   // Stop timer
   const stopTimer = useCallback(async () => {
@@ -99,10 +115,8 @@ export function useTimer(options: UseTimerOptions) {
       await timerService.stopTimer(matchId);
       console.log('timerService.stopTimer completed successfully');
       
-      // Reload timer status after stopping
-      console.log('Reloading timer status...');
-      await loadTimerStatus();
-      console.log('Timer status reloaded');
+      // Don't reload timer status - let SignalR handle the update
+      console.log('Skipping loadTimerStatus - letting SignalR handle update');
       console.log('=== useTimer stopTimer COMPLETED ===');
     } catch (err) {
       console.error('=== useTimer stopTimer FAILED ===');
@@ -111,7 +125,7 @@ export function useTimer(options: UseTimerOptions) {
     } finally {
       setLoading(false);
     }
-  }, [matchId, loadTimerStatus]);
+  }, [matchId]);
 
   // Reset timer
   const resetTimer = useCallback(async () => {
@@ -123,15 +137,15 @@ export function useTimer(options: UseTimerOptions) {
       await timerService.resetTimer(matchId);
       console.log('Timer reset successfully');
       
-      // Reload timer status after resetting
-      await loadTimerStatus();
+      // Don't reload timer status - let SignalR handle the update
+      console.log('Skipping loadTimerStatus - letting SignalR handle update');
     } catch (err) {
       console.error('Error resetting timer:', err);
       setError(err instanceof Error ? err.message : 'Failed to reset timer');
     } finally {
       setLoading(false);
     }
-  }, [matchId, loadTimerStatus]);
+  }, [matchId]);
 
   // Create timer
   const createTimer = useCallback(async () => {
@@ -142,7 +156,8 @@ export function useTimer(options: UseTimerOptions) {
       console.log('Creating timer for match:', matchId);
       await timerService.createTimer(matchId);
       console.log('Timer created successfully');
-      await loadTimerStatus(); // Reload status after creation
+      // Don't reload timer status - let SignalR handle the update
+      console.log('Skipping loadTimerStatus - letting SignalR handle update');
     } catch (err) {
       console.error('Error creating timer:', err);
       // Don't set error for timer creation - it might already exist
@@ -150,7 +165,7 @@ export function useTimer(options: UseTimerOptions) {
     } finally {
       setLoading(false);
     }
-  }, [matchId, loadTimerStatus]);
+  }, [matchId]);
 
   // Destroy timer
   const destroyTimer = useCallback(async () => {
@@ -193,17 +208,42 @@ export function useTimer(options: UseTimerOptions) {
       if (timerUpdate.MatchId === matchId) {
         console.log('✅ MATCH ID MATCHES - UPDATING TIMER STATE');
         
-        // Format the elapsed time: show mm:ss for initial state, hh:mm:ss for running time
+        // Format the elapsed time to only show hours when needed
         let formattedTime = timerUpdate.ElapsedTime;
-        if (timerUpdate.ElapsedTime === '00:00:00') {
-          formattedTime = '00:00';
+        if (timerUpdate.ElapsedTime && timerUpdate.ElapsedTime.includes(':')) {
+          const parts = timerUpdate.ElapsedTime.split(':');
+          if (parts.length === 3) {
+            const [hours, minutes, seconds] = parts;
+            const hoursNum = parseInt(hours) || 0;
+            const minutesNum = parseInt(minutes) || 0;
+            const secondsNum = parseInt(seconds) || 0;
+            
+            // If hours is 0, only show mm:ss
+            if (hoursNum === 0) {
+              formattedTime = `${minutesNum.toString().padStart(2, '0')}:${secondsNum.toString().padStart(2, '0')}`;
+            } else {
+              // If hours > 0, show hh:mm:ss
+              formattedTime = `${hoursNum.toString().padStart(2, '0')}:${minutesNum.toString().padStart(2, '0')}:${secondsNum.toString().padStart(2, '0')}`;
+            }
+          }
         }
         
-        setTimerState({
-          isRunning: timerUpdate.IsRunning,
-          elapsedTime: formattedTime,
-          periodNumber: timerUpdate.PeriodNumber,
-          lastUpdated: timerUpdate.LastUpdated,
+                setTimerState(prev => {
+          // Only update if state has actually changed
+          if (
+            prev.elapsedTime === formattedTime &&
+            prev.isRunning === timerUpdate.IsRunning &&
+            prev.periodNumber === timerUpdate.PeriodNumber
+          ) {
+            return prev; // No need to re-render
+          }
+
+          return {
+            isRunning: timerUpdate.IsRunning,
+            elapsedTime: formattedTime,
+            periodNumber: timerUpdate.PeriodNumber,
+            lastUpdated: timerUpdate.LastUpdated,
+          };
         });
         
         if (onTimerUpdate) {
@@ -222,8 +262,6 @@ export function useTimer(options: UseTimerOptions) {
 
   // Setup SignalR connection and event handling
   useEffect(() => {
-    if (!autoConnect || !matchId) return;
-
     const setupSignalR = async () => {
       try {
         console.log('=== TIMER SIGNALR SETUP START ===');
@@ -246,10 +284,8 @@ export function useTimer(options: UseTimerOptions) {
         
         console.log('SignalR setup completed for timer');
         
-        // Load initial timer status
-        console.log('Step 4: Loading initial timer status...');
-        await loadTimerStatus();
-        console.log('Step 4: Initial timer status loaded');
+        // Don't load initial timer status - let SignalR handle all updates
+        console.log('Step 4: Skipping initial timer status load - letting SignalR handle updates');
         console.log('=== TIMER SIGNALR SETUP COMPLETE ===');
         
       } catch (err) {
@@ -259,7 +295,10 @@ export function useTimer(options: UseTimerOptions) {
       }
     };
 
-    setupSignalR();
+    // Only proceed if we should auto-connect and have a matchId
+    if (autoConnect && matchId) {
+      setupSignalR();
+    }
 
     // Cleanup on unmount
     return () => {
