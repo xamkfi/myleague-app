@@ -51,10 +51,13 @@ export interface FloorballTeamPlayer {
   position: FloorballPosition;
   jerseyNumber?: number;
   isActive: boolean;
+  age?: number;
   gamesPlayed: number;
   goals: number;
   assists: number;
   penaltyMinutes: number;
+  yellowCards: number;
+  redCards: number;
 }
 
 export interface FloorballReferee {
@@ -70,6 +73,7 @@ export interface FloorballTeam {
   homeArena: string;
   primaryJerseyColor: string;
   secondaryJerseyColor?: string;
+  logoUrl?: string;
   hasActiveMembers: boolean;
   roster: FloorballTeamPlayer[];
 }
@@ -115,6 +119,7 @@ export interface FloorballTeamRequest {
   primaryJerseyColor: string;
   category?: TeamCategory;
   secondaryJerseyColor?: string;
+  logoUrl?: string;
 } 
 
 // Team Player Management types
@@ -142,6 +147,32 @@ export interface AddPlayerToTeamRequest {
   jerseyNumber?: number;
 }
 
+// Match Event types
+export interface FloorballGoalEventDto {
+  teamId: string;
+  playerId: string;
+  assisterId?: string;
+  secondaryAssisterId?: string;
+  periodNumber: number;
+  timeInSeconds: number;
+  wasInOvertime: boolean;
+  wasInShootout: boolean;
+  playerName?: string;
+  assisterName?: string;
+  secondaryAssisterName?: string;
+}
+
+export interface FloorballPenaltyEventDto {
+  teamId: string;
+  playerId?: string;
+  penaltyType: string;
+  minutes: number;
+  periodNumber: number;
+  timeInSeconds: number;
+  description: string;
+  playerName?: string;
+}
+
 // Match-related interfaces
 export interface FloorballMatchDto {
   id: string;
@@ -159,8 +190,10 @@ export interface FloorballMatchDto {
   wentToShootout: boolean;
   periodScores: Record<number, { homeScore: number; awayScore: number }>;
   officials: string[];
-  goalEvents: unknown[];
-  penaltyEvents: unknown[];
+  goalEvents: FloorballGoalEventDto[];
+  penaltyEvents: FloorballPenaltyEventDto[];
+  homeClub?: Club;
+  awayClub?: Club;
 }
 
 export interface CreateFloorballMatchRequest {
@@ -178,6 +211,24 @@ export interface UpdateFloorballMatchRequest {
   venue?: string;
 }
 
+// New types for edit match functionality
+export interface ChangeMatchSeasonRequest {
+  seasonId: string;
+}
+
+export interface ChangeMatchTeamsRequest {
+  homeTeamId: string;
+  awayTeamId: string;
+}
+
+export interface ChangeMatchVenueRequest {
+  venue: string;
+}
+
+export interface ChangeMatchDateTimeRequest {
+  scheduledDateTime: string;
+}
+
 export interface GetFloorballMatchesRequest {
   page?: number;
   pageSize?: number;
@@ -185,4 +236,5 @@ export interface GetFloorballMatchesRequest {
   teamId?: string;
   startDate?: string;
   endDate?: string;
+  sortOrder?: string;
 } 

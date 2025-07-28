@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { FloorballPosition } from "../../types/floorball/floorballTypes";
+import { FloorballPosition, FloorballMatchStatus } from "../../types/floorball/floorballTypes";
+import { floorballPlayerService } from "../../api/floorball/floorballPlayerService";
+import { floorballTeamService } from "../../api/floorball/floorballTeamService";
+import { floorballMatchService } from "../../api/floorball/floorballMatchService";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
 import './FloorballTeamPlayerUserPage.scss';
 
@@ -54,142 +57,111 @@ interface PlayerWithMatches {
   recentMatches: FloorballMatch[];
 }
 
-// API function to fetch player's match data
-const fetchPlayerMatches = async (playerId: string): Promise<PlayerWithMatches | null> => {
+// Enhanced API function to fetch comprehensive player data
+const fetchPlayerData = async (playerId: string): Promise<PlayerWithMatches | null> => {
   try {
-    const response = await fetch(`/api/FloorballPlayer/${playerId}/matches`);
+    // Fetch basic player data
+    const playerData = await floorballPlayerService.getById(playerId);
     
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // Fetch all teams to find which team(s) this player belongs to
+    const teamsResponse = await floorballTeamService.getAll({ pageSize: 100 });
+    const allTeams = teamsResponse.data || [];
+    
+    // Find teams where this player is in the roster
+    const playerTeams = allTeams.filter(team => 
+      team.roster.some(rosterPlayer => rosterPlayer.playerId === playerId)
+    );
+    
+    // Build career stats from roster data
+    const careerStats = playerTeams.map(team => {
+      const playerInTeam = team.roster.find(rosterPlayer => rosterPlayer.playerId === playerId);
+      return {
+        teamId: team.id,
+        teamName: team.name,
+        stats: {
+          gamesPlayed: playerInTeam?.gamesPlayed || 0,
+          goals: playerInTeam?.goals || 0,
+          assists: playerInTeam?.assists || 0,
+          points: (playerInTeam?.goals || 0) + (playerInTeam?.assists || 0),
+          penaltyMinutes: playerInTeam?.penaltyMinutes || 0,
+        }
+      };
+    });
+    
+    // Get current/primary team (first active team or first team if none active)
+    const currentTeam = playerTeams.find(team => 
+      team.roster.find(rosterPlayer => 
+        rosterPlayer.playerId === playerId && rosterPlayer.isActive
+      )
+    ) || playerTeams[0];
+    
+    const playerInCurrentTeam = currentTeam?.roster.find(rosterPlayer => 
+      rosterPlayer.playerId === playerId
+    );
+    
+    // Fetch recent matches for the current team
+    let recentMatches: FloorballMatch[] = [];
+    if (currentTeam) {
+      try {
+        const matchesResponse = await floorballMatchService.getAll({
+          teamId: currentTeam.id,
+          pageSize: 10 // Get recent matches
+        });
+        
+        // Transform match data to our expected format
+        recentMatches = (matchesResponse.data || []).map(match => ({
+          id: match.id,
+          seasonId: match.seasonId,
+          homeTeamId: match.homeTeamId,
+          homeTeamName: match.homeTeamName,
+          awayTeamId: match.awayTeamId,
+          awayTeamName: match.awayTeamName,
+          scheduledDateTime: match.scheduledDateTime,
+          venue: match.venue,
+          status: match.status === FloorballMatchStatus.Completed ? 'completed' : 
+                 match.status === FloorballMatchStatus.InProgress ? 'in_progress' : 
+                 match.status === FloorballMatchStatus.Cancelled ? 'cancelled' : 
+                 match.status === FloorballMatchStatus.Postponed ? 'cancelled' : 'scheduled',
+          homeScore: match.homeScore,
+          awayScore: match.awayScore,
+          wentToOvertime: match.wentToOvertime,
+          wentToShootout: match.wentToShootout,
+          periodScores: match.periodScores,
+          officials: match.officials,
+          // Note: Individual player stats per match are not available in the current API
+          playerStats: undefined
+        }));
+      } catch (error) {
+        console.warn('Could not fetch matches:', error);
+      }
     }
     
-    const apiResponse = await response.json();
-    
-    // Extract data from the ApiResponse wrapper
-    if (apiResponse.success && apiResponse.data) {
-      return apiResponse.data;
-    } else {
-      throw new Error(apiResponse.message || 'Failed to fetch player matches');
-    }
-  } catch (error) {
-    console.error('Error fetching player matches:', error);
-    // Return mock data for development with team-specific stats
-    return {
-      id: playerId || '1',
-      playerName: 'Matti Meikäläinen',
-      position: FloorballPosition.Forward,
-      jerseyNumber: 15,
-      teamName: 'MAHL Tigers',
-      teamId: 'team-1',
-      isActive: true,
-      careerStats: [
-        {
-          teamId: 'team-1',
-          teamName: 'MAHL Tigers',
-          stats: {
-            gamesPlayed: 20,
-            goals: 8,
-            assists: 5,
-            points: 13,
-            penaltyMinutes: 6
-          }
-        },
-        {
-          teamId: 'team-5',
-          teamName: 'Espoo Eagles',
-          stats: {
-            gamesPlayed: 8,
-            goals: 4,
-            assists: 3,
-            points: 7,
-            penaltyMinutes: 8
-          }
+    const transformedData: PlayerWithMatches = {
+      id: playerData.id,
+      playerName: playerData.person.fullName,
+      position: playerData.position,
+      jerseyNumber: playerInCurrentTeam?.jerseyNumber,
+      teamName: currentTeam?.name || 'Ei joukkuetta',
+      teamId: currentTeam?.id || 'no-team',
+      isActive: playerInCurrentTeam?.isActive || false,
+      careerStats: careerStats.length > 0 ? careerStats : [{
+        teamId: 'no-team',
+        teamName: 'Ei joukkuetta',
+        stats: {
+          gamesPlayed: 0,
+          goals: playerData.careerGoals,
+          assists: playerData.careerAssists,
+          points: playerData.careerGoals + playerData.careerAssists,
+          penaltyMinutes: 0,
         }
-      ],
-      recentMatches: [
-        {
-          id: '1',
-          seasonId: 'season-2024',
-          homeTeamId: 'team-1',
-          homeTeamName: 'MAHL Tigers',
-          awayTeamId: 'team-2',
-          awayTeamName: 'Helsinki Flyers',
-          scheduledDateTime: '2024-03-15T18:30:00Z',
-          venue: 'Keskusurheiluhalli',
-          status: 'completed',
-          homeScore: 4,
-          awayScore: 2,
-          wentToOvertime: false,
-          wentToShootout: false,
-          periodScores: {
-            '1': { homeScore: 1, awayScore: 1 },
-            '2': { homeScore: 2, awayScore: 0 },
-            '3': { homeScore: 1, awayScore: 1 }
-          },
-          officials: ['Tuomari 1', 'Tuomari 2'],
-          playerStats: {
-            goals: 2,
-            assists: 1,
-            penaltyMinutes: 2,
-            playedMinutes: 55
-          }
-        },
-        {
-          id: '2',
-          seasonId: 'season-2024',
-          homeTeamId: 'team-3',
-          homeTeamName: 'Turku Titans',
-          awayTeamId: 'team-1',
-          awayTeamName: 'MAHL Tigers',
-          scheduledDateTime: '2024-03-08T19:00:00Z',
-          venue: 'Turkuhalli',
-          status: 'completed',
-          homeScore: 1,
-          awayScore: 3,
-          wentToOvertime: false,
-          wentToShootout: false,
-          periodScores: {
-            '1': { homeScore: 0, awayScore: 2 },
-            '2': { homeScore: 1, awayScore: 1 },
-            '3': { homeScore: 0, awayScore: 0 }
-          },
-          officials: ['Tuomari 3', 'Tuomari 4'],
-          playerStats: {
-            goals: 0,
-            assists: 2,
-            penaltyMinutes: 0,
-            playedMinutes: 58
-          }
-        },
-        {
-          id: '3',
-          seasonId: 'season-2024',
-          homeTeamId: 'team-1',
-          homeTeamName: 'MAHL Tigers',
-          awayTeamId: 'team-4',
-          awayTeamName: 'Tampere Thunder',
-          scheduledDateTime: '2024-03-01T17:30:00Z',
-          venue: 'Keskusurheiluhalli',
-          status: 'completed',
-          homeScore: 2,
-          awayScore: 5,
-          wentToOvertime: false,
-          wentToShootout: false,
-          periodScores: {
-            '1': { homeScore: 1, awayScore: 2 },
-            '2': { homeScore: 0, awayScore: 2 },
-            '3': { homeScore: 1, awayScore: 1 }
-          },
-          officials: ['Tuomari 5', 'Tuomari 6'],
-          playerStats: {
-            goals: 1,
-            assists: 0,
-            penaltyMinutes: 4,
-            playedMinutes: 52
-          }
-        }
-      ]
+      }],
+      recentMatches
     };
+    
+    return transformedData;
+  } catch (error) {
+    console.error('Error fetching player data:', error);
+    throw error;
   }
 };
 
@@ -221,7 +193,7 @@ const FloorballTeamPlayerUserPage = () => {
         setLoading(true);
         setError(null);
         
-        const playerData = await fetchPlayerMatches(id);
+        const playerData = await fetchPlayerData(id);
         
         setPlayer(playerData);
       } catch (err) {
@@ -281,8 +253,15 @@ const FloorballTeamPlayerUserPage = () => {
           <div className="floorball-player-avatar"></div>
           <div className="floorball-player-info">
             <div className="floorball-player-name">{player.playerName}</div>
-            <div className="floorball-player-subtitle">#{player.jerseyNumber} • {getPositionText(player.position)}</div>
-            <div className="floorball-player-subtitle">{player.teamName}</div>
+            <div className="floorball-player-subtitle">
+              {player.jerseyNumber ? `#${player.jerseyNumber} • ` : ''}{getPositionText(player.position)}
+            </div>
+            <div className="floorball-player-subtitle">
+              {player.teamName !== 'Ei joukkuetta' ? player.teamName : 'Joukkuetieto ei saatavilla'}
+            </div>
+            <div className="floorball-player-subtitle">
+              {player.isActive ? 'Aktiivinen pelaaja' : 'Ei aktiivinen'}
+            </div>
           </div>
         </div>
 
@@ -319,7 +298,7 @@ const FloorballTeamPlayerUserPage = () => {
               <h4>Joukkuekohtaiset tilastot</h4>
               {player.careerStats.map(teamStats => (
                 <div key={teamStats.teamId} className="team-stats">
-                  <h5>{teamStats.teamName}</h5>
+                  <h5>{teamStats.teamName !== 'Ei joukkuetta' ? teamStats.teamName : 'Joukkuetieto ei saatavilla'}</h5>
                   <div className="team-stats-grid">
                     <span>{teamStats.stats.gamesPlayed} ottelua</span>
                     <span>{teamStats.stats.goals} maalia</span>
@@ -331,58 +310,66 @@ const FloorballTeamPlayerUserPage = () => {
               ))}
             </div>
           )}
+          {/*Tilastot haetaan joukkueiden roster-tiedoista. Ottelukohtaiset pelaajatilastot eivät ole saatavilla nykyisen rajapinnan kautta.*/}
         </div>
 
         <div className="matches-section">
           <h3>Viimeisimmät ottelut</h3>
-          <div className="matches-list">
-            {player.recentMatches.map(match => {
-              const isHome = match.homeTeamId === player.teamId;
-              const opponentName = isHome ? match.awayTeamName : match.homeTeamName;
-              const result = getMatchResult(match, player.teamId);
-              
-              return (
-                <div key={match.id} className={`match-card ${result}`}>
-                  <div className="match-header">
-                    <div className="match-teams">
-                      <div className="match-opponent">{opponentName}</div>
-                      <div className="match-location">{isHome ? 'Kotona' : 'Vieraissa'}</div>
+          {player.recentMatches.length === 0 ? (
+            <div className="no-matches">
+              <p>Ei otteluita saatavilla.</p>
+              <p>Pelaajan joukkueelle ei ole vielä luotu otteluita tai pelaaja ei kuulu mihinkään joukkueeseen.</p>
+            </div>
+          ) : (
+            <div className="matches-list">
+              {player.recentMatches.map(match => {
+                const isHome = match.homeTeamId === player.teamId;
+                const opponentName = isHome ? match.awayTeamName : match.homeTeamName;
+                const result = getMatchResult(match, player.teamId);
+                
+                return (
+                  <div key={match.id} className={`match-card ${result}`}>
+                    <div className="match-header">
+                      <div className="match-teams">
+                        <div className="match-opponent">{opponentName}</div>
+                        <div className="match-location">{isHome ? 'Kotona' : 'Vieraissa'}</div>
+                      </div>
+                      <div className={`match-result ${result}`}>
+                        {match.homeScore} - {match.awayScore}
+                      </div>
                     </div>
-                    <div className={`match-result ${result}`}>
-                      {match.homeScore} - {match.awayScore}
+                    
+                    <div className="match-info">
+                      <div className="match-date">{formatDate(match.scheduledDateTime)}</div>
+                      <div className="match-venue">{match.venue}</div>
+                      <div className={`match-status ${result}`}>{result.toUpperCase()}</div>
                     </div>
-                  </div>
-                  
-                  <div className="match-info">
-                    <div className="match-date">{formatDate(match.scheduledDateTime)}</div>
-                    <div className="match-venue">{match.venue}</div>
-                    <div className={`match-status ${result}`}>{result.toUpperCase()}</div>
-                  </div>
 
-                  {match.playerStats && (
-                    <div className="match-player-stats">
-                      <div className="player-stat">
-                        <span className="stat-label">Maalit:</span>
-                        <span className="stat-value">{match.playerStats.goals}</span>
+                    {match.playerStats && (
+                      <div className="match-player-stats">
+                        <div className="player-stat">
+                          <span className="stat-label">Maalit:</span>
+                          <span className="stat-value">{match.playerStats.goals}</span>
+                        </div>
+                        <div className="player-stat">
+                          <span className="stat-label">Syötöt:</span>
+                          <span className="stat-value">{match.playerStats.assists}</span>
+                        </div>
+                        <div className="player-stat">
+                          <span className="stat-label">Jäähyt:</span>
+                          <span className="stat-value">{match.playerStats.penaltyMinutes} min</span>
+                        </div>
+                        <div className="player-stat">
+                          <span className="stat-label">Peliminuutit:</span>
+                          <span className="stat-value">{match.playerStats.playedMinutes} min</span>
+                        </div>
                       </div>
-                      <div className="player-stat">
-                        <span className="stat-label">Syötöt:</span>
-                        <span className="stat-value">{match.playerStats.assists}</span>
-                      </div>
-                      <div className="player-stat">
-                        <span className="stat-label">Jäähyt:</span>
-                        <span className="stat-value">{match.playerStats.penaltyMinutes} min</span>
-                      </div>
-                      <div className="player-stat">
-                        <span className="stat-label">Peliminuutit:</span>
-                        <span className="stat-value">{match.playerStats.playedMinutes} min</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </PageTemplate>

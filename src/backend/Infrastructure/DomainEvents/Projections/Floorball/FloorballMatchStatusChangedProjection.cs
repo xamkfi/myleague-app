@@ -55,7 +55,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
                         match.Cancel();
                         break;
                     case FloorballMatchStatus.Scheduled:
-                        // No-op – reschedule projection handles updating scheduled matches.
+                        // No-op – no additional action needed for scheduled status
                         break;
                     default:
                         _logger.LogDebug("No projection action required for status {Status}", domainEvent.NewStatus);

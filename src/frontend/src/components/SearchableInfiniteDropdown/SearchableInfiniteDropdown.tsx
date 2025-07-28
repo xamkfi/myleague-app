@@ -24,9 +24,10 @@ interface SearchableInfiniteDropdownProps {
   emptyMessage?: string;
   searchPlaceholder?: string;
   onEnterSelect?: () => void; // Callback for moving to next field
+  loadInitialDataOnMount?: boolean; // New prop to load initial data when component mounts
 }
 
-const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
+const SearchableInfiniteDropdown = ({
   placeholder = "Select an option",
   value,
   onChange,
@@ -36,8 +37,9 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
   className = "",
   emptyMessage = "No options found",
   searchPlaceholder = "Search...",
-  onEnterSelect
-}) => {
+  onEnterSelect,
+  loadInitialDataOnMount = false
+}: SearchableInfiniteDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [options, setOptions] = useState<DropdownOption[]>([]);
@@ -273,6 +275,13 @@ const SearchableInfiniteDropdown: React.FC<SearchableInfiniteDropdownProps> = ({
       loadInitialData();
     }
   }, [isOpen, options.length, loading, loadInitialData]);
+
+  // Load initial data on mount if enabled and we have a value but no options
+  useEffect(() => {
+    if (loadInitialDataOnMount && value && options.length === 0 && !loading) {
+      loadInitialData();
+    }
+  }, [loadInitialDataOnMount, value, options.length, loading, loadInitialData]);
 
   // Focus search input when dropdown opens
   useEffect(() => {

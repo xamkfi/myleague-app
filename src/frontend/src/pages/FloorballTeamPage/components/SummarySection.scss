@@ -1,0 +1,67 @@
+@use 'sass:map';
+@use '../../../styles/variables' as *;
+@use '../../../styles/common' as *;
+
+.summary-container{
+   @include container;
+   font-size: map.get($font-sizes, "sm");
+   margin-bottom: map.get($spacing, "md");
+}
+
+.summary-table{
+   display: grid;
+   color: $color-neutral-black;
+   grid-template-columns: minmax(100px, 120px) minmax(60px, 400px) repeat(3, minmax(100px, 110px));
+   grid-template-areas: "date homeTeam awayTeam score seperator status";
+}
+
+.stats-header{
+   background-color: #548cc7;
+   color: rgb(242, 249, 255);
+   font-weight: map.get($font-weights, "bold");
+}
+
+.summary-season-container{
+   // border: 1px solid $color-border;
+   // box-shadow: 0 2px 4px $color-box-shadow;
+   margin-bottom: map.get($spacing, "base");
+   
+} 
+
+.summary-season-header{
+   text-align: left;
+   border-radius: map.get($border-radius, "sm");
+   background: $color-gradient-blue;
+   font-size: map.get($font-sizes, "md");
+   font-weight: map.get($font-weights, "bold");
+   padding:
+      map.get($spacing, "xs") 
+      map.get($spacing, "base");
+   color: $color-white;
+}
+
+.summary-header{
+   text-align: left;
+   border-radius: map.get($border-radius, "sm");
+   margin-bottom: map.get($spacing, "sm");
+   color: $color-blue-deep;
+   font-size: map.get($font-sizes, "lg");
+   font-weight: map.get($font-weights, "bold");
+}
+
+.summary-teams-container{
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: flex-start;
+}
+
+// MatchCard component now handles all match styling
+
+.seperator-line{
+   border-left: 1px solid $color-neutral-medium-grey;
+}
+
+// All match-related styles are now handled by the MatchCard component
+
+

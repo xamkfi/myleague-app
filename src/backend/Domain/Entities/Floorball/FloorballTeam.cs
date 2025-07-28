@@ -72,6 +72,11 @@ public class FloorballTeam : AggregateRoot
     public string SecondaryJerseyColor { get; private set; }
 
     /// <summary>
+    /// Gets the logo URL of the team
+    /// </summary>
+    public Uri? LogoUrl { get; private set; }
+
+    /// <summary>
     /// Private constructor for EF Core
     /// </summary>
     private FloorballTeam()
@@ -88,6 +93,7 @@ public class FloorballTeam : AggregateRoot
         DivisionId = Guid.Empty; // Default to empty Guid for EF Core
         ShortName = string.Empty; // Default to an empty string
         TeamCategory = TeamCategory.Adult; // Default to Adult category
+        LogoUrl = null; // Default to null
     }
 
     /// <summary>
@@ -101,6 +107,7 @@ public class FloorballTeam : AggregateRoot
     /// <param name="teamCategory">The category of the team (Adult, Youth, Women)</param>
     /// <param name="secondaryJerseyColor">The team's secondary jersey color (optional)</param>
     /// <param name="shortName">The team's short name (optional)</param>
+    /// <param name="logoUrl">The team's logo URL (optional)</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballTeam(
         string name, 
@@ -110,7 +117,8 @@ public class FloorballTeam : AggregateRoot
         string primaryJerseyColor,
         TeamCategory teamCategory,
         string? secondaryJerseyColor = null,
-        string? shortName = null)
+        string? shortName = null,
+        Uri? logoUrl = null)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(club);
@@ -146,6 +154,7 @@ public class FloorballTeam : AggregateRoot
         PrimaryJerseyColor = primaryJerseyColor;
         SecondaryJerseyColor = secondaryJerseyColor ?? string.Empty;
         TeamCategory = teamCategory;
+        LogoUrl = logoUrl;
         
         AddDomainEvent(new FloorballTeamRegisteredEvent(
             Id, 
@@ -214,6 +223,25 @@ public class FloorballTeam : AggregateRoot
     public void UpdateTeamCategory(TeamCategory teamCategory)
     {
         TeamCategory = teamCategory;
+    }
+
+    /// <summary>
+    /// Updates the team's logo URL
+    /// </summary>
+    /// <param name="logoUrl">The new logo URL (optional)</param>
+    public void UpdateLogo(Uri? logoUrl)
+    {
+        LogoUrl = logoUrl;
+    }
+
+    /// <summary>
+    /// Gets the effective logo URL for the team, using the club's logo as fallback
+    /// </summary>
+    /// <param name="clubLogoUrl">The club's logo URL to use as fallback</param>
+    /// <returns>The team's logo URL or the club's logo URL if team logo is not set</returns>
+    public Uri? GetEffectiveLogoUrl(Uri? clubLogoUrl)
+    {
+        return LogoUrl ?? clubLogoUrl;
     }
 
     /// <summary>

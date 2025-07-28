@@ -24,7 +24,6 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
     private readonly IFloorballSeasonRepository _seasonRepository;
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IClubRepository _clubRepository;
-    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly IFloorballUnitOfWork _floorballUnitOfWork;
     private readonly ILogger<AddTeamToSeasonHandler> _logger;
 
@@ -34,20 +33,17 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
     /// <param name="seasonRepository">The floorball season repository</param>
     /// <param name="teamRepository">The floorball team repository</param>
     /// <param name="clubRepository">The club repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
     /// <param name="logger">The logger</param>
     public AddTeamToSeasonHandler(
         IFloorballSeasonRepository seasonRepository,
         IFloorballTeamRepository teamRepository,
         IClubRepository clubRepository,
-        IFloorballUnitOfWork unitOfWork,
         IFloorballUnitOfWork floorballUnitOfWork,
         ILogger<AddTeamToSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
         _teamRepository = teamRepository;
         _clubRepository = clubRepository;
-        _unitOfWork = unitOfWork;
         _floorballUnitOfWork = floorballUnitOfWork;
         _logger = logger;
     }
@@ -84,7 +80,6 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
             season.AddTeam(team);
             
             // Save changes explicitly to trigger domain events
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
             // Load clubs for all teams in the season for the DTO mapping

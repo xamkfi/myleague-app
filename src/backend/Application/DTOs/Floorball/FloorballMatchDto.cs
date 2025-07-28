@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 
@@ -52,5 +53,7 @@ namespace Application.DTOs.Floorball
         IReadOnlyDictionary<int, PeriodScoreDto> PeriodScores,
         IReadOnlyCollection<Guid> Officials,
         IReadOnlyCollection<FloorballGoalEventDto> GoalEvents,
-        IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents);
+        IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents,
+        Club? homeClub,
+        Club? awayClub);
 }

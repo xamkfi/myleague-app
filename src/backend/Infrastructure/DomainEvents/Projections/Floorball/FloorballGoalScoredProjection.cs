@@ -14,7 +14,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
     /// <summary>
     /// Projection for updating a goal count
     /// </summary>
-    class FloorballGoalScoredProjection : IDomainEventHandler<FloorballGoalScoredEvent>
+    public sealed class FloorballGoalScoredProjection : IDomainEventHandler<FloorballGoalScoredEvent>
     {
         private readonly FloorballDbContext _dbContext;
         private readonly ILogger<FloorballGoalScoredProjection> _logger;
@@ -38,7 +38,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Projections.Floorball
             try
             {
                 FloorballMatch? match = await _dbContext.FloorballMatches.FindAsync(domainEvent.MatchId);
-
+                
                 if (match == null)
                 {
                     _logger.LogWarning("FloorballMatch with ID {MatchId} not found for goal scoring projection", domainEvent.MatchId);

@@ -15,6 +15,13 @@ public interface IPersonRepository
     Task<Person?> GetByIdAsync(Guid id);
     
     /// <summary>
+    /// Gets multiple persons by their IDs
+    /// </summary>
+    /// <param name="ids">The person IDs</param>
+    /// <returns>A collection of persons found with the specified IDs</returns>
+    Task<IEnumerable<Person>> GetByIdsAsync(IEnumerable<Guid> ids);
+    
+    /// <summary>
     /// Gets a person by full name
     /// </summary>
     /// <param name="firstName">The first name</param>

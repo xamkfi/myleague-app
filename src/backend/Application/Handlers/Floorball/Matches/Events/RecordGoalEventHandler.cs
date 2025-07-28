@@ -68,7 +68,10 @@ public class RecordGoalEventHandler : IRequestHandler<RecordGoalEventCommand, Re
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.WasInOvertime,
-                request.WasInShootout);
+                request.WasInShootout,
+                "Unknown Player", // PlayerName - would need player lookup for actual name
+                request.AssisterId.HasValue ? "Unknown Player" : null, // AssisterName
+                request.SecondaryAssisterId.HasValue ? "Unknown Player" : null); // SecondaryAssisterName
 
             _logger.LogInformation("Successfully recorded goal event for match: {MatchId}", request.MatchId);
 

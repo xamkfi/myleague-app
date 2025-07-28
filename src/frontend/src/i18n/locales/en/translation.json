@@ -590,6 +590,38 @@
   },
   "searchBar": {
     "placeholder": "Search...",
-    "button": "Search"
+    "button": "Search",
+    "noMatches": "No matches found."
+  },
+  "results": {
+    "title": "RESULTS",
+    "loading": "Loading results…",
+    "noResults": "No results found."
+  },
+  "roster": {
+    "jerseyNumber": "#",
+    "name": "Name",
+    "age": "Age",
+    "matchesPlayed": "Matches played",
+    "goals": "Goals",
+    "assists": "Assists",
+    "yellowCards": "Yellow cards",
+    "redCards": "Red cards",
+    "positions": {
+      "None": "NONE",
+      "Goalkeeper": "GOALKEEPER",
+      "Defender": "DEFENDER",
+      "Center": "CENTER",
+      "Forward": "FORWARD"
+    },
+    "tooltips": {
+      "jerseyNumber": "Jersey number",
+      "age": "Age",
+      "matchesPlayed": "Matches played",
+      "goals": "Goals",
+      "assists": "Assists",
+      "yellowCards": "Yellow cards",
+      "redCards": "Red cards"
+    }
   }
 } 

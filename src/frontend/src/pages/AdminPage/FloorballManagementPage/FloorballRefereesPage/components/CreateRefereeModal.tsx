@@ -196,7 +196,7 @@ const CreateRefereeModal = ({
   const selectedPerson = availablePersons.find(p => p.id === selectedPersonId);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="create-referee-modal-overlay" onClick={onClose}>
       {/* Floating Success Toast */}
       {successMessage && (
         <div className="success-toast">
@@ -204,8 +204,8 @@ const CreateRefereeModal = ({
         </div>
       )}
       
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
+      <div className="create-referee-modal-content" onClick={e => e.stopPropagation()}>
+        <div className="create-referee-modal-header">
           <h2>
             {showCreateForm 
               ? t('floorball.referees.createRefereeFor', 'Create Referee for {{name}}', { name: selectedPerson?.fullName })
@@ -222,7 +222,7 @@ const CreateRefereeModal = ({
           </button>
         </div>
 
-        <div className="modal-body">
+        <div className="create-referee-modal-body">
           {!showCreateForm ? (
             <>
               {/* Search Bar */}
@@ -353,7 +353,7 @@ const CreateRefereeModal = ({
           )}
         </div>
 
-        <div className="modal-footer">
+        <div className="create-referee-modal-footer">
           <button
             type="button"
             onClick={onClose}

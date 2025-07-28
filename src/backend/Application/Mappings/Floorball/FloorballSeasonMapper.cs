@@ -33,7 +33,7 @@ public static class FloorballSeasonMapper
             season.EndDate.ToUniversalTime(),
             season.IsActive,
             season.IsCompleted,
-            FloorballTeamMapper.ToDtos(season.Teams, clubs).ToList().AsReadOnly(),
+            FloorballTeamMapper.ToDtos(season.Teams, clubs, new Dictionary<Guid, Person>()).ToList().AsReadOnly(),
             FloorballMatchMapper.ToDtos(season.Matches).ToList().AsReadOnly()
         );
     }

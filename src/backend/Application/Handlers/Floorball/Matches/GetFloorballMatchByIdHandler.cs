@@ -10,6 +10,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Queries.Floorball.Match;
+using Microsoft.EntityFrameworkCore;
+using Domain.Repositories.Common;
+using Domain.Entities.Common;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -20,18 +23,29 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly ILogger<GetFloorballMatchByIdHandler> _logger;
+    private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IPersonRepository _personRepository;
+    private readonly IClubRepository _clubRepository;
 
     /// <summary>
     /// Initializes a new instance of the GetFloorballMatchByIdHandler class
     /// </summary>
     /// <param name="matchRepository">The floorball match repository</param>
     /// <param name="logger">The logger</param>
+    /// <param name="playerRepository">The floorball player repository</param>
+    /// <param name="personRepository">The person repository</param>
     public GetFloorballMatchByIdHandler(
         IFloorballMatchRepository matchRepository,
-        ILogger<GetFloorballMatchByIdHandler> logger)
+        ILogger<GetFloorballMatchByIdHandler> logger,
+        IFloorballPlayerRepository playerRepository,
+        IPersonRepository personRepository,
+        IClubRepository clubRepository)
     {
         _matchRepository = matchRepository;
         _logger = logger;
+        _playerRepository = playerRepository;
+        _personRepository = personRepository;
+        _clubRepository = clubRepository;
     }
 
     /// <summary>
@@ -53,7 +67,55 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
                 return Result<FloorballMatchDto>.NotFound("FloorballMatch", request.Id);
             }
 
-            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
+            // Get all unique player IDs from goal events and penalty events
+            var playerIds = match.GoalEvents
+                .SelectMany(g => new[] { g.ScoringPlayerId, g.AssistingPlayerId, g.SecondaryAssistingPlayerId })
+                .Concat(match.PenaltyEvents.Select(p => p.PlayerId))
+                .OfType<Guid>()
+                .Distinct()
+                .ToList();
+
+            // Load players and their person data
+            var playerPersonLookup = new Dictionary<Guid, Person>();
+            if (playerIds.Any())
+            {
+                // Get players to map player ID to person ID
+                var players = new List<FloorballPlayer>();
+                foreach (Guid playerId in playerIds)
+                {
+                    FloorballPlayer? player = await _playerRepository.GetByIdAsync(playerId);
+                    if (player != null)
+                    {
+                        players.Add(player);
+                    }
+                }
+
+                // Extract person IDs from players
+                var personIds = players.Select(p => p.PersonId).Distinct().ToList();
+                
+                // Load persons using PersonRepository
+                if (personIds.Any())
+                {
+                    IEnumerable<Person> persons = await _personRepository.GetByIdsAsync(personIds);
+                    var personLookup = persons.ToDictionary(p => p.Id, p => p);
+                    
+                    // Create lookup from player ID to person
+                    foreach (FloorballPlayer player in players)
+                    {
+                        if (personLookup.TryGetValue(player.PersonId, out Person? person))
+                        {
+                            playerPersonLookup[player.Id] = person;
+                        }
+                    }
+                }
+            }
+
+            //Getting the club for logo URL.
+            Club? homeClub = await _clubRepository.GetByIdAsync(match.HomeTeam.ClubId);
+            Club? awayClub = await _clubRepository.GetByIdAsync(match.AwayTeam.ClubId);
+
+
+            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, homeClub, awayClub, playerPersonLookup);
             _logger.LogInformation("Successfully retrieved floorball match: {MatchId}", match.Id);
 
             return Result<FloorballMatchDto>.Success(matchDto);
