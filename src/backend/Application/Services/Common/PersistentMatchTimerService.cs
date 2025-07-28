@@ -108,7 +108,7 @@ namespace Application.Services.Common
 
                 await _timerRepository.SaveTimerStateAsync(matchId, timerState);
 
-                TimeSpan elapsedTime = timerState.GetElapsedTime();
+                TimeSpan elapsedTime = timerState.ElapsedTime;
                 TimerUpdate update = TimerUpdate.CreateStarted(matchId, periodNumber, elapsedTime);
                 await NotifyTimerUpdateAsync(matchId, update);
 
@@ -151,7 +151,7 @@ namespace Application.Services.Common
 
                 await _timerRepository.SaveTimerStateAsync(matchId, timerState);
 
-                TimeSpan elapsedTime = timerState.GetElapsedTime();
+                TimeSpan elapsedTime = timerState.ElapsedTime;
                 TimerUpdate update = TimerUpdate.CreateStopped(matchId, timerState.PeriodNumber, elapsedTime);
                 await NotifyTimerUpdateAsync(matchId, update);
 
@@ -216,7 +216,7 @@ namespace Application.Services.Common
                     return TimeSpan.Zero;
                 }
 
-                TimeSpan elapsedTime = timerState.GetElapsedTime();
+                TimeSpan elapsedTime = timerState.ElapsedTime;
                 _logger.LogDebug("Elapsed time for match {MatchId}: {ElapsedTime}", matchId, elapsedTime);
                 return elapsedTime;
             }

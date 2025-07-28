@@ -1,4 +1,4 @@
-using Application.Commands.Floorball.Match;
+using Application.Commands.Common;
 using Application.Common;
 using Application.DTOs.Floorball;
 using Application.Services.Common;
@@ -24,6 +24,12 @@ namespace WebAPI.Controllers.Floorball
         private readonly ILogger<MatchTimerController> _logger;
         private readonly IMatchClockManager _clockManager;
 
+        /// <summary>
+        /// Initializes a new instance of the MatchTimerController class
+        /// </summary>
+        /// <param name="mediator">The mediator for handling commands and queries</param>
+        /// <param name="logger">The logger</param>
+        /// <param name="clockManager">The clock manager for timer operations</param>
         public MatchTimerController(IMediator mediator, ILogger<MatchTimerController> logger, IMatchClockManager clockManager)
         {
             _mediator = mediator;
@@ -34,14 +40,17 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Starts the timer for a match
         /// </summary>
+        /// <param name="matchId">The match ID</param>
+        /// <param name="periodNumber">Optional period number</param>
+        /// <returns>Success response</returns>
         [HttpPost("start/{matchId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<FloorballTeamManagerDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> StartTimer(Guid matchId)
+        public async Task<IActionResult> StartTimer(Guid matchId, [FromQuery] int? periodNumber = null)
         {
-            _logger.LogInformation("Request to start timer for match {MatchId}", matchId);
-            Result result = await _mediator.Send(new StartMatchTimerCommand(matchId));
+            _logger.LogInformation("Request to start timer for match {MatchId} with period {PeriodNumber}", matchId, periodNumber);
+            Result result = await _mediator.Send(new StartMatchTimerCommand(matchId, periodNumber));
             if (result.IsSuccess)
                 return Ok(ApiResponse.SuccessResponse("Timer started successfully"));
             return BadRequest(ApiResponse.ErrorResponse(result.Error ?? "Failed to start timer"));
@@ -72,12 +81,28 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetElapsedTime(Guid matchId)
         {
-            Result<TimeSpan> result = await _mediator.Send(new Application.Queries.Floorball.Match.GetMatchElapsedTimeQuery(matchId));
+            Result<TimeSpan> result = await _mediator.Send(new Application.Queries.Common.GetMatchElapsedTimeQuery(matchId));
             if (!result.IsSuccess)
             {
                 return NotFound(ApiResponse.ErrorResponse(result.Error ?? $"Timer does not exist for match {matchId}"));
             }
             return Ok(ApiResponse<string>.SuccessResponse(result.Data.ToString(), "Elapsed time retrieved successfully"));
+        }
+
+        /// <summary>
+        /// Resets the timer for a match
+        /// </summary>
+        [HttpPost("reset/{matchId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballTeamManagerDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ResetTimer(Guid matchId)
+        {
+            _logger.LogInformation("Request to reset timer for match {MatchId}", matchId);
+            Result result = await _mediator.Send(new ResetMatchTimerCommand(matchId));
+            if (result.IsSuccess)
+                return Ok(ApiResponse.SuccessResponse("Timer reset successfully"));
+            return BadRequest(ApiResponse.ErrorResponse(result.Error ?? "Failed to reset timer"));
         }
     }
 } 

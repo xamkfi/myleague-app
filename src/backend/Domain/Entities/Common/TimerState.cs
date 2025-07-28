@@ -18,20 +18,22 @@ namespace Domain.Entities.Common
         /// <summary>
         /// Calculates the elapsed time based on stored state
         /// </summary>
-        /// <returns>The calculated elapsed time</returns>
-        public TimeSpan GetElapsedTime()
+        public TimeSpan ElapsedTime
         {
-            if (!StartedAt.HasValue)
+            get
             {
-                return TimeSpan.Zero;
-            }
+                if (!StartedAt.HasValue)
+                {
+                    return TimeSpan.Zero;
+                }
 
-            DateTime now = DateTime.UtcNow;
-            TimeSpan totalRunningTime = IsRunning 
-                ? now - StartedAt.Value 
+                DateTime now = DateTime.UtcNow;
+                TimeSpan totalRunningTime = IsRunning
+                ? now - StartedAt.Value
                 : (PausedAt ?? now) - StartedAt.Value;
 
-            return totalRunningTime - TotalPausedDuration;
+                return totalRunningTime - TotalPausedDuration;
+            }
         }
 
         /// <summary>
