@@ -4,6 +4,32 @@ import type { NewsArticleDto } from "../../../api/news/newsService";
 export default function NewsCard({ news }: { news: NewsArticleDto }) {
   const navigate = useNavigate();
 
+  const getSportIcon = (sportCategory: string) => {
+    switch (sportCategory?.toLowerCase()) {
+      case 'floorball':
+        return '🏒';
+      case 'icehockey':
+        return '🏒';
+      case 'football':
+        return '⚽';
+      default:
+        return '🏆';
+    }
+  };
+
+  const getSportColor = (sportCategory: string) => {
+    switch (sportCategory?.toLowerCase()) {
+      case 'floorball':
+        return 'floorball';
+      case 'icehockey':
+        return 'icehockey';
+      case 'football':
+        return 'football';
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <div className="news-card" onClick={() => navigate(`/uutiset/${news.id}`)}>
       <div className="news-card-image-container">
@@ -12,6 +38,12 @@ export default function NewsCard({ news }: { news: NewsArticleDto }) {
           alt={news.title}
           className="news-card-image"
         />
+        {news.sportCategory && (
+          <div className={`sport-category-badge ${getSportColor(news.sportCategory)}`}>
+            <span className="sport-icon">{getSportIcon(news.sportCategory)}</span>
+            <span className="sport-name">{news.sportCategory}</span>
+          </div>
+        )}
       </div>
       <div className="news-card-content">
         <div className="news-card-date">

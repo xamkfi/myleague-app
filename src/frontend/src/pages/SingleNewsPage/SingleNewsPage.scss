@@ -1,9 +1,9 @@
 .single-news-page {
-  max-width: 800px;
+  width: 100%;
   margin: 0 auto;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-
+  background-color: #ffffff;
   &--preview {
     border: 1px solid #e5e7eb;
     border-radius: 12px;
@@ -137,6 +137,7 @@
 
   &__image-section {
     margin: 2rem 0;
+    padding: 0 2rem;
   }
 
   &__main-image {
@@ -159,6 +160,7 @@
   }
 
   &__content-html {
+    padding: 0 2rem;
     word-break: break-all;
     overflow-wrap: break-word;
     white-space: pre-wrap;
@@ -220,6 +222,7 @@
       line-height: 1.75;
       text-align: left;
 
+
       &:last-child {
         margin-bottom: 0;
       }
@@ -275,7 +278,7 @@
       border-radius: 8px;
       margin: 2rem 0;
       display: block;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
       
       // Center images
       margin-left: auto;

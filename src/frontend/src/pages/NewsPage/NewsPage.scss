@@ -84,6 +84,43 @@
   z-index: 1;
 }
 
+.news-filter-panel {
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  align-self: stretch;
+  .search-input {
+    padding: 0rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: map.get($spacing, 'md');
+    border-radius: map.get($border-radius, 'xl');
+    overflow: hidden;
+    margin-left: 3rem;
+  }
+  .category-dropdown {
+    display: flex;
+    width: 180px;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 8px;
+    border-radius: map.get($border-radius, 'sm');
+    border: 1px solid $color-neutral-medium-grey;
+    background: $color-neutral-white;
+    overflow: hidden;
+    color: $color-neutral-dark-grey;
+    text-align: left;
+    text-overflow: ellipsis;
+
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'medium');
+    line-height: 24px;
+  }
+}
+
 .main-news-card::before {
   content: "";
   position: absolute;
@@ -170,6 +207,17 @@
 .news-list-section {
   margin-top: map.get($spacing, 'md');
   width: 100%;
+  margin-bottom: map.get($spacing, 'lg');
+  background-color: $color-neutral-light-grey;
+  display: flex;
+  padding: map.get($spacing, 'md');
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  border-radius: map.get($border-radius, 'lg');
+  background: $color-neutral-white;
+  /* Drop Shadow 1 */
+  box-shadow: 0 5px 25px 0 rgba(57, 62, 99, 0.15);
 }
 
 .news-list-title {
@@ -191,6 +239,76 @@
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
+  }
+}
+
+// Skeleton loading styles
+.skeleton-card {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-image {
+  position: relative;
+  overflow: hidden;
+  
+  .skeleton-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+}
+
+.skeleton-date {
+  width: 80px;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.skeleton-title {
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeleton-tags {
+  display: flex;
+  gap: 8px;
+  
+  .skeleton-tag {
+    width: 60px;
+    height: 16px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+    border-radius: 12px;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
   }
 }
 
@@ -218,7 +336,7 @@
   display: flex;
   align-items: stretch;
   justify-content: center;
-  
+  position: relative;
 }
 
 .news-card-image {
@@ -269,6 +387,56 @@
   flex-wrap: wrap;
   gap: 0.15rem;
   margin-top: 0;
+}
+
+.sport-category-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: white;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  pointer-events: none;
+  max-width: calc(100% - 1.5rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .sport-icon {
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  .sport-name {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &.floorball {
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+  }
+
+  &.icehockey {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+  }
+
+  &.football {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+  }
+
+  &.default {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  }
 }
 
 @media (max-width: 900px) {

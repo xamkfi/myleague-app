@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 interface NewsFilterProps {
   onFilterChange: (filters: {
@@ -10,24 +10,24 @@ interface NewsFilterProps {
 }
 
 export const NewsCategory = {
-  None: 0,
-  General: 1,
-  MatchReports: 2,
-  LeagueNews: 3,
-  PlayerUpdates: 4,
-  TeamNews: 5,
-  Announcements: 6,
-  Events: 7,
-  Transfers: 8,
-  Injuries: 9,
-  Awards: 10,
+  None: 'None',
+  General: 'General',
+  MatchReports: 'MatchReports',
+  LeagueNews: 'LeagueNews',
+  PlayerUpdates: 'PlayerUpdates',
+  TeamNews: 'TeamNews',
+  Announcements: 'Announcements',
+  Events: 'Events',
+  Transfers: 'Transfers',
+  Injuries: 'Injuries',
+  Awards: 'Awards',
 };
 
 export const SportsCategory = {
-  None: 0,
-  Floorball: 1,
-  Icehockey: 2,
-  Football: 3,
+  None: 'None',
+  Floorball: 'Floorball',
+  Icehockey: 'Icehockey',
+  Football: 'Football',
 };
 
 export default function NewsFilter({onFilterChange}: NewsFilterProps) {
@@ -36,17 +36,36 @@ export default function NewsFilter({onFilterChange}: NewsFilterProps) {
   const [category, setCategory] = useState('');
   const [sportCategory, setSportCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
-    const categories = Object.values(NewsCategory).filter(value => value !== NewsCategory.None);
-    const sportCategories = Object.values(SportsCategory).filter(value => value !== SportsCategory.None);
+  // Memoize the filtered categories to avoid unnecessary recalculations
+  const categories = useMemo(() => 
+    Object.values(NewsCategory).filter(value => value !== NewsCategory.None), 
+    []
+  );
+  
+  const sportCategories = useMemo(() => 
+    Object.values(SportsCategory).filter(value => value !== SportsCategory.None), 
+    []
+  );
 
-  const handleFilterChange = (
+  // Debounce search term to avoid too many API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Memoize the filter change handler to prevent unnecessary re-renders
+  const handleFilterChange = useCallback((
     updated: Partial<{ category: string; sportCategory: string; searchTerm: string }>
   ) => {
     const newFilters = {
       category: updated.category ?? category,
       sportCategory: updated.sportCategory ?? sportCategory,
-      searchTerm: updated.searchTerm ?? searchTerm,
+      searchTerm: updated.searchTerm ?? debouncedSearchTerm,
     };
 
     setCategory(newFilters.category);
@@ -54,16 +73,20 @@ export default function NewsFilter({onFilterChange}: NewsFilterProps) {
     setSearchTerm(newFilters.searchTerm);
 
     onFilterChange(newFilters);
-  };
+  }, [category, sportCategory, debouncedSearchTerm, onFilterChange]);
 
+  // Auto-trigger filter change when debounced search term changes
+  useEffect(() => {
+    handleFilterChange({ searchTerm: debouncedSearchTerm });
+  }, [debouncedSearchTerm, handleFilterChange]);
 
   return (
-    <div className="news-filter-panel p-4 bg-white rounded shadow-md flex flex-wrap gap-6 items-center">
+    <div className="news-filter-panel">
       {/* Category dropdown */}
       <select
         value={category}
         onChange={(e) => handleFilterChange({ category: e.target.value })}
-        className="border rounded px-3 py-2"
+        className="category-dropdown"
       >
         <option value="">All Categories</option>
         {categories.map((cat) => (
@@ -77,7 +100,7 @@ export default function NewsFilter({onFilterChange}: NewsFilterProps) {
       <select
         value={sportCategory}
         onChange={(e) => handleFilterChange({ sportCategory: e.target.value })}
-        className="border rounded px-3 py-2"
+        className="category-dropdown"
       >
         <option value="">All Sports</option>
         {sportCategories.map((sport) => (
@@ -88,7 +111,7 @@ export default function NewsFilter({onFilterChange}: NewsFilterProps) {
       </select>
 
       {/* Search input */}
-      <div className="flex items-center max-w-md w-full rounded-lg overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500">
+      <div className="search-input">
         <input
           type="search"
           placeholder={t("newsPage.searchPlaceholder")}
@@ -96,12 +119,6 @@ export default function NewsFilter({onFilterChange}: NewsFilterProps) {
           onChange={(e) => setSearchTerm(e.target.value)} 
           className="flex-grow px-4 py-2 outline-none"
         />
-        <button
-          className="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors duration-300"
-          onClick={() => handleFilterChange({ searchTerm })}
-        >
-          {t("newsPage.search")}
-        </button>
       </div>
 
     </div>

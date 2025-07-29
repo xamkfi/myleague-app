@@ -45,20 +45,7 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
       {/* Article header */}
       <header className="single-news-page__header">
         {/* Categories */}
-        {(news.sportCategory || news.category) && (
-          <div className="single-news-page__categories">
-            {news.sportCategory && (
-              <span className="single-news-page__category single-news-page__category--sport">
-                {news.sportCategory}
-              </span>
-            )}
-            {news.category && (
-              <span className="single-news-page__category single-news-page__category--general">
-                {news.category}
-              </span>
-            )}
-          </div>
-        )}
+
         
         {/* Title */}
         <h1 className="single-news-page__title">
@@ -97,6 +84,22 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
             </div>
           )}
         </div>
+        {(news.sportCategory || news.category) && (
+          <div className="single-news-page__categories">
+            {news.sportCategory && (
+              <span className="single-news-page__category single-news-page__category--sport">
+                {news.sportCategory}
+              </span>
+            )}
+            {news.category && (
+              <span className="single-news-page__category single-news-page__category--general">
+                {news.category}
+              </span>
+            )}
+          </div>
+        )}
+        
+        
       </header>
 
       {/* Main image */}

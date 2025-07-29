@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './NewsPage.scss';
 import NewsCard from './components/NewsCard';
+import NewsCardSkeleton from './components/NewsCardSkeleton';
 import NewsFilter from './components/NewsFilter';
 import { newsService, type NewsArticleDto, type NewsParameters, getMainNewsArticle } from '../../api/news/newsService';
 import { useNavigate } from 'react-router-dom';
+import Pagination from '../../components/Pagination';
 
 function NewsPage() {
   const { t } = useTranslation();
@@ -17,11 +19,25 @@ function NewsPage() {
     sportCategory: '',
     searchTerm: ''
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const RetrieveNews = useCallback(async () => {
-    const response = await newsService(filters);
-    setNewsList(response);
-  }, [filters]);
+    setIsLoading(true);
+    try {
+      const response = await newsService(filters);
+      setNewsList(response);
+      setTotalCount(response.length);
+      setTotalPages(Math.ceil(response.length / pageSize));
+    } catch (error) {
+      console.error('Failed to fetch news:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters, pageSize]);
 
   useEffect(() => {
     RetrieveNews();
@@ -31,10 +47,20 @@ function NewsPage() {
     getMainNewsArticle().then(setMainNews);
   }, []);
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
+
   // Exclude mainNews from otherNews if present
   const otherNews = mainNews
     ? newsList.filter((item) => item.id !== mainNews.id)
     : newsList;
+
+  // Apply pagination to the news list
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedNews = otherNews.slice(startIndex, endIndex);
 
   const mainNewsBgStyle = mainNews && mainNews.mainImage
     ? { ['--main-news-image' as any]: `url('${mainNews.mainImage}')` } as React.CSSProperties
@@ -67,13 +93,29 @@ function NewsPage() {
         </div>
       </div>
 
-      <div className="news-list-section">
+      <div className="news-list-section container">
         <NewsFilter onFilterChange={setFilters} />
         <div className="news-grid">
-          {otherNews.map((item) => (
-            <NewsCard key={item.id} news={item} />
-          ))}
+          {isLoading ? (
+            Array.from({ length: pageSize }, (_, index) => (
+              <NewsCardSkeleton key={`skeleton-${index}`} />
+            ))
+          ) : paginatedNews.length === 0 ? (
+            <p>{t('newsPage.noNewsFound', 'Ei uutisia vastaaville hakuehdoille.')}</p>
+          ) : (
+            paginatedNews.map((item) => (
+              <NewsCard key={item.id} news={item} />
+            ))
+          )}
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+        />
       </div>
     </PageTemplate>
   );
