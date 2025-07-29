@@ -2,44 +2,12 @@
 @use '../../styles/variables' as *;
 @use '../../styles/common' as *;
 
-// Force white background on all parent containers
-body,
-html,
-.page-container,
-.page-content,
-.page-body {
-  background-color: #ffffff !important;
-}
-
-// Override PageTemplate styles completely for this page
-.page-container {
-  background-color: #ffffff !important;
-  
-  .page-content {
-    background-color: #ffffff !important;
-    
-    .page-body {
-      width: 100% !important;
-      max-width: none !important;
-      padding: 0 !important;
-      align-items: stretch !important;
-      background-color: #ffffff !important;
-      
-      .rules-container {
-        width: 100%;
-        max-width: none;
-        background-color: #ffffff !important;
-      }
-    }
-  }
-}
-
 .rules {
   &-container {
     max-width: 1000px;
     margin: 0 auto;
     padding: 40px;
-    background-color: #ffffff !important;
+    background-color: #ffffff;
     min-height: calc(100vh - 80px);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   }
