@@ -39,6 +39,12 @@ namespace Domain.Repositories.Common
         Task<IEnumerable<TimerState>> GetActiveTimersAsync();
 
         /// <summary>
+        /// Gets all timer states (active and inactive)
+        /// </summary>
+        /// <returns>A collection of all timer states</returns>
+        Task<IEnumerable<TimerState>> GetAllTimersAsync();
+
+        /// <summary>
         /// Checks if a timer exists for a match
         /// </summary>
         /// <param name="matchId">The match ID</param>

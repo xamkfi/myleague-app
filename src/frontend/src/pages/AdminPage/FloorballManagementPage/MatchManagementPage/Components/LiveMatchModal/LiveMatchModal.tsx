@@ -9,6 +9,7 @@ import {
 import { floorballMatchService } from '../../../../../../api/floorball/floorballMatchService';
 import { floorballTeamService } from '../../../../../../api/floorball/floorballTeamService';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../../api/floorball/floorballPlayerService';
+import { timerService } from '../../../../../../api/common/timerService';
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../../types/floorball/floorballTypes';
 import type { LiveMatchState } from '../../hooks/useLiveMatchState';
 
@@ -420,6 +421,8 @@ const LiveMatchModal = ({
       // Don't throw - cleanup errors are not critical
     }
   };
+
+
 
 
 
@@ -1338,10 +1341,24 @@ const LiveMatchModal = ({
       setLoading(true);
       setError(null);
       
+      console.log('=== COMPLETING MATCH ===');
+      console.log('Match ID:', currentMatch.id);
+      
       // Use the event sourced endpoint to complete the match
       const response = await floorballMatchService.complete(currentMatch.id);
       
       if (response.success && response.data) {
+        console.log('Match completion successful, destroying timer...');
+        
+        // Destroy the timer for this match to stop background service queries
+        try {
+          await timerService.destroyTimer(currentMatch.id);
+          console.log('Timer destroyed successfully for match:', currentMatch.id);
+        } catch (timerError) {
+          console.warn('Failed to destroy timer for match:', currentMatch.id, timerError);
+          // Don't fail the match completion if timer destruction fails
+        }
+        
         // Update the current match with the response from the backend
         setCurrentMatch(response.data);
         
@@ -1350,6 +1367,8 @@ const LiveMatchModal = ({
         if (onCompleteLive) {
           onCompleteLive(currentMatch.id, response.data);
         }
+        
+        console.log('=== MATCH COMPLETION COMPLETE ===');
       } else {
         setError('Failed to complete match');
       }

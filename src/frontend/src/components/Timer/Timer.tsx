@@ -60,6 +60,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
       console.log('Step 2: Starting timer...');
       startTimer(periodNumber);
       console.log('Step 2: Timer start initiated');
+      
       console.log('=== TIMER START COMPLETED ===');
     } catch (error) {
       console.error('=== TIMER START FAILED ===');
