@@ -231,13 +231,11 @@ export function useTimer(options: UseTimerOptions) {
           }
         }
         
-        setTimerState(prev => {
-          return {
-            isRunning: timerUpdate.IsRunning,
-            elapsedTime: formattedTime,
-            periodNumber: timerUpdate.PeriodNumber,
-            lastUpdated: timerUpdate.LastUpdated,
-          };
+        setTimerState({
+          isRunning: timerUpdate.IsRunning,
+          elapsedTime: formattedTime,
+          periodNumber: timerUpdate.PeriodNumber,
+          lastUpdated: timerUpdate.LastUpdated,
         });
         
         if (onTimerUpdate) {
@@ -259,7 +257,7 @@ export function useTimer(options: UseTimerOptions) {
     if (shouldLog) {
       console.log('=== END TIMER EVENT ===');
     }
-  }, [matchId, onTimerUpdate, autoConnect]);
+  }, [matchId, onTimerUpdate]);
 
   // Update the ref with the latest callback
   handleTimerUpdateRef.current = handleTimerUpdate;
@@ -339,7 +337,7 @@ export function useTimer(options: UseTimerOptions) {
       
       console.log('=== TIMER SIGNALR CLEANUP COMPLETE ===');
     };
-  }, [matchId, autoConnect]); // Removed handleTimerUpdate from dependencies
+  }, [matchId, autoConnect, loadTimerStatus]); // Include loadTimerStatus dependency
 
   return {
     timerState,

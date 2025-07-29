@@ -1,6 +1,5 @@
 import { useEffect, useCallback, useMemo } from 'react';
 import { useTimer } from '../../hooks/useTimer';
-import { floorballMatchEventService } from '../../api/floorball/floorballMatchEventService';
 import './Timer.scss';
 import type { TimerUpdate } from '../../api/common/timerService';
 
@@ -19,7 +18,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     return () => {
       console.log('🔄 Timer component UNMOUNTED:', { matchId, periodNumber, isActive });
     };
-  }, []); // Empty dependency array to only run once on mount/unmount
+  }, [matchId, periodNumber, isActive]); // Include all dependencies
 
   const {
     timerState,

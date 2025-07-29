@@ -276,7 +276,7 @@ export const floorballMatchEventService = {
   /**
    * Record overtime in a floorball match
    */
-  recordOvertime: async (matchId: string): Promise<ApiResponse<any>> => {
+  recordOvertime: async (matchId: string): Promise<ApiResponse<Record<string, unknown>>> => {
     try {
       console.log('Recording overtime for match:', matchId);
       
@@ -287,7 +287,7 @@ export const floorballMatchEventService = {
         },
       });
       
-      return await handleApiResponse<any>(response);
+      return await handleApiResponse<Record<string, unknown>>(response);
     } catch (error) {
       console.error('Error recording overtime:', error);
       throw error;
@@ -297,7 +297,7 @@ export const floorballMatchEventService = {
   /**
    * Record shootout in a floorball match
    */
-  recordShootout: async (matchId: string): Promise<ApiResponse<any>> => {
+  recordShootout: async (matchId: string): Promise<ApiResponse<Record<string, unknown>>> => {
     try {
       console.log('Recording shootout for match:', matchId);
       
@@ -308,7 +308,7 @@ export const floorballMatchEventService = {
         },
       });
       
-      return await handleApiResponse<any>(response);
+      return await handleApiResponse<Record<string, unknown>>(response);
     } catch (error) {
       console.error('Error recording shootout:', error);
       throw error;
@@ -318,7 +318,7 @@ export const floorballMatchEventService = {
   /**
    * Cancel a floorball match
    */
-  cancelMatch: async (matchId: string): Promise<ApiResponse<any>> => {
+  cancelMatch: async (matchId: string): Promise<ApiResponse<Record<string, unknown>>> => {
     try {
       console.log('Canceling match:', matchId);
       
@@ -329,7 +329,7 @@ export const floorballMatchEventService = {
         },
       });
       
-      return await handleApiResponse<any>(response);
+      return await handleApiResponse<Record<string, unknown>>(response);
     } catch (error) {
       console.error('Error canceling match:', error);
       throw error;

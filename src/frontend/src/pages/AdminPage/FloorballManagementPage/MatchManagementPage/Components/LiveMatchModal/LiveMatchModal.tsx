@@ -338,7 +338,6 @@ const LiveMatchModal = ({
    * This function fetches the events and stores them for processing
    */
   const loadMatchEvents = useCallback(async () => {
-  const loadMatchEvents = useCallback(async () => {
     try {
       console.log('loadMatchEvents called for match:', match.id);
       const response = await floorballMatchEventService.getMatchEvents(match.id);
@@ -353,7 +352,6 @@ const LiveMatchModal = ({
       console.error('Error loading match events:', error);
       // Don't set error for events loading - it's not critical
     }
-  }, [match.id]);
   }, [match.id]);
 
   /**
@@ -1060,7 +1058,7 @@ const LiveMatchModal = ({
    * @param playerId - The player's unique identifier
    * @returns The player's full name (firstName + lastName) or a fallback if not found
    */
-  const getPlayerNameById = (playerId: string | undefined | null): string => {
+  const getPlayerNameById = useCallback((playerId: string | undefined | null): string => {
     if (!playerId) {
       return 'Unknown Player';
     }
@@ -1163,12 +1161,12 @@ const LiveMatchModal = ({
           
           // If still no time, try to extract from the event data structure
           if (timeInSeconds === 0 && event.data) {
-            const eventData = event.data as any;
+            const eventData = event.data as Record<string, unknown>;
             // Look for time-related fields in the nested structure
-            if (eventData.TimeInSeconds !== undefined) {
+            if (eventData.TimeInSeconds !== undefined && typeof eventData.TimeInSeconds === 'number') {
               timeInSeconds = eventData.TimeInSeconds;
               console.log('Found TimeInSeconds in nested structure:', timeInSeconds);
-            } else if (eventData.timeInSeconds !== undefined) {
+            } else if (eventData.timeInSeconds !== undefined && typeof eventData.timeInSeconds === 'number') {
               timeInSeconds = eventData.timeInSeconds;
               console.log('Found timeInSeconds in nested structure:', timeInSeconds);
             } else if (eventData.EventTime) {
@@ -1272,12 +1270,12 @@ const LiveMatchModal = ({
           
           // If still no time, try to extract from the event data structure
           if (penaltyTimeInSeconds === 0 && event.data) {
-            const eventData = event.data as any;
+            const eventData = event.data as Record<string, unknown>;
             // Look for time-related fields in the nested structure
-            if (eventData.TimeInSeconds !== undefined) {
+            if (eventData.TimeInSeconds !== undefined && typeof eventData.TimeInSeconds === 'number') {
               penaltyTimeInSeconds = eventData.TimeInSeconds;
               console.log('Found penalty TimeInSeconds in nested structure:', penaltyTimeInSeconds);
-            } else if (eventData.timeInSeconds !== undefined) {
+            } else if (eventData.timeInSeconds !== undefined && typeof eventData.timeInSeconds === 'number') {
               penaltyTimeInSeconds = eventData.timeInSeconds;
               console.log('Found penalty timeInSeconds in nested structure:', penaltyTimeInSeconds);
             } else if (eventData.EventTime) {
@@ -1333,7 +1331,7 @@ const LiveMatchModal = ({
 
     console.log('Final sorted events:', sortedEvents);
     return sortedEvents;
-  }, [matchEvents, currentMatch.homeTeamId, homeTeam?.name, awayTeam?.name, homePlayers, awayPlayers]);
+  }, [matchEvents, currentMatch.homeTeamId, homeTeam?.name, awayTeam?.name, getPlayerNameById]);
 
   const handleCompleteLive = async () => {
     try {

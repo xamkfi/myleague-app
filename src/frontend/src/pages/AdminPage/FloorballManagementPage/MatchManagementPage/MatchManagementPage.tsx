@@ -401,7 +401,7 @@ const MatchManagementPage = () => {
     if (liveModalMatch) {
       updateLiveMatchState(liveModalMatch.id, updates);
     }
-  }, [liveModalMatch?.id, updateLiveMatchState]);
+  }, [liveModalMatch, updateLiveMatchState]);
 
   const toggleSection = (section: keyof typeof collapsedSections) => {
     setCollapsedSections(prev => ({
