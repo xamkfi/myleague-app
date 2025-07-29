@@ -19,7 +19,8 @@ namespace Application.Queries.Floorball.Match
         Guid? SeasonId = null,
         Guid? TeamId = null,
         DateTime? StartDate = null,
-        DateTime? EndDate = null
+        DateTime? EndDate = null,
+        string SortOrder = "desc" // "asc" or "desc"
     ) : IRequest<Result<PagedResult<FloorballMatchDto>>>
     {
         /// <summary>

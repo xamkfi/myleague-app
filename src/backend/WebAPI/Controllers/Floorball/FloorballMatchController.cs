@@ -44,15 +44,16 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<FloorballMatchDto>>> GetAllMatches([FromQuery] GetFloorballMatchesRequest request)
         {
-            _logger.LogInformation("Getting all floorball matches with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
+            _logger.LogInformation("Getting all floorball matches with pagination - Page: {Page}, PageSize: {PageSize}, SortOrder: {SortOrder}", request.Page, request.PageSize, request.SortOrder);
 
-            var query = new GetAllFloorballMatchesQuery(
+            GetAllFloorballMatchesQuery query = new GetAllFloorballMatchesQuery(
                 request.Page,
                 request.PageSize,
                 request.SeasonId,
                 request.TeamId,
                 request.StartDate,
-                request.EndDate
+                request.EndDate,
+                request.SortOrder
             );
 
             Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query);
@@ -156,6 +157,38 @@ namespace WebAPI.Controllers.Floorball
             {
                 return NotFound(ApiResponse<List<FloorballMatchDto>>.ErrorResponse(errorMessage));
             }
+            return StatusCode(500, ApiResponse<List<FloorballMatchDto>>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Get today's floorball matches with team ID
+        /// </summary>
+        /// <param name="teamId">Team ID to filter matches</param>
+        /// <returns></returns>
+        [HttpGet("by-team/{teamId:guid}/today")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballMatchDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetTodaysMatchesByTeam(Guid teamId)
+        {
+            _logger.LogInformation("Getting today's floorball match with team ID of: {teamId}", teamId);
+
+            var query = new GetTodaysMatchesByTeamQuery(teamId);
+
+            Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                var matches = result.Data.ToList();
+                return Ok(ApiResponse<List<FloorballMatchDto>>.SuccessResponse(matches, "Retrieved today's floorball matches with team ID successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to retrieve today's floorball matches with team ID";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<List<FloorballMatchDto>>.ErrorResponse(errorMessage));
+            }
+
             return StatusCode(500, ApiResponse<List<FloorballMatchDto>>.ErrorResponse(errorMessage));
         }
 

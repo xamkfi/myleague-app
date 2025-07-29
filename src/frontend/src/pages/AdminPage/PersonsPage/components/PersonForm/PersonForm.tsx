@@ -13,6 +13,7 @@ import './PersonForm.scss';
 
 interface PersonFormProps {
   mode?: 'standalone' | 'embedded';
+  personId?: string; // For embedded mode when editing
   onSuccess?: (createdPerson: Person) => void;
   onCancel?: () => void;
   showTeamAssignment?: boolean;
@@ -34,14 +35,18 @@ const MAX_LENGTHS = {
 
 const PersonForm = ({
   mode = 'standalone',
+  personId: propPersonId,
   onSuccess,
   onCancel,
   showTeamAssignment = true,
   initialData
 }: PersonFormProps) => {
-  const { id } = useParams<{ id: string }>();
+  const { id: urlId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  
+  // Use personId prop in embedded mode, fallback to URL param in standalone mode
+  const id = mode === 'embedded' ? propPersonId : urlId;
   const isEditMode = Boolean(id);
 
   const [loading, setLoading] = useState(false);
@@ -123,7 +128,7 @@ const PersonForm = ({
         });
       } catch (error) {
         console.error('Failed to fetch person:', error);
-        setError(t('admin.persons.errors.fetchFailed', 'Failed to fetch person details'));
+        setError(t('admin.persons.errors.fetchFailed'));
       } finally {
         setLoading(false);
       }
@@ -134,7 +139,7 @@ const PersonForm = ({
 
   const validateBirthDate = (date: string): string | null => {
     if (!date) {
-      return t('admin.persons.validation.birthDateRequired', 'Birth date is required');
+      return t('admin.persons.validation.birthDateRequired');
     }
 
     // Parse dd-mm-yyyy format
@@ -143,17 +148,17 @@ const PersonForm = ({
     const today = new Date();
     
     if (isNaN(birthDate.getTime())) {
-      return t('admin.persons.validation.invalidDate', 'Invalid date format');
+      return t('admin.persons.validation.invalidDate');
     }
     
     if (birthDate > today) {
-      return t('admin.persons.validation.birthDateFuture', 'Birth date cannot be in the future');
+      return t('admin.persons.validation.birthDateFuture');
     }
 
     const minDate = new Date();
     minDate.setFullYear(minDate.getFullYear() - 120); // Reasonable maximum age
     if (birthDate < minDate) {
-      return t('admin.persons.validation.birthDateTooOld', 'Birth date is too far in the past');
+      return t('admin.persons.validation.birthDateTooOld');
     }
 
     return null;
@@ -163,10 +168,10 @@ const PersonForm = ({
     if (!email) return null; // Email is optional
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return t('admin.persons.validation.invalidEmail', 'Invalid email format');
+      return t('admin.persons.validation.invalidEmail');
     }
     if (email.length > MAX_LENGTHS.email) {
-      return t('admin.persons.validation.emailTooLong', 'Email cannot exceed {{max}} characters', { max: MAX_LENGTHS.email });
+      return t('admin.persons.validation.emailTooLong', { max: MAX_LENGTHS.email });
     }
     return null;
   };
@@ -257,15 +262,15 @@ const PersonForm = ({
 
     // Required fields validation
     if (!formData.firstName.trim()) {
-      errors.firstName = t('admin.persons.validation.firstNameRequired', 'First name is required');
+      errors.firstName = t('admin.persons.validation.firstNameRequired');
     } else if (formData.firstName.length > MAX_LENGTHS.firstName) {
-      errors.firstName = t('admin.persons.validation.firstNameTooLong', 'First name cannot exceed {{max}} characters', { max: MAX_LENGTHS.firstName });
+      errors.firstName = t('admin.persons.validation.firstNameTooLong', { max: MAX_LENGTHS.firstName });
     }
 
     if (!formData.lastName.trim()) {
-      errors.lastName = t('admin.persons.validation.lastNameRequired', 'Last name is required');
+      errors.lastName = t('admin.persons.validation.lastNameRequired');
     } else if (formData.lastName.length > MAX_LENGTHS.lastName) {
-      errors.lastName = t('admin.persons.validation.lastNameTooLong', 'Last name cannot exceed {{max}} characters', { max: MAX_LENGTHS.lastName });
+      errors.lastName = t('admin.persons.validation.lastNameTooLong', { max: MAX_LENGTHS.lastName });
     }
 
     const birthDateError = validateBirthDate(formData.birthDate);
@@ -285,31 +290,31 @@ const PersonForm = ({
 
     if (hasAnyAddressField) {
       if (!formData.address.street1.trim()) {
-        errors['address.street1'] = t('admin.persons.validation.street1Required', 'Street address is required');
+        errors['address.street1'] = t('admin.persons.validation.street1Required');
       } else if (formData.address.street1.length > MAX_LENGTHS.street1) {
-        errors['address.street1'] = t('admin.persons.validation.street1TooLong', 'Street address cannot exceed {{max}} characters', { max: MAX_LENGTHS.street1 });
+        errors['address.street1'] = t('admin.persons.validation.street1TooLong', { max: MAX_LENGTHS.street1 });
       }
 
       if (formData.address.street2 && formData.address.street2.length > MAX_LENGTHS.street2) {
-        errors['address.street2'] = t('admin.persons.validation.street2TooLong', 'Street address 2 cannot exceed {{max}} characters', { max: MAX_LENGTHS.street2 });
+        errors['address.street2'] = t('admin.persons.validation.street2TooLong', { max: MAX_LENGTHS.street2 });
       }
 
       if (!formData.address.city.trim()) {
-        errors['address.city'] = t('admin.persons.validation.cityRequired', 'City is required');
+        errors['address.city'] = t('admin.persons.validation.cityRequired');
       } else if (formData.address.city.length > MAX_LENGTHS.city) {
-        errors['address.city'] = t('admin.persons.validation.cityTooLong', 'City cannot exceed {{max}} characters', { max: MAX_LENGTHS.city });
+        errors['address.city'] = t('admin.persons.validation.cityTooLong', { max: MAX_LENGTHS.city });
       }
 
       if (!formData.address.postalCode.trim()) {
-        errors['address.postalCode'] = t('admin.persons.validation.postalCodeRequired', 'Postal code is required');
+        errors['address.postalCode'] = t('admin.persons.validation.postalCodeRequired');
       } else if (formData.address.postalCode.length > MAX_LENGTHS.postalCode) {
-        errors['address.postalCode'] = t('admin.persons.validation.postalCodeTooLong', 'Postal code cannot exceed {{max}} characters', { max: MAX_LENGTHS.postalCode });
+        errors['address.postalCode'] = t('admin.persons.validation.postalCodeTooLong', { max: MAX_LENGTHS.postalCode });
       }
 
       if (!formData.address.country.trim()) {
-        errors['address.country'] = t('admin.persons.validation.countryRequired', 'Country is required');
+        errors['address.country'] = t('admin.persons.validation.countryRequired');
       } else if (formData.address.country.length > MAX_LENGTHS.country) {
-        errors['address.country'] = t('admin.persons.validation.countryTooLong', 'Country cannot exceed {{max}} characters', { max: MAX_LENGTHS.country });
+        errors['address.country'] = t('admin.persons.validation.countryTooLong', { max: MAX_LENGTHS.country });
       }
     }
 
@@ -320,20 +325,20 @@ const PersonForm = ({
     }
 
     if (formData.contactInfo.phone && formData.contactInfo.phone.length > MAX_LENGTHS.phone) {
-      errors['contactInfo.phone'] = t('admin.persons.validation.phoneTooLong', 'Phone number cannot exceed {{max}} characters', { max: MAX_LENGTHS.phone });
+      errors['contactInfo.phone'] = t('admin.persons.validation.phoneTooLong', { max: MAX_LENGTHS.phone });
     }
 
     if (formData.contactInfo.alternativePhone && formData.contactInfo.alternativePhone.length > MAX_LENGTHS.alternativePhone) {
-      errors['contactInfo.alternativePhone'] = t('admin.persons.validation.alternativePhoneTooLong', 'Alternative phone number cannot exceed {{max}} characters', { max: MAX_LENGTHS.alternativePhone });
+      errors['contactInfo.alternativePhone'] = t('admin.persons.validation.alternativePhoneTooLong', { max: MAX_LENGTHS.alternativePhone });
     }
 
     // Team assignment validation (only for new persons, not edits)
     if (!isEditMode && formData.teamId && !formData.position) {
-      errors.position = t('admin.persons.validation.positionRequired', 'Position is required when team is selected');
+      errors.position = t('admin.persons.validation.positionRequired');
     }
 
     if (formData.jerseyNumber && (formData.jerseyNumber < 1 || formData.jerseyNumber > 99)) {
-      errors.jerseyNumber = t('admin.persons.validation.invalidJerseyNumber', 'Jersey number must be between 1 and 99');
+      errors.jerseyNumber = t('admin.persons.validation.invalidJerseyNumber');
     }
 
     setFieldErrors(errors);
@@ -394,7 +399,7 @@ const PersonForm = ({
         } catch (teamAssignmentError) {
           // Person was created but team assignment failed
           console.warn('Team assignment failed:', teamAssignmentError);
-          setError(t('admin.persons.errors.teamAssignmentFailed', 'Person created, but team assignment failed'));
+          setError(t('admin.persons.errors.teamAssignmentFailed'));
           // Still navigate since person was created successfully
         }
       }
@@ -407,7 +412,7 @@ const PersonForm = ({
       }
     } catch (error) {
       console.error('Failed to save person:', error);
-      setError(t('admin.persons.errors.saveFailed', 'Failed to save person'));
+              setError(t('admin.persons.errors.saveFailed'));
     } finally {
       setLoading(false);
     }
@@ -422,17 +427,17 @@ const PersonForm = ({
   };
 
   if (loading && isEditMode) {
-    return <div className="person-form-loading">{t('admin.persons.loading', 'Loading...')}</div>;
+    return <div className="person-form-loading">{t('common.loading')}</div>;
   }
 
   return (
     <form className="person-form" onSubmit={handleSubmit}>
       <div className="form-section">
-        <h3>{t('admin.persons.form.basicInfo', 'Basic Information')}</h3>
+        <h3>{t('admin.persons.form.basicInfo')}</h3>
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="firstName">
-              {t('admin.persons.form.firstName', 'First Name')} <span className="required">*</span>
+              {t('admin.persons.form.firstName')} <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -450,7 +455,7 @@ const PersonForm = ({
           </div>
           <div className="form-group">
             <label htmlFor="lastName">
-              {t('admin.persons.form.lastName', 'Last Name')} <span className="required">*</span>
+              {t('admin.persons.form.lastName')} <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -470,7 +475,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="birthDate">
-              {t('admin.persons.form.birthDate', 'Birth Date')} <span className="required">*</span>
+              {t('admin.persons.form.birthDate')} <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -486,12 +491,12 @@ const PersonForm = ({
               <div className="field-error">{fieldErrors.birthDate}</div>
             )}
             <div className="field-hint">
-              {t('admin.persons.form.dateFormat', 'Format: dd-mm-yyyy')}
+              {t('admin.persons.form.dateFormat')}
             </div>
           </div>
           <div className="form-group">
             <label htmlFor="isRegistered" className="checkbox-label">
-              {t('admin.persons.form.isRegistered', 'Registered')}
+              {t('admin.persons.form.isRegistered')}
             </label>
             <input
               type="checkbox"
@@ -505,13 +510,13 @@ const PersonForm = ({
       </div>
 
       <div className="form-section">
-        <h3>{t('admin.persons.form.address', 'Address')}</h3>
+        <h3>{t('admin.persons.form.address')}</h3>
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="address.street1">
-              {t('admin.persons.form.street1', 'Street Address')}
-              {(formData.address.street2 || formData.address.city || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
-            </label>
+                          <label htmlFor="address.street1">
+                {t('admin.persons.form.street1')}
+                {(formData.address.street2 || formData.address.city || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
+              </label>
             <input
               type="text"
               id="address.street1"
@@ -526,9 +531,9 @@ const PersonForm = ({
             )}
           </div>
           <div className="form-group">
-            <label htmlFor="address.street2">
-              {t('admin.persons.form.street2', 'Street Address 2')}
-            </label>
+                          <label htmlFor="address.street2">
+                {t('admin.persons.form.street2')}
+              </label>
             <input
               type="text"
               id="address.street2"
@@ -545,10 +550,10 @@ const PersonForm = ({
         </div>
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="address.city">
-              {t('admin.persons.form.city', 'City')}
-              {(formData.address.street1 || formData.address.street2 || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
-            </label>
+                          <label htmlFor="address.city">
+                {t('admin.persons.form.city')}
+                {(formData.address.street1 || formData.address.street2 || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
+              </label>
             <input
               type="text"
               id="address.city"
@@ -563,10 +568,10 @@ const PersonForm = ({
             )}
           </div>
           <div className="form-group">
-            <label htmlFor="address.postalCode">
-              {t('admin.persons.form.postalCode', 'Postal Code')}
-              {(formData.address.street1 || formData.address.street2 || formData.address.city || formData.address.country).trim() !== '' && <span className="required">*</span>}
-            </label>
+                          <label htmlFor="address.postalCode">
+                {t('admin.persons.form.postalCode')}
+                {(formData.address.street1 || formData.address.street2 || formData.address.city || formData.address.country).trim() !== '' && <span className="required">*</span>}
+              </label>
             <input
               type="text"
               id="address.postalCode"
@@ -581,10 +586,10 @@ const PersonForm = ({
             )}
           </div>
           <div className="form-group">
-            <label htmlFor="address.country">
-              {t('admin.persons.form.country', 'Country')}
-              {(formData.address.street1 || formData.address.street2 || formData.address.city || formData.address.postalCode).trim() !== '' && <span className="required">*</span>}
-            </label>
+                          <label htmlFor="address.country">
+                {t('admin.persons.form.country')}
+                {(formData.address.street1 || formData.address.street2 || formData.address.city || formData.address.postalCode).trim() !== '' && <span className="required">*</span>}
+              </label>
             <input
               type="text"
               id="address.country"
@@ -602,12 +607,12 @@ const PersonForm = ({
       </div>
 
       <div className="form-section">
-        <h3>{t('admin.persons.form.contact', 'Contact Information')}</h3>
+        <h3>{t('admin.persons.form.contact')}</h3>
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="contactInfo.email">
-              {t('admin.persons.form.email', 'Email')}
-            </label>
+                          <label htmlFor="contactInfo.email">
+                {t('admin.persons.form.email')}
+              </label>
             <input
               type="email"
               id="contactInfo.email"
@@ -624,9 +629,9 @@ const PersonForm = ({
         </div>
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="contactInfo.phone">
-              {t('admin.persons.form.phone', 'Phone')}
-            </label>
+                          <label htmlFor="contactInfo.phone">
+                {t('admin.persons.form.phone')}
+              </label>
             <input
               type="tel"
               id="contactInfo.phone"
@@ -641,9 +646,9 @@ const PersonForm = ({
             )}
           </div>
           <div className="form-group">
-            <label htmlFor="contactInfo.alternativePhone">
-              {t('admin.persons.form.alternativePhone', 'Alternative Phone')}
-            </label>
+                          <label htmlFor="contactInfo.alternativePhone">
+                {t('admin.persons.form.alternativePhone')}
+              </label>
             <input
               type="tel"
               id="contactInfo.alternativePhone"
@@ -663,19 +668,19 @@ const PersonForm = ({
       {/* Team Assignment Section - Only show for new persons and when enabled */}
       {!isEditMode && showTeamAssignment && (
         <div className="form-section">
-          <h3>{t('admin.persons.form.floorballAssignment', 'Floorball Team Assignment (Optional)')}</h3>
+          <h3>{t('admin.persons.form.floorballAssignment')}</h3>
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="teamId">
-                {t('admin.persons.form.team', 'Team')}
+                {t('admin.persons.form.team')}
               </label>
               <SearchableInfiniteDropdown
-                placeholder={t('admin.persons.form.selectTeam', 'Select a team...')}
+                placeholder={t('admin.persons.form.selectTeam')}
                 value={formData.teamId || ''}
                 onChange={handleTeamChange}
                 onSearch={floorballTeamSearchService.searchTeams}
-                emptyMessage={t('admin.persons.form.noTeams', 'No teams found')}
-                searchPlaceholder={t('admin.persons.form.searchTeams', 'Search teams...')}
+                emptyMessage={t('admin.persons.form.noTeams')}
+                searchPlaceholder={t('admin.persons.form.searchTeams')}
                 className={fieldErrors.teamId ? 'error' : ''}
               />
               {fieldErrors.teamId && (
@@ -688,7 +693,7 @@ const PersonForm = ({
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="position">
-                  {t('admin.persons.form.position', 'Position')} <span className="required">*</span>
+                  {t('admin.persons.form.position')} <span className="required">*</span>
                 </label>
                 <select
                   id="position"
@@ -698,10 +703,10 @@ const PersonForm = ({
                   required
                   className={fieldErrors.position ? 'error' : ''}
                 >
-                  <option value="">{t('admin.persons.form.selectPosition', 'Select position...')}</option>
+                  <option value="">{t('admin.persons.form.selectPosition')}</option>
                   {Object.values(FloorballPosition).map(pos => (
                     <option key={pos} value={pos}>
-                      {t(`admin.persons.form.positions.${pos.toLowerCase()}`, pos)}
+                      {t(`admin.persons.form.positions.${pos.toLowerCase()}`)}
                     </option>
                   ))}
                 </select>
@@ -712,7 +717,7 @@ const PersonForm = ({
               
               <div className="form-group">
                 <label htmlFor="jerseyNumber">
-                  {t('admin.persons.form.jerseyNumber', 'Jersey Number')}
+                  {t('admin.persons.form.jerseyNumber')}
                 </label>
                 <input
                   type="number"
@@ -728,7 +733,7 @@ const PersonForm = ({
                   <div className="field-error">{fieldErrors.jerseyNumber}</div>
                 )}
                 <div className="field-hint">
-                  {t('admin.persons.form.jerseyNumberHint', 'Optional: 1-99')}
+                  {t('admin.persons.form.jerseyNumberHint')}
                 </div>
               </div>
             </div>
@@ -745,7 +750,7 @@ const PersonForm = ({
           onClick={handleCancel}
           disabled={loading}
         >
-          {t('admin.persons.actions.cancel', 'Cancel')}
+          {t('admin.persons.actions.cancel')}
         </button>
         <button
           type="submit"
@@ -753,12 +758,11 @@ const PersonForm = ({
           disabled={loading}
         >
           {loading 
-            ? t('admin.persons.actions.saving', 'Saving...')
+            ? t('admin.persons.actions.saving')
             : t(
                 isEditMode 
                   ? 'admin.persons.actions.update'
-                  : 'admin.persons.actions.create',
-                isEditMode ? 'Update Person' : 'Create Person'
+                  : 'admin.persons.actions.create'
               )
           }
         </button>

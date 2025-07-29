@@ -338,6 +338,7 @@ const LiveMatchModal = ({
    * This function fetches the events and stores them for processing
    */
   const loadMatchEvents = useCallback(async () => {
+  const loadMatchEvents = useCallback(async () => {
     try {
       console.log('loadMatchEvents called for match:', match.id);
       const response = await floorballMatchEventService.getMatchEvents(match.id);
@@ -352,6 +353,7 @@ const LiveMatchModal = ({
       console.error('Error loading match events:', error);
       // Don't set error for events loading - it's not critical
     }
+  }, [match.id]);
   }, [match.id]);
 
   /**
@@ -420,6 +422,8 @@ const LiveMatchModal = ({
       // Don't throw - cleanup errors are not critical
     }
   };
+
+
 
 
 
@@ -1064,7 +1068,7 @@ const LiveMatchModal = ({
     const allPlayers = [...homePlayers, ...awayPlayers];
     const player = allPlayers.find(p => p.id === playerId);
     return player ? `${player.person.firstName} ${player.person.lastName}` : `Player ${playerId.slice(0, 8)}...`;
-  };
+  }, [homePlayers, awayPlayers]);
 
   /**
    * Processes and combines all match events (goals and penalties) from the backend

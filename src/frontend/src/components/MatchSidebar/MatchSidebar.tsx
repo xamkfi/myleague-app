@@ -38,23 +38,8 @@ function MatchSidebar({ match, standings, teamStats }: MatchSidebarProps) {
         <p className="match-date">{match.date}</p>
         
         <div className="teams-container">
-          <div className="team-logo">
-            {match.homeTeam.logo ? (
-              <img src={match.homeTeam.logo} alt={match.homeTeam.name} />
-            ) : (
-              <div className="placeholder-logo"></div>
-            )}
-          </div>
           
-          <span className="vs-text">vs</span>
           
-          <div className="team-logo">
-            {match.awayTeam.logo ? (
-              <img src={match.awayTeam.logo} alt={match.awayTeam.name} />
-            ) : (
-              <div className="placeholder-logo"></div>
-            )}
-          </div>
         </div>
       </div>
 

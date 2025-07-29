@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
   
 const MatchManagementPage = () => {
   const { t } = useTranslation();
+  
   // State management
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
@@ -38,7 +39,6 @@ const MatchManagementPage = () => {
   
   // Use the live match state hook
   const {
-    liveMatches,
     initializeLiveMatch,
     updateLiveMatchState,
     cancelLiveMatch,
@@ -136,22 +136,22 @@ const MatchManagementPage = () => {
     let unsubscribe: (() => void) | undefined;
 
     // Handle match status changes
-    const handleMatchStatusChange = (eventData: any) => {
-      const { MatchId, NewStatus } = eventData;
+          const handleMatchStatusChange = (eventData: MatchEvent) => {
+        const { MatchId, NewStatus } = eventData.data as { MatchId: string; NewStatus: string };
       
-      setMatches(prev => prev.map(match => {
-        if (match.id === MatchId) {
-          return { ...match, status: NewStatus };
-        }
-        return match;
-      }));
+              setMatches(prev => prev.map(match => {
+          if (match.id === MatchId) {
+            return { ...match, status: NewStatus as FloorballMatchDto['status'] };
+          }
+          return match;
+        }));
       
       console.log(`Match ${MatchId} status changed to ${NewStatus}`);
     };
 
     // Handle goal scored events
-    const handleGoalScored = (eventData: any) => {
-      const { MatchId, TeamId } = eventData;
+    const handleGoalScored = (eventData: MatchEvent) => {
+      const { MatchId, TeamId } = eventData.data as { MatchId: string; TeamId: string };
       
       // Don't update scores locally - let the LiveMatchModal handle score updates
       // by refreshing from the backend to avoid duplicate updates
@@ -161,8 +161,8 @@ const MatchManagementPage = () => {
     };
 
     // Handle penalty assigned events
-    const handlePenaltyAssigned = (eventData: any) => {
-      const { MatchId } = eventData;
+    const handlePenaltyAssigned = (eventData: MatchEvent) => {
+      const { MatchId } = eventData.data as { MatchId: string };
       
       // For now, we just log the penalty - the events list will be updated
       // when the modal refreshes the events
@@ -173,17 +173,15 @@ const MatchManagementPage = () => {
     const handleSignalREvent = (event: MatchEvent) => {
       console.log('Received SignalR event in MatchManagementPage:', event);
       
-      const eventData = event.data as any;
-      
       switch (event.eventType) {
         case 'FloorballMatchStatusChangedEvent':
-          handleMatchStatusChange(eventData);
+          handleMatchStatusChange(event);
           break;
         case 'FloorballGoalScored':
-          handleGoalScored(eventData);
+          handleGoalScored(event);
           break;
         case 'FloorballPenaltyAssigned':
-          handlePenaltyAssigned(eventData);
+          handlePenaltyAssigned(event);
           break;
         default:
           // Ignore other event types
@@ -474,7 +472,7 @@ const MatchManagementPage = () => {
         <div className="match-management__content">
           <div className="loading-spinner">
             <div className="spinner"></div>
-            <p>Loading matches...</p>
+            <p>{t('floorball.matches.loading', 'Loading matches...')}</p>
           </div>
         </div>
       </div>
@@ -501,8 +499,8 @@ const MatchManagementPage = () => {
             </div>
           </div>
           <div className="page-header__main">
-            <h1 className="page-title">Match Management</h1>
-            <p className="page-subtitle">Manage your floorball matches, track live games, and organize your season</p>
+            <h1 className="page-title">{t('floorball.matches.title', 'Match Management')}</h1>
+            <p className="page-subtitle">{t('floorball.matches.subtitle', 'Manage your floorball matches, track live games, and organize your season')}</p>
           </div>
         </div>
 
@@ -540,7 +538,6 @@ const MatchManagementPage = () => {
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
             actionLoading={actionLoading}
-            liveMatches={liveMatches}
             sectionType="ongoing"
           />
 
@@ -553,7 +550,6 @@ const MatchManagementPage = () => {
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
             actionLoading={actionLoading}
-            liveMatches={liveMatches}
             sectionType="scheduled"
           />
 
@@ -566,7 +562,6 @@ const MatchManagementPage = () => {
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
             actionLoading={actionLoading}
-            liveMatches={liveMatches}
             sectionType="completed"
           />
 

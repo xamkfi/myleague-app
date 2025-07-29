@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import type { Person } from '../../../../../types/admin/personTypes';
 import { PersonRole } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
 import PaginationControls from '../PaginationControls/PaginationControls';
 import './PersonList.scss';
 
-const PersonList = () => {
+interface PersonListProps {
+  onEditPerson?: (personId: string) => void;
+  refreshTrigger?: number; // Used to trigger refresh from parent
+}
+
+const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [persons, setPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,32 +26,36 @@ const PersonList = () => {
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    const fetchPersons = async () => {
-      try {
-        const data = await personApi.getAll();
-        setPersons(data);
-        setError(null);
-      } catch (error) {
-        console.error('Failed to fetch persons:', error);
-        setError(t('admin.persons.errors.fetchFailed', 'Failed to fetch persons'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPersons();
+  const fetchPersons = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await personApi.getAll();
+      setPersons(data);
+      setError(null);
+    } catch (error) {
+      console.error('Failed to fetch persons:', error);
+      setError(t('admin.persons.errors.fetchFailed', 'Failed to fetch persons'));
+    } finally {
+      setLoading(false);
+    }
   }, [t]);
 
+  useEffect(() => {
+    fetchPersons();
+  }, [fetchPersons, refreshTrigger]);
+
   const handleEdit = (id: string) => {
-    navigate(`/admin/persons/${id}/edit`);
+    if (onEditPerson) {
+      onEditPerson(id);
+    }
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm(t('admin.persons.confirmDelete', 'Are you sure you want to delete this person?'))) {
+    if (window.confirm(t('admin.persons.actions.confirmDelete', 'Are you sure you want to delete this person?'))) {
       try {
         await personApi.delete(id);
-        setPersons(persons.filter(person => person.id !== id));
+        // Refresh the list to get updated data
+        await fetchPersons();
       } catch (error) {
         console.error('Failed to delete person:', error);
         setError(t('admin.persons.errors.deleteFailed', 'Failed to delete person'));
@@ -58,8 +65,8 @@ const PersonList = () => {
 
   const handleToggleRegistration = async (id: string, currentStatus: boolean) => {
     const confirmMessage = currentStatus 
-      ? t('admin.persons.confirmUnregister', 'Are you sure you want to unregister this person?')
-      : t('admin.persons.confirmRegister', 'Are you sure you want to register this person?');
+      ? t('admin.persons.actions.confirmUnregister', 'Are you sure you want to unregister this person?')
+      : t('admin.persons.actions.confirmRegister', 'Are you sure you want to register this person?');
     
     if (window.confirm(confirmMessage)) {
       setUpdatingRegistration(id);

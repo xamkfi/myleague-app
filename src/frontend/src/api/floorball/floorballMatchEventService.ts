@@ -27,7 +27,7 @@ export interface FloorballPenaltyEventDto {
 export interface FloorballDomainEventDto {
   eventType: string;
   occurredOn: string;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';

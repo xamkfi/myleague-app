@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import type { 
   CreateFloorballMatchRequest,
   FloorballMatchDto,
@@ -226,7 +224,7 @@ const MatchFormModal = ({
     }
     
     return result;
-  }, [mode, initialData, initialHomeTeamOptions]);
+  }, [mode, initialHomeTeamOptions]);
 
   const searchAwayTeamsWithInitial = useCallback(async (query: string, page: number) => {
     // Get all teams from the search service
@@ -246,7 +244,7 @@ const MatchFormModal = ({
     }
     
     return result;
-  }, [mode, initialData, initialAwayTeamOptions]);
+  }, [mode, initialAwayTeamOptions]);
 
   // Update scheduledDateTime when date or time changes
   const updateScheduledDateTime = (date: Date | null, hours: string, minutes: string) => {
@@ -340,7 +338,7 @@ const MatchFormModal = ({
         setError(null);
         
         // Check what fields changed and call appropriate endpoints
-        const changes: Promise<any>[] = [];
+        const changes: Promise<unknown>[] = [];
         
         if (formData.seasonId !== initialData.seasonId) {
           changes.push(onSubmit({ seasonId: formData.seasonId } as ChangeMatchSeasonRequest));
@@ -364,7 +362,7 @@ const MatchFormModal = ({
         }
         
         // Execute all changes
-        await Promise.all(changes);
+        await Promise.all(changes as Promise<unknown>[]);
         
       } catch (error) {
         console.error('Error updating match:', error);
@@ -496,11 +494,10 @@ const MatchFormModal = ({
             <div className="input-wrapper">
               <div className="datetime-input-group">
                 <div className="date-input">
-                  <DatePicker
-                    selected={selectedDate}
-                    onChange={handleDateChange}
-                    dateFormat="dd.MM.yyyy"
-                    placeholderText="DD.MM.YYYY"
+                  <input
+                    type="date"
+                    value={selectedDate ? selectedDate.toISOString().split('T')[0] : ''}
+                    onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : null)}
                     className="date-picker-input"
                     required
                   />

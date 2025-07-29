@@ -63,6 +63,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <param name="startDate">Optional start date filter</param>
         /// <param name="endDate">Optional end date filter</param>
         /// <param name="status">Optional match status filter</param>
+        /// <param name="sortOrder">Optional sort order ("asc" or "desc")</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Paginated collection of floorball matches</returns>
         public async Task<PagedResult<FloorballMatch>> GetPagedAsync(
@@ -73,6 +74,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             DateTime? startDate = null,
             DateTime? endDate = null,
             FloorballMatchStatus? status = null,
+            string sortOrder = "desc",
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballMatch> query = _entities
@@ -109,8 +111,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 query = query.Where(m => m.Status == status.Value);
             }
 
-            // Apply ordering by scheduled date (most recent first)
-            query = query.OrderByDescending(m => m.ScheduledDateTime);
+            // Apply ordering by scheduled date
+            if(sortOrder == "desc")
+            {
+                query = query.OrderByDescending(m => m.ScheduledDateTime);
+            }
+            else
+            {
+                query = query.OrderBy(m => m.ScheduledDateTime);
+            }
+            
 
             // Get total count before pagination
             int totalCount = await query.CountAsync(cancellationToken);
@@ -355,6 +365,21 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<bool> ExistsAsync(Guid id)
         {
             return await _entities.AnyAsync(m => m.Id == id);
+        }
+
+        public async Task<IEnumerable<FloorballMatch>> GetTodaysMatchesByTeamAsync(Guid teamId, CancellationToken cancellationToken)
+        {
+            DateTime today = DateTime.UtcNow.Date;
+            DateTime tomorrow = today.AddDays(1);
+
+            return await _entities
+                .Include(m => m.Season)
+                .Include(m => m.HomeTeam)
+                .Include(m => m.AwayTeam)
+                .Where(m => (m.HomeTeamId == teamId || m.AwayTeamId == teamId) &&
+                               m.ScheduledDateTime >= today && m.ScheduledDateTime < tomorrow)
+                .OrderBy(m => m.ScheduledDateTime)
+                .ToListAsync(cancellationToken);
         }
     }
 } 

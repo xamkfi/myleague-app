@@ -11,7 +11,6 @@ export class SignalRService {
   private isConnecting = false;
   private subscribedEventTypes = new Set<string>();
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
 
   /**
    * Tests the SignalR connection by trying to connect and then disconnect
