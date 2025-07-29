@@ -2,6 +2,14 @@ import type { ApiResponse } from '../../types/common/apiResponseType';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
+export interface TimeSpan {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  milliseconds: number;
+}
+
 export interface TimerStatusResponse {
   exists: boolean;
   isRunning: boolean;
@@ -129,8 +137,24 @@ export const timerService = {
       throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to get elapsed time'}`);
     }
 
-    const apiResponse: ApiResponse<string> = await response.json();
-    return apiResponse.data;
+    const apiResponse: ApiResponse<TimeSpan> = await response.json();
+    console.log('getElapsedTime API response:', apiResponse);
+    
+    // The backend returns a TimeSpan object, we need to convert it to a string
+    // TimeSpan is serialized as an object with properties like { days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }
+    const timeSpan = apiResponse.data;
+    const totalSeconds = (timeSpan.days * 24 * 3600) + (timeSpan.hours * 3600) + (timeSpan.minutes * 60) + timeSpan.seconds;
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    // Format as "hh:mm:ss" or "mm:ss" depending on hours
+    const formattedTime = hours > 0 
+      ? `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      : `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    console.log('Formatted elapsed time:', formattedTime);
+    return formattedTime;
   },
 
   /**

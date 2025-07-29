@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { signalRService, type MatchEvent } from '../../../../../../services/signalRService';
 import { 
   floorballMatchEventService, 
@@ -14,6 +14,9 @@ import type { LiveMatchState } from '../../hooks/useLiveMatchState';
 
 import { Timer } from '../../../../../../components/Timer/Timer';
 import './LiveMatchModal.scss';
+
+// Create a memoized Timer component to prevent unnecessary re-renders
+const MemoizedTimer = React.memo(Timer);
 
 interface LiveMatchModalProps {
   match: FloorballMatchDto;
@@ -67,6 +70,15 @@ const LiveMatchModal = ({
   onStateUpdate,
   onMatchUpdated
 }: LiveMatchModalProps) => {
+  // Debug logging for modal lifecycle
+  useEffect(() => {
+    console.log('🔄 LiveMatchModal RENDER:', { 
+      matchId: match.id, 
+      isOpen, 
+      status: match.status,
+      hasLiveState: !!liveState 
+    });
+  }, [match.id, isOpen, match.status, liveState]); // Only log when these specific values change
   // State management
   const [homeTeam, setHomeTeam] = useState<FloorballTeam | null>(null);
   const [awayTeam, setAwayTeam] = useState<FloorballTeam | null>(null);
@@ -86,7 +98,16 @@ const LiveMatchModal = ({
   const [currentTimerElapsedTime, setCurrentTimerElapsedTime] = useState<number>(0);
   const [getCurrentTimeFromTimer, setGetCurrentTimeFromTimer] = useState<(() => string) | null>(null);
   
-
+  // LOCAL TIMER STATE - Only runs when modal is open
+  const [localClock, setLocalClock] = useState({
+    period: 1,
+    minutes: 0,
+    seconds: 0,
+    isRunning: false
+  });
+  
+  // Timer interval ref for cleanup
+  const timerIntervalRef = useRef<number | null>(null);
   
   // Use state from parent or default values
   const currentScore = useMemo(() => {
@@ -101,13 +122,8 @@ const LiveMatchModal = ({
     return baseScore;
   }, [liveState?.currentScore, currentMatch.homeScore, currentMatch.awayScore]);
   
-  // Legacy clock state for backward compatibility during transition
-  const clock = liveState?.clock || {
-    period: 1,
-    minutes: 0,
-    seconds: 0,
-    isRunning: false
-  };
+  // Use local clock state instead of liveState clock
+  const clock = localClock;
   
   // Event recording state
   const [showGoalForm, setShowGoalForm] = useState(false);
@@ -142,6 +158,49 @@ const LiveMatchModal = ({
     timeSeconds: 0,
   });
 
+  // LOCAL TIMER MANAGEMENT - Only runs when modal is open
+  useEffect(() => {
+    if (!isOpen) {
+      // Clean up timer when modal closes
+      if (timerIntervalRef.current) {
+        console.log('LiveMatchModal: Cleaning up timer interval');
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      return;
+    }
+
+    // Only start timer if modal is open and clock is running
+    if (isOpen && localClock.isRunning) {
+      console.log('LiveMatchModal: Starting local timer interval');
+      timerIntervalRef.current = setInterval(() => {
+        setLocalClock(prev => {
+          const newSeconds = prev.seconds + 1;
+          if (newSeconds >= 60) {
+            return {
+              ...prev,
+              minutes: prev.minutes + 1,
+              seconds: 0
+            };
+          } else {
+            return {
+              ...prev,
+              seconds: newSeconds
+            };
+          }
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timerIntervalRef.current) {
+        console.log('LiveMatchModal: Cleaning up timer interval on unmount');
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
+  }, [isOpen, localClock.isRunning]);
+
   // Load team and player data
   useEffect(() => {
     if (isOpen) {
@@ -164,35 +223,37 @@ const LiveMatchModal = ({
 
   // Initialize clock and period states
   useEffect(() => {
-    if (onStateUpdate && !liveState?.clock) {
+    if (isOpen && onStateUpdate && !liveState?.clock) {
       // Only initialize if we don't already have a clock state
+      const initialClock = {
+        period: 1,
+        minutes: 0,
+        seconds: 0,
+        isRunning: false
+      };
+      setLocalClock(initialClock);
       onStateUpdate({
-        clock: {
-          period: 1,
-          minutes: 0,
-          seconds: 0,
-          isRunning: false
-        }
+        clock: initialClock
       });
     }
-  }, [onStateUpdate, liveState?.clock]);
+  }, [isOpen, onStateUpdate, liveState?.clock]);
 
 
 
   // Initialize started periods when component loads
   useEffect(() => {
-    if (currentMatch.status === 'InProgress') {
+    if (isOpen && currentMatch.status === 'InProgress') {
       // If match is in progress, assume period 1 has been started
       setStartedPeriods(new Set([1]));
       // Set next period to start as period 2
       setNextPeriodToStart(2);
-    } else {
+    } else if (isOpen) {
       // Reset started periods for new matches
       setStartedPeriods(new Set());
       setEndedPeriods(new Set());
       setNextPeriodToStart(1);
     }
-  }, [currentMatch.status]);
+  }, [isOpen, currentMatch.status]);
 
 
 
@@ -224,6 +285,8 @@ const LiveMatchModal = ({
       setLoading(false);
     }
   };
+
+
 
   /**
    * Loads the current match status from the backend
@@ -547,15 +610,19 @@ const LiveMatchModal = ({
       setNextPeriodToStart(nextPeriod);
       
       // Update the clock to the next period
-      if (onStateUpdate && nextPeriod > 0) {
-        onStateUpdate({
-          clock: { 
-            period: nextPeriod, 
-            minutes: 0, 
-            seconds: 0, 
-            isRunning: false 
-          }
-        });
+      if (nextPeriod > 0) {
+        const newClock = { 
+          period: nextPeriod, 
+          minutes: 0, 
+          seconds: 0, 
+          isRunning: false 
+        };
+        setLocalClock(newClock);
+        if (onStateUpdate) {
+          onStateUpdate({
+            clock: newClock
+          });
+        }
       }
       
       setError(null);
@@ -584,14 +651,16 @@ const LiveMatchModal = ({
       setStartedPeriods(prev => new Set([...prev, nextPeriodToStart]));
       
       // Update the clock to the new period
+      const newClock = { 
+        period: nextPeriodToStart, 
+        minutes: 0, 
+        seconds: 0, 
+        isRunning: false 
+      };
+      setLocalClock(newClock);
       if (onStateUpdate) {
         onStateUpdate({
-          clock: { 
-            period: nextPeriodToStart, 
-            minutes: 0, 
-            seconds: 0, 
-            isRunning: false 
-          }
+          clock: newClock
         });
       }
       
@@ -696,14 +765,16 @@ const LiveMatchModal = ({
       await floorballMatchEventService.startPeriod(currentMatch.id, 4);
       
       // Update the clock to period 4
+      const newClock = { 
+        period: 4, 
+        minutes: 0, 
+        seconds: 0, 
+        isRunning: false 
+      };
+      setLocalClock(newClock);
       if (onStateUpdate) {
         onStateUpdate({
-          clock: { 
-            period: 4, 
-            minutes: 0, 
-            seconds: 0, 
-            isRunning: false 
-          }
+          clock: newClock
         });
       }
       
@@ -734,14 +805,16 @@ const LiveMatchModal = ({
       await floorballMatchEventService.startPeriod(currentMatch.id, 5);
       
       // Update the clock to period 5
+      const newClock = { 
+        period: 5, 
+        minutes: 0, 
+        seconds: 0, 
+        isRunning: false 
+      };
+      setLocalClock(newClock);
       if (onStateUpdate) {
         onStateUpdate({
-          clock: { 
-            period: 5, 
-            minutes: 0, 
-            seconds: 0, 
-            isRunning: false 
-          }
+          clock: newClock
         });
       }
       
@@ -1031,6 +1104,7 @@ const LiveMatchModal = ({
             PlayerId?: string;
             PeriodNumber?: number;
             TimeInSeconds?: number;
+            EventTime?: string;
             IsOvertime?: boolean;
             IsPenaltyShot?: boolean;
             IsShootout?: boolean;
@@ -1042,6 +1116,7 @@ const LiveMatchModal = ({
             playerId?: string;
             periodNumber?: number;
             timeInSeconds?: number;
+            eventTime?: string;
             isOvertime?: boolean;
             isPenaltyShot?: boolean;
             isShootout?: boolean;
@@ -1052,9 +1127,60 @@ const LiveMatchModal = ({
           console.log('Goal data keys:', Object.keys(goalData));
           console.log('TimeInSeconds value:', goalData.TimeInSeconds);
           console.log('TimeInSeconds type:', typeof goalData.TimeInSeconds);
+          console.log('EventTime value:', goalData.EventTime);
+          console.log('EventTime type:', typeof goalData.EventTime);
           
-                      // Handle both PascalCase and camelCase field names
-            const timeInSeconds = goalData.TimeInSeconds ?? goalData.timeInSeconds ?? 0;
+          // Handle both PascalCase and camelCase field names
+          // Try TimeInSeconds first, then parse EventTime if available, fallback to 0
+          let timeInSeconds = goalData.TimeInSeconds ?? goalData.timeInSeconds ?? 0;
+          
+          // If TimeInSeconds is not available, try to parse EventTime
+          if (timeInSeconds === 0 && (goalData.EventTime || goalData.eventTime)) {
+            const eventTime = goalData.EventTime ?? goalData.eventTime;
+            console.log('Parsing EventTime:', eventTime);
+            // EventTime might be in format "00:45" (mm:ss) or similar
+            if (typeof eventTime === 'string') {
+              const timeParts = eventTime.split(':');
+              if (timeParts.length === 2) {
+                const minutes = parseInt(timeParts[0]) || 0;
+                const seconds = parseInt(timeParts[1]) || 0;
+                timeInSeconds = minutes * 60 + seconds;
+                console.log('Parsed time from EventTime:', timeInSeconds, 'seconds');
+              } else if (timeParts.length === 3) {
+                // Handle hh:mm:ss format
+                const hours = parseInt(timeParts[0]) || 0;
+                const minutes = parseInt(timeParts[1]) || 0;
+                const seconds = parseInt(timeParts[2]) || 0;
+                timeInSeconds = hours * 3600 + minutes * 60 + seconds;
+                console.log('Parsed time from EventTime (hh:mm:ss):', timeInSeconds, 'seconds');
+              }
+            }
+          }
+          
+          // If still no time, try to extract from the event data structure
+          if (timeInSeconds === 0 && event.data) {
+            const eventData = event.data as any;
+            // Look for time-related fields in the nested structure
+            if (eventData.TimeInSeconds !== undefined) {
+              timeInSeconds = eventData.TimeInSeconds;
+              console.log('Found TimeInSeconds in nested structure:', timeInSeconds);
+            } else if (eventData.timeInSeconds !== undefined) {
+              timeInSeconds = eventData.timeInSeconds;
+              console.log('Found timeInSeconds in nested structure:', timeInSeconds);
+            } else if (eventData.EventTime) {
+              const eventTime = eventData.EventTime;
+              console.log('Found EventTime in nested structure:', eventTime);
+              if (typeof eventTime === 'string') {
+                const timeParts = eventTime.split(':');
+                if (timeParts.length === 2) {
+                  const minutes = parseInt(timeParts[0]) || 0;
+                  const seconds = parseInt(timeParts[1]) || 0;
+                  timeInSeconds = minutes * 60 + seconds;
+                  console.log('Parsed nested EventTime:', timeInSeconds, 'seconds');
+                }
+              }
+            }
+          }
             const periodNumber = goalData.PeriodNumber ?? goalData.periodNumber ?? 1;
             const teamId = goalData.TeamId ?? goalData.teamId ?? '';
             const playerId = goalData.PlayerId ?? goalData.playerId ?? '';
@@ -1091,6 +1217,7 @@ const LiveMatchModal = ({
             PlayerId?: string;
             PeriodNumber?: number;
             TimeInSeconds?: number;
+            EventTime?: string;
             PenaltyType?: string;
             Minutes?: number;
             Description?: string;
@@ -1100,6 +1227,7 @@ const LiveMatchModal = ({
             playerId?: string;
             periodNumber?: number;
             timeInSeconds?: number;
+            eventTime?: string;
             penaltyType?: string;
             minutes?: number;
             description?: string;
@@ -1108,9 +1236,60 @@ const LiveMatchModal = ({
           console.log('Penalty data keys:', Object.keys(penaltyData));
           console.log('TimeInSeconds value:', penaltyData.TimeInSeconds);
           console.log('TimeInSeconds type:', typeof penaltyData.TimeInSeconds);
+          console.log('EventTime value:', penaltyData.EventTime);
+          console.log('EventTime type:', typeof penaltyData.EventTime);
           
-            // Handle both PascalCase and camelCase field names for penalty
-            const penaltyTimeInSeconds = penaltyData.TimeInSeconds ?? penaltyData.timeInSeconds ?? 0;
+          // Handle both PascalCase and camelCase field names for penalty
+          // Try TimeInSeconds first, then parse EventTime if available, fallback to 0
+          let penaltyTimeInSeconds = penaltyData.TimeInSeconds ?? penaltyData.timeInSeconds ?? 0;
+          
+          // If TimeInSeconds is not available, try to parse EventTime
+          if (penaltyTimeInSeconds === 0 && (penaltyData.EventTime || penaltyData.eventTime)) {
+            const eventTime = penaltyData.EventTime ?? penaltyData.eventTime;
+            console.log('Parsing penalty EventTime:', eventTime);
+            // EventTime might be in format "00:45" (mm:ss) or similar
+            if (typeof eventTime === 'string') {
+              const timeParts = eventTime.split(':');
+              if (timeParts.length === 2) {
+                const minutes = parseInt(timeParts[0]) || 0;
+                const seconds = parseInt(timeParts[1]) || 0;
+                penaltyTimeInSeconds = minutes * 60 + seconds;
+                console.log('Parsed penalty time from EventTime:', penaltyTimeInSeconds, 'seconds');
+              } else if (timeParts.length === 3) {
+                // Handle hh:mm:ss format
+                const hours = parseInt(timeParts[0]) || 0;
+                const minutes = parseInt(timeParts[1]) || 0;
+                const seconds = parseInt(timeParts[2]) || 0;
+                penaltyTimeInSeconds = hours * 3600 + minutes * 60 + seconds;
+                console.log('Parsed penalty time from EventTime (hh:mm:ss):', penaltyTimeInSeconds, 'seconds');
+              }
+            }
+          }
+          
+          // If still no time, try to extract from the event data structure
+          if (penaltyTimeInSeconds === 0 && event.data) {
+            const eventData = event.data as any;
+            // Look for time-related fields in the nested structure
+            if (eventData.TimeInSeconds !== undefined) {
+              penaltyTimeInSeconds = eventData.TimeInSeconds;
+              console.log('Found penalty TimeInSeconds in nested structure:', penaltyTimeInSeconds);
+            } else if (eventData.timeInSeconds !== undefined) {
+              penaltyTimeInSeconds = eventData.timeInSeconds;
+              console.log('Found penalty timeInSeconds in nested structure:', penaltyTimeInSeconds);
+            } else if (eventData.EventTime) {
+              const eventTime = eventData.EventTime;
+              console.log('Found penalty EventTime in nested structure:', eventTime);
+              if (typeof eventTime === 'string') {
+                const timeParts = eventTime.split(':');
+                if (timeParts.length === 2) {
+                  const minutes = parseInt(timeParts[0]) || 0;
+                  const seconds = parseInt(timeParts[1]) || 0;
+                  penaltyTimeInSeconds = minutes * 60 + seconds;
+                  console.log('Parsed nested penalty EventTime:', penaltyTimeInSeconds, 'seconds');
+                }
+              }
+            }
+          }
             const penaltyPeriodNumber = penaltyData.PeriodNumber ?? penaltyData.periodNumber ?? 1;
             const penaltyTeamId = penaltyData.TeamId ?? penaltyData.teamId ?? '';
             const penaltyPlayerId = penaltyData.PlayerId ?? penaltyData.playerId;
@@ -1372,10 +1551,11 @@ const LiveMatchModal = ({
                   </div>
                 </div>
               ) : currentMatch.status === 'InProgress' ? (
-                <Timer 
-                  key={`timer-${currentMatch.id}-${currentMatch.status}`}
+                <MemoizedTimer 
+                  key={`timer-${currentMatch.id}`} // Remove status from key to prevent re-mounting
                   matchId={currentMatch.id} 
                   periodNumber={clock.period}
+                  isActive={isOpen} // Only activate timer when modal is open
                   onTimerUpdate={(update) => {
                     console.log('Timer update in LiveMatchModal:', update);
                     // Update our local timer state for accurate time calculations
@@ -1639,4 +1819,4 @@ const LiveMatchModal = ({
   );
 };
 
-export default LiveMatchModal; 
+export default LiveMatchModal;

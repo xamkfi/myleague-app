@@ -94,19 +94,26 @@ export class SignalRService {
         try {
           const parsedEvent = JSON.parse(eventData);
           const matchEvent: MatchEvent = { eventType, data: parsedEvent };
-          console.log('🔔 RECEIVED SIGNALR DOMAIN EVENT');
-          console.log('Domain event type:', eventType);
-          console.log('Domain event data:', parsedEvent);
-          console.log('Parsed match event:', matchEvent);
+          
+          // Only log very occasionally to avoid spam
+          const shouldLog = Math.random() < 0.01; // Log ~1% of events
+          if (shouldLog) {
+            console.log('=== SIGNALR DOMAIN EVENT ===');
+            console.log('Event type:', eventType);
+            console.log('Event data:', parsedEvent);
+            console.log('=== END SIGNALR DOMAIN EVENT ===');
+          }
+          
+          // Notify all registered callbacks
           this.matchEventCallbacks.forEach(callback => {
             try {
               callback(matchEvent);
             } catch (error) {
-              console.error('Error in SignalR event callback:', error);
+              console.error('Error in SignalR callback:', error);
             }
           });
         } catch (error) {
-          console.error('Error parsing SignalR event data:', error);
+          console.error('Error parsing SignalR event:', error);
         }
       });
 
@@ -114,14 +121,20 @@ export class SignalRService {
         try {
           const parsedEvent = JSON.parse(eventData);
           const matchEvent: MatchEvent = { eventType, data: parsedEvent };
-          console.log('🔔 RECEIVED SIGNALR MATCH EVENT');
-          console.log('Match event type:', eventType);
-          console.log('Match event data:', parsedEvent);
-          console.log('Parsed match event:', matchEvent);
-          console.log('Number of callbacks registered:', this.matchEventCallbacks.length);
+          
+          // Only log occasionally to avoid spam
+          const shouldLog = Math.random() < 0.05; // Log ~5% of events
+          if (shouldLog) {
+            console.log('🔔 RECEIVED SIGNALR MATCH EVENT');
+            console.log('Match event type:', eventType);
+            console.log('Number of callbacks registered:', this.matchEventCallbacks.length);
+          }
+          
           this.matchEventCallbacks.forEach((callback, index) => {
             try {
-              console.log(`Calling callback ${index + 1}/${this.matchEventCallbacks.length}`);
+              if (shouldLog) {
+                console.log(`Calling callback ${index + 1}/${this.matchEventCallbacks.length}`);
+              }
               callback(matchEvent);
             } catch (error) {
               console.error(`Error in SignalR event callback ${index + 1}:`, error);
@@ -287,10 +300,13 @@ export class SignalRService {
 
   onMatchEvent(callback: (event: MatchEvent) => void): () => void {
     this.matchEventCallbacks.push(callback);
+    console.log(`🔧 REGISTERED NEW MATCH EVENT CALLBACK. Total callbacks: ${this.matchEventCallbacks.length}`);
+    
     return () => {
       const index = this.matchEventCallbacks.indexOf(callback);
       if (index > -1) {
         this.matchEventCallbacks.splice(index, 1);
+        console.log(`🔧 UNREGISTERED MATCH EVENT CALLBACK. Total callbacks: ${this.matchEventCallbacks.length}`);
       }
     };
   }

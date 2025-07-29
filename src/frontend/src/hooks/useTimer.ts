@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { signalRService } from '../services/signalRService';
+import { signalRService, type MatchEvent } from '../services/signalRService';
 import { timerService, type TimerUpdate } from '../api/common/timerService';
 
 export interface TimerState {
@@ -25,12 +25,9 @@ export function useTimer(options: UseTimerOptions) {
   });
   
   const [loading, setLoading] = useState(false);
-  
-
   const [error, setError] = useState<string | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
-
-
+  const handleTimerUpdateRef = useRef<((event: MatchEvent) => void) | null>(null);
 
   // Load initial timer status
   const loadTimerStatus = useCallback(async () => {
@@ -82,6 +79,7 @@ export function useTimer(options: UseTimerOptions) {
       console.log('=== useTimer startTimer CALLED ===');
       console.log('Match ID:', matchId);
       console.log('Period Number:', periodNumber);
+      console.log('Auto Connect:', autoConnect);
       
       setLoading(true);
       setError(null);
@@ -100,13 +98,14 @@ export function useTimer(options: UseTimerOptions) {
     } finally {
       setLoading(false);
     }
-  }, [matchId]);
+  }, [matchId, autoConnect]);
 
   // Stop timer
   const stopTimer = useCallback(async () => {
     try {
       console.log('=== useTimer stopTimer CALLED ===');
       console.log('Match ID:', matchId);
+      console.log('Auto Connect:', autoConnect);
       
       setLoading(true);
       setError(null);
@@ -125,7 +124,7 @@ export function useTimer(options: UseTimerOptions) {
     } finally {
       setLoading(false);
     }
-  }, [matchId]);
+  }, [matchId, autoConnect]);
 
   // Reset timer
   const resetTimer = useCallback(async () => {
@@ -189,24 +188,28 @@ export function useTimer(options: UseTimerOptions) {
   }, [matchId]);
 
   // Handle timer updates from SignalR
-  const handleTimerUpdate = useCallback((event: { eventType: string; data: unknown }) => {
-    console.log('=== TIMER EVENT RECEIVED ===');
-    console.log('Received SignalR event:', event);
-    console.log('Event type:', event.eventType);
-    console.log('Event data:', event.data);
-    console.log('Current match ID:', matchId);
+  const handleTimerUpdate = useCallback((event: MatchEvent) => {
+    // Only log very occasionally to avoid spam
+    const shouldLog = Math.random() < 0.02; // Log ~2% of events
     
-    // Handle timer update events - check for TimerUpdateEvent and look at the EventType in data
+    if (shouldLog) {
+      console.log('=== TIMER EVENT RECEIVED ===');
+      console.log('Event type:', event.eventType);
+      console.log('Event data:', event.data);
+    }
+    
     if (event.eventType === 'TimerUpdateEvent' && event.data) {
       const timerUpdate = event.data as TimerUpdate;
-      console.log('Parsed timer update:', timerUpdate);
-      console.log('Timer event type:', timerUpdate.EventType);
-      console.log('Timer match ID:', timerUpdate.MatchId);
-      console.log('Timer elapsed time:', timerUpdate.ElapsedTime);
-      console.log('Timer is running:', timerUpdate.IsRunning);
       
       if (timerUpdate.MatchId === matchId) {
-        console.log('✅ MATCH ID MATCHES - UPDATING TIMER STATE');
+        if (shouldLog) {
+          console.log('✅ Processing timer update for match:', matchId);
+          console.log('Timer state:', {
+            isRunning: timerUpdate.IsRunning,
+            elapsedTime: timerUpdate.ElapsedTime,
+            periodNumber: timerUpdate.PeriodNumber
+          });
+        }
         
         // Format the elapsed time to only show hours when needed
         let formattedTime = timerUpdate.ElapsedTime;
@@ -228,16 +231,7 @@ export function useTimer(options: UseTimerOptions) {
           }
         }
         
-                setTimerState(prev => {
-          // Only update if state has actually changed
-          if (
-            prev.elapsedTime === formattedTime &&
-            prev.isRunning === timerUpdate.IsRunning &&
-            prev.periodNumber === timerUpdate.PeriodNumber
-          ) {
-            return prev; // No need to re-render
-          }
-
+        setTimerState(prev => {
           return {
             isRunning: timerUpdate.IsRunning,
             elapsedTime: formattedTime,
@@ -250,22 +244,41 @@ export function useTimer(options: UseTimerOptions) {
           onTimerUpdate(timerUpdate);
         }
       } else {
-        console.log('❌ Match ID mismatch - ignoring event');
-        console.log('Expected:', matchId);
-        console.log('Received:', timerUpdate.MatchId);
+        if (shouldLog) {
+          console.log('❌ Match ID mismatch - ignoring event');
+          console.log('Expected:', matchId);
+          console.log('Received:', timerUpdate.MatchId);
+        }
       }
     } else {
-      console.log('❌ Not a TimerUpdateEvent or no data');
+      if (shouldLog) {
+        console.log('❌ Not a TimerUpdateEvent or no data');
+      }
     }
-    console.log('=== END TIMER EVENT ===');
-  }, [matchId, onTimerUpdate]);
+    
+    if (shouldLog) {
+      console.log('=== END TIMER EVENT ===');
+    }
+  }, [matchId, onTimerUpdate, autoConnect]);
+
+  // Update the ref with the latest callback
+  handleTimerUpdateRef.current = handleTimerUpdate;
 
   // Setup SignalR connection and event handling
   useEffect(() => {
+    let isActive = true; // Track if this effect is still active
+    
     const setupSignalR = async () => {
       try {
         console.log('=== TIMER SIGNALR SETUP START ===');
         console.log('Setting up SignalR for timer with match ID:', matchId);
+        console.log('Auto Connect:', autoConnect);
+        
+        // Only proceed if we should auto-connect and have a matchId
+        if (!autoConnect || !matchId) {
+          console.log('Skipping SignalR setup - autoConnect:', autoConnect, 'matchId:', matchId);
+          return;
+        }
         
         // Connect to SignalR
         console.log('Step 1: Connecting to SignalR...');
@@ -279,13 +292,21 @@ export function useTimer(options: UseTimerOptions) {
         
         // Listen for timer events
         console.log('Step 3: Setting up event listener...');
-        unsubscribeRef.current = signalRService.onMatchEvent(handleTimerUpdate);
-        console.log('Step 3: Event listener setup completed');
+        if (isActive) { // Only set up if still active
+          unsubscribeRef.current = signalRService.onMatchEvent((event) => {
+            if (handleTimerUpdateRef.current) {
+              handleTimerUpdateRef.current(event);
+            }
+          });
+          console.log('Step 3: Event listener setup completed');
+        }
         
         console.log('SignalR setup completed for timer');
         
-        // Don't load initial timer status - let SignalR handle all updates
-        console.log('Step 4: Skipping initial timer status load - letting SignalR handle updates');
+        // Load initial timer status to get current state immediately
+        console.log('Step 4: Loading initial timer status...');
+        await loadTimerStatus();
+        console.log('Step 4: Initial timer status loaded');
         console.log('=== TIMER SIGNALR SETUP COMPLETE ===');
         
       } catch (err) {
@@ -295,21 +316,30 @@ export function useTimer(options: UseTimerOptions) {
       }
     };
 
-    // Only proceed if we should auto-connect and have a matchId
-    if (autoConnect && matchId) {
-      setupSignalR();
-    }
+    setupSignalR();
 
     // Cleanup on unmount
     return () => {
+      isActive = false; // Mark as inactive
       console.log('=== TIMER SIGNALR CLEANUP ===');
       console.log('Cleaning up SignalR for timer');
+      console.log('Match ID:', matchId);
+      console.log('Auto Connect:', autoConnect);
+      
       if (unsubscribeRef.current) {
+        console.log('Calling unsubscribe function');
         unsubscribeRef.current();
+        unsubscribeRef.current = null;
       }
-      signalRService.unsubscribeFromMatch(matchId).catch(console.error);
+      
+      if (autoConnect && matchId) {
+        console.log('Unsubscribing from match events');
+        signalRService.unsubscribeFromMatch(matchId).catch(console.error);
+      }
+      
+      console.log('=== TIMER SIGNALR CLEANUP COMPLETE ===');
     };
-  }, [matchId, autoConnect, handleTimerUpdate, loadTimerStatus]);
+  }, [matchId, autoConnect]); // Removed handleTimerUpdate from dependencies
 
   return {
     timerState,
