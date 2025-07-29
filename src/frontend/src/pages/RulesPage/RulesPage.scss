@@ -2,37 +2,190 @@
 @use '../../styles/variables' as *;
 @use '../../styles/common' as *;
 
+// Force white background on all parent containers
+body,
+html,
+.page-container,
+.page-content,
+.page-body {
+  background-color: #ffffff !important;
+}
+
+// Override PageTemplate styles completely for this page
+.page-container {
+  background-color: #ffffff !important;
+  
+  .page-content {
+    background-color: #ffffff !important;
+    
+    .page-body {
+      width: 100% !important;
+      max-width: none !important;
+      padding: 0 !important;
+      align-items: stretch !important;
+      background-color: #ffffff !important;
+      
+      .rules-container {
+        width: 100%;
+        max-width: none;
+        background-color: #ffffff !important;
+      }
+    }
+  }
+}
+
 .rules {
   &-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: #ffffff !important;
+    min-height: calc(100vh - 80px);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+
+  &-title {
+    font-size: 28px;
+    font-weight: 600;
+    text-align: left;
+    margin-bottom: 50px;
+    color: #000000;
+    line-height: 1.3;
+    letter-spacing: 0.5px;
   }
 }
 
 .rule {
   &-section {
-    width: 100%;
-    margin-bottom: map.get($spacing, 'xl');
+    display: flex;
+    margin-bottom: 30px;
+    align-items: flex-start;
+    gap: 0;
+    background-color: #dbdbdb;
+    border-radius: 12px;
+    overflow: hidden;
 
-    h2 {
-      font-size: map.get($font-sizes, 'xl');
-      margin-bottom: map.get($spacing, 'base');
-      border-bottom: 1px solid $color-border;
-      padding-bottom: map.get($spacing, 'xs');
-      color: $color-text-primary;
+    &:last-child {
+      margin-bottom: 0;
     }
+  }
 
-    h3 {
-      font-size: map.get($font-sizes, 'lg');
-      margin: map.get($spacing, 'lg') 0 map.get($spacing, 'xs');
-      color: $color-text-primary;
+  &-number {
+    font-size: 36px;
+    font-weight: 400;
+    color: #000000;
+    min-width: 120px;
+    flex-shrink: 0;
+    line-height: 1;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    padding: 40px 30px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  &-content {
+    flex: 1;
+    padding: 40px 40px 40px 20px;
+    background-color: #dbdbdb;
+    
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #000000;
+      letter-spacing: 0.3px;
+      line-height: 1.3;
     }
 
     p {
-      margin-bottom: map.get($spacing, 'base');
-      line-height: $line-height-relaxed;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      color: #000000;
+      text-align: justify;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .rules {
+    &-container {
+      padding: 30px 20px;
+    }
+
+    &-title {
+      font-size: 24px;
+      margin-bottom: 40px;
+    }
+  }
+
+  .rule {
+    &-section {
+      flex-direction: column;
+      margin-bottom: 25px;
+    }
+
+    &-number {
+      font-size: 32px;
+      min-width: auto;
+      padding: 30px 30px 10px 30px;
+      justify-content: center;
+    }
+
+    &-content {
+      padding: 0 30px 30px 30px;
+      
+      h2 {
+        font-size: 15px;
+        margin-bottom: 15px;
+      }
+
+      p {
+        font-size: 13px;
+        margin-bottom: 14px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .rules {
+    &-container {
+      padding: 20px 15px;
+    }
+
+    &-title {
+      font-size: 20px;
+      margin-bottom: 30px;
+    }
+  }
+
+  .rule {
+    &-section {
+      margin-bottom: 20px;
+    }
+
+    &-number {
+      font-size: 28px;
+      padding: 25px 25px 10px 25px;
+    }
+
+    &-content {
+      padding: 0 25px 25px 25px;
+      
+      h2 {
+        font-size: 14px;
+      }
+
+      p {
+        font-size: 12px;
+      }
     }
   }
 } 
