@@ -1,6 +1,7 @@
 using Application.Commands.Floorball.MatchEvent;
 using Application.DTOs.Floorball;
 using Application.Common;
+using Application.Services.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -19,18 +20,22 @@ namespace Application.Handlers.Floorball.Matches.Events;
 public class CompleteEventSourcedFloorballMatchHandler : IRequestHandler<CompleteEventSourcedFloorballMatchCommand, Result<FloorballMatchDto>>
 {
     private readonly IEventSourcedFloorballMatchRepository _eventSourcedMatchRepository;
+    private readonly IMatchTimerService _timerService;
     private readonly ILogger<CompleteEventSourcedFloorballMatchHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the CompleteEventSourcedFloorballMatchHandler class
     /// </summary>
     /// <param name="eventSourcedMatchRepository">The event sourced match repository</param>
+    /// <param name="timerService">The timer service</param>
     /// <param name="logger">The logger</param>
     public CompleteEventSourcedFloorballMatchHandler(
         IEventSourcedFloorballMatchRepository eventSourcedMatchRepository,
+        IMatchTimerService timerService,
         ILogger<CompleteEventSourcedFloorballMatchHandler> logger)
     {
         _eventSourcedMatchRepository = eventSourcedMatchRepository;
+        _timerService = timerService;
         _logger = logger;
     }
 
@@ -54,6 +59,19 @@ public class CompleteEventSourcedFloorballMatchHandler : IRequestHandler<Complet
 
             // Save the match with its new events
             await _eventSourcedMatchRepository.SaveAsync(match, cancellationToken);
+
+            // Destroy the timer for this match to prevent background service queries
+            try
+            {
+                _logger.LogInformation("Destroying timer for completed match: {MatchId}", request.MatchId);
+                await _timerService.DestroyTimerAsync(request.MatchId);
+                _logger.LogInformation("Successfully destroyed timer for completed match: {MatchId}", request.MatchId);
+            }
+            catch (Exception timerEx)
+            {
+                _logger.LogWarning(timerEx, "Failed to destroy timer for completed match: {MatchId}. This is non-critical.", request.MatchId);
+                // Don't fail the match completion if timer destruction fails
+            }
 
             // Create the DTO response
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, "Home Team", "Away Team");

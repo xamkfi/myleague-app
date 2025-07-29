@@ -41,6 +41,12 @@ public static class DependencyInjection
         // Register application services
         services.AddScoped<IPaginationService, PaginationService>();
         
+        // Register timer services
+        services.AddScoped<IMatchTimerService, PersistentMatchTimerService>();
+        
+        // Keep old timer service for backward compatibility during transition
+        services.AddSingleton<IMatchClockManager, MatchClockManager>();
+
         return services;
     }
 } 
