@@ -12,7 +12,6 @@ interface UseSignalRProps {
 
 export const useSignalR = ({
   matchId,
-  isOpen,
   onPeriodStarted,
   onGoalScored,
   onPenaltyAssigned

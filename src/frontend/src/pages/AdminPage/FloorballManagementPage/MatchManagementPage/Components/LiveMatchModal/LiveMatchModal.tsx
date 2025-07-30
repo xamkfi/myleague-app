@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 
 // Import extracted components
 import LiveMatchModalHeader from './LiveMatchModalHeader';
@@ -112,41 +112,44 @@ const LiveMatchModal = ({
     return baseScore;
   }, [liveState?.currentScore, matchData.currentMatch.homeScore, matchData.currentMatch.awayScore]);
 
-  // Update currentMatch when match prop changes
+  // Update currentMatch when match prop changes - OPTIMIZED
   useEffect(() => {
-    matchData.setCurrentMatch(match);
-  }, [match, matchData.setCurrentMatch]);
+    // Only update if actually different to prevent cascading re-renders
+    if (match.id !== matchData.currentMatch.id || match.status !== matchData.currentMatch.status) {
+      matchData.setCurrentMatch(match);
+    }
+  }, [match.id, match.status, matchData.currentMatch.id, matchData.currentMatch.status, matchData.setCurrentMatch]);
 
-  // Initialize started periods when component loads
+  // Initialize started periods when component loads - OPTIMIZED
   useEffect(() => {
-    if (isOpen && matchData.currentMatch.status === 'InProgress') {
+    if (!isOpen) return;
+    
+    if (matchData.currentMatch.status === 'InProgress') {
       periodManagement.setStartedPeriods(new Set([1]));
       periodManagement.setNextPeriodToStart(2);
-    } else if (isOpen) {
+    } else {
       periodManagement.setStartedPeriods(new Set());
       periodManagement.setEndedPeriods(new Set());
       periodManagement.setNextPeriodToStart(1);
     }
-  }, [isOpen, matchData.currentMatch.status, periodManagement.setStartedPeriods, periodManagement.setEndedPeriods, periodManagement.setNextPeriodToStart]);
+  }, [isOpen, matchData.currentMatch.status]); // Removed function dependencies
 
-  // Load team data and setup SignalR when modal opens
+  // Load team data and setup SignalR when modal opens - OPTIMIZED
   useEffect(() => {
-    if (isOpen) {
-      matchData.loadTeamData();
-      matchEvents.loadMatchEvents();
-      matchData.loadCurrentMatchStatus();
-      signalR.setupSignalR();
-    }
+    if (!isOpen) return;
+
+    matchData.loadTeamData();
+    matchEvents.loadMatchEvents();
+    matchData.loadCurrentMatchStatus();
+    signalR.setupSignalR();
     
     return () => {
       signalR.cleanupSignalR();
     };
-  }, [isOpen, match.id, matchData.loadTeamData, matchEvents.loadMatchEvents, matchData.loadCurrentMatchStatus, signalR.setupSignalR, signalR.cleanupSignalR]);
+  }, [isOpen, match.id]); // Minimal dependencies
 
-  /**
-   * Handles the period control button click (End Period or Start Period)
-   */
-  const handlePeriodControlClick = () => {
+  // MEMOIZED: Handles the period control button click
+  const handlePeriodControlClick = useCallback(() => {
     if (periodManagement.canEndPeriod()) {
       let currentTime = '00:00';
       let totalSeconds = 0;
@@ -180,7 +183,71 @@ const LiveMatchModal = ({
     } else {
       periodManagement.startPeriod();
     }
-  };
+  }, [
+    periodManagement.canEndPeriod,
+    periodManagement.endPeriod,
+    periodManagement.startPeriod,
+    periodManagement.setShowEndPeriodConfirmation,
+    periodManagement.setPendingEndPeriodAction,
+    timer.getCurrentTimeFromTimer,
+    timer.currentTimerElapsedTime,
+    timer.setCurrentTimerElapsedTime
+  ]);
+
+  // MEMOIZED: Timer update handler
+  const handleTimerUpdate = useCallback((update: any) => {
+    console.log('Timer update in LiveMatchModal:', update);
+    if (update.ElapsedTime) {
+      const timeParts = update.ElapsedTime.split(':');
+      if (timeParts.length === 3) {
+        const hours = parseInt(timeParts[0]) || 0;
+        const minutes = parseInt(timeParts[1]) || 0;
+        const seconds = parseInt(timeParts[2]) || 0;
+        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+        timer.setCurrentTimerElapsedTime(totalSeconds);
+      } else if (timeParts.length === 2) {
+        const minutes = parseInt(timeParts[0]) || 0;
+        const seconds = parseInt(timeParts[1]) || 0;
+        const totalSeconds = minutes * 60 + seconds;
+        timer.setCurrentTimerElapsedTime(totalSeconds);
+      }
+    }
+  }, [timer.setCurrentTimerElapsedTime]);
+
+  // MEMOIZED: Get current time handler
+  const handleGetCurrentTime = useCallback((getTime: () => string) => {
+    timer.setGetCurrentTimeFromTimer(() => getTime);
+  }, [timer.setGetCurrentTimeFromTimer]);
+
+  // MEMOIZED: Goal form show handler
+  const handleShowGoalForm = useCallback(() => {
+    forms.setShowGoalForm(true);
+  }, [forms.setShowGoalForm]);
+
+  // MEMOIZED: Goal form close handler
+  const handleCloseGoalForm = useCallback(() => {
+    forms.setShowGoalForm(false);
+  }, [forms.setShowGoalForm]);
+
+  // MEMOIZED: Penalty form close handler
+  const handleClosePenaltyForm = useCallback(() => {
+    forms.setShowPenaltyForm(false);
+  }, [forms.setShowPenaltyForm]);
+
+  // MEMOIZED: Error close handler
+  const handleCloseError = useCallback(() => {
+    matchData.setError(null);
+  }, [matchData.setError]);
+
+  // MEMOIZED: Overtime confirmation cancel handler
+  const handleCancelOvertime = useCallback(() => {
+    periodManagement.setShowOvertimeConfirmation(false);
+  }, [periodManagement.setShowOvertimeConfirmation]);
+
+  // MEMOIZED: Shootout confirmation cancel handler
+  const handleCancelShootout = useCallback(() => {
+    periodManagement.setShowShootoutConfirmation(false);
+  }, [periodManagement.setShowShootoutConfirmation]);
 
   if (!isOpen) return null;
 
@@ -201,7 +268,7 @@ const LiveMatchModal = ({
           <div className="error-alert">
             <span className="error-icon">⚠️</span>
             <span className="error-text">{matchData.error}</span>
-            <button onClick={() => matchData.setError(null)} className="error-close">×</button>
+            <button onClick={handleCloseError} className="error-close">×</button>
           </div>
         )}
 
@@ -227,7 +294,7 @@ const LiveMatchModal = ({
           confirmText="Start Overtime"
           isLoading={matchData.loading}
           onConfirm={periodManagement.recordOvertime}
-          onCancel={() => periodManagement.setShowOvertimeConfirmation(false)}
+          onCancel={handleCancelOvertime}
         />
 
         <ConfirmationDialog
@@ -239,7 +306,7 @@ const LiveMatchModal = ({
           confirmText="Start Shootout"
           isLoading={matchData.loading}
           onConfirm={periodManagement.recordShootout}
-          onCancel={() => periodManagement.setShowShootoutConfirmation(false)}
+          onCancel={handleCancelShootout}
         />
 
         <div className="modal-content">
@@ -257,27 +324,8 @@ const LiveMatchModal = ({
               currentTimerElapsedTime={timer.currentTimerElapsedTime}
               onStartMatch={matchControls.handleStartMatch}
               onPeriodControlClick={handlePeriodControlClick}
-              onTimerUpdate={(update: any) => {
-                console.log('Timer update in LiveMatchModal:', update);
-                if (update.ElapsedTime) {
-                  const timeParts = update.ElapsedTime.split(':');
-                  if (timeParts.length === 3) {
-                    const hours = parseInt(timeParts[0]) || 0;
-                    const minutes = parseInt(timeParts[1]) || 0;
-                    const seconds = parseInt(timeParts[2]) || 0;
-                    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-                    timer.setCurrentTimerElapsedTime(totalSeconds);
-                  } else if (timeParts.length === 2) {
-                    const minutes = parseInt(timeParts[0]) || 0;
-                    const seconds = parseInt(timeParts[1]) || 0;
-                    const totalSeconds = minutes * 60 + seconds;
-                    timer.setCurrentTimerElapsedTime(totalSeconds);
-                  }
-                }
-              }}
-              onGetCurrentTime={(getTime: () => string) => {
-                timer.setGetCurrentTimeFromTimer(() => getTime);
-              }}
+              onTimerUpdate={handleTimerUpdate}
+              onGetCurrentTime={handleGetCurrentTime}
               canEndPeriod={periodManagement.canEndPeriod}
               getPeriodStatus={periodManagement.getPeriodStatus}
               getPeriodControlButtonText={periodManagement.getPeriodControlButtonText}
@@ -290,7 +338,7 @@ const LiveMatchModal = ({
             <LiveMatchQuickActions
               loading={forms.loading}
               currentMatch={matchData.currentMatch}
-              onShowGoalForm={() => forms.setShowGoalForm(true)}
+              onShowGoalForm={handleShowGoalForm}
               onShowPenaltyForm={forms.openPenaltyForm}
             />
 
@@ -307,7 +355,7 @@ const LiveMatchModal = ({
               loading={forms.loading}
               getPlayersForTeam={matchData.getPlayersForTeam}
               onRecordGoal={forms.recordGoal}
-              onClose={() => forms.setShowGoalForm(false)}
+              onClose={handleCloseGoalForm}
               formatTime={timer.formatTime}
             />
 
@@ -323,7 +371,7 @@ const LiveMatchModal = ({
               loading={forms.loading}
               getPlayersForTeam={matchData.getPlayersForTeam}
               onRecordPenalty={forms.recordPenalty}
-              onClose={() => forms.setShowPenaltyForm(false)}
+              onClose={handleClosePenaltyForm}
               formatTime={timer.formatTime}
             />
           </div>

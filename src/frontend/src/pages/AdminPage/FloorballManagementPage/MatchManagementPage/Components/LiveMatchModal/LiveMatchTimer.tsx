@@ -33,11 +33,8 @@ const LiveMatchTimer: React.FC<LiveMatchTimerProps> = ({
   clock,
   isOpen,
   loading,
-  startedPeriods,
-  endedPeriods,
   nextPeriodToStart,
   periodLoading,
-  currentTimerElapsedTime,
   onStartMatch,
   onPeriodControlClick,
   onTimerUpdate,
@@ -46,8 +43,7 @@ const LiveMatchTimer: React.FC<LiveMatchTimerProps> = ({
   getPeriodStatus,
   getPeriodControlButtonText,
   isInOvertime,
-  isInShootout,
-  formatTime
+  isInShootout
 }) => {
   return (
     <div className={`clock-score-section ${isInOvertime() ? 'overtime' : ''} ${isInShootout() ? 'shootout' : ''}`}>

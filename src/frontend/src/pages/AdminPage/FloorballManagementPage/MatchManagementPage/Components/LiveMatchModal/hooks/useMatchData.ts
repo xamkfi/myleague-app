@@ -129,6 +129,7 @@ export const useMatchData = ({
     currentMatch,
     setCurrentMatch,
     loading,
+    setLoading,
     error,
     setError,
     

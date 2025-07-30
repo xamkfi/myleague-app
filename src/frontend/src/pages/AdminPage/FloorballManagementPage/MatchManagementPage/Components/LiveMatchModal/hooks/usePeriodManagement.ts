@@ -17,7 +17,6 @@ export const usePeriodManagement = ({
   clock,
   setLocalClock,
   currentTimerElapsedTime,
-  isOpen,
   onStateUpdate
 }: UsePeriodManagementProps) => {
   // State for tracking which periods have been started and ended
