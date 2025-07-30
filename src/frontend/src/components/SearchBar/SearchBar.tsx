@@ -3,12 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useRef } from 'react';
-import { createTeamSlug, createClubSlug } from '../../utils/slugUtils';
+import { createClubSlug } from '../../utils/slugUtils';
 import { slugify } from '../../utils/slugUtils';
-import { floorballTeamService } from '../../api/floorball/floorballTeamService';
-import type { FloorballTeam } from '../../types/floorball/floorballTypes';
 import { globalSearchService } from '../../api/common/globalSearchService';
-import type { GlobalSearchResult } from '../../api/common/globalSearchService';
 import { getClubs } from '../../api/common/clubService';
 import type { Club } from '../../api/common/clubService';
 
@@ -28,6 +25,7 @@ function SearchBar(props: any) {
    const [isAnimatedIn, setIsAnimatedIn] = useState(false);
    const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
    const [hasSearched, setHasSearched] = useState(false);
+   const [selectedIndex, setSelectedIndex] = useState(-1);
    const resultsRef = useRef<HTMLDivElement>(null);
 
    // Load all clubs for slug resolution
@@ -43,6 +41,25 @@ function SearchBar(props: any) {
      loadClubs();
    }, []);
 
+   // Debounced search effect
+   useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchQuery.length >= 1) {
+        onSeacrhClick();
+      } else {
+        // Clear results if query is too short
+        setHasSearched(false);
+        setSearchResults([]);
+        setPeopleResults([]);
+        setClubResults([]);
+      }
+    }, 300); // 500ms delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
    // Handle clicks outside the search container
    useEffect(() => {
      const handleClickOutside = (event: MouseEvent) => {
@@ -51,18 +68,50 @@ function SearchBar(props: any) {
        }
      };
 
+     const handleKeyDown = (event: KeyboardEvent) => {
+       if (!isVisible || !hasSearched) return;
+
+       const totalResults = peopleResults.length + searchResults.length + clubResults.length;
+       
+       switch (event.key) {
+         case 'ArrowDown':
+           event.preventDefault();
+           setSelectedIndex(prev => 
+             prev < totalResults - 1 ? prev + 1 : 0
+           );
+           break;
+         case 'ArrowUp':
+           event.preventDefault();
+           setSelectedIndex(prev => 
+             prev > 0 ? prev - 1 : totalResults - 1
+           );
+           break;
+         case 'Enter':
+           if (selectedIndex >= 0) {
+             event.preventDefault();
+             handleSelectedItem();
+           }
+           break;
+         case 'Escape':
+          setHasSearched(false);
+          break;
+       }
+     };
+
      document.addEventListener('mousedown', handleClickOutside);
+     document.addEventListener('keydown', handleKeyDown);
      return () => {
        document.removeEventListener('mousedown', handleClickOutside);
+       document.removeEventListener('keydown', handleKeyDown);
      };
-   }, []);
+   }, [isVisible, hasSearched, peopleResults.length, searchResults.length, clubResults.length, selectedIndex]);
 
    // Add new useEffect after the existing useEffects
    useEffect(() => {
-     const hasResults = searchResults.length > 0 || peopleResults.length > 0 || clubResults.length > 0;
      const shouldShow = isSearchFocused && hasSearched;
      if (shouldShow && !isVisible) {
        setIsVisible(true);
+       setSelectedIndex(-1); // Reset selection when showing results
        setTimeout(() => {
          setIsAnimatedIn(true);
        }, 10);
@@ -70,6 +119,13 @@ function SearchBar(props: any) {
        setIsAnimatedIn(false);
      }
    }, [isSearchFocused, searchResults, peopleResults, clubResults, isVisible, hasSearched]);
+
+   // Reset hasSearched when isSearchFocused becomes false
+   useEffect(() => {
+     if (!isSearchFocused) {
+       setHasSearched(false);
+     }
+   }, [isSearchFocused]);
 
    const onSeacrhClick = async () => {
       if (!searchQuery.trim()) return;
@@ -93,7 +149,7 @@ function SearchBar(props: any) {
    };
 
    const handlePersonClick = (person: any) => {
-     const action = () => navigate(`/person/${person.personId}`);
+     const action = () => navigate(`/floorballplayer/${person.personId}`);
      setPendingAction(() => action);
      setIsSearchFocused(false);
    };
@@ -115,16 +171,27 @@ function SearchBar(props: any) {
      }
    };
 
-   const onKeyPress = async (e: React.KeyboardEvent<HTMLElement>, functionality: string, teamId?: string) => {
-      if (e.key === 'Enter') {
-         switch (functionality) {
-            case 'search':
-               onSeacrhClick();
-               break;
-            default:
-               break;
-         }
-      }
+   const handleSelectedItem = () => {
+     const totalPeople = peopleResults.length;
+     const totalTeams = searchResults.length;
+     
+     if (selectedIndex < totalPeople) {
+       // Person result
+       handlePersonClick(peopleResults[selectedIndex]);
+     } else if (selectedIndex < totalPeople + totalTeams) {
+       // Team result
+       const teamIndex = selectedIndex - totalPeople;
+       handleTeamClick(searchResults[teamIndex]);
+     } else {
+       // Club result
+       const clubIndex = selectedIndex - totalPeople - totalTeams;
+       handleClubClick(clubResults[clubIndex]);
+     }
+   };
+
+   const getItemClassName = (index: number) => {
+     const baseClass = 'search-result-item';
+     return selectedIndex === index ? `${baseClass} selected` : baseClass;
    };
 
    // Add handleTransitionEnd before return
@@ -135,6 +202,7 @@ function SearchBar(props: any) {
        setPeopleResults([]);
        setClubResults([]);
        setHasSearched(false);
+       setSelectedIndex(-1);
        if (pendingAction) {
          pendingAction();
          setPendingAction(null);
@@ -151,15 +219,8 @@ function SearchBar(props: any) {
             placeholder={t('searchBar.placeholder')}
             className="search-bar-input"
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => onKeyPress(e, 'search')}
             onFocus={() => setIsSearchFocused(true)}
          />
-
-         <button 
-            onClick={onSeacrhClick} 
-            className="search-bar-button">
-               {t('searchBar.button')}
-         </button>
 
          {/* Search results */}
          {isVisible && (
@@ -183,15 +244,17 @@ function SearchBar(props: any) {
                    <h4>People</h4>
                  </div>
                )}
-               {peopleResults.map((p)=>(
+               {peopleResults.map((p, index)=>(
                   <div 
-                    className="search-result-item" 
+                    className={getItemClassName(index)}
                     key={p.personId}
                     tabIndex={0}
                     onClick={() => handlePersonClick(p)}
-                    onKeyDown={(e) => e.key === 'Enter' && handlePersonClick(p)}>
+                    onKeyDown={(e) => e.key === 'Enter' && handlePersonClick(p)}
+                    onMouseEnter={() => setSelectedIndex(index)}>
                      <div className="search-result-item-content">
                         <div className="search-result-item-name">{p.firstName} {p.lastName}</div>
+                        <div className="search-result-item-details">⌊{p.teamName ?? "No data"}</div>
                      </div>
                    </div>
                 ))}
@@ -201,36 +264,44 @@ function SearchBar(props: any) {
                     <h4>Teams</h4>
                   </div>
                 )}
-                {searchResults.map((result) => (
-                   <div 
-                   tabIndex={0} 
-                   className="search-result-item" 
-                   key={result.teamId || result.id} 
-                   onClick={() => handleTeamClick(result)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleTeamClick(result)}>
-                     <div className="search-result-item-content">
-                        <div className="search-result-item-name">{result.teamName}</div>
-                     </div>
-                   </div>
-                ))}
+                {searchResults.map((result, index) => {
+                   const actualIndex = peopleResults.length + index;
+                   return (
+                     <div 
+                     tabIndex={0} 
+                     className={getItemClassName(actualIndex)}
+                     key={result.teamId || result.id} 
+                     onClick={() => handleTeamClick(result)}
+                     onKeyDown={(e) => e.key === 'Enter' && handleTeamClick(result)}
+                     onMouseEnter={() => setSelectedIndex(actualIndex)}>
+                        <div className="search-result-item-content">
+                           <div className="search-result-item-name">{result.teamName}</div>
+                        </div>
+                      </div>
+                   );
+                })}
                 {/* Club results third */}
                 {clubResults.length > 0 && (
                   <div className="search-section-header">
                     <h4>Clubs</h4>
                   </div>
                 )}
-                {clubResults.map((clubName) => (
-                  <div 
-                    className="search-result-item" 
-                    key={clubName}
-                    tabIndex={0}
-                    onClick={() => handleClubClick(clubName)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleClubClick(clubName)}>
-                     <div className="search-result-item-content">
-                        <div className="search-result-item-name">{clubName}</div>
-                     </div>
-                   </div>
-                ))}
+                {clubResults.map((clubName, index) => {
+                   const actualIndex = peopleResults.length + searchResults.length + index;
+                   return (
+                     <div 
+                       className={getItemClassName(actualIndex)}
+                       key={clubName}
+                       tabIndex={0}
+                       onClick={() => handleClubClick(clubName)}
+                       onKeyDown={(e) => e.key === 'Enter' && handleClubClick(clubName)}
+                       onMouseEnter={() => setSelectedIndex(actualIndex)}>
+                      <div className="search-result-item-content">
+                         <div className="search-result-item-name">{clubName}</div>
+                      </div>
+                    </div>
+                   );
+                })}
             </div>
          )}
 

@@ -8,11 +8,13 @@
    border-radius: map.get($border-radius, 'lg');
    margin: 0 map.get($spacing, 'xs');
    position: relative;
+   width: 100%;
    >* {
       padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
    }
    .search-bar-input {
       outline: none;
+      width: 100%;
       transition: outline 0.2s ease;
       &:focus {
          outline: 4px solid $color-blue-medium;
@@ -60,11 +62,20 @@
          &:focus {
             opacity: 0.5;
          }
+         &.selected {
+            background-color: $color-blue-medium;
+            color: $color-neutral-white;
+         }
          .search-result-item-content {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
             padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
          }
+         .search-result-item-details {
+            font-size: map.get($font-sizes, 'sm');
+            color: $color-neutral-medium-grey;
+          }
       }
    }
 }

@@ -13,9 +13,9 @@ namespace Application.DTOs.Common
         Guid PersonId,
         string FirstName,
         string LastName,
-        Guid? TeamId,
-        string? TeamName,
-        Guid? ClubId,
-        string? ClubName);
+        Guid? TeamId = null,
+        string? TeamName = null,
+        Guid? ClubId = null,
+        string? ClubName = null);
     
 }

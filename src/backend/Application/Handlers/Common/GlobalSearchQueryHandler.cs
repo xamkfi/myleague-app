@@ -69,22 +69,32 @@ namespace Application.Handlers.Common
             IEnumerable<Guid> floorballPlayerIds = playerMap.Values.Select(pl => pl.Id);
             Dictionary<Guid, FloorballTeam> playerTeamMap = await _floorballTeamRepository.GetTeamsByPlayerIdsAsync(floorballPlayerIds, cancellationToken);
 
-            IEnumerable<Guid> clubIds = playerTeamMap.Values.Select(t => t.ClubId).Distinct();
-            Dictionary<Guid, Club> clubMap = await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
+            // Get club IDs from both player teams and direct team search results
+            IEnumerable<Guid> playerTeamClubIds = playerTeamMap.Values.Select(t => t.ClubId).Distinct();
+            IEnumerable<Guid> teamClubIds = teams.Select(t => t.ClubId).Distinct();
+            IEnumerable<Guid> allClubIds = playerTeamClubIds.Union(teamClubIds);
+            Dictionary<Guid, Club> clubMap = await _clubRepository.GetByIdsAsync(allClubIds, cancellationToken);
 
             GlobalSearchResultPersonDto[] personResults = persons.Select(p =>
             {
                 if (!playerMap.TryGetValue(p.Id, out FloorballPlayer? fp))
                 {
-                    return new GlobalSearchResultPersonDto(p.Id, p.FirstName, p.LastName, null, null, null, null);
+                    // This person is not a floorball player, return basic person data
+                    return new GlobalSearchResultPersonDto(p.Id, p.FirstName, p.LastName);
                 }
+                
+                // This person is a floorball player, enrich with team data (may be null if not on a team)
                 playerTeamMap.TryGetValue(fp.Id, out FloorballTeam? team);
                 Club? club = team != null && clubMap.TryGetValue(team.ClubId, out Club? c) ? c : null;
                 return new GlobalSearchResultPersonDto(p.Id, p.FirstName, p.LastName, team?.Id, team?.Name, club?.Id, club?.Name);
             }).ToArray();
 
             GlobalSearchResultTeamDto[] teamResults = teams
-                .Select(t => new GlobalSearchResultTeamDto(t.Id, t.Name, t.ClubId, null))
+                .Select(t => 
+                {
+                    Club? club = clubMap.TryGetValue(t.ClubId, out Club? c) ? c : null;
+                    return new GlobalSearchResultTeamDto(t.Id, t.Name, t.ClubId, club?.Name);
+                })
                 .ToArray();
 
             string[] clubNames = clubs.Select(c => c.Name).ToArray();
