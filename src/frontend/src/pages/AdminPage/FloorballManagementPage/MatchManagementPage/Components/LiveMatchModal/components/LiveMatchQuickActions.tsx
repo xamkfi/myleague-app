@@ -1,5 +1,5 @@
 import React from 'react';
-import type { FloorballMatchDto } from '../../../../../../types/floorball/floorballTypes';
+import type { FloorballMatchDto } from '../../../../../../../types/floorball/floorballTypes';
 
 interface LiveMatchQuickActionsProps {
   loading: boolean;

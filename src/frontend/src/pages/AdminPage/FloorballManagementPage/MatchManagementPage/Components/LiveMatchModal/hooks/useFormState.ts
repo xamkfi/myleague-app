@@ -5,7 +5,7 @@ import {
   type RecordPenaltyEventRequest 
 } from '../../../../../../../api/floorball/floorballMatchEventService';
 import type { FloorballMatchDto } from '../../../../../../../types/floorball/floorballTypes';
-import type { GoalForm, PenaltyForm, LocalClock } from '../types';
+import type { GoalForm, PenaltyForm, LocalClock } from '../components/types';
 
 interface UseFormStateProps {
   currentMatch: FloorballMatchDto;

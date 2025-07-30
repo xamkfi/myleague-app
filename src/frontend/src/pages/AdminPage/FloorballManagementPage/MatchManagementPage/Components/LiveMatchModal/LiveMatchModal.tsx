@@ -2,14 +2,14 @@ import { useEffect, useMemo, useCallback } from 'react';
 import type { TimerUpdate } from '../../../../../../api/common/timerService';
 
 // Import extracted components
-import LiveMatchModalHeader from './LiveMatchModalHeader';
-import LiveMatchScoreboard from './LiveMatchScoreboard';
-import LiveMatchTimer from './LiveMatchTimer';
-import LiveMatchQuickActions from './LiveMatchQuickActions';
-import GoalRecordingForm from './GoalRecordingForm';
-import PenaltyRecordingForm from './PenaltyRecordingForm';
-import LiveMatchEventsHistory from './LiveMatchEventsHistory';
-import ConfirmationDialog from './ConfirmationDialog';
+import LiveMatchModalHeader from './components/LiveMatchModalHeader';
+import LiveMatchScoreboard from './components/LiveMatchScoreboard';
+import LiveMatchTimer from './components/LiveMatchTimer';
+import LiveMatchQuickActions from './components/LiveMatchQuickActions';
+import GoalRecordingForm from './components/GoalRecordingForm';
+import PenaltyRecordingForm from './components/PenaltyRecordingForm';
+import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
+import ConfirmationDialog from './components/ConfirmationDialog';
 
 // Import custom hooks
 import {
@@ -23,7 +23,7 @@ import {
 } from './hooks';
 
 // Import types
-import type { LiveMatchModalProps } from './types';
+import type { LiveMatchModalProps } from './components/types';
 
 import './LiveMatchModal.scss';
 

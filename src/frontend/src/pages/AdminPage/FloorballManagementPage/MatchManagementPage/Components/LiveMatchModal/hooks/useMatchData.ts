@@ -3,7 +3,7 @@ import { floorballTeamService } from '../../../../../../../api/floorball/floorba
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../../../api/floorball/floorballPlayerService';
 import { floorballMatchService } from '../../../../../../../api/floorball/floorballMatchService';
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../../../types/floorball/floorballTypes';
-import type { StateUpdate } from '../types';
+import type { StateUpdate } from '../components/types';
 
 interface UseMatchDataProps {
   match: FloorballMatchDto;

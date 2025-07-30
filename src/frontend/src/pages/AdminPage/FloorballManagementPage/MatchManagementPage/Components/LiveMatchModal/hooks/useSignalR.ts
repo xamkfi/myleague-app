@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { signalRService, type MatchEvent } from '../../../../../../../services/signalRService';
-import type { PeriodEventData, GoalEventData, PenaltyEventData } from '../types';
+import type { PeriodEventData, GoalEventData, PenaltyEventData } from '../components/types';
 
 interface UseSignalRProps {
   matchId: string;

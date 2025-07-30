@@ -1,5 +1,5 @@
 // Main modal component
-export { default as LiveMatchModal } from './LiveMatchModal';
+export { default as LiveMatchModal } from '../LiveMatchModal';
 
 // Sub-components
 export { default as LiveMatchModalHeader } from './LiveMatchModalHeader';
@@ -12,7 +12,7 @@ export { default as LiveMatchEventsHistory } from './LiveMatchEventsHistory';
 export { default as ConfirmationDialog } from './ConfirmationDialog';
 
 // Custom hooks
-export * from './hooks';
+export * from '../hooks';
 
 // Types
 export type * from './types'; 
