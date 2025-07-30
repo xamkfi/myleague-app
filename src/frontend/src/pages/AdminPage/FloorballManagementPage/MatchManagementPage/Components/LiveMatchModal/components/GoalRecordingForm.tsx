@@ -19,7 +19,7 @@ interface GoalRecordingFormProps {
   formatTime: (minutes: number, seconds: number) => string;
 }
 
-const GoalRecordingForm: React.FC<GoalRecordingFormProps> = ({
+const GoalRecordingForm = ({
   showGoalForm,
   goalForm,
   setGoalForm,
@@ -33,7 +33,7 @@ const GoalRecordingForm: React.FC<GoalRecordingFormProps> = ({
   onRecordGoal,
   onClose,
   formatTime
-}) => {
+}: GoalRecordingFormProps) => {
   if (!showGoalForm) return null;
 
   return (

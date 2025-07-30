@@ -1,4 +1,3 @@
-import React from 'react';
 import type { FloorballTeam } from '../../../../../../../types/floorball/floorballTypes';
 
 interface LiveMatchScoreboardProps {
@@ -7,11 +6,11 @@ interface LiveMatchScoreboardProps {
   currentScore: { home: number; away: number };
 }
 
-const LiveMatchScoreboard: React.FC<LiveMatchScoreboardProps> = ({
+const LiveMatchScoreboard = ({
   homeTeam,
   awayTeam,
   currentScore
-}) => {
+}: LiveMatchScoreboardProps) => {
   return (
     <div className="scoreboard">
       <div className="team-score">

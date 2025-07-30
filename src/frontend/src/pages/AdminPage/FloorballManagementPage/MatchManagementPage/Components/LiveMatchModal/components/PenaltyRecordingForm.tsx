@@ -19,7 +19,7 @@ interface PenaltyRecordingFormProps {
   formatTime: (minutes: number, seconds: number) => string;
 }
 
-const PenaltyRecordingForm: React.FC<PenaltyRecordingFormProps> = ({
+const PenaltyRecordingForm = ({
   showPenaltyForm,
   penaltyForm,
   setPenaltyForm,
@@ -33,7 +33,7 @@ const PenaltyRecordingForm: React.FC<PenaltyRecordingFormProps> = ({
   onRecordPenalty,
   onClose,
   formatTime
-}) => {
+}: PenaltyRecordingFormProps) => {
   if (!showPenaltyForm) return null;
 
   return (

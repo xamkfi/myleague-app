@@ -1,4 +1,3 @@
-import React from 'react';
 import type { ProcessedEvent } from './types';
 
 interface LiveMatchEventsHistoryProps {
@@ -6,10 +5,10 @@ interface LiveMatchEventsHistoryProps {
   formatEventTime: (timeInSeconds: number) => string;
 }
 
-const LiveMatchEventsHistory: React.FC<LiveMatchEventsHistoryProps> = ({
+const LiveMatchEventsHistory = ({
   allEvents,
   formatEventTime
-}) => {
+}: LiveMatchEventsHistoryProps) => {
   return (
     <div className="events-history">
       <h3>Match Events</h3>

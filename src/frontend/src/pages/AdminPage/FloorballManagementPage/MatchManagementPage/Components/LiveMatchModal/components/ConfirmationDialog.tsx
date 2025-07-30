@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface ConfirmationDialogProps {
   isOpen: boolean;
   icon: string;
@@ -13,7 +11,7 @@ interface ConfirmationDialogProps {
   onCancel: () => void;
 }
 
-const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
+const ConfirmationDialog = ({
   isOpen,
   icon,
   title,
@@ -24,7 +22,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   isLoading = false,
   onConfirm,
   onCancel
-}) => {
+}: ConfirmationDialogProps) => {
   if (!isOpen) return null;
 
   return (
