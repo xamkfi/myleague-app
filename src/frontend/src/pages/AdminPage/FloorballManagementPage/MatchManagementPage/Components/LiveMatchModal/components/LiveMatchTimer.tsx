@@ -102,7 +102,21 @@ const LiveMatchTimer = ({
       {/* Period Control Button - End Period or Start Period */}
       <div className="clock-start-reset">
         <button 
-          onClick={onPeriodControlClick} 
+          onClick={() => {
+            const canEnd = canEndPeriod();
+            const currentPeriodToCheck = canEnd ? clock.period : nextPeriodToStart;
+            const isDisabled = periodLoading[currentPeriodToCheck];
+            
+            console.log('🔘 Period control button clicked:', {
+              canEndPeriod: canEnd,
+              periodToCheck: currentPeriodToCheck,
+              isDisabled,
+              periodLoading,
+              buttonText: getPeriodControlButtonText()
+            });
+            
+            onPeriodControlClick();
+          }} 
           className="period-control-btn"
           title={canEndPeriod() ? "End the current period" : "Start the next period"}
           disabled={periodLoading[canEndPeriod() ? clock.period : nextPeriodToStart]}

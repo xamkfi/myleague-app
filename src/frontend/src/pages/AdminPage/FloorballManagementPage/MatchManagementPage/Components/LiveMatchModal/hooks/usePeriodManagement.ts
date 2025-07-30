@@ -212,11 +212,32 @@ export const usePeriodManagement = ({
    * Determines if we can end the current period
    */
   const canEndPeriod = useCallback(() => {
-    return currentMatch.status === 'InProgress' && 
-           !periodLoading[clock.period] &&
-           startedPeriods.has(clock.period) &&
-           !endedPeriods.has(clock.period) &&
-           nextPeriodToStart > 0;
+    const conditions = {
+      matchInProgress: currentMatch.status === 'InProgress',
+      notLoading: !periodLoading[clock.period],
+      periodStarted: startedPeriods.has(clock.period),
+      periodNotEnded: !endedPeriods.has(clock.period),
+      hasNextPeriod: nextPeriodToStart > 0
+    };
+    
+    const canEnd = conditions.matchInProgress && 
+                   conditions.notLoading &&
+                   conditions.periodStarted &&
+                   conditions.periodNotEnded &&
+                   conditions.hasNextPeriod;
+    
+    console.log('🔍 canEndPeriod check:', {
+      period: clock.period,
+      matchStatus: currentMatch.status,
+      conditions,
+      result: canEnd,
+      startedPeriods: Array.from(startedPeriods),
+      endedPeriods: Array.from(endedPeriods),
+      nextPeriodToStart,
+      periodLoading
+    });
+    
+    return canEnd;
   }, [currentMatch.status, periodLoading, clock.period, startedPeriods, endedPeriods, nextPeriodToStart]);
 
   /**

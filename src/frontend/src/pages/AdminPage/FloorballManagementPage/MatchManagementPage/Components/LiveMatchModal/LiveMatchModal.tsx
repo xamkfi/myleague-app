@@ -153,6 +153,16 @@ const LiveMatchModal = ({
 
   // MEMOIZED: Handles the period control button click
   const handlePeriodControlClick = useCallback(() => {
+    console.log('🔥 Period control button clicked - debugging info:', {
+      canEndPeriod: periodManagement.canEndPeriod(),
+      currentPeriod: timer.localClock.period,
+      matchStatus: matchData.currentMatch.status,
+      startedPeriods: Array.from(periodManagement.startedPeriods),
+      endedPeriods: Array.from(periodManagement.endedPeriods),
+      nextPeriodToStart: periodManagement.nextPeriodToStart,
+      periodLoading: periodManagement.periodLoading
+    });
+    
     if (periodManagement.canEndPeriod()) {
       let currentTime = '00:00';
       let totalSeconds = 0;
@@ -177,6 +187,13 @@ const LiveMatchModal = ({
       const isUnder20Minutes = totalSeconds < 1200; // 20 minutes = 1200 seconds
       timer.setCurrentTimerElapsedTime(totalSeconds);
       
+      console.log('🔚 Attempting to end period:', {
+        period: timer.localClock.period,
+        totalSeconds,
+        isUnder20Minutes,
+        willShowConfirmation: isUnder20Minutes
+      });
+      
       if (isUnder20Minutes) {
         periodManagement.setShowEndPeriodConfirmation(true);
         periodManagement.setPendingEndPeriodAction(() => periodManagement.endPeriod);
@@ -184,10 +201,25 @@ const LiveMatchModal = ({
         periodManagement.endPeriod();
       }
     } else {
+      console.log('🚀 Attempting to start period:', periodManagement.nextPeriodToStart);
       periodManagement.startPeriod();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps array - functions are from stable hook references
+  }, [
+    periodManagement.canEndPeriod,
+    periodManagement.startPeriod,
+    periodManagement.endPeriod,
+    periodManagement.setShowEndPeriodConfirmation,
+    periodManagement.setPendingEndPeriodAction,
+    periodManagement.startedPeriods,
+    periodManagement.endedPeriods,
+    periodManagement.nextPeriodToStart,
+    periodManagement.periodLoading,
+    timer.localClock.period,
+    timer.getCurrentTimeFromTimer,
+    timer.currentTimerElapsedTime,
+    timer.setCurrentTimerElapsedTime,
+    matchData.currentMatch.status
+  ]);
 
   // MEMOIZED: Timer update handler
   const handleTimerUpdate = useCallback((update: TimerUpdate) => {
@@ -207,50 +239,42 @@ const LiveMatchModal = ({
         timer.setCurrentTimerElapsedTime(totalSeconds);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - timer.setCurrentTimerElapsedTime is stable
+  }, [timer.setCurrentTimerElapsedTime]);
 
   // MEMOIZED: Get current time handler
   const handleGetCurrentTime = useCallback((getTime: () => string) => {
     timer.setGetCurrentTimeFromTimer(() => getTime);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - timer.setGetCurrentTimeFromTimer is stable
+  }, [timer.setGetCurrentTimeFromTimer]);
 
   // MEMOIZED: Goal form show handler
   const handleShowGoalForm = useCallback(() => {
     forms.setShowGoalForm(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - forms.setShowGoalForm is stable
+  }, [forms.setShowGoalForm]);
 
   // MEMOIZED: Goal form close handler
   const handleCloseGoalForm = useCallback(() => {
     forms.setShowGoalForm(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - forms.setShowGoalForm is stable
+  }, [forms.setShowGoalForm]);
 
   // MEMOIZED: Penalty form close handler
   const handleClosePenaltyForm = useCallback(() => {
     forms.setShowPenaltyForm(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - forms.setShowPenaltyForm is stable
+  }, [forms.setShowPenaltyForm]);
 
   // MEMOIZED: Error close handler
   const handleCloseError = useCallback(() => {
     matchData.setError(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - matchData.setError is stable
+  }, [matchData.setError]);
 
   // MEMOIZED: Overtime confirmation cancel handler
   const handleCancelOvertime = useCallback(() => {
     periodManagement.setShowOvertimeConfirmation(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - periodManagement.setShowOvertimeConfirmation is stable
+  }, [periodManagement.setShowOvertimeConfirmation]);
 
   // MEMOIZED: Shootout confirmation cancel handler
   const handleCancelShootout = useCallback(() => {
     periodManagement.setShowShootoutConfirmation(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - periodManagement.setShowShootoutConfirmation is stable
+  }, [periodManagement.setShowShootoutConfirmation]);
 
   if (!isOpen) return null;
 
