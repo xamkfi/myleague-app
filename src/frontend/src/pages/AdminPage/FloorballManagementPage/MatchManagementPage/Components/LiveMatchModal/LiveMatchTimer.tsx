@@ -1,6 +1,7 @@
 import React from 'react';
 import { Timer } from '../../../../../../components/Timer/Timer';
 import type { FloorballMatchDto } from '../../../../../../types/floorball/floorballTypes';
+import type { TimerUpdate } from '../../../../../../api/common/timerService';
 import type { LocalClock } from './types';
 
 // Create a memoized Timer component to prevent unnecessary re-renders
@@ -18,7 +19,7 @@ interface LiveMatchTimerProps {
   currentTimerElapsedTime: number;
   onStartMatch: () => Promise<void>;
   onPeriodControlClick: () => void;
-  onTimerUpdate: (update: any) => void;
+  onTimerUpdate: (update: TimerUpdate) => void;
   onGetCurrentTime: (getTime: () => string) => void;
   canEndPeriod: () => boolean;
   getPeriodStatus: () => string;

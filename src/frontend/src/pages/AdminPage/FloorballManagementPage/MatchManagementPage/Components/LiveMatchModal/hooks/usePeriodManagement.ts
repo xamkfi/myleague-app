@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { floorballMatchEventService } from '../../../../../../../api/floorball/floorballMatchEventService';
 import type { FloorballMatchDto } from '../../../../../../../types/floorball/floorballTypes';
-import type { LocalClock, PeriodEventData } from '../types';
+import type { LocalClock, PeriodEventData, StateUpdate } from '../types';
 
 interface UsePeriodManagementProps {
   currentMatch: FloorballMatchDto;
@@ -9,7 +9,7 @@ interface UsePeriodManagementProps {
   setLocalClock: (clock: LocalClock | ((prev: LocalClock) => LocalClock)) => void;
   currentTimerElapsedTime: number;
   isOpen: boolean;
-  onStateUpdate?: (updates: any) => void;
+  onStateUpdate?: (updates: StateUpdate) => void;
 }
 
 export const usePeriodManagement = ({

@@ -14,6 +14,12 @@ export interface LiveMatchModalProps {
   onMatchUpdated?: (updatedMatch: FloorballMatchDto) => void;
 }
 
+export interface StateUpdate {
+  currentScore?: { home: number; away: number };
+  clock?: LocalClock;
+  [key: string]: unknown;
+}
+
 export interface PeriodEventData {
   matchId: string;
   periodNumber: number;

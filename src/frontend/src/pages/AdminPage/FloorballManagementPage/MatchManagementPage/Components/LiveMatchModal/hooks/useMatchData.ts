@@ -3,11 +3,12 @@ import { floorballTeamService } from '../../../../../../../api/floorball/floorba
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../../../api/floorball/floorballPlayerService';
 import { floorballMatchService } from '../../../../../../../api/floorball/floorballMatchService';
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../../../types/floorball/floorballTypes';
+import type { StateUpdate } from '../types';
 
 interface UseMatchDataProps {
   match: FloorballMatchDto;
   onMatchUpdated?: (updatedMatch: FloorballMatchDto) => void;
-  onStateUpdate?: (updates: any) => void;
+  onStateUpdate?: (updates: StateUpdate) => void;
 }
 
 export const useMatchData = ({ 

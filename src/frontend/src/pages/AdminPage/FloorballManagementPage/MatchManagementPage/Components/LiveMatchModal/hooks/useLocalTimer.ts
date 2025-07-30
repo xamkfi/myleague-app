@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import type { LocalClock } from '../types';
+import type { LocalClock, StateUpdate } from '../types';
 
 interface UseLocalTimerProps {
   isOpen: boolean;
-  onStateUpdate?: (updates: any) => void;
+  onStateUpdate?: (updates: StateUpdate) => void;
 }
 
 export const useLocalTimer = ({ isOpen, onStateUpdate }: UseLocalTimerProps) => {
