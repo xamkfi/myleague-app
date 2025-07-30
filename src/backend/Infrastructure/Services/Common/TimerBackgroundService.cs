@@ -7,6 +7,7 @@ using Application.DTOs.Common;
 using Application.Services.Common;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MyLeague.Infrastructure.Services.Common
 {
@@ -15,8 +16,8 @@ namespace MyLeague.Infrastructure.Services.Common
     /// </summary>
     public class TimerBackgroundService : BackgroundService
     {
-        private readonly InMemoryTimerStore _timerStore;
-        private readonly ITimerNotificationService _notificationService;
+        private readonly ITimerStore _timerStore;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<TimerBackgroundService> _logger;
         private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(1);
 
@@ -26,12 +27,12 @@ namespace MyLeague.Infrastructure.Services.Common
         /// <param name="serviceProvider">The service provider</param>
         /// <param name="logger">The logger</param>
         public TimerBackgroundService(
-            InMemoryTimerStore timerStore,
-            ITimerNotificationService notificationService,
+            ITimerStore timerStore,
+            IServiceScopeFactory scopeFactory,
             ILogger<TimerBackgroundService> logger)
         {
             _timerStore = timerStore;
-            _notificationService = notificationService;
+            _scopeFactory = scopeFactory;
             _logger = logger;
         }
 
@@ -85,29 +86,34 @@ namespace MyLeague.Infrastructure.Services.Common
                 }
                 _logger.LogInformation("TimerBackgroundService: Sending periodic updates for {Count} running timers", runningTimers.Count());
 
-                foreach (Domain.Entities.Common.TimerState timerState in runningTimers)
+                using (IServiceScope scope = _scopeFactory.CreateScope())
                 {
-                    try
+                    ITimerNotificationService notificationService = scope.ServiceProvider.GetRequiredService<ITimerNotificationService>();
+
+                    foreach (Domain.Entities.Common.TimerState timerState in runningTimers)
                     {
-                        timerState.Tick();
-                        TimeSpan elapsedTime = timerState.ElapsedTime;
-                        
-                        _logger.LogInformation("TimerBackgroundService: Timer state for match {MatchId}: IsRunning={IsRunning}, ElapsedTime={ElapsedTime}",
-                            timerState.MatchId, timerState.IsRunning, elapsedTime);
-                        
-                        TimerUpdate update = TimerUpdate.CreateUpdate(
-                            timerState.MatchId,
-                            timerState.PeriodNumber,
-                            elapsedTime,
-                            timerState.IsRunning);
-                        await _notificationService.NotifyTimerUpdateAsync(timerState.MatchId, update);
-                        
-                        _logger.LogInformation("TimerBackgroundService: Sent periodic update for match {MatchId}: {ElapsedTime}",
-                            timerState.MatchId, elapsedTime);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "TimerBackgroundService: Error sending periodic update for match {MatchId}", timerState.MatchId);
+                        try
+                        {
+                            timerState.Tick();
+                            TimeSpan elapsedTime = timerState.ElapsedTime;
+                            
+                            _logger.LogInformation("TimerBackgroundService: Timer state for match {MatchId}: IsRunning={IsRunning}, ElapsedTime={ElapsedTime}",
+                                timerState.MatchId, timerState.IsRunning, elapsedTime);
+                            
+                            TimerUpdate update = TimerUpdate.CreateUpdate(
+                                timerState.MatchId,
+                                timerState.PeriodNumber,
+                                elapsedTime,
+                                timerState.IsRunning);
+                            await notificationService.NotifyTimerUpdateAsync(timerState.MatchId, update);
+                            
+                            _logger.LogInformation("TimerBackgroundService: Sent periodic update for match {MatchId}: {ElapsedTime}",
+                                timerState.MatchId, elapsedTime);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "TimerBackgroundService: Error sending periodic update for match {MatchId}", timerState.MatchId);
+                        }
                     }
                 }
                 _logger.LogDebug("TimerBackgroundService: Completed periodic update cycle");
