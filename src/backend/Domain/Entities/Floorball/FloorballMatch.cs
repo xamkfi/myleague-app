@@ -437,8 +437,10 @@ public class FloorballMatch : AggregateRoot
             periodNumber,
             timeInSeconds,
             WentToOvertime,
-            false, // Is shootout goal
-            assistingPlayer?.Id));
+            false, // isPenaltyShot
+            WentToShootout, // isShootout
+            assistingPlayer?.Id,
+            secondaryAssistingPlayer?.Id));
     }
 
     public void UpdateScore(Guid scoringTeamId)

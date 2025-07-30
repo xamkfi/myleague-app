@@ -62,6 +62,7 @@ namespace MyLeague.Infrastructure.SignalR
         {
             string groupName = $"Match_{matchId}";
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            _logger.LogInformation("Client {ConnectionId} subscribed to match group {GroupName}", Context.ConnectionId, groupName);
         }
 
         /// <summary>
@@ -73,6 +74,7 @@ namespace MyLeague.Infrastructure.SignalR
         {
             string groupName = $"Match_{matchId}";
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            _logger.LogInformation("Client {ConnectionId} unsubscribed from match group {GroupName}", Context.ConnectionId, groupName);
         }
     }
 }

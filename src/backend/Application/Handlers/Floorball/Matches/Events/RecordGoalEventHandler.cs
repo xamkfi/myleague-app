@@ -53,6 +53,8 @@ public class RecordGoalEventHandler : IRequestHandler<RecordGoalEventCommand, Re
                 request.PlayerId,
                 request.PeriodNumber,
                 request.TimeInSeconds,
+                request.WasInOvertime,
+                request.WasInShootout,
                 request.AssisterId,
                 request.SecondaryAssisterId);
 
