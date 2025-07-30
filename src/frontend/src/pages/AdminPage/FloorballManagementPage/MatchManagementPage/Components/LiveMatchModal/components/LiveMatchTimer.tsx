@@ -29,7 +29,7 @@ interface LiveMatchTimerProps {
   formatTime: (minutes: number, seconds: number) => string;
 }
 
-const LiveMatchTimer: React.FC<LiveMatchTimerProps> = ({
+const LiveMatchTimer = ({
   currentMatch,
   clock,
   isOpen,
@@ -45,7 +45,7 @@ const LiveMatchTimer: React.FC<LiveMatchTimerProps> = ({
   getPeriodControlButtonText,
   isInOvertime,
   isInShootout
-}) => {
+}: LiveMatchTimerProps) => {
   return (
     <div className={`clock-score-section ${isInOvertime() ? 'overtime' : ''} ${isInShootout() ? 'shootout' : ''}`}>
       {currentMatch.status === 'Completed' && (

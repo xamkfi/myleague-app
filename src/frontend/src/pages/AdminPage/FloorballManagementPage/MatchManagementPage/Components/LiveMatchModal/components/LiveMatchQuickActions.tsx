@@ -1,4 +1,3 @@
-import React from 'react';
 import type { FloorballMatchDto } from '../../../../../../../types/floorball/floorballTypes';
 
 interface LiveMatchQuickActionsProps {
@@ -8,12 +7,12 @@ interface LiveMatchQuickActionsProps {
   onShowPenaltyForm: () => void;
 }
 
-const LiveMatchQuickActions: React.FC<LiveMatchQuickActionsProps> = ({
+const LiveMatchQuickActions = ({
   loading,
   currentMatch,
   onShowGoalForm,
   onShowPenaltyForm
-}) => {
+}: LiveMatchQuickActionsProps) => {
   return (
     <div className="quick-actions">
       <button 

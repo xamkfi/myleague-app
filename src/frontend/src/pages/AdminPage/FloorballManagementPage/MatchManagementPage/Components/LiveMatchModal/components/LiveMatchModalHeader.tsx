@@ -1,4 +1,3 @@
-import React from 'react';
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../../../types/floorball/floorballTypes';
 
 interface LiveMatchModalHeaderProps {
@@ -9,13 +8,13 @@ interface LiveMatchModalHeaderProps {
   onCompleteLive: () => void;
 }
 
-const LiveMatchModalHeader: React.FC<LiveMatchModalHeaderProps> = ({
+const LiveMatchModalHeader = ({
   homeTeam,
   awayTeam,
   currentMatch,
   onClose,
   onCompleteLive
-}) => {
+}: LiveMatchModalHeaderProps) => {
   return (
     <div className="modal-header">
       <div className="match-info">
