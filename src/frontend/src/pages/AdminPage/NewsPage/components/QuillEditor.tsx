@@ -160,10 +160,6 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
         console.log("🚫 Navigation in progress - skipping useEffect completely");
         return;
       }
-
-      console.log("=== QuillEditor useEffect triggered ===");
-      console.log("Current value:", value);
-      console.log("Previous images:", previousImagesRef.current);
       
       const currentImages = extractImageUrls(value);
       const currentMatchResults = extractMatchResults(value);

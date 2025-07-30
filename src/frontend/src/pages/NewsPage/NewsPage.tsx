@@ -5,9 +5,10 @@ import './NewsPage.scss';
 import NewsCard from './components/NewsCard';
 import NewsCardSkeleton from './components/NewsCardSkeleton';
 import NewsFilter from './components/NewsFilter';
-import { newsService, type NewsArticleDto, type NewsParameters, getMainNewsArticle } from '../../api/news/newsService';
+import { newsService, type NewsArticleDto, type NewsParameters, type PaginatedNewsResponse, getMainNewsArticle } from '../../api/news/newsService';
 import { useNavigate } from 'react-router-dom';
 import Pagination from '../../components/Pagination';
+import defaultNewsImage from '../../assets/defaultImage.jpg';
 
 function NewsPage() {
   const { t } = useTranslation();
@@ -28,16 +29,41 @@ function NewsPage() {
   const RetrieveNews = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await newsService(filters);
-      setNewsList(response);
-      setTotalCount(response.length);
-      setTotalPages(Math.ceil(response.length / pageSize));
+      const response = await newsService({
+        ...filters,
+        page: currentPage,
+        pageSize: pageSize
+      });
+      
+      console.log('API Response:', response);
+      
+      // Handle the paginated response structure
+      if (response && typeof response === 'object' && 'pagination' in response) {
+        // New paginated response format with pagination object
+        const paginatedResponse = response as PaginatedNewsResponse;
+        console.log('Pagination data:', paginatedResponse.pagination);
+        
+        setNewsList(paginatedResponse.data);
+        setTotalCount(paginatedResponse.pagination.totalCount);
+        setTotalPages(paginatedResponse.pagination.totalPages);
+        setCurrentPage(paginatedResponse.pagination.currentPage);
+        setPageSize(paginatedResponse.pagination.pageSize);
+        
+        console.log('Set totalCount to:', paginatedResponse.pagination.totalCount);
+        console.log('Set totalPages to:', paginatedResponse.pagination.totalPages);
+      } else {
+        // Fallback for old format
+        const oldResponse = response as NewsArticleDto[];
+        setNewsList(oldResponse);
+        setTotalCount(oldResponse.length);
+        setTotalPages(Math.ceil(oldResponse.length / pageSize));
+      }
     } catch (error) {
       console.error('Failed to fetch news:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [filters, pageSize]);
+  }, [filters, currentPage, pageSize]);
 
   useEffect(() => {
     RetrieveNews();
@@ -57,28 +83,25 @@ function NewsPage() {
     ? newsList.filter((item) => item.id !== mainNews.id)
     : newsList;
 
-  // Apply pagination to the news list
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedNews = otherNews.slice(startIndex, endIndex);
-
-  const mainNewsBgStyle = mainNews && mainNews.mainImage
-    ? { ['--main-news-image' as any]: `url('${mainNews.mainImage}')` } as React.CSSProperties
-    : undefined;
+  const mainNewsBgStyle = mainNews
+  ? { ['--main-news-image' as any]: `url('${mainNews.mainImage || defaultNewsImage}')` } as React.CSSProperties
+  : undefined;
 
   return (
     <PageTemplate title={t('nav.news')} >
       <div
-        className={`news-main-bg${mainNews && mainNews.mainImage ? ' has-main-image' : ''}`}
+        className={`news-main-bg${mainNews ? ' has-main-image' : ''}`}
         style={mainNewsBgStyle}
       >
         <div className="news-main-section">
           {mainNews && (
             <div className="main-news-card">
               <div className="main-news-image-container">
-                {mainNews.mainImage && (
+                {mainNews.mainImage ? (
                   <img src={mainNews.mainImage} alt={mainNews.title} className="main-news-image" />
-                )}
+                ) : (
+                  <img src={defaultNewsImage} alt="Default News Image" className="main-news-image" />
+                )} 
               </div>
               <div className="main-news-content">
                 <div className="main-news-category">{mainNews.sportCategory}</div>
@@ -100,22 +123,24 @@ function NewsPage() {
             Array.from({ length: pageSize }, (_, index) => (
               <NewsCardSkeleton key={`skeleton-${index}`} />
             ))
-          ) : paginatedNews.length === 0 ? (
+          ) : otherNews.length === 0 ? (
             <p>{t('newsPage.noNewsFound', 'Ei uutisia vastaaville hakuehdoille.')}</p>
           ) : (
-            paginatedNews.map((item) => (
+            otherNews.map((item) => (
               <NewsCard key={item.id} news={item} />
             ))
           )}
         </div>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalCount={totalCount}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={setPageSize}
-        />
+        {totalCount > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+          />
+        )}
       </div>
     </PageTemplate>
   );

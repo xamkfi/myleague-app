@@ -58,19 +58,18 @@
 .match-result-teams {
   font-weight: 500;
   color: #1e293b;
-  flex: 1 1 200px;
-  min-width: 200px;
-  max-width: 300px;
+  flex: 1 1 auto; /* Allow full expansion */
+  min-width: 0; /* Remove minimum width constraint */
+  max-width: none; /* Remove maximum width constraint */
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-left: auto;
-  margin-right: auto;
+  margin-left: 0; /* Remove auto margins */
+  margin-right: 0; /* Remove auto margins */
   justify-content: center;
   display: flex;
   font-size: 0.90em;
-
 }
 
 .match-result-status {
@@ -87,6 +86,7 @@
       color: #1d4ed8;
     }
   }
+
 }
 
 .match-teams {

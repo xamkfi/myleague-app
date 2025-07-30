@@ -5,6 +5,7 @@ import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './SingleNewsPage.scss';
 import type { NewsArticleDto } from '../../api/news/newsService';
 import { singleNewsService } from '../../api/news/singleNewsService';
+import defaultNewsImage from '../../assets/defaultImage.jpg';
 
 
 interface SingleNewsPageProps {
@@ -24,7 +25,6 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
   useEffect(()=>{
     if(id){
       RetrieveNews(id);
-          console.log(news?.mainImage, news?.contentHtml);
     }
 
   },[news?.contentHtml, news?.mainImage, id])
@@ -103,19 +103,17 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
       </header>
 
       {/* Main image */}
-      {news.mainImage && (
-        <div className="single-news-page__image-section">
-          <img
-            src={news.mainImage}
-            alt={news.title}
-            className="single-news-page__main-image"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = 'https://via.placeholder.com/800x400?text=Image+Not+Found';
-            }}
-          />
-        </div>
-      )}
+      <div className="single-news-page__image-section">
+        <img
+          src={news.mainImage || defaultNewsImage}
+          alt={news.title}
+          className="single-news-page__main-image"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = 'https://via.placeholder.com/800x400?text=Image+Not+Found';
+          }}
+        />
+      </div>
 
       {/* Article content */}
       <div className="single-news-page__content">

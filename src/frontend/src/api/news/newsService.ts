@@ -21,16 +21,25 @@ export interface NewsParameters{
   pageSize?: number,
 }
 
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message: string;
-  errors: string[];
+export interface PaginationInfo {
+  currentPage: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  startItem: number;
+  endItem: number;
+}
+
+export interface PaginatedNewsResponse {
+  data: NewsArticleDto[];
+  pagination: PaginationInfo;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-export async function newsService(params?: Partial<NewsParameters>) {
+export async function newsService(params?: Partial<NewsParameters>): Promise<PaginatedNewsResponse | NewsArticleDto[]> {
   try {
     const queryParams = new URLSearchParams();
 
@@ -51,8 +60,9 @@ export async function newsService(params?: Partial<NewsParameters>) {
       throw new Error("Failed to fetch news.");
     }
 
-    const data: ApiResponse<NewsArticleDto[]> = await response.json();
-    return data.data;
+    // The backend returns the data directly, not wrapped in ApiResponse
+    const data: PaginatedNewsResponse | NewsArticleDto[] = await response.json();
+    return data;
 
   } catch (error) {
     console.error("Upload error:", error);
@@ -75,8 +85,9 @@ export async function archiveNewsService(id: string) {
       throw new Error("Failed to archive news article.");
     }
 
-    const data: ApiResponse<NewsArticleDto> = await response.json();
-    return data.data;
+    // The backend returns the data directly, not wrapped in ApiResponse
+    const data: NewsArticleDto = await response.json();
+    return data;
 
   } catch (error) {
     console.error("Archive error:", error);
@@ -99,8 +110,9 @@ export async function restoreNewsService(id: string) {
       throw new Error("Failed to restore news article.");
     }
 
-    const data: ApiResponse<NewsArticleDto> = await response.json();
-    return data.data;
+    // The backend returns the data directly, not wrapped in ApiResponse
+    const data: NewsArticleDto = await response.json();
+    return data;
 
   } catch (error) {
     console.error("Restore error:", error);

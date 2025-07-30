@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import type { NewsArticleDto } from "../../../api/news/newsService";
+import defaultNewsImage from '../../../assets/defaultImage.jpg';
 
 export default function NewsCard({ news }: { news: NewsArticleDto }) {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ export default function NewsCard({ news }: { news: NewsArticleDto }) {
     <div className="news-card" onClick={() => navigate(`/uutiset/${news.id}`)}>
       <div className="news-card-image-container">
         <img
-          src={news.mainImage}
+          src={news.mainImage || defaultNewsImage}
           alt={news.title}
           className="news-card-image"
         />

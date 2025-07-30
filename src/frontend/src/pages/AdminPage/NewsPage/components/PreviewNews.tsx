@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { type NewsInputsData } from './NewsInputs';
 import '../styles/PreviewNews.scss';
+import defaultNewsImage from '../../../../assets/defaultImage.jpg';
 
 interface PreviewNewsProps {
   value: string;
@@ -62,19 +63,17 @@ export default function PreviewNews({ value, newsData }: PreviewNewsProps) {
       </header>
 
       {/* Main image */}
-      {newsData?.mainPicture && (
-        <div className="preview-news__image-section">
-          <img
-            src={newsData.mainPicture}
-            alt={newsData.title || t('admin.news.news_image', 'News image')}
-            className="preview-news__main-image"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = 'https://via.placeholder.com/800x400?text=Image+Not+Found';
-            }}
-          />
-        </div>
-      )}
+      <div className="preview-news__image-section">
+        <img
+          src={newsData?.mainPicture || defaultNewsImage}
+          alt={newsData?.title || t('admin.news.news_image', 'News image')}
+          className="preview-news__main-image"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = 'https://via.placeholder.com/800x400?text=Image+Not+Found';
+          }}
+        />
+      </div>
 
       {/* Article content */}
       <div className="preview-news__content">

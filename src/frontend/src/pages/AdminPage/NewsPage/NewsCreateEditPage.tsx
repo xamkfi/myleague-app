@@ -68,9 +68,8 @@ export default function NewsCreateEditPage() {
         }
       };
       fetchNewsArticle();
-      console.log(newsData.mainPicture, value);
     }
-  }, [id, isEditMode, navigate, newsData.mainPicture, value]);
+  }, [id, isEditMode, navigate]);
 
   const validateInputs = (): boolean => {
     const newErrors: Partial<NewsInputsData> = {};
@@ -116,8 +115,6 @@ export default function NewsCreateEditPage() {
 
       try {
         setLoadingAnimation(true);
-        
-        console.log("=== Publish Started ===");
         
         const newsToSubmit = convertToNewsData();
         
