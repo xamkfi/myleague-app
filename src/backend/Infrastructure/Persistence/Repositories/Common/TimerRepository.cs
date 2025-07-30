@@ -142,69 +142,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
-        /// Gets all active timer states
-        /// </summary>
-        /// <returns>A collection of active timer states</returns>
-        public async Task<IEnumerable<TimerState>> GetActiveTimersAsync()
-        {
-            try
-            {
-                _logger.LogInformation("=== GETTING ACTIVE TIMERS ===");
-                
-                List<TimerState> activeTimers = await _dbContext.TimerStates
-                    .Where(t => t.IsRunning)
-                    .ToListAsync();
-
-                _logger.LogInformation("Found {Count} active timers", activeTimers.Count);
-                
-                foreach (TimerState timer in activeTimers)
-                {
-                    _logger.LogInformation("Active timer - MatchId: {MatchId}, IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}", 
-                        timer.MatchId, timer.IsRunning, timer.StartedAt, timer.PausedAt);
-                }
-                
-                _logger.LogInformation("=== ACTIVE TIMERS RETRIEVAL COMPLETE ===");
-                return activeTimers;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving active timers");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Gets all timer states (active and inactive)
-        /// </summary>
-        /// <returns>A collection of all timer states</returns>
-        public async Task<IEnumerable<TimerState>> GetAllTimersAsync()
-        {
-            try
-            {
-                _logger.LogInformation("=== GETTING ALL TIMERS ===");
-                
-                List<TimerState> allTimers = await _dbContext.TimerStates
-                    .ToListAsync();
-
-                _logger.LogInformation("Found {Count} total timers", allTimers.Count);
-                
-                foreach (TimerState timer in allTimers)
-                {
-                    _logger.LogInformation("Timer - MatchId: {MatchId}, IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}", 
-                        timer.MatchId, timer.IsRunning, timer.StartedAt, timer.PausedAt);
-                }
-                
-                _logger.LogInformation("=== ALL TIMERS RETRIEVAL COMPLETE ===");
-                return allTimers;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving all timers");
-                throw;
-            }
-        }
-
-        /// <summary>
         /// Checks if a timer exists for a match
         /// </summary>
         /// <param name="matchId">The match ID</param>

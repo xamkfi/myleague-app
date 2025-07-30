@@ -66,5 +66,55 @@ namespace Domain.Entities.Common
                 return TimeSpan.Zero;
             }
         }
+
+        /// <summary>
+        /// Starts or resumes the timer
+        /// </summary>
+        public void Start()
+        {
+            if (!StartedAt.HasValue)
+                StartedAt = DateTime.UtcNow;
+            LastResumedAt = DateTime.UtcNow;
+            IsRunning = true;
+            LastUpdated = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Pauses the running timer
+        /// </summary>
+        public void Pause()
+        {
+            if (IsRunning && LastResumedAt.HasValue)
+            {
+                TotalPausedDuration += DateTime.UtcNow - LastResumedAt.Value;
+                PausedAt = DateTime.UtcNow;
+                IsRunning = false;
+                LastUpdated = DateTime.UtcNow;
+            }
+        }
+
+        /// <summary>
+        /// Resets the timer state to initial
+        /// </summary>
+        public void Reset()
+        {
+            StartedAt = null;
+            LastResumedAt = null;
+            PausedAt = null;
+            TotalPausedDuration = TimeSpan.Zero;
+            IsRunning = false;
+            LastUpdated = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Updates internal timestamp for running timer
+        /// </summary>
+        public void Tick()
+        {
+            if (IsRunning)
+            {
+                LastUpdated = DateTime.UtcNow;
+            }
+        }
     }
 } 
