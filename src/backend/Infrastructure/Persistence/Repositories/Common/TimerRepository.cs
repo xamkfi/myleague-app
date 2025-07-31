@@ -149,21 +149,10 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         {
             try
             {
-                _logger.LogInformation("=== GETTING ACTIVE TIMERS ===");
-                
                 List<TimerState> activeTimers = await _dbContext.TimerStates
                     .Where(t => t.IsRunning)
                     .ToListAsync();
 
-                _logger.LogInformation("Found {Count} active timers", activeTimers.Count);
-                
-                foreach (TimerState timer in activeTimers)
-                {
-                    _logger.LogInformation("Active timer - MatchId: {MatchId}, IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}", 
-                        timer.MatchId, timer.IsRunning, timer.StartedAt, timer.PausedAt);
-                }
-                
-                _logger.LogInformation("=== ACTIVE TIMERS RETRIEVAL COMPLETE ===");
                 return activeTimers;
             }
             catch (Exception ex)
@@ -181,20 +170,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         {
             try
             {
-                _logger.LogInformation("=== GETTING ALL TIMERS ===");
-                
                 List<TimerState> allTimers = await _dbContext.TimerStates
                     .ToListAsync();
 
-                _logger.LogInformation("Found {Count} total timers", allTimers.Count);
-                
-                foreach (TimerState timer in allTimers)
-                {
-                    _logger.LogInformation("Timer - MatchId: {MatchId}, IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}", 
-                        timer.MatchId, timer.IsRunning, timer.StartedAt, timer.PausedAt);
-                }
-                
-                _logger.LogInformation("=== ALL TIMERS RETRIEVAL COMPLETE ===");
                 return allTimers;
             }
             catch (Exception ex)

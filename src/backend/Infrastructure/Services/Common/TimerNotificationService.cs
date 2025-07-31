@@ -38,14 +38,8 @@ namespace MyLeague.Infrastructure.Services.Common
         {
             try
             {
-                _logger.LogInformation("TimerNotificationService: Sending timer update for match {MatchId}: {EventType}", matchId, update.EventType);
-                _logger.LogInformation("TimerNotificationService: Timer update details: IsRunning={IsRunning}, ElapsedTime={ElapsedTime}, PeriodNumber={PeriodNumber}", 
-                    update.IsRunning, update.ElapsedTime, update.PeriodNumber);
-
                 // Send to match-specific group
                 await _notifier.NotifyMatchAsync(matchId, "TimerUpdateEvent", update);
-                
-                _logger.LogInformation("TimerNotificationService: Successfully sent timer update for match {MatchId}", matchId);
             }
             catch (Exception ex)
             {
