@@ -81,7 +81,6 @@ namespace MyLeague.Infrastructure.Services.Common
                 
                 if (!runningTimers.Any())
                 {
-                    _logger.LogDebug("TimerBackgroundService: No running timers found for periodic updates");
                     return; // No running timers to update
                 }
                 _logger.LogInformation("TimerBackgroundService: Sending periodic updates for {Count} running timers", runningTimers.Count());

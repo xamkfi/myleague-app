@@ -225,18 +225,7 @@ export const usePeriodManagement = ({
                    conditions.periodStarted &&
                    conditions.periodNotEnded &&
                    conditions.hasNextPeriod;
-    
-    console.log('🔍 canEndPeriod check:', {
-      period: clock.period,
-      matchStatus: currentMatch.status,
-      conditions,
-      result: canEnd,
-      startedPeriods: Array.from(startedPeriods),
-      endedPeriods: Array.from(endedPeriods),
-      nextPeriodToStart,
-      periodLoading
-    });
-    
+        
     return canEnd;
   }, [currentMatch.status, periodLoading, clock.period, startedPeriods, endedPeriods, nextPeriodToStart]);
 

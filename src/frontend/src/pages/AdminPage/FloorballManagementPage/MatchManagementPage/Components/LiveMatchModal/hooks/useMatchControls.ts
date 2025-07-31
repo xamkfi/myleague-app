@@ -29,11 +29,9 @@ export const useMatchControls = ({
       setLoading(true);
       setError(null);
       
-      console.log('Starting match...');
       const response = await floorballMatchService.start(currentMatch.id);
       
       if (response.success && response.data) {
-        console.log('Match started successfully, updating state...');
         setCurrentMatch(response.data);
         if (onGoLive) {
           onGoLive(currentMatch.id, response.data);
@@ -59,19 +57,14 @@ export const useMatchControls = ({
       setLoading(true);
       setError(null);
       
-      console.log('=== COMPLETING MATCH ===');
-      console.log('Match ID:', currentMatch.id);
-      
       // Use the event sourced endpoint to complete the match
       const response = await floorballMatchService.complete(currentMatch.id);
       
       if (response.success && response.data) {
-        console.log('Match completion successful, destroying timer...');
         
         // Destroy the timer for this match to stop background service queries
         try {
           await timerService.destroyTimer(currentMatch.id);
-          console.log('Timer destroyed successfully for match:', currentMatch.id);
         } catch (timerError) {
           console.warn('Failed to destroy timer for match:', currentMatch.id, timerError);
           // Don't fail the match completion if timer destruction fails
@@ -86,7 +79,6 @@ export const useMatchControls = ({
           onCompleteLive(currentMatch.id, response.data);
         }
         
-        console.log('=== MATCH COMPLETION COMPLETE ===');
       } else {
         setError('Failed to complete match');
       }
