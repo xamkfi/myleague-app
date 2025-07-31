@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
+import { ResizeImage } from '../../../../functions/ResizeImage';
 
 export interface NewsInputsData {
   title: string;
@@ -83,18 +84,19 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
 
       try {
         setUploadingImage(true);
-      
-        const response = await handleImageUploadService(file);
-
+        
+      // Resize image to 960x430 before upload
+      const resizedFile = await ResizeImage(file, 960, 430);
+        
+        const response = await handleImageUploadService(resizedFile);
         updateField('mainPicture', response);
         setUploadingImage(false);
       } catch (error) {
-        console.log(error)
+        console.log(error);
         setUploadingImage(false);
       }
     }
   };
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 

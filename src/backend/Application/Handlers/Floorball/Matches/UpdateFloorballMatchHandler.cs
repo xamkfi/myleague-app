@@ -66,7 +66,7 @@ public class UpdateFloorballMatchHandler : IRequestHandler<UpdateFloorballMatchC
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(existingMatch, null, null);
+            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(existingMatch);
             _logger.LogInformation("Successfully updated floorball match with ID: {MatchId}", existingMatch.Id);
 
             return Result<FloorballMatchDto>.Success(matchDto);

@@ -33,28 +33,30 @@ export default function NewsCard({ news }: { news: NewsArticleDto }) {
 
   return (
     <div className="news-card" onClick={() => navigate(`/uutiset/${news.id}`)}>
-      <div className="news-card-image-container">
-        <img
-          src={news.mainImage || defaultNewsImage}
-          alt={news.title}
-          className="news-card-image"
-        />
-        {news.sportCategory && (
-          <div className={`sport-category-badge ${getSportColor(news.sportCategory)}`}>
-            <span className="sport-icon">{getSportIcon(news.sportCategory)}</span>
-            <span className="sport-name">{news.sportCategory}</span>
+      <div 
+        className="news-card-background"
+        style={{
+          backgroundImage: `linear-gradient(0deg, rgba(28, 28, 30, 0.90) 0%, rgba(49, 63, 90, 0.48) 61.06%, rgba(74, 103, 159, 0.00) 100%), url(${news.mainImage || defaultNewsImage})`
+        }}
+      >
+        <div className="news-card-overlay">
+          {news.sportCategory && (
+            <div className={`sport-category-badge ${getSportColor(news.sportCategory)}`}>
+              <span className="sport-icon">{getSportIcon(news.sportCategory)}</span>
+              <span className="sport-name">{news.sportCategory}</span>
+            </div>
+          )}
+          <div className="news-card-content">
+            <div className="news-card-date">
+              {new Date(news.createdAt).toLocaleDateString()}
+            </div>
+            <div className="news-card-title">{news.title}</div>
+            <div className="news-card-tags">
+              {news.tags.map((tag) => (
+                <span key={tag}>#{tag}</span>
+              ))}
+            </div>
           </div>
-        )}
-      </div>
-      <div className="news-card-content">
-        <div className="news-card-date">
-          {new Date(news.createdAt).toLocaleDateString()}
-        </div>
-        <div className="news-card-title">{news.title}</div>
-        <div className="news-card-tags">
-          {news.tags.map((tag) => (
-            <span key={tag}>#{tag}</span>
-          ))}
         </div>
       </div>
     </div>

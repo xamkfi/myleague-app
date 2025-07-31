@@ -117,6 +117,7 @@ function NewsPage() {
       </div>
 
       <div className="news-list-section container">
+      <h1 className="news-list-title">KAIKKI UUTISET</h1>
         <NewsFilter onFilterChange={setFilters} />
         <div className="news-grid">
           {isLoading ? (

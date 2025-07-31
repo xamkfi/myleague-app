@@ -24,6 +24,8 @@ export interface MatchResultValue {
   date: string;
   link: string;
   status?: string;
+  homeTeamImage?: string;
+  awayTeamImage?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,12 +41,16 @@ export class MatchResultTableBlot extends BlockEmbed {
     const { matches } = value;
 
     const matchRows = matches.map(match => {
+      const homeTeamImage = match.homeTeamImage ? `<img src="${match.homeTeamImage}" alt="${match.homeTeam}" class="team-image home-team-image" />` : '';
+      const awayTeamImage = match.awayTeamImage ? `<img src="${match.awayTeamImage}" alt="${match.awayTeam}" class="team-image away-team-image" />` : '';
+      
       let teamsHtml;
       if (match.status && match.status.toLowerCase() === 'completed') {
-        teamsHtml = `${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam}`;
+        teamsHtml = `${homeTeamImage} ${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam} ${awayTeamImage}`;
       } else {
-        teamsHtml = `${match.homeTeam} vs ${match.awayTeam}`;
+        teamsHtml = `${homeTeamImage} ${match.homeTeam} vs ${match.awayTeam} ${awayTeamImage}`;
       }
+
       return `<div class="match-result-row">
         <span class="match-result-date">${new Date(match.date).toLocaleString("fi-FI", {year: "numeric", month: "numeric", day: 'numeric', hour: '2-digit', minute: '2-digit'})}</span>
         <span class="match-result-teams">${teamsHtml}</span>
@@ -260,7 +266,11 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
                 awayScore: match.awayScore,
                 date: match.scheduledDateTime,
                 status: match.status,
-                link: match.id
+                link: match.id,
+                // Note: homeTeamImage and awayTeamImage would need to be added to the FloorballMatch interface
+                // For now, we'll use undefined as these properties don't exist in the current interface
+                homeTeamImage: undefined,
+                awayTeamImage: undefined
             }));
 
             editor.insertEmbed(range.index, 'matchResultTable', {

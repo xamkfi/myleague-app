@@ -1,3 +1,7 @@
+@use 'sass:map';
+@use '../../../../styles/variables' as *;
+@use '../../../../styles/common' as *;
+
 .status-badge {
   padding: 4px 10px;
   border-radius: 6px;
@@ -55,8 +59,14 @@
   color: #888;
 }
 
+.match-result-score {
+  font-size: 1.2em;
+  font-weight: map.get($font-weights, "bold");
+  color: #1e293b;
+}
+
 .match-result-teams {
-  font-weight: 500;
+  font-weight: map.get($font-weights, "medium");
   color: #1e293b;
   flex: 1 1 auto; /* Allow full expansion */
   min-width: 0; /* Remove minimum width constraint */
@@ -69,7 +79,26 @@
   margin-right: 0; /* Remove auto margins */
   justify-content: center;
   display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.90em;
+}
+
+.team-image {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  background-color: #f8fafc;
+  
+  &.home-team-image {
+    order: -1; /* Place home team image first */
+  }
+  
+  &.away-team-image {
+    order: 1; /* Place away team image last */
+  }
 }
 
 .match-result-status {
