@@ -90,6 +90,12 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     private readonly Dictionary<int, (int HomeScore, int AwayScore)> _periodScores = new();
 
     /// <summary>
+    /// Gets all save events
+    /// </summary>
+    public IReadOnlyCollection<FloorballSaveEvent> SaveEvents => _saveEvents.AsReadOnly();
+    private readonly List<FloorballSaveEvent> _saveEvents = new();
+    
+    /// <summary>
     /// Public constructor for event replay
     /// </summary>
     public EventSourcedFloorballMatch()
@@ -499,8 +505,41 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
 
         ApplyEvent(floorballPeriodStartedEvent);
     }
+
+    /// <summary>
+    /// Records a save event
+    /// </summary>
+    /// <param name="teamId">The ID of the team whose goalie made the save</param>
+    /// <param name="goalieId">The ID of the goalie</param>
+    /// <param name="periodNumber">The period number</param>
+    /// <param name="timeInSeconds">The time in seconds when the save was made</param>
+    /// <param name="wasInOvertime">Whether the save was in overtime</param>
+    /// <param name="wasInShootout">Whether the save was in shootout</param>
+    public void RecordSave(
+        Guid teamId,
+        Guid goalieId,
+        int periodNumber,
+        int timeInSeconds,
+        bool wasInOvertime = false,
+        bool wasInShootout = false)
+    {
+        if (Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException($"Cannot record a save for a match with status {Status}.");
+        if (teamId != HomeTeamId && teamId != AwayTeamId)
+            throw new ArgumentException("Team must be either the home team or the away team.", nameof(teamId));
+
+        FloorballSaveEvent saveEvent = new FloorballSaveEvent(
+            Id,
+            teamId,
+            goalieId,
+            periodNumber,
+            timeInSeconds,
+            wasInOvertime,
+            wasInShootout);
+        ApplyEvent(saveEvent);
+    }
     #endregion
-    
+
     #region Apply Methods
     
     // These methods are called by the base class via reflection when applying events
@@ -678,5 +717,14 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
         }
     }
     
+    /// <summary>
+    /// Applies a save event
+    /// </summary>
+    /// <param name="event">The event to apply</param>
+    private void Apply(FloorballSaveEvent @event)
+    {
+        // Add the existing event to our collection (don't create a new one)
+        _saveEvents.Add(@event);
+    }
     #endregion
-} 
+}

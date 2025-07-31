@@ -29,8 +29,9 @@ public class FloorballMatchEventConfiguration : IEntityTypeConfiguration<Floorba
         // Configure inheritance - Table Per Hierarchy (TPH)
         builder.HasDiscriminator<string>("EventType")
             .HasValue<FloorballGoal>("Goal")
-            .HasValue<FloorballPenalty>("Penalty");
-
+            .HasValue<FloorballPenalty>("Penalty")
+            .HasValue<FloorballSave>("Save");
+        
         // Properties
         builder.Property(e => e.Id)
             .IsRequired();
@@ -60,66 +61,12 @@ public class FloorballMatchEventConfiguration : IEntityTypeConfiguration<Floorba
         // Computed column for formatted time
         builder.Ignore(e => e.FormattedTime);
 
-        //// Configure FloorballPenalty-specific properties
-        //builder.Property<Guid?>("PlayerId")
-        //    .IsRequired(false);
-
-        //builder.Property<int?>("PenaltyType")
-        //    .IsRequired(false);
-
-        //builder.Property<int?>("DurationInMinutes")
-        //    .IsRequired(false);
-
-        //// Configure FloorballGoal-specific properties
-        //builder.Property<Guid?>("ScoringPlayerId")
-        //    .IsRequired(false);
-
-        //builder.Property<Guid?>("AssistingPlayerId")
-        //    .IsRequired(false);
-
-        //builder.Property<int?>("GoalType")
-        //    .IsRequired(false);
-
-        //builder.Property<bool?>("IsOvertime")
-        //    .IsRequired(false);
-
-        //builder.Property<bool?>("IsShootout")
-        //    .IsRequired(false);
-
         // Foreign key relationships
-        // Comment out this relationship to avoid conflicts with FloorballMatchConfiguration
-        // builder.HasOne<FloorballMatch>()
-        //     .WithMany()
-        //     .HasForeignKey(e => e.MatchId)
-        //     .OnDelete(DeleteBehavior.Cascade)
-        //     .IsRequired();
-
         builder.HasOne<FloorballTeam>()
             .WithMany()
             .HasForeignKey(e => e.TeamId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
-
-        // Foreign key for penalty player
-        //builder.HasOne<FloorballPlayer>()
-        //    .WithMany()
-        //    .HasForeignKey("PlayerId")
-        //    .OnDelete(DeleteBehavior.SetNull)
-        //    .IsRequired(false);
-
-        //// Foreign key for goal scorer
-        //builder.HasOne<FloorballPlayer>()
-        //    .WithMany()
-        //    .HasForeignKey("ScoringPlayerId")
-        //    .OnDelete(DeleteBehavior.SetNull)
-        //    .IsRequired(false);
-
-        //// Foreign key for goal assister
-        //builder.HasOne<FloorballPlayer>()
-        //    .WithMany()
-        //    .HasForeignKey("AssistingPlayerId")
-        //    .OnDelete(DeleteBehavior.SetNull)
-        //    .IsRequired(false);
 
         // Indexes
         builder.HasIndex(e => e.MatchId)
@@ -130,31 +77,5 @@ public class FloorballMatchEventConfiguration : IEntityTypeConfiguration<Floorba
 
         builder.HasIndex(e => new { e.MatchId, e.PeriodNumber, e.TimeInSeconds })
             .HasDatabaseName("IX_FloorballMatchEvent_MatchId_Period_Time");
-
-        // Penalty-specific indexes
-        //builder.HasIndex("PlayerId")
-        //    .HasDatabaseName("IX_FloorballMatchEvent_PlayerId")
-        //    .HasFilter("\"PlayerId\" IS NOT NULL");
-
-        //builder.HasIndex("PenaltyType")
-        //    .HasDatabaseName("IX_FloorballMatchEvent_PenaltyType")
-        //    .HasFilter("\"PenaltyType\" IS NOT NULL");
-
-        //builder.HasIndex("DurationInMinutes")
-        //    .HasDatabaseName("IX_FloorballMatchEvent_DurationInMinutes")
-        //    .HasFilter("\"DurationInMinutes\" IS NOT NULL");
-
-        //// Goal-specific indexes
-        //builder.HasIndex("ScoringPlayerId")
-        //    .HasDatabaseName("IX_FloorballMatchEvent_ScoringPlayerId")
-        //    .HasFilter("\"ScoringPlayerId\" IS NOT NULL");
-
-        //builder.HasIndex("AssistingPlayerId")
-        //    .HasDatabaseName("IX_FloorballMatchEvent_AssistingPlayerId")
-        //    .HasFilter("\"AssistingPlayerId\" IS NOT NULL");
-
-        //builder.HasIndex("GoalType")
-        //    .HasDatabaseName("IX_FloorballMatchEvent_GoalType")
-        //    .HasFilter("\"GoalType\" IS NOT NULL");
     }
-} 
+}
