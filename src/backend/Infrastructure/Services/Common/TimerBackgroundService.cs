@@ -88,18 +88,13 @@ namespace MyLeague.Infrastructure.Services.Common
 
             try
             {
-                _logger.LogDebug("TimerBackgroundService: Starting periodic update cycle");
-                
                 // Get all running timers
                 IEnumerable<Domain.Entities.Common.TimerState> runningTimers = await timerRepository.GetActiveTimersAsync();
                 
                 if (!runningTimers.Any())
                 {
-                    _logger.LogDebug("TimerBackgroundService: No running timers found for periodic updates");
                     return; // No running timers to update
                 }
-
-                _logger.LogInformation("TimerBackgroundService: Sending periodic updates for {Count} running timers", runningTimers.Count());
 
                 foreach (Domain.Entities.Common.TimerState timerState in runningTimers)
                 {
@@ -107,9 +102,6 @@ namespace MyLeague.Infrastructure.Services.Common
                     {
                         // Calculate current elapsed time
                         TimeSpan elapsedTime = timerState.ElapsedTime;
-                        
-                        _logger.LogInformation("TimerBackgroundService: Timer state for match {MatchId}: IsRunning={IsRunning}, ElapsedTime={ElapsedTime}", 
-                            timerState.MatchId, timerState.IsRunning, elapsedTime);
                         
                         // Create periodic update
                         TimerUpdate update = TimerUpdate.CreateUpdate(
@@ -120,17 +112,12 @@ namespace MyLeague.Infrastructure.Services.Common
                         
                         // Send update
                         await notificationService.NotifyTimerUpdateAsync(timerState.MatchId, update);
-                        
-                        _logger.LogInformation("TimerBackgroundService: Sent periodic update for match {MatchId}: {ElapsedTime}", 
-                            timerState.MatchId, elapsedTime);
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "TimerBackgroundService: Error sending periodic update for match {MatchId}", timerState.MatchId);
                     }
                 }
-                
-                _logger.LogDebug("TimerBackgroundService: Completed periodic update cycle");
             }
             catch (Exception ex)
             {
