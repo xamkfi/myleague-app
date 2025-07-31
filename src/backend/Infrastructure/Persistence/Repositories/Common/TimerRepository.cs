@@ -142,47 +142,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
-        /// Gets all active timer states
-        /// </summary>
-        /// <returns>A collection of active timer states</returns>
-        public async Task<IEnumerable<TimerState>> GetActiveTimersAsync()
-        {
-            try
-            {
-                List<TimerState> activeTimers = await _dbContext.TimerStates
-                    .Where(t => t.IsRunning)
-                    .ToListAsync();
-
-                return activeTimers;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving active timers");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Gets all timer states (active and inactive)
-        /// </summary>
-        /// <returns>A collection of all timer states</returns>
-        public async Task<IEnumerable<TimerState>> GetAllTimersAsync()
-        {
-            try
-            {
-                List<TimerState> allTimers = await _dbContext.TimerStates
-                    .ToListAsync();
-
-                return allTimers;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving all timers");
-                throw;
-            }
-        }
-
-        /// <summary>
         /// Checks if a timer exists for a match
         /// </summary>
         /// <param name="matchId">The match ID</param>
