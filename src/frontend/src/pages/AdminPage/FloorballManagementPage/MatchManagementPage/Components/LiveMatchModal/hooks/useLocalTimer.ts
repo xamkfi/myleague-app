@@ -27,7 +27,6 @@ export const useLocalTimer = ({ isOpen, onStateUpdate }: UseLocalTimerProps) => 
     if (!isOpen) {
       // Clean up timer when modal closes
       if (timerIntervalRef.current) {
-        console.log('LiveMatchModal: Cleaning up timer interval');
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }
@@ -36,7 +35,6 @@ export const useLocalTimer = ({ isOpen, onStateUpdate }: UseLocalTimerProps) => 
 
     // Only start timer if modal is open and clock is running
     if (isOpen && localClock.isRunning) {
-      console.log('LiveMatchModal: Starting local timer interval');
       timerIntervalRef.current = setInterval(() => {
         setLocalClock(prev => {
           const newSeconds = prev.seconds + 1;
@@ -58,7 +56,6 @@ export const useLocalTimer = ({ isOpen, onStateUpdate }: UseLocalTimerProps) => 
 
     return () => {
       if (timerIntervalRef.current) {
-        console.log('LiveMatchModal: Cleaning up timer interval on unmount');
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }

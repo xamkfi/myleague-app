@@ -37,16 +37,6 @@ const LiveMatchModal = ({
   onStateUpdate,
   onMatchUpdated
 }: LiveMatchModalProps) => {
-  // Debug logging for modal lifecycle
-  useEffect(() => {
-    console.log('🔄 LiveMatchModal RENDER:', { 
-      matchId: match.id, 
-      isOpen, 
-      status: match.status,
-      hasLiveState: !!liveState 
-    });
-  }, [match.id, isOpen, match.status, liveState]);
-
   // Use custom hooks for business logic
   const matchData = useMatchData({
     match,
@@ -153,16 +143,6 @@ const LiveMatchModal = ({
 
   // MEMOIZED: Handles the period control button click
   const handlePeriodControlClick = useCallback(() => {
-    console.log('🔥 Period control button clicked - debugging info:', {
-      canEndPeriod: periodManagement.canEndPeriod(),
-      currentPeriod: timer.localClock.period,
-      matchStatus: matchData.currentMatch.status,
-      startedPeriods: Array.from(periodManagement.startedPeriods),
-      endedPeriods: Array.from(periodManagement.endedPeriods),
-      nextPeriodToStart: periodManagement.nextPeriodToStart,
-      periodLoading: periodManagement.periodLoading
-    });
-    
     if (periodManagement.canEndPeriod()) {
       let currentTime = '00:00';
       let totalSeconds = 0;
@@ -187,13 +167,6 @@ const LiveMatchModal = ({
       const isUnder20Minutes = totalSeconds < 1200; // 20 minutes = 1200 seconds
       timer.setCurrentTimerElapsedTime(totalSeconds);
       
-      console.log('🔚 Attempting to end period:', {
-        period: timer.localClock.period,
-        totalSeconds,
-        isUnder20Minutes,
-        willShowConfirmation: isUnder20Minutes
-      });
-      
       if (isUnder20Minutes) {
         periodManagement.setShowEndPeriodConfirmation(true);
         periodManagement.setPendingEndPeriodAction(() => periodManagement.endPeriod);
@@ -201,7 +174,6 @@ const LiveMatchModal = ({
         periodManagement.endPeriod();
       }
     } else {
-      console.log('🚀 Attempting to start period:', periodManagement.nextPeriodToStart);
       periodManagement.startPeriod();
     }
   }, [
@@ -223,7 +195,6 @@ const LiveMatchModal = ({
 
   // MEMOIZED: Timer update handler
   const handleTimerUpdate = useCallback((update: TimerUpdate) => {
-    console.log('Timer update in LiveMatchModal:', update);
     if (update.ElapsedTime) {
       const timeParts = update.ElapsedTime.split(':');
       if (timeParts.length === 3) {
