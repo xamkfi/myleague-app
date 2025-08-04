@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { NewsCategory, SportsCategory } from '../../AdminPage/NewsPage/Utils/NewsFilterContstants';
 
 interface NewsFilterProps {
   onFilterChange: (filters: {
@@ -9,26 +10,7 @@ interface NewsFilterProps {
   }) => void;
 }
 
-export const NewsCategory = {
-  None: 'None',
-  General: 'General',
-  MatchReports: 'MatchReports',
-  LeagueNews: 'LeagueNews',
-  PlayerUpdates: 'PlayerUpdates',
-  TeamNews: 'TeamNews',
-  Announcements: 'Announcements',
-  Events: 'Events',
-  Transfers: 'Transfers',
-  Injuries: 'Injuries',
-  Awards: 'Awards',
-};
 
-export const SportsCategory = {
-  None: 'None',
-  Floorball: 'Floorball',
-  Icehockey: 'Icehockey',
-  Football: 'Football',
-};
 
 export default function NewsFilter({onFilterChange}: NewsFilterProps) {
 

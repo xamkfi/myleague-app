@@ -1,9 +1,8 @@
 // Match Selection Header
 .match-selection-header {
   margin-bottom: 1rem;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  background: #f9f9f9;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .match-selection-header__controls {

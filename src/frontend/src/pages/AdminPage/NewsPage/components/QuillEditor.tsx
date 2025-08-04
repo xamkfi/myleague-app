@@ -247,6 +247,8 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
           [{ 'list': 'ordered' }, { 'list': 'bullet' },
           { 'indent': '-1' }, { 'indent': '+1' }],
           ['image', "link",]
+
+
         ],
         handlers: {
           image: openImageUploader
@@ -283,8 +285,8 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
 
     return (
         <>
-            <MatchSelectionHeader onInsertMatches={handleInsertMatches} />
-            
+
+          <MatchSelectionHeader onInsertMatches={handleInsertMatches} />
             <ReactQuill
                 ref={(element =>{
                     if(element != null){

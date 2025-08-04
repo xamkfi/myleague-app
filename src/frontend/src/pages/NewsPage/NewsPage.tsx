@@ -83,9 +83,9 @@ function NewsPage() {
     ? newsList.filter((item) => item.id !== mainNews.id)
     : newsList;
 
-  const mainNewsBgStyle = mainNews
-  ? { ['--main-news-image' as any]: `url('${mainNews.mainImage || defaultNewsImage}')` } as React.CSSProperties
-  : undefined;
+    const mainNewsBgStyle = mainNews
+    ? { '--main-news-image': `url('${mainNews.mainImage || defaultNewsImage}')` } as React.CSSProperties
+    : undefined;
 
   return (
     <PageTemplate title={t('nav.news')} >
