@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import type { ChangeEvent } from 'react';
 import type { FloorballMatchDto } from '../../../../../../../types/floorball/floorballTypes';
 import type { FloorballPlayerDto } from '../../../../../../../api/floorball/floorballPlayerService';
@@ -8,20 +8,26 @@ interface SaveRecordingSectionProps {
   currentMatch: FloorballMatchDto;
   homePlayers: FloorballPlayerDto[];
   awayPlayers: FloorballPlayerDto[];
+  homeGoalieId: string;
+  awayGoalieId: string;
+  setHomeGoalieId: (id: string) => void;
+  setAwayGoalieId: (id: string) => void;
   onRecordSave: (team: 'home' | 'away', goalieId: string) => void;
   loading: boolean;
+  keybindsEnabled: boolean;
 }
-
 const SaveRecordingSection = ({
   currentMatch,
   homePlayers,
   awayPlayers,
+  homeGoalieId,
+  awayGoalieId,
+  setHomeGoalieId,
+  setAwayGoalieId,
   onRecordSave,
-  loading
+  loading,
+  keybindsEnabled
 }: SaveRecordingSectionProps) => {
-  const [homeGoalieId, setHomeGoalieId] = useState<string>('');
-  const [awayGoalieId, setAwayGoalieId] = useState<string>('');
-
   const homeGoalkeepers = useMemo(() => {
     const gks = homePlayers.filter((p: FloorballPlayerDto) => p.position === FloorballPosition.Goalkeeper && p.isActive);
     return gks.length > 0 ? gks : homePlayers;
@@ -32,20 +38,16 @@ const SaveRecordingSection = ({
     return gks.length > 0 ? gks : awayPlayers;
   }, [awayPlayers]);
 
-  const handleHomeSave = useCallback(() => {
-    onRecordSave('home', homeGoalieId);
-  }, [onRecordSave, homeGoalieId]);
+  const handleHomeSave = useCallback(() => onRecordSave('home', homeGoalieId), [onRecordSave, homeGoalieId]);
 
-  const handleAwaySave = useCallback(() => {
-    onRecordSave('away', awayGoalieId);
-  }, [onRecordSave, awayGoalieId]);
+  const handleAwaySave = useCallback(() => onRecordSave('away', awayGoalieId), [onRecordSave, awayGoalieId]);
 
   return (
     <div className="save-recording-section">
       <div className="goalie-dropdowns">
         <div className="goalie-dropdown">
           <select value={homeGoalieId} onChange={(e: ChangeEvent<HTMLSelectElement>) => setHomeGoalieId(e.target.value)}>
-            <option value="">SELECT HOME GOALIE</option>
+            <option value="">SELECT GOALIE</option>
             {homeGoalkeepers.map((gk: FloorballPlayerDto) => (
               <option key={gk.id} value={gk.id}>
                 {gk.person.firstName} {gk.person.lastName}
@@ -57,12 +59,13 @@ const SaveRecordingSection = ({
             onClick={handleHomeSave}
             className="action-btn save-btn"
           >
-             Record Home Save
+            <span className={`key-label ${keybindsEnabled ? '' : 'disabled'}`}>(Q)</span>
+            Record Home Save
           </button>
         </div>
         <div className="goalie-dropdown">
           <select value={awayGoalieId} onChange={(e: ChangeEvent<HTMLSelectElement>) => setAwayGoalieId(e.target.value)}>
-            <option value="">SELECT AWAY GOALIE</option>
+            <option value="">SELECT GOALIE</option>
             {awayGoalkeepers.map((gk: FloorballPlayerDto) => (
               <option key={gk.id} value={gk.id}>
                 {gk.person.firstName} {gk.person.lastName}
@@ -74,7 +77,8 @@ const SaveRecordingSection = ({
             onClick={handleAwaySave}
             className="action-btn save-btn"
           >
-             Record Away Save
+            <span className={`key-label ${keybindsEnabled ? '' : 'disabled'}`}>(P)</span>
+            Record Away Save
           </button>
         </div>
       </div>

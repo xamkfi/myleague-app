@@ -38,6 +38,10 @@ const LiveMatchModal = ({
   onStateUpdate,
   onMatchUpdated
 }: LiveMatchModalProps) => {
+  // State for selected goalies (lifted up)
+  const [homeGoalieId, setHomeGoalieId] = useState<string>('');
+  const [awayGoalieId, setAwayGoalieId] = useState<string>('');
+
   // Use custom hooks for business logic
   const matchData = useMatchData({
     match,
@@ -198,6 +202,36 @@ const LiveMatchModal = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, match.id]); // Intentionally minimal deps for performance
+
+  // Keybinds enabled when modal is open, match live, and no forms are open
+  const keybindsEnabled = isOpen &&
+    matchData.currentMatch.status === 'InProgress' &&
+    !forms.showGoalForm &&
+    !forms.showPenaltyForm;
+
+  // Handle Q/P keybinds
+  useEffect(() => {
+    if (!keybindsEnabled) return;
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+      // Ignore typing in inputs or contenteditable
+      if (['INPUT', 'TEXTAREA'].includes(target.tagName) || target.isContentEditable) {
+        return;
+      }
+      const key = e.key.toLowerCase();
+      if (key === 'q' && homeGoalieId) {
+        handleRecordSave('home', homeGoalieId);
+        e.preventDefault();
+      }
+      if (key === 'p' && awayGoalieId) {
+        handleRecordSave('away', awayGoalieId);
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [keybindsEnabled, homeGoalieId, awayGoalieId, handleRecordSave]);
 
   // MEMOIZED: Handles the period control button click
   const handlePeriodControlClick = useCallback(() => {
@@ -369,8 +403,13 @@ const LiveMatchModal = ({
             currentMatch={matchData.currentMatch}
             homePlayers={matchData.homePlayers}
             awayPlayers={matchData.awayPlayers}
+            homeGoalieId={homeGoalieId}
+            awayGoalieId={awayGoalieId}
+            setHomeGoalieId={setHomeGoalieId}
+            setAwayGoalieId={setAwayGoalieId}
             onRecordSave={handleRecordSave}
             loading={saveLoading}
+            keybindsEnabled={keybindsEnabled}
           />
             {/* Quick Actions */}
             <LiveMatchQuickActions

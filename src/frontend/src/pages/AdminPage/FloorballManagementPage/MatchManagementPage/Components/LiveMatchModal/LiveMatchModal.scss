@@ -1138,7 +1138,7 @@
     }
 
     .save-btn {
-      padding: 8px 12px;
+      padding: 4px 12px;
       font-size: 14px;
       background-color: #007bff;
       color: #fff;
@@ -1155,6 +1155,17 @@
         opacity: 0.6;
         cursor: not-allowed;
       }
+    }
+
+    /* Keybind label styling */
+    .key-label {
+      margin-right: 8px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #000000;
+    }
+    .key-label.disabled {
+      opacity: 0.4;
     }
   }
 } 
