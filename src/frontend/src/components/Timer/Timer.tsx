@@ -84,18 +84,24 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     console.log('=== TIMER RESET COMPLETED ===');
   };
 
+  const handleToggle = async () => {
+    if (timerState.isRunning) {
+      handleStop();
+    } else {
+      await handleStart();
+    }
+  };
+
   // Memoize button disabled states to prevent blinking during SignalR updates
   const buttonStates = useMemo(() => {
-    const startDisabled = loading || timerState.isRunning || !isActive;
-    const stopDisabled = loading || !timerState.isRunning || !isActive;
+    const toggleDisabled = loading || !isActive;
     const resetDisabled = loading || !isActive;
     
     return {
-      startDisabled,
-      stopDisabled,
+      toggleDisabled,
       resetDisabled
     };
-  }, [loading, timerState.isRunning, isActive]);
+  }, [loading, isActive]);
 
   // Don't render timer controls if not active
   if (!isActive) {
@@ -123,19 +129,11 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
 
       <div className="timer-controls">
         <button
-          onClick={handleStart}
-          disabled={buttonStates.startDisabled}
-          className="timer-button start"
+          onClick={handleToggle}
+          disabled={buttonStates.toggleDisabled}
+          className={`timer-button ${timerState.isRunning ? 'stop' : 'start'}`}
         >
-          Start
-        </button>
-        
-        <button
-          onClick={handleStop}
-          disabled={buttonStates.stopDisabled}
-          className="timer-button stop"
-        >
-          Stop
+          {timerState.isRunning ? 'Stop' : 'Start'}
         </button>
         
         <button
