@@ -49,9 +49,22 @@ export interface PenaltyEventData {
   AwayTeam: { Id: string; Name: string };
 }
 
+/**
+ * Save event data from SignalR (PascalCase fields)
+ */
+export interface SaveEventData {
+  MatchId: string;
+  TeamId: string;
+  GoalieId: string;
+  PeriodNumber: number;
+  TimeInSeconds: number;
+  IsOvertime: boolean;
+  IsShootout: boolean;
+}
+
 export interface ProcessedEvent {
   id: string;
-  type: 'goal' | 'penalty';
+  type: 'goal' | 'penalty' | 'save';
   teamId: string;
   teamName: string;
   playerId?: string;

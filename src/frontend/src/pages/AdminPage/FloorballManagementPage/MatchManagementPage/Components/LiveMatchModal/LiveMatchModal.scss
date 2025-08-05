@@ -755,6 +755,11 @@
       border-left: 4px solid #f59e0b;
     }
 
+    /* Save event style */
+    &.save {
+      border-left: 4px solid #3b82f6;
+    }
+
     .event-time {
       font-family: 'Courier New', monospace;
       font-size: 0.875rem;
@@ -767,7 +772,8 @@
       flex: 1;
 
       .goal-event,
-      .penalty-event {
+      .penalty-event,
+      .save-event {
         display: flex;
         align-items: center;
         gap: 8px;
