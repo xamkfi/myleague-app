@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useState } from 'react';
+import { floorballMatchEventService, type RecordSaveEventRequest } from '../../../../../../api/floorball/floorballMatchEventService';
 import type { TimerUpdate } from '../../../../../../api/common/timerService';
 
 // Import extracted components
@@ -10,6 +11,7 @@ import GoalRecordingForm from './components/GoalRecordingForm';
 import PenaltyRecordingForm from './components/PenaltyRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ConfirmationDialog from './components/ConfirmationDialog';
+import SaveRecordingSection from './components/SaveRecordingSection';
 
 // Import custom hooks
 import {
@@ -24,7 +26,6 @@ import {
 
 // Import types
 import type { LiveMatchModalProps } from './components/types';
-
 import './LiveMatchModal.scss';
 
 const LiveMatchModal = ({ 
@@ -83,6 +84,33 @@ const LiveMatchModal = ({
     loadMatchEvents: matchEvents.loadMatchEvents,
     setError: matchData.setError
   });
+  // Loading state for save events
+  const [saveLoading, setSaveLoading] = useState<boolean>(false);
+  const handleRecordSave = useCallback(async (team: 'home' | 'away', goalieId: string) => {
+    try {
+      setSaveLoading(true);
+      const payload: RecordSaveEventRequest = {
+        goalieId,
+        matchId: matchData.currentMatch.id,
+        teamId: team === 'home'
+          ? matchData.homeTeam?.id ?? ''
+          : matchData.awayTeam?.id ?? '',
+        playerId: goalieId,
+        periodNumber: timer.localClock.period,
+        timeInSeconds: timer.currentTimerElapsedTime,
+        wasInOvertime: matchData.currentMatch.wentToOvertime || timer.localClock.period > 3,
+        wasInShootout: matchData.currentMatch.wentToShootout || timer.localClock.period > 4
+      };
+      await floorballMatchEventService.recordSave(payload);
+      await matchEvents.loadMatchEvents();
+      matchData.setError(null);
+    } catch (error) {
+      console.error('Error recording save:', error);
+      matchData.setError(error instanceof Error ? error.message : 'Failed to record save');
+    } finally {
+      setSaveLoading(false);
+    }
+  }, [matchData, matchEvents.loadMatchEvents, timer.localClock.period, timer.currentTimerElapsedTime]);
 
   const signalR = useSignalR({
     matchId: match.id,
@@ -331,7 +359,13 @@ const LiveMatchModal = ({
               isInShootout={periodManagement.isInShootout}
               formatTime={timer.formatTime}
             />
-
+          <SaveRecordingSection
+            currentMatch={matchData.currentMatch}
+            homePlayers={matchData.homePlayers}
+            awayPlayers={matchData.awayPlayers}
+            onRecordSave={handleRecordSave}
+            loading={saveLoading}
+          />
             {/* Quick Actions */}
             <LiveMatchQuickActions
               loading={forms.loading}
