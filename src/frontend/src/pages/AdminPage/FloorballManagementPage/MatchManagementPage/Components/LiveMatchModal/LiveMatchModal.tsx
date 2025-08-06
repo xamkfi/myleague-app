@@ -109,7 +109,7 @@ const LiveMatchModal = ({
     if (match.id !== matchData.currentMatch.id || match.status !== matchData.currentMatch.status) {
       matchData.setCurrentMatch(match);
     }
-  }, [match.id, match.status, matchData.currentMatch.id, matchData.currentMatch.status, matchData.setCurrentMatch]);
+  }, [match, matchData]);
 
   // Initialize started periods when component loads - OPTIMIZED
   useEffect(() => {
@@ -123,8 +123,7 @@ const LiveMatchModal = ({
       periodManagement.setEndedPeriods(new Set());
       periodManagement.setNextPeriodToStart(1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, matchData.currentMatch.status]); // Intentionally minimal deps for performance
+  }, [isOpen, matchData.currentMatch.status, periodManagement]);
 
   // Load team data and setup SignalR when modal opens - OPTIMIZED
   useEffect(() => {
@@ -176,22 +175,7 @@ const LiveMatchModal = ({
     } else {
       periodManagement.startPeriod();
     }
-  }, [
-    periodManagement.canEndPeriod,
-    periodManagement.startPeriod,
-    periodManagement.endPeriod,
-    periodManagement.setShowEndPeriodConfirmation,
-    periodManagement.setPendingEndPeriodAction,
-    periodManagement.startedPeriods,
-    periodManagement.endedPeriods,
-    periodManagement.nextPeriodToStart,
-    periodManagement.periodLoading,
-    timer.localClock.period,
-    timer.getCurrentTimeFromTimer,
-    timer.currentTimerElapsedTime,
-    timer.setCurrentTimerElapsedTime,
-    matchData.currentMatch.status
-  ]);
+  }, [periodManagement, timer]);
 
   // MEMOIZED: Timer update handler
   const handleTimerUpdate = useCallback((update: TimerUpdate) => {
@@ -210,42 +194,42 @@ const LiveMatchModal = ({
         timer.setCurrentTimerElapsedTime(totalSeconds);
       }
     }
-  }, [timer.setCurrentTimerElapsedTime]);
+  }, [timer]);
 
   // MEMOIZED: Get current time handler
   const handleGetCurrentTime = useCallback((getTime: () => string) => {
     timer.setGetCurrentTimeFromTimer(() => getTime);
-  }, [timer.setGetCurrentTimeFromTimer]);
+  }, [timer]);
 
   // MEMOIZED: Goal form show handler
   const handleShowGoalForm = useCallback(() => {
     forms.setShowGoalForm(true);
-  }, [forms.setShowGoalForm]);
+  }, [forms]);
 
   // MEMOIZED: Goal form close handler
   const handleCloseGoalForm = useCallback(() => {
     forms.setShowGoalForm(false);
-  }, [forms.setShowGoalForm]);
+  }, [forms]);
 
   // MEMOIZED: Penalty form close handler
   const handleClosePenaltyForm = useCallback(() => {
     forms.setShowPenaltyForm(false);
-  }, [forms.setShowPenaltyForm]);
+  }, [forms]);
 
   // MEMOIZED: Error close handler
   const handleCloseError = useCallback(() => {
     matchData.setError(null);
-  }, [matchData.setError]);
+  }, [matchData]);
 
   // MEMOIZED: Overtime confirmation cancel handler
   const handleCancelOvertime = useCallback(() => {
     periodManagement.setShowOvertimeConfirmation(false);
-  }, [periodManagement.setShowOvertimeConfirmation]);
+  }, [periodManagement]);
 
   // MEMOIZED: Shootout confirmation cancel handler
   const handleCancelShootout = useCallback(() => {
     periodManagement.setShowShootoutConfirmation(false);
-  }, [periodManagement.setShowShootoutConfirmation]);
+  }, [periodManagement]);
 
   if (!isOpen) return null;
 

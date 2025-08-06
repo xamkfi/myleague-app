@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { NewsArticleDto, PaginatedNewsResponse } from '../../../../api/news/newsService'; 
@@ -28,7 +28,7 @@ const NewsList = ({ filters }: NewsListProps) => {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  const fetchNewsArticles = async (page: number = 1, size: number = 10) => {
+  const fetchNewsArticles = useCallback(async (page: number = 1, size: number = 10) => {
     try {
       setLoading(true);
       const response = await newsService({
@@ -60,11 +60,11 @@ const NewsList = ({ filters }: NewsListProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, pageSize, t]);
 
   useEffect(() => {
     fetchNewsArticles(currentPage, pageSize);
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, fetchNewsArticles]);
 
   // Reset to first page when filters change (only if filters are provided)
   useEffect(() => {
