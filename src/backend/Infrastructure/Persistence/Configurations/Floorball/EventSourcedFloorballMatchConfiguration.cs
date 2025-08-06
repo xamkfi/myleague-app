@@ -82,6 +82,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Ignore(m => m.OfficialIds);
             builder.Ignore(m => m.PeriodScores);
             builder.Ignore(m => m.UncommittedEvents);
+            builder.Ignore(m => m.SaveEvents);
         }
     }
 } 
