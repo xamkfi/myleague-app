@@ -33,18 +33,6 @@ namespace Domain.Repositories.Common
         Task DeleteTimerStateAsync(Guid matchId);
 
         /// <summary>
-        /// Gets all active timer states
-        /// </summary>
-        /// <returns>A collection of active timer states</returns>
-        Task<IEnumerable<TimerState>> GetActiveTimersAsync();
-
-        /// <summary>
-        /// Gets all timer states (active and inactive)
-        /// </summary>
-        /// <returns>A collection of all timer states</returns>
-        Task<IEnumerable<TimerState>> GetAllTimersAsync();
-
-        /// <summary>
         /// Checks if a timer exists for a match
         /// </summary>
         /// <param name="matchId">The match ID</param>

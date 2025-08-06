@@ -15,6 +15,7 @@ namespace Application.Services.Common
         private readonly ITimerRepository _timerRepository;
         private readonly ITimerNotificationService _notificationService;
         private readonly ILogger<PersistentMatchTimerService> _logger;
+        private readonly ITimerStore _timerStore;
 
         /// <summary>
         /// Initializes a new instance of the PersistentMatchTimerService class
@@ -25,10 +26,12 @@ namespace Application.Services.Common
         public PersistentMatchTimerService(
             ITimerRepository timerRepository,
             ITimerNotificationService notificationService,
+            ITimerStore timerStore,
             ILogger<PersistentMatchTimerService> logger)
         {
             _timerRepository = timerRepository;
             _notificationService = notificationService;
+            _timerStore = timerStore;
             _logger = logger;
         }
 
@@ -131,6 +134,7 @@ namespace Application.Services.Common
                     timerState.IsRunning, timerState.StartedAt, timerState.PausedAt, timerState.TotalPausedDuration);
 
                 await _timerRepository.SaveTimerStateAsync(matchId, timerState);
+                _timerStore.Add(timerState!);
                 _logger.LogInformation("Saved timer state for match {MatchId}", matchId);
 
                 // Add a small delay to ensure the database transaction is fully committed
@@ -191,6 +195,7 @@ namespace Application.Services.Common
                     timerState.IsRunning, timerState.StartedAt, timerState.PausedAt, timerState.TotalPausedDuration);
 
                 await _timerRepository.SaveTimerStateAsync(matchId, timerState);
+                _timerStore.TryRemove(matchId, out _);
                 _logger.LogInformation("Saved stopped timer state for match {MatchId}", matchId);
 
                 // Add a small delay to ensure the database transaction is fully committed
@@ -208,6 +213,7 @@ namespace Application.Services.Common
                 // Notify clients of the timer update
                 TimerUpdate update = TimerUpdate.CreateStopped(matchId, timerState.PeriodNumber, elapsedTime);
                 await NotifyTimerUpdateAsync(matchId, update);
+                _timerStore.TryRemove(matchId, out _);
 
                 _logger.LogInformation("Stopped timer for match {MatchId}", matchId);
             }
@@ -241,6 +247,7 @@ namespace Application.Services.Common
                 timerState.LastUpdated = DateTime.UtcNow;
 
                 await _timerRepository.SaveTimerStateAsync(matchId, timerState);
+                _timerStore.TryRemove(matchId, out TimerState? removedState);
 
                 TimerUpdate update = TimerUpdate.CreateReset(matchId, timerState.PeriodNumber);
                 await NotifyTimerUpdateAsync(matchId, update);
@@ -339,6 +346,7 @@ namespace Application.Services.Common
                 }
 
                 await _timerRepository.DeleteTimerStateAsync(matchId);
+                _timerStore.TryRemove(matchId, out TimerState? removedState);
                 _logger.LogInformation("Destroyed timer for match {MatchId}", matchId);
             }
             catch (Exception ex)

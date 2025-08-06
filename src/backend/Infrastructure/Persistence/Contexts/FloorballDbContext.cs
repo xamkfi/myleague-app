@@ -86,6 +86,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballPenalty> FloorballPenalties { get; set; }
 
         /// <summary>
+        /// Gets or sets the FloorballSaves DbSet.
+        /// </summary>
+        public DbSet<FloorballSave> FloorballSaves { get; set; }
+
+        /// <summary>
         /// Gets or sets the FloorballTeamManagers DbSet.
         /// </summary>
         public DbSet<FloorballTeamManager> FloorballTeamManagers { get; set; }
@@ -153,6 +158,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballStoredEventConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballGoalConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPenaltyConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballSaveConfiguration());
         }
     }
-} 
+}

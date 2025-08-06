@@ -14,7 +14,7 @@ export const useDivisions = () => {
       const response = await divisionService.getAll();
       setDivisions(response.data);
     } catch (err) {
-      console.log('Error loading divisions:', err);
+      console.error('Error loading divisions:', err);
       setError('Failed to load divisions');
       setDivisions([]);
     } finally {

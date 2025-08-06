@@ -76,6 +76,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             // Add timer services
             services.AddScoped<ITimerRepository, TimerRepository>();
             services.AddScoped<ITimerNotificationService, TimerNotificationService>();
+            services.AddSingleton<ITimerStore, InMemoryTimerStore>();
             
             // Register timer background service
             services.AddHostedService<TimerBackgroundService>();
