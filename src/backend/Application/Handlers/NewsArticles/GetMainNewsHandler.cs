@@ -32,7 +32,7 @@ namespace Application.Handlers.NewsArticles
             NewsArticle? mainNews = await _newsRepository.GetMainNews();
             if (mainNews == null)
             {
-                return Result<NewsArticleDto>.NotFound("not found", mainNews);
+                return Result<NewsArticleDto>.NotFound("not found", nameof(mainNews));
             }
             NewsArticleDto dto = NewsArticleMapper.ToDto(mainNews);
             return Result<NewsArticleDto>.Success(dto);
