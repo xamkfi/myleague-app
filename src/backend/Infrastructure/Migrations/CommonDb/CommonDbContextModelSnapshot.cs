@@ -262,6 +262,48 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.ToTable("Persons", "common");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Common.TimerState", b =>
+                {
+                    b.Property<Guid>("MatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsRunning")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("LastResumedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime?>("PausedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("PeriodNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("TotalPausedDuration")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("MatchId");
+
+                    b.HasIndex("IsRunning")
+                        .HasDatabaseName("IX_TimerStates_IsRunning");
+
+                    b.HasIndex("LastUpdated")
+                        .HasDatabaseName("IX_TimerStates_LastUpdated");
+
+                    b.ToTable("TimerStates", "common");
+                });
+
             modelBuilder.Entity("Domain.Entities.Common.User", b =>
                 {
                     b.Property<Guid>("Id")

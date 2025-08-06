@@ -221,17 +221,20 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     /// </summary>
     /// <param name="scoringTeamId">The ID of the team that scored</param>
     /// <param name="scoringPlayerId">The ID of the player who scored</param>
-    /// <param name="assistingPlayerId">The ID of the player who assisted (optional)</param>
-    /// <param name="periodNumber">The period number (1-3)</param>
+    /// <param name="periodNumber">The period number (1-5)</param>
     /// <param name="timeInSeconds">The time in seconds when the goal was scored</param>
-    /// <param name="description">The description of the goal</param>
-    /// <param name="goalTypeId">The type of goal</param>
+    /// <param name="wasInOvertime">Whether the goal was scored in overtime</param>
+    /// <param name="wasInShootout">Whether the goal was scored in shootout</param>
+    /// <param name="assistingPlayerId">The ID of the player who assisted (optional)</param>
+    /// <param name="secondaryAssistingPlayerId">The ID of the second player who assisted (optional)</param>
     /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
     public void RecordGoal(
         Guid scoringTeamId,
         Guid scoringPlayerId,
         int periodNumber,
         int timeInSeconds,
+        bool wasInOvertime = false,
+        bool wasInShootout = false,
         Guid? assistingPlayerId = null,
         Guid? secondaryAssistingPlayerId = null)
     {
@@ -243,14 +246,16 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
         if (scoringTeamId != HomeTeamId && scoringTeamId != AwayTeamId)
             throw new ArgumentException("Scoring team must be either the home team or the away team.", nameof(scoringTeamId));
+        
         FloorballGoalScoredEvent goalScoredEvent = new FloorballGoalScoredEvent(
             Id,
             scoringTeamId,
             scoringPlayerId,
             periodNumber,
             timeInSeconds,
-            WentToOvertime,
-            false,
+            wasInOvertime,
+            false, // isPenaltyShot - not implemented yet
+            wasInShootout,
             assistingPlayerId,
             secondaryAssistingPlayerId);
         ApplyEvent(goalScoredEvent);
@@ -658,6 +663,19 @@ public class EventSourcedFloorballMatch : EventSourcedAggregate
     private void Apply(FloorballMatchVenueChangedEvent @event)
     {
         Venue = @event.NewVenue ?? string.Empty;
+    }
+    
+    /// <summary>
+    /// Applies a period started event
+    /// </summary>
+    /// <param name="event">The event to apply</param>
+    private void Apply(FloorballPeriodStartedEvent @event)
+    {
+        // Add the period to period scores if it doesn't exist yet
+        if (!_periodScores.ContainsKey(@event.PeriodNumber))
+        {
+            _periodScores[@event.PeriodNumber] = (0, 0);
+        }
     }
     
     #endregion

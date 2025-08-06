@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 
 export interface LiveMatchState {
@@ -34,45 +34,6 @@ export const useLiveMatchState = () => {
   const [liveMatches, setLiveMatches] = useState<Set<string>>(new Set());
   const [liveMatchStates, setLiveMatchStates] = useState<Map<string, LiveMatchState>>(new Map());
 
-  // Background timer for running live match clocks
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      setLiveMatchStates(prev => {
-        const newMap = new Map(prev);
-        let hasChanges = false;
-        
-        for (const [matchId, state] of newMap.entries()) {
-          if (state.clock.isRunning) {
-            const newSeconds = state.clock.seconds + 1;
-            if (newSeconds >= 60) {
-              newMap.set(matchId, {
-                ...state,
-                clock: {
-                  ...state.clock,
-                  minutes: state.clock.minutes + 1,
-                  seconds: 0
-                }
-              });
-            } else {
-              newMap.set(matchId, {
-                ...state,
-                clock: {
-                  ...state.clock,
-                  seconds: newSeconds
-                }
-              });
-            }
-            hasChanges = true;
-          }
-        }
-        
-        return hasChanges ? newMap : prev;
-      });
-    }, 1000);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
   const initializeLiveMatchState = (match: FloorballMatchDto): LiveMatchState => {
     return {
       clock: {
@@ -89,7 +50,8 @@ export const useLiveMatchState = () => {
     };
   };
 
-  const updateLiveMatchState = (matchId: string, updates: Partial<LiveMatchState>) => {
+  const updateLiveMatchState = useCallback((matchId: string, updates: Partial<LiveMatchState>) => {
+    console.log(`useLiveMatchState: Updating state for match ${matchId}`, updates);
     setLiveMatchStates(prev => {
       const newMap = new Map(prev);
       const currentState = newMap.get(matchId);
@@ -98,9 +60,10 @@ export const useLiveMatchState = () => {
       }
       return newMap;
     });
-  };
+  }, []);
 
-  const initializeLiveMatch = (match: FloorballMatchDto) => {
+  const initializeLiveMatch = useCallback((match: FloorballMatchDto) => {
+    console.log(`useLiveMatchState: Initializing live match ${match.id}`);
     setLiveMatches(prev => new Set([...prev, match.id]));
     
     setLiveMatchStates(prev => {
@@ -108,9 +71,10 @@ export const useLiveMatchState = () => {
       newMap.set(match.id, initializeLiveMatchState(match));
       return newMap;
     });
-  };
+  }, []);
 
-  const cancelLiveMatch = (matchId: string) => {
+  const cancelLiveMatch = useCallback((matchId: string) => {
+    console.log(`useLiveMatchState: Canceling live match ${matchId}`);
     // Remove from live matches
     setLiveMatches(prev => {
       const newSet = new Set(prev);
@@ -124,15 +88,15 @@ export const useLiveMatchState = () => {
       newMap.delete(matchId);
       return newMap;
     });
-  };
+  }, []);
 
-  const getLiveMatchState = (matchId: string): LiveMatchState | undefined => {
+  const getLiveMatchState = useCallback((matchId: string): LiveMatchState | undefined => {
     return liveMatchStates.get(matchId);
-  };
+  }, [liveMatchStates]);
 
-  const isMatchLive = (matchId: string): boolean => {
+  const isMatchLive = useCallback((matchId: string): boolean => {
     return liveMatches.has(matchId);
-  };
+  }, [liveMatches]);
 
   return {
     liveMatches,

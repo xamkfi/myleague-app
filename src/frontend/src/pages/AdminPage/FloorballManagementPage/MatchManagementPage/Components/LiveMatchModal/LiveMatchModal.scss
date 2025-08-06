@@ -161,9 +161,123 @@
     background: none;
     border: none;
     color: #ef4444;
-    cursor: pointer;
     font-size: 1.2rem;
-    padding: 2px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: auto;
+  }
+}
+
+// Confirmation Dialog Styles
+.confirmation-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirmation-dialog {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideIn 0.3s ease-out;
+
+  .confirmation-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .confirmation-icon {
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      margin: 0;
+      color: #1f2937;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+  }
+
+  .confirmation-content {
+    margin-bottom: 20px;
+
+    p {
+      margin: 0 0 8px 0;
+      color: #374151;
+      line-height: 1.5;
+    }
+
+    .confirmation-warning {
+      color: #dc2626;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+  }
+
+  .confirmation-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.confirm-btn {
+        background: #dc2626;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: #b91c1c;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+
+      &.cancel-btn {
+        background: #6b7280;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: #4b5563;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -193,6 +307,18 @@
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   border-radius: 8px;
   border: 1px solid #e2e8f0;
+
+  &.overtime {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #f59e0b;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+  }
+
+  &.shootout {
+    background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+    border: 2px solid #ec4899;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+  }
 }
 
 .match-clock {
@@ -225,6 +351,16 @@
     &.time-over-limit {
       color: #dc2626;
       text-shadow: 0 1px 4px rgba(220, 38, 38, 0.6);
+    }
+
+    &.overtime {
+      color: #d97706;
+      text-shadow: 0 1px 4px rgba(217, 119, 6, 0.6);
+    }
+
+    &.shootout {
+      color: #ec4899;
+      text-shadow: 0 1px 4px rgba(236, 72, 153, 0.6);
     }
   }
 
@@ -288,7 +424,7 @@
 
   .clock-start-reset {
     display: flex;
-    gap: 8px;
+    gap: 20px;
     justify-content: center;
     flex-wrap: wrap;
     margin: 4px 0;
@@ -302,6 +438,29 @@
       cursor: pointer;
       transition: all 0.2s;
       min-width: 80px;
+
+      &.start-pause-btn {
+        background: #10b981;
+        color: white;
+        min-width: 120px; // Wider to accommodate longer text
+
+        &:hover {
+          background: #059669;
+          transform: translateY(-1px);
+        }
+
+        &.pause {
+          background: #f59e0b;
+
+          &:hover {
+            background: #d97706;
+          }
+        }
+      }
+
+
+
+
 
       &.start-btn {
         background: #10b981;
@@ -335,53 +494,7 @@
     }
   }
 
-  .previous-next-period {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin: 4px 0;
 
-    .period-control-btn {
-      padding: 4px 8px;
-      border: 2px solid #e2e8f0;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      background: #f8fafc;
-      color: #475569;
-      min-width: 70px;
-
-      &:hover {
-        background: #e2e8f0;
-        border-color: #cbd5e1;
-        transform: translateY(-1px);
-      }
-
-      &:active {
-        transform: translateY(0);
-      }
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        background: #f1f5f9;
-        border-color: #e2e8f0;
-        color: #94a3b8;
-
-        &:hover {
-          transform: none;
-          background: #f1f5f9;
-          border-color: #e2e8f0;
-        }
-      }
-    }
-  }
 }
 
 .scoreboard {
@@ -419,84 +532,24 @@
 
 .period-management {
   display: flex;
-  gap: 6px;
+  gap: 1px;
   justify-content: center;
-  margin-top: 8px;
-  padding: 6px;
-  background: #f8fafc;
+  margin: 1px 0;
+  padding: 1px;
 
   .period-status {
     font-size: 0.75rem;
     font-weight: 500;
     color: #374151;
     text-align: center;
-    margin-bottom: 4px;
-    padding: 2px 4px;
-    background: white;
-    border-radius: 3px;
-    border: 1px solid #d1d5db;
-  }
-
-  .period-control-btn {
-    padding: 3px 6px;
-    border: 2px solid;
+    margin: 0;
+    padding: 2px 6px;
+    background: #f3f4f6;
     border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    min-width: 60px;
-    justify-content: center;
-
-    &.start-period-btn {
-      background: #dcfce7;
-      border-color: #bbf7d0;
-      color: #166534;
-
-      &:hover {
-        background: #bbf7d0;
-        border-color: #86efac;
-        transform: translateY(-1px);
-      }
-
-      &:active {
-        transform: translateY(0);
-      }
-    }
-
-    &.end-period-btn {
-      background: #fef2f2;
-      border-color: #fecaca;
-      color: #dc2626;
-
-      &:hover {
-        background: #fecaca;
-        border-color: #f87171;
-        transform: translateY(-1px);
-      }
-
-      &:active {
-        transform: translateY(0);
-      }
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: #f1f5f9;
-      border-color: #e2e8f0;
-      color: #94a3b8;
-
-      &:hover {
-        transform: none;
-        background: #f1f5f9;
-        border-color: #e2e8f0;
-      }
-    }
+    border: 1px solid #e5e7eb;
   }
+
+
 }
 
 .quick-actions {
@@ -670,11 +723,12 @@
   }
 
   .events-list {
-    max-height: 250px;
+    flex: 1;
     overflow-y: auto;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
     background: white;
+    min-height: 0; // This is important for flex-grow to work properly
   }
 
   .event-item {
@@ -943,5 +997,105 @@
     color: #6b7280;
     font-style: italic;
     margin-left: auto;
+  }
+}
+
+// Timer container styles
+.timer-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 16px 0;
+  width: 100%;
+}
+
+.start-match-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  width: 100%;
+
+  .start-match-hint {
+    font-size: 0.875rem;
+    color: #6b7280;
+    text-align: center;
+    font-style: italic;
+  }
+}
+
+.period-control-btn {
+  background: #dc2626;
+  color: white;
+  min-width: 120px;
+  padding: 4px 10px;
+  border: 2px solid #dc2626;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+  text-decoration: none;
+  outline: none;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+
+  &:hover:not(:disabled) {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #9ca3af;
+    border-color: #9ca3af;
+
+    &:hover {
+      transform: none;
+      background: #9ca3af;
+      border-color: #9ca3af;
+      box-shadow: none;
+    }
+  }
+}
+
+.start-match-btn {
+  background: #10b981;
+  color: white;
+  min-width: 120px;
+  padding: 12px 24px;
+  border: 2px solid #10b981;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+  text-decoration: none;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+
+  &:hover:not(:disabled) {
+    background: #059669;
+    border-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #9ca3af;
+    border-color: #9ca3af;
+
+    &:hover {
+      transform: none;
+      background: #9ca3af;
+      border-color: #9ca3af;
+      box-shadow: none;
+    }
   }
 } 
