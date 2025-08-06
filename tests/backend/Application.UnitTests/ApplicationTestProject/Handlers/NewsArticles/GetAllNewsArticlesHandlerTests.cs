@@ -87,6 +87,7 @@ public class GetAllNewsArticlesHandlerTests
             PageSize: 3,
             Category: "General",
             SportCategory: "Football",
+            Search: "",
             Author: "Test Author",
             IncludeArchived: true
         );
