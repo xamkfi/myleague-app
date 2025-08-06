@@ -118,7 +118,7 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, null, null);
+            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             _logger.LogInformation("Successfully recorded goal in match {MatchId} by player {PlayerId}", request.MatchId, request.ScoringPlayerId);
 
             return Result<FloorballMatchDto>.Success(matchDto);

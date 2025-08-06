@@ -1,0 +1,367 @@
+.news-inputs {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    text-align: left;
+
+    .required {
+      color: #ef4444;
+    }
+  }
+
+  &__input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    resize: none;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+      border-color: #3b82f6;
+    }
+
+    &.error {
+      border-color: #fca5a5;
+      background-color: #fef2f2;
+    }
+  }
+
+  &__textarea {
+    @extend .news-inputs__input;
+    min-height: 6rem;
+  }
+
+  &__select {
+    @extend .news-inputs__input;
+  }
+
+  &__error {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+
+  &__summary-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.25rem;
+
+    &__characters {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    &__warning {
+      color: #ef4444;
+      font-size: 0.875rem;
+    }
+  }
+
+  &__image-upload {
+    &__dropzone {
+      border: 2px dashed #d1d5db;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      text-align: center;
+      transition: border-color 0.2s ease;
+
+      &:hover {
+        border-color: #9ca3af;
+      }
+
+      &.uploading {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    &__input {
+      display: none;
+    }
+
+    &__label {
+      cursor: pointer;
+
+      &.uploading {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    &__icon {
+      width: 3rem;
+      height: 3rem;
+      color: #9ca3af;
+      margin-bottom: 1rem;
+    }
+
+    &__text {
+      font-size: 0.875rem;
+      color: #4b5563;
+    }
+
+    &__upload-text {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .upload-icon {
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    &__click-text {
+      font-weight: 500;
+      color: #2563eb;
+    }
+
+    &__drag-text {
+      color: #6b7280;
+    }
+
+    &__file-info {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 0.25rem;
+    }
+  }
+
+  &__image-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    &__container {
+      position: relative;
+      display: inline-block;
+
+      &:hover {
+        .news-inputs__image-preview__overlay {
+          background-color: rgba(0, 0, 0, 0.3);
+          opacity: 1;
+        }
+      }
+    }
+
+    &__image {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 960 / 440;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+    }
+
+    &__overlay {
+      position: absolute;
+      inset: 0;
+      background-color: transparent;
+      transition: all 0.2s ease;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+    }
+
+    &__actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    &__info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      &__status {
+        font-size: 0.875rem;
+        color: #4b5563;
+      }
+
+      &__replace {
+        display: flex;
+        gap: 0.5rem;
+      }
+    }
+
+    &__replace-button {
+      font-size: 0.875rem;
+      color: #16a34a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #15803d;
+      }
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+  }
+
+  &__categories {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  &__tags {
+    &__container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    &__input-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    &__input {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        border-color: #3b82f6;
+      }
+    }
+
+    &__add-button {
+      background-color: #2563eb;
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:hover:not(:disabled) {
+        background-color: #1d4ed8;
+      }
+
+      &:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+      }
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+
+    &__list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    &__tag {
+      background-color: #dbeafe;
+      color: #1e40af;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #bfdbfe;
+      }
+
+      .remove-button {
+        color: #2563eb;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+          color: #1d4ed8;
+        }
+      }
+
+      &:hover .remove-button {
+        opacity: 1;
+      }
+
+      svg {
+        width: 0.75rem;
+        height: 0.75rem;
+      }
+    }
+
+    &__empty {
+      color: #6b7280;
+      font-size: 0.875rem;
+      font-style: italic;
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

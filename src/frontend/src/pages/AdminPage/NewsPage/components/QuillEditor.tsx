@@ -24,6 +24,8 @@ export interface MatchResultValue {
   date: string;
   link: string;
   status?: string;
+  homeTeamImage?: string;
+  awayTeamImage?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,17 +41,21 @@ export class MatchResultTableBlot extends BlockEmbed {
     const { matches } = value;
 
     const matchRows = matches.map(match => {
+      const homeTeamImage = match.homeTeamImage ? `<img src="${match.homeTeamImage}" alt="${match.homeTeam}" class="team-image home-team-image" />` : '';
+      const awayTeamImage = match.awayTeamImage ? `<img src="${match.awayTeamImage}" alt="${match.awayTeam}" class="team-image away-team-image" />` : '';
+      
       let teamsHtml;
       if (match.status && match.status.toLowerCase() === 'completed') {
-        teamsHtml = `${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam}`;
+        teamsHtml = `${homeTeamImage} ${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam} ${awayTeamImage}`;
       } else {
-        teamsHtml = `${match.homeTeam} vs ${match.awayTeam}`;
+        teamsHtml = `${homeTeamImage} ${match.homeTeam} vs ${match.awayTeam} ${awayTeamImage}`;
       }
+
       return `<div class="match-result-row">
         <span class="match-result-date">${new Date(match.date).toLocaleString("fi-FI", {year: "numeric", month: "numeric", day: 'numeric', hour: '2-digit', minute: '2-digit'})}</span>
         <span class="match-result-teams">${teamsHtml}</span>
         <span class="match-result-status"><span class="status-badge status-${match.status}">${match.status}</span></span>
-        <span class="match-result-link"><a href="${match.link}" target="_blank" rel="noopener noreferrer">View Details</a></span>
+        <span class="match-result-link"><a href="/match/${match.link}" target="_blank" rel="noopener noreferrer">View Details</a></span>
       </div>`;
     }).join('');
     node.innerHTML = `<div class="match-result-list">
@@ -160,10 +166,6 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
         console.log("🚫 Navigation in progress - skipping useEffect completely");
         return;
       }
-
-      console.log("=== QuillEditor useEffect triggered ===");
-      console.log("Current value:", value);
-      console.log("Previous images:", previousImagesRef.current);
       
       const currentImages = extractImageUrls(value);
       const currentMatchResults = extractMatchResults(value);
@@ -245,6 +247,8 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
           [{ 'list': 'ordered' }, { 'list': 'bullet' },
           { 'indent': '-1' }, { 'indent': '+1' }],
           ['image', "link",]
+
+
         ],
         handlers: {
           image: openImageUploader
@@ -264,7 +268,11 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
                 awayScore: match.awayScore,
                 date: match.scheduledDateTime,
                 status: match.status,
-                link: match.id
+                link: match.id,
+                // Note: homeTeamImage and awayTeamImage would need to be added to the FloorballMatch interface
+                // For now, we'll use undefined as these properties don't exist in the current interface
+                homeTeamImage: undefined,
+                awayTeamImage: undefined
             }));
 
             editor.insertEmbed(range.index, 'matchResultTable', {
@@ -277,8 +285,8 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
 
     return (
         <>
-            <MatchSelectionHeader onInsertMatches={handleInsertMatches} />
-            
+
+          <MatchSelectionHeader onInsertMatches={handleInsertMatches} />
             <ReactQuill
                 ref={(element =>{
                     if(element != null){

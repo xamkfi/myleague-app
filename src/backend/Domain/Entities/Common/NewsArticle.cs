@@ -83,7 +83,7 @@ namespace Domain.Entities.Common
         /// <param name="contentHtml">The HTML content of the news article.</param>
         /// <param name="author">The optional author of the news article.</param>
         /// <exception cref="ArgumentException">Thrown when title or content is empty or title exceeds 200 characters.</exception>
-        public NewsArticle(Guid id, string title, Uri mainImage, string contentHtml, string? author = null)
+        public NewsArticle(Guid id, string title, Uri? mainImage, string contentHtml, string? author = null)
         {
             Id = id;
             Title = ValidateTitle(title);

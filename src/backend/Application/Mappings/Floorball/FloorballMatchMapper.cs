@@ -19,9 +19,9 @@ public static class FloorballMatchMapper
     /// <param name="match">The match entity to map</param>
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when match is null</exception>
-    public static FloorballMatchDto ToDto(FloorballMatch match, Club? homeClub, Club? awayClub)
+    public static FloorballMatchDto ToDto(FloorballMatch match)
     {
-        return ToDto(match, homeClub!, awayClub!, new Dictionary<Guid, Person>());
+        return ToDto(match, new Dictionary<Guid, Person>());
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public static class FloorballMatchMapper
     /// <param name="playerPersonLookup">Dictionary mapping player IDs to their person data</param>
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when match is null</exception>
-    public static FloorballMatchDto ToDto(FloorballMatch match, Club? homeClub, Club? awayClub, Dictionary<Guid, Person> playerPersonLookup)
+    public static FloorballMatchDto ToDto(FloorballMatch match, Dictionary<Guid, Person> playerPersonLookup)
     {
         if (match == null)
             throw new ArgumentNullException(nameof(match));
@@ -83,8 +83,10 @@ public static class FloorballMatchMapper
             match.SeasonId,
             match.HomeTeamId,
             match.HomeTeam.Name,
+            match.HomeTeam.LogoUrl,
             match.AwayTeamId,
             match.AwayTeam.Name,
+            match.AwayTeam.LogoUrl,
             match.ScheduledDateTime.ToUniversalTime(),
             match.Venue,
             match.Status,
@@ -95,9 +97,7 @@ public static class FloorballMatchMapper
             periodScores,
             officials,
             goalEvents,
-            penaltyEvents,
-            homeClub,
-            awayClub);
+            penaltyEvents);
     }
 
     /// <summary>
@@ -111,7 +111,40 @@ public static class FloorballMatchMapper
         if (matches == null)
             throw new ArgumentNullException(nameof(matches));
 
-        return matches.Select(match => ToDto(match, null, null));
+        return matches.Select(match => ToDto(match));
+    }
+
+    /// <summary>
+    /// Maps a collection of FloorballMatch entities to FloorballMatchDto objects with club data
+    /// </summary>
+    /// <param name="matches">The matches to map</param>
+    /// <param name="clubLookup">Dictionary mapping club IDs to club entities</param>
+    /// <returns>The mapped DTOs</returns>
+    /// <exception cref="ArgumentNullException">Thrown when matches is null</exception>
+    public static IEnumerable<FloorballMatchDto> ToDtos(IEnumerable<FloorballMatch> matches, Dictionary<Guid, Club> clubLookup)
+    {
+        if (matches == null)
+            throw new ArgumentNullException(nameof(matches));
+
+        clubLookup ??= new Dictionary<Guid, Club>();
+
+        return matches.Select(match => 
+        {
+            Club? homeClub = null;
+            Club? awayClub = null;
+
+            if (clubLookup.TryGetValue(match.HomeTeam.ClubId, out Club? home))
+            {
+                homeClub = home;
+            }
+
+            if (clubLookup.TryGetValue(match.AwayTeam.ClubId, out Club? away))
+            {
+                awayClub = away;
+            }
+
+            return ToDto(match);
+        });
     }
 
     /// <summary>
@@ -135,8 +168,10 @@ public static class FloorballMatchMapper
             match.SeasonId,
             match.HomeTeamId,
             homeTeamName,
+            null,
             match.AwayTeamId,
             awayTeamName,
+            null,
             match.ScheduledDateTime,
             match.Venue,
             match.Status,
@@ -147,9 +182,7 @@ public static class FloorballMatchMapper
             periodScores,
             match.OfficialIds,
             new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed
-            new List<FloorballPenaltyEventDto>(), // TODO: Map penalty events when needed
-            null,
-            null
+            new List<FloorballPenaltyEventDto>() // TODO: Map penalty events when needed
         );
     }
 
