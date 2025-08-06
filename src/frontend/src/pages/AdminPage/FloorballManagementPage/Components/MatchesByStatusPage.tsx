@@ -44,6 +44,9 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
     handleStateUpdate,
     handleLiveMatch,
     handleEditMatch,
+    handleGoLive,
+    handleCompleteLive,
+    handleMatchUpdated,
     handleCloseLiveModal,
     handleCloseForm,
     handleFormSubmit,
@@ -158,8 +161,11 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
               match={liveModalMatch}
               isOpen={isLiveModalOpen}
               onClose={handleCloseLiveModal}
+              onGoLive={handleGoLive}
+              onCompleteLive={handleCompleteLive}
               liveState={getLiveMatchState(liveModalMatch.id)}
               onStateUpdate={handleStateUpdate}
+              onMatchUpdated={handleMatchUpdated}
             />
           )}
         </>

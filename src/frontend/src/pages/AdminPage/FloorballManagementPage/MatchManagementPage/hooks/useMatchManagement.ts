@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type {
   CreateFloorballMatchRequest,
   ChangeMatchSeasonRequest,
@@ -17,6 +18,7 @@ interface UseMatchManagementParams {
 }
 
 export function useMatchManagement({ setMatches }: UseMatchManagementParams) {
+  const navigate = useNavigate();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [liveModalMatch, setLiveModalMatch] = useState<FloorballMatchDto | null>(null);
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
@@ -36,6 +38,26 @@ export function useMatchManagement({ setMatches }: UseMatchManagementParams) {
     setIsLiveModalOpen(true);
     initializeLiveMatch(match);
   }, [initializeLiveMatch]);
+
+  // New: when Start is clicked in modal, update matches and navigate to In-Progress page
+  const handleGoLive = useCallback((matchId: string, updatedMatch?: FloorballMatchDto) => {
+    if (updatedMatch) {
+      setMatches(prev => prev.map(m => m.id === matchId ? updatedMatch : m));
+    }
+    navigate('/admin/floorball/matches/in-progress');
+  }, [navigate, setMatches]);
+
+  // New: when Complete is clicked, update matches state; no navigation by default
+  const handleCompleteLive = useCallback((matchId: string, updatedMatch?: FloorballMatchDto) => {
+    if (updatedMatch) {
+      setMatches(prev => prev.map(m => m.id === matchId ? updatedMatch : m));
+    }
+  }, [setMatches]);
+
+  // New: generic match updates for live events
+  const handleMatchUpdated = useCallback((updatedMatch: FloorballMatchDto) => {
+    setMatches(prev => prev.map(m => m.id === updatedMatch.id ? updatedMatch : m));
+  }, [setMatches]);
 
   const handleEditMatch = useCallback((match: FloorballMatchDto) => {
     setEditMatch(match);
@@ -116,6 +138,9 @@ export function useMatchManagement({ setMatches }: UseMatchManagementParams) {
     handleStateUpdate,
     handleLiveMatch,
     handleEditMatch,
+    handleGoLive,
+    handleCompleteLive,
+    handleMatchUpdated,
     handleCloseLiveModal,
     handleCloseForm,
     handleFormSubmit,
