@@ -86,7 +86,7 @@ export function useTimer(options: UseTimerOptions) {
     } finally {
       setLoading(false);
     }
-  }, [matchId, autoConnect]);
+  }, [matchId]);
 
   // Stop timer
   const stopTimer = useCallback(async () => {
@@ -103,7 +103,7 @@ export function useTimer(options: UseTimerOptions) {
     } finally {
       setLoading(false);
     }
-  }, [matchId, autoConnect]);
+  }, [matchId]);
 
   // Reset timer
   const resetTimer = useCallback(async () => {

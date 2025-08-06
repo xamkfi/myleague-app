@@ -8,11 +8,8 @@ import { createClubSlug } from '../../utils/slugUtils';
 import './Navbar.scss';
 import SearchBar from '../SearchBar';
 
-interface NavbarProps {
-  onLogin?: () => void;
-}
 
-function Navbar({ onLogin }: NavbarProps) {
+function Navbar() {
   const { t } = useTranslation();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [clubs, setClubs] = useState<Club[]>([]);

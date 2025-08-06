@@ -1,7 +1,7 @@
 import './SearchBar.scss';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRef } from 'react';
 import { createClubSlug } from '../../utils/slugUtils';
 import { slugify } from '../../utils/slugUtils';
@@ -10,11 +10,25 @@ import { getClubs } from '../../api/common/clubService';
 import type { Club } from '../../api/common/clubService';
 import SearchIcon from '../../assets/basicIcons/search.svg';
 
-function SearchBar(props: any) {
+// Add interfaces
+interface SearchPerson {
+  personId: string;
+  firstName: string;
+  lastName: string;
+  teamName?: string | null;
+}
+
+interface SearchTeam {
+  teamId?: string;
+  id?: string;
+  teamName: string;
+}
+
+function SearchBar() {
    const { t } = useTranslation();
    const [searchQuery, setSearchQuery] = useState('');
-   const [searchResults, setSearchResults] = useState<any[]>([]);
-   const [peopleResults, setPeopleResults] = useState<any[]>([]);
+   const [searchResults, setSearchResults] = useState<SearchTeam[]>([]);
+   const [peopleResults, setPeopleResults] = useState<SearchPerson[]>([]);
    const [clubResults, setClubResults] = useState<string[]>([]);
    const [allClubs, setAllClubs] = useState<Club[]>([]);
    const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -28,6 +42,68 @@ function SearchBar(props: any) {
    const [hasSearched, setHasSearched] = useState(false);
    const [selectedIndex, setSelectedIndex] = useState(-1);
    const resultsRef = useRef<HTMLDivElement>(null);
+
+   // Move handlers here
+   const handlePersonClick = useCallback((person: SearchPerson) => {
+     const action = () => navigate(`/floorballplayer/${person.personId}`);
+     setPendingAction(() => action);
+     setIsSearchFocused(false);
+   }, [navigate]);
+
+   const handleTeamClick = useCallback((team: SearchTeam) => {
+     // Create a simple slug from teamName for search results
+     const teamSlug = slugify(team.teamName);
+     const action = () => navigate(`/team/${teamSlug}`);
+     setPendingAction(() => action);
+     setIsSearchFocused(false);
+   }, [navigate]);
+
+   const handleClubClick = useCallback((clubName: string) => {
+     const club = allClubs.find(c => c.name === clubName);
+     if (club) {
+       const action = () => navigate(`/club/${createClubSlug(club)}`);
+       setPendingAction(() => action);
+       setIsSearchFocused(false);
+     }
+   }, [allClubs, navigate]);
+
+   const handleSelectedItem = useCallback(() => {
+     const totalPeople = peopleResults.length;
+     const totalTeams = searchResults.length;
+     
+     if (selectedIndex < totalPeople) {
+       // Person result
+       handlePersonClick(peopleResults[selectedIndex]);
+     } else if (selectedIndex < totalPeople + totalTeams) {
+       // Team result
+       const teamIndex = selectedIndex - totalPeople;
+       handleTeamClick(searchResults[teamIndex]);
+     } else {
+       // Club result
+       const clubIndex = selectedIndex - totalPeople - totalTeams;
+       handleClubClick(clubResults[clubIndex]);
+     }
+   }, [peopleResults, searchResults, clubResults, selectedIndex, handlePersonClick, handleTeamClick, handleClubClick]);
+
+   const getItemClassName = (index: number) => {
+     const baseClass = 'search-result-item';
+     return selectedIndex === index ? `${baseClass} selected` : baseClass;
+   };
+
+   const handleTransitionEnd = (e: React.TransitionEvent<HTMLDivElement>) => {
+     if (!isAnimatedIn && e.propertyName === 'opacity' && e.target === resultsRef.current) {
+       setIsVisible(false);
+       setSearchResults([]);
+       setPeopleResults([]);
+       setClubResults([]);
+       setHasSearched(false);
+       setSelectedIndex(-1);
+       if (pendingAction) {
+         pendingAction();
+         setPendingAction(null);
+       }
+     }
+   };
 
    // Load all clubs for slug resolution
    useEffect(() => {
@@ -45,8 +121,29 @@ function SearchBar(props: any) {
    // Debounced search effect
    useEffect(() => {
     const handler = setTimeout(() => {
+      const doSearch = async () => {
+        if (!searchQuery.trim()) return;
+        setHasSearched(true);
+        try {
+           const response = await globalSearchService.search(searchQuery.trim());
+           if (response.data) {
+              const teamResults = response.data.team.slice(0, 5);
+              setSearchResults(teamResults);
+              setPeopleResults(response.data.person.slice(0,5));
+              setClubResults(response.data.clubNames.slice(0,5));
+              console.log('Search results:', {
+                people: response.data.person.length,
+                teams: response.data.team.length,
+                clubs: response.data.clubNames.length
+              });
+           }
+        } catch (err) {
+           console.error(err);
+        }
+      };
+
       if (searchQuery.length >= 1) {
-        onSeacrhClick();
+        doSearch();
       } else {
         // Clear results if query is too short
         setHasSearched(false);
@@ -54,7 +151,7 @@ function SearchBar(props: any) {
         setPeopleResults([]);
         setClubResults([]);
       }
-    }, 300); // 500ms delay
+    }, 300); // 300ms delay
 
     return () => {
       clearTimeout(handler);
@@ -105,7 +202,7 @@ function SearchBar(props: any) {
        document.removeEventListener('mousedown', handleClickOutside);
        document.removeEventListener('keydown', handleKeyDown);
      };
-   }, [isVisible, hasSearched, peopleResults.length, searchResults.length, clubResults.length, selectedIndex]);
+   }, [isVisible, hasSearched, peopleResults.length, searchResults.length, clubResults.length, selectedIndex, handleSelectedItem]);
 
    // Add new useEffect after the existing useEffects
    useEffect(() => {
@@ -127,89 +224,6 @@ function SearchBar(props: any) {
        setHasSearched(false);
      }
    }, [isSearchFocused]);
-
-   const onSeacrhClick = async () => {
-      if (!searchQuery.trim()) return;
-      setHasSearched(true);
-      try {
-         const response = await globalSearchService.search(searchQuery.trim());
-         if (response.data) {
-            const teamResults = response.data.team.slice(0, 5);
-            setSearchResults(teamResults);
-            setPeopleResults(response.data.person.slice(0,5));
-            setClubResults(response.data.clubNames.slice(0,5));
-            console.log('Search results:', {
-              people: response.data.person.length,
-              teams: response.data.team.length,
-              clubs: response.data.clubNames.length
-            });
-         }
-      } catch (err) {
-         console.error(err);
-      }
-   };
-
-   const handlePersonClick = (person: any) => {
-     const action = () => navigate(`/floorballplayer/${person.personId}`);
-     setPendingAction(() => action);
-     setIsSearchFocused(false);
-   };
-
-   const handleTeamClick = (team: any) => {
-     // Create a simple slug from teamName for search results
-     const teamSlug = slugify(team.teamName);
-     const action = () => navigate(`/team/${teamSlug}`);
-     setPendingAction(() => action);
-     setIsSearchFocused(false);
-   };
-
-   const handleClubClick = (clubName: string) => {
-     const club = allClubs.find(c => c.name === clubName);
-     if (club) {
-       const action = () => navigate(`/club/${createClubSlug(club)}`);
-       setPendingAction(() => action);
-       setIsSearchFocused(false);
-     }
-   };
-
-   const handleSelectedItem = () => {
-     const totalPeople = peopleResults.length;
-     const totalTeams = searchResults.length;
-     
-     if (selectedIndex < totalPeople) {
-       // Person result
-       handlePersonClick(peopleResults[selectedIndex]);
-     } else if (selectedIndex < totalPeople + totalTeams) {
-       // Team result
-       const teamIndex = selectedIndex - totalPeople;
-       handleTeamClick(searchResults[teamIndex]);
-     } else {
-       // Club result
-       const clubIndex = selectedIndex - totalPeople - totalTeams;
-       handleClubClick(clubResults[clubIndex]);
-     }
-   };
-
-   const getItemClassName = (index: number) => {
-     const baseClass = 'search-result-item';
-     return selectedIndex === index ? `${baseClass} selected` : baseClass;
-   };
-
-   // Add handleTransitionEnd before return
-   const handleTransitionEnd = (e: React.TransitionEvent<HTMLDivElement>) => {
-     if (!isAnimatedIn && e.propertyName === 'opacity' && e.target === resultsRef.current) {
-       setIsVisible(false);
-       setSearchResults([]);
-       setPeopleResults([]);
-       setClubResults([]);
-       setHasSearched(false);
-       setSelectedIndex(-1);
-       if (pendingAction) {
-         pendingAction();
-         setPendingAction(null);
-       }
-     }
-   };
 
    return (
       <div className="search-bar-container" ref={searchContainerRef}>
