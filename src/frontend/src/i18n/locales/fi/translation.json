@@ -605,5 +605,9 @@
       "yellowCards": "Keltaiset kortit",
       "redCards": "Punaiset kortit"
     }
+  },
+  "searchBar": {
+    "placeholder": "Hae...",
+    "button": "Hae"
   }
 } 
