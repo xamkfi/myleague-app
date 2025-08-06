@@ -8,7 +8,7 @@ import { slugify } from '../../utils/slugUtils';
 import { globalSearchService } from '../../api/common/globalSearchService';
 import { getClubs } from '../../api/common/clubService';
 import type { Club } from '../../api/common/clubService';
-import ReactIcon from '../../assets/react.svg';
+import SearchIcon from '../../assets/basicIcons/search.svg';
 
 function SearchBar(props: any) {
    const { t } = useTranslation();
@@ -216,7 +216,7 @@ function SearchBar(props: any) {
 
          {/* Search input */}
          <div className="search-bar-input-wrapper">
-           <img src={ReactIcon} className="search-icon" alt="Search" />
+           <img src={SearchIcon} className="search-icon" alt="Search" />
            <input
               type="text"
               placeholder={t('searchBar.placeholder')}
