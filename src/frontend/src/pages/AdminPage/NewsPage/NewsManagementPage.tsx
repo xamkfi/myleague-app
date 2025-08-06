@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import NewsList from './components/NewsList';
 import './NewsManagementPage.scss';
 import PageTemplate from '../../../components/PageTemplate/PageTemplate';
+import NewsFilter from './components/NewsFilter';
 
 const NewsManagementPage = () => {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ const NewsManagementPage = () => {
         </button>
       </div>
       
+      <NewsFilter />
       <div className="news-content">
         <NewsList />
       </div>

@@ -52,8 +52,8 @@ public class GetAllNewsArticlesHandler : BasePagedQueryHandler<GetAllNewsArticle
             // Check for cancellation before starting
             cancellationToken.ThrowIfCancellationRequested();
 
-            _logger.LogInformation("Retrieving news articles - Page: {Page}, PageSize: {PageSize}, Category: {Category}, SportCategory: {SportCategory}, Author: {Author}, IncludeArchived: {IncludeArchived}", 
-                request.Page, request.PageSize, request.Category, request.SportCategory, request.Author, request.IncludeArchived);
+            _logger.LogInformation("Retrieving news articles - Page: {Page}, PageSize: {PageSize}, Category: {Category}, SportCategory: {SportCategory}, Search: {Search}, Author: {Author}, IncludeArchived: {IncludeArchived}", 
+                request.Page, request.PageSize, request.Category, request.SportCategory, request.Search, request.Author, request.IncludeArchived);
 
             // Validate pagination parameters using base handler
             Result<PaginationValidationResult> validationResult = ValidatePaginationParameters(
@@ -74,14 +74,16 @@ public class GetAllNewsArticlesHandler : BasePagedQueryHandler<GetAllNewsArticle
                 request.Page, 
                 actualPageSize, 
                 request.Category, 
-                request.SportCategory, 
-                request.Author, 
+                request.SportCategory,
+                request.Search,
+                request.Author,
                 request.IncludeArchived, 
                 cancellationToken);
 
             int totalCount = await _newsRepository.GetCountAsync(
                 request.Category,
                 request.SportCategory,
+                request.Search,
                 request.Author,
                 request.IncludeArchived,
                 cancellationToken);

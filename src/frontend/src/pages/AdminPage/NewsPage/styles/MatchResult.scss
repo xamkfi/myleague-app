@@ -1,3 +1,7 @@
+@use 'sass:map';
+@use '../../../../styles/variables' as *;
+@use '../../../../styles/common' as *;
+
 .status-badge {
   padding: 4px 10px;
   border-radius: 6px;
@@ -44,36 +48,55 @@
   border-radius: 8px;
   padding: 0.5rem 1rem;
   background: #fff;
-  margin-bottom: 0.5rem;
-  gap: 1rem;
   flex-wrap: wrap;
   position: relative;
 }
 
 .match-result-date {
-  color: #8b6464;
-  font-weight: 500;
-  min-width: 160px;
-  max-width: 160px;
-  flex: 0 0 160px;
-  margin-right: 1.5rem;
-  text-align: left;
+  font-size: 0.80em;
+  color: #888;
+}
+
+.match-result-score {
+  font-size: 1.2em;
+  font-weight: map.get($font-weights, "bold");
+  color: #1e293b;
 }
 
 .match-result-teams {
-  font-weight: 600;
+  font-weight: map.get($font-weights, "medium");
   color: #1e293b;
-  flex: 1 1 200px;
-  min-width: 200px;
-  max-width: 300px;
+  flex: 1 1 auto; /* Allow full expansion */
+  min-width: 0; /* Remove minimum width constraint */
+  max-width: none; /* Remove maximum width constraint */
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-left: auto;
-  margin-right: auto;
+  margin-left: 0; /* Remove auto margins */
+  margin-right: 0; /* Remove auto margins */
   justify-content: center;
   display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.90em;
+}
+
+.team-image {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  background-color: #f8fafc;
+  
+  &.home-team-image {
+    order: -1; /* Place home team image first */
+  }
+  
+  &.away-team-image {
+    order: 1; /* Place away team image last */
+  }
 }
 
 .match-result-status {
@@ -90,6 +113,7 @@
       color: #1d4ed8;
     }
   }
+
 }
 
 .match-teams {

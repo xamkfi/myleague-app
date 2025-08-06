@@ -245,7 +245,7 @@
   // Tab Content Container
   .tab-content-container {
     background: transparent;
-    padding: map.get($spacing, 'lg');
+    padding: map.get($spacing, 'lg') 0px;
   }
 
   // Tab Content Section

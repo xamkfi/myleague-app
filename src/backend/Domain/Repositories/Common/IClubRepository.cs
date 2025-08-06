@@ -13,7 +13,7 @@ public interface IClubRepository
     /// <param name="id">The club ID</param>
     /// <returns>The club if found, null otherwise</returns>
     Task<Club?> GetByIdAsync(Guid id);
-    
+
     /// <summary>
     /// Gets a club by name
     /// </summary>
