@@ -474,6 +474,7 @@
         "completed": "Päättyneet",
         "scheduled": "Aikataulutetut",
         "inProgress": "Käynnissä",
+        "cancelled": "Peruutetut",
         "createNew": "Luo Uusi"
       },
       "filters": {

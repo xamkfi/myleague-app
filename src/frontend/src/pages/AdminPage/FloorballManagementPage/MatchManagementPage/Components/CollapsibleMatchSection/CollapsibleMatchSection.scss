@@ -267,4 +267,28 @@
       }
     }
   }
+  // Special styling for cancelled matches section (red)
+  &.cancelled-section {
+    .section-header {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+
+      .section-title {
+        color: white;
+
+        .collapse-icon {
+          color: rgba(255, 255, 255, 0.8);
+        }
+      }
+
+      .section-count {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+
+      &:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      }
+    }
+  }
 } 

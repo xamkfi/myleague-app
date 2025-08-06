@@ -1,6 +1,6 @@
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   justify-content: stretch;
   gap: 12px;
   margin-bottom: 24px;
@@ -12,7 +12,7 @@
 // Force 5 columns on desktop/tablet screens
 @media (min-width: 769px) {
   .stats-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     overflow-x: visible;
     gap: 12px;
   }
@@ -71,6 +71,9 @@
 
     &.completed {
       background: #10b981;
+    }
+    &.cancelled {
+      background: #ef4444;
     }
   }
 

@@ -22,9 +22,11 @@ import type {
 import './MatchManagementPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
   
 const MatchManagementPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   
   // State management
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
@@ -56,6 +58,7 @@ const MatchManagementPage = () => {
     ongoing: false,
     scheduled: false,
     completed: false
+    , cancelled: false
   });
 
   // Real-time connection status
@@ -119,11 +122,20 @@ const MatchManagementPage = () => {
         return dateB.getTime() - dateA.getTime();
       })
       .slice(0, 10); // Only show 10 most recent
-    
+
+    const cancelledMatches = filtered
+      .filter(match => match.status === 'Cancelled')
+      .sort((a, b) => {
+        const dateA = new Date(a.scheduledDateTime);
+        const dateB = new Date(b.scheduledDateTime);
+        return dateB.getTime() - dateA.getTime();
+      }).slice(0, 10);
+
     return {
       ongoing: ongoingMatches,
       scheduled: scheduledMatches,
-      completed: completedMatches
+      completed: completedMatches,
+      cancelled: cancelledMatches
     };
   }, [matches, selectedSeasonId]);
 
@@ -519,6 +531,10 @@ const MatchManagementPage = () => {
           filteredMatches={filteredMatches}
           selectedSeasonId={selectedSeasonId}
           onCreateNew={handleCreateNew}
+          onCompletedClick={() => navigate('/admin/floorball/matches/completed')}
+          onScheduledClick={() => navigate('/admin/floorball/matches/scheduled')}
+          onInProgressClick={() => navigate('/admin/floorball/matches/in-progress')}
+          onCancelledClick={() => navigate('/admin/floorball/matches/cancelled')}
         />
 
         <MatchFilters 
@@ -565,10 +581,23 @@ const MatchManagementPage = () => {
             sectionType="completed"
           />
 
+          {/* Cancelled Matches Section */}
+          <CollapsibleMatchSection
+            title={`Cancelled Matches (${filteredMatches.cancelled.length})`}
+            matches={filteredMatches.cancelled}
+            isCollapsed={collapsedSections.cancelled}
+            onToggleCollapse={() => toggleSection('cancelled')}
+            onLiveMatch={handleLiveMatch}
+            onEditMatch={handleEditMatch}
+            actionLoading={actionLoading}
+            sectionType="cancelled"
+          />
+
           {/* Empty State - when no matches in any section */}
           {filteredMatches.ongoing.length === 0 && 
            filteredMatches.scheduled.length === 0 && 
-           filteredMatches.completed.length === 0 && (
+           filteredMatches.completed.length === 0 && 
+           filteredMatches.cancelled.length === 0 && (
             <div className="empty-state">
               <div className="empty-icon">📋</div>
               <h3>No matches found</h3>
