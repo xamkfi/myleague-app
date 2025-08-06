@@ -32,7 +32,7 @@ const LiveMatchEventsHistory = ({
                       {event.wasInShootout && ` (SO)`}
                     </span>
                   </div>
-                ) : (
+                ) : event.type === 'penalty' ? (
                   <div className="penalty-event">
                     <span className="event-icon">🟨</span>
                     <span className="event-text">
@@ -40,7 +40,16 @@ const LiveMatchEventsHistory = ({
                       {event.playerName && ` - ${event.playerName}`}
                     </span>
                   </div>
-                )}
+                ) : event.type === 'save' ? (
+                  <div className="save-event">
+                    <span className="event-icon">🛡️</span>
+                    <span className="event-text">
+                      <strong>{event.teamName}</strong> - Save by {event.playerName}
+                      {event.wasInOvertime && ` (OT)`}
+                      {event.wasInShootout && ` (SO)`}
+                    </span>
+                  </div>
+                ) : null}
               </div>
             </div>
           ))}

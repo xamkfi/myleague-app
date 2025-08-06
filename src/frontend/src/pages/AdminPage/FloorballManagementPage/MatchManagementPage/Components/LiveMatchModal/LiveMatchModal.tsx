@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useState } from 'react';
+import { floorballMatchEventService, type RecordSaveEventRequest } from '../../../../../../api/floorball/floorballMatchEventService';
 import type { TimerUpdate } from '../../../../../../api/common/timerService';
 
 // Import extracted components
@@ -10,6 +11,7 @@ import GoalRecordingForm from './components/GoalRecordingForm';
 import PenaltyRecordingForm from './components/PenaltyRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ConfirmationDialog from './components/ConfirmationDialog';
+import SaveRecordingSection from './components/SaveRecordingSection';
 
 // Import custom hooks
 import {
@@ -24,7 +26,6 @@ import {
 
 // Import types
 import type { LiveMatchModalProps } from './components/types';
-
 import './LiveMatchModal.scss';
 
 const LiveMatchModal = ({ 
@@ -37,6 +38,10 @@ const LiveMatchModal = ({
   onStateUpdate,
   onMatchUpdated
 }: LiveMatchModalProps) => {
+  // State for selected goalies (lifted up)
+  const [homeGoalieId, setHomeGoalieId] = useState<string>('');
+  const [awayGoalieId, setAwayGoalieId] = useState<string>('');
+
   // Use custom hooks for business logic
   const matchData = useMatchData({
     match,
@@ -83,14 +88,68 @@ const LiveMatchModal = ({
     loadMatchEvents: matchEvents.loadMatchEvents,
     setError: matchData.setError
   });
+  // Loading state for save events and destructured dependencies
+  const [saveLoading, setSaveLoading] = useState<boolean>(false);
+  const matchId = matchData.currentMatch.id;
+  const homeTeamId = matchData.homeTeam?.id ?? '';
+  const awayTeamId = matchData.awayTeam?.id ?? '';
+  const matchWentToOvertime = matchData.currentMatch.wentToOvertime;
+  const matchWentToShootout = matchData.currentMatch.wentToShootout;
+  const { loadMatchEvents } = matchEvents;
+  const { setError } = matchData;
+
+  const handleRecordSave = useCallback(async (team: 'home' | 'away', goalieId: string) => {
+    try {
+      setSaveLoading(true);
+      const payload: RecordSaveEventRequest = {
+        goalieId,
+        matchId,
+        teamId: team === 'home' ? homeTeamId : awayTeamId,
+        playerId: goalieId,
+        periodNumber: timer.localClock.period,
+        timeInSeconds: timer.currentTimerElapsedTime,
+        wasInOvertime: matchWentToOvertime || timer.localClock.period > 3,
+        wasInShootout: matchWentToShootout || timer.localClock.period > 4
+      };
+      await floorballMatchEventService.recordSave(payload);
+      await loadMatchEvents();
+      setError(null);
+    } catch (error) {
+      console.error('Error recording save:', error);
+      setError(error instanceof Error ? error.message : 'Failed to record save');
+    } finally {
+      setSaveLoading(false);
+    }
+  }, [
+    matchId,
+    homeTeamId,
+    awayTeamId,
+    matchWentToOvertime,
+    matchWentToShootout,
+    loadMatchEvents,
+    setError,
+    timer.localClock.period,
+    timer.currentTimerElapsedTime
+  ]);
 
   const signalR = useSignalR({
     matchId: match.id,
     isOpen,
     onPeriodStarted: periodManagement.handlePeriodStarted,
     onGoalScored: matchEvents.handleGoalScored,
-    onPenaltyAssigned: matchEvents.handlePenaltyAssigned
+    onPenaltyAssigned: matchEvents.handlePenaltyAssigned,
+    onSaveRecorded: matchEvents.handleSaveRecorded
   });
+
+  // Destructure utilities to satisfy hook deps without pulling full objects
+  const {
+    currentTimerElapsedTime: elapsedTime,
+    getCurrentTimeFromTimer,
+    setCurrentTimerElapsedTime,
+    setGetCurrentTimeFromTimer
+  } = timer;
+  const { setShowGoalForm, setShowPenaltyForm } = forms;
+  const { setShowOvertimeConfirmation, setShowShootoutConfirmation } = periodManagement;
 
   // Calculate current score
   const currentScore = useMemo(() => {
@@ -103,13 +162,16 @@ const LiveMatchModal = ({
     return baseScore;
   }, [liveState?.currentScore, matchData.currentMatch.homeScore, matchData.currentMatch.awayScore]);
 
+  // Destructure currentMatch and setter to satisfy update effect dependencies
+  const { currentMatch: trackedMatch, setCurrentMatch } = matchData;
+
   // Update currentMatch when match prop changes - OPTIMIZED
   useEffect(() => {
     // Only update if actually different to prevent cascading re-renders
-    if (match.id !== matchData.currentMatch.id || match.status !== matchData.currentMatch.status) {
-      matchData.setCurrentMatch(match);
+    if (match.id !== trackedMatch.id || match.status !== trackedMatch.status) {
+      setCurrentMatch(match);
     }
-  }, [match.id, match.status, matchData.currentMatch.id, matchData.currentMatch.status, matchData.setCurrentMatch]);
+  }, [match, trackedMatch.id, trackedMatch.status, setCurrentMatch]);
 
   // Initialize started periods when component loads - OPTIMIZED
   useEffect(() => {
@@ -141,32 +203,56 @@ const LiveMatchModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, match.id]); // Intentionally minimal deps for performance
 
+  // Keybinds enabled when modal is open, match live, and no forms are open
+  const keybindsEnabled = isOpen &&
+    matchData.currentMatch.status === 'InProgress' &&
+    !forms.showGoalForm &&
+    !forms.showPenaltyForm;
+
+  // Handle Q/P keybinds
+  useEffect(() => {
+    if (!keybindsEnabled) return;
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+      // Ignore typing in inputs or contenteditable
+      if (['INPUT', 'TEXTAREA'].includes(target.tagName) || target.isContentEditable) {
+        return;
+      }
+      const key = e.key.toLowerCase();
+      if (key === 'q' && homeGoalieId) {
+        handleRecordSave('home', homeGoalieId);
+        e.preventDefault();
+      }
+      if (key === 'p' && awayGoalieId) {
+        handleRecordSave('away', awayGoalieId);
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [keybindsEnabled, homeGoalieId, awayGoalieId, handleRecordSave]);
+
   // MEMOIZED: Handles the period control button click
   const handlePeriodControlClick = useCallback(() => {
     if (periodManagement.canEndPeriod()) {
-      let currentTime = '00:00';
+      // Determine elapsed time (get from timer if available, else use last known)
       let totalSeconds = 0;
-      
-      if (timer.getCurrentTimeFromTimer) {
-        currentTime = timer.getCurrentTimeFromTimer();
-        const timeParts = currentTime.split(':');
+      if (getCurrentTimeFromTimer) {
+        const timeParts = getCurrentTimeFromTimer().split(':');
         if (timeParts.length === 2) {
-          const minutes = parseInt(timeParts[0]) || 0;
-          const seconds = parseInt(timeParts[1]) || 0;
-          totalSeconds = minutes * 60 + seconds;
+          const [m, s] = timeParts.map(p => parseInt(p, 10) || 0);
+          totalSeconds = m * 60 + s;
         } else if (timeParts.length === 3) {
-          const hours = parseInt(timeParts[0]) || 0;
-          const minutes = parseInt(timeParts[1]) || 0;
-          const seconds = parseInt(timeParts[2]) || 0;
-          totalSeconds = hours * 3600 + minutes * 60 + seconds;
+          const [h, m, s] = timeParts.map(p => parseInt(p, 10) || 0);
+          totalSeconds = h * 3600 + m * 60 + s;
         }
       } else {
-        totalSeconds = timer.currentTimerElapsedTime;
+        totalSeconds = elapsedTime;
       }
-      
-      const isUnder20Minutes = totalSeconds < 1200; // 20 minutes = 1200 seconds
-      timer.setCurrentTimerElapsedTime(totalSeconds);
-      
+      const isUnder20Minutes = totalSeconds < 1200;
+      setCurrentTimerElapsedTime(totalSeconds);
+
       if (isUnder20Minutes) {
         periodManagement.setShowEndPeriodConfirmation(true);
         periodManagement.setPendingEndPeriodAction(() => periodManagement.endPeriod);
@@ -176,76 +262,58 @@ const LiveMatchModal = ({
     } else {
       periodManagement.startPeriod();
     }
-  }, [
-    periodManagement.canEndPeriod,
-    periodManagement.startPeriod,
-    periodManagement.endPeriod,
-    periodManagement.setShowEndPeriodConfirmation,
-    periodManagement.setPendingEndPeriodAction,
-    periodManagement.startedPeriods,
-    periodManagement.endedPeriods,
-    periodManagement.nextPeriodToStart,
-    periodManagement.periodLoading,
-    timer.localClock.period,
-    timer.getCurrentTimeFromTimer,
-    timer.currentTimerElapsedTime,
-    timer.setCurrentTimerElapsedTime,
-    matchData.currentMatch.status
-  ]);
+  }, [periodManagement, getCurrentTimeFromTimer, elapsedTime, setCurrentTimerElapsedTime]);
 
   // MEMOIZED: Timer update handler
   const handleTimerUpdate = useCallback((update: TimerUpdate) => {
     if (update.ElapsedTime) {
       const timeParts = update.ElapsedTime.split(':');
+      let totalSeconds = 0;
       if (timeParts.length === 3) {
-        const hours = parseInt(timeParts[0]) || 0;
-        const minutes = parseInt(timeParts[1]) || 0;
-        const seconds = parseInt(timeParts[2]) || 0;
-        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-        timer.setCurrentTimerElapsedTime(totalSeconds);
+        const [h, m, s] = timeParts.map(part => parseInt(part, 10) || 0);
+        totalSeconds = h * 3600 + m * 60 + s;
       } else if (timeParts.length === 2) {
-        const minutes = parseInt(timeParts[0]) || 0;
-        const seconds = parseInt(timeParts[1]) || 0;
-        const totalSeconds = minutes * 60 + seconds;
-        timer.setCurrentTimerElapsedTime(totalSeconds);
+        const [m, s] = timeParts.map(part => parseInt(part, 10) || 0);
+        totalSeconds = m * 60 + s;
       }
+      setCurrentTimerElapsedTime(totalSeconds);
     }
-  }, [timer.setCurrentTimerElapsedTime]);
+  }, [setCurrentTimerElapsedTime]);
 
   // MEMOIZED: Get current time handler
   const handleGetCurrentTime = useCallback((getTime: () => string) => {
-    timer.setGetCurrentTimeFromTimer(() => getTime);
-  }, [timer.setGetCurrentTimeFromTimer]);
+    setGetCurrentTimeFromTimer(() => getTime);
+  }, [setGetCurrentTimeFromTimer]);
 
   // MEMOIZED: Goal form show handler
   const handleShowGoalForm = useCallback(() => {
-    forms.setShowGoalForm(true);
-  }, [forms.setShowGoalForm]);
+    setShowGoalForm(true);
+  }, [setShowGoalForm]);
 
   // MEMOIZED: Goal form close handler
   const handleCloseGoalForm = useCallback(() => {
-    forms.setShowGoalForm(false);
-  }, [forms.setShowGoalForm]);
+    setShowGoalForm(false);
+  }, [setShowGoalForm]);
 
   // MEMOIZED: Penalty form close handler
   const handleClosePenaltyForm = useCallback(() => {
-    forms.setShowPenaltyForm(false);
-  }, [forms.setShowPenaltyForm]);
+    setShowPenaltyForm(false);
+  }, [setShowPenaltyForm]);
 
   // MEMOIZED: Error close handler
   const handleCloseError = useCallback(() => {
-    matchData.setError(null);
-  }, [matchData.setError]);
+    setError(null);
+  }, [setError]);
 
   // MEMOIZED: Overtime confirmation cancel handler
   const handleCancelOvertime = useCallback(() => {
-    periodManagement.setShowOvertimeConfirmation(false);
-  }, [periodManagement.setShowOvertimeConfirmation]);
+    setShowOvertimeConfirmation(false);
+  }, [setShowOvertimeConfirmation]);
 
   // MEMOIZED: Shootout confirmation cancel handler
   const handleCancelShootout = useCallback(() => {
-    periodManagement.setShowShootoutConfirmation(false);
-  }, [periodManagement.setShowShootoutConfirmation]);
+    setShowShootoutConfirmation(false);
+  }, [setShowShootoutConfirmation]);
 
   if (!isOpen) return null;
 
@@ -331,7 +399,18 @@ const LiveMatchModal = ({
               isInShootout={periodManagement.isInShootout}
               formatTime={timer.formatTime}
             />
-
+          <SaveRecordingSection
+            currentMatch={matchData.currentMatch}
+            homePlayers={matchData.homePlayers}
+            awayPlayers={matchData.awayPlayers}
+            homeGoalieId={homeGoalieId}
+            awayGoalieId={awayGoalieId}
+            setHomeGoalieId={setHomeGoalieId}
+            setAwayGoalieId={setAwayGoalieId}
+            onRecordSave={handleRecordSave}
+            loading={saveLoading}
+            keybindsEnabled={keybindsEnabled}
+          />
             {/* Quick Actions */}
             <LiveMatchQuickActions
               loading={forms.loading}

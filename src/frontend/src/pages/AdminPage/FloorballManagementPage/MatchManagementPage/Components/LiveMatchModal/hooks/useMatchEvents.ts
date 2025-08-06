@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { floorballMatchEventService, type FloorballDomainEventDto } from '../../../../../../../api/floorball/floorballMatchEventService';
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../../../types/floorball/floorballTypes';
-import type { GoalEventData, PenaltyEventData } from '../components/types';
+import type { GoalEventData, PenaltyEventData, SaveEventData } from '../components/types';
 
 interface UseMatchEventsProps {
   match: FloorballMatchDto;
@@ -90,6 +90,19 @@ export const useMatchEvents = ({
     // Refresh events list
     loadMatchEvents();
   }, [match.id, loadMatchEvents]);
+  
+  /**
+   * Handles real-time save events from SignalR
+   */
+  const handleSaveRecorded = useCallback((eventData: SaveEventData) => {
+    console.log('handleSaveRecorded called with eventData:', eventData);
+    if (eventData.MatchId !== match.id) {
+      console.log('Save event is for different match, ignoring');
+      return;
+    }
+    console.log('Save recorded for team:', eventData.TeamId);
+    loadMatchEvents();
+  }, [match.id, loadMatchEvents]);
 
   /**
    * Processes and combines all match events (goals and penalties) from the backend
@@ -102,8 +115,17 @@ export const useMatchEvents = ({
       console.log('No matchEvents, returning empty array');
       return [];
     }
-    
-    // Process domain events from backend into displayable events
+
+    // Raw shape of save event data from SignalR
+    type RawSaveEventData = {
+      matchId: string;
+      teamId: string;
+      goalieId: string;
+      periodNumber: number;
+      timeInSeconds: number;
+      wasInOvertime: boolean;
+      wasInShootout: boolean;
+    };
     const events = matchEvents
       .filter((event): event is FloorballDomainEventDto => event !== null && event !== undefined)
       .map((event: FloorballDomainEventDto) => {
@@ -256,6 +278,34 @@ export const useMatchEvents = ({
             description: penaltyDescription
           };
         }
+        // Handle save events
+        else if (event.eventType === 'FloorballSaveEvent') {
+          console.log('Processing FloorballSaveEvent');
+          const raw = event.data as RawSaveEventData;
+          const saveData: SaveEventData = {
+            MatchId: raw.matchId,
+            TeamId: raw.teamId,
+            GoalieId: raw.goalieId,
+            PeriodNumber: raw.periodNumber,
+            TimeInSeconds: raw.timeInSeconds,
+            IsOvertime: raw.wasInOvertime,
+            IsShootout: raw.wasInShootout
+          };
+          const { TeamId, GoalieId, PeriodNumber, TimeInSeconds, IsOvertime, IsShootout } = saveData;
+          return {
+            id: `save-${TeamId}-${GoalieId}-${PeriodNumber}-${TimeInSeconds}`,
+            type: 'save' as const,
+            teamId: TeamId,
+            teamName: TeamId === currentMatch.homeTeamId ? homeTeam?.name || 'Home' : awayTeam?.name || 'Away',
+            playerId: GoalieId,
+            playerName: getPlayerNameById(GoalieId),
+            periodNumber: PeriodNumber,
+            timeInSeconds: TimeInSeconds,
+            timestamp: new Date(event.occurredOn),
+            wasInOvertime: IsOvertime,
+            wasInShootout: IsShootout
+          };
+        }
         return null;
       })
       .filter((event): event is NonNullable<typeof event> => event !== null);
@@ -281,6 +331,7 @@ export const useMatchEvents = ({
     allEvents,
     loadMatchEvents,
     handleGoalScored,
-    handlePenaltyAssigned
+    handlePenaltyAssigned,
+    handleSaveRecorded
   };
 }; 

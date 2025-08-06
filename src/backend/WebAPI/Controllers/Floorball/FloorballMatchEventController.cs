@@ -145,6 +145,45 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Records a new save event in a floorball match
+        /// </summary>
+        /// <param name="request">Save event details</param>
+        /// <returns>Created save event</returns>
+        [HttpPost("save")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballSaveEventDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballSaveEventDto>>> RecordSave([FromBody] RecordSaveEventRequest request)
+        {
+            _logger.LogInformation("Recording save event for match {matchId}", request.MatchId);
+
+            RecordSaveEventCommand command = new RecordSaveEventCommand(
+                request.MatchId,
+                request.TeamId,
+                request.GoalieId,
+                request.PeriodNumber,
+                request.TimeInSeconds,
+                request.WasInOvertime,
+                request.WasInShootout
+            );
+
+            Result<FloorballSaveEventDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return CreatedAtAction(
+                    nameof(RecordSave),
+                    new { matchId = request.MatchId },
+                    ApiResponse<FloorballSaveEventDto>.SuccessResponse(result.Data, "Save event recorded successfully")
+                );
+            }
+
+            string errorMessage = result.Error ?? "Failed to record save event";
+            return BadRequest(ApiResponse<FloorballSaveEventDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Updates an existing goal event
         /// </summary>
         /// <param name="request">Updated goal event details</param>

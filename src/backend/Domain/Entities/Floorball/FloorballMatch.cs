@@ -95,6 +95,12 @@ public class FloorballMatch : AggregateRoot
         _events.OfType<FloorballPenalty>().ToList().AsReadOnly();
     
     /// <summary>
+    /// Gets all save events
+    /// </summary>
+    public IReadOnlyCollection<FloorballSave> SaveEvents =>
+        _events.OfType<FloorballSave>().ToList().AsReadOnly();
+    
+    /// <summary>
     /// Gets the match officials (referees)
     /// </summary>
     public IReadOnlyCollection<FloorballReferee> Officials => _officials.AsReadOnly();
@@ -394,7 +400,7 @@ public class FloorballMatch : AggregateRoot
         }
 
         // Record the goal event
-        var goalEvent = new FloorballGoal(
+        FloorballGoal goalEvent = new FloorballGoal(
             Id,
             scoringTeam.Id,
             scoringPlayer.Id,
@@ -480,7 +486,7 @@ public class FloorballMatch : AggregateRoot
         if(team == null)
             throw new ArgumentNullException(nameof(team), "Team cannot be null.");
 
-        var penaltyEvent = new FloorballPenalty(
+        FloorballPenalty penaltyEvent = new FloorballPenalty(
             Id,
             team.Id,
             player?.Id,
@@ -501,6 +507,62 @@ public class FloorballMatch : AggregateRoot
             periodNumber,
             timeInSeconds,
             description ?? string.Empty));
+    }
+
+    /// <summary>
+    /// Records a save
+    /// </summary>
+    /// <param name="team">The team whose goalie made the save</param>
+    /// <param name="goalie">The goalie who made the save</param>
+    /// <param name="periodNumber">The period number</param>
+    /// <param name="timeInSeconds">The time in seconds when the save was made</param>
+    /// <param name="wasInOvertime">Whether the save was made in overtime</param>
+    /// <param name="wasInShootout">Whether the save was made in shootout</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
+    public void RecordSave(
+        FloorballTeam team,
+        FloorballPlayer goalie,
+        int periodNumber,
+        int timeInSeconds,
+        bool wasInOvertime = false,
+        bool wasInShootout = false)
+    {
+        if (Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException($"Cannot record a save when match status is {Status}.");
+
+        ArgumentNullException.ThrowIfNull(team);
+        ArgumentNullException.ThrowIfNull(goalie);
+
+        if (periodNumber < 1 || periodNumber > 5)
+            throw new ArgumentOutOfRangeException(nameof(periodNumber), "Period number must be between 1 and 5.");
+        if (timeInSeconds < 0)
+            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be non-negative.");
+        if (team.Id != HomeTeamId && team.Id != AwayTeamId)
+            throw new ArgumentException("Team is not participating in this match.", nameof(team));
+        bool goalieOnTeam = team.Roster.Any(tp => tp.PlayerId == goalie.Id);
+        if (!goalieOnTeam)
+            throw new ArgumentException("Goalie is not on the team's roster.", nameof(goalie));
+
+        FloorballSave saveEvent = new FloorballSave(
+            Guid.NewGuid(),
+            Id,
+            team.Id,
+            goalie.Id,
+            periodNumber,
+            timeInSeconds,
+            wasInOvertime,
+            wasInShootout);
+        _events.Add(saveEvent);
+
+        // Add domain event
+        AddDomainEvent(new FloorballSaveEvent(
+            Id,
+            team.Id,
+            goalie.Id,
+            periodNumber,
+            timeInSeconds,
+            wasInOvertime,
+            wasInShootout));
     }
 
     /// <summary>
