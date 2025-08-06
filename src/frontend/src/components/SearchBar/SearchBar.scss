@@ -2,40 +2,38 @@
 @use 'sass:map';
 
 .search-bar-container {
-   display: flex;
+   flex: 1 0 0;
    background-color: $color-neutral-white;
    color: $color-neutral-dark-grey;
-   border-radius: map.get($border-radius, 'lg');
+   border-radius: 16px;
    margin: 0 map.get($spacing, 'xs');
+   padding: 0 12px;
    position: relative;
    width: 100%;
+   
    >* {
       padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
    }
-   .search-bar-input {
-      outline: none;
-      width: 100%;
-      transition: outline 0.2s ease;
-      &:focus {
-         outline: 4px solid $color-blue-medium;
-      }
-   }
-   .search-bar-button {
-      background-color: $color-blue-medium;
-      color: $color-neutral-white;
-      outline: none;
-      border-radius: 
-         0
-         map.get($border-radius, 'lg')
-         map.get($border-radius, 'lg')
-         0;
-      transition: outline 0.2s ease;
-      &:active {
-         background-color: $color-neutral-medium-grey;
-      }
-      &:focus {
-         outline: 6px solid $color-blue-medium;
-      }
+
+   .search-bar-input-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 8px 0;
+
+    .search-icon {
+      margin-right: 8px; /* Adjust as needed */
+      width: 20px;       /* Or your preferred size */
+      height: 20px;      /* Or your preferred size */
+    }
+
+    .search-bar-input {
+       outline: none;
+       width: 100%;
+       border: none;
+    }
+  }
+
    }
 
    .search-results {
@@ -44,7 +42,9 @@
       top: 100%;
       left: 0;
       width: 100%;
-      padding: map.get($spacing, 'xs') 0;
+      font-size: 14px;
+      padding: 0;
+      overflow: hidden;
       background-color: $color-neutral-white;
       box-shadow: 0 6px 10px $color-neutral-black-alpha;
       border-radius: map.get($border-radius, 'lg');
@@ -73,12 +73,18 @@
             padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
          }
          .search-result-item-details {
-            font-size: map.get($font-sizes, 'sm');
+            font-size: 12px;
             color: $color-neutral-medium-grey;
+          }
+          .search-result-item-details-icon {
+            font-size: 12px;
+            position: relative;
+            color: $color-neutral-medium-grey;
+            top: -4px;
           }
       }
    }
-}
+
 
 .search-no-results {
    text-align: center;
@@ -105,7 +111,6 @@
      font-weight: map.get($font-weights, 'bold');
      color: $color-neutral-dark-grey;
      text-transform: uppercase;
-     letter-spacing: $letter-spacing-wide * 0.125;
    }
  }
 

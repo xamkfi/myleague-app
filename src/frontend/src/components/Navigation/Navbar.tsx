@@ -118,9 +118,6 @@ function Navbar({ onLogin }: NavbarProps) {
         <div className="navbar-language">
           <LanguageToggle />
         </div>
-        <button className="button button-primary" onClick={onLogin}>
-          Somelinkit
-        </button>
       </div>
     </nav>
   );

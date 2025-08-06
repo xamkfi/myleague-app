@@ -8,6 +8,7 @@ import { slugify } from '../../utils/slugUtils';
 import { globalSearchService } from '../../api/common/globalSearchService';
 import { getClubs } from '../../api/common/clubService';
 import type { Club } from '../../api/common/clubService';
+import ReactIcon from '../../assets/react.svg';
 
 function SearchBar(props: any) {
    const { t } = useTranslation();
@@ -214,13 +215,17 @@ function SearchBar(props: any) {
       <div className="search-bar-container" ref={searchContainerRef}>
 
          {/* Search input */}
-         <input
-            type="text"
-            placeholder={t('searchBar.placeholder')}
-            className="search-bar-input"
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-         />
+         <div className="search-bar-input-wrapper">
+           <img src={ReactIcon} className="search-icon" alt="Search" />
+           <input
+              type="text"
+              placeholder={t('searchBar.placeholder')}
+              className="search-bar-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+           />
+         </div>
 
          {/* Search results */}
          {isVisible && (
@@ -254,7 +259,10 @@ function SearchBar(props: any) {
                     onMouseEnter={() => setSelectedIndex(index)}>
                      <div className="search-result-item-content">
                         <div className="search-result-item-name">{p.firstName} {p.lastName}</div>
-                        <div className="search-result-item-details">⌊{p.teamName ?? "No data"}</div>
+                        <div className="search-result-item-details">
+                          <span className="search-result-item-details-icon">⌊</span>
+                          {p.teamName ?? "No data"}
+                        </div>
                      </div>
                    </div>
                 ))}

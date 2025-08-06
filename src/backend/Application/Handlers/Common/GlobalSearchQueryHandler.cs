@@ -86,7 +86,7 @@ namespace Application.Handlers.Common
                 // This person is a floorball player, enrich with team data (may be null if not on a team)
                 playerTeamMap.TryGetValue(fp.Id, out FloorballTeam? team);
                 Club? club = team != null && clubMap.TryGetValue(team.ClubId, out Club? c) ? c : null;
-                return new GlobalSearchResultPersonDto(p.Id, p.FirstName, p.LastName, team?.Id, team?.Name, club?.Id, club?.Name);
+                return new GlobalSearchResultPersonDto(fp.Id, p.FirstName, p.LastName, team?.Id, team?.Name, club?.Id, club?.Name);
             }).ToArray();
 
             GlobalSearchResultTeamDto[] teamResults = teams
