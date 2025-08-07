@@ -18,6 +18,7 @@ export const useLocalTimer = ({ isOpen, onStateUpdate }: UseLocalTimerProps) => 
   // Timer state tracking for accurate time calculations
   const [currentTimerElapsedTime, setCurrentTimerElapsedTime] = useState<number>(0);
   const [getCurrentTimeFromTimer, setGetCurrentTimeFromTimer] = useState<(() => string) | null>(null);
+  const [getToggleFromTimer, setGetToggleFromTimer] = useState<(() => Promise<void>) | null>(null);
   
   // Timer interval ref for cleanup
   const timerIntervalRef = useRef<number | null>(null);
@@ -109,6 +110,8 @@ export const useLocalTimer = ({ isOpen, onStateUpdate }: UseLocalTimerProps) => 
     setCurrentTimerElapsedTime,
     getCurrentTimeFromTimer,
     setGetCurrentTimeFromTimer,
+    getToggleFromTimer,
+    setGetToggleFromTimer,
     
     // Utility functions
     formatTime,

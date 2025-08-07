@@ -146,7 +146,9 @@ const LiveMatchModal = ({
     currentTimerElapsedTime: elapsedTime,
     getCurrentTimeFromTimer,
     setCurrentTimerElapsedTime,
-    setGetCurrentTimeFromTimer
+    setGetCurrentTimeFromTimer,
+    getToggleFromTimer,
+    setGetToggleFromTimer
   } = timer;
   const { setShowGoalForm, setShowPenaltyForm } = forms;
   const { setShowOvertimeConfirmation, setShowShootoutConfirmation } = periodManagement;
@@ -208,7 +210,7 @@ const LiveMatchModal = ({
     !forms.showGoalForm &&
     !forms.showPenaltyForm;
 
-  // Handle Q/P keybinds
+  // Handle Q/P/Space keybinds
   useEffect(() => {
     if (!keybindsEnabled) return;
     const handler = (e: KeyboardEvent) => {
@@ -227,10 +229,14 @@ const LiveMatchModal = ({
         handleRecordSave('away', awayGoalieId);
         e.preventDefault();
       }
+      if (key === ' ' && getToggleFromTimer) {
+        getToggleFromTimer();
+        e.preventDefault();
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [keybindsEnabled, homeGoalieId, awayGoalieId, handleRecordSave]);
+  }, [keybindsEnabled, homeGoalieId, awayGoalieId, handleRecordSave, getToggleFromTimer]);
 
   // MEMOIZED: Handles the period control button click
   const handlePeriodControlClick = useCallback(() => {
@@ -283,6 +289,11 @@ const LiveMatchModal = ({
   const handleGetCurrentTime = useCallback((getTime: () => string) => {
     setGetCurrentTimeFromTimer(() => getTime);
   }, [setGetCurrentTimeFromTimer]);
+
+  // MEMOIZED: Get toggle function handler
+  const handleGetToggleFunction = useCallback((toggleFunction: () => Promise<void>) => {
+    setGetToggleFromTimer(() => toggleFunction);
+  }, [setGetToggleFromTimer]);
 
   // MEMOIZED: Goal form show handler
   const handleShowGoalForm = useCallback(() => {
@@ -391,12 +402,14 @@ const LiveMatchModal = ({
               onPeriodControlClick={handlePeriodControlClick}
               onTimerUpdate={handleTimerUpdate}
               onGetCurrentTime={handleGetCurrentTime}
+              onGetToggleFunction={handleGetToggleFunction}
               canEndPeriod={periodManagement.canEndPeriod}
               getPeriodStatus={periodManagement.getPeriodStatus}
               getPeriodControlButtonText={periodManagement.getPeriodControlButtonText}
               isInOvertime={periodManagement.isInOvertime}
               isInShootout={periodManagement.isInShootout}
               formatTime={timer.formatTime}
+              keybindsEnabled={keybindsEnabled}
             />
           <SaveRecordingSection
             currentMatch={matchData.currentMatch}

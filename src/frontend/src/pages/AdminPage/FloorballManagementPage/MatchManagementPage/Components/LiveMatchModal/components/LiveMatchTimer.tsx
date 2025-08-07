@@ -21,12 +21,14 @@ interface LiveMatchTimerProps {
   onPeriodControlClick: () => void;
   onTimerUpdate: (update: TimerUpdate) => void;
   onGetCurrentTime: (getTime: () => string) => void;
+  onGetToggleFunction?: (toggleFunction: () => Promise<void>) => void;
   canEndPeriod: () => boolean;
   getPeriodStatus: () => string;
   getPeriodControlButtonText: () => string;
   isInOvertime: () => boolean;
   isInShootout: () => boolean;
   formatTime: (minutes: number, seconds: number) => string;
+  keybindsEnabled: boolean;
 }
 
 const LiveMatchTimer = ({
@@ -40,11 +42,13 @@ const LiveMatchTimer = ({
   onPeriodControlClick,
   onTimerUpdate,
   onGetCurrentTime,
+  onGetToggleFunction,
   canEndPeriod,
   getPeriodStatus,
   getPeriodControlButtonText,
   isInOvertime,
-  isInShootout
+  isInShootout,
+  keybindsEnabled
 }: LiveMatchTimerProps) => {
   return (
     <div className={`clock-score-section ${isInOvertime() ? 'overtime' : ''} ${isInShootout() ? 'shootout' : ''}`}>
@@ -91,6 +95,8 @@ const LiveMatchTimer = ({
             isActive={isOpen} // Only activate timer when modal is open
             onTimerUpdate={onTimerUpdate}
             onGetCurrentTime={onGetCurrentTime}
+            onGetToggleFunction={onGetToggleFunction}
+            keybindsEnabled={keybindsEnabled}
           />
         ) : (
           <div className="timer-loading">

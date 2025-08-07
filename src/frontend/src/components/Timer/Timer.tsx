@@ -8,10 +8,12 @@ interface TimerProps {
   periodNumber?: number;
   onTimerUpdate?: (update: TimerUpdate) => void;
   onGetCurrentTime?: (getTime: () => string) => void;
+  onGetToggleFunction?: (toggleFunction: () => Promise<void>) => void;
   isActive?: boolean; // New prop to control when timer should be active
+  keybindsEnabled?: boolean; // New prop to show keybind indicator
 }
 
-export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, isActive = true }: TimerProps) => {
+export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetToggleFunction, isActive = true, keybindsEnabled = false }: TimerProps) => {
   // Debug logging for component lifecycle - only log once per actual mount/unmount
   useEffect(() => {
     console.log('🔄 Timer component MOUNTED:', { matchId, periodNumber, isActive });
@@ -92,6 +94,13 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     }
   };
 
+  // Notify parent component of the toggle function
+  useEffect(() => {
+    if (onGetToggleFunction && isActive) {
+      onGetToggleFunction(handleToggle);
+    }
+  }, [onGetToggleFunction, handleToggle, isActive]);
+
   // Memoize button disabled states to prevent blinking during SignalR updates
   const buttonStates = useMemo(() => {
     const toggleDisabled = loading || !isActive;
@@ -131,9 +140,10 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
         <button
           onClick={handleToggle}
           disabled={buttonStates.toggleDisabled}
-          className={`timer-button ${timerState.isRunning ? 'stop' : 'start'}`}
+          className={`timer-button ${timerState.isRunning ? 'pause' : 'start'}`}
         >
-          {timerState.isRunning ? 'Stop' : 'Start'}
+          <span className={`key-label ${keybindsEnabled ? '' : 'disabled'}`}>(Space)</span>
+          {timerState.isRunning ? 'Pause' : 'Start'}
         </button>
         
         <button
