@@ -142,7 +142,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
           disabled={buttonStates.toggleDisabled}
           className={`timer-button ${timerState.isRunning ? 'pause' : 'start'}`}
         >
-          <span className={`key-label ${keybindsEnabled ? '' : 'disabled'}`}>(Space)</span>
+          <span className={`key-label ${keybindsEnabled ? '' : 'disabled'}`}>(Space) </span>
           {timerState.isRunning ? 'Pause' : 'Start'}
         </button>
         
