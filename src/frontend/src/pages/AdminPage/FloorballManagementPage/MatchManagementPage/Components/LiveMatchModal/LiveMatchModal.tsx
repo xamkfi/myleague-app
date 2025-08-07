@@ -187,7 +187,8 @@ const LiveMatchModal = ({
       periodManagement.setEndedPeriods(new Set());
       periodManagement.setNextPeriodToStart(1);
     }
-  }, [isOpen, matchData.currentMatch.status, periodManagement]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, matchData.currentMatch.status]);
 
   // Load team data and setup SignalR when modal opens - OPTIMIZED
   useEffect(() => {
