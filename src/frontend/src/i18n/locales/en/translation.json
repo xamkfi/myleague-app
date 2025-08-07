@@ -150,9 +150,9 @@
       "edit": "Edit News Article",
       "loading": "Loading...",
       "title": "Title",
-      "title_placeholder": "Enter compelling article title...",
+      "title_placeholder": "Enter article title...",
       "summary": "Summary",
-      "summary_placeholder": "Write a brief summary that captures the essence of your article...",
+      "summary_placeholder": "Write a brief summary...",
       "main_picture": "Main Picture",
       "author": "Author",
       "author_placeholder": "Enter author name...",
@@ -233,6 +233,24 @@
         "summary_too_long": "Summary cannot exceed 200 characters",
         "invalid_image": "Please select a valid image file",
         "image_too_large": "Image file must be less than 5MB"
+      },
+      "matches": {
+        "add_matches": "Add Matches",
+        "add_matches_selected": "Add Matches",
+        "browse_matches": "Browse Matches",
+        "search_matches": "Search matches...",
+        "all_matches": "All matches",
+        "upcoming_matches": "Upcoming matches",
+        "results": "Results",
+        "cancelled": "Cancelled",
+        "selected_matches": "Selected matches",
+        "clear_all": "Clear all",
+        "add_selected": "Add selected",
+        "cancel": "Cancel",
+        "no_matches_available": "No matches available",
+        "loading_matches": "Loading matches...",
+        "try_again": "Try again",
+        "error": "Error"
       }
     }
   },
@@ -555,6 +573,42 @@
   },
   "matches": {
     "loading": "Loading matches…",
+    "noMatches": "No matches found."
+  },
+  "results": {
+    "title": "RESULTS",
+    "loading": "Loading results…",
+    "noResults": "No results found."
+  },
+  "roster": {
+    "jerseyNumber": "#",
+    "name": "Name",
+    "age": "Age",
+    "matchesPlayed": "Matches played",
+    "goals": "Goals",
+    "assists": "Assists",
+    "yellowCards": "Yellow cards",
+    "redCards": "Red cards",
+    "positions": {
+      "None": "NONE",
+      "Goalkeeper": "GOALKEEPER",
+      "Defender": "DEFENDER",
+      "Center": "CENTER",
+      "Forward": "FORWARD"
+    },
+    "tooltips": {
+      "jerseyNumber": "Jersey number",
+      "age": "Age",
+      "matchesPlayed": "Matches played",
+      "goals": "Goals",
+      "assists": "Assists",
+      "yellowCards": "Yellow cards",
+      "redCards": "Red cards"
+    }
+  },
+  "searchBar": {
+    "placeholder": "Search...",
+    "button": "Search",
     "noMatches": "No matches found."
   },
   "results": {

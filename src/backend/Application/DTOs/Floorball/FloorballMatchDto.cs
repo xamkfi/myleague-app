@@ -41,8 +41,10 @@ namespace Application.DTOs.Floorball
         Guid SeasonId,
         Guid HomeTeamId,
         string HomeTeamName,
+        Uri? HomeTeamLogo,
         Guid AwayTeamId,
         string AwayTeamName,
+        Uri? AwayTeamLogo,
         DateTime ScheduledDateTime,
         string? Venue,
         FloorballMatchStatus Status,
@@ -53,7 +55,5 @@ namespace Application.DTOs.Floorball
         IReadOnlyDictionary<int, PeriodScoreDto> PeriodScores,
         IReadOnlyCollection<Guid> Officials,
         IReadOnlyCollection<FloorballGoalEventDto> GoalEvents,
-        IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents,
-        Club? homeClub,
-        Club? awayClub);
+        IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents);
 }

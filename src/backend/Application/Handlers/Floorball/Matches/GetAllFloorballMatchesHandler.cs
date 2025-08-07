@@ -7,6 +7,8 @@ using Application.Handlers.Common;
 using Application.Services.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Common;
+using Domain.Entities.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
@@ -14,6 +16,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Queries.Floorball.Match;
+using System.Linq;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -24,19 +27,23 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
     IRequestHandler<GetAllFloorballMatchesQuery, Result<PagedResult<FloorballMatchDto>>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
+    private readonly IClubRepository _clubRepository;
 
     /// <summary>
     /// Initializes a new instance of the GetAllFloorballMatchesHandler class
     /// </summary>
     /// <param name="matchRepository">The floorball match repository</param>
+    /// <param name="clubRepository">The club repository</param>
     /// <param name="paginationService">The pagination service</param>
     /// <param name="logger">The logger</param>
     public GetAllFloorballMatchesHandler(
         IFloorballMatchRepository matchRepository,
+        IClubRepository clubRepository,
         IPaginationService paginationService,
         ILogger<GetAllFloorballMatchesHandler> logger) : base(paginationService, logger)
     {
         _matchRepository = matchRepository;
+        _clubRepository = clubRepository;
     }
 
     /// <summary>
@@ -84,7 +91,8 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Map to DTOs
+
+            // Map to DTOs with club data
             IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(pagedMatches.Items);
             
             // Create the final paged result with DTOs

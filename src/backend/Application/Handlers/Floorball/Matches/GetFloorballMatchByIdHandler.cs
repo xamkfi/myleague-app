@@ -115,7 +115,7 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
             Club? awayClub = await _clubRepository.GetByIdAsync(match.AwayTeam.ClubId);
 
 
-            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, homeClub, awayClub, playerPersonLookup);
+            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, playerPersonLookup);
             _logger.LogInformation("Successfully retrieved floorball match: {MatchId}", match.Id);
 
             return Result<FloorballMatchDto>.Success(matchDto);

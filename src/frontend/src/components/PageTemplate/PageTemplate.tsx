@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import Navbar from '../Navigation/Navbar';
+import Footer from '../Footer/Footer';
 import './PageTemplate.scss';
 
 interface PageTemplateProps {
@@ -9,11 +10,10 @@ interface PageTemplateProps {
 }
 
 function PageTemplate({ title, children }: PageTemplateProps) {
-  // Set the document title (browser tab title)
   useEffect(() => {
     document.title = `${title} - MAHL`;
     return () => {
-      document.title = 'MAHL'; // Reset to default on unmount
+      document.title = 'MAHL';
     };
   }, [title]);
 
@@ -27,6 +27,7 @@ function PageTemplate({ title, children }: PageTemplateProps) {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

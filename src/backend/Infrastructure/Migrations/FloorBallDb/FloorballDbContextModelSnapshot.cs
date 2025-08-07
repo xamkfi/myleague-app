@@ -671,6 +671,42 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasDiscriminator().HasValue("Penalty");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSave", b =>
+                {
+                    b.HasBaseType("Domain.Entities.Floorball.FloorballMatchEvent");
+
+                    b.Property<Guid?>("FloorballMatchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GoalieId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("WasInOvertime")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("WasInShootout")
+                        .HasColumnType("boolean");
+
+                    b.HasIndex("FloorballMatchId");
+
+                    b.HasIndex("GoalieId")
+                        .HasDatabaseName("IX_FloorballMatchEvent_GoalieId");
+
+                    b.ToTable("FloorballMatchEvents", "floorball", t =>
+                        {
+                            t.HasCheckConstraint("CK_FloorballMatchEvent_PeriodNumber", "\"PeriodNumber\" > 0");
+
+                            t.HasCheckConstraint("CK_FloorballMatchEvent_TimeInSeconds", "\"TimeInSeconds\" >= 0");
+
+                            t.HasCheckConstraint("CK_FloorballPenalty_DurationInMinutes", "\"DurationInMinutes\" IS NULL OR \"DurationInMinutes\" > 0");
+
+                            t.Property("FloorballMatchId")
+                                .HasColumnName("FloorballSave_FloorballMatchId");
+                        });
+
+                    b.HasDiscriminator().HasValue("Save");
+                });
+
             modelBuilder.Entity("Domain.Entities.Floorball.EventSourcedFloorballMatch", b =>
                 {
                     b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
@@ -840,6 +876,13 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .HasForeignKey("FloorballMatchId");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSave", b =>
+                {
+                    b.HasOne("Domain.Entities.Floorball.FloorballMatch", null)
+                        .WithMany("SaveEvents")
+                        .HasForeignKey("FloorballMatchId");
+                });
+
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatch", b =>
                 {
                     b.Navigation("Events");
@@ -849,6 +892,8 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Navigation("PenaltyEvents");
 
                     b.Navigation("PeriodScores");
+
+                    b.Navigation("SaveEvents");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeason", b =>

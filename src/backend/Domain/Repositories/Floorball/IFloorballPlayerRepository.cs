@@ -121,6 +121,14 @@ public interface IFloorballPlayerRepository
     Task<IEnumerable<FloorballPlayer>> SearchByNameAsync(string searchTerm);
 
     /// <summary>
+    /// Gets floorball players by a set of person IDs, as a dictionary keyed by PersonId.
+    /// </summary>
+    /// <param name="personIds">Collection of person IDs.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Dictionary where key is PersonId and value is FloorballPlayer.</returns>
+    Task<Dictionary<Guid, FloorballPlayer>> GetByPersonIdsAsync(IEnumerable<Guid> personIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if a floorball player exists
     /// </summary>
     /// <param name="id">The player ID</param>

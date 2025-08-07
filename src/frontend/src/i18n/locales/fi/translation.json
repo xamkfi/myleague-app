@@ -150,9 +150,9 @@
       "edit": "Muokkaa Uutisartikkelia",
       "loading": "Ladataan...",
       "title": "Otsikko",
-      "title_placeholder": "Lisää houkutteleva artikkelin otsikko...",
+      "title_placeholder": "Lisää artikkelin otsikko...",
       "summary": "Yhteenveto",
-      "summary_placeholder": "Kirjoita lyhyt yhteenveto, joka kuvaa artikkelisi ydinsanomaa...",
+      "summary_placeholder": "Kirjoita lyhyt yhteenveto...",
       "main_picture": "Pääkuva",
       "author": "Tekijä",
       "author_placeholder": "Anna tekijän nimi...",
@@ -233,6 +233,24 @@
         "summary_too_long": "Yhteenveto ei voi ylittää 200 merkkiä",
         "invalid_image": "Valitse kelvollinen kuvatiedosto",
         "image_too_large": "Kuvatiedoston tulee olla alle 5MB"
+      },
+      "matches": {
+        "add_matches": "Lisää Otteluita",
+        "add_matches_selected": "Lisää Otteluita",
+        "browse_matches": "Selaa Otteluita",
+        "search_matches": "Etsi otteluita...",
+        "all_matches": "Kaikki ottelut",
+        "upcoming_matches": "Tulevat ottelut",
+        "results": "Tulokset",
+        "cancelled": "Perutut",
+        "selected_matches": "Valitut ottelut",
+        "clear_all": "Tyhjennä kaikki",
+        "add_selected": "Lisää valitut",
+        "cancel": "Peruuta",
+        "no_matches_available": "Ei otteluita saatavilla",
+        "loading_matches": "Ladataan otteluita...",
+        "try_again": "Yritä uudelleen",
+        "error": "Virhe"
       }
     }
   },
@@ -587,5 +605,9 @@
       "yellowCards": "Keltaiset kortit",
       "redCards": "Punaiset kortit"
     }
+  },
+  "searchBar": {
+    "placeholder": "Hae...",
+    "button": "Hae"
   }
 } 

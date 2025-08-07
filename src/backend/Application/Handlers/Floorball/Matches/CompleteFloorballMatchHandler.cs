@@ -80,7 +80,7 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
                 // Don't fail the match completion if timer destruction fails
             }
 
-            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, null, null);
+            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             _logger.LogInformation("Successfully completed floorball match: {MatchId}", request.Id);
 
             return Result<FloorballMatchDto>.Success(matchDto);

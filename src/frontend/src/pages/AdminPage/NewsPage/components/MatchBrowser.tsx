@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getMatchesService, type FloorballMatch } from '../../../../api/admin/News/GetMatchesService';
 import '../styles/MatchBrowser.scss';
 
@@ -9,6 +10,7 @@ interface MatchBrowserProps {
 type MatchCategory = 'all' | 'scheduled' | 'results' | 'cancelled';
 
 export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
+  const { t } = useTranslation();
   const [showBrowser, setShowBrowser] = useState(false);
   const [selectedMatches, setSelectedMatches] = useState<FloorballMatch[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -60,10 +62,6 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
     setSelectedMatches([]);
   };
 
-  const handleRefresh = () => {
-    fetchMatches();
-  };
-
   // Filter matches by search term and category
   const getFilteredMatches = () => {
     const filtered = matches.filter(match => 
@@ -92,20 +90,23 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
   const getCategoryTitle = () => {
     switch (selectedCategory) {
       case 'scheduled':
-        return 'Aikataulutetut ottelut';
+        return t('admin.news.matches.upcoming_matches', 'Upcoming matches');
       case 'results':
-        return 'Päättyneet ottelut';
+        return t('admin.news.matches.results', 'Results');
       case 'cancelled':
-        return 'Perutut ottelut';
+        return t('admin.news.matches.cancelled', 'Cancelled');
       default:
-        return 'Kaikki ottelut';
+        return t('admin.news.matches.all_matches', 'All matches');
     }
   };
 
   return (
     <>
-      <button onClick={() => setShowBrowser(true)}>
-        Hae otteluita ({selectedMatches.length} valittu)
+      <button 
+        className="match-browser__trigger-btn"
+        onClick={() => setShowBrowser(true)}
+      >
+        {t('admin.news.matches.add_matches_selected')}
       </button>
 
       {showBrowser && (
@@ -113,77 +114,101 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
           <div className="match-browser-modal__backdrop" onClick={() => setShowBrowser(false)} />
           <div className="match-browser-modal__content">
             <div className="match-browser-modal__header">
-              <h3>Ottelujen selaus</h3>
-              <div className="match-browser-modal__header-actions">
-                <button onClick={handleRefresh} disabled={loading}>
-                  {loading ? 'Ladataan...' : 'Päivitä'}
-                </button>
-                <button onClick={() => setShowBrowser(false)}>×</button>
-              </div>
+              <h2>{t('admin.news.matches.add_matches', 'ADD MATCHES')}</h2>
+              <button 
+                className="match-browser-modal__close-btn"
+                onClick={() => setShowBrowser(false)}
+              >
+                ×
+              </button>
             </div>
 
             <div className="match-browser-modal__body">
               {/* Error message */}
               {error && (
                 <div className="match-browser__error">
-                  <p>Virhe: {error}</p>
-                  <button onClick={fetchMatches}>Yritä uudelleen</button>
+                  <p>{t('admin.news.matches.error', 'Error')}: {error}</p>
+                  <button onClick={fetchMatches}>{t('admin.news.matches.try_again', 'Try again')}</button>
                 </div>
               )}
 
-              {/* Search */}
-              <div className="match-browser__search">
-                <input
-                  type="text"
-                  placeholder="Etsi joukkueita..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              {/* Category selection */}
+              {/* Category filter buttons */}
               <div className="match-browser__categories">
                 <button 
                   className={getCategoryButtonClass('all')}
                   onClick={() => setSelectedCategory('all')}
                 >
-                  All
+                  {t('admin.news.matches.all_matches', 'All')}
                 </button>
                 <button 
                   className={getCategoryButtonClass('scheduled')}
                   onClick={() => setSelectedCategory('scheduled')}
                 >
-                  Upcoming
+                  {t('admin.news.matches.upcoming_matches', 'Upcoming')}
                 </button>
                 <button 
                   className={getCategoryButtonClass('results')}
                   onClick={() => setSelectedCategory('results')}
                 >
-                  Results
+                  {t('admin.news.matches.results', 'Results')}
                 </button>
                 <button 
                   className={getCategoryButtonClass('cancelled')}
                   onClick={() => setSelectedCategory('cancelled')}
                 >
-                  Cancelled
+                  {t('admin.news.matches.cancelled', 'Cancelled')}
                 </button>
               </div>
 
-              {/* Selected matches */}
-              {selectedMatches.length > 0 && (
-                <div className="match-browser__selected">
-                  <h4>Valitut ottelut ({selectedMatches.length})</h4>
-                  <div className="match-browser__selected-list">
-                    {selectedMatches.map(match => (
-                      <span key={match.id} className="match-browser__selected-item">
-                        {match.homeTeamName} vs {match.awayTeamName}
-                        <button onClick={() => handleMatchSelect(match)}>×</button>
-                      </span>
-                    ))}
-                  </div>
-                  <div className="match-browser__selected-actions">
-                    <button onClick={insertSelectedMatches}>Lisää valitut</button>
-                    <button onClick={clearSelection}>Tyhjennä</button>
+              {/* Search bar */}
+              <div className="match-browser__search">
+                <div className="match-browser__search-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder={t('admin.news.matches.search_matches', 'Search matches...')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="match-browser__search-input"
+                />
+              </div>
+
+              {/* Matches list */}
+              {!loading && !error && (
+                <div className="match-browser__list-section">
+                  <h3 className="match-browser__list-title">{getCategoryTitle()}</h3>
+                  <div className="match-browser__list">
+                    {filteredMatches.length === 0 ? (
+                      <div className="match-browser__empty">
+                        <p>{t('admin.news.matches.no_matches_available', 'No matches available')}</p>
+                      </div>
+                    ) : (
+                      filteredMatches.map(match => (
+                        <div key={match.id} className="match-browser__item">
+                          <div className="match-browser__item-content">
+                            <div className="match-browser__item-date">
+                              {new Date(match.scheduledDateTime).toLocaleDateString('en-GB')} {new Date(match.scheduledDateTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            <div className="match-browser__item-sport">
+                              football
+                            </div>
+                            <div className="match-browser__item-teams">
+                              {match.homeTeamName} {match.homeScore} - {match.awayScore} {match.awayTeamName}
+                            </div>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={selectedMatches.some(m => m.id === match.id)}
+                            onChange={() => handleMatchSelect(match)}
+                            className="match-browser__item-checkbox"
+                          />
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}
@@ -191,39 +216,51 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
               {/* Loading state */}
               {loading && (
                 <div className="match-browser__loading">
-                  <p>Ladataan otteluita...</p>
+                  <p>{t('admin.news.matches.loading_matches', 'Loading matches...')}</p>
                 </div>
               )}
 
-              {/* Matches list */}
-              {!loading && !error && (
-                <div className="match-browser__list">
-                  <div className="match-browser__list-header">
-                    <h4>{getCategoryTitle()} ({filteredMatches.length})</h4>
+              {/* Selected matches chips */}
+              {selectedMatches.length > 0 && (
+                <div className="match-browser__selected">
+                  <div className="match-browser__selected-chips">
+                    {selectedMatches.map(match => (
+                      <span key={match.id} className="match-browser__selected-chip">
+                        {match.homeTeamName} vs {match.awayTeamName}
+                        <button 
+                          onClick={() => handleMatchSelect(match)}
+                          className="match-browser__selected-chip-remove"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
                   </div>
-                  {filteredMatches.length === 0 ? (
-                    <div className="match-browser__empty">
-                      <p>Ei otteluita saatavilla</p>
-                    </div>
-                  ) : (
-                    filteredMatches.map(match => (
-                      <div key={match.id} className="match-browser__item">
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={selectedMatches.some(m => m.id === match.id)}
-                            onChange={() => handleMatchSelect(match)}
-                          />
-                          <span className="match-browser__date">{match.scheduledDateTime}</span>
-                          <span className="match-browser__teams">
-                            {match.homeTeamName} {match.homeScore} - {match.awayScore} {match.awayTeamName}
-                          </span>
-                        </label>
-                      </div>
-                    ))
-                  )}
+                  <button 
+                    onClick={clearSelection}
+                    className="match-browser__clear-all"
+                  >
+                    {t('admin.news.matches.clear_all', 'Clear all')}
+                  </button>
                 </div>
               )}
+
+              {/* Action buttons */}
+              <div className="match-browser__actions">
+                <button 
+                  onClick={() => setShowBrowser(false)}
+                  className="match-browser__cancel-btn"
+                >
+                  {t('admin.news.matches.cancel', 'Cancel')}
+                </button>
+                <button 
+                  onClick={insertSelectedMatches}
+                  disabled={selectedMatches.length === 0}
+                  className="match-browser__add-btn"
+                >
+                  {t('admin.news.matches.add_selected', 'Add selected')}
+                </button>
+              </div>
             </div>
           </div>
         </div>

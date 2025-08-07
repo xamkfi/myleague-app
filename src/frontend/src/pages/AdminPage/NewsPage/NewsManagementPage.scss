@@ -59,6 +59,16 @@
   }
 }
 
+// Pagination container styles
+.pagination-container {
+  padding: 1.5rem;
+  border-top: 1px solid #e9ecef;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 // Responsive design
 @media (max-width: 768px) {
   .news-management-page {
@@ -79,5 +89,9 @@
         justify-content: center;
       }
     }
+  }
+  
+  .pagination-container {
+    padding: 1rem;
   }
 } 

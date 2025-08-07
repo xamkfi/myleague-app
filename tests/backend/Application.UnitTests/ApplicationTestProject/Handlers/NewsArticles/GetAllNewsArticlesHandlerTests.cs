@@ -54,10 +54,10 @@ public class GetAllNewsArticlesHandlerTests
             new NewsArticle(Guid.NewGuid(), "Article 2", new Uri("https://example.com/image2.jpg"), "<p>Content 2</p>", "Author 2")
         };
 
-        _mockNewsRepository.Setup(x => x.GetAllAsync(1, 3, null, null, null, false, It.IsAny<CancellationToken>()))
+        _mockNewsRepository.Setup(x => x.GetAllAsync(1, 3, null, null, null, null, false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(newsArticles);
 
-        _mockNewsRepository.Setup(x => x.GetCountAsync(null, null, null, false, It.IsAny<CancellationToken>()))
+        _mockNewsRepository.Setup(x => x.GetCountAsync(null, null, null, null, false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(10);
 
         // Act
@@ -74,8 +74,8 @@ public class GetAllNewsArticlesHandlerTests
         result.Data.HasNextPage.Should().BeTrue();
         result.Data.HasPreviousPage.Should().BeFalse();
 
-        _mockNewsRepository.Verify(x => x.GetAllAsync(1, 3, null, null, null, false, It.IsAny<CancellationToken>()), Times.Once);
-        _mockNewsRepository.Verify(x => x.GetCountAsync(null, null, null, false, It.IsAny<CancellationToken>()), Times.Once);
+        _mockNewsRepository.Verify(x => x.GetAllAsync(1, 3, null, null, null, null, false, It.IsAny<CancellationToken>()), Times.Once);
+        _mockNewsRepository.Verify(x => x.GetCountAsync(null, null, null, null, false, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -87,16 +87,17 @@ public class GetAllNewsArticlesHandlerTests
             PageSize: 3,
             Category: "General",
             SportCategory: "Football",
+            Search: "",
             Author: "Test Author",
             IncludeArchived: true
         );
 
         List<NewsArticle> newsArticles = new List<NewsArticle>();
 
-        _mockNewsRepository.Setup(x => x.GetAllAsync(2, 3, "General", "Football", "Test Author", true, It.IsAny<CancellationToken>()))
+        _mockNewsRepository.Setup(x => x.GetAllAsync(2, 3, "General", "Football", "", "Test Author", true, It.IsAny<CancellationToken>()))
             .ReturnsAsync(newsArticles);
 
-        _mockNewsRepository.Setup(x => x.GetCountAsync("General", "Football", "Test Author", true, It.IsAny<CancellationToken>()))
+        _mockNewsRepository.Setup(x => x.GetCountAsync("General", "Football", "", "Test Author", true, It.IsAny<CancellationToken>()))
             .ReturnsAsync(0);
 
         // Act
@@ -107,8 +108,8 @@ public class GetAllNewsArticlesHandlerTests
         result.Data!.Items.Should().BeEmpty();
         result.Data.TotalCount.Should().Be(0);
 
-        _mockNewsRepository.Verify(x => x.GetAllAsync(2, 3, "General", "Football", "Test Author", true, It.IsAny<CancellationToken>()), Times.Once);
-        _mockNewsRepository.Verify(x => x.GetCountAsync("General", "Football", "Test Author", true, It.IsAny<CancellationToken>()), Times.Once);
+        _mockNewsRepository.Verify(x => x.GetAllAsync(2, 3, "General", "Football", "", "Test Author", true, It.IsAny<CancellationToken>()), Times.Once);
+        _mockNewsRepository.Verify(x => x.GetCountAsync("General", "Football", "", "Test Author", true, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -126,7 +127,7 @@ public class GetAllNewsArticlesHandlerTests
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Contain("Page must be greater than 0");
 
-        _mockNewsRepository.Verify(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mockNewsRepository.Verify(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Theory]
@@ -150,7 +151,7 @@ public class GetAllNewsArticlesHandlerTests
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Contain("Page size");
 
-        _mockNewsRepository.Verify(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mockNewsRepository.Verify(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -159,7 +160,7 @@ public class GetAllNewsArticlesHandlerTests
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery();
 
-        _mockNewsRepository.Setup(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+        _mockNewsRepository.Setup(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Database error"));
 
         // Act
@@ -183,7 +184,7 @@ public class GetAllNewsArticlesHandlerTests
         await Assert.ThrowsAsync<OperationCanceledException>(
             () => _handler.Handle(query, cts.Token));
 
-        _mockNewsRepository.Verify(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mockNewsRepository.Verify(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -194,7 +195,7 @@ public class GetAllNewsArticlesHandlerTests
 
         using CancellationTokenSource cts = new CancellationTokenSource();
 
-        _mockNewsRepository.Setup(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+        _mockNewsRepository.Setup(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Callback(() => cts.Cancel()) // Cancel during operation
             .ReturnsAsync(new List<NewsArticle>());
 
@@ -209,10 +210,10 @@ public class GetAllNewsArticlesHandlerTests
         // Arrange
         GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery();
 
-        _mockNewsRepository.Setup(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+        _mockNewsRepository.Setup(x => x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<NewsArticle>());
 
-        _mockNewsRepository.Setup(x => x.GetCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+        _mockNewsRepository.Setup(x => x.GetCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(0);
 
         // Act

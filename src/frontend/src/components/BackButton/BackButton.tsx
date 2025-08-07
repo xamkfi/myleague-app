@@ -12,7 +12,7 @@ interface BackButtonProps {
 const BackButton = ({ 
   to = '..', 
   text,
-  scrollThreshold = 200 
+  scrollThreshold = 0
 }: BackButtonProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -32,9 +32,9 @@ const BackButton = ({
   const buttonText = text || t('common.back', 'Back');
 
   return (
-    <div className={`back-button-container ${isScrolled ? 'floating' : ''}`}>
+    <div className={`global-back-button-container ${isScrolled ? 'floating' : ''}`}>
       <button
-        className="back-button"
+        className="global-back-button"
         onClick={() => navigate(to)}
       >
         {buttonText}

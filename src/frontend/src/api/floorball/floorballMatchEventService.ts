@@ -55,6 +55,18 @@ export interface RecordPenaltyEventRequest {
   description?: string;
 }
 
+// Add RecordSaveEventRequest interface
+export interface RecordSaveEventRequest {
+  goalieId: string;
+  matchId: string;
+  teamId: string;
+  playerId: string;
+  periodNumber: number;
+  timeInSeconds: number;
+  wasInOvertime: boolean;
+  wasInShootout: boolean;
+}
+
 export interface UpdateGoalEventRequest extends RecordGoalEventRequest {
   eventId: string;
 }
@@ -68,6 +80,7 @@ export interface FloorballGoalEventDto {
   teamId: string;
   playerId: string;
   assisterId?: string;
+  secondaryAssisterId?: string;
   periodNumber: number;
   timeInSeconds: number;
   wasInOvertime: boolean;
@@ -82,6 +95,16 @@ export interface FloorballPenaltyEventDto {
   periodNumber: number;
   timeInSeconds: number;
   description: string;
+}
+// Add FloorballSaveEventDto interface
+export interface FloorballSaveEventDto {
+  teamId: string;
+  goalieId: string;
+  playerId: string;
+  periodNumber: number;
+  timeInSeconds: number;
+  wasInOvertime: boolean;
+  wasInShootout: boolean;
 }
 
 /**
@@ -165,6 +188,24 @@ export const floorballMatchEventService = {
       return await handleApiResponse<FloorballPenaltyEventDto>(response);
     } catch (error) {
       console.error('Error recording penalty:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Add recordSave method
+   */
+  recordSave: async (data: RecordSaveEventRequest): Promise<ApiResponse<FloorballSaveEventDto>> => {
+    try {
+      console.log('Recording save:', data);
+      const response = await fetch(`${API_URL}/FloorballMatchEvent/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await handleApiResponse<FloorballSaveEventDto>(response);
+    } catch (error) {
+      console.error('Error recording save:', error);
       throw error;
     }
   },

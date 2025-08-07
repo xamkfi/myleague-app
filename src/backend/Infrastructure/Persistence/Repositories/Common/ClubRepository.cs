@@ -32,6 +32,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
+        public async Task<Dictionary<Guid, Club>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            return await _entities
+                .Where(c => ids.Contains(c.Id))
+                .ToDictionaryAsync(c => c.Id, c => c, cancellationToken);
+        }
+
         /// <summary>
         /// Gets a club by name
         /// </summary>
@@ -113,12 +120,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// Searches for clubs by name
         /// </summary>
         /// <param name="searchTerm">The search term</param>
+        /// <param name="count">The maximum number of results to return.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A collection of clubs matching the search term</returns>
-        public async Task<IEnumerable<Club>> SearchByNameAsync(string searchTerm)
+        public async Task<IEnumerable<Club>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default)
         {
+            string lowercasedTerm = searchTerm.ToLower();
             return await _entities
-                .Where(c => c.Name.Contains(searchTerm))
-                .ToListAsync();
+                .Where(c => c.Name.ToLower().Contains(lowercasedTerm))
+                .OrderBy(c => c.Name)
+                .Take(count)
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>
