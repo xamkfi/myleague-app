@@ -1,5 +1,6 @@
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo, useState } from 'react';
 import { useTimer } from '../../hooks/useTimer';
+import { TimeInputModal } from './TimeInputModal';
 import './Timer.scss';
 import type { TimerUpdate } from '../../api/common/timerService';
 
@@ -14,6 +15,9 @@ interface TimerProps {
 }
 
 export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetToggleFunction, isActive = true, keybindsEnabled = false }: TimerProps) => {
+  // State for time input modal
+  const [showTimeInputModal, setShowTimeInputModal] = useState(false);
+
   // Debug logging for component lifecycle - only log once per actual mount/unmount
   useEffect(() => {
     console.log('🔄 Timer component MOUNTED:', { matchId, periodNumber, isActive });
@@ -29,6 +33,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     startTimer,
     stopTimer,
     resetTimer,
+    setTimer,
     createTimer,
   } = useTimer({
     matchId,
@@ -94,6 +99,31 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     }
   };
 
+  const handleSetTime = async (timeInSeconds: number) => {
+    try {
+      console.log('=== TIMER SET TIME BUTTON CLICKED ===');
+      console.log('Match ID:', matchId);
+      console.log('Time in seconds:', timeInSeconds);
+      console.log('Timer Active:', isActive);
+      
+      await setTimer(timeInSeconds);
+      setShowTimeInputModal(false);
+      
+      console.log('=== TIMER SET TIME COMPLETED ===');
+    } catch (error) {
+      console.error('=== TIMER SET TIME FAILED ===');
+      console.error('Error setting timer:', error);
+    }
+  };
+
+  const handleOpenTimeInput = () => {
+    setShowTimeInputModal(true);
+  };
+
+  const handleCloseTimeInput = () => {
+    setShowTimeInputModal(false);
+  };
+
   // Notify parent component of the toggle function
   useEffect(() => {
     if (onGetToggleFunction && isActive) {
@@ -105,10 +135,12 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
   const buttonStates = useMemo(() => {
     const toggleDisabled = loading || !isActive;
     const resetDisabled = loading || !isActive;
+    const setTimeDisabled = loading || !isActive;
     
     return {
       toggleDisabled,
-      resetDisabled
+      resetDisabled,
+      setTimeDisabled
     };
   }, [loading, isActive]);
 
@@ -153,9 +185,26 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
         >
           Reset
         </button>
+
+        <button
+          onClick={handleOpenTimeInput}
+          disabled={buttonStates.setTimeDisabled}
+          className="timer-button set-time"
+          title="Set specific time"
+        >
+          Set Time
+        </button>
       </div>
 
       {error && <div className="timer-error">Error: {error}</div>}
+
+      <TimeInputModal
+        isOpen={showTimeInputModal}
+        currentTime={timerState.elapsedTime}
+        onSetTime={handleSetTime}
+        onClose={handleCloseTimeInput}
+        loading={loading}
+      />
     </div>
   );
 }; 

@@ -178,6 +178,34 @@ export const timerService = {
   },
 
   /**
+   * Sets the timer to a specific time for a match
+   */
+  setTimer: async (matchId: string, timeInSeconds: number): Promise<void> => {
+    console.log('=== timerService.setTimer CALLED ===');
+    console.log('Match ID:', matchId);
+    console.log('Time in seconds:', timeInSeconds);
+    
+    const response = await fetch(`${API_URL}/matches/${matchId}/timer/set-time`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ timeInSeconds }),
+    });
+
+    console.log('Set timer response status:', response.status);
+    console.log('Set timer response ok:', response.ok);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Set timer error response:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to set timer'}`);
+    }
+
+    console.log('=== timerService.setTimer SUCCESS ===');
+  },
+
+  /**
    * Destroys the timer for a match
    */
   destroyTimer: async (matchId: string): Promise<void> => {

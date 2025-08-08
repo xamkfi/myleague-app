@@ -83,6 +83,15 @@
           background: #e68900;
         }
       }
+
+      &.set-time {
+        background: #2196f3;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: #1976d2;
+        }
+      }
     }
   }
 

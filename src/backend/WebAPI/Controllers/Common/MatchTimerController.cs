@@ -180,6 +180,34 @@ namespace WebAPI.Controllers.Common
         }
 
         /// <summary>
+        /// Sets the timer to a specific time for a match
+        /// </summary>
+        /// <param name="matchId">The match ID</param>
+        /// <param name="request">The set timer request</param>
+        /// <returns>Success response</returns>
+        [HttpPut("set-time")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SetTimer(Guid matchId, [FromBody] SetTimerRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("Request to set timer for match {MatchId} to {TimeInSeconds} seconds", matchId, request.TimeInSeconds);
+                
+                TimeSpan elapsedTime = TimeSpan.FromSeconds(request.TimeInSeconds);
+                await _timerService.SetTimerAsync(matchId, elapsedTime);
+                
+                return Ok(ApiResponse.SuccessResponse("Timer set successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting timer for match {MatchId}", matchId);
+                return StatusCode(500, ApiResponse.ErrorResponse("Failed to set timer"));
+            }
+        }
+
+        /// <summary>
         /// Creates a timer for a match
         /// </summary>
         /// <param name="matchId">The match ID</param>
