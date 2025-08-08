@@ -107,6 +107,7 @@ export const TimeInputModal = ({ isOpen, currentTime, onSetTime, onClose, loadin
                 placeholder="00"
                 disabled={loading}
                 autoFocus
+                autoComplete="off"
               />
             </div>
             
@@ -122,6 +123,7 @@ export const TimeInputModal = ({ isOpen, currentTime, onSetTime, onClose, loadin
                 placeholder="00"
                 disabled={loading}
                 maxLength={2}
+                autoComplete="off"
               />
             </div>
           </div>
