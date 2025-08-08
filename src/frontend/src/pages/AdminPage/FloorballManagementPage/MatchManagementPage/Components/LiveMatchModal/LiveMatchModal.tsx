@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useCallback, useState } from 'react';
 import { floorballMatchEventService, type RecordSaveEventRequest } from '../../../../../../api/floorball/floorballMatchEventService';
-import type { TimerUpdate } from '../../../../../../api/common/timerService';
+import { timerService, type TimerUpdate } from '../../../../../../api/common/timerService';
 
 // Import extracted components
 import LiveMatchModalHeader from './components/LiveMatchModalHeader';
@@ -51,6 +51,7 @@ const LiveMatchModal = ({
 
   const timer = useLocalTimer({
     isOpen,
+    matchId: match.id,
     onStateUpdate
   });
 
@@ -175,20 +176,69 @@ const LiveMatchModal = ({
     }
   }, [match, trackedMatch.id, trackedMatch.status, setCurrentMatch]);
 
-  // Initialize started periods when component loads - OPTIMIZED
+  // Initialize period management state when component loads - OPTIMIZED
   useEffect(() => {
     if (!isOpen) return;
     
-    if (matchData.currentMatch.status === 'InProgress') {
-      periodManagement.setStartedPeriods(new Set([1]));
-      periodManagement.setNextPeriodToStart(2);
-    } else {
-      periodManagement.setStartedPeriods(new Set());
-      periodManagement.setEndedPeriods(new Set());
-      periodManagement.setNextPeriodToStart(1);
-    }
+    const initializePeriodState = async () => {
+      try {
+        if (matchData.currentMatch.status === 'InProgress') {
+          // Load current timer status to get the actual current period
+          const timerStatus = await timerService.getTimerStatus(match.id);
+          const currentPeriod = timerStatus.exists && timerStatus.periodNumber ? timerStatus.periodNumber : 1;
+          
+          console.log('Initializing period state for period:', currentPeriod);
+          
+          // If we're on period N, then periods 1 through N-1 have been started and ended,
+          // and period N has been started but not ended
+          const startedPeriods = new Set<number>();
+          const endedPeriods = new Set<number>();
+          
+          // Mark all previous periods as started and ended
+          for (let i = 1; i < currentPeriod; i++) {
+            startedPeriods.add(i);
+            endedPeriods.add(i);
+          }
+          
+          // Mark current period as started (but not ended)
+          startedPeriods.add(currentPeriod);
+          
+          // Set the next period to start
+          const nextPeriod = currentPeriod + 1;
+          
+          periodManagement.setStartedPeriods(startedPeriods);
+          periodManagement.setEndedPeriods(endedPeriods);
+          periodManagement.setNextPeriodToStart(nextPeriod <= 5 ? nextPeriod : 0);
+          
+          console.log('Period state initialized:', {
+            currentPeriod,
+            startedPeriods: Array.from(startedPeriods),
+            endedPeriods: Array.from(endedPeriods),
+            nextPeriodToStart: nextPeriod <= 5 ? nextPeriod : 0
+          });
+        } else {
+          // Match not in progress - reset to initial state
+          periodManagement.setStartedPeriods(new Set());
+          periodManagement.setEndedPeriods(new Set());
+          periodManagement.setNextPeriodToStart(1);
+        }
+      } catch (error) {
+        console.warn('Failed to initialize period state, using defaults:', error);
+        // Fallback to basic initialization
+        if (matchData.currentMatch.status === 'InProgress') {
+          periodManagement.setStartedPeriods(new Set([1]));
+          periodManagement.setNextPeriodToStart(2);
+        } else {
+          periodManagement.setStartedPeriods(new Set());
+          periodManagement.setEndedPeriods(new Set());
+          periodManagement.setNextPeriodToStart(1);
+        }
+      }
+    };
+    
+    initializePeriodState();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, matchData.currentMatch.status]);
+  }, [isOpen, matchData.currentMatch.status, match.id]);
 
   // Load team data and setup SignalR when modal opens - OPTIMIZED
   useEffect(() => {

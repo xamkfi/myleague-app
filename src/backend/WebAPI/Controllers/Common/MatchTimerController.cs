@@ -162,12 +162,14 @@ namespace WebAPI.Controllers.Common
                 
                 bool isRunning = await _timerService.IsRunningAsync(matchId);
                 TimeSpan elapsedTime = await _timerService.GetElapsedTimeAsync(matchId);
+                int? periodNumber = await _timerService.GetCurrentPeriodAsync(matchId);
                 
                 TimerStatusResponse status = new TimerStatusResponse
                 {
                     Exists = true,
                     IsRunning = isRunning,
-                    ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss")
+                    ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss"),
+                    PeriodNumber = periodNumber
                 };
                 
                 return Ok(ApiResponse<TimerStatusResponse>.SuccessResponse(status, "Timer status retrieved successfully"));

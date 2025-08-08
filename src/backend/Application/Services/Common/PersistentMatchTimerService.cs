@@ -370,6 +370,33 @@ namespace Application.Services.Common
         }
 
         /// <summary>
+        /// Gets the current period number for a match
+        /// </summary>
+        /// <param name="matchId">The match ID</param>
+        /// <returns>The current period number, or null if not set</returns>
+        public async Task<int?> GetCurrentPeriodAsync(Guid matchId)
+        {
+            try
+            {
+                TimerState? timerState = await _timerRepository.GetTimerStateAsync(matchId);
+                if (timerState == null)
+                {
+                    _logger.LogDebug("Timer does not exist for match {MatchId}, returning null period", matchId);
+                    return null;
+                }
+
+                int? periodNumber = timerState.PeriodNumber;
+                _logger.LogDebug("Current period for match {MatchId}: {PeriodNumber}", matchId, periodNumber);
+                return periodNumber;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current period for match {MatchId}", matchId);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Checks if the timer is running for a match
         /// </summary>
         /// <param name="matchId">The match ID</param>

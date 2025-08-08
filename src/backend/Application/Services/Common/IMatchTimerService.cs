@@ -53,6 +53,13 @@ namespace Application.Services.Common
         Task<TimeSpan> GetElapsedTimeAsync(Guid matchId);
 
         /// <summary>
+        /// Gets the current period number for a match
+        /// </summary>
+        /// <param name="matchId">The match ID</param>
+        /// <returns>The current period number, or null if not set</returns>
+        Task<int?> GetCurrentPeriodAsync(Guid matchId);
+
+        /// <summary>
         /// Checks if the timer is running for a match
         /// </summary>
         /// <param name="matchId">The match ID</param>

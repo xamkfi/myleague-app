@@ -14,6 +14,7 @@ export interface TimerStatusResponse {
   exists: boolean;
   isRunning: boolean;
   elapsedTime: string; // TimeSpan as string
+  periodNumber?: number; // Current period number
 }
 
 export interface TimerUpdate {
