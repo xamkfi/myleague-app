@@ -1,4 +1,4 @@
-import type { Club, FloorballTeam, FloorballTeamNameResult } from '../types/floorball/floorballTypes';
+import type { Club, FloorballTeamNameResult } from '../types/floorball/floorballTypes';
 
 /**
  * Convert text to URL-friendly slug
