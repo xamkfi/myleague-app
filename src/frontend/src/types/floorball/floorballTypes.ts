@@ -78,6 +78,11 @@ export interface FloorballTeam {
   roster: FloorballTeamPlayer[];
 }
 
+export interface FloorballTeamNameResult {
+  id: string;
+  name: string;
+}
+
 // API Response types
 export interface ApiResponse<T> {
   success: boolean;
