@@ -22,14 +22,14 @@ export const SeasonsFilters = ({
     <div className="filters-section">
       <div className="filters-row">
         <div className="filter-group">
-          <label>
+          <div className="show-active" onClick={() => onShowActiveOnlyChange(!showActiveOnly)}>
             <input
               type="checkbox"
               checked={showActiveOnly}
               onChange={(e) => onShowActiveOnlyChange(e.target.checked)}
             />
             {t('floorball.seasons.showActiveOnly', 'Show Active Only')}
-          </label>
+          </div>
         </div>
         
         <div className="filter-group">
