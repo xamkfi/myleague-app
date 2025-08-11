@@ -16,6 +16,14 @@
       align-items: center;
       gap: 0.5rem;
 
+      .show-active {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        user-select: none;
+      }
+
       label {
         font-weight: 500;
         color: #495057;
