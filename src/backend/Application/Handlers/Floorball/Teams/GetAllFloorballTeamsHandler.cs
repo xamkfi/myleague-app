@@ -94,11 +94,11 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
 
             // Get paginated teams using database-level pagination
             PagedResult<FloorballTeam> pagedTeams = await _teamRepository.GetPagedAsync(
-                request.Page,
-                actualPageSize,
-                request.ClubId,
-                divisionId,
-                cancellationToken);
+                page: request.Page,
+                pageSize: actualPageSize,
+                clubId: request.ClubId,
+                divisionId: divisionId,
+                cancellationToken: cancellationToken);
             
             // Load all clubs for DTO mapping (since Club navigation is ignored in FloorballTeam)
             IEnumerable<Club> clubs = await _clubRepository.GetAllAsync();

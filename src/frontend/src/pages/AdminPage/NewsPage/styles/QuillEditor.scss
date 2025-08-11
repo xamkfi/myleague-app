@@ -49,12 +49,12 @@
         max-width: 100% !important;
       }
       
-      // Style images inside the editor to be responsive
+      // Style images inside the editor to be responsive and left-aligned
       img {
         max-width: 100% !important;
         height: auto;
         display: block;
-        margin: 1rem auto;
+        margin: 1rem 0 !important;
         object-fit: contain;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

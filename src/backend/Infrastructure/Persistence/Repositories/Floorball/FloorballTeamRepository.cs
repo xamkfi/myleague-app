@@ -57,9 +57,10 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <returns>Paginated collection of floorball teams</returns>
         public async Task<PagedResult<FloorballTeam>> GetPagedAsync(
             int page, 
-            int pageSize, 
+            int pageSize,
+            string searchTerm = "",
             Guid? clubId = null, 
-            Guid? divisionId = null,
+            Guid? divisionId = null,    
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballTeam> query = _entities.AsQueryable();
@@ -73,6 +74,12 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (divisionId.HasValue)
             {
                 query = query.Where(t => t.DivisionId == divisionId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                string loweredSearchTerm = searchTerm.ToLower();
+                query = query.Where(t => t.Name.ToLower().Contains(loweredSearchTerm));
             }
 
             // Apply ordering by name
@@ -157,6 +164,37 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(t => t.Roster)
                 .Where(t => t.Roster.Any(r => r.PlayerId == playerId))
                 .ToListAsync();
+        }
+
+        public async Task<Dictionary<Guid, FloorballTeam>> GetTeamsByPlayerIdsAsync(IEnumerable<Guid> playerIds, CancellationToken cancellationToken = default)
+        {
+            if (!playerIds.Any())
+            {
+                return new Dictionary<Guid, FloorballTeam>();
+            }
+
+            // Find all teams that contain any of the players
+            List<FloorballTeam> teamsWithPlayers = await _entities
+                .Include(t => t.Roster)
+                .Where(t => t.Roster.Any(p => playerIds.Contains(p.PlayerId)))
+                .ToListAsync(cancellationToken);
+
+            Dictionary<Guid, FloorballTeam> playerTeamMap = new Dictionary<Guid, FloorballTeam>();
+
+            // Map each player to their team
+            foreach (FloorballTeam team in teamsWithPlayers)
+            {
+                foreach (FloorballTeamPlayer player in team.Roster)
+                {
+                    // If the player is in our list of searched players and not already mapped, add them
+                    if (playerIds.Contains(player.PlayerId) && !playerTeamMap.ContainsKey(player.PlayerId))
+                    {
+                        playerTeamMap[player.PlayerId] = team;
+                    }
+                }
+            }
+
+            return playerTeamMap;
         }
 
         /// <summary>
@@ -280,12 +318,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// Searches for teams by name
         /// </summary>
         /// <param name="searchTerm">The search term</param>
+        /// <param name="count">The maximum number of results to return.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A collection of teams matching the search term</returns>
-        public async Task<IEnumerable<FloorballTeam>> SearchByNameAsync(string searchTerm)
+        public async Task<IEnumerable<FloorballTeam>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default)
         {
+            string lowercasedTerm = searchTerm.ToLower();
             return await _entities
-                .Where(t => t.Name.Contains(searchTerm))
-                .ToListAsync();
+                .Where(t => t.Name.ToLower().Contains(lowercasedTerm))
+                .OrderBy(t => t.Name)
+                .Take(count)
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>

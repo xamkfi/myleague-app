@@ -215,7 +215,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Collection of news articles</returns>
-        public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -245,6 +245,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     {
                         query = query.Where(n => n.Category == parsedCategory);
                     }
+                }
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    search = search.ToLower();
+                    query = query.Where(n =>
+                        EF.Functions.Like(n.Title ?? "", $"%{search}%") ||
+                        EF.Functions.Like(n.Summary ?? "", $"%{search}%"));
                 }
 
                 if (!string.IsNullOrWhiteSpace(sportCategory))
@@ -285,7 +293,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Total count of matching news articles</returns>
-        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default)
+        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -311,6 +319,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     {
                         query = query.Where(n => n.SportCategory == parsedSportCategory);
                     }
+                }
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    search = search.ToLower();
+                    query = query.Where(n =>
+                        EF.Functions.Like(n.Title ?? "", $"%{search}%") ||
+                        EF.Functions.Like(n.Summary ?? "", $"%{search}%"));
                 }
 
                 if (!string.IsNullOrWhiteSpace(author))
@@ -493,6 +509,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 _logger.LogError(ex, "Error occurred while updating news article with ID: {NewsId}", news?.Id);
                 throw;
             }
+        }
+
+        public async Task<NewsArticle?> GetMainNews()
+        {
+            NewsArticle? news = await _entities.OrderByDescending(n => n.CreatedAt).FirstOrDefaultAsync();
+
+            if(news == null)
+            {
+                _logger.LogWarning("No news articles found when trying to fetch the newest news.");
+                return null;
+            }
+
+            return news;
         }
     }
 } 

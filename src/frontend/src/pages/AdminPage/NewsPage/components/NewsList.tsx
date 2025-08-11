@@ -1,34 +1,77 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import type { NewsArticleDto } from '../../../../api/news/newsService'; 
+import type { NewsArticleDto, PaginatedNewsResponse } from '../../../../api/news/newsService'; 
 import { newsService, archiveNewsService, restoreNewsService } from '../../../../api/news/newsService';
+import Pagination from '../../../../components/Pagination';
 import "../styles/NewsList.scss";
 
-const NewsList = () => {
+interface NewsListProps {
+  filters?: {
+    category: string;
+    sportCategory: string;
+    searchTerm: string;
+  };
+}
+
+const NewsList = ({ filters }: NewsListProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [newsArticles, setNewsArticles] = useState<NewsArticleDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingArticle, setDeletingArticle] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const fetchNewsArticles = useCallback(async (page: number = 1, size: number = 10) => {
+    try {
+      setLoading(true);
+      const response = await newsService({
+        ...(filters || { category: '', sportCategory: '', searchTerm: '' }),
+        page,
+        pageSize: size
+      });
+      
+      // Handle the paginated response structure
+      if (response && typeof response === 'object' && 'pagination' in response) {
+        // New paginated response format with pagination object
+        const paginatedResponse = response as PaginatedNewsResponse;
+        setNewsArticles(paginatedResponse.data);
+        setTotalCount(paginatedResponse.pagination.totalCount);
+        setTotalPages(paginatedResponse.pagination.totalPages);
+        setCurrentPage(paginatedResponse.pagination.currentPage);
+        setPageSize(paginatedResponse.pagination.pageSize);
+      } else {
+        // Fallback for old format
+        const oldResponse = response as NewsArticleDto[];
+        setNewsArticles(oldResponse);
+        setTotalCount(oldResponse.length);
+        setTotalPages(Math.ceil(oldResponse.length / pageSize));
+      }
+      setError(null);
+    } catch (error) {
+      console.error('Failed to fetch news articles:', error);
+      setError(t('admin.news.errors.fetchFailed', 'Failed to fetch news articles'));
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, pageSize, t]);
 
   useEffect(() => {
-    const fetchNewsArticles = async () => {
-      try {
-        const data = await newsService();
-        setNewsArticles(data);
-        setError(null);
-      } catch (error) {
-        console.error('Failed to fetch news articles:', error);
-        setError(t('admin.news.errors.fetchFailed', 'Failed to fetch news articles'));
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchNewsArticles(currentPage, pageSize);
+  }, [currentPage, pageSize, fetchNewsArticles]);
 
-    fetchNewsArticles();
-  }, [t]);
+  // Reset to first page when filters change (only if filters are provided)
+  useEffect(() => {
+    if (filters) {
+      setCurrentPage(1);
+    }
+  }, [filters]);
 
   const handleEdit = (id: string) => {
     navigate(`/admin/news/edit/${id}`);
@@ -40,7 +83,19 @@ const NewsList = () => {
       try {
         // Note: You'll need to implement delete functionality in newsService
         // await newsService.delete(id);
-        setNewsArticles(newsArticles.filter(article => article.id !== id));
+        
+        // Remove the article from current page
+        const updatedArticles = newsArticles.filter(article => article.id !== id);
+        setNewsArticles(updatedArticles);
+        
+        // If this was the last item on the page and not the first page, go to previous page
+        if (updatedArticles.length === 0 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        } else {
+          // Refresh the current page to get updated data
+          fetchNewsArticles(currentPage, pageSize);
+        }
+        
         setError(null);
         console.log(t('admin.news.success.deleted', 'News article deleted successfully'));
       } catch (error) {
@@ -63,9 +118,10 @@ const NewsList = () => {
         } else {
           await archiveNewsService(id);
         }
-        setNewsArticles(newsArticles.map(article => 
-          article.id === id ? { ...article, isArchived: !currentStatus } : article
-        ));
+        
+        // Refresh the current page to get updated data
+        fetchNewsArticles(currentPage, pageSize);
+        
         setError(null);
         
         const successMessage = !currentStatus
@@ -93,6 +149,8 @@ const NewsList = () => {
 
   return (
     <div className="news-list">
+      {/* Add Filtering here */}
+      
       <table>
         <thead>
           <tr>
@@ -165,9 +223,23 @@ const NewsList = () => {
           ))}
         </tbody>
       </table>
+      
       {newsArticles.length === 0 && (
         <div className="no-data">
           {t('admin.news.noData', 'No news articles found')}
+        </div>
+      )}
+      
+      {totalCount > 0 && (
+        <div className="pagination-container">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo, useState } from 'react';
 import { useTimer } from '../../hooks/useTimer';
+import { TimeInputModal } from './TimeInputModal';
 import './Timer.scss';
 import type { TimerUpdate } from '../../api/common/timerService';
 
@@ -8,10 +9,15 @@ interface TimerProps {
   periodNumber?: number;
   onTimerUpdate?: (update: TimerUpdate) => void;
   onGetCurrentTime?: (getTime: () => string) => void;
+  onGetToggleFunction?: (toggleFunction: () => Promise<void>) => void;
   isActive?: boolean; // New prop to control when timer should be active
+  keybindsEnabled?: boolean; // New prop to show keybind indicator
 }
 
-export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, isActive = true }: TimerProps) => {
+export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetToggleFunction, isActive = true, keybindsEnabled = false }: TimerProps) => {
+  // State for time input modal
+  const [showTimeInputModal, setShowTimeInputModal] = useState(false);
+
   // Debug logging for component lifecycle - only log once per actual mount/unmount
   useEffect(() => {
     console.log('🔄 Timer component MOUNTED:', { matchId, periodNumber, isActive });
@@ -27,6 +33,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     startTimer,
     stopTimer,
     resetTimer,
+    setTimer,
     createTimer,
   } = useTimer({
     matchId,
@@ -84,18 +91,58 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     console.log('=== TIMER RESET COMPLETED ===');
   };
 
+  const handleToggle = async () => {
+    if (timerState.isRunning) {
+      handleStop();
+    } else {
+      await handleStart();
+    }
+  };
+
+  const handleSetTime = async (timeInSeconds: number) => {
+    try {
+      console.log('=== TIMER SET TIME BUTTON CLICKED ===');
+      console.log('Match ID:', matchId);
+      console.log('Time in seconds:', timeInSeconds);
+      console.log('Timer Active:', isActive);
+      
+      await setTimer(timeInSeconds);
+      setShowTimeInputModal(false);
+      
+      console.log('=== TIMER SET TIME COMPLETED ===');
+    } catch (error) {
+      console.error('=== TIMER SET TIME FAILED ===');
+      console.error('Error setting timer:', error);
+    }
+  };
+
+  const handleOpenTimeInput = () => {
+    setShowTimeInputModal(true);
+  };
+
+  const handleCloseTimeInput = () => {
+    setShowTimeInputModal(false);
+  };
+
+  // Notify parent component of the toggle function
+  useEffect(() => {
+    if (onGetToggleFunction && isActive) {
+      onGetToggleFunction(handleToggle);
+    }
+  }, [onGetToggleFunction, handleToggle, isActive]);
+
   // Memoize button disabled states to prevent blinking during SignalR updates
   const buttonStates = useMemo(() => {
-    const startDisabled = loading || timerState.isRunning || !isActive;
-    const stopDisabled = loading || !timerState.isRunning || !isActive;
+    const toggleDisabled = loading || !isActive;
     const resetDisabled = loading || !isActive;
+    const setTimeDisabled = loading || !isActive;
     
     return {
-      startDisabled,
-      stopDisabled,
-      resetDisabled
+      toggleDisabled,
+      resetDisabled,
+      setTimeDisabled
     };
-  }, [loading, timerState.isRunning, isActive]);
+  }, [loading, isActive]);
 
   // Don't render timer controls if not active
   if (!isActive) {
@@ -123,19 +170,12 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
 
       <div className="timer-controls">
         <button
-          onClick={handleStart}
-          disabled={buttonStates.startDisabled}
-          className="timer-button start"
+          onClick={handleToggle}
+          disabled={buttonStates.toggleDisabled}
+          className={`timer-button ${timerState.isRunning ? 'pause' : 'start'}`}
         >
-          Start
-        </button>
-        
-        <button
-          onClick={handleStop}
-          disabled={buttonStates.stopDisabled}
-          className="timer-button stop"
-        >
-          Stop
+          <span className={`key-label ${keybindsEnabled ? '' : 'disabled'}`}>(Space) </span>
+          {timerState.isRunning ? 'Pause' : 'Start'}
         </button>
         
         <button
@@ -145,9 +185,26 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
         >
           Reset
         </button>
+
+        <button
+          onClick={handleOpenTimeInput}
+          disabled={buttonStates.setTimeDisabled}
+          className="timer-button set-time"
+          title="Set specific time"
+        >
+          Set Time
+        </button>
       </div>
 
       {error && <div className="timer-error">Error: {error}</div>}
+
+      <TimeInputModal
+        isOpen={showTimeInputModal}
+        currentTime={timerState.elapsedTime}
+        onSetTime={handleSetTime}
+        onClose={handleCloseTimeInput}
+        loading={loading}
+      />
     </div>
   );
 }; 

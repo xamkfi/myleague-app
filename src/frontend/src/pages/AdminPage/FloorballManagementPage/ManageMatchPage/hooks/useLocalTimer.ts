@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
+import { timerService } from '../../../../../../../api/common/timerService';
 import type { LocalClock, StateUpdate } from '../components/types';
 
 interface UseLocalTimerProps {
   isOpen: boolean;
+  matchId: string;
   onStateUpdate?: (updates: StateUpdate) => void;
 }
 
-export const useLocalTimer = ({ isOpen, onStateUpdate }: UseLocalTimerProps) => {
+export const useLocalTimer = ({ isOpen, matchId, onStateUpdate }: UseLocalTimerProps) => {
   // LOCAL TIMER STATE - Only runs when modal is open
   const [localClock, setLocalClock] = useState<LocalClock>({
     period: 1,
@@ -18,6 +20,7 @@ export const useLocalTimer = ({ isOpen, onStateUpdate }: UseLocalTimerProps) => 
   // Timer state tracking for accurate time calculations
   const [currentTimerElapsedTime, setCurrentTimerElapsedTime] = useState<number>(0);
   const [getCurrentTimeFromTimer, setGetCurrentTimeFromTimer] = useState<(() => string) | null>(null);
+  const [getToggleFromTimer, setGetToggleFromTimer] = useState<(() => Promise<void>) | null>(null);
   
   // Timer interval ref for cleanup
   const timerIntervalRef = useRef<number | null>(null);
@@ -62,22 +65,68 @@ export const useLocalTimer = ({ isOpen, onStateUpdate }: UseLocalTimerProps) => 
     };
   }, [isOpen, localClock.isRunning]);
 
-  // Initialize clock state
+  // Load and restore period state when modal opens
   useEffect(() => {
-    if (isOpen && onStateUpdate && localClock.period === 1 && localClock.minutes === 0 && localClock.seconds === 0) {
-      // Only initialize if we don't already have a clock state
-      const initialClock = {
-        period: 1,
-        minutes: 0,
-        seconds: 0,
-        isRunning: false
-      };
-      setLocalClock(initialClock);
-      onStateUpdate({
-        clock: initialClock
-      });
-    }
-  }, [isOpen, onStateUpdate, localClock.period, localClock.minutes, localClock.seconds]);
+    if (!isOpen || !matchId) return;
+
+    const loadTimerState = async () => {
+      try {
+        const timerStatus = await timerService.getTimerStatus(matchId);
+        
+        if (timerStatus.exists && timerStatus.periodNumber) {
+          // Restore the clock to the current period
+          const restoredClock = {
+            period: timerStatus.periodNumber,
+            minutes: 0,
+            seconds: 0,
+            isRunning: false
+          };
+          
+          console.log('Restoring period state to:', timerStatus.periodNumber);
+          setLocalClock(restoredClock);
+          
+          if (onStateUpdate) {
+            onStateUpdate({
+              clock: restoredClock
+            });
+          }
+        } else {
+          // Initialize with default state if no timer exists or no period set
+          const initialClock = {
+            period: 1,
+            minutes: 0,
+            seconds: 0,
+            isRunning: false
+          };
+          setLocalClock(initialClock);
+          
+          if (onStateUpdate) {
+            onStateUpdate({
+              clock: initialClock
+            });
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to load timer state, using default period 1:', error);
+        // Fallback to period 1 if loading fails
+        const fallbackClock = {
+          period: 1,
+          minutes: 0,
+          seconds: 0,
+          isRunning: false
+        };
+        setLocalClock(fallbackClock);
+        
+        if (onStateUpdate) {
+          onStateUpdate({
+            clock: fallbackClock
+          });
+        }
+      }
+    };
+
+    loadTimerState();
+  }, [isOpen, matchId, onStateUpdate]);
 
   /**
    * Formats time as MM:SS
@@ -109,6 +158,8 @@ export const useLocalTimer = ({ isOpen, onStateUpdate }: UseLocalTimerProps) => 
     setCurrentTimerElapsedTime,
     getCurrentTimeFromTimer,
     setGetCurrentTimeFromTimer,
+    getToggleFromTimer,
+    setGetToggleFromTimer,
     
     // Utility functions
     formatTime,

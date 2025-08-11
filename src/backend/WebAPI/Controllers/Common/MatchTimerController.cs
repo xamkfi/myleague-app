@@ -162,12 +162,14 @@ namespace WebAPI.Controllers.Common
                 
                 bool isRunning = await _timerService.IsRunningAsync(matchId);
                 TimeSpan elapsedTime = await _timerService.GetElapsedTimeAsync(matchId);
+                int? periodNumber = await _timerService.GetCurrentPeriodAsync(matchId);
                 
                 TimerStatusResponse status = new TimerStatusResponse
                 {
                     Exists = true,
                     IsRunning = isRunning,
-                    ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss")
+                    ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss"),
+                    PeriodNumber = periodNumber
                 };
                 
                 return Ok(ApiResponse<TimerStatusResponse>.SuccessResponse(status, "Timer status retrieved successfully"));
@@ -176,6 +178,34 @@ namespace WebAPI.Controllers.Common
             {
                 _logger.LogError(ex, "Error getting timer status for match {MatchId}", matchId);
                 return StatusCode(500, ApiResponse.ErrorResponse("Failed to get timer status"));
+            }
+        }
+
+        /// <summary>
+        /// Sets the timer to a specific time for a match
+        /// </summary>
+        /// <param name="matchId">The match ID</param>
+        /// <param name="request">The set timer request</param>
+        /// <returns>Success response</returns>
+        [HttpPut("set-time")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SetTimer(Guid matchId, [FromBody] SetTimerRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("Request to set timer for match {MatchId} to {TimeInSeconds} seconds", matchId, request.TimeInSeconds);
+                
+                TimeSpan elapsedTime = TimeSpan.FromSeconds(request.TimeInSeconds);
+                await _timerService.SetTimerAsync(matchId, elapsedTime);
+                
+                return Ok(ApiResponse.SuccessResponse("Timer set successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting timer for match {MatchId}", matchId);
+                return StatusCode(500, ApiResponse.ErrorResponse("Failed to set timer"));
             }
         }
 

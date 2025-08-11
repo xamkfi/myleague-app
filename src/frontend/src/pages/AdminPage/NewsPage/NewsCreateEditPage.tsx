@@ -34,7 +34,8 @@ export default function NewsCreateEditPage() {
     author: '',
     category: '',
     sportCategory: '',
-    tags: []
+    tags: [],
+    contentHtml: ''
   });
 
   const [errors, setErrors] = useState<Partial<NewsInputsData>>({});
@@ -56,7 +57,8 @@ export default function NewsCreateEditPage() {
             author: article.author || '',
             category: article.category || '',
             sportCategory: article.sportCategory || '',
-            tags: article.tags || []
+            tags: article.tags || [],
+            contentHtml: article.contentHtml || ''
           });
           setValue(article.contentHtml || '');
         } catch (error) {
@@ -68,9 +70,8 @@ export default function NewsCreateEditPage() {
         }
       };
       fetchNewsArticle();
-      console.log(newsData.mainPicture, value);
     }
-  }, [id, isEditMode, navigate, newsData.mainPicture, value]);
+  }, [id, isEditMode, navigate]);
 
   const validateInputs = (): boolean => {
     const newErrors: Partial<NewsInputsData> = {};
@@ -116,8 +117,6 @@ export default function NewsCreateEditPage() {
 
       try {
         setLoadingAnimation(true);
-        
-        console.log("=== Publish Started ===");
         
         const newsToSubmit = convertToNewsData();
         
@@ -195,7 +194,8 @@ export default function NewsCreateEditPage() {
       author: '',
       category: '',
       sportCategory: '',
-      tags: []
+      tags: [],
+      contentHtml: ''
     });
     setErrors({});
     setContentError('');
@@ -246,12 +246,12 @@ export default function NewsCreateEditPage() {
           </div>
         </div>
 
-        <div className="py-8">
+
           <PreviewNews 
             value={value} 
             newsData={newsData}
           />
-        </div>
+
       </div>
       </PageTemplate>
     );

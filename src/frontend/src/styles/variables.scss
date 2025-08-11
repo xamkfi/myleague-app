@@ -1,5 +1,4 @@
 @use "sass:map";
-
 /**
  * Global SCSS Variables
  * 
@@ -96,6 +95,7 @@ $sidebar-width: 280px;
 $border-radius: (
   'sm': 4px,
   'lg': 8px,
+  'xl': 24px,
   'full': 50%
 );
 
@@ -129,3 +129,4 @@ $transition-filter: filter 300ms;
   background: $background-white;
   box-shadow: $shadow;
 } 
+

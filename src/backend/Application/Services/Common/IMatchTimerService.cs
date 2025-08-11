@@ -38,11 +38,26 @@ namespace Application.Services.Common
         Task ResetTimerAsync(Guid matchId);
 
         /// <summary>
+        /// Sets the timer to a specific elapsed time for a match
+        /// </summary>
+        /// <param name="matchId">The match ID</param>
+        /// <param name="elapsedTime">The elapsed time to set</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        Task SetTimerAsync(Guid matchId, TimeSpan elapsedTime);
+
+        /// <summary>
         /// Gets the elapsed time for a match
         /// </summary>
         /// <param name="matchId">The match ID</param>
         /// <returns>The elapsed time</returns>
         Task<TimeSpan> GetElapsedTimeAsync(Guid matchId);
+
+        /// <summary>
+        /// Gets the current period number for a match
+        /// </summary>
+        /// <param name="matchId">The match ID</param>
+        /// <returns>The current period number, or null if not set</returns>
+        Task<int?> GetCurrentPeriodAsync(Guid matchId);
 
         /// <summary>
         /// Checks if the timer is running for a match

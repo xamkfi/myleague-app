@@ -38,7 +38,8 @@ namespace Application.Handlers.Persons
         {
             try
             {
-                IEnumerable<Person> persons = await _personRepository.SearchByNameAsync(request.name);
+                const int defaultSearchResultCount = 10;
+                IEnumerable<Person> persons = await _personRepository.SearchByNameAsync(request.name, defaultSearchResultCount, cancellationToken);
                 if(!persons.Any())
                 {
                     _logger.LogWarning("Person with name {search} not found", request.name);

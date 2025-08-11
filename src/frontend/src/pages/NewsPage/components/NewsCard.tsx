@@ -1,38 +1,31 @@
 import { useNavigate } from "react-router-dom";
 import type { NewsArticleDto } from "../../../api/news/newsService";
+import defaultNewsImage from '../../../assets/defaultImage.jpg';
 
 export default function NewsCard({ news }: { news: NewsArticleDto }) {
-
   const navigate = useNavigate();
-  
+
   return (
-    <div className="rounded-2xl overflow-hidden shadow-md bg-white cursor-pointer transition-transform duration-300 hover:shadow-lg hover:scale-101" onClick={()=>navigate(`/uutiset/${news.id}`)}>
-      <img
-        src={news.mainImage}
-        alt={news.title}
-        className="w-full h-48 object-cover"
-      />
-      <div className="p-4 space-y-2">
-        <div className="text-xs text-gray-500 uppercase">
-          {news.sportCategory} • {news.category}
-        </div>
-        <h2 className="text-lg font-semibold">{news.title}</h2>
-        <p className="text-sm text-gray-700">{news.summary}</p>
-        <div className="flex items-center text-xs text-gray-500 mt-2 gap-4">
-          <span className="flex items-center gap-1">{news.author}</span>
-          <span className="flex items-center gap-1">
-            {new Date(news.createdAt).toLocaleDateString()}
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {news.tags.map((tag) => (
-            <span
-              key={tag}
-              className="bg-gray-100 text-xs text-gray-600 px-2 py-1 rounded-full"
-            >
-              {tag}
-            </span>
-          ))}
+    <div className="news-card" onClick={() => navigate(`/uutiset/${news.id}`)}>
+      <div 
+        className="news-card-background"
+        style={{
+          backgroundImage: `linear-gradient(0deg, rgba(28, 28, 30, 0.90) 0%, rgba(49, 63, 90, 0.48) 61.06%, rgba(74, 103, 159, 0.00) 100%), url(${news.mainImage || defaultNewsImage})`
+        }}
+      >
+        <div className="news-card-overlay">
+          <div className="news-card-content">
+            <div className="news-card-date">
+              {new Date(news.createdAt).toLocaleDateString()}
+            </div>
+            <div className="news-card-title">{news.title}</div>
+            {news.sportCategory && (
+              <div className={`sport-category-badge`}>
+                <span className="sport-icon"></span>
+                <span className="sport-name">{news.sportCategory}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

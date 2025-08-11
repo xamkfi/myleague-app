@@ -86,7 +86,7 @@ export function useTimer(options: UseTimerOptions) {
     } finally {
       setLoading(false);
     }
-  }, [matchId, autoConnect]);
+  }, [matchId]);
 
   // Stop timer
   const stopTimer = useCallback(async () => {
@@ -103,7 +103,7 @@ export function useTimer(options: UseTimerOptions) {
     } finally {
       setLoading(false);
     }
-  }, [matchId, autoConnect]);
+  }, [matchId]);
 
   // Reset timer
   const resetTimer = useCallback(async () => {
@@ -134,6 +134,23 @@ export function useTimer(options: UseTimerOptions) {
       console.error('Error creating timer:', err);
       // Don't set error for timer creation - it might already exist
       // Just log it and continue
+    } finally {
+      setLoading(false);
+    }
+  }, [matchId]);
+
+  // Set timer to specific time
+  const setTimer = useCallback(async (timeInSeconds: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      await timerService.setTimer(matchId, timeInSeconds);
+      
+      // Don't reload timer status - let SignalR handle the update
+    } catch (err) {
+      console.error('Error setting timer:', err);
+      setError(err instanceof Error ? err.message : 'Failed to set timer');
     } finally {
       setLoading(false);
     }
@@ -261,6 +278,7 @@ export function useTimer(options: UseTimerOptions) {
     startTimer,
     stopTimer,
     resetTimer,
+    setTimer,
     createTimer,
     destroyTimer,
     loadTimerStatus,
