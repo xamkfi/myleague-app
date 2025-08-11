@@ -57,7 +57,7 @@ namespace Application.Services.Common
         /// </summary>
         /// <param name="matchId">The match ID</param>
         /// <returns>The current period number, or null if not set</returns>
-        Task<int?> GetCurrentPeriodAsync(Guid matchId);
+        Task<int?> GetCurrentPeriodTime(Guid matchId);
 
         /// <summary>
         /// Checks if the timer is running for a match
