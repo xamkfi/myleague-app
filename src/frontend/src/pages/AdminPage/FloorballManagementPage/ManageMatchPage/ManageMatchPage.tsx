@@ -2,6 +2,7 @@ import { useEffect, useMemo, useCallback, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { floorballMatchEventService, type RecordSaveEventRequest } from '../../../../api/floorball/floorballMatchEventService';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
+import { timerService } from '../../../../api/common/timerService';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import type { TimerUpdate } from '../../../../api/common/timerService';
 import Navbar from '../../../../components/Navigation/Navbar';
@@ -56,6 +57,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
   const timer = useLocalTimer({
     isOpen: true,
+    matchId: match.id,
     onStateUpdate: handleStateUpdate,
   });
 
@@ -154,7 +156,9 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     currentTimerElapsedTime: elapsedTime,
     getCurrentTimeFromTimer,
     setCurrentTimerElapsedTime,
-    setGetCurrentTimeFromTimer
+    setGetCurrentTimeFromTimer,
+    getToggleFromTimer,
+    setGetToggleFromTimer
   } = timer;
   const { setShowGoalForm, setShowPenaltyForm } = forms;
   const { setShowOvertimeConfirmation, setShowShootoutConfirmation } = periodManagement;
@@ -177,16 +181,49 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
   // Initialize started periods when component loads
   useEffect(() => {
-    if (matchData.currentMatch.status === 'InProgress') {
-      periodManagement.setStartedPeriods(new Set([1]));
-      periodManagement.setNextPeriodToStart(2);
-    } else {
-      periodManagement.setStartedPeriods(new Set());
-      periodManagement.setEndedPeriods(new Set());
-      periodManagement.setNextPeriodToStart(1);
-    }
+    const initializePeriodState = async () => {
+      try {
+        if (matchData.currentMatch.status === 'InProgress') {
+          const timerStatus = await timerService.getTimerStatus(match.id);
+          const currentPeriod = timerStatus.exists && timerStatus.periodNumber ? timerStatus.periodNumber : 1;
+          
+          const startedPeriods = new Set<number>();
+          const endedPeriods = new Set<number>();
+          
+          for (let i = 1; i < currentPeriod; i++) {
+            startedPeriods.add(i);
+            endedPeriods.add(i);
+          }
+          
+          startedPeriods.add(currentPeriod);
+          
+          const nextPeriod = currentPeriod + 1;
+          
+          periodManagement.setStartedPeriods(startedPeriods);
+          periodManagement.setEndedPeriods(endedPeriods);
+          periodManagement.setNextPeriodToStart(nextPeriod <= 5 ? nextPeriod : 0);
+
+        } else {
+          periodManagement.setStartedPeriods(new Set());
+          periodManagement.setEndedPeriods(new Set());
+          periodManagement.setNextPeriodToStart(1);
+        }
+      } catch (error) {
+        console.warn('Failed to initialize period state, using defaults:', error);
+        if (matchData.currentMatch.status === 'InProgress') {
+          periodManagement.setStartedPeriods(new Set([1]));
+          periodManagement.setNextPeriodToStart(2);
+        } else {
+          periodManagement.setStartedPeriods(new Set());
+          periodManagement.setEndedPeriods(new Set());
+          periodManagement.setNextPeriodToStart(1);
+        }
+      }
+    };
+    
+    initializePeriodState();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchData.currentMatch.status]);
+  }, [matchData.currentMatch.status, match.id]);
 
   // Destructure the data-loading functions from hooks to use as stable dependencies
   const { loadTeamData, loadCurrentMatchStatus } = matchData;
@@ -209,7 +246,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     !forms.showGoalForm &&
     !forms.showPenaltyForm;
 
-  // Handle Q/P keybinds
+  // Handle Q/P/Space keybinds
   useEffect(() => {
     if (!keybindsEnabled) return;
     const handler = (e: KeyboardEvent) => {
@@ -228,10 +265,14 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         handleRecordSave('away', awayGoalieId);
         e.preventDefault();
       }
+      if (key === ' ' && getToggleFromTimer) {
+        getToggleFromTimer();
+        e.preventDefault();
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [keybindsEnabled, homeGoalieId, awayGoalieId, handleRecordSave]);
+  }, [keybindsEnabled, homeGoalieId, awayGoalieId, handleRecordSave, getToggleFromTimer]);
 
   // MEMOIZED: Handles the period control button click
   const handlePeriodControlClick = useCallback(() => {
@@ -284,6 +325,11 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   const handleGetCurrentTime = useCallback((getTime: () => string) => {
     setGetCurrentTimeFromTimer(() => getTime);
   }, [setGetCurrentTimeFromTimer]);
+
+  // MEMOIZED: Get toggle function handler
+  const handleGetToggleFunction = useCallback((toggleFunction: () => Promise<void>) => {
+    setGetToggleFromTimer(() => toggleFunction);
+  }, [setGetToggleFromTimer]);
 
   // MEMOIZED: Goal form show handler
   const handleShowGoalForm = useCallback(() => {
@@ -390,12 +436,14 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             onPeriodControlClick={handlePeriodControlClick}
             onTimerUpdate={handleTimerUpdate}
             onGetCurrentTime={handleGetCurrentTime}
+            onGetToggleFunction={handleGetToggleFunction}
             canEndPeriod={periodManagement.canEndPeriod}
             getPeriodStatus={periodManagement.getPeriodStatus}
             getPeriodControlButtonText={periodManagement.getPeriodControlButtonText}
             isInOvertime={periodManagement.isInOvertime}
             isInShootout={periodManagement.isInShootout}
             formatTime={timer.formatTime}
+            keybindsEnabled={keybindsEnabled}
           />
         <SaveRecordingSection
           currentMatch={matchData.currentMatch}
@@ -516,8 +564,10 @@ const ManageMatchPage = () => {
   return (
     <div className="manage-match-page">
       <Navbar />
-      <div className="page-content">
-        <BackButton to="/admin/floorball/matches" text="Back to Match Management" />
+      <div className="back-button-container">
+        <BackButton to="/admin/floorball/matches" text="Back to Overview" />
+      </div>
+      <div className="manage-match-page-content">
         <ManageMatchPageContent match={match} setMatch={setMatch} />
       </div>
     </div>

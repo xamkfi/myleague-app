@@ -21,7 +21,7 @@ interface LiveMatchTimerProps {
   onPeriodControlClick: () => void;
   onTimerUpdate: (update: TimerUpdate) => void;
   onGetCurrentTime: (getTime: () => string) => void;
-  onGetToggleFunction?: (toggleFunction: () => Promise<void>) => void;
+  onGetToggleFunction: (toggleFunction: () => Promise<void>) => void;
   canEndPeriod: () => boolean;
   getPeriodStatus: () => string;
   getPeriodControlButtonText: () => string;
@@ -109,18 +109,6 @@ const LiveMatchTimer = ({
       <div className="clock-start-reset">
         <button 
           onClick={() => {
-            const canEnd = canEndPeriod();
-            const currentPeriodToCheck = canEnd ? clock.period : nextPeriodToStart;
-            const isDisabled = periodLoading[currentPeriodToCheck];
-            
-            console.log('🔘 Period control button clicked:', {
-              canEndPeriod: canEnd,
-              periodToCheck: currentPeriodToCheck,
-              isDisabled,
-              periodLoading,
-              buttonText: getPeriodControlButtonText()
-            });
-            
             onPeriodControlClick();
           }} 
           className="period-control-btn"
