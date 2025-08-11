@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
-import { floorballMatchEventService, type FloorballDomainEventDto } from '../../../../../../../api/floorball/floorballMatchEventService';
-import type { FloorballMatchDto, FloorballTeam } from '../../../../../../../types/floorball/floorballTypes';
+import { floorballMatchEventService, type FloorballDomainEventDto } from '../../../../../api/floorball/floorballMatchEventService';
+import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 import type { GoalEventData, PenaltyEventData, SaveEventData } from '../components/types';
 
 interface UseMatchEventsProps {

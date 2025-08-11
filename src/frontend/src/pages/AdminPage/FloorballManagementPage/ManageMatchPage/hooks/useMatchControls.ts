@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { floorballMatchService } from '../../../../../../../api/floorball/floorballMatchService';
-import { timerService } from '../../../../../../../api/common/timerService';
-import type { FloorballMatchDto } from '../../../../../../../types/floorball/floorballTypes';
+import { floorballMatchService } from '../../../../../api/floorball/floorballMatchService';
+import { timerService } from '../../../../../api/common/timerService';
+import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 
 interface UseMatchControlsProps {
   currentMatch: FloorballMatchDto;

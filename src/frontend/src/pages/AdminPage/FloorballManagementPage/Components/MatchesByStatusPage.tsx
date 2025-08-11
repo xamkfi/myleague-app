@@ -2,14 +2,13 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
-import { useMatchManagement } from '../MatchManagementPage/hooks/useMatchManagement';
-import LiveMatchModal from '../MatchManagementPage/Components/LiveMatchModal/LiveMatchModal';
-import MatchFormModal from '../MatchManagementPage/Components/MatchFormModal/MatchFormModal';
+import { useMatchManagement } from '../ManageMatchPage/hooks/useMatchManagement';
+import MatchFormModal from '../MatchOverviewPage/Components/MatchFormModal/MatchFormModal';
 import PaginationControls from '../FloorballTeamsPage/components/PaginationControls';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import BackButton from '../../../../components/BackButton/BackButton';
-import MatchFilters from '../MatchManagementPage/Components/MatchFilters/MatchFilters';
-import CollapsibleMatchSection from '../MatchManagementPage/Components/CollapsibleMatchSection/CollapsibleMatchSection';
+import MatchFilters from '../MatchOverviewPage/Components/MatchFilters/MatchFilters';
+import CollapsibleMatchSection from '../MatchOverviewPage/Components/CollapsibleMatchSection/CollapsibleMatchSection';
 
 import './MatchesByStatusPage.scss';
 
@@ -35,19 +34,11 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
   // Modal and match management logic
   const {
     actionLoading,
-    liveModalMatch,
-    isLiveModalOpen,
     showForm,
     formMode,
     editMatch,
-    getLiveMatchState,
-    handleStateUpdate,
     handleLiveMatch,
     handleEditMatch,
-    handleGoLive,
-    handleCompleteLive,
-    handleMatchUpdated,
-    handleCloseLiveModal,
     handleCloseForm,
     handleFormSubmit,
     handleCancelMatch
@@ -93,7 +84,7 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
       ? matches.filter(m => m.seasonId === selectedSeasonId)
       : matches;
 
-    let result = base.filter(m => m.status === status);
+    const result = base.filter(m => m.status === status);
 
     if (status === 'Scheduled') {
       result.sort((a, b) => new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime());
@@ -156,18 +147,6 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
             onCancelMatch={handleCancelMatch}
             loading={actionLoading === 'edit' || actionLoading === 'cancelling'}
           />
-          {liveModalMatch && (
-            <LiveMatchModal
-              match={liveModalMatch}
-              isOpen={isLiveModalOpen}
-              onClose={handleCloseLiveModal}
-              onGoLive={handleGoLive}
-              onCompleteLive={handleCompleteLive}
-              liveState={getLiveMatchState(liveModalMatch.id)}
-              onStateUpdate={handleStateUpdate}
-              onMatchUpdated={handleMatchUpdated}
-            />
-          )}
         </>
       )}
     </div>

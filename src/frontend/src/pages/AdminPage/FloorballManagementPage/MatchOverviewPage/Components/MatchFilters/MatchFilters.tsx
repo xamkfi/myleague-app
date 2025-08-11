@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { FloorballSeasonDto } from '../../../../../../api/floorball/floorballSeasonService';
-import { formatSeasonDisplayName } from '../../utils/matchFormatters';
+import { formatSeasonDisplayName } from '../../../ManageMatchPage/utils/matchFormatters';
 import './MatchFilters.scss';
 
 interface MatchFiltersProps {

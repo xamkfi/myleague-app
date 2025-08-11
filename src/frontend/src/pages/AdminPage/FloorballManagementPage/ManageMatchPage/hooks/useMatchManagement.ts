@@ -11,7 +11,6 @@ import type {
 import { FloorballMatchStatus } from '../../../../../types/floorball/floorballTypes';
 import { floorballMatchService } from '../../../../../api/floorball/floorballMatchService';
 import { floorballMatchEventService } from '../../../../../api/floorball/floorballMatchEventService';
-import { useLiveMatchState } from './useLiveMatchState';
 
 interface UseMatchManagementParams {
   setMatches: React.Dispatch<React.SetStateAction<FloorballMatchDto[]>>;
@@ -20,54 +19,19 @@ interface UseMatchManagementParams {
 export function useMatchManagement({ setMatches }: UseMatchManagementParams) {
   const navigate = useNavigate();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [liveModalMatch, setLiveModalMatch] = useState<FloorballMatchDto | null>(null);
-  const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
 
   const [showForm, setShowForm] = useState(false);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [editMatch, setEditMatch] = useState<FloorballMatchDto | undefined>(undefined);
 
-  const {
-    initializeLiveMatch,
-    updateLiveMatchState,
-    getLiveMatchState
-  } = useLiveMatchState();
-
   const handleLiveMatch = useCallback((match: FloorballMatchDto) => {
-    setLiveModalMatch(match);
-    setIsLiveModalOpen(true);
-    initializeLiveMatch(match);
-  }, [initializeLiveMatch]);
-
-  // New: when Start is clicked in modal, update matches and navigate to In-Progress page
-  const handleGoLive = useCallback((matchId: string, updatedMatch?: FloorballMatchDto) => {
-    if (updatedMatch) {
-      setMatches(prev => prev.map(m => m.id === matchId ? updatedMatch : m));
-    }
-    navigate('/admin/floorball/matches/in-progress');
-  }, [navigate, setMatches]);
-
-  // New: when Complete is clicked, update matches state; no navigation by default
-  const handleCompleteLive = useCallback((matchId: string, updatedMatch?: FloorballMatchDto) => {
-    if (updatedMatch) {
-      setMatches(prev => prev.map(m => m.id === matchId ? updatedMatch : m));
-    }
-  }, [setMatches]);
-
-  // New: generic match updates for live events
-  const handleMatchUpdated = useCallback((updatedMatch: FloorballMatchDto) => {
-    setMatches(prev => prev.map(m => m.id === updatedMatch.id ? updatedMatch : m));
-  }, [setMatches]);
+    navigate(`/admin/floorball/matches/manage/${match.id}`);
+  }, [navigate]);
 
   const handleEditMatch = useCallback((match: FloorballMatchDto) => {
     setEditMatch(match);
     setFormMode('edit');
     setShowForm(true);
-  }, []);
-
-  const handleCloseLiveModal = useCallback(() => {
-    setIsLiveModalOpen(false);
-    setLiveModalMatch(null);
   }, []);
 
   const handleCloseForm = useCallback(() => {
@@ -121,27 +85,13 @@ export function useMatchManagement({ setMatches }: UseMatchManagementParams) {
     }
   }, [setMatches]);
 
-  const handleStateUpdate = useCallback((updates: Partial<any>) => {
-    if (liveModalMatch) {
-      updateLiveMatchState(liveModalMatch.id, updates);
-    }
-  }, [liveModalMatch, updateLiveMatchState]);
-
   return {
     actionLoading,
-    liveModalMatch,
-    isLiveModalOpen,
     showForm,
     formMode,
     editMatch,
-    getLiveMatchState,
-    handleStateUpdate,
     handleLiveMatch,
     handleEditMatch,
-    handleGoLive,
-    handleCompleteLive,
-    handleMatchUpdated,
-    handleCloseLiveModal,
     handleCloseForm,
     handleFormSubmit,
     handleCancelMatch

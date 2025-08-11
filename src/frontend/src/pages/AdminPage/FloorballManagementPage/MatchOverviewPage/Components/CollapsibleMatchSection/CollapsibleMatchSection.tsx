@@ -1,5 +1,5 @@
 import type { FloorballMatchDto } from '../../../../../../types/floorball/floorballTypes';
-import { formatDateTime, getStatusBadge } from '../../utils/matchFormatters';
+import { formatDateTime, getStatusBadge } from '../../../ManageMatchPage/utils/matchFormatters';
 import './CollapsibleMatchSection.scss';
 
 interface CollapsibleMatchSectionProps {

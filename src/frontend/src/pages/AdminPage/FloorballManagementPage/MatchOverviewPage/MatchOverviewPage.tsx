@@ -4,13 +4,10 @@ import { floorballMatchEventService } from '../../../../api/floorball/floorballM
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import { signalRService, type MatchEvent } from '../../../../services/signalRService';
 import Navbar from '../../../../components/Navigation/Navbar';
-import LiveMatchModal from './Components/LiveMatchModal/LiveMatchModal';
 import MatchFormModal from './Components/MatchFormModal/MatchFormModal';
 import MatchStatsCards from './Components/MatchStatsCards/MatchStatsCards';
 import MatchFilters from './Components/MatchFilters/MatchFilters';
 import CollapsibleMatchSection from './Components/CollapsibleMatchSection/CollapsibleMatchSection';
-import { useLiveMatchState } from './hooks/useLiveMatchState';
-import type { LiveMatchState } from './hooks/useLiveMatchState';
 import type { 
   FloorballMatchDto, 
   CreateFloorballMatchRequest,
@@ -19,12 +16,12 @@ import type {
   ChangeMatchVenueRequest,
   ChangeMatchDateTimeRequest
 } from '../../../../types/floorball/floorballTypes';
-import './MatchManagementPage.scss';
+import './MatchOverviewPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
   
-const MatchManagementPage = () => {
+const MatchOverviewPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   
@@ -35,18 +32,6 @@ const MatchManagementPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   
-  // Live match modal state
-  const [liveModalMatch, setLiveModalMatch] = useState<FloorballMatchDto | null>(null);
-  const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
-  
-  // Use the live match state hook
-  const {
-    initializeLiveMatch,
-    updateLiveMatchState,
-    cancelLiveMatch,
-    getLiveMatchState,
-  }: ReturnType<typeof useLiveMatchState> = useLiveMatchState();
-
   // Form state
   const [showForm, setShowForm] = useState(false);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
@@ -57,8 +42,8 @@ const MatchManagementPage = () => {
   const [collapsedSections, setCollapsedSections] = useState({
     ongoing: false,
     scheduled: false,
-    completed: false
-    , cancelled: false
+    completed: false,
+    cancelled: false
   });
 
   // Real-time connection status
@@ -161,39 +146,13 @@ const MatchManagementPage = () => {
       console.log(`Match ${MatchId} status changed to ${NewStatus}`);
     };
 
-    // Handle goal scored events
-    const handleGoalScored = (eventData: MatchEvent) => {
-      const { MatchId, TeamId } = eventData.data as { MatchId: string; TeamId: string };
-      
-      // Don't update scores locally - let the LiveMatchModal handle score updates
-      // by refreshing from the backend to avoid duplicate updates
-      // The LiveMatchModal will call loadCurrentMatchStatus() which gets the accurate
-      // score from the backend and notifies the parent via onMatchUpdated callback
-      console.log(`Goal scored for match ${MatchId} by team ${TeamId} - score will be updated by modal`);
-    };
-
-    // Handle penalty assigned events
-    const handlePenaltyAssigned = (eventData: MatchEvent) => {
-      const { MatchId } = eventData.data as { MatchId: string };
-      
-      // For now, we just log the penalty - the events list will be updated
-      // when the modal refreshes the events
-      console.log(`Penalty assigned for match ${MatchId}`);
-    };
-
     // Handle real-time SignalR events
     const handleSignalREvent = (event: MatchEvent) => {
-      console.log('Received SignalR event in MatchManagementPage:', event);
+      console.log('Received SignalR event in MatchOverviewPage:', event);
       
       switch (event.eventType) {
         case 'FloorballMatchStatusChangedEvent':
           handleMatchStatusChange(event);
-          break;
-        case 'FloorballGoalScored':
-          handleGoalScored(event);
-          break;
-        case 'FloorballPenaltyAssigned':
-          handlePenaltyAssigned(event);
           break;
         default:
           // Ignore other event types
@@ -203,7 +162,7 @@ const MatchManagementPage = () => {
 
     const setupSignalR = async () => {
       try {
-        console.log('Setting up SignalR connection for MatchManagementPage...');
+        console.log('Setting up SignalR connection for MatchOverviewPage...');
         
         // Test backend accessibility first
         const isBackendAccessible = await signalRService.testBackendAccessibility();
@@ -227,10 +186,6 @@ const MatchManagementPage = () => {
         // Subscribe to match status change events
         await signalRService.subscribeToEventType('FloorballMatchStatusChangedEvent');
         
-        // Subscribe to goal and penalty events for real-time updates
-        await signalRService.subscribeToEventType('FloorballGoalScored');
-        await signalRService.subscribeToEventType('FloorballPenaltyAssigned');
-        
         // Set up event handler
         unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
         
@@ -242,7 +197,7 @@ const MatchManagementPage = () => {
         // Check connection status every 5 seconds
         const connectionInterval = setInterval(checkConnectionStatus, 5000);
         
-        console.log('SignalR subscriptions set up for MatchManagementPage');
+        console.log('SignalR subscriptions set up for MatchOverviewPage');
         
         return () => {
           clearInterval(connectionInterval);
@@ -268,8 +223,6 @@ const MatchManagementPage = () => {
         
         // Unsubscribe from event types
         signalRService.unsubscribeFromEventType('FloorballMatchStatusChangedEvent');
-        signalRService.unsubscribeFromEventType('FloorballGoalScored');
-        signalRService.unsubscribeFromEventType('FloorballPenaltyAssigned');
       };
     });
   }, []);
@@ -343,8 +296,7 @@ const MatchManagementPage = () => {
   };
 
   const handleLiveMatch = (match: FloorballMatchDto) => {
-    setLiveModalMatch(match);
-    setIsLiveModalOpen(true);
+    navigate(`/admin/floorball/matches/manage/${match.id}`);
   };
 
   const handleEditMatch = (match: FloorballMatchDto) => {
@@ -391,90 +343,11 @@ const MatchManagementPage = () => {
     }
   };
 
-  const handleCloseLiveModal = () => {
-    setIsLiveModalOpen(false);
-    setLiveModalMatch(null);
-  };
-
-  const handleMatchUpdated = (updatedMatch: FloorballMatchDto) => {
-    // Update the match in the matches list with the latest data from backend
-    setMatches(prev => prev.map(match => 
-      match.id === updatedMatch.id ? updatedMatch : match
-    ));
-    
-    // Also update the live modal match if it's the same match
-    if (liveModalMatch?.id === updatedMatch.id) {
-      setLiveModalMatch(updatedMatch);
-    }
-  };
-
-  // Memoize the onStateUpdate callback to prevent infinite loops
-  const handleStateUpdate = useCallback((updates: Partial<LiveMatchState>) => {
-    if (liveModalMatch) {
-      updateLiveMatchState(liveModalMatch.id, updates);
-    }
-  }, [liveModalMatch, updateLiveMatchState]);
-
   const toggleSection = (section: keyof typeof collapsedSections) => {
     setCollapsedSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
-  };
-
-  const handleGoLive = (matchId: string, updatedMatch?: FloorballMatchDto) => {
-    // Helper function to detect placeholder team names
-    const isPlaceholderTeamName = (name: string) => {
-      return !name || name.trim() === '' || name === 'Home Team' || name === 'Away Team';
-    };
-    
-    // Update match with the response from the backend first
-    if (updatedMatch) {
-      const originalMatch = matches.find(m => m.id === matchId);
-      
-      setMatches((prev: FloorballMatchDto[]) => prev.map((m: FloorballMatchDto) => {
-        if (m.id === matchId) {
-          // Preserve team names from the original match if they're missing, empty, or placeholder values
-          const preservedMatch = {
-            ...updatedMatch,
-            homeTeamName: !isPlaceholderTeamName(updatedMatch.homeTeamName) ? updatedMatch.homeTeamName : m.homeTeamName,
-            awayTeamName: !isPlaceholderTeamName(updatedMatch.awayTeamName) ? updatedMatch.awayTeamName : m.awayTeamName
-          };
-          return preservedMatch;
-        }
-        return m;
-      }));
-      
-      // Create the preserved match for the modal
-      const preservedUpdatedMatch = {
-        ...updatedMatch,
-        homeTeamName: !isPlaceholderTeamName(updatedMatch.homeTeamName) ? updatedMatch.homeTeamName : (originalMatch?.homeTeamName || ''),
-        awayTeamName: !isPlaceholderTeamName(updatedMatch.awayTeamName) ? updatedMatch.awayTeamName : (originalMatch?.awayTeamName || '')
-      };
-      
-      setLiveModalMatch(preservedUpdatedMatch);
-      
-      // Use the preserved match data to initialize live match state
-      initializeLiveMatch(preservedUpdatedMatch);
-    } else {
-      // Fallback to current modal match if no updated data
-      initializeLiveMatch(liveModalMatch!);
-    }
-  };
-
-  const handleCompleteLive = (matchId: string, updatedMatch?: FloorballMatchDto) => {
-    // Use the hook to cancel live match
-    cancelLiveMatch(matchId);
-    
-    // Update match with the response from the backend
-    if (updatedMatch) {
-      setMatches((prev: FloorballMatchDto[]) => prev.map((m: FloorballMatchDto) => 
-        m.id === matchId ? updatedMatch : m
-      ));
-      setLiveModalMatch(updatedMatch);
-    }
-    
-    // Don't close the modal - let it stay open with "Match Finished" status
   };
 
   if (loading) {
@@ -619,23 +492,9 @@ const MatchManagementPage = () => {
           onCancelMatch={handleCancelMatch}
           loading={actionLoading !== null}
         />
-
-        {/* Live Match Modal */}
-        {liveModalMatch && (
-          <LiveMatchModal
-            match={liveModalMatch}
-            isOpen={isLiveModalOpen}
-            onClose={handleCloseLiveModal}
-            onCompleteLive={handleCompleteLive}
-            onGoLive={handleGoLive}
-            liveState={getLiveMatchState(liveModalMatch.id)}
-            onStateUpdate={handleStateUpdate}
-            onMatchUpdated={handleMatchUpdated}
-          />
-        )}
       </div>
     </div>
   );
 };
 
-export default MatchManagementPage; 
+export default MatchOverviewPage; 

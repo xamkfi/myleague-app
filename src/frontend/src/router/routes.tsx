@@ -21,11 +21,12 @@ import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/Floor
 import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage';
 import FloorballRefereesPage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage';
 import FloorballSeasonsPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage';
-import MatchManagementPage from '../pages/AdminPage/FloorballManagementPage/MatchManagementPage/MatchManagementPage';
+import MatchOverviewPage from '../pages/AdminPage/FloorballManagementPage/MatchOverviewPage/MatchOverviewPage';
 import CompletedMatchesPage from '../pages/AdminPage/FloorballManagementPage/CompletedMatchesPage/CompletedMatchesPage';
 import ScheduledMatchesPage from '../pages/AdminPage/FloorballManagementPage/ScheduledMatchesPage/ScheduledMatchesPage';
 import InProgressMatchesPage from '../pages/AdminPage/FloorballManagementPage/InProgressMatchesPage/InProgressMatchesPage';
 import CancelledMatchesPage from '../pages/AdminPage/FloorballManagementPage/CancelledMatchesPage/CancelledMatchesPage';
+import ManageMatchPage from '../pages/AdminPage/FloorballManagementPage/ManageMatchPage/ManageMatchPage';
 import FloorballTeamPage from '../pages/FloorballTeamPage/FloorballTeamPage';
 import NewsManagementPage from '../pages/AdminPage/NewsPage/NewsManagementPage';
 import FloorballTeamPlayerUserPage from '../pages/FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage';
@@ -131,11 +132,12 @@ export const routes: RouteObject[] = [
       {
         path: 'matches',
         children: [
-          { index: true, element: <MatchManagementPage /> },
+          { index: true, element: <MatchOverviewPage /> },
           { path: 'completed', element: <CompletedMatchesPage /> },
           { path: 'scheduled', element: <ScheduledMatchesPage /> },
           { path: 'in-progress', element: <InProgressMatchesPage /> },
-          { path: 'cancelled', element: <CancelledMatchesPage /> }
+          { path: 'cancelled', element: <CancelledMatchesPage /> },
+          { path: 'manage/:matchId', element: <ManageMatchPage /> }
         ]
       }
     ]

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { signalRService, type MatchEvent } from '../../../../../../../services/signalRService';
+import { signalRService, type MatchEvent } from '../../../../../services/signalRService';
 import type { PeriodEventData, GoalEventData, PenaltyEventData, SaveEventData } from '../components/types';
 
 interface UseSignalRProps {
@@ -25,41 +25,20 @@ export const useSignalR = ({
    * Updates the UI immediately when events are received
    */
   const handleSignalREvent = useCallback((event: MatchEvent) => {
-    console.log('Received match event:', event);
-    console.log('Event type:', event.eventType);
-    console.log('Event data:', event.data);
-    
     const eventData = event.data as { MatchId?: string };
-    console.log('Extracted MatchId from event data:', eventData?.MatchId);
-    console.log('Current match ID:', matchId);
     
     if (eventData?.MatchId !== matchId) {
-      console.log('Event is not for this match, ignoring');
       return; // Event is not for this match
     }
     
-    console.log('Processing event for this match');
-    
-    // IGNORE timer events - let the Timer component handle them
-    if (event.eventType === 'TimerUpdateEvent') {
-      console.log('Ignoring timer event - Timer component will handle it');
-      return;
-    }
-    
     if (event.eventType === 'FloorballGoalScored') {
-      console.log('Handling goal scored event');
       onGoalScored(event.data as GoalEventData);
     } else if (event.eventType === 'FloorballPenaltyAssigned') {
-      console.log('Handling penalty assigned event');
       onPenaltyAssigned(event.data as PenaltyEventData);
     } else if (event.eventType === 'FloorballSaveEvent') {
-      console.log('Handling save recorded event');
       onSaveRecorded(event.data as SaveEventData);
     } else if (event.eventType === 'FloorballPeriodStartedEvent') {
-      console.log('Handling period started event');
       onPeriodStarted(event.data as PeriodEventData);
-    } else {
-      console.log('Unknown event type:', event.eventType);
     }
   }, [matchId, onGoalScored, onPenaltyAssigned, onPeriodStarted, onSaveRecorded]);
 
@@ -70,8 +49,6 @@ export const useSignalR = ({
    */
   const setupSignalR = useCallback(async () => {
     try {
-      console.log('Setting up SignalR connection...');
-      
       // Test backend accessibility first
       const isBackendAccessible = await signalRService.testBackendAccessibility();
       if (!isBackendAccessible) {
@@ -87,8 +64,6 @@ export const useSignalR = ({
       
       // Only subscribe if connection is established
       if (signalRService.isConnected) {
-        console.log('SignalR connected, subscribing to match events...');
-        
         // Subscribe to this specific match for all match-related events
         await signalRService.subscribeToMatch(matchId);
         
@@ -99,7 +74,6 @@ export const useSignalR = ({
         await signalRService.subscribeToEventType('FloorballPeriodStartedEvent');
         
         const unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
-        console.log('SignalR setup completed successfully');
         return unsubscribe;
       } else {
         console.warn('SignalR connection not established, skipping event subscriptions');

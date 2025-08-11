@@ -1,4 +1,4 @@
-import type { FloorballTeam } from '../../../../../../../types/floorball/floorballTypes';
+import type { FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 
 interface LiveMatchScoreboardProps {
   homeTeam: FloorballTeam | null;

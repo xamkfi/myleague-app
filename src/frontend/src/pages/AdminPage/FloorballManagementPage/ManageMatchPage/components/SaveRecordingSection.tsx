@@ -1,8 +1,8 @@
 import { useMemo, useCallback } from 'react';
 import type { ChangeEvent } from 'react';
-import type { FloorballMatchDto } from '../../../../../../../types/floorball/floorballTypes';
-import type { FloorballPlayerDto } from '../../../../../../../api/floorball/floorballPlayerService';
-import { FloorballPosition } from '../../../../../../../types/floorball/floorballTypes';
+import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
+import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
+import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 
 interface SaveRecordingSectionProps {
   currentMatch: FloorballMatchDto;

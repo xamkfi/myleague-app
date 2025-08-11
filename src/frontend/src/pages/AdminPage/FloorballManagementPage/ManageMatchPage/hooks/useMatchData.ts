@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
-import { floorballTeamService } from '../../../../../../../api/floorball/floorballTeamService';
-import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../../../api/floorball/floorballPlayerService';
-import { floorballMatchService } from '../../../../../../../api/floorball/floorballMatchService';
-import type { FloorballMatchDto, FloorballTeam } from '../../../../../../../types/floorball/floorballTypes';
+import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
+import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
+import { floorballMatchService } from '../../../../../api/floorball/floorballMatchService';
+import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 import type { StateUpdate } from '../components/types';
 
 interface UseMatchDataProps {

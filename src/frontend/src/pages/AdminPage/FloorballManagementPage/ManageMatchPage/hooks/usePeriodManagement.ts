@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { floorballMatchEventService } from '../../../../../../../api/floorball/floorballMatchEventService';
-import type { FloorballMatchDto } from '../../../../../../../types/floorball/floorballTypes';
+import { floorballMatchEventService } from '../../../../../api/floorball/floorballMatchEventService';
+import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 import type { LocalClock, PeriodEventData, StateUpdate } from '../components/types';
 
 interface UsePeriodManagementProps {

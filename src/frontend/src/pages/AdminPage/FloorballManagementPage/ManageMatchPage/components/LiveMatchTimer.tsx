@@ -1,7 +1,7 @@
 import React from 'react';
-import { Timer } from '../../../../../../../components/Timer/Timer';
-import type { FloorballMatchDto } from '../../../../../../../types/floorball/floorballTypes';
-import type { TimerUpdate } from '../../../../../../../api/common/timerService';
+import { Timer } from '../../../../../components/Timer/Timer';
+import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
+import type { TimerUpdate } from '../../../../../api/common/timerService';
 import type { LocalClock } from './types';
 
 // Create a memoized Timer component to prevent unnecessary re-renders
