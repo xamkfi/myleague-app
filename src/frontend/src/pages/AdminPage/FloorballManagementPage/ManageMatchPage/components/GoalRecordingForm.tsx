@@ -36,48 +36,39 @@ const GoalRecordingForm = ({
 }: GoalRecordingFormProps) => {
   if (!showGoalForm) return null;
 
+  const selectedTeamName = goalForm.teamId === currentMatch.homeTeamId 
+    ? homeTeam?.name 
+    : awayTeam?.name;
+
   return (
     <div className="event-form goal-form">
-      <h3>Record Goal</h3>
+      <h3>Record Goal for {selectedTeamName}</h3>
       <div className="form-row">
         <select 
-          value={goalForm.teamId} 
-          onChange={(e) => setGoalForm(prev => ({ ...prev, teamId: e.target.value, playerId: '' }))}
+          value={goalForm.playerId} 
+          onChange={(e) => setGoalForm(prev => ({ ...prev, playerId: e.target.value }))}
         >
-          <option value="">Select Team</option>
-          <option value={currentMatch.homeTeamId}>{homeTeam?.name || 'Home'}</option>
-          <option value={currentMatch.awayTeamId}>{awayTeam?.name || 'Away'}</option>
+          <option value="">Select Player</option>
+          {getPlayersForTeam(goalForm.teamId).map(player => (
+            <option key={player.id} value={player.id}>
+              {player.person.firstName} {player.person.lastName}
+            </option>
+          ))}
         </select>
         
-        {goalForm.teamId && (
-          <select 
-            value={goalForm.playerId} 
-            onChange={(e) => setGoalForm(prev => ({ ...prev, playerId: e.target.value }))}
-          >
-            <option value="">Select Player</option>
-            {getPlayersForTeam(goalForm.teamId).map(player => (
+        <select 
+          value={goalForm.assisterId} 
+          onChange={(e) => setGoalForm(prev => ({ ...prev, assisterId: e.target.value }))}
+        >
+          <option value="">Select Assist (Optional)</option>
+          {getPlayersForTeam(goalForm.teamId)
+            .filter(player => player.id !== goalForm.playerId)
+            .map(player => (
               <option key={player.id} value={player.id}>
                 {player.person.firstName} {player.person.lastName}
               </option>
             ))}
-          </select>
-        )}
-        
-        {goalForm.teamId && (
-          <select 
-            value={goalForm.assisterId} 
-            onChange={(e) => setGoalForm(prev => ({ ...prev, assisterId: e.target.value }))}
-          >
-            <option value="">Select Assist (Optional)</option>
-            {getPlayersForTeam(goalForm.teamId)
-              .filter(player => player.id !== goalForm.playerId)
-              .map(player => (
-                <option key={player.id} value={player.id}>
-                  {player.person.firstName} {player.person.lastName}
-                </option>
-              ))}
-          </select>
-        )}
+        </select>
       </div>
       
       <div className="form-row compact-time-row">

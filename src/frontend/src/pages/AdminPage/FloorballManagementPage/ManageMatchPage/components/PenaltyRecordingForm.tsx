@@ -35,32 +35,25 @@ const PenaltyRecordingForm = ({
 }: PenaltyRecordingFormProps) => {
   if (!showPenaltyForm) return null;
 
+  const selectedTeamName = penaltyForm.teamId === currentMatch.homeTeamId 
+    ? homeTeam?.name 
+    : awayTeam?.name;
+
   return (
     <div className="event-form penalty-form">
-      <h3>Record Penalty</h3>
+      <h3>Record Penalty for {selectedTeamName}</h3>
       <div className="form-row">
         <select 
-          value={penaltyForm.teamId} 
-          onChange={(e) => setPenaltyForm(prev => ({ ...prev, teamId: e.target.value, playerId: '' }))}
+          value={penaltyForm.playerId} 
+          onChange={(e) => setPenaltyForm(prev => ({ ...prev, playerId: e.target.value }))}
         >
-          <option value="">Select Team</option>
-          <option value={currentMatch.homeTeamId}>{homeTeam?.name || 'Home'}</option>
-          <option value={currentMatch.awayTeamId}>{awayTeam?.name || 'Away'}</option>
+          <option value="">Select Player (Optional)</option>
+          {getPlayersForTeam(penaltyForm.teamId).map(player => (
+            <option key={player.id} value={player.id}>
+              {player.person.firstName} {player.person.lastName}
+            </option>
+          ))}
         </select>
-        
-        {penaltyForm.teamId && (
-          <select 
-            value={penaltyForm.playerId} 
-            onChange={(e) => setPenaltyForm(prev => ({ ...prev, playerId: e.target.value }))}
-          >
-            <option value="">Select Player (Optional)</option>
-            {getPlayersForTeam(penaltyForm.teamId).map(player => (
-              <option key={player.id} value={player.id}>
-                {player.person.firstName} {player.person.lastName}
-              </option>
-            ))}
-          </select>
-        )}
         
         <select 
           value={penaltyForm.penaltyType} 

@@ -48,6 +48,24 @@ export const useFormState = ({
   const [loading, setLoading] = useState(false);
 
   /**
+   * Opens the goal form for a specific team
+   * @param teamId The ID of the team to open the form for
+   */
+  const openGoalFormForTeam = useCallback((teamId: string) => {
+    setGoalForm(prev => ({ ...prev, teamId }));
+    setShowGoalForm(true);
+  }, []);
+
+  /**
+   * Opens the penalty form for a specific team
+   * @param teamId The ID of the team to open the form for
+   */
+  const openPenaltyFormForTeam = useCallback((teamId: string) => {
+    setPenaltyForm(prev => ({ ...prev, teamId }));
+    setShowPenaltyForm(true);
+  }, []);
+
+  /**
    * Opens the penalty form
    */
   const openPenaltyForm = useCallback(() => {
@@ -152,6 +170,8 @@ export const useFormState = ({
     showPenaltyForm,
     setShowPenaltyForm,
     openPenaltyForm,
+    openGoalFormForTeam,
+    openPenaltyFormForTeam,
     
     // Form data
     goalForm,

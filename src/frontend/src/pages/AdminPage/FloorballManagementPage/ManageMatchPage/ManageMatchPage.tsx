@@ -331,11 +331,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setGetToggleFromTimer(() => toggleFunction);
   }, [setGetToggleFromTimer]);
 
-  // MEMOIZED: Goal form show handler
-  const handleShowGoalForm = useCallback(() => {
-    setShowGoalForm(true);
-  }, [setShowGoalForm]);
-
   // MEMOIZED: Goal form close handler
   const handleCloseGoalForm = useCallback(() => {
     setShowGoalForm(false);
@@ -350,16 +345,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   const handleCloseError = useCallback(() => {
     matchData.setError(null);
   }, [matchData]);
-
-  // MEMOIZED: Overtime confirmation cancel handler
-  const handleCancelOvertime = useCallback(() => {
-    setShowOvertimeConfirmation(false);
-  }, [setShowOvertimeConfirmation]);
-
-  // MEMOIZED: Shootout confirmation cancel handler
-  const handleCancelShootout = useCallback(() => {
-    setShowShootoutConfirmation(false);
-  }, [setShowShootoutConfirmation]);
 
 
   return (
@@ -404,7 +389,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         confirmText="Start Overtime"
         isLoading={matchData.loading}
         onConfirm={periodManagement.recordOvertime}
-        onCancel={handleCancelOvertime}
+        onCancel={() => setShowOvertimeConfirmation(false)}
       />
 
       <ConfirmationDialog
@@ -416,7 +401,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         confirmText="Start Shootout"
         isLoading={matchData.loading}
         onConfirm={periodManagement.recordShootout}
-        onCancel={handleCancelShootout}
+        onCancel={() => setShowShootoutConfirmation(false)}
       />
 
       <div className="modal-content">
@@ -461,8 +446,10 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           <LiveMatchQuickActions
             loading={forms.loading}
             currentMatch={matchData.currentMatch}
-            onShowGoalForm={handleShowGoalForm}
-            onShowPenaltyForm={forms.openPenaltyForm}
+            homeTeamId={matchData.homeTeam?.id}
+            awayTeamId={matchData.awayTeam?.id}
+            onShowGoalForm={forms.openGoalFormForTeam}
+            onShowPenaltyForm={forms.openPenaltyFormForTeam}
           />
 
           {/* Forms */}
