@@ -1,7 +1,7 @@
-import type { FloorballMatchDto, FloorballTeam } from '../../../../../../../types/floorball/floorballTypes';
-import type { FloorballPlayerDto } from '../../../../../../../api/floorball/floorballPlayerService';
-import type { LiveMatchState } from '../../../hooks/useLiveMatchState';
-import type { FloorballDomainEventDto } from '../../../../../../../api/floorball/floorballMatchEventService';
+import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floorball/floorballTypes';
+import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
+import type { LiveMatchState } from '../hooks/useLiveMatchState';
+import type { FloorballDomainEventDto } from '../../../../../api/floorball/floorballMatchEventService';
 
 export interface LiveMatchModalProps {
   match: FloorballMatchDto;
