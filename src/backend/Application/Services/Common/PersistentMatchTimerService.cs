@@ -282,18 +282,17 @@ namespace Application.Services.Common
                 }
 
                 DateTime now = DateTime.UtcNow;
-                bool wasRunning = timerState!.IsRunning;
 
                 // Calculate the StartedAt time that would result in the desired elapsed time
                 // Formula: elapsedTime = (now - StartedAt) - TotalPausedDuration
                 // Rearranged: StartedAt = now - elapsedTime - TotalPausedDuration
                 DateTime newStartedAt = now - elapsedTime;
 
-                timerState.StartedAt = newStartedAt;
+                timerState!.StartedAt = newStartedAt;
                 timerState.TotalPausedDuration = TimeSpan.Zero; // Reset paused duration for clean state
                 timerState.LastUpdated = now;
 
-                if (wasRunning)
+                if (timerState!.IsRunning)
                 {
                     // If timer was running, keep it running and set LastResumedAt
                     timerState.LastResumedAt = now;
@@ -327,7 +326,7 @@ namespace Application.Services.Common
                 await Task.Delay(100);
 
                 // Create appropriate timer update based on running state
-                TimerUpdate update = wasRunning 
+                TimerUpdate update = timerState!.IsRunning
                     ? TimerUpdate.CreateStarted(matchId, timerState.PeriodNumber, elapsedTime)
                     : TimerUpdate.CreateStopped(matchId, timerState.PeriodNumber, elapsedTime);
                 
@@ -374,7 +373,7 @@ namespace Application.Services.Common
         /// </summary>
         /// <param name="matchId">The match ID</param>
         /// <returns>The current period number, or null if not set</returns>
-        public async Task<int?> GetCurrentPeriodAsync(Guid matchId)
+        public async Task<int?> GetCurrentPeriodTime(Guid matchId)
         {
             try
             {

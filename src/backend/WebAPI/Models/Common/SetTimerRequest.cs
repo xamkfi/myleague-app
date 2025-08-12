@@ -11,7 +11,7 @@ namespace WebAPI.Models.Common
         /// The time to set in seconds
         /// </summary>
         [Required]
-        [Range(0, int.MaxValue, ErrorMessage = "Time in seconds must be non-negative")]
+        [Range(0, 7200, ErrorMessage = "Time in seconds must be between 0 and 7200 (2 hours)")]
         public int TimeInSeconds { get; set; }
     }
 }
