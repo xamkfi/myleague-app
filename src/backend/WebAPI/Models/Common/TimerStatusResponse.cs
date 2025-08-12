@@ -19,4 +19,9 @@ public class TimerStatusResponse
     /// The elapsed time as a formatted string
     /// </summary>
     public string ElapsedTime { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The current period number
+    /// </summary>
+    public int? PeriodNumber { get; set; }
 } 
