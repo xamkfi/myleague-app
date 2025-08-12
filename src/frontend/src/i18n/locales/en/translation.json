@@ -492,6 +492,7 @@
         "completed": "Completed",
         "scheduled": "Scheduled",
         "inProgress": "In Progress",
+        "cancelled": "Cancelled",
         "createNew": "Create New"
       },
       "filters": {
