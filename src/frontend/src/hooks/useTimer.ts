@@ -139,6 +139,23 @@ export function useTimer(options: UseTimerOptions) {
     }
   }, [matchId]);
 
+  // Set timer to specific time
+  const setTimer = useCallback(async (timeInSeconds: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      await timerService.setTimer(matchId, timeInSeconds);
+      
+      // Don't reload timer status - let SignalR handle the update
+    } catch (err) {
+      console.error('Error setting timer:', err);
+      setError(err instanceof Error ? err.message : 'Failed to set timer');
+    } finally {
+      setLoading(false);
+    }
+  }, [matchId]);
+
   // Destroy timer
   const destroyTimer = useCallback(async () => {
     try {
@@ -261,6 +278,7 @@ export function useTimer(options: UseTimerOptions) {
     startTimer,
     stopTimer,
     resetTimer,
+    setTimer,
     createTimer,
     destroyTimer,
     loadTimerStatus,

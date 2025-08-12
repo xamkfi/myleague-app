@@ -136,6 +136,9 @@ export const usePeriodManagement = ({
         });
       }
       
+      // Update next period to start
+      setNextPeriodToStart(nextPeriodToStart + 1);
+      
     } catch (error) {
       console.error('Error starting period:', error);
       throw error;
