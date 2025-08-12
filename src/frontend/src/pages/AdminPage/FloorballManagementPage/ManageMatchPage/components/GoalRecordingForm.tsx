@@ -1,4 +1,3 @@
-import React from 'react';
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import type { GoalForm, LocalClock } from './types';
