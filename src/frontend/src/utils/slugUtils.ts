@@ -1,4 +1,4 @@
-import type { Club, FloorballTeam } from '../types/floorball/floorballTypes';
+import type { Club, FloorballTeamNameResult } from '../types/floorball/floorballTypes';
 
 /**
  * Convert text to URL-friendly slug
@@ -14,29 +14,14 @@ export const slugify = (text: string): string => {
 };
 
 /**
- * Get division slug suffix for a team
- */
-const getDivisionSlug = (divisionId: string): string => {
-  // Create a simple slug from the division ID
-  return divisionId.toLowerCase().replace(/[^a-z0-9]/g, '');
-};
-
-/**
- * Create a simple slug from club name
- */
-export const createClubSlug = (club: Club): string => {
-  return slugify(club.name);
-};
-
-/**
  * Create team slugs with smart duplicate handling
  * Only adds ID suffix if there are name conflicts
  */
-export const createTeamSlugs = (teams: FloorballTeam[]): Map<string, string> => {
+export const createTeamSlugs = (teams: FloorballTeamNameResult[]): Map<string, string> => {
   const slugMap = new Map<string, string>();
   
   // Group teams by base name (before slugifying)
-  const teamsByBaseName = new Map<string, FloorballTeam[]>();
+  const teamsByBaseName = new Map<string, FloorballTeamNameResult[]>();
   
   teams.forEach(team => {
     const baseName = team.name.toLowerCase();
@@ -55,15 +40,14 @@ export const createTeamSlugs = (teams: FloorballTeam[]): Map<string, string> => 
       const team = teamGroup[0];
       slugMap.set(team.id, baseSlug);
     } else {
-      // Handle duplicates - add division or ID suffix
+      // Handle duplicates - add ID suffix for uniqueness
       teamGroup.forEach((team, index) => {
         if (index === 0) {
           // First team gets the base slug
           slugMap.set(team.id, baseSlug);
         } else {
-          // Other teams get division suffix or ID suffix
-          const divisionSuffix = getDivisionSlug(team.divisionId);
-          const slugWithSuffix = divisionSuffix ? `${baseSlug}-${divisionSuffix}` : `${baseSlug}-${team.id.slice(0, 8)}`;
+          // Other teams get ID suffix for uniqueness
+          const slugWithSuffix = `${baseSlug}-${team.id.slice(0, 8)}`;
           slugMap.set(team.id, slugWithSuffix);
         }
       });
@@ -76,7 +60,7 @@ export const createTeamSlugs = (teams: FloorballTeam[]): Map<string, string> => 
 /**
  * Create a single team slug (used when you have individual team)
  */
-export const createTeamSlug = (team: FloorballTeam, allTeams?: FloorballTeam[]): string => {
+export const createTeamSlug = (team: FloorballTeamNameResult, allTeams?: FloorballTeamNameResult[]): string => {
   if (!allTeams) {
     // Fallback - just use team name
     return slugify(team.name);
@@ -84,6 +68,13 @@ export const createTeamSlug = (team: FloorballTeam, allTeams?: FloorballTeam[]):
   
   const slugMap = createTeamSlugs(allTeams);
   return slugMap.get(team.id) || slugify(team.name);
+};
+
+/**
+ * Create a simple slug from club name
+ */
+export const createClubSlug = (club: Club): string => {
+  return slugify(club.name);
 };
 
 /**
@@ -96,7 +87,7 @@ export const findClubBySlug = (clubs: Club[], slug: string): Club | undefined =>
 /**
  * Find team by slug
  */
-export const findTeamBySlug = (teams: FloorballTeam[], slug: string): FloorballTeam | undefined => {
+export const findTeamBySlug = (teams: FloorballTeamNameResult[], slug: string): FloorballTeamNameResult | undefined => {
   const slugMap = createTeamSlugs(teams);
   
   // Find team ID that matches the slug
@@ -112,7 +103,7 @@ export const findTeamBySlug = (teams: FloorballTeam[], slug: string): FloorballT
 /**
  * Get slug for a specific team (useful for navigation)
  */
-export const getTeamSlug = (team: FloorballTeam, allTeams: FloorballTeam[]): string => {
+export const getTeamSlug = (team: FloorballTeamNameResult, allTeams: FloorballTeamNameResult[]): string => {
   const slugMap = createTeamSlugs(allTeams);
   return slugMap.get(team.id) || slugify(team.name);
 }; 

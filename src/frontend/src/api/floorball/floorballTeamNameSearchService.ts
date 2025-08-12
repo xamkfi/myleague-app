@@ -1,11 +1,6 @@
-import type { ApiResponse } from '../../types/floorball/floorballTypes';
+import type { ApiResponse, FloorballTeamNameResult } from '../../types/floorball/floorballTypes';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-export interface TeamNameResult {
-  id: string;
-  name: string;
-}
 
 export interface DropdownOption {
   id: string;
@@ -25,7 +20,7 @@ export const floorballTeamNameSearchService = {
   /**
    * Get team names filtered by name filter (non-paginated backend call)
    */
-  getTeamNames: async (nameFilter: string): Promise<ApiResponse<TeamNameResult[]>> => {
+  getTeamNames: async (nameFilter: string): Promise<ApiResponse<FloorballTeamNameResult[]>> => {
     const searchParams = new URLSearchParams();
     if (nameFilter) {
       searchParams.append('nameFilter', nameFilter);
@@ -38,7 +33,7 @@ export const floorballTeamNameSearchService = {
       throw new Error('Failed to fetch team names');
     }
 
-    const apiResponse: ApiResponse<TeamNameResult[]> = await response.json();
+    const apiResponse: ApiResponse<FloorballTeamNameResult[]> = await response.json();
     if (!apiResponse.success) {
       throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch team names');
     }

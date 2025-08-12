@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import type { FloorballMatchDto, FloorballTeam } from '../../types/floorball/floorballTypes';
+import { floorballTeamNameSearchService } from '../../api/floorball/floorballTeamNameSearchService';
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
 import './FloorballTeamPage.scss';
@@ -42,17 +43,18 @@ function FloorballTeamPage() {
         setLoading(true);
 
         // Fetch all teams to enable slug resolution
-        const teamsResponse = await floorballTeamService.getAll({});
+        const teamsResponse = await floorballTeamNameSearchService.getTeamNames("");
         const allTeams = teamsResponse.data || [];
-
+        
         // Find team by slug
         const foundTeam = findTeamBySlug(allTeams, slug);
 
         if (foundTeam) {
-          setTeam(foundTeam);
+          const teamResponse = await floorballTeamService.getById(foundTeam.id);
+          setTeam(teamResponse);
 
           // Fetch division the team is in
-          const divisionResponse = await divisionService.getById(foundTeam.divisionId)
+          const divisionResponse = await divisionService.getById(teamResponse.divisionId)
           setDivision(divisionResponse.data)
         } else {
           setError('Team not found');

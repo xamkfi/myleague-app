@@ -228,10 +228,11 @@
       }
     }
   }
+}
   
-  // Modal Styles
-  .modal-overlay {
-    position: fixed;
+// Modal Styles
+.modal-overlay {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -244,6 +245,8 @@
   padding: 1rem;
 
   .modal-content {
+    display: flex;
+    flex-direction: column;
     background: white;
     border-radius: 0.5rem;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -712,4 +715,3 @@
 .fa-spinner {
   animation: spin 1s linear infinite;
 } 
-}
