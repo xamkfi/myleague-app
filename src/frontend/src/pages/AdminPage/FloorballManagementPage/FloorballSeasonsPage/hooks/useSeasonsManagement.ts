@@ -6,11 +6,13 @@ import {
   type CreateFloorballSeasonRequest,
   type UpdateFloorballSeasonRequest
 } from '../../../../../api/floorball/floorballSeasonService';
-
+import { divisionService } from '../../../../../api/common/divisionService';
+import type { DivisionType } from '../../../../../types/common/divisionType';
 
 export const useSeasonsManagement = () => {
   const { t } = useTranslation();
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
+  const [divisions, setDivisions] = useState<DivisionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [operationLoading, setOperationLoading] = useState<string | null>(null);
@@ -74,10 +76,8 @@ export const useSeasonsManagement = () => {
       setLoading(true);
       setError(null);
       
-      const result = showActiveOnly 
-        ? await floorballSeasonService.getActive()
-        : await floorballSeasonService.getAll();
-      
+      // Always load all seasons, we'll filter them locally
+      const result = await floorballSeasonService.getAll();
       setSeasons(result.data || []);
     } catch (err) {
       setError(parseApiError(err));
@@ -85,7 +85,17 @@ export const useSeasonsManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [showActiveOnly, parseApiError]);
+  }, [parseApiError]);
+
+  const loadDivisions = useCallback(async () => {
+    try {
+      const result = await divisionService.getAll();
+      setDivisions(result.data || []);
+    } catch (err) {
+      console.error('Error loading divisions:', err);
+      setDivisions([]);
+    }
+  }, []);
 
   const handleCreateSeason = async (seasonData: CreateFloorballSeasonRequest) => {
     try {
@@ -179,25 +189,39 @@ export const useSeasonsManagement = () => {
 
   const handleShowActiveOnlyChange = (value: boolean) => {
     setShowActiveOnly(value);
-    // Trigger reload when filter changes
-    if (value !== showActiveOnly) {
-      setTimeout(loadSeasons, 0);
-    }
   };
 
   // Filter seasons based on current filters
   const filteredSeasons = seasons.filter(season => {
-    if (divisionFilter !== 'all' && season.divisionId !== divisionFilter) {
+    // Filter by active status
+    if (showActiveOnly && !season.isActive) {
       return false;
     }
+    
+    // Filter by division
+    if (divisionFilter !== 'all') {
+      const division = divisions.find(d => d.id === season.divisionId);
+      const divisionName = division?.name || season.divisionId;
+      if (divisionName !== divisionFilter) {
+        return false;
+      }
+    }
+    
     return true;
   });
 
-  const uniqueDivisions = [...new Set(seasons.map(s => s.divisionId))].sort();
+  // Get unique division names from the seasons' division IDs
+  const uniqueDivisions = [...new Set(
+    seasons.map(season => {
+      const division = divisions.find(d => d.id === season.divisionId);
+      return division?.name || season.divisionId; // Fallback to ID if division not found
+    })
+  )].sort();
 
   useEffect(() => {
+    loadDivisions();
     loadSeasons();
-  }, [loadSeasons]);
+  }, [loadDivisions, loadSeasons]);
 
   return {
     // Data
