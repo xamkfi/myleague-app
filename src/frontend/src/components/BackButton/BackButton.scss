@@ -13,10 +13,8 @@
   transition: all 0.2s ease-out;
   &.floating {
     position: sticky;
-    top: 50px; 
-    left: 0px;
-    transform: translateX(-12%);
-    z-index: 1000;
+    z-index: 10;
+    top: 50px;
   }
 
 }
@@ -28,7 +26,7 @@
   background-color: $color-neutral-dark-grey;
   color: $color-white;
   border: none;
-  border-radius: map.get($border-radius, 'sm');
+  border-radius: map.get($border-radius, 'lg');
   font-size: map.get($font-sizes, 'base');
   font-weight: map.get($font-weights, 'medium');
   cursor: pointer;
@@ -38,8 +36,5 @@
     background-color: color.scale($color-neutral-dark-grey, $lightness: 25%);
     color: $color-neutral-white;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  &:active {
-    transform: translateY(0);
   }
 }
