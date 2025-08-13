@@ -70,7 +70,6 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
                 request.WasInOvertime,
                 request.WasInShootout);
 
-
             _matchRepository.MarkEventAsAdded(saveEvent);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);

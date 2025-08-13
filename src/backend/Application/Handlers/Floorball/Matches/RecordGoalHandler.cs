@@ -111,6 +111,12 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
                 request.PeriodNumber, request.TimeInSeconds,
                 request.Description, request.GoalType);
 
+            //Adding goals/assists to player statistics
+            scoringPlayer.RecordGoal();
+            if (assistingPlayer != null) assistingPlayer.RecordAssist();
+            if (secondAssistingPlayer != null) secondAssistingPlayer.RecordAssist();
+
+            // Mark the goal event as added in the repository
             _matchRepository.MarkEventAsAdded(goal);
 
             // Save changes explicitly to trigger domain events

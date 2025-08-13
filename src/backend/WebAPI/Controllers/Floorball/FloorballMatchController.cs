@@ -1,14 +1,15 @@
-﻿using Application.Commands.Floorball.Match;
+﻿using System.Globalization;
+using Application.Commands.Floorball.Match;
 using Application.Common;
-using Domain.Common;
 using Application.DTOs.Floorball;
 using Application.Queries.Floorball.Match;
+using Domain.Common;
+using Domain.Entities.Floorball;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using WebAPI.Models.Floorball;
-using Domain.Entities.Floorball;
 
 namespace WebAPI.Controllers.Floorball
 {
@@ -269,7 +270,7 @@ namespace WebAPI.Controllers.Floorball
         /// </summary>
         /// <param name="request">Update match request</param>
         /// <returns>Updated match details</returns>
-        [HttpPut]
+		[HttpPut]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -278,14 +279,22 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Updating floorball match with ID: {id}", request.Id);
 
-            if (!DateTime.TryParse(request.ScheduledDateTime, out DateTime scheduledDateTime))
+            if (!DateTimeOffset.TryParse(
+                request.ScheduledDateTime,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.RoundtripKind,
+                out DateTimeOffset dto))
+            {
                 return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse("Invalid scheduled date and time format"));
+            }
+
+            DateTime scheduledUtc = dto.UtcDateTime;
 
             UpdateFloorballMatchCommand command = new UpdateFloorballMatchCommand(
                 request.Id,
-                scheduledDateTime,
+                scheduledUtc,
                 request.Venue
-                );
+            );
 
             Result<FloorballMatchDto> result = await _mediator.Send(command);
 
@@ -423,7 +432,7 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordSave([FromBody] FloorballMatchEventBaseRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordSave([FromBody] RecordSaveEventRequest request)
         {
             _logger.LogInformation("Recording save for match ID: {matchId}", request.MatchId);
 

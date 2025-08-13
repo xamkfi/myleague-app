@@ -38,14 +38,12 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
         IFloorballMatchRepository matchRepository,
         ILogger<GetFloorballMatchByIdHandler> logger,
         IFloorballPlayerRepository playerRepository,
-        IPersonRepository personRepository,
-        IClubRepository clubRepository)
+        IPersonRepository personRepository)
     {
         _matchRepository = matchRepository;
         _logger = logger;
         _playerRepository = playerRepository;
         _personRepository = personRepository;
-        _clubRepository = clubRepository;
     }
 
     /// <summary>
@@ -109,11 +107,6 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
                     }
                 }
             }
-
-            //Getting the club for logo URL.
-            Club? homeClub = await _clubRepository.GetByIdAsync(match.HomeTeam.ClubId);
-            Club? awayClub = await _clubRepository.GetByIdAsync(match.AwayTeam.ClubId);
-
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, playerPersonLookup);
             _logger.LogInformation("Successfully retrieved floorball match: {MatchId}", match.Id);

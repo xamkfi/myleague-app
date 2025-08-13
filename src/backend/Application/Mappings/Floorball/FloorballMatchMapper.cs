@@ -240,7 +240,7 @@ public static class FloorballMatchMapper
             throw new ArgumentNullException(nameof(match));
         if (command == null)
             throw new ArgumentNullException(nameof(command));
-
+        
         // Use the domain entity's Reschedule method to update scheduled date/time and venue
         // This properly handles business rules and domain events
         match.Reschedule(command.ScheduledDateTime, command.Venue);

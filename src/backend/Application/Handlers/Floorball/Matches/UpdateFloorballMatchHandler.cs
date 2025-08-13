@@ -20,7 +20,7 @@ namespace Application.Handlers.Floorball.Matches;
 public class UpdateFloorballMatchHandler : IRequestHandler<UpdateFloorballMatchCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateFloorballMatchHandler> _logger;
 
     /// <summary>
@@ -31,7 +31,7 @@ public class UpdateFloorballMatchHandler : IRequestHandler<UpdateFloorballMatchC
     /// <param name="logger">The logger</param>
     public UpdateFloorballMatchHandler(
         IFloorballMatchRepository matchRepository,
-        IUnitOfWork unitOfWork,
+        IFloorballUnitOfWork unitOfWork,
         ILogger<UpdateFloorballMatchHandler> logger)
     {
         _matchRepository = matchRepository;
