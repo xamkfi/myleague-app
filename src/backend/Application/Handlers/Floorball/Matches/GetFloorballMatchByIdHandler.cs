@@ -25,7 +25,6 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
     private readonly ILogger<GetFloorballMatchByIdHandler> _logger;
     private readonly IFloorballPlayerRepository _playerRepository;
     private readonly IPersonRepository _personRepository;
-    private readonly IClubRepository _clubRepository;
 
     /// <summary>
     /// Initializes a new instance of the GetFloorballMatchByIdHandler class

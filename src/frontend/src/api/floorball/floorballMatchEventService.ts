@@ -400,11 +400,14 @@ export const floorballMatchEventService = {
   /**
    * End a period in a floorball match
    */
-  endPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<void>> => {
+  endPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Ending period:', periodNumber, 'for match:', matchId);
-      // No direct endpoint in FloorballMatchController; treat as client-side action
-      return { success: true, data: undefined as unknown as void, message: 'Period end handled client-side', errors: [] };
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/period/${periodNumber}/end`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+        });
+      return await handleApiResponse<FloorballMatchDto>(response);
     } catch (error) {
       console.error('Error ending period:', error);
       throw error;

@@ -340,9 +340,6 @@ public class FloorballMatch : AggregateRoot
         //Add domain events
         AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
         AddDomainEvent(new FloorballMatchStartedEvent(Id, DateTime.UtcNow));
-
-        //Starting the first period.
-        StartPeriod(1);
     }
 
     /// <summary>
@@ -749,17 +746,6 @@ public class FloorballMatch : AggregateRoot
         return penaltyEvent;
     }
 
-    public void StartPeriod(int periodNumber)
-    {
-        if (Status != FloorballMatchStatus.InProgress)
-            throw new InvalidOperationException("Match must be in progress.");
-        if (periodNumber < 1 || periodNumber > 5)
-            throw new ArgumentOutOfRangeException(nameof(periodNumber));
-
-        FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
-        AddDomainEvent(new FloorballPeriodStartedEvent(Id, periodNumber, HomeScore, AwayScore, periodNumber == 3));
-    }
-
     public void EndPeriod(int periodNumber)
     {
         if (Status != FloorballMatchStatus.InProgress)
@@ -775,21 +761,5 @@ public class FloorballMatch : AggregateRoot
         periodScore.Complete();
 
         AddDomainEvent(new FloorballPeriodEndedEvent(Id, periodNumber, HomeScore, AwayScore, periodNumber == 3));
-    }
-
-    private int GetCurrentPeriodNumber()
-    {
-        // Periods 1..3 are initialized at creation
-        bool p1 = _periodScores.First(ps => ps.PeriodNumber == 1).IsCompleted;
-        if (!p1) return 1;
-
-        bool p2 = _periodScores.First(ps => ps.PeriodNumber == 2).IsCompleted;
-        if (!p2) return 2;
-
-        bool p3 = _periodScores.First(ps => ps.PeriodNumber == 3).IsCompleted;
-        if (!p3) return 3;
-
-        // All regular periods completed
-        return 3;
     }
 } 
