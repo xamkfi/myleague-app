@@ -6,6 +6,7 @@ using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
+using Domain.Entities.Floorball;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -26,7 +27,7 @@ public class RecordShootoutHandler : IRequestHandler<RecordShootoutCommand, Resu
     {
         try
         {
-            var match = await _matchRepository.GetByIdAsync(request.MatchId);
+            FloorballMatch? match = await _matchRepository.GetByIdAsync(request.MatchId);
             if (match == null)
             {
                 _logger.LogWarning("Match not found with ID: {MatchId}", request.MatchId);

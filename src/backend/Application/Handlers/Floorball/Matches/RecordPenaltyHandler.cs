@@ -66,7 +66,7 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
 
             _logger.LogInformation("Recording penalty in match {MatchId}", request.MatchId);
 
-            match.RecordPenalty(
+            FloorballPenalty penaltyEvent = match.RecordPenalty(
                 team,
                 player!,
                 request.PenaltyType,
@@ -74,6 +74,8 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.Description);
+
+            _matchRepository.MarkEventAsAdded(penaltyEvent);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

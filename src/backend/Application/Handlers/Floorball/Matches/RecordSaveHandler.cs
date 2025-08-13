@@ -62,13 +62,16 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
 
             _logger.LogInformation("Recording save in match {MatchId}", request.MatchId);
 
-            match.RecordSave(
+            FloorballSave saveEvent = match.RecordSave(
                 team,
                 goalie,
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.WasInOvertime,
                 request.WasInShootout);
+
+
+            _matchRepository.MarkEventAsAdded(saveEvent);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

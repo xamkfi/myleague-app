@@ -27,7 +27,7 @@ public class RecordOvertimeHandler : IRequestHandler<RecordOvertimeCommand, Resu
     {
         try
         {
-            var match = await _matchRepository.GetByIdAsync(request.MatchId);
+            FloorballMatch? match = await _matchRepository.GetByIdAsync(request.MatchId);
             if (match == null)
             {
                 _logger.LogWarning("Match not found with ID: {MatchId}", request.MatchId);

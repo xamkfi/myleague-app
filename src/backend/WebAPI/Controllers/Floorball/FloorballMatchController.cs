@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using WebAPI.Models.Floorball;
+using Domain.Entities.Floorball;
 
 namespace WebAPI.Controllers.Floorball
 {
@@ -173,7 +174,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting today's floorball match with team ID of: {teamId}", teamId);
 
-            var query = new GetTodaysMatchesByTeamQuery(teamId);
+            GetTodaysMatchesByTeamQuery query = new GetTodaysMatchesByTeamQuery(teamId);
 
             Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(query);
 
@@ -388,7 +389,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Recording penalty for match ID: {matchId}", request.MatchId);
 
-            var command = new RecordPenaltyCommand(
+            RecordPenaltyCommand command = new RecordPenaltyCommand(
                 request.MatchId,
                 request.TeamId,
                 request.PlayerId,
@@ -398,14 +399,14 @@ namespace WebAPI.Controllers.Floorball
                 request.TimeInSeconds,
                 string.Empty);
 
-            var result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
             {
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Penalty recorded successfully"));
             }
 
-            var errorMessage = result.Error ?? "Failed to record penalty";
+            string? errorMessage = result.Error ?? "Failed to record penalty";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
@@ -422,27 +423,27 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordSave([FromBody] RecordSaveEventRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordSave([FromBody] FloorballMatchEventBaseRequest request)
         {
             _logger.LogInformation("Recording save for match ID: {matchId}", request.MatchId);
 
-            var command = new RecordSaveCommand(
+            RecordSaveCommand command = new RecordSaveCommand(
                 request.MatchId,
                 request.TeamId,
-                request.GoalieId,
+                request.PlayerId,
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.WasInOvertime,
                 request.WasInShootout);
 
-            var result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
             {
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Save recorded successfully"));
             }
 
-            var errorMessage = result.Error ?? "Failed to record save";
+            string? errorMessage = result.Error ?? "Failed to record save";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
@@ -462,15 +463,15 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Deleting goal {goalEventId} for match ID: {matchId}", goalEventId, matchId);
 
-            var command = new DeleteGoalCommand(matchId, goalEventId);
-            var result = await _mediator.Send(command);
+            DeleteGoalCommand command = new DeleteGoalCommand(matchId, goalEventId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
             {
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Goal deleted successfully"));
             }
 
-            var errorMessage = result.Error ?? "Failed to delete goal";
+            string? errorMessage = result.Error ?? "Failed to delete goal";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
@@ -490,15 +491,15 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Deleting penalty {penaltyEventId} for match ID: {matchId}", penaltyEventId, matchId);
 
-            var command = new DeletePenaltyCommand(matchId, penaltyEventId);
-            var result = await _mediator.Send(command);
+            DeletePenaltyCommand command = new DeletePenaltyCommand(matchId, penaltyEventId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
             {
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Penalty deleted successfully"));
             }
 
-            var errorMessage = result.Error ?? "Failed to delete penalty";
+            string? errorMessage = result.Error ?? "Failed to delete penalty";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
@@ -518,15 +519,15 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Recording overtime for match ID: {matchId}", matchId);
 
-            var command = new RecordOvertimeCommand(matchId);
-            var result = await _mediator.Send(command);
+            RecordOvertimeCommand command = new RecordOvertimeCommand(matchId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
             {
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Overtime recorded successfully"));
             }
 
-            var errorMessage = result.Error ?? "Failed to record overtime";
+            string? errorMessage = result.Error ?? "Failed to record overtime";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
@@ -546,15 +547,15 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Recording shootout for match ID: {matchId}", matchId);
 
-            var command = new RecordShootoutCommand(matchId);
-            var result = await _mediator.Send(command);
+            RecordShootoutCommand command = new RecordShootoutCommand(matchId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
             {
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Shootout recorded successfully"));
             }
 
-            var errorMessage = result.Error ?? "Failed to record shootout";
+            string? errorMessage = result.Error ?? "Failed to record shootout";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
@@ -574,15 +575,15 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Postponing match ID: {matchId}", matchId);
 
-            var command = new PostponeMatchCommand(matchId);
-            var result = await _mediator.Send(command);
+            PostponeMatchCommand command = new PostponeMatchCommand(matchId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
             {
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match postponed successfully"));
             }
 
-            var errorMessage = result.Error ?? "Failed to postpone match";
+            string? errorMessage = result.Error ?? "Failed to postpone match";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
@@ -602,15 +603,15 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Canceling match ID: {matchId}", matchId);
 
-            var command = new CancelMatchCommand(matchId);
-            var result = await _mediator.Send(command);
+            CancelMatchCommand command = new CancelMatchCommand(matchId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
             {
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match canceled successfully"));
             }
 
-            var errorMessage = result.Error ?? "Failed to cancel match";
+            string? errorMessage = result.Error ?? "Failed to cancel match";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
@@ -631,15 +632,15 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Adding official {refereeId} to match ID: {matchId}", request.RefereeId, request.MatchId);
 
-            var command = new AddOfficialToMatchCommand(request.MatchId, request.RefereeId);
-            var result = await _mediator.Send(command);
+            AddOfficialToMatchCommand command = new AddOfficialToMatchCommand(request.MatchId, request.RefereeId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
             {
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Official added successfully"));
             }
 
-            var errorMessage = result.Error ?? "Failed to add official";
+            string? errorMessage = result.Error ?? "Failed to add official";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));

@@ -154,14 +154,14 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballSaveEventDto>>> RecordSave([FromBody] RecordSaveEventRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballSaveEventDto>>> RecordSave([FromBody] FloorballMatchEventBaseRequest request)
         {
             _logger.LogInformation("Recording save event for match {matchId}", request.MatchId);
 
             RecordSaveEventCommand command = new RecordSaveEventCommand(
                 request.MatchId,
                 request.TeamId,
-                request.GoalieId,
+                request.PlayerId,
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.WasInOvertime,

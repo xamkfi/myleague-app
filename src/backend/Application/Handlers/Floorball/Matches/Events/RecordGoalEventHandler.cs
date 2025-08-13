@@ -62,7 +62,7 @@ public class RecordGoalEventHandler : IRequestHandler<RecordGoalEventCommand, Re
             await _eventSourcedMatchRepository.SaveAsync(match, cancellationToken);
 
             // Create the DTO response
-            var goalEventDto = new FloorballGoalEventDto(
+            FloorballGoalEventDto goalEventDto = new FloorballGoalEventDto(
                 request.TeamId,
                 request.PlayerId,
                 request.AssisterId,

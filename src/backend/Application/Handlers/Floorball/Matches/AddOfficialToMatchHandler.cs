@@ -33,14 +33,14 @@ public class AddOfficialToMatchHandler : IRequestHandler<AddOfficialToMatchComma
     {
         try
         {
-            var match = await _matchRepository.GetByIdAsync(request.MatchId);
+            FloorballMatch? match = await _matchRepository.GetByIdAsync(request.MatchId);
             if (match == null)
             {
                 _logger.LogWarning("Match not found with ID: {MatchId}", request.MatchId);
                 return Result<FloorballMatchDto>.Failure($"Match with ID {request.MatchId} not found.");
             }
 
-            var referee = await _refereeRepository.GetByIdAsync(request.RefereeId);
+            FloorballReferee? referee = await _refereeRepository.GetByIdAsync(request.RefereeId);
             if (referee == null)
             {
                 _logger.LogWarning("Referee not found with ID: {RefereeId}", request.RefereeId);
