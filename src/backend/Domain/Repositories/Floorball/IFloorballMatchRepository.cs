@@ -153,4 +153,10 @@ public interface IFloorballMatchRepository
     /// <param name="id">The match ID</param>
     /// <returns>True if the match exists, false otherwise</returns>
     Task<bool> ExistsAsync(Guid id);
+
+    /// <summary>
+    /// Marks a match event as added
+    /// </summary>
+    /// <param name="matchEvent"></param>
+    void MarkEventAsAdded(FloorballMatchEvent matchEvent);
 } 

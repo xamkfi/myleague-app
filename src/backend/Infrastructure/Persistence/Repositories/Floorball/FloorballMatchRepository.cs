@@ -39,6 +39,15 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
+        /// Marks a match event as added, so it will be inserted into the database
+        /// </summary>
+        /// <param name="matchEvent"></param>
+        public void MarkEventAsAdded(FloorballMatchEvent matchEvent)
+        {
+            _dbContext.Entry(matchEvent).State = EntityState.Added;
+        }
+
+        /// <summary>
         /// Gets all floorball matches
         /// </summary>
         /// <returns>A collection of all floorball matches</returns>
@@ -381,5 +390,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .OrderBy(m => m.ScheduledDateTime)
                 .ToListAsync(cancellationToken);
         }
+
     }
 } 
