@@ -262,6 +262,86 @@ namespace Application.Services.Common
         }
 
         /// <summary>
+        /// Sets the timer to a specific elapsed time for a match
+        /// </summary>
+        /// <param name="matchId">The match ID</param>
+        /// <param name="elapsedTime">The elapsed time to set</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task SetTimerAsync(Guid matchId, TimeSpan elapsedTime)
+        {
+            try
+            {
+                _logger.LogInformation("Setting timer for match {MatchId} to {ElapsedTime}", matchId, elapsedTime);
+                
+                TimerState? timerState = await _timerRepository.GetTimerStateAsync(matchId);
+                if (timerState == null)
+                {
+                    _logger.LogWarning("Timer does not exist for match {MatchId}, creating new timer", matchId);
+                    await CreateTimerAsync(matchId);
+                    timerState = await _timerRepository.GetTimerStateAsync(matchId);
+                }
+
+                DateTime now = DateTime.UtcNow;
+
+                // Calculate the StartedAt time that would result in the desired elapsed time
+                // Formula: elapsedTime = (now - StartedAt) - TotalPausedDuration
+                // Rearranged: StartedAt = now - elapsedTime - TotalPausedDuration
+                DateTime newStartedAt = now - elapsedTime;
+
+                timerState!.StartedAt = newStartedAt;
+                timerState.TotalPausedDuration = TimeSpan.Zero; // Reset paused duration for clean state
+                timerState.LastUpdated = now;
+
+                if (timerState!.IsRunning)
+                {
+                    // If timer was running, keep it running and set LastResumedAt
+                    timerState.LastResumedAt = now;
+                    timerState.PausedAt = null;
+                    timerState.IsRunning = true;
+                }
+                else
+                {
+                    // If timer was paused/stopped, set PausedAt to now to maintain the set time
+                    timerState.PausedAt = now;
+                    timerState.LastResumedAt = null;
+                    timerState.IsRunning = false;
+                }
+
+                _logger.LogInformation("Timer state after set - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}, ElapsedTime: {ElapsedTime}", 
+                    timerState.IsRunning, timerState.StartedAt, timerState.PausedAt, timerState.ElapsedTime);
+
+                await _timerRepository.SaveTimerStateAsync(matchId, timerState);
+                
+                // Update the timer store
+                if (timerState.IsRunning)
+                {
+                    _timerStore.Add(timerState);
+                }
+                else
+                {
+                    _timerStore.TryRemove(matchId, out _);
+                }
+
+                // Add a small delay to ensure the database transaction is fully committed
+                await Task.Delay(100);
+
+                // Create appropriate timer update based on running state
+                TimerUpdate update = timerState!.IsRunning
+                    ? TimerUpdate.CreateStarted(matchId, timerState.PeriodNumber, elapsedTime)
+                    : TimerUpdate.CreateStopped(matchId, timerState.PeriodNumber, elapsedTime);
+                
+                await NotifyTimerUpdateAsync(matchId, update);
+
+                _logger.LogInformation("Set timer for match {MatchId} to {ElapsedTime}", matchId, elapsedTime);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting timer for match {MatchId} to {ElapsedTime}", matchId, elapsedTime);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Gets the elapsed time for a match
         /// </summary>
         /// <param name="matchId">The match ID</param>
@@ -284,6 +364,33 @@ namespace Application.Services.Common
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting elapsed time for match {MatchId}", matchId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Gets the current period number for a match
+        /// </summary>
+        /// <param name="matchId">The match ID</param>
+        /// <returns>The current period number, or null if not set</returns>
+        public async Task<int?> GetCurrentPeriodTime(Guid matchId)
+        {
+            try
+            {
+                TimerState? timerState = await _timerRepository.GetTimerStateAsync(matchId);
+                if (timerState == null)
+                {
+                    _logger.LogDebug("Timer does not exist for match {MatchId}, returning null period", matchId);
+                    return null;
+                }
+
+                int? periodNumber = timerState.PeriodNumber;
+                _logger.LogDebug("Current period for match {MatchId}: {PeriodNumber}", matchId, periodNumber);
+                return periodNumber;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current period for match {MatchId}", matchId);
                 throw;
             }
         }

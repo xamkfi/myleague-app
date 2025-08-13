@@ -4,6 +4,9 @@
 @use './components/ErrorMessage.scss';
 @use './components/LoadingState.scss';
 @use './components/BackButton.scss';
+@use '../../../../styles/variables.scss' as *;
+@use 'sass:map';
+
 
 // Main container styles
 .floorball-seasons-container {
@@ -49,10 +52,10 @@
       white-space: nowrap;
       
       &:nth-child(1) { width: 22%; } // Name
-      &:nth-child(2) { width: 11%; } // Division
-      &:nth-child(3) { width: 15%; } // Start Date
-      &:nth-child(4) { width: 15%; } // End Date
-      &:nth-child(5) { width: 8%; } // Teams
+      &:nth-child(2) { width: 13%; } // Division
+      &:nth-child(3) { width: 10%; } // Start Date
+      &:nth-child(4) { width: 10%; } // End Date
+      &:nth-child(5) { width: 12%; } // Teams
       &:nth-child(6) { width: 11%; } // Status
       &:nth-child(7) { width: 18%; } // Actions
     }
@@ -69,11 +72,12 @@
   }
 
   td {
-    padding: 0.75rem;
+    padding: map.get($spacing, 'xs');
     border-bottom: 1px solid #dee2e6;
     vertical-align: middle;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    text-align: left;
 
     // Specific styling for date columns
     &:nth-child(3), &:nth-child(4) {
@@ -225,7 +229,7 @@
     }
   }
 }
-
+  
 // Modal Styles
 .modal-overlay {
   position: fixed;
@@ -241,6 +245,8 @@
   padding: 1rem;
 
   .modal-content {
+    display: flex;
+    flex-direction: column;
     background: white;
     border-radius: 0.5rem;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
