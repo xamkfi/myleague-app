@@ -178,8 +178,30 @@ export const floorballMatchEventService = {
         }
       }));
 
-      // Note: saves are not included in FloorballMatchDto; only goals and penalties are synthesized here
-      const synthesizedEvents = [...goalEvents, ...penaltyEvents];
+      // Synthesize saves from DTO
+      type SaveEventFromDto = {
+        teamId: string;
+        playerId: string;
+        periodNumber: number;
+        timeInSeconds: number;
+        wasInOvertime: boolean;
+        wasInShootout: boolean;
+      };
+      const saveEvents: FloorballDomainEventDto[] = (match?.saveEvents ?? []).map((s: SaveEventFromDto) => ({
+        eventType: 'FloorballSaveEvent',
+        occurredOn,
+        data: {
+          matchId,
+          teamId: s.teamId,
+          goalieId: s.playerId,
+          periodNumber: s.periodNumber,
+          timeInSeconds: s.timeInSeconds,
+          wasInOvertime: s.wasInOvertime,
+          wasInShootout: s.wasInShootout
+        }
+      }));
+
+      const synthesizedEvents = [...goalEvents, ...penaltyEvents, ...saveEvents];
 
       return {
         success: true,

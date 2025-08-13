@@ -2,31 +2,40 @@ using Application.Commands.Floorball.Match;
 using Application.Common;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
+using Domain.Entities.Floorball;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
-using Microsoft.Extensions.Logging;
 using MediatR;
-using Domain.Entities.Floorball;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Handlers.Floorball.Matches;
 
 /// <summary>
-/// CancelMatchHandler is responsible for handling the cancellation of a floorball match.
+/// Handler for starting a period in a floorball match
 /// </summary>
-public class CancelMatchHandler : IRequestHandler<CancelMatchCommand, Result<FloorballMatchDto>>
+public class StartPeriodHandler : IRequestHandler<StartPeriodCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
-    private readonly ILogger<CancelMatchHandler> _logger;
+    private readonly ILogger<StartPeriodHandler> _logger;
 
-    public CancelMatchHandler(IFloorballMatchRepository matchRepository, IFloorballUnitOfWork unitOfWork, ILogger<CancelMatchHandler> logger)
+    /// <summary>
+    /// Initializes a new instance of the StartPeriodHandler class
+    /// </summary>
+    public StartPeriodHandler(
+        IFloorballMatchRepository matchRepository,
+        IFloorballUnitOfWork unitOfWork,
+        ILogger<StartPeriodHandler> logger)
     {
         _matchRepository = matchRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
-    public async Task<Result<FloorballMatchDto>> Handle(CancelMatchCommand request, CancellationToken cancellationToken)
+    /// <summary>
+    /// Handles the StartPeriodCommand request
+    /// </summary>
+    public async Task<Result<FloorballMatchDto>> Handle(StartPeriodCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -37,7 +46,7 @@ public class CancelMatchHandler : IRequestHandler<CancelMatchCommand, Result<Flo
                 return Result<FloorballMatchDto>.Failure($"Match with ID {request.MatchId} not found.");
             }
 
-            match.Cancel();
+            match.StartPeriod(request.PeriodNumber);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -45,8 +54,8 @@ public class CancelMatchHandler : IRequestHandler<CancelMatchCommand, Result<Flo
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while canceling match {MatchId}", request.MatchId);
-            return Result<FloorballMatchDto>.Failure("An error occurred while canceling the match.");
+            _logger.LogError(ex, "Error occurred while starting period {Period} for match {MatchId}", request.PeriodNumber, request.MatchId);
+            return Result<FloorballMatchDto>.Failure("An error occurred while starting the period.");
         }
     }
 }

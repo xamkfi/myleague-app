@@ -462,6 +462,62 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Starts a period in a floorball match
+        /// </summary>
+        [HttpPost("{matchId:guid}/period/{periodNumber:int}/start")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> StartPeriod(Guid matchId, int periodNumber)
+        {
+            _logger.LogInformation("Starting period {period} for match ID: {matchId}", periodNumber, matchId);
+
+            StartPeriodCommand command = new StartPeriodCommand(matchId, periodNumber);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Period started successfully"));
+            }
+
+            string? errorMessage = result.Error ?? "Failed to start period";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Ends a period in a floorball match
+        /// </summary>
+        [HttpPost("{matchId:guid}/period/{periodNumber:int}/end")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> EndPeriod(Guid matchId, int periodNumber)
+        {
+            _logger.LogInformation("Ending period {period} for match ID: {matchId}", periodNumber, matchId);
+
+            EndPeriodCommand command = new EndPeriodCommand(matchId, periodNumber);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Period ended successfully"));
+            }
+
+            string? errorMessage = result.Error ?? "Failed to end period";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Deletes a goal event from a floorball match
         /// </summary>
         [HttpDelete("{matchId:guid}/goal/{goalEventId:guid}")]

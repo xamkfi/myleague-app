@@ -10,6 +10,9 @@ using MediatR;
 
 namespace Application.Handlers.Floorball.Matches;
 
+/// <summary>
+/// Handler for adding an official (referee) to a floorball match
+/// </summary>
 public class AddOfficialToMatchHandler : IRequestHandler<AddOfficialToMatchCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
@@ -29,6 +32,12 @@ public class AddOfficialToMatchHandler : IRequestHandler<AddOfficialToMatchComma
         _logger = logger;
     }
 
+    /// <summary>
+    /// Handles the AddOfficialToMatchCommand request
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<Result<FloorballMatchDto>> Handle(AddOfficialToMatchCommand request, CancellationToken cancellationToken)
     {
         try

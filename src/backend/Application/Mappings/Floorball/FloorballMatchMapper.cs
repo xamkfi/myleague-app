@@ -78,6 +78,20 @@ public static class FloorballMatchMapper
                 GetPlayerName(p.PlayerId, playerPersonLookup)))
             .ToList();
 
+        // Map save events with goalie names
+        List<FloorballSaveEventDto> saveEvents = match.SaveEvents
+            .Select(s => new FloorballSaveEventDto
+            {
+                TeamId = s.TeamId,
+                GoalieId = s.GoalieId,
+                PeriodNumber = s.PeriodNumber,
+                TimeInSeconds = s.TimeInSeconds,
+                WasInOvertime = s.WasInOvertime,
+                WasInShootout = s.WasInShootout,
+                GoalieName = GetPlayerName(s.GoalieId, playerPersonLookup)
+            })
+            .ToList();
+
         return new FloorballMatchDto(
             match.Id,
             match.SeasonId,
@@ -97,7 +111,8 @@ public static class FloorballMatchMapper
             periodScores,
             officials,
             goalEvents,
-            penaltyEvents);
+            penaltyEvents,
+            saveEvents);
     }
 
     /// <summary>
@@ -182,7 +197,8 @@ public static class FloorballMatchMapper
             periodScores,
             match.OfficialIds,
             new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed
-            new List<FloorballPenaltyEventDto>() // TODO: Map penalty events when needed
+            new List<FloorballPenaltyEventDto>(), // TODO: Map penalty events when needed
+            new List<FloorballSaveEventDto>()
         );
     }
 
