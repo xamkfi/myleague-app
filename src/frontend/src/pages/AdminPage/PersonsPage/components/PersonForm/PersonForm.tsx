@@ -9,6 +9,8 @@ import { floorballTeamService } from '../../../../../api/floorball/floorballTeam
 import { floorballTeamSearchService } from '../../../../../api/floorball/floorballTeamSearchService';
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
+import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
+import BackButton from '../../../../../components/BackButton/BackButton';
 import './PersonForm.scss';
 
 interface PersonFormProps {
@@ -427,11 +429,47 @@ const PersonForm = ({
   };
 
   if (loading && isEditMode) {
-    return <div className="person-form-loading">{t('common.loading')}</div>;
+    return (
+      <PageTemplate title={t('admin.persons.form.loading', 'Loading...')}>
+        <div className="person-form-loading">{t('common.loading')}</div>
+      </PageTemplate>
+    );
   }
 
+  // For standalone mode, wrap in PageTemplate
+  if (mode === 'standalone') {
+    const pageTitle = isEditMode 
+      ? t('admin.persons.form.editTitle', 'Edit Person')
+      : t('admin.persons.form.createTitle', 'Create New Person');
+
+    return (
+      <PageTemplate title={pageTitle}>
+        <div className="person-form-page">
+          <BackButton 
+            to="/admin/persons" 
+            text={t('common.back', 'Back to Person Management')} 
+          />
+          <div className="person-form-header">
+            <h1>{pageTitle}</h1>
+          </div>
+          <form className="person-form" onSubmit={handleSubmit}>
+            {renderFormContent()}
+          </form>
+        </div>
+      </PageTemplate>
+    );
+  }
+
+  // For embedded mode, render just the form
   return (
     <form className="person-form" onSubmit={handleSubmit}>
+      {renderFormContent()}
+    </form>
+  );
+
+  function renderFormContent() {
+    return (
+      <>
       <div className="form-section">
         <h3>{t('admin.persons.form.basicInfo')}</h3>
         <div className="form-row">
@@ -767,8 +805,9 @@ const PersonForm = ({
           }
         </button>
       </div>
-    </form>
-  );
+      </>
+    );
+  }
 };
 
 export default PersonForm; 
