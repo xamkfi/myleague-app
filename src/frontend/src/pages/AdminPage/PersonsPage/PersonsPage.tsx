@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../components/PageTemplate/PageTemplate';
@@ -9,7 +8,6 @@ import BackButton from '../../../components/BackButton/BackButton';
 const PersonsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleAddPerson = () => {
     navigate('/admin/persons/new');
@@ -19,10 +17,6 @@ const PersonsPage = () => {
     navigate(`/admin/persons/${personId}/edit`);
   };
 
-  // This function can be called to refresh the list when returning from form pages
-  const handleRefreshList = () => {
-    setRefreshTrigger(prev => prev + 1);
-  };
 
   return (
     <div className="persons-page-wrapper">
@@ -45,7 +39,6 @@ const PersonsPage = () => {
           <div className="persons-content">
             <PersonList 
               onEditPerson={handleEditPerson} 
-              refreshTrigger={refreshTrigger}
             />
           </div>
         </div>
