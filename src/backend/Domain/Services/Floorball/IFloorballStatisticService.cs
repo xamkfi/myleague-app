@@ -205,22 +205,22 @@ public class SeasonStatisticsSummary
     /// <summary>
     /// Gets or sets team standings ordered by points
     /// </summary>
-    public List<FloorballTeamSeasonStatistics> TeamStandings { get; set; } = new();
+    public IReadOnlyCollection<FloorballTeamSeasonStatistics>? TeamStandings { get; }
 
     /// <summary>
     /// Gets or sets top scoring players
     /// </summary>
-    public List<FloorballPlayerSeasonStatistics> TopScorers { get; set; } = new();
+    public IReadOnlyCollection<FloorballPlayerSeasonStatistics>? TopScorers { get; }
 
     /// <summary>
     /// Gets or sets top assist leaders
     /// </summary>
-    public List<FloorballPlayerSeasonStatistics> TopAssists { get; set; } = new();
+    public IReadOnlyCollection<FloorballPlayerSeasonStatistics>? TopAssists { get; }
 
     /// <summary>
     /// Gets or sets top performing goalies
     /// </summary>
-    public List<FloorballGoalieSeasonStatistics> TopGoalies { get; set; } = new();
+    public IReadOnlyCollection<FloorballGoalieSeasonStatistics>? TopGoalies { get; }
 
     /// <summary>
     /// Gets or sets total games played in the season
@@ -256,12 +256,12 @@ public class PlayerCareerStatistics
     /// <summary>
     /// Gets or sets season-by-season statistics
     /// </summary>
-    public List<FloorballPlayerSeasonStatistics> SeasonStatistics { get; set; } = new();
+    public IReadOnlyCollection<FloorballPlayerSeasonStatistics>? SeasonStatistics { get; }
 
     /// <summary>
     /// Gets or sets career goalie statistics (if applicable)
     /// </summary>
-    public List<FloorballGoalieSeasonStatistics> GoalieStatistics { get; set; } = new();
+    public IReadOnlyCollection<FloorballGoalieSeasonStatistics>? GoalieStatistics { get; }
 }
 
 /// <summary>

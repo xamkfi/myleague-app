@@ -251,20 +251,20 @@ public class FloorballTeamSeasonStatistics : BaseEntity
             throw new ArgumentException("Goals cannot be negative.");
 
         // Update win/loss/tie record
-        switch (gameResult.ToLower(CultureInfo.InvariantCulture))
+        switch (gameResult.ToUpperInvariant())
         {
-            case "win":
+            case "WIN":
                 Wins++;
                 Points += 3;
                 if (isHomeGame) HomeWins++;
                 else AwayWins++;
                 break;
-            case "loss":
+            case "LOSS":
                 Losses++;
                 if (isHomeGame) HomeLosses++;
                 else AwayLosses++;
                 break;
-            case "tie":
+            case "TIE":
                 Ties++;
                 Points += 1;
                 break;

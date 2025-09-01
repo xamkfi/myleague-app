@@ -272,16 +272,10 @@ public class FloorballMatchTeamStatistics : BaseEntity
     /// <summary>
     /// Gets the power play percentage
     /// </summary>
-    public decimal GetPowerPlayPercentage()
-    {
-        return PowerPlayOpportunities > 0 ? (decimal)PowerPlayGoals / PowerPlayOpportunities * 100 : 0;
-    }
+    public decimal PowerPlayPercentage => PowerPlayOpportunities > 0 ? (decimal)PowerPlayGoals / PowerPlayOpportunities * 100 : 0;
 
     /// <summary>
     /// Gets the penalty kill percentage
     /// </summary>
-    public decimal GetPenaltyKillPercentage()
-    {
-        return PenaltyKillOpportunities > 0 ? (decimal)PenaltyKillSuccess / PenaltyKillOpportunities * 100 : 0;
-    }
+    public decimal PenaltyKillPercentage => PenaltyKillOpportunities > 0 ? (decimal)PenaltyKillSuccess / PenaltyKillOpportunities * 100 : 0;
 }

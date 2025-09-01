@@ -126,10 +126,10 @@ public class UpdateMatchStatisticsHandler : IRequestHandler<UpdateMatchStatistic
         }
 
         // Determine match result for this team
-        string gameResult = "loss";
-        if (isHomeTeam && match.HomeScore > match.AwayScore) gameResult = "win";
-        else if (!isHomeTeam && match.AwayScore > match.HomeScore) gameResult = "win";
-        else if (match.HomeScore == match.AwayScore) gameResult = "tie";
+        string gameResult = "LOSS";
+        if (isHomeTeam && match.HomeScore > match.AwayScore) gameResult = "WIN";
+        else if (!isHomeTeam && match.AwayScore > match.HomeScore) gameResult = "WIN";
+        else if (match.HomeScore == match.AwayScore) gameResult = "TIE";
 
         int goalsFor = isHomeTeam ? match.HomeScore : match.AwayScore;
         int goalsAgainst = isHomeTeam ? match.AwayScore : match.HomeScore;

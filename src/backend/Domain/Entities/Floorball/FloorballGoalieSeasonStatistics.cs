@@ -195,15 +195,15 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
         GamesPlayed++;
         if (wasStarter) GamesStarted++;
         
-        switch (gameResult.ToLower(CultureInfo.InvariantCulture))
+        switch (gameResult.ToUpperInvariant())
         {
-            case "win":
+            case "WIN":
                 Wins++;
                 break;
-            case "loss":
+            case "LOSS":
                 Losses++;
                 break;
-            case "tie":
+            case "TIE":
                 Ties++;
                 break;
         }
