@@ -51,7 +51,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     }
   }, [onGetCurrentTime, getCurrentTime, isActive]);
 
-  const handleStart = async () => {
+  const handleStart = useCallback(async () => {
     try {
       console.log('=== TIMER START BUTTON CLICKED ===');
       console.log('Match ID:', matchId);
@@ -73,15 +73,15 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
       console.error('=== TIMER START FAILED ===');
       console.error('Error starting timer:', error);
     }
-  };
+  }, [matchId, periodNumber, isActive, createTimer, startTimer]);
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     console.log('=== TIMER STOP BUTTON CLICKED ===');
     console.log('Match ID:', matchId);
     console.log('Timer Active:', isActive);
     stopTimer();
     console.log('=== TIMER STOP COMPLETED ===');
-  };
+  }, [matchId, isActive, stopTimer]);
 
   const handleReset = () => {
     console.log('=== TIMER RESET BUTTON CLICKED ===');
@@ -91,13 +91,13 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     console.log('=== TIMER RESET COMPLETED ===');
   };
 
-  const handleToggle = async () => {
+  const handleToggle = useCallback(async () => {
     if (timerState.isRunning) {
       handleStop();
     } else {
       await handleStart();
     }
-  };
+  }, [timerState.isRunning, handleStop, handleStart]);
 
   const handleSetTime = async (timeInSeconds: number) => {
     try {

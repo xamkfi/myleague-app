@@ -27,9 +27,9 @@ public class GetTodaysMatchesByTeamHandler : IRequestHandler<GetTodaysMatchesByT
         {
             _logger.LogInformation("Getting today's matches for team {teamId}", request.TeamId);
 
-            var matches = await _matchRepository.GetTodaysMatchesByTeamAsync(request.TeamId, cancellationToken);
+            IEnumerable<FloorballMatch> matches = await _matchRepository.GetTodaysMatchesByTeamAsync(request.TeamId, cancellationToken);
 
-            var matchDtos = FloorballMatchMapper.ToDtos(matches);
+            IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(matches);
 
             return Result<IEnumerable<FloorballMatchDto>>.Success(matchDtos);
         }

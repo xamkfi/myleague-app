@@ -116,16 +116,7 @@ export const useMatchEvents = ({
       return [];
     }
 
-    // Raw shape of save event data from SignalR
-    type RawSaveEventData = {
-      matchId: string;
-      teamId: string;
-      goalieId: string;
-      periodNumber: number;
-      timeInSeconds: number;
-      wasInOvertime: boolean;
-      wasInShootout: boolean;
-    };
+    // Shape is normalized later; we accept both PascalCase and camelCase
     const events = matchEvents
       .filter((event): event is FloorballDomainEventDto => event !== null && event !== undefined)
       .map((event: FloorballDomainEventDto) => {
@@ -281,15 +272,24 @@ export const useMatchEvents = ({
         // Handle save events
         else if (event.eventType === 'FloorballSaveEvent') {
           console.log('Processing FloorballSaveEvent');
-          const raw = event.data as RawSaveEventData;
+          interface AnySaveLike {
+            MatchId?: string; matchId?: string;
+            TeamId?: string; teamId?: string;
+            GoalieId?: string; goalieId?: string;
+            PeriodNumber?: number; periodNumber?: number;
+            TimeInSeconds?: number; timeInSeconds?: number;
+            IsOvertime?: boolean; wasInOvertime?: boolean;
+            IsShootout?: boolean; wasInShootout?: boolean;
+          }
+          const d = event.data as AnySaveLike;
           const saveData: SaveEventData = {
-            MatchId: raw.matchId,
-            TeamId: raw.teamId,
-            GoalieId: raw.goalieId,
-            PeriodNumber: raw.periodNumber,
-            TimeInSeconds: raw.timeInSeconds,
-            IsOvertime: raw.wasInOvertime,
-            IsShootout: raw.wasInShootout
+            MatchId: (d.MatchId ?? d.matchId) || '',
+            TeamId: (d.TeamId ?? d.teamId) || '',
+            GoalieId: (d.GoalieId ?? d.goalieId) || '',
+            PeriodNumber: (d.PeriodNumber ?? d.periodNumber) ?? 0,
+            TimeInSeconds: (d.TimeInSeconds ?? d.timeInSeconds) ?? 0,
+            IsOvertime: (d.IsOvertime ?? d.wasInOvertime) ?? false,
+            IsShootout: (d.IsShootout ?? d.wasInShootout) ?? false
           };
           const { TeamId, GoalieId, PeriodNumber, TimeInSeconds, IsOvertime, IsShootout } = saveData;
           return {

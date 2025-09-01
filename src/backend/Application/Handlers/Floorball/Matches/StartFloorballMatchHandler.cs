@@ -19,7 +19,7 @@ namespace Application.Handlers.Floorball.Matches;
 public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<StartFloorballMatchHandler> _logger;
 
     /// <summary>
@@ -30,7 +30,7 @@ public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCom
     /// <param name="logger">The logger</param>
     public StartFloorballMatchHandler(
         IFloorballMatchRepository matchRepository,
-        IUnitOfWork unitOfWork,
+        IFloorballUnitOfWork unitOfWork,
         ILogger<StartFloorballMatchHandler> logger)
     {
         _matchRepository = matchRepository;

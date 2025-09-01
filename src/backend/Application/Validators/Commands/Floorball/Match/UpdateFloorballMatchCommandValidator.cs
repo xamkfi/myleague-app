@@ -26,6 +26,6 @@ public class UpdateFloorballMatchCommandValidator : AbstractValidator<UpdateFloo
 
     private bool BeValidDate(DateTime date)
     {
-        return date != default && date.Kind == DateTimeKind.Utc;
+        return date != default;
     }
 } 
