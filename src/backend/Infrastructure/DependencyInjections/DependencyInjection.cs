@@ -1,5 +1,6 @@
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
+using Domain.Services.Floorball;
 using Domain.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -71,6 +72,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballMatchRepository, FloorballMatchRepository>();
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
             services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
+            services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
             services.AddScoped<IImageStorageService, AzureBlobImageStorageService>();
             
             // Add timer services
