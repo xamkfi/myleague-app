@@ -49,7 +49,7 @@ public class GetTeamSeasonStatisticsHandler : IRequestHandler<GetTeamSeasonStati
         {
             _logger.LogInformation("Retrieving team statistics for Team {TeamId} in Season {SeasonId}", request.TeamId, request.SeasonId);
 
-            var statistics = await _statisticsRepository.GetTeamSeasonStatisticsAsync(request.TeamId, request.SeasonId, cancellationToken);
+            Domain.Entities.Floorball.FloorballTeamSeasonStatistics? statistics = await _statisticsRepository.GetTeamSeasonStatisticsAsync(request.TeamId, request.SeasonId, cancellationToken);
             
             if (statistics == null)
             {
@@ -58,10 +58,10 @@ public class GetTeamSeasonStatisticsHandler : IRequestHandler<GetTeamSeasonStati
             }
 
             // Get team and season names for the DTO
-            var team = await _teamRepository.GetByIdAsync(request.TeamId);
-            var season = await _seasonRepository.GetByIdAsync(request.SeasonId);
+            Domain.Entities.Floorball.FloorballTeam? team = await _teamRepository.GetByIdAsync(request.TeamId);
+            Domain.Entities.Floorball.FloorballSeason? season = await _seasonRepository.GetByIdAsync(request.SeasonId);
 
-            var dto = FloorballStatisticsMapper.ToDto(statistics, team?.Name, season?.Name);
+            FloorballTeamSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(statistics, team?.Name, season?.Name);
             
             _logger.LogInformation("Successfully retrieved team statistics for Team {TeamId} in Season {SeasonId}", request.TeamId, request.SeasonId);
             return Result<FloorballTeamSeasonStatisticsDto>.Success(dto);

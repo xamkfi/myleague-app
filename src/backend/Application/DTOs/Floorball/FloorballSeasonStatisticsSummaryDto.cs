@@ -31,6 +31,11 @@ public class FloorballSeasonStatisticsSummaryDto
     public List<FloorballPlayerSeasonStatisticsDto> TopAssists { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets top performing goalies
+    /// </summary>
+    public List<FloorballGoalieSeasonStatisticsDto> TopGoalies { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets total games played in the season
     /// </summary>
     public int TotalGames { get; set; }

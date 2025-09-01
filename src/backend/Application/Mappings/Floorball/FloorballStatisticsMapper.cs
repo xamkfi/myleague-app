@@ -124,4 +124,44 @@ public static class FloorballStatisticsMapper
             Giveaways = entity.Giveaways
         };
     }
+
+    /// <summary>
+    /// Converts FloorballGoalieSeasonStatistics entity to DTO
+    /// </summary>
+    /// <param name="entity">The statistics entity</param>
+    /// <param name="playerName">Optional player name</param>
+    /// <param name="teamName">Optional team name</param>
+    /// <param name="seasonName">Optional season name</param>
+    /// <returns>Statistics DTO</returns>
+    public static FloorballGoalieSeasonStatisticsDto ToDto(FloorballGoalieSeasonStatistics entity, string? playerName = null, string? teamName = null, string? seasonName = null)
+    {
+        return new FloorballGoalieSeasonStatisticsDto
+        {
+            Id = entity.Id,
+            PlayerId = entity.PlayerId,
+            TeamId = entity.TeamId,
+            SeasonId = entity.SeasonId,
+            PlayerName = playerName ?? string.Empty,
+            TeamName = teamName ?? string.Empty,
+            SeasonName = seasonName ?? string.Empty,
+            GamesPlayed = entity.GamesPlayed,
+            GamesStarted = entity.GamesStarted,
+            Wins = entity.Wins,
+            Losses = entity.Losses,
+            Ties = entity.Ties,
+            Saves = entity.Saves,
+            ShotsAgainst = entity.ShotsAgainst,
+            SavePercentage = entity.SavePercentage,
+            GoalsAgainst = entity.GoalsAgainst,
+            GoalsAgainstAverage = entity.GoalsAgainstAverage,
+            Shutouts = entity.Shutouts,
+            MinutesPlayed = entity.MinutesPlayed,
+            PowerPlaySaves = entity.PowerPlaySaves,
+            PowerPlayShotsAgainst = entity.PowerPlayShotsAgainst,
+            PowerPlaySavePercentage = entity.PowerPlaySavePercentage,
+            ShortHandedSaves = entity.ShortHandedSaves,
+            ShortHandedShotsAgainst = entity.ShortHandedShotsAgainst,
+            ShortHandedSavePercentage = entity.ShortHandedSavePercentage
+        };
+    }
 }
