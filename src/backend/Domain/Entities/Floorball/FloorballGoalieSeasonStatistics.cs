@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Enums.Floorball;
 using System.Globalization;
 
 namespace Domain.Entities.Floorball;
@@ -182,30 +183,29 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
     /// Records a game played by this goalie
     /// </summary>
     /// <param name="wasStarter">Whether the goalie started the game</param>
-    /// <param name="gameResult">Result of the game (win/loss/tie)</param>
+    /// <param name="gameResult">Result of the game</param>
     /// <param name="minutesPlayed">Minutes played in the game</param>
-    public void RecordGamePlayed(bool wasStarter, string gameResult, int minutesPlayed)
+    public void RecordGamePlayed(bool wasStarter, FloorballGameResult gameResult, int minutesPlayed)
     {
-        if (string.IsNullOrWhiteSpace(gameResult))
-            throw new ArgumentNullException(nameof(gameResult), "Game result cannot be null or empty.");
-            
         if (minutesPlayed < 0)
             throw new ArgumentException("Minutes played cannot be negative.", nameof(minutesPlayed));
 
         GamesPlayed++;
         if (wasStarter) GamesStarted++;
         
-        switch (gameResult.ToUpperInvariant())
+        switch (gameResult)
         {
-            case "WIN":
+            case FloorballGameResult.Win:
                 Wins++;
                 break;
-            case "LOSS":
+            case FloorballGameResult.Loss:
                 Losses++;
                 break;
-            case "TIE":
+            case FloorballGameResult.Tie:
                 Ties++;
                 break;
+            default:
+                throw new ArgumentException($"Invalid game result: {gameResult}", nameof(gameResult));
         }
 
         MinutesPlayed += minutesPlayed;

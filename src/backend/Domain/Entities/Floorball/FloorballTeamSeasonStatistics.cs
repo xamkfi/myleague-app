@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Enums.Floorball;
 using System.Globalization;
 
 namespace Domain.Entities.Floorball;
@@ -213,7 +214,7 @@ public class FloorballTeamSeasonStatistics : BaseEntity
     /// <summary>
     /// Updates the team's statistics after a match
     /// </summary>
-    /// <param name="gameResult">Result of the game (win/loss/tie)</param>
+    /// <param name="gameResult">Result of the game</param>
     /// <param name="isHomeGame">Whether this was a home game</param>
     /// <param name="goalsFor">Goals scored by the team</param>
     /// <param name="goalsAgainst">Goals scored against the team</param>
@@ -227,7 +228,7 @@ public class FloorballTeamSeasonStatistics : BaseEntity
     /// <param name="faceoffWins">Faceoffs won</param>
     /// <param name="faceoffAttempts">Total faceoffs taken</param>
     public void UpdateAfterMatch(
-        string gameResult,
+        FloorballGameResult gameResult,
         bool isHomeGame,
         int goalsFor,
         int goalsAgainst,
@@ -241,33 +242,32 @@ public class FloorballTeamSeasonStatistics : BaseEntity
         int faceoffWins = 0,
         int faceoffAttempts = 0)
     {
-        GamesPlayed++;
+                GamesPlayed++;
         
         // Validate parameters
-        if (string.IsNullOrWhiteSpace(gameResult))
-            throw new ArgumentNullException(nameof(gameResult), "Game result cannot be null or empty.");
-            
         if (goalsFor < 0 || goalsAgainst < 0)
             throw new ArgumentException("Goals cannot be negative.");
 
         // Update win/loss/tie record
-        switch (gameResult.ToUpperInvariant())
+        switch (gameResult)
         {
-            case "WIN":
+            case FloorballGameResult.Win:
                 Wins++;
                 Points += 3;
                 if (isHomeGame) HomeWins++;
                 else AwayWins++;
                 break;
-            case "LOSS":
+            case FloorballGameResult.Loss:
                 Losses++;
                 if (isHomeGame) HomeLosses++;
                 else AwayLosses++;
                 break;
-            case "TIE":
+            case FloorballGameResult.Tie:
                 Ties++;
                 Points += 1;
                 break;
+            default:
+                throw new ArgumentException($"Invalid game result: {gameResult}", nameof(gameResult));
         }
 
         // Update scoring statistics

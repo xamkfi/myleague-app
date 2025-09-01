@@ -4,6 +4,7 @@ using Application.Mappings.Floorball;
 using Application.Common;
 using Application.Services.Common;
 using Domain.Entities.Floorball;
+using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
@@ -122,11 +123,11 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             teamStats = new FloorballTeamSeasonStatistics(teamId, seasonId);
         }
 
-        // Determine match result
-        string gameResult;
-        if (teamScore > opponentScore) gameResult = "WIN";
-        else if (teamScore < opponentScore) gameResult = "LOSS";
-        else gameResult = "TIE";
+        // Determine match result using enum
+        FloorballGameResult gameResult;
+        if (teamScore > opponentScore) gameResult = FloorballGameResult.Win;
+        else if (teamScore < opponentScore) gameResult = FloorballGameResult.Loss;
+        else gameResult = FloorballGameResult.Tie;
 
         // Update team statistics with match result
         teamStats.UpdateAfterMatch(
