@@ -21,6 +21,7 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<RecordGoalHandler> _logger;
 
@@ -30,18 +31,21 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
     /// <param name="matchRepository">The floorball match repository</param>
     /// <param name="teamRepository">The floorball team repository</param>
     /// <param name="playerRepository">The floorball player repository</param>
+    /// <param name="statisticsRepository">The statistics repository</param>
     /// <param name="unitOfWork">The unit of work</param>
     /// <param name="logger">The logger</param>
     public RecordGoalHandler(
         IFloorballMatchRepository matchRepository,
         IFloorballTeamRepository teamRepository,
         IFloorballPlayerRepository playerRepository,
+        IFloorballStatisticsRepository statisticsRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<RecordGoalHandler> logger)
     {
         _matchRepository = matchRepository;
         _teamRepository = teamRepository;
         _playerRepository = playerRepository;
+        _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -116,6 +120,21 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
             if (assistingPlayer != null) assistingPlayer.RecordAssist();
             if (secondAssistingPlayer != null) secondAssistingPlayer.RecordAssist();
 
+            // Update season statistics immediately
+            await UpdatePlayerSeasonStatistics(scoringPlayer.Id, request.ScoringTeamId, match.SeasonId, true, false, cancellationToken);
+            if (assistingPlayer != null)
+                await UpdatePlayerSeasonStatistics(assistingPlayer.Id, request.ScoringTeamId, match.SeasonId, false, true, cancellationToken);
+            if (secondAssistingPlayer != null)
+                await UpdatePlayerSeasonStatistics(secondAssistingPlayer.Id, request.ScoringTeamId, match.SeasonId, false, true, cancellationToken);
+
+            // Update team season statistics (increment goals for scoring team, goals against for opposing team)
+            await UpdateTeamSeasonGoalStatistics(request.ScoringTeamId, match.SeasonId, true, cancellationToken);
+            Guid opposingTeamId = request.ScoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
+            await UpdateTeamSeasonGoalStatistics(opposingTeamId, match.SeasonId, false, cancellationToken);
+
+            // Update match team statistics
+            await UpdateMatchTeamStatistics(match.Id, request.ScoringTeamId, cancellationToken);
+
             // Mark the goal event as added in the repository
             _matchRepository.MarkEventAsAdded(goal);
 
@@ -132,5 +151,63 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
             _logger.LogError(ex, "Error occurred while recording goal in match {MatchId}", request.MatchId);
             return Result<FloorballMatchDto>.Failure("An error occurred while recording the goal.");
         }
+    }
+
+    /// <summary>
+    /// Updates player season statistics for goals and assists
+    /// </summary>
+    private async Task UpdatePlayerSeasonStatistics(Guid playerId, Guid teamId, Guid seasonId, bool isGoal, bool isAssist, CancellationToken cancellationToken)
+    {
+        FloorballPlayerSeasonStatistics? playerStats = await _statisticsRepository.GetPlayerSeasonStatisticsAsync(playerId, teamId, seasonId, cancellationToken);
+        if (playerStats == null)
+        {
+            playerStats = new FloorballPlayerSeasonStatistics(playerId, teamId, seasonId);
+        }
+
+        if (isGoal) playerStats.RecordGoal();
+        if (isAssist) playerStats.RecordAssist();
+
+        await _statisticsRepository.SavePlayerSeasonStatisticsAsync(playerStats, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates team season statistics for goals scored
+    /// </summary>
+    private async Task UpdateTeamSeasonGoalStatistics(Guid teamId, Guid seasonId, bool isGoalFor, CancellationToken cancellationToken)
+    {
+        FloorballTeamSeasonStatistics? teamStats = await _statisticsRepository.GetTeamSeasonStatisticsAsync(teamId, seasonId, cancellationToken);
+        if (teamStats == null)
+        {
+            teamStats = new FloorballTeamSeasonStatistics(teamId, seasonId);
+        }
+
+        // Update goals using the entity methods
+        if (isGoalFor)
+        {
+            teamStats.IncrementGoalsFor();
+        }
+        else
+        {
+            teamStats.IncrementGoalsAgainst();
+        }
+
+        await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates match team statistics for shots and goals
+    /// </summary>
+    private async Task UpdateMatchTeamStatistics(Guid matchId, Guid teamId, CancellationToken cancellationToken)
+    {
+        FloorballMatchTeamStatistics? matchStats = await _statisticsRepository.GetMatchTeamStatisticsAsync(matchId, teamId, cancellationToken);
+        if (matchStats == null)
+        {
+            matchStats = new FloorballMatchTeamStatistics(matchId, teamId);
+        }
+
+        // Goal counts as both a shot and a shot on goal
+        matchStats.UpdateShotStatistics(1, 1);
+
+        await _statisticsRepository.SaveMatchTeamStatisticsAsync(matchStats, cancellationToken);
     }
 } 

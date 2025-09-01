@@ -297,4 +297,22 @@ public class FloorballTeamSeasonStatistics : BaseEntity
         FaceoffAttempts += faceoffAttempts;
         FaceoffPercentage = FaceoffAttempts > 0 ? (decimal)FaceoffWins / FaceoffAttempts * 100 : 0;
     }
+
+    /// <summary>
+    /// Increments the goals scored by the team
+    /// </summary>
+    public void IncrementGoalsFor()
+    {
+        GoalsFor++;
+        GoalDifference = GoalsFor - GoalsAgainst;
+    }
+
+    /// <summary>
+    /// Increments the goals conceded by the team
+    /// </summary>
+    public void IncrementGoalsAgainst()
+    {
+        GoalsAgainst++;
+        GoalDifference = GoalsFor - GoalsAgainst;
+    }
 }

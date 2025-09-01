@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Application.Commands.Floorball.Statistics;
 using Application.Common;
 using Application.DTOs.Floorball;
 using Application.Queries.Floorball.Statistics;
@@ -217,64 +216,6 @@ namespace WebAPI.Controllers.Floorball
             return StatusCode(500, ApiResponse<List<FloorballTeamSeasonStatisticsDto>>.ErrorResponse(errorMessage));
         }
 
-        /// <summary>
-        /// Updates match statistics (typically called after a match is completed)
-        /// </summary>
-        /// <param name="matchId">The match ID</param>
-        /// <returns>Result of the update operation</returns>
-        [HttpPost("update-match/{matchId:guid}")]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> UpdateMatchStatistics(Guid matchId)
-        {
-            _logger.LogInformation("Updating match statistics for Match: {MatchId}", matchId);
 
-            UpdateMatchStatisticsCommand command = new UpdateMatchStatisticsCommand(matchId);
-            Result result = await _mediator.Send(command);
-
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse.SuccessResponse("Match statistics updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update match statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
-        }
-
-        /// <summary>
-        /// Updates season statistics (recalculates all statistics for a season)
-        /// </summary>
-        /// <param name="seasonId">The season ID</param>
-        /// <returns>Result of the update operation</returns>
-        [HttpPost("update-season/{seasonId:guid}")]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> UpdateSeasonStatistics(Guid seasonId)
-        {
-            _logger.LogInformation("Updating season statistics for Season: {SeasonId}", seasonId);
-
-            UpdateSeasonStatisticsCommand command = new UpdateSeasonStatisticsCommand(seasonId);
-            Result result = await _mediator.Send(command);
-
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse.SuccessResponse("Season statistics updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update season statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
-        }
     }
 }
