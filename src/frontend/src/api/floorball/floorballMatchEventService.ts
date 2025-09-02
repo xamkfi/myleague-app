@@ -1,5 +1,6 @@
 import type { 
-  ApiResponse
+  ApiResponse,
+  FloorballMatchDto
 } from '../../types/floorball/floorballTypes';
 
 // Event DTOs
@@ -133,15 +134,81 @@ export const floorballMatchEventService = {
   getMatchEvents: async (matchId: string): Promise<ApiResponse<FloorballDomainEventDto[]>> => {
     try {
       console.log('Fetching match events for match:', matchId);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/${matchId}/history`, {
+      // Use FloorballMatchController to fetch the match and synthesize events
+      const response = await fetch(`${API_URL}/FloorballMatch/by-id/${matchId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
-      return await handleApiResponse<FloorballDomainEventDto[]>(response);
+
+      const apiResponse = await handleApiResponse<FloorballMatchDto>(response);
+
+      const match = apiResponse.data;
+      const occurredOn = match?.scheduledDateTime ?? new Date().toISOString();
+
+      const goalEvents: FloorballDomainEventDto[] = (match?.goalEvents ?? []).map((g) => ({
+        eventType: 'FloorballGoalScoredEvent',
+        occurredOn,
+        data: {
+          matchId,
+          teamId: g.teamId,
+          playerId: g.playerId,
+          periodNumber: g.periodNumber,
+          timeInSeconds: g.timeInSeconds,
+          isOvertime: g.wasInOvertime,
+          isShootout: g.wasInShootout,
+          assisterId: g.assisterId,
+          secondaryAssisterId: g.secondaryAssisterId
+        }
+      }));
+
+      const penaltyEvents: FloorballDomainEventDto[] = (match?.penaltyEvents ?? []).map((p) => ({
+        eventType: 'FloorballPenaltyAssignedEvent',
+        occurredOn,
+        data: {
+          matchId,
+          teamId: p.teamId,
+          playerId: p.playerId,
+          periodNumber: p.periodNumber,
+          timeInSeconds: p.timeInSeconds,
+          penaltyType: p.penaltyType,
+          minutes: p.minutes,
+          description: p.description
+        }
+      }));
+
+      // Synthesize saves from DTO
+      type SaveEventFromDto = {
+        teamId: string;
+        playerId: string;
+        periodNumber: number;
+        timeInSeconds: number;
+        wasInOvertime: boolean;
+        wasInShootout: boolean;
+      };
+      const saveEvents: FloorballDomainEventDto[] = (match?.saveEvents ?? []).map((s: SaveEventFromDto) => ({
+        eventType: 'FloorballSaveEvent',
+        occurredOn,
+        data: {
+          matchId,
+          teamId: s.teamId,
+          goalieId: s.playerId,
+          periodNumber: s.periodNumber,
+          timeInSeconds: s.timeInSeconds,
+          wasInOvertime: s.wasInOvertime,
+          wasInShootout: s.wasInShootout
+        }
+      }));
+
+      const synthesizedEvents = [...goalEvents, ...penaltyEvents, ...saveEvents];
+
+      return {
+        success: true,
+        data: synthesizedEvents,
+        message: 'Match events synthesized from match DTO',
+        errors: []
+      };
     } catch (error) {
       console.error('Error fetching match events:', error);
       throw error;
@@ -151,19 +218,31 @@ export const floorballMatchEventService = {
   /**
    * Record a goal event in a floorball match
    */
-  recordGoal: async (data: RecordGoalEventRequest): Promise<ApiResponse<FloorballGoalEventDto>> => {
+  recordGoal: async (data: RecordGoalEventRequest): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording goal:', data);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/goal`, {
+      // Switch to FloorballMatchController endpoint
+      const payload = {
+        matchId: data.matchId,
+        scoringTeamId: data.teamId,
+        scoringPlayerId: data.playerId,
+        assistingPlayerId: data.assisterId,
+        secondaryAssistingPlayerIs: undefined,
+        periodNumber: data.periodNumber,
+        timeInSeconds: data.timeInSeconds,
+        description: '',
+        goalType: null
+      };
+
+      const response = await fetch(`${API_URL}/FloorballMatch/record-goal`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
       
-      return await handleApiResponse<FloorballGoalEventDto>(response);
+      return await handleApiResponse<FloorballMatchDto>(response);
     } catch (error) {
       console.error('Error recording goal:', error);
       throw error;
@@ -173,19 +252,30 @@ export const floorballMatchEventService = {
   /**
    * Record a penalty event in a floorball match
    */
-  recordPenalty: async (data: RecordPenaltyEventRequest): Promise<ApiResponse<FloorballPenaltyEventDto>> => {
+  recordPenalty: async (data: RecordPenaltyEventRequest): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording penalty:', data);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/penalty`, {
+      // Switch to FloorballMatchController endpoint
+      const payload = {
+        matchId: data.matchId,
+        teamId: data.teamId,
+        playerId: data.playerId,
+        penaltyType: data.penaltyType,
+        durationMinutes: data.durationMinutes,
+        periodNumber: data.periodNumber,
+        timeInSeconds: data.timeInSeconds,
+        description: data.description ?? ''
+      };
+
+      const response = await fetch(`${API_URL}/FloorballMatch/record-penalty`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
       
-      return await handleApiResponse<FloorballPenaltyEventDto>(response);
+      return await handleApiResponse<FloorballMatchDto>(response);
     } catch (error) {
       console.error('Error recording penalty:', error);
       throw error;
@@ -195,15 +285,26 @@ export const floorballMatchEventService = {
   /**
    * Add recordSave method
    */
-  recordSave: async (data: RecordSaveEventRequest): Promise<ApiResponse<FloorballSaveEventDto>> => {
+  recordSave: async (data: RecordSaveEventRequest): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording save:', data);
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/save`, {
+      // Switch to FloorballMatchController endpoint
+      const payload = {
+        matchId: data.matchId,
+        teamId: data.teamId,
+        playerId: data.goalieId,
+        periodNumber: data.periodNumber,
+        timeInSeconds: data.timeInSeconds,
+        wasInOvertime: data.wasInOvertime,
+        wasInShootout: data.wasInShootout
+      };
+
+      const response = await fetch(`${API_URL}/FloorballMatch/record-save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
-      return await handleApiResponse<FloorballSaveEventDto>(response);
+      return await handleApiResponse<FloorballMatchDto>(response);
     } catch (error) {
       console.error('Error recording save:', error);
       throw error;
@@ -278,15 +379,18 @@ export const floorballMatchEventService = {
   startPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<void>> => {
     try {
       console.log('Starting period:', periodNumber, 'for match:', matchId);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/period/${periodNumber}/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      return await handleApiResponse<void>(response);
+      // For period 1, use start-match; for overtime/shootout, handled by dedicated endpoints.
+      if (periodNumber === 1) {
+        const response = await fetch(`${API_URL}/FloorballMatch/start-match/${matchId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        return await handleApiResponse<void>(response);
+      }
+      // No server call required for other periods
+      return { success: true, data: undefined as unknown as void, message: 'Period start handled client-side', errors: [] };
     } catch (error) {
       console.error('Error starting period:', error);
       throw error;
@@ -296,18 +400,14 @@ export const floorballMatchEventService = {
   /**
    * End a period in a floorball match
    */
-  endPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<void>> => {
+  endPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Ending period:', periodNumber, 'for match:', matchId);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/period/${periodNumber}/end`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      return await handleApiResponse<void>(response);
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/period/${periodNumber}/end`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+        });
+      return await handleApiResponse<FloorballMatchDto>(response);
     } catch (error) {
       console.error('Error ending period:', error);
       throw error;
@@ -317,18 +417,16 @@ export const floorballMatchEventService = {
   /**
    * Record overtime in a floorball match
    */
-  recordOvertime: async (matchId: string): Promise<ApiResponse<Record<string, unknown>>> => {
+  recordOvertime: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording overtime for match:', matchId);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/overtime`, {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/overtime`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
-      return await handleApiResponse<Record<string, unknown>>(response);
+      return await handleApiResponse<FloorballMatchDto>(response);
     } catch (error) {
       console.error('Error recording overtime:', error);
       throw error;
@@ -338,18 +436,16 @@ export const floorballMatchEventService = {
   /**
    * Record shootout in a floorball match
    */
-  recordShootout: async (matchId: string): Promise<ApiResponse<Record<string, unknown>>> => {
+  recordShootout: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording shootout for match:', matchId);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/shootout`, {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/shootout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
-      return await handleApiResponse<Record<string, unknown>>(response);
+      return await handleApiResponse<FloorballMatchDto>(response);
     } catch (error) {
       console.error('Error recording shootout:', error);
       throw error;
@@ -359,18 +455,16 @@ export const floorballMatchEventService = {
   /**
    * Cancel a floorball match
    */
-  cancelMatch: async (matchId: string): Promise<ApiResponse<Record<string, unknown>>> => {
+  cancelMatch: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Canceling match:', matchId);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${matchId}/cancel`, {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/cancel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
-      return await handleApiResponse<Record<string, unknown>>(response);
+      return await handleApiResponse<FloorballMatchDto>(response);
     } catch (error) {
       console.error('Error canceling match:', error);
       throw error;

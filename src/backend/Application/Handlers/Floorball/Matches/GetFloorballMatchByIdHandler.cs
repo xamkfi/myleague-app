@@ -25,7 +25,6 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
     private readonly ILogger<GetFloorballMatchByIdHandler> _logger;
     private readonly IFloorballPlayerRepository _playerRepository;
     private readonly IPersonRepository _personRepository;
-    private readonly IClubRepository _clubRepository;
 
     /// <summary>
     /// Initializes a new instance of the GetFloorballMatchByIdHandler class
@@ -38,14 +37,12 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
         IFloorballMatchRepository matchRepository,
         ILogger<GetFloorballMatchByIdHandler> logger,
         IFloorballPlayerRepository playerRepository,
-        IPersonRepository personRepository,
-        IClubRepository clubRepository)
+        IPersonRepository personRepository)
     {
         _matchRepository = matchRepository;
         _logger = logger;
         _playerRepository = playerRepository;
         _personRepository = personRepository;
-        _clubRepository = clubRepository;
     }
 
     /// <summary>
@@ -68,7 +65,7 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
             }
 
             // Get all unique player IDs from goal events and penalty events
-            var playerIds = match.GoalEvents
+            IEnumerable<Guid> playerIds = match.GoalEvents
                 .SelectMany(g => new[] { g.ScoringPlayerId, g.AssistingPlayerId, g.SecondaryAssistingPlayerId })
                 .Concat(match.PenaltyEvents.Select(p => p.PlayerId))
                 .OfType<Guid>()
@@ -76,11 +73,11 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
                 .ToList();
 
             // Load players and their person data
-            var playerPersonLookup = new Dictionary<Guid, Person>();
+            Dictionary<Guid, Person> playerPersonLookup = new Dictionary<Guid, Person>();
             if (playerIds.Any())
             {
                 // Get players to map player ID to person ID
-                var players = new List<FloorballPlayer>();
+                List<FloorballPlayer> players = new List<FloorballPlayer>();
                 foreach (Guid playerId in playerIds)
                 {
                     FloorballPlayer? player = await _playerRepository.GetByIdAsync(playerId);
@@ -91,13 +88,13 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
                 }
 
                 // Extract person IDs from players
-                var personIds = players.Select(p => p.PersonId).Distinct().ToList();
+                List<Guid> personIds = players.Select(p => p.PersonId).Distinct().ToList();
                 
                 // Load persons using PersonRepository
                 if (personIds.Any())
                 {
                     IEnumerable<Person> persons = await _personRepository.GetByIdsAsync(personIds);
-                    var personLookup = persons.ToDictionary(p => p.Id, p => p);
+                    Dictionary<Guid, Person> personLookup = persons.ToDictionary(p => p.Id, p => p);
                     
                     // Create lookup from player ID to person
                     foreach (FloorballPlayer player in players)
@@ -109,11 +106,6 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
                     }
                 }
             }
-
-            //Getting the club for logo URL.
-            Club? homeClub = await _clubRepository.GetByIdAsync(match.HomeTeam.ClubId);
-            Club? awayClub = await _clubRepository.GetByIdAsync(match.AwayTeam.ClubId);
-
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, playerPersonLookup);
             _logger.LogInformation("Successfully retrieved floorball match: {MatchId}", match.Id);

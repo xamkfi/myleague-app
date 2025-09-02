@@ -178,6 +178,17 @@ export interface FloorballPenaltyEventDto {
   playerName?: string;
 }
 
+// Save event DTO
+export interface FloorballSaveEventDto {
+  teamId: string;
+  playerId: string; // goalie id
+  periodNumber: number;
+  timeInSeconds: number;
+  wasInOvertime: boolean;
+  wasInShootout: boolean;
+  playerName?: string;
+}
+
 // Match-related interfaces
 export interface FloorballMatchDto {
   id: string;
@@ -197,6 +208,7 @@ export interface FloorballMatchDto {
   officials: string[];
   goalEvents: FloorballGoalEventDto[];
   penaltyEvents: FloorballPenaltyEventDto[];
+  saveEvents: FloorballSaveEventDto[];
   homeClub?: Club;
   awayClub?: Club;
 }

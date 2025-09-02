@@ -55,5 +55,6 @@ namespace Application.DTOs.Floorball
         IReadOnlyDictionary<int, PeriodScoreDto> PeriodScores,
         IReadOnlyCollection<Guid> Officials,
         IReadOnlyCollection<FloorballGoalEventDto> GoalEvents,
-        IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents);
+        IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents,
+        IReadOnlyCollection<FloorballSaveEventDto> SaveEvents);
 }
