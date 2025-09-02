@@ -200,15 +200,12 @@ export const floorballMatchService = {
     try {
       console.log('Creating match:', data);
       
-      // Remove refereeId for event sourced endpoint (it's handled separately)
-      const { refereeId, ...requestData } = data;
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match`, {
+      const response = await fetch(`${API_URL}/FloorballMatch`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(data),
       });
       
       console.log('Create response status:', response.status);
@@ -224,36 +221,6 @@ export const floorballMatchService = {
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to create floorball match');
-      }
-      
-      // If a referee was provided, add them to the match
-      if (refereeId && refereeId.trim() !== '') {
-        try {
-          console.log('Adding referee to match:', refereeId);
-          const addOfficialResponse = await fetch(`${API_URL}/FloorballMatchEvent/match/official`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              MatchId: apiResponse.data!.id,
-              RefereeId: refereeId
-            }),
-          });
-          
-          if (addOfficialResponse.ok) {
-            const addOfficialApiResponse: ApiResponse<FloorballMatchDto> = await addOfficialResponse.json();
-            if (addOfficialApiResponse.success && addOfficialApiResponse.data) {
-              // Return the updated match with the referee
-              return addOfficialApiResponse;
-            }
-          }
-          
-          console.warn('Failed to add referee to match, but match was created successfully');
-        } catch (error) {
-          console.error('Error adding referee to match:', error);
-          // Don't fail the entire operation if adding referee fails
-        }
       }
       
       return apiResponse;
@@ -303,8 +270,8 @@ export const floorballMatchService = {
     try {
       console.log('Starting match with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/start`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/FloorballMatch/start-match/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -335,8 +302,8 @@ export const floorballMatchService = {
     try {
       console.log('Completing match with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/complete`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/FloorballMatch/complete-match/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -432,13 +399,17 @@ export const floorballMatchService = {
   changeVenue: async (id: string, venue: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Changing venue for match with ID:', id, 'to venue:', venue);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/venue`, {
-        method: 'PATCH',
+      // Fetch current match to preserve scheduledDateTime
+      const current = await (await fetch(`${API_URL}/FloorballMatch/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
+      if (!current.success || !current.data) {
+        throw new Error(current.errors?.join(', ') || 'Failed to fetch current match');
+      }
+      const response = await fetch(`${API_URL}/FloorballMatch`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ newVenue: venue }),
+        body: JSON.stringify({ id, scheduledDateTime: current.data.scheduledDateTime, venue }),
       });
       
       if (!response.ok) {
@@ -465,13 +436,17 @@ export const floorballMatchService = {
   changeDateTime: async (id: string, scheduledDateTime: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Changing date/time for match with ID:', id, 'to:', scheduledDateTime);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/datetime`, {
-        method: 'PATCH',
+      // Fetch current match to preserve venue
+      const current = await (await fetch(`${API_URL}/FloorballMatch/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
+      if (!current.success || !current.data) {
+        throw new Error(current.errors?.join(', ') || 'Failed to fetch current match');
+      }
+      const response = await fetch(`${API_URL}/FloorballMatch`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ newDateTime: scheduledDateTime }),
+        body: JSON.stringify({ id, scheduledDateTime, venue: current.data.venue }),
       });
       
       if (!response.ok) {

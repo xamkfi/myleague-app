@@ -81,13 +81,13 @@ public class FloorballMatch : AggregateRoot
     /// </summary>
     public IReadOnlyCollection<FloorballMatchEvent> Events => _events.AsReadOnly();
     private readonly List<FloorballMatchEvent> _events = new();
-    
+
     /// <summary>
     /// Gets all goal events
     /// </summary>
     public IReadOnlyCollection<FloorballGoal> GoalEvents => 
         _events.OfType<FloorballGoal>().ToList().AsReadOnly();
-    
+
     /// <summary>
     /// Gets all penalty events
     /// </summary>
@@ -328,18 +328,18 @@ public class FloorballMatch : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the match status doesn't allow starting</exception>
     public void Start()
     {
-        //if (Status != FloorballMatchStatus.Scheduled)
-        //    throw new InvalidOperationException($"Cannot start a match with status {Status}.");
-        
-        //if (_officials.Count == 0)
-        //    throw new InvalidOperationException("Cannot start a match without officials.");
+        if (Status != FloorballMatchStatus.Scheduled)
+            throw new InvalidOperationException($"Cannot start a match with status {Status}.");
 
-        //FloorballMatchStatus oldStatus = Status;
+        if (_officials.Count == 0)
+            throw new InvalidOperationException("Cannot start a match without officials.");
+
+        FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.InProgress;
-        
-        // Add domain events
-        //AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
-        //AddDomainEvent(new FloorballMatchStartedEvent(Id, DateTime.UtcNow));
+
+        //Add domain events
+        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
+        AddDomainEvent(new FloorballMatchStartedEvent(Id, DateTime.UtcNow));
     }
 
     /// <summary>
@@ -353,7 +353,7 @@ public class FloorballMatch : AggregateRoot
     /// <param name="description">The description of the goal</param>
     /// <param name="goalType">The type of goal</param>
     /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
-    public void RecordGoal(
+    public FloorballGoal RecordGoal(
         FloorballTeam scoringTeam, 
         FloorballPlayer scoringPlayer,
         FloorballPlayer? assistingPlayer,
@@ -401,15 +401,16 @@ public class FloorballMatch : AggregateRoot
 
         // Record the goal event
         FloorballGoal goalEvent = new FloorballGoal(
-            Id,
+            matchId: Id,
             scoringTeam.Id,
             scoringPlayer.Id,
             assistingPlayer?.Id,
             secondaryAssistingPlayer?.Id,
             periodNumber,
             timeInSeconds,
-            null, // goalType as FloorballGoalType
+            null,
             description);
+
 
         _events.Add(goalEvent);
 
@@ -447,6 +448,8 @@ public class FloorballMatch : AggregateRoot
             WentToShootout, // isShootout
             assistingPlayer?.Id,
             secondaryAssistingPlayer?.Id));
+
+        return goalEvent;
     }
 
     public void UpdateScore(Guid scoringTeamId)
@@ -466,7 +469,7 @@ public class FloorballMatch : AggregateRoot
     /// <param name="periodNumber">The period number</param>
     /// <param name="timeInSeconds">The time in seconds when the penalty was given</param>
     /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
-    public void RecordPenalty(
+    public FloorballPenalty RecordPenalty(
         FloorballTeam team,
         FloorballPlayer player,
         FloorballPenaltyType penaltyType,
@@ -507,6 +510,8 @@ public class FloorballMatch : AggregateRoot
             periodNumber,
             timeInSeconds,
             description ?? string.Empty));
+
+        return penaltyEvent;
     }
 
     /// <summary>
@@ -519,7 +524,7 @@ public class FloorballMatch : AggregateRoot
     /// <param name="wasInOvertime">Whether the save was made in overtime</param>
     /// <param name="wasInShootout">Whether the save was made in shootout</param>
     /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
-    public void RecordSave(
+    public FloorballSave RecordSave(
         FloorballTeam team,
         FloorballPlayer goalie,
         int periodNumber,
@@ -563,6 +568,8 @@ public class FloorballMatch : AggregateRoot
             timeInSeconds,
             wasInOvertime,
             wasInShootout));
+
+        return saveEvent;
     }
 
     /// <summary>
@@ -574,20 +581,20 @@ public class FloorballMatch : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the match is not in a state that allows adding officials</exception>
     public void AddOfficial(FloorballReferee referee)
     {
-        //ArgumentNullException.ThrowIfNull(referee);
-        
-        //if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
-        //    throw new InvalidOperationException($"Cannot add officials to a match with status {Status}.");
-        
-        //if (_officials.Contains(referee))
-        //    return;
-            
+        ArgumentNullException.ThrowIfNull(referee);
+
+        if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
+            throw new InvalidOperationException($"Cannot add officials to a match with status {Status}.");
+
+        if (_officials.Contains(referee))
+            return;
+
         _officials.Add(referee);
 
-        
+
         // Add domain event
-        //AddDomainEvent(new FloorballOfficialAssignedEvent(Id, referee.Id));
-        
+        AddDomainEvent(new FloorballOfficialAssignedEvent(Id, referee.Id));
+
     }
 
     /// <summary>
@@ -629,10 +636,10 @@ public class FloorballMatch : AggregateRoot
         {
             referee.RecordMatchOfficiated();
         }
-        
-        // Add domain events
-        //AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
-        //AddDomainEvent(new FloorballMatchCompletedEvent(Id, HomeScore, AwayScore, WentToOvertime, WentToShootout));
+
+        //Add domain events
+        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
+        AddDomainEvent(new FloorballMatchCompletedEvent(Id, HomeScore, AwayScore, WentToOvertime, WentToShootout));
     }
 
     /// <summary>
@@ -737,5 +744,22 @@ public class FloorballMatch : AggregateRoot
             penaltyEvent.Description));
 
         return penaltyEvent;
+    }
+
+    public void EndPeriod(int periodNumber)
+    {
+        if (Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException("Match must be in progress.");
+        if (periodNumber < 1 || periodNumber > 5)
+            throw new ArgumentOutOfRangeException(nameof(periodNumber));
+
+        FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
+
+        if(periodScore == null)
+            throw new InvalidOperationException($"Period {periodNumber} has not been started.");
+
+        periodScore.Complete();
+
+        AddDomainEvent(new FloorballPeriodEndedEvent(Id, periodNumber, HomeScore, AwayScore, periodNumber == 3));
     }
 } 

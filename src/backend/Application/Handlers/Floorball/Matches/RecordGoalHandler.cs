@@ -21,7 +21,7 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballPlayerRepository _playerRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<RecordGoalHandler> _logger;
 
     /// <summary>
@@ -36,7 +36,7 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
         IFloorballMatchRepository matchRepository,
         IFloorballTeamRepository teamRepository,
         IFloorballPlayerRepository playerRepository,
-        IUnitOfWork unitOfWork,
+        IFloorballUnitOfWork unitOfWork,
         ILogger<RecordGoalHandler> logger)
     {
         _matchRepository = matchRepository;
@@ -105,16 +105,20 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
             }
 
             _logger.LogInformation("Recording goal in match {MatchId} by player {PlayerId}", request.MatchId, request.ScoringPlayerId);
-            match.RecordGoal(
-                scoringTeam, 
-                scoringPlayer, 
-                assistingPlayer!,
-                secondAssistingPlayer,
-                request.PeriodNumber, 
-                request.TimeInSeconds, 
-                request.Description,
-                request.GoalType);
-            
+
+            FloorballGoal goal = match.RecordGoal(scoringTeam, scoringPlayer,
+                assistingPlayer, secondAssistingPlayer,
+                request.PeriodNumber, request.TimeInSeconds,
+                request.Description, request.GoalType);
+
+            //Adding goals/assists to player statistics
+            scoringPlayer.RecordGoal();
+            if (assistingPlayer != null) assistingPlayer.RecordAssist();
+            if (secondAssistingPlayer != null) secondAssistingPlayer.RecordAssist();
+
+            // Mark the goal event as added in the repository
+            _matchRepository.MarkEventAsAdded(goal);
+
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

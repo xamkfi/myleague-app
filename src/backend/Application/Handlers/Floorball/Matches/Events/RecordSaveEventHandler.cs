@@ -49,7 +49,7 @@ public class RecordSaveEventHandler : IRequestHandler<RecordSaveEventCommand, Re
             await _eventSourcedMatchRepository.SaveAsync(match, cancellationToken);
 
             // Create the DTO response
-            var saveEventDto = new FloorballSaveEventDto
+            FloorballSaveEventDto saveEventDto = new FloorballSaveEventDto
             {
                 TeamId = request.TeamId,
                 GoalieId = request.GoalieId,

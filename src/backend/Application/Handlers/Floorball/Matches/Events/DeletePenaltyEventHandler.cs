@@ -72,7 +72,7 @@ public class DeletePenaltyEventHandler : IRequestHandler<DeletePenaltyEventComma
             }
 
             // Create the DTO before deleting the penalty
-            var penaltyEventDto = new FloorballPenaltyEventDto(
+            FloorballPenaltyEventDto penaltyEventDto = new FloorballPenaltyEventDto(
                 penaltyToDelete.TeamId,
                 penaltyToDelete.PlayerId,
                 penaltyToDelete.PenaltyType,

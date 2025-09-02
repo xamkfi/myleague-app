@@ -61,7 +61,7 @@ public class RecordPenaltyEventHandler : IRequestHandler<RecordPenaltyEventComma
             await _eventSourcedMatchRepository.SaveAsync(match, cancellationToken);
 
             // Create the DTO response
-            var penaltyEventDto = new FloorballPenaltyEventDto(
+            FloorballPenaltyEventDto penaltyEventDto = new FloorballPenaltyEventDto(
                 request.TeamId,
                 request.PlayerId,
                 request.PenaltyType,

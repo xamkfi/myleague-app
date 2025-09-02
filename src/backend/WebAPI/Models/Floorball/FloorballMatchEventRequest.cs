@@ -109,6 +109,14 @@ namespace WebAPI.Models.Floorball
     }
 
     /// <summary>
+    /// Request model for recording a save event
+    /// </summary>
+    public class RecordSaveEventRequest : FloorballMatchEventBaseRequest
+    {
+        // No additional fields required; goalie is provided via PlayerId
+    }
+
+    /// <summary>
     /// Request model for creating an event-sourced floorball match
     /// </summary>
     public class CreateEventSourcedFloorballMatchRequest
