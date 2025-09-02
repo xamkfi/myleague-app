@@ -223,78 +223,34 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
             <button
               onClick={() => handleAdjustTime(-60)}
               disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time decrease"
+              className="timer-button adjust-time decrease minute-back"
               title="Go back 1 minute"
-              style={{
-                backgroundColor: '#ff6b35',
-                color: 'white',
-                border: '2px solid #e55a2b',
-                borderRadius: '6px',
-                padding: '0.6rem 1rem',
-                minWidth: '65px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
-                fontWeight: '600',
-                fontSize: '0.85rem'
-              }}
             >
-              ⏪ 1m
+              ⏪ 1min
             </button>
             <button
               onClick={() => handleAdjustTime(-10)}
               disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time decrease"
+              className="timer-button adjust-time decrease seconds-back"
               title="Go back 10 seconds"
-              style={{
-                backgroundColor: '#ff6b35',
-                color: 'white',
-                border: '2px solid #e55a2b',
-                borderRadius: '6px',
-                padding: '0.6rem 1rem',
-                minWidth: '65px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
-                fontWeight: '600',
-                fontSize: '0.85rem'
-              }}
             >
               ◀ 10s
             </button>
             <button
               onClick={() => handleAdjustTime(10)}
               disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time increase"
+              className="timer-button adjust-time increase seconds-forward"
               title="Advance 10 seconds"
-              style={{
-                backgroundColor: '#4caf50',
-                color: 'white',
-                border: '2px solid #388e3c',
-                borderRadius: '6px',
-                padding: '0.6rem 1rem',
-                minWidth: '65px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
-                fontWeight: '600',
-                fontSize: '0.85rem'
-              }}
             >
               ▶ 10s
             </button>
             <button
               onClick={() => handleAdjustTime(60)}
               disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time increase"
+              className="timer-button adjust-time increase minute-forward"
               title="Advance 1 minute"
-              style={{
-                backgroundColor: '#4caf50',
-                color: 'white',
-                border: '2px solid #388e3c',
-                borderRadius: '6px',
-                padding: '0.6rem 1rem',
-                minWidth: '65px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
-                fontWeight: '600',
-                fontSize: '0.85rem'
-              }}
             >
-              ⏩ 1m
+              ⏩ 1min
             </button>
           </div>
         </div>
