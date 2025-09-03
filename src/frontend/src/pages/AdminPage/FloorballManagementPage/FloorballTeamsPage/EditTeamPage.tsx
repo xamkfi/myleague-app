@@ -37,6 +37,12 @@ const EditTeamPage = () => {
   const [addedPlayers, setAddedPlayers] = useState<Set<string>>(new Set());
   const [savingRoster, setSavingRoster] = useState(false);
   
+  // Search and selection state
+  const [availablePlayersSearch, setAvailablePlayersSearch] = useState('');
+  const [rosterPlayersSearch, setRosterPlayersSearch] = useState('');
+  const [selectedAvailablePlayers, setSelectedAvailablePlayers] = useState<Set<string>>(new Set());
+  const [selectedRosterPlayers, setSelectedRosterPlayers] = useState<Set<string>>(new Set());
+  
   const [formData, setFormData] = useState<FloorballTeamRequest>({
     name: '',
     divisionId: '',
@@ -317,6 +323,73 @@ const EditTeamPage = () => {
     !displayRoster.find(rosterPlayer => rosterPlayer.playerId === player.id)
   );
 
+  // Filtered lists based on search
+  const filteredAvailablePlayers = availablePlayers.filter(player =>
+    player.person.fullName.toLowerCase().includes(availablePlayersSearch.toLowerCase())
+  );
+
+  const filteredRosterPlayers = displayRoster.filter(player =>
+    player.playerName.toLowerCase().includes(rosterPlayersSearch.toLowerCase())
+  );
+
+  // Selection management functions
+  const toggleAvailablePlayerSelection = (playerId: string) => {
+    setSelectedAvailablePlayers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(playerId)) {
+        newSet.delete(playerId);
+      } else {
+        newSet.add(playerId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleRosterPlayerSelection = (playerId: string) => {
+    setSelectedRosterPlayers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(playerId)) {
+        newSet.delete(playerId);
+      } else {
+        newSet.add(playerId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllAvailablePlayers = () => {
+    setSelectedAvailablePlayers(new Set(filteredAvailablePlayers.map(p => p.id)));
+  };
+
+  const clearAvailableSelection = () => {
+    setSelectedAvailablePlayers(new Set());
+  };
+
+  const selectAllRosterPlayers = () => {
+    setSelectedRosterPlayers(new Set(filteredRosterPlayers.map(p => p.playerId)));
+  };
+
+  const clearRosterSelection = () => {
+    setSelectedRosterPlayers(new Set());
+  };
+
+  const addSelectedPlayersToRoster = () => {
+    selectedAvailablePlayers.forEach(playerId => {
+      const player = allPlayers.find(p => p.id === playerId);
+      if (player) {
+        addPlayerToTeam(player);
+      }
+    });
+    setSelectedAvailablePlayers(new Set());
+  };
+
+  const removeSelectedPlayersFromRoster = () => {
+    selectedRosterPlayers.forEach(playerId => {
+      removePlayerFromTeam(playerId);
+    });
+    setSelectedRosterPlayers(new Set());
+  };
+
   // Check if there are any pending changes
   const hasRosterChanges = Object.keys(playerEdits).length > 0 || removedPlayers.size > 0 || addedPlayers.size > 0;
 
@@ -512,110 +585,208 @@ const EditTeamPage = () => {
         {/* Players Management Tab */}
         {activeTab === 'players' && (
           <div className="players-management">
-            <div className="players-section">
-              <h3>{t('floorball.teams.currentRoster', 'Current Roster')} ({displayRoster.length})</h3>
-              
-              {displayRoster.length === 0 ? (
-                <p className="no-players">{t('floorball.teams.noPlayers', 'No players in roster')}</p>
-              ) : (
-                <div className="roster-table-container">
-                  <table className="roster-table">
-                    <thead>
-                      <tr>
-                        <th>{t('floorball.players.name', 'Name')}</th>
-                        <th>{t('floorball.players.position', 'Position')}</th>
-                        <th>{t('floorball.players.jerseyNumber', 'Jersey #')}</th>
-                        <th>{t('floorball.players.status', 'Status')}</th>
-                        <th>{t('common.actions', 'Actions')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {displayRoster.map((rosterPlayer) => {
+            <div className="roster-management-container">
+              {/* Available Players Panel */}
+              <div className="players-panel available-panel">
+                <div className="panel-header">
+                  <h3>{t('floorball.teams.availablePlayers', 'Available Players')}</h3>
+                  <span className="player-count">({availablePlayers.length})</span>
+                </div>
+                
+                <div className="panel-controls">
+                  <input
+                    type="text"
+                    placeholder={t('common.search', 'Search')}
+                    className="search-input"
+                    value={availablePlayersSearch}
+                    onChange={(e) => setAvailablePlayersSearch(e.target.value)}
+                  />
+                  <div className="control-buttons">
+                    <button
+                      type="button"
+                      className="control-btn"
+                      onClick={selectAllAvailablePlayers}
+                      disabled={filteredAvailablePlayers.length === 0}
+                    >
+                      {t('common.selectAll', 'Select All')} ({selectedAvailablePlayers.size})
+                    </button>
+                    <button
+                      type="button"
+                      className="control-btn"
+                      onClick={clearAvailableSelection}
+                      disabled={selectedAvailablePlayers.size === 0}
+                    >
+                      {t('common.clear', 'Clear')}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="players-list-container">
+                  {loadingPlayers ? (
+                    <div className="loading-state">
+                      <p>{t('common.loading', 'Loading players...')}</p>
+                    </div>
+                  ) : filteredAvailablePlayers.length === 0 ? (
+                    <div className="empty-state">
+                      <p>{t('floorball.teams.noAvailablePlayers', 'No available players')}</p>
+                    </div>
+                  ) : (
+                    <div className="players-list">
+                      {filteredAvailablePlayers.map((player) => (
+                        <div
+                          key={player.id}
+                          className={`player-card ${selectedAvailablePlayers.has(player.id) ? 'selected' : ''}`}
+                          onClick={() => toggleAvailablePlayerSelection(player.id)}
+                        >
+                          <div className="player-info">
+                            <div className="player-name">{player.person.fullName}</div>
+                            <div className="player-details">
+                              <span className="position">{player.position || 'None'}</span>
+                              <span className="status">{player.isActive ? 'AKTIVINEN' : 'Inactive'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Transfer Controls */}
+              <div className="transfer-controls">
+                <button
+                  type="button"
+                  className="transfer-btn add-btn"
+                  onClick={addSelectedPlayersToRoster}
+                  disabled={selectedAvailablePlayers.size === 0}
+                  title={t('floorball.teams.addToRoster', 'Add to roster')}
+                >
+                  <span className="arrow">→</span>
+                  <span className="count">({selectedAvailablePlayers.size})</span>
+                </button>
+                <button
+                  type="button"
+                  className="transfer-btn remove-btn"
+                  onClick={removeSelectedPlayersFromRoster}
+                  disabled={selectedRosterPlayers.size === 0}
+                  title={t('floorball.teams.removeFromRoster', 'Remove from roster')}
+                >
+                  <span className="arrow">←</span>
+                  <span className="count">({selectedRosterPlayers.size})</span>
+                </button>
+              </div>
+
+              {/* Current Roster Panel */}
+              <div className="players-panel roster-panel">
+                <div className="panel-header">
+                  <h3>{t('floorball.teams.currentRoster', 'Current Roster')}</h3>
+                  <span className="player-count">({displayRoster.length})</span>
+                </div>
+                
+                <div className="panel-controls">
+                  <input
+                    type="text"
+                    placeholder={t('common.search', 'Search')}
+                    className="search-input"
+                    value={rosterPlayersSearch}
+                    onChange={(e) => setRosterPlayersSearch(e.target.value)}
+                  />
+                  <div className="control-buttons">
+                    <button
+                      type="button"
+                      className="control-btn"
+                      onClick={selectAllRosterPlayers}
+                      disabled={filteredRosterPlayers.length === 0}
+                    >
+                      {t('common.selectAll', 'Select All')} ({selectedRosterPlayers.size})
+                    </button>
+                    <button
+                      type="button"
+                      className="control-btn"
+                      onClick={clearRosterSelection}
+                      disabled={selectedRosterPlayers.size === 0}
+                    >
+                      {t('common.clear', 'Clear')}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="players-list-container">
+                  {filteredRosterPlayers.length === 0 ? (
+                    <div className="empty-state">
+                      <p>{t('floorball.teams.noPlayers', 'No players in roster')}</p>
+                    </div>
+                  ) : (
+                    <div className="players-list">
+                      {filteredRosterPlayers.map((rosterPlayer) => {
                         const edits = playerEdits[rosterPlayer.playerId] || {};
                         const currentPosition = edits.position ?? rosterPlayer.position ?? FloorballPosition.None;
                         const currentJerseyNumber = edits.jerseyNumber !== undefined ? edits.jerseyNumber : rosterPlayer.jerseyNumber;
                         const currentIsActive = edits.isActive !== undefined ? edits.isActive : rosterPlayer.isActive;
                         
                         return (
-                          <tr key={rosterPlayer.playerId}>
-                            <td>{rosterPlayer.playerName}</td>
-                            <td>
-                              <select
-                                value={currentPosition}
-                                onChange={(e) => updatePlayerPosition(rosterPlayer.playerId, e.target.value as FloorballPosition)}
-                              >
-                                <option value={FloorballPosition.None}>None</option>
-                                <option value={FloorballPosition.Goalkeeper}>Goalkeeper</option>
-                                <option value={FloorballPosition.Defender}>Defender</option>
-                                <option value={FloorballPosition.Forward}>Forward</option>
-                              </select>
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                min="1"
-                                max="99"
-                                value={currentJerseyNumber || ''}
-                                onChange={(e) => updatePlayerJerseyNumber(rosterPlayer.playerId, e.target.value ? parseInt(e.target.value) : undefined)}
-                                placeholder="--"
-                              />
-                            </td>
-                            <td>
-                              <label className="status-toggle">
-                                <input
-                                  type="checkbox"
-                                  checked={currentIsActive}
-                                  onChange={(e) => togglePlayerActive(rosterPlayer.playerId, e.target.checked)}
-                                />
-                                {currentIsActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
-                              </label>
-                            </td>
-                            <td>
-                              <button
-                                type="button"
-                                className="remove-button"
-                                onClick={() => removePlayerFromTeam(rosterPlayer.playerId)}
-                              >
-                                {t('common.remove', 'Remove')}
-                              </button>
-                            </td>
-                          </tr>
+                          <div
+                            key={rosterPlayer.playerId}
+                            className={`player-card roster-card ${selectedRosterPlayers.has(rosterPlayer.playerId) ? 'selected' : ''}`}
+                            onClick={() => toggleRosterPlayerSelection(rosterPlayer.playerId)}
+                          >
+                            <div className="player-info">
+                              <div className="player-name">{rosterPlayer.playerName}</div>
+                              <div className="player-details">
+                                <div className="detail-row">
+                                  <label>{t('floorball.players.position', 'Position')}:</label>
+                                  <select
+                                    value={currentPosition}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      updatePlayerPosition(rosterPlayer.playerId, e.target.value as FloorballPosition);
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <option value="Puolustaja">Puolustaja</option>
+                                    <option value="Forward">Forward</option>
+                                    <option value="Maalivahti">Maalivahti</option>
+                                    <option value={FloorballPosition.None}>None</option>
+                                  </select>
+                                </div>
+                                <div className="detail-row">
+                                  <label>{t('floorball.players.jerseyNumber', 'Jersey #')}:</label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="99"
+                                    value={currentJerseyNumber || ''}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      updatePlayerJerseyNumber(rosterPlayer.playerId, e.target.value ? parseInt(e.target.value) : undefined);
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                    placeholder="--"
+                                  />
+                                </div>
+                                <div className="detail-row">
+                                  <label>{t('floorball.players.status', 'Status')}:</label>
+                                  <select
+                                    value={currentIsActive ? 'Aktiivinen' : 'Inactive'}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      togglePlayerActive(rosterPlayer.playerId, e.target.value === 'Aktiivinen');
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <option value="Aktiivinen">Aktiivinen</option>
+                                    <option value="Inactive">Inactive</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         );
                       })}
-                    </tbody>
-                  </table>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-
-            <div className="players-section">
-              <h3>{t('floorball.teams.availablePlayers', 'Available Players')}</h3>
-              
-              {loadingPlayers ? (
-                <p>{t('common.loading', 'Loading players...')}</p>
-              ) : availablePlayers.length === 0 ? (
-                <p className="no-players">{t('floorball.teams.noAvailablePlayers', 'No available players')}</p>
-              ) : (
-                <div className="available-players-container">
-                  <div className="available-players-list">
-                    {availablePlayers.map((player) => (
-                      <div key={player.id} className="available-player-item">
-                        <div className="player-info">
-                          <span className="player-name">{player.person.fullName}</span>
-                          <span className="player-position">{player.position || 'No position'}</span>
-                        </div>
-                        <button
-                          type="button"
-                          className="add-button"
-                          onClick={() => addPlayerToTeam(player)}
-                        >
-                          {t('common.add', 'Add')}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
 
             {hasRosterChanges && (
