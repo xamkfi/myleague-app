@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { FloorballTeam, FloorballTeamRequest } from '../../../../../types/floorball/floorballTypes';
+import type { FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 import TeamPlayersRow from './TeamPlayersRow';
-import EditTeamModal from './EditTeamModal';
 import React from 'react';
 import type { DivisionType } from '../../../../../types/common/divisionType';
 import { divisionService } from '../../../../../api/common/divisionService';
@@ -11,7 +10,7 @@ import './TeamsTable.scss';
 interface TeamsTableProps {
   teams: FloorballTeam[];
   loading: boolean;
-  onEdit: (teamData: FloorballTeamRequest, teamId: string) => Promise<void>;
+  onEdit: (teamId: string) => void;
   onDelete: (teamId: string, teamName: string) => void;
 }
 
@@ -20,8 +19,6 @@ const TeamsTable = ({ teams, loading, onEdit, onDelete }: TeamsTableProps) => {
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [closingTeams, setClosingTeams] = useState<Set<string>>(new Set());
   const [divisions, setDivisions] = useState<DivisionType[]>([])
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [closingDropdown, setClosingDropdown] = useState<string | null>(null);
@@ -56,23 +53,7 @@ const TeamsTable = ({ teams, loading, onEdit, onDelete }: TeamsTableProps) => {
 
   // Handle edit team
   const handleEditTeam = (teamId: string) => {
-    setEditingTeamId(teamId);
-    setEditModalOpen(true);
-  };
-
-  // Handle edit modal submit
-  const handleEditSubmit = async (teamData: FloorballTeamRequest) => {
-    if (editingTeamId) {
-      await onEdit(teamData, editingTeamId);
-      setEditModalOpen(false);
-      setEditingTeamId(null);
-    }
-  };
-
-  // Handle edit modal close
-  const handleEditClose = () => {
-    setEditModalOpen(false);
-    setEditingTeamId(null);
+    onEdit(teamId);
   };
 
   const cancelCloseTimer = () => {
@@ -266,13 +247,6 @@ const TeamsTable = ({ teams, loading, onEdit, onDelete }: TeamsTableProps) => {
           )}
         </div>
       </div>
-
-      <EditTeamModal
-        isOpen={editModalOpen}
-        onClose={handleEditClose}
-        onSubmit={handleEditSubmit}
-        teamId={editingTeamId}
-      />
     </>
   );
 };

@@ -17,6 +17,8 @@ import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
 import NewsCreateEditPage from '../pages/AdminPage/NewsPage/NewsCreateEditPage';
 import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/FloorballManagementPage';
 import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
+import CreateTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/CreateTeamPage';
+import EditTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditTeamPage';
 import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage';
 import FloorballRefereesPage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage';
 import FloorballSeasonsPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage';
@@ -110,7 +112,20 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'teams',
-        element: <FloorballTeamsPage/>
+        children: [
+          {
+            index: true,
+            element: <FloorballTeamsPage/>
+          },
+          {
+            path: 'new',
+            element: <CreateTeamPage/>
+          },
+          {
+            path: ':id/edit',
+            element: <EditTeamPage/>
+          }
+        ]
       },
       {
         path: 'players',
