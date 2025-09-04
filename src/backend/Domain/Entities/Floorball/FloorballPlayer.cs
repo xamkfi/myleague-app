@@ -118,8 +118,34 @@ public class FloorballPlayer : AggregateRoot
     public void RecordAssist()
     {
         CareerAssists++;
-        
+
         AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.Assist));
+    }
+
+    /// <summary>
+    /// Removes a goal from the player's career statistics
+    /// </summary>
+    public void RemoveGoal()
+    {
+        if (CareerGoals > 0)
+        {
+            CareerGoals--;
+
+            AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.GoalRemoved));
+        }
+    }
+
+    /// <summary>
+    /// Removes an assist from the player's career statistics
+    /// </summary>
+    public void RemoveAssist()
+    {
+        if (CareerAssists > 0)
+        {
+            CareerAssists--;
+
+            AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.AssistRemoved));
+        }
     }
     
     /// <summary>

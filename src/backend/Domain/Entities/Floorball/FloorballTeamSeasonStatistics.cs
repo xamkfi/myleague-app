@@ -315,4 +315,28 @@ public class FloorballTeamSeasonStatistics : BaseEntity
         GoalsAgainst++;
         GoalDifference = GoalsFor - GoalsAgainst;
     }
+
+    /// <summary>
+    /// Decrements the goals scored by the team
+    /// </summary>
+    public void DecrementGoalsFor()
+    {
+        if (GoalsFor > 0)
+        {
+            GoalsFor--;
+            GoalDifference = GoalsFor - GoalsAgainst;
+        }
+    }
+
+    /// <summary>
+    /// Decrements the goals conceded by the team
+    /// </summary>
+    public void DecrementGoalsAgainst()
+    {
+        if (GoalsAgainst > 0)
+        {
+            GoalsAgainst--;
+            GoalDifference = GoalsFor - GoalsAgainst;
+        }
+    }
 }

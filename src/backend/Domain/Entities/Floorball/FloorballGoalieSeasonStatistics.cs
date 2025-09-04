@@ -92,7 +92,7 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
     public decimal GoalsAgainstAverage { get; private set; }
 
     /// <summary>
-    /// Gets the number of shutouts
+    /// Gets the number of shutouts, aka nollapeli
     /// </summary>
     public int Shutouts { get; private set; }
 
@@ -215,28 +215,36 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
     /// <summary>
     /// Records saves and shots faced by this goalie
     /// </summary>
-    /// <param name="saves">Number of saves made</param>
-    /// <param name="shotsAgainst">Number of shots faced</param>
-    /// <param name="goalsAllowed">Number of goals allowed</param>
+    /// <param name="saves">Number of saves made (can be negative for decrementing)</param>
+    /// <param name="shotsAgainst">Number of shots faced (can be negative for decrementing)</param>
+    /// <param name="goalsAllowed">Number of goals allowed (can be negative for decrementing)</param>
     public void RecordSaves(int saves, int shotsAgainst, int goalsAllowed)
     {
-        if (saves < 0 || shotsAgainst < 0 || goalsAllowed < 0)
-            throw new ArgumentException("Save statistics cannot be negative.");
-        
-        if (saves + goalsAllowed != shotsAgainst)
-            throw new ArgumentException("Saves + goals allowed must equal shots against.");
+        // Allow negative values for decrementing statistics
+        if (Math.Abs(saves) + Math.Abs(goalsAllowed) != Math.Abs(shotsAgainst) && shotsAgainst != 0)
+            throw new ArgumentException("Absolute values: |saves| + |goals allowed| must equal |shots against|.");
 
         Saves += saves;
         ShotsAgainst += shotsAgainst;
         GoalsAgainst += goalsAllowed;
 
+        // Ensure non-negative values for calculated fields
+        Saves = Math.Max(0, Saves);
+        ShotsAgainst = Math.Max(0, ShotsAgainst);
+        GoalsAgainst = Math.Max(0, GoalsAgainst);
+
         UpdateSavePercentage();
         UpdateGoalsAgainstAverage();
 
-        // Check for shutout
-        if (goalsAllowed == 0 && shotsAgainst > 0)
+        // Handle shutout logic - only increment if we're adding positive values
+        if (goalsAllowed > 0 && shotsAgainst > 0)
         {
             Shutouts++;
+        }
+        else if (goalsAllowed < 0 || shotsAgainst < 0)
+        {
+            // Decrement shutout if we're removing goals/shots
+            Shutouts = Math.Max(0, Shutouts - 1);
         }
     }
 

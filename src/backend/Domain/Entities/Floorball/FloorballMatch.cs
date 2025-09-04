@@ -99,6 +99,16 @@ public class FloorballMatch : AggregateRoot
     /// </summary>
     public IReadOnlyCollection<FloorballSave> SaveEvents =>
         _events.OfType<FloorballSave>().ToList().AsReadOnly();
+
+    /// <summary>
+    /// Gets the ID of the current active goalie for the home team
+    /// </summary>
+    public Guid? HomeActiveGoalieId { get; private set; }
+
+    /// <summary>
+    /// Gets the ID of the current active goalie for the away team
+    /// </summary>
+    public Guid? AwayActiveGoalieId { get; private set; }
     
     /// <summary>
     /// Gets the match officials (referees)
@@ -123,6 +133,8 @@ public class FloorballMatch : AggregateRoot
         AwayScore = 0;
         WentToOvertime = false;
         WentToShootout = false;
+        HomeActiveGoalieId = null;
+        AwayActiveGoalieId = null;
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
@@ -170,6 +182,8 @@ public class FloorballMatch : AggregateRoot
         AwayScore = 0;
         WentToOvertime = false;
         WentToShootout = false;
+        HomeActiveGoalieId = null;
+        AwayActiveGoalieId = null;
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
@@ -221,6 +235,8 @@ public class FloorballMatch : AggregateRoot
         AwayScore = 0;
         WentToOvertime = false;
         WentToShootout = false;
+        HomeActiveGoalieId = null;
+        AwayActiveGoalieId = null;
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
@@ -761,5 +777,66 @@ public class FloorballMatch : AggregateRoot
         periodScore.Complete();
 
         AddDomainEvent(new FloorballPeriodEndedEvent(Id, periodNumber, HomeScore, AwayScore, periodNumber == 3));
+    }
+
+    /// <summary>
+    /// Sets the active goalie for the home team
+    /// </summary>
+    /// <param name="goalieId">The ID of the goalie to set as active</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
+    /// <exception cref="ArgumentException">Thrown when the goalie is not on the home team</exception>
+    public void SetHomeActiveGoalie(Guid goalieId)
+    {
+        if (Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException("Cannot change goalie when match is not in progress.");
+
+        // Validate that the goalie is on the home team
+        bool goalieOnTeam = HomeTeam.Roster.Any(tp => tp.PlayerId == goalieId);
+        if (!goalieOnTeam)
+            throw new ArgumentException("Goalie is not on the home team.", nameof(goalieId));
+
+        Guid? previousGoalieId = HomeActiveGoalieId;
+        HomeActiveGoalieId = goalieId;
+
+        // Add domain event
+        AddDomainEvent(new FloorballGoalieChangedEvent(Id, HomeTeamId, previousGoalieId, goalieId));
+    }
+
+    /// <summary>
+    /// Sets the active goalie for the away team
+    /// </summary>
+    /// <param name="goalieId">The ID of the goalie to set as active</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
+    /// <exception cref="ArgumentException">Thrown when the goalie is not on the away team</exception>
+    public void SetAwayActiveGoalie(Guid goalieId)
+    {
+        if (Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException("Cannot change goalie when match is not in progress.");
+
+        // Validate that the goalie is on the away team
+        bool goalieOnTeam = AwayTeam.Roster.Any(tp => tp.PlayerId == goalieId);
+        if (!goalieOnTeam)
+            throw new ArgumentException("Goalie is not on the away team.", nameof(goalieId));
+
+        Guid? previousGoalieId = AwayActiveGoalieId;
+        AwayActiveGoalieId = goalieId;
+
+        // Add domain event
+        AddDomainEvent(new FloorballGoalieChangedEvent(Id, AwayTeamId, previousGoalieId, goalieId));
+    }
+
+    /// <summary>
+    /// Gets the active goalie ID for a specific team
+    /// </summary>
+    /// <param name="teamId">The team ID</param>
+    /// <returns>The active goalie ID, or null if no goalie is set</returns>
+    public Guid? GetActiveGoalieId(Guid teamId)
+    {
+        if (teamId == HomeTeamId)
+            return HomeActiveGoalieId;
+        else if (teamId == AwayTeamId)
+            return AwayActiveGoalieId;
+        else
+            throw new ArgumentException("Team is not participating in this match.", nameof(teamId));
     }
 } 

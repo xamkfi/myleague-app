@@ -135,6 +135,9 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
             // Update match team statistics
             await UpdateMatchTeamStatistics(match.Id, request.ScoringTeamId, cancellationToken);
 
+            // Update goalie statistics (shots against and goals allowed for the opposing team)
+            await UpdateGoalieSeasonStatistics(match, request.ScoringTeamId, cancellationToken);
+
             // Mark the goal event as added in the repository
             _matchRepository.MarkEventAsAdded(goal);
 
@@ -209,5 +212,42 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
         matchStats.UpdateShotStatistics(1, 1);
 
         await _statisticsRepository.SaveMatchTeamStatisticsAsync(matchStats, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates goalie season statistics when a goal is scored (shots against and goals allowed)
+    /// </summary>
+    private async Task UpdateGoalieSeasonStatistics(FloorballMatch match, Guid scoringTeamId, CancellationToken cancellationToken)
+    {
+        // Find the opposing team (the one that allowed the goal)
+        Guid opposingTeamId = scoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
+
+        // Update match team statistics for the opposing team (shots against)
+        FloorballMatchTeamStatistics? opposingMatchStats = await _statisticsRepository.GetMatchTeamStatisticsAsync(match.Id, opposingTeamId, cancellationToken);
+        if (opposingMatchStats == null)
+        {
+            opposingMatchStats = new FloorballMatchTeamStatistics(match.Id, opposingTeamId);
+        }
+
+        // Goal counts as both a shot and a shot on goal for the opposing team
+        opposingMatchStats.UpdateShotStatistics(1, 1);
+        await _statisticsRepository.SaveMatchTeamStatisticsAsync(opposingMatchStats, cancellationToken);
+
+        // Update the specific goalie's statistics if we know who was active
+        Guid? activeGoalieId = match.GetActiveGoalieId(opposingTeamId);
+        if (activeGoalieId.HasValue)
+        {
+            FloorballGoalieSeasonStatistics? goalieStats = await _statisticsRepository.GetGoalieSeasonStatisticsAsync(
+                activeGoalieId.Value, opposingTeamId, match.SeasonId, cancellationToken);
+
+            if (goalieStats == null)
+            {
+                goalieStats = new FloorballGoalieSeasonStatistics(activeGoalieId.Value, opposingTeamId, match.SeasonId);
+            }
+
+            // Goal allowed: 1 shot against, 1 goal allowed, 0 saves
+            goalieStats.RecordSaves(0, 1, 1);
+            await _statisticsRepository.SaveGoalieSeasonStatisticsAsync(goalieStats, cancellationToken);
+        }
     }
 } 

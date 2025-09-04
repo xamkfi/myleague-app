@@ -1,4 +1,5 @@
 using Domain.Entities;
+using System;
 
 namespace Domain.Entities.Floorball;
 
@@ -223,8 +224,60 @@ public class FloorballPlayerSeasonStatistics : BaseEntity
     {
         if (minutes < 0)
             throw new ArgumentException("Penalty minutes cannot be negative.", nameof(minutes));
-        
+
         PenaltyMinutes += minutes;
+    }
+
+    /// <summary>
+    /// Removes a goal from this player's season statistics
+    /// </summary>
+    /// <param name="isPowerPlay">Whether it was a power play goal</param>
+    /// <param name="isShortHanded">Whether it was a short-handed goal</param>
+    /// <param name="isGameWinning">Whether it was a game-winning goal</param>
+    /// <param name="isOvertime">Whether it was an overtime goal</param>
+    public void RemoveGoal(bool isPowerPlay = false, bool isShortHanded = false, bool isGameWinning = false, bool isOvertime = false)
+    {
+        if (Goals > 0)
+        {
+            Goals--;
+            Points = Goals + Assists;
+        }
+
+        if (isPowerPlay && PowerPlayGoals > 0) PowerPlayGoals--;
+        if (isShortHanded && ShortHandedGoals > 0) ShortHandedGoals--;
+        if (isGameWinning && GameWinningGoals > 0) GameWinningGoals--;
+        if (isOvertime && OvertimeGoals > 0) OvertimeGoals--;
+
+        UpdateShotPercentage();
+    }
+
+    /// <summary>
+    /// Removes an assist from this player's season statistics
+    /// </summary>
+    /// <param name="isPowerPlay">Whether it was a power play assist</param>
+    /// <param name="isShortHanded">Whether it was a short-handed assist</param>
+    public void RemoveAssist(bool isPowerPlay = false, bool isShortHanded = false)
+    {
+        if (Assists > 0)
+        {
+            Assists--;
+            Points = Goals + Assists;
+        }
+
+        if (isPowerPlay && PowerPlayAssists > 0) PowerPlayAssists--;
+        if (isShortHanded && ShortHandedAssists > 0) ShortHandedAssists--;
+    }
+
+    /// <summary>
+    /// Removes penalty minutes from this player
+    /// </summary>
+    /// <param name="minutes">The penalty minutes to remove</param>
+    public void RemovePenaltyMinutes(int minutes)
+    {
+        if (minutes < 0)
+            throw new ArgumentException("Penalty minutes to remove cannot be negative.", nameof(minutes));
+
+        PenaltyMinutes = Math.Max(0, PenaltyMinutes - minutes);
     }
 
     /// <summary>

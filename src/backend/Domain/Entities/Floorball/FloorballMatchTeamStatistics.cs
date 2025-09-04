@@ -1,4 +1,5 @@
 using Domain.Entities;
+using System;
 
 namespace Domain.Entities.Floorball;
 
@@ -231,6 +232,33 @@ public class FloorballMatchTeamStatistics : BaseEntity
             throw new ArgumentException("Penalty minutes cannot be negative.");
 
         PenaltyMinutes += minutes;
+    }
+
+    /// <summary>
+    /// Removes shot statistics
+    /// </summary>
+    /// <param name="shotsOnGoal">Shots on goal to remove</param>
+    /// <param name="shotsTotal">Total shots to remove</param>
+    public void RemoveShotStatistics(int shotsOnGoal, int shotsTotal)
+    {
+        if (shotsOnGoal < 0 || shotsTotal < 0 || shotsOnGoal > shotsTotal)
+            throw new ArgumentException("Invalid shot statistics to remove.");
+
+        ShotsOnGoal = Math.Max(0, ShotsOnGoal - shotsOnGoal);
+        ShotsTotal = Math.Max(0, ShotsTotal - shotsTotal);
+        UpdateShotPercentage();
+    }
+
+    /// <summary>
+    /// Removes penalty minutes
+    /// </summary>
+    /// <param name="minutes">Penalty minutes to remove</param>
+    public void RemovePenaltyMinutes(int minutes)
+    {
+        if (minutes < 0)
+            throw new ArgumentException("Penalty minutes to remove cannot be negative.");
+
+        PenaltyMinutes = Math.Max(0, PenaltyMinutes - minutes);
     }
 
     /// <summary>
