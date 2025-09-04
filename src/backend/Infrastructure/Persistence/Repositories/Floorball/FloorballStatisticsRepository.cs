@@ -3,6 +3,7 @@ using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball;
 
@@ -54,18 +55,48 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SaveTeamSeasonStatisticsAsync(FloorballTeamSeasonStatistics statistics, CancellationToken cancellationToken = default)
     {
-        var existing = await GetTeamSeasonStatisticsAsync(statistics.TeamId, statistics.SeasonId, cancellationToken);
-        
-        if (existing == null)
+        const int maxRetries = 3;
+        int retryCount = 0;
+
+        while (retryCount < maxRetries)
         {
-            await _context.FloorballTeamSeasonStatistics.AddAsync(statistics, cancellationToken);
+            try
+            {
+                FloorballTeamSeasonStatistics? existing = await GetTeamSeasonStatisticsAsync(statistics.TeamId, statistics.SeasonId, cancellationToken);
+
+                if (existing == null)
+                {
+                    await _context.FloorballTeamSeasonStatistics.AddAsync(statistics, cancellationToken);
+                }
+                else
+                {
+                    // Use SetValues for domain entities with private setters - this is the correct EF Core approach
+                    _context.Entry(existing).CurrentValues.SetValues(statistics);
+                    // Update the UpdatedAt timestamp
+                    _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+                return; // Success, exit the method
+            }
+            catch (DbUpdateConcurrencyException) when (retryCount < maxRetries - 1)
+            {
+                // Retry after a short delay
+                retryCount++;
+                await Task.Delay(TimeSpan.FromMilliseconds(100 * retryCount), cancellationToken);
+
+                // Refresh the context to get the latest data
+                foreach (EntityEntry entry in _context.ChangeTracker.Entries())
+                {
+                    entry.State = EntityState.Detached;
+                }
+            }
+            catch (DbUpdateConcurrencyException) when (retryCount >= maxRetries - 1)
+            {
+                // Log the final failure and rethrow
+                throw;
+            }
         }
-        else
-        {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-        }
-        
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     #endregion
@@ -125,18 +156,48 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SavePlayerSeasonStatisticsAsync(FloorballPlayerSeasonStatistics statistics, CancellationToken cancellationToken = default)
     {
-        var existing = await GetPlayerSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.SeasonId, cancellationToken);
-        
-        if (existing == null)
+        const int maxRetries = 3;
+        int retryCount = 0;
+
+        while (retryCount < maxRetries)
         {
-            await _context.FloorballPlayerSeasonStatistics.AddAsync(statistics, cancellationToken);
+            try
+            {
+                FloorballPlayerSeasonStatistics? existing = await GetPlayerSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.SeasonId, cancellationToken);
+
+                if (existing == null)
+                {
+                    await _context.FloorballPlayerSeasonStatistics.AddAsync(statistics, cancellationToken);
+                }
+                else
+                {
+                    // Use SetValues for domain entities with private setters - this is the correct EF Core approach
+                    _context.Entry(existing).CurrentValues.SetValues(statistics);
+                    // Update the UpdatedAt timestamp
+                    _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+                return; // Success, exit the method
+            }
+            catch (DbUpdateConcurrencyException) when (retryCount < maxRetries - 1)
+            {
+                // Retry after a short delay
+                retryCount++;
+                await Task.Delay(TimeSpan.FromMilliseconds(100 * retryCount), cancellationToken);
+
+                // Refresh the context to get the latest data
+                foreach (EntityEntry entry in _context.ChangeTracker.Entries())
+                {
+                    entry.State = EntityState.Detached;
+                }
+            }
+            catch (DbUpdateConcurrencyException) when (retryCount >= maxRetries - 1)
+            {
+                // Log the final failure and rethrow
+                throw;
+            }
         }
-        else
-        {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-        }
-        
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     #endregion
@@ -183,18 +244,48 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SaveGoalieSeasonStatisticsAsync(FloorballGoalieSeasonStatistics statistics, CancellationToken cancellationToken = default)
     {
-        var existing = await GetGoalieSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.SeasonId, cancellationToken);
-        
-        if (existing == null)
+        const int maxRetries = 3;
+        int retryCount = 0;
+
+        while (retryCount < maxRetries)
         {
-            await _context.FloorballGoalieSeasonStatistics.AddAsync(statistics, cancellationToken);
+            try
+            {
+                FloorballGoalieSeasonStatistics? existing = await GetGoalieSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.SeasonId, cancellationToken);
+
+                if (existing == null)
+                {
+                    await _context.FloorballGoalieSeasonStatistics.AddAsync(statistics, cancellationToken);
+                }
+                else
+                {
+                    // Use SetValues for domain entities with private setters - this is the correct EF Core approach
+                    _context.Entry(existing).CurrentValues.SetValues(statistics);
+                    // Update the UpdatedAt timestamp
+                    _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+                return; // Success, exit the method
+            }
+            catch (DbUpdateConcurrencyException) when (retryCount < maxRetries - 1)
+            {
+                // Retry after a short delay
+                retryCount++;
+                await Task.Delay(TimeSpan.FromMilliseconds(100 * retryCount), cancellationToken);
+
+                // Refresh the context to get the latest data
+                foreach (EntityEntry entry in _context.ChangeTracker.Entries())
+                {
+                    entry.State = EntityState.Detached;
+                }
+            }
+            catch (DbUpdateConcurrencyException) when (retryCount >= maxRetries - 1)
+            {
+                // Log the final failure and rethrow
+                throw;
+            }
         }
-        else
-        {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-        }
-        
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     #endregion
@@ -219,7 +310,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SaveMatchTeamStatisticsAsync(FloorballMatchTeamStatistics statistics, CancellationToken cancellationToken = default)
     {
-        var existing = await GetMatchTeamStatisticsAsync(statistics.MatchId, statistics.TeamId, cancellationToken);
+        FloorballMatchTeamStatistics? existing = await GetMatchTeamStatisticsAsync(statistics.MatchId, statistics.TeamId, cancellationToken);
         
         if (existing == null)
         {
@@ -247,7 +338,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SaveCachedStatisticsAsync(FloorballStatisticsCache cache, CancellationToken cancellationToken = default)
     {
-        var existing = await GetCachedStatisticsAsync(cache.CacheKey, cancellationToken);
+        FloorballStatisticsCache? existing = await GetCachedStatisticsAsync(cache.CacheKey, cancellationToken);
         
         if (existing == null)
         {
@@ -265,7 +356,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task<int> RemoveExpiredCacheAsync(CancellationToken cancellationToken = default)
     {
-        var expiredEntries = await _context.FloorballStatisticsCache
+        List<FloorballStatisticsCache> expiredEntries = await _context.FloorballStatisticsCache
             .Where(c => c.ExpiresAt < DateTime.UtcNow)
             .ToListAsync(cancellationToken);
         
@@ -281,7 +372,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task RemoveSeasonCacheAsync(Guid seasonId, CancellationToken cancellationToken = default)
     {
-        var seasonCacheEntries = await _context.FloorballStatisticsCache
+        List<FloorballStatisticsCache> seasonCacheEntries = await _context.FloorballStatisticsCache
             .Where(c => c.SeasonId == seasonId)
             .ToListAsync(cancellationToken);
         
@@ -301,9 +392,9 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     {
         var statsToProcess = statistics.ToList();
         
-        foreach (var stat in statsToProcess)
+        foreach (FloorballTeamSeasonStatistics? stat in statsToProcess)
         {
-            var existing = await GetTeamSeasonStatisticsAsync(stat.TeamId, stat.SeasonId, cancellationToken);
+            FloorballTeamSeasonStatistics? existing = await GetTeamSeasonStatisticsAsync(stat.TeamId, stat.SeasonId, cancellationToken);
             
             if (existing == null)
             {
@@ -323,9 +414,9 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     {
         var statsToProcess = statistics.ToList();
         
-        foreach (var stat in statsToProcess)
+        foreach (FloorballPlayerSeasonStatistics? stat in statsToProcess)
         {
-            var existing = await GetPlayerSeasonStatisticsAsync(stat.PlayerId, stat.TeamId, stat.SeasonId, cancellationToken);
+            FloorballPlayerSeasonStatistics? existing = await GetPlayerSeasonStatisticsAsync(stat.PlayerId, stat.TeamId, stat.SeasonId, cancellationToken);
             
             if (existing == null)
             {
@@ -345,9 +436,9 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     {
         var statsToProcess = statistics.ToList();
         
-        foreach (var stat in statsToProcess)
+        foreach (FloorballGoalieSeasonStatistics? stat in statsToProcess)
         {
-            var existing = await GetGoalieSeasonStatisticsAsync(stat.PlayerId, stat.TeamId, stat.SeasonId, cancellationToken);
+            FloorballGoalieSeasonStatistics? existing = await GetGoalieSeasonStatisticsAsync(stat.PlayerId, stat.TeamId, stat.SeasonId, cancellationToken);
             
             if (existing == null)
             {
@@ -366,19 +457,19 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     public async Task ResetSeasonStatisticsAsync(Guid seasonId, CancellationToken cancellationToken = default)
     {
         // Remove existing team statistics
-        var teamStats = await _context.FloorballTeamSeasonStatistics
+        List<FloorballTeamSeasonStatistics> teamStats = await _context.FloorballTeamSeasonStatistics
             .Where(s => s.SeasonId == seasonId)
             .ToListAsync(cancellationToken);
         _context.FloorballTeamSeasonStatistics.RemoveRange(teamStats);
-        
+
         // Remove existing player statistics
-        var playerStats = await _context.FloorballPlayerSeasonStatistics
+        List<FloorballPlayerSeasonStatistics> playerStats = await _context.FloorballPlayerSeasonStatistics
             .Where(s => s.SeasonId == seasonId)
             .ToListAsync(cancellationToken);
         _context.FloorballPlayerSeasonStatistics.RemoveRange(playerStats);
-        
+
         // Remove existing goalie statistics
-        var goalieStats = await _context.FloorballGoalieSeasonStatistics
+        List<FloorballGoalieSeasonStatistics> goalieStats = await _context.FloorballGoalieSeasonStatistics
             .Where(s => s.SeasonId == seasonId)
             .ToListAsync(cancellationToken);
         _context.FloorballGoalieSeasonStatistics.RemoveRange(goalieStats);
