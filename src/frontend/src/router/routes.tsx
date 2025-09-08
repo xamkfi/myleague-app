@@ -23,7 +23,10 @@ import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/Flo
 import CreatePlayerPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePlayerPage/CreatePlayerPage';
 import CreatePersonPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePersonPage/CreatePersonPage';
 import FloorballRefereesPage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage';
+import CreateRefereePage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/CreateRefereePage/CreateRefereePage';
 import FloorballSeasonsPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage';
+import CreateSeasonPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/CreateSeasonPage/CreateSeasonPage';
+import EditSeasonPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/EditSeasonPage/EditSeasonPage';
 import MatchOverviewPage from '../pages/AdminPage/FloorballManagementPage/MatchOverviewPage/MatchOverviewPage';
 import CompletedMatchesPage from '../pages/AdminPage/FloorballManagementPage/CompletedMatchesPage/CompletedMatchesPage';
 import ScheduledMatchesPage from '../pages/AdminPage/FloorballManagementPage/ScheduledMatchesPage/ScheduledMatchesPage';
@@ -148,11 +151,33 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'referees',
-        element: <FloorballRefereesPage />
+        children: [
+          {
+            index: true,
+            element: <FloorballRefereesPage />
+          },
+          {
+            path: 'create',
+            element: <CreateRefereePage />
+          }
+        ]
       },
       {
         path: 'seasons',
-        element: <FloorballSeasonsPage />
+        children: [
+          {
+            index: true,
+            element: <FloorballSeasonsPage />
+          },
+          {
+            path: 'create',
+            element: <CreateSeasonPage />
+          },
+          {
+            path: ':seasonId/edit',
+            element: <EditSeasonPage />
+          }
+        ]
       },
       {
         path: 'matches',
@@ -196,5 +221,4 @@ export const routes: RouteObject[] = [
     path: '/match/:id',
     element: <MatchPage/>
   }
-  
 ]; 

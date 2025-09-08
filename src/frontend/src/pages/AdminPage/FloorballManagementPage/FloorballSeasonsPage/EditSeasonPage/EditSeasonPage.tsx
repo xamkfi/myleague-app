@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
+import BackButton from '../../../../../components/BackButton/BackButton';
 import type { 
   FloorballSeasonDto, 
   UpdateFloorballSeasonRequest
@@ -8,32 +11,28 @@ import { floorballSeasonService } from '../../../../../api/floorball/floorballSe
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
 import { type FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 import { useDivisions } from '../../../../../hooks/useDivisions';
+import './EditSeasonPage.scss';
 
-interface EditSeasonModalProps {
-  season: FloorballSeasonDto;
-  onSave: (seasonData: UpdateFloorballSeasonRequest) => Promise<void>;
-  onClose: () => void;
-  onTeamsChanged?: () => Promise<void>;
-}
-
-export const EditSeasonModal = ({
-  season,
-  onSave,
-  onClose,
-  onTeamsChanged
-}: EditSeasonModalProps) => {
+const EditSeasonPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { seasonId } = useParams<{ seasonId: string }>();
+  const { divisions } = useDivisions();
   
+  const [season, setSeason] = useState<FloorballSeasonDto | null>(null);
+  const [loadingSeason, setLoadingSeason] = useState(true);
   const [formData, setFormData] = useState<UpdateFloorballSeasonRequest>({
-    name: season.name,
-    startDate: season.startDate.split('T')[0], // Convert to YYYY-MM-DD format
-    endDate: season.endDate.split('T')[0],
-    divisionId: season.divisionId
+    name: '',
+    startDate: '',
+    endDate: '',
+    divisionId: ''
   });
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'teams'>('details');
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successTimeoutId, setSuccessTimeoutId] = useState<number | null>(null);
   
   // Team management state
   const [allTeams, setAllTeams] = useState<FloorballTeam[]>([]);
@@ -42,10 +41,47 @@ export const EditSeasonModal = ({
   const [addedTeams, setAddedTeams] = useState<Set<string>>(new Set());
   const [removedTeams, setRemovedTeams] = useState<Set<string>>(new Set());
 
+  // Load season data when component mounts
+  useEffect(() => {
+    if (seasonId) {
+      loadSeason();
+    }
+  }, [seasonId]);
+
   // Load teams when modal opens
   useEffect(() => {
     loadAllTeams();
   }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutId) {
+        clearTimeout(successTimeoutId);
+      }
+    };
+  }, [successTimeoutId]);
+
+  const loadSeason = async () => {
+    if (!seasonId) return;
+
+    try {
+      setLoadingSeason(true);
+      const seasonData = await floorballSeasonService.getById(seasonId);
+      setSeason(seasonData);
+      setFormData({
+        name: seasonData.name,
+        startDate: seasonData.startDate.split('T')[0], // Convert to YYYY-MM-DD format
+        endDate: seasonData.endDate.split('T')[0],
+        divisionId: seasonData.divisionId
+      });
+    } catch (err) {
+      setError(t('floorball.seasons.errors.loadFailed', 'Failed to load season data'));
+      console.error('Error loading season:', err);
+    } finally {
+      setLoadingSeason(false);
+    }
+  };
 
   const loadAllTeams = async () => {
     try {
@@ -101,7 +137,6 @@ export const EditSeasonModal = ({
     }
 
     // Handle specific business logic errors
-    
     if (errorMessage.includes('Cannot update a completed season')) {
       return t('floorball.seasons.errors.cannotUpdateCompleted', 'Cannot update a completed season.');
     }
@@ -174,8 +209,11 @@ export const EditSeasonModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!seasonId) return;
+    
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       // Client-side validation
@@ -217,7 +255,29 @@ export const EditSeasonModal = ({
         throw new Error(t('floorball.seasons.validation.seasonTooLong', 'Season duration cannot exceed 2 years'));
       }
 
-      await onSave(formData);
+      await floorballSeasonService.update(seasonId, formData);
+
+      // Clear any existing timeout to prevent flickering
+      if (successTimeoutId) {
+        clearTimeout(successTimeoutId);
+      }
+
+      // Show success message
+      const message = t('floorball.seasons.seasonUpdated', 'Season "{{seasonName}}" has been updated successfully!', { 
+        seasonName: formData.name 
+      });
+      setSuccessMessage(message);
+      
+      // Auto-hide success message after 3 seconds and then navigate back
+      const timeoutId = setTimeout(() => {
+        setSuccessMessage(null);
+        setSuccessTimeoutId(null);
+        navigate('/admin/floorball/seasons');
+      }, 3000);
+      setSuccessTimeoutId(timeoutId);
+
+      // Reload season data
+      await loadSeason();
     } catch (err) {
       setError(parseApiError(err));
     } finally {
@@ -226,6 +286,8 @@ export const EditSeasonModal = ({
   };
 
   const addTeamToSeason = (team: FloorballTeam) => {
+    if (!season) return;
+    
     setError(null); // Clear any existing errors
     
     // Check if season is completed
@@ -249,6 +311,8 @@ export const EditSeasonModal = ({
   };
 
   const removeTeamFromSeason = (teamId: string) => {
+    if (!season) return;
+    
     setError(null); // Clear any existing errors
     
     // Check if season is completed
@@ -266,6 +330,8 @@ export const EditSeasonModal = ({
   };
 
   const saveTeamChanges = async () => {
+    if (!season || !seasonId) return;
+    
     setSavingTeams(true);
     setError(null);
     
@@ -273,7 +339,7 @@ export const EditSeasonModal = ({
       // Handle removals first
       for (const teamId of removedTeams) {
         try {
-          await floorballSeasonService.removeTeamFromSeason(season.id, teamId);
+          await floorballSeasonService.removeTeamFromSeason(seasonId, teamId);
         } catch (error) {
           console.error(`Error removing team ${teamId}:`, error);
           throw new Error(`Failed to remove team: ${parseTeamError(error)}`);
@@ -286,7 +352,7 @@ export const EditSeasonModal = ({
       
       for (const teamId of teamsToAdd) {
         try {
-          await floorballSeasonService.addTeamToSeason(season.id, teamId);
+          await floorballSeasonService.addTeamToSeason(seasonId, teamId);
         } catch (error) {
           console.error(`Error adding team ${teamId}:`, error);
           throw new Error(`Failed to add team: ${parseTeamError(error)}`);
@@ -297,13 +363,18 @@ export const EditSeasonModal = ({
       setAddedTeams(new Set());
       setRemovedTeams(new Set());
       
-      // Trigger parent refresh if callback provided
-      if (onTeamsChanged) {
-        await onTeamsChanged();
-      }
+      // Reload season data
+      await loadSeason();
       
-      // Close modal
-      onClose();
+      // Show success message
+      setSuccessMessage(t('floorball.seasons.teamChangesSaved', 'Team changes saved successfully!'));
+      
+      // Auto-hide success message after 2 seconds
+      const timeoutId = setTimeout(() => {
+        setSuccessMessage(null);
+        setSuccessTimeoutId(null);
+      }, 2000);
+      setSuccessTimeoutId(timeoutId);
     } catch (error) {
       console.error('Error saving team changes:', error);
       setError(parseTeamError(error));
@@ -312,7 +383,29 @@ export const EditSeasonModal = ({
     }
   };
 
-  const { divisions } = useDivisions();
+  if (loadingSeason) {
+    return (
+      <PageTemplate title={t('floorball.seasons.edit.title', 'Edit Season')}>
+        <div className="edit-season-loading">
+          <p>{t('common.loading', 'Loading...')}</p>
+        </div>
+      </PageTemplate>
+    );
+  }
+
+  if (!season) {
+    return (
+      <PageTemplate title={t('floorball.seasons.edit.title', 'Edit Season')}>
+        <div className="edit-season-error">
+          <p>{t('floorball.seasons.errors.notFound', 'Season not found')}</p>
+          <BackButton 
+            to="/admin/floorball/seasons" 
+            text={t('common.back', 'Back to Seasons')} 
+          />
+        </div>
+      </PageTemplate>
+    );
+  }
 
   // Calculate display data for teams
   const seasonTeams = season.teams?.filter(team => !removedTeams.has(team.id)) || [];
@@ -331,18 +424,20 @@ export const EditSeasonModal = ({
   const hasTeamChanges = addedTeams.size > 0 || removedTeams.size > 0;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content edit-season-modal">
-        <div className="modal-header">
-          <h3>{t('floorball.seasons.edit.title', 'Edit Season')}</h3>
-          <button 
-            className="modal-close-btn"
-            onClick={onClose}
-            aria-label={t('common.close', 'Close')}
-          >
-            ×
-          </button>
+    <PageTemplate title={t('floorball.seasons.edit.title', 'Edit Season')}>
+      {/* Floating Success Toast */}
+      {successMessage && (
+        <div className="success-toast">
+          <p>{successMessage}</p>
         </div>
+      )}
+
+      <div className="edit-season-container">
+        {/* Back button */}
+        <BackButton 
+          to="/admin/floorball/seasons" 
+          text={t('common.back', 'Back to Seasons')} 
+        />
 
         {/* Tab Navigation */}
         <div className="tab-navigation">
@@ -359,11 +454,11 @@ export const EditSeasonModal = ({
             {t('floorball.seasons.manageTeams', 'Manage Teams')} ({displayTeams.length})
           </button>
         </div>
-        
-        {/* Season Details Tab */}
-        {activeTab === 'details' && (
-          <form onSubmit={handleSubmit}>
-            <div className="modal-body">
+
+        <div className="edit-season-content">
+          {/* Season Details Tab */}
+          {activeTab === 'details' && (
+            <form onSubmit={handleSubmit} className="edit-season-form">
               {error && (
                 <div className="error-message">
                   <i className="fas fa-exclamation-circle"></i>
@@ -440,39 +535,37 @@ export const EditSeasonModal = ({
                   />
                 </div>
               </div>
-            </div>
-            
-            <div className="modal-footer">
-              <button 
-                type="button"
-                className="btn btn-secondary"
-                onClick={onClose}
-                disabled={loading}
-              >
-                {t('common.cancel', 'Cancel')}
-              </button>
-              <button 
-                type="submit"
-                className="btn btn-primary"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <i className="fas fa-spinner fa-spin"></i>
-                    {t('common.saving', 'Saving...')}
-                  </>
-                ) : (
-                  t('common.save', 'Save')
-                )}
-              </button>
-            </div>
-          </form>
-        )}
 
-        {/* Teams Management Tab */}
-        {activeTab === 'teams' && (
-          <div className="teams-management">
-            <div className="modal-body">
+              <div className="form-actions">
+                <button 
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => navigate('/admin/floorball/seasons')}
+                  disabled={loading}
+                >
+                  {t('common.cancel', 'Cancel')}
+                </button>
+                <button 
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin"></i>
+                      {t('common.saving', 'Saving...')}
+                    </>
+                  ) : (
+                    t('common.save', 'Save')
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Teams Management Tab */}
+          {activeTab === 'teams' && (
+            <div className="teams-management">
               {error && (
                 <div className="error-message">
                   <i className="fas fa-exclamation-circle"></i>
@@ -543,36 +636,38 @@ export const EditSeasonModal = ({
                   )}
                 </div>
               </div>
-            </div>
 
-            <div className="modal-footer">
-              <button 
-                type="button"
-                className="btn btn-secondary"
-                onClick={onClose}
-                disabled={savingTeams}
-              >
-                {t('common.cancel', 'Cancel')}
-              </button>
-              <button 
-                type="button"
-                className="btn btn-primary"
-                onClick={saveTeamChanges}
-                disabled={savingTeams || !hasTeamChanges}
-              >
-                {savingTeams ? (
-                  <>
-                    <i className="fas fa-spinner fa-spin"></i>
-                    {t('common.saving', 'Saving...')}
-                  </>
-                ) : (
-                  t('floorball.seasons.saveTeamChanges', 'Save Team Changes')
-                )}
-              </button>
+              <div className="teams-actions">
+                <button 
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => navigate('/admin/floorball/seasons')}
+                  disabled={savingTeams}
+                >
+                  {t('common.cancel', 'Cancel')}
+                </button>
+                <button 
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={saveTeamChanges}
+                  disabled={savingTeams || !hasTeamChanges}
+                >
+                  {savingTeams ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin"></i>
+                      {t('common.saving', 'Saving...')}
+                    </>
+                  ) : (
+                    t('floorball.seasons.saveTeamChanges', 'Save Team Changes')
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </PageTemplate>
   );
-}; 
+};
+
+export default EditSeasonPage;
