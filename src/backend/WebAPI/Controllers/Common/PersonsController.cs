@@ -49,8 +49,8 @@ namespace WebAPI.Controllers.Common
 
             if (result.IsSuccess && result.Data != null)
             {
-                List<PersonDto> personList = result.Data.ToList();
-                return Ok(ApiResponse<List<PersonDto>>.SuccessResponse(personList, "Persons retrieved successfully"));
+                PersonDto[] personList = result.Data.OrderByDescending(x => x.LastName).ToArray();
+                return Ok(ApiResponse<PersonDto[]>.SuccessResponse(personList, "Persons retrieved successfully"));
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
