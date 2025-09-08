@@ -90,8 +90,10 @@
         "jerseyNumber": "Pelinumero",
         "jerseyNumberHint": "Valinnainen: 1-99",
         "positions": {
+          "none": "Ei pelipaikkaa",
           "center": "Keskihyökkääjä",
-          "winger": "Laitahyökkääjä", 
+          "winger": "Laitahyökkääjä",
+          "forward": "Hyökkääjä",
           "defender": "Puolustaja",
           "goalkeeper": "Maalivahti"
         }

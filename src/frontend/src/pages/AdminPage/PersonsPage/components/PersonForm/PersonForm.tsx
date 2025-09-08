@@ -10,6 +10,7 @@ import { floorballTeamSearchService } from '../../../../../api/floorball/floorba
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import './PersonForm.scss';
+import { SPORTS, type SportType } from '../../../../../constants/sports';
 
 interface PersonFormProps {
   mode?: 'standalone' | 'embedded';
@@ -91,6 +92,7 @@ const PersonForm = ({
   };
   
   const [formData, setFormData] = useState<EnhancedPersonFormData>(getInitialFormData());
+  const [selectedSport, setSelectedSport] = useState<SportType | ''>('');
 
   useEffect(() => {
     const fetchPerson = async () => {
@@ -176,6 +178,7 @@ const PersonForm = ({
     return null;
   };
 
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
@@ -193,10 +196,13 @@ const PersonForm = ({
     }
 
     if (name === 'birthDate') {
+      console.log('date', new Date(value).toISOString());
+
       setFormData(prev => ({
         ...prev,
         birthDate: value
       }));
+
       
       const dateError = validateBirthDate(value);
       if (dateError) {
@@ -356,15 +362,29 @@ const PersonForm = ({
       setLoading(true);
       setError(null);
 
-      // Convert dd-mm-yyyy to ISO format for API
-      const [day, month, year] = formData.birthDate.split('-').map(Number);
-      const isoDate = new Date(year, month - 1, day).toISOString();
+      // Validate jersey number uniqueness within selected team before creating person
+      if (formData.teamId && formData.jerseyNumber !== undefined) {
+        try {
+          const team = await floorballTeamService.getById(formData.teamId);
+          const numberTaken = team?.roster?.some(player => player.jerseyNumber === formData.jerseyNumber);
+          if (numberTaken) {
+            const takenMsg = t('admin.persons.validation.jerseyNumberTaken') || 'Jersey number already in use for this team';
+            setFieldErrors(prev => ({ ...prev, jerseyNumber: takenMsg }));
+            setError(takenMsg);
+            setLoading(false);
+            return;
+          }
+        } catch (validationErr) {
+          console.warn('Failed to validate jersey number uniqueness:', validationErr);
+          // If validation fails silently, proceed; backend should still enforce on add
+        }
+      }
 
       // Prepare person data (excluding team assignment fields)
       const personData: PersonFormData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        birthDate: isoDate,
+        birthDate: formData.birthDate,
         isRegistered: formData.isRegistered,
         role: formData.role,
         address: formData.address,
@@ -426,6 +446,43 @@ const PersonForm = ({
     }
   };
 
+  // Search helpers for sport and teams by sport
+  const searchSports = async (query: string, _page: number) => {
+    const sports = SPORTS as unknown as string[];
+    const filtered = query?.trim()
+      ? sports.filter((s) => s.toLowerCase().includes(query.toLowerCase()))
+      : sports;
+    const options = filtered.map((s) => ({ id: s as string, name: s as string }));
+    return {
+      data: options,
+      pagination: { hasNextPage: false, totalCount: options.length }
+    };
+  };
+
+  const searchTeamsBySport = async (query: string, page: number) => {
+    if (!selectedSport) {
+      return { data: [], pagination: { hasNextPage: false, totalCount: 0 } };
+    }
+    // TODO: Add other sports here
+    if (selectedSport === 'Floorball') {
+      return floorballTeamSearchService.searchTeams(query, page);
+    }
+    return { data: [], pagination: { hasNextPage: false, totalCount: 0 } };
+  };
+
+  const handleSportChange = (sportId: string) => {
+    setSelectedSport(sportId as SportType);
+    // Clear dependent selections when sport changes
+
+    setFormData(prev => ({
+      ...prev,
+      teamId: undefined,
+      position: undefined,
+      jerseyNumber: undefined
+    }));
+    setFieldErrors(prev => ({ ...prev, teamId: '', position: '', jerseyNumber: '' }));
+  };
+
   if (loading && isEditMode) {
     return <div className="person-form-loading">{t('common.loading')}</div>;
   }
@@ -447,7 +504,7 @@ const PersonForm = ({
               onChange={handleInputChange}
               maxLength={MAX_LENGTHS.firstName}
               required
-              className={fieldErrors.firstName ? 'error' : ''}
+              className={fieldErrors.firstName ? 'person-error' : ''}
             />
             {fieldErrors.firstName && (
               <div className="field-error">{fieldErrors.firstName}</div>
@@ -465,7 +522,7 @@ const PersonForm = ({
               onChange={handleInputChange}
               maxLength={MAX_LENGTHS.lastName}
               required
-              className={fieldErrors.lastName ? 'error' : ''}
+              className={fieldErrors.lastName ? 'person-error' : ''}
             />
             {fieldErrors.lastName && (
               <div className="field-error">{fieldErrors.lastName}</div>
@@ -478,14 +535,14 @@ const PersonForm = ({
               {t('admin.persons.form.birthDate')} <span className="required">*</span>
             </label>
             <input
-              type="text"
+              type="date"
               id="birthDate"
               name="birthDate"
               value={formData.birthDate}
               onChange={handleInputChange}
               placeholder="dd-mm-yyyy"
               required
-              className={fieldErrors.birthDate ? 'error' : ''}
+              className={fieldErrors.birthDate ? 'person-error' : ''}
             />
             {fieldErrors.birthDate && (
               <div className="field-error">{fieldErrors.birthDate}</div>
@@ -524,7 +581,7 @@ const PersonForm = ({
               value={formData.address.street1}
               onChange={handleInputChange}
               maxLength={MAX_LENGTHS.street1}
-              className={fieldErrors['address.street1'] ? 'error' : ''}
+              className={fieldErrors['address.street1'] ? 'person-error' : ''}
             />
             {fieldErrors['address.street1'] && (
               <div className="field-error">{fieldErrors['address.street1']}</div>
@@ -541,7 +598,7 @@ const PersonForm = ({
               value={formData.address.street2}
               onChange={handleInputChange}
               maxLength={MAX_LENGTHS.street2}
-              className={fieldErrors['address.street2'] ? 'error' : ''}
+              className={fieldErrors['address.street2'] ? 'person-error' : ''}
             />
             {fieldErrors['address.street2'] && (
               <div className="field-error">{fieldErrors['address.street2']}</div>
@@ -561,7 +618,7 @@ const PersonForm = ({
               value={formData.address.city}
               onChange={handleInputChange}
               maxLength={MAX_LENGTHS.city}
-              className={fieldErrors['address.city'] ? 'error' : ''}
+              className={fieldErrors['address.city'] ? 'person-error' : ''}
             />
             {fieldErrors['address.city'] && (
               <div className="field-error">{fieldErrors['address.city']}</div>
@@ -579,7 +636,7 @@ const PersonForm = ({
               value={formData.address.postalCode}
               onChange={handleInputChange}
               maxLength={MAX_LENGTHS.postalCode}
-              className={fieldErrors['address.postalCode'] ? 'error' : ''}
+              className={fieldErrors['address.postalCode'] ? 'person-error' : ''}
             />
             {fieldErrors['address.postalCode'] && (
               <div className="field-error">{fieldErrors['address.postalCode']}</div>
@@ -597,7 +654,7 @@ const PersonForm = ({
               value={formData.address.country}
               onChange={handleInputChange}
               maxLength={MAX_LENGTHS.country}
-              className={fieldErrors['address.country'] ? 'error' : ''}
+              className={fieldErrors['address.country'] ? 'person-error' : ''}
             />
             {fieldErrors['address.country'] && (
               <div className="field-error">{fieldErrors['address.country']}</div>
@@ -620,7 +677,7 @@ const PersonForm = ({
               value={formData.contactInfo.email}
               onChange={handleInputChange}
               maxLength={MAX_LENGTHS.email}
-              className={fieldErrors['contactInfo.email'] ? 'error' : ''}
+              className={fieldErrors['contactInfo.email'] ? 'person-error' : ''}
             />
             {fieldErrors['contactInfo.email'] && (
               <div className="field-error">{fieldErrors['contactInfo.email']}</div>
@@ -639,7 +696,7 @@ const PersonForm = ({
               value={formData.contactInfo.phone}
               onChange={handleInputChange}
               maxLength={MAX_LENGTHS.phone}
-              className={fieldErrors['contactInfo.phone'] ? 'error' : ''}
+              className={fieldErrors['contactInfo.phone'] ? 'person-error' : ''}
             />
             {fieldErrors['contactInfo.phone'] && (
               <div className="field-error">{fieldErrors['contactInfo.phone']}</div>
@@ -656,7 +713,7 @@ const PersonForm = ({
               value={formData.contactInfo.alternativePhone}
               onChange={handleInputChange}
               maxLength={MAX_LENGTHS.alternativePhone}
-              className={fieldErrors['contactInfo.alternativePhone'] ? 'error' : ''}
+              className={fieldErrors['contactInfo.alternativePhone'] ? 'person-error' : ''}
             />
             {fieldErrors['contactInfo.alternativePhone'] && (
               <div className="field-error">{fieldErrors['contactInfo.alternativePhone']}</div>
@@ -671,17 +728,32 @@ const PersonForm = ({
           <h3>{t('admin.persons.form.floorballAssignment')}</h3>
           <div className="form-row">
             <div className="form-group">
+              <label htmlFor="sportType">
+                {t('admin.persons.form.sportType', 'Sport')}
+              </label>
+              <SearchableInfiniteDropdown
+                placeholder={t('admin.persons.form.selectSport', 'Select sport')}
+                value={selectedSport}
+                onChange={handleSportChange}
+                onSearch={searchSports}
+                emptyMessage={t('admin.persons.form.noSports', 'No sports')}
+                searchPlaceholder={t('admin.persons.form.searchSports', 'Search sports')}
+              />
+            </div>
+            <div className="form-group">
               <label htmlFor="teamId">
                 {t('admin.persons.form.team')}
               </label>
               <SearchableInfiniteDropdown
+                key={`team-dropdown-${selectedSport || 'none'}`}
                 placeholder={t('admin.persons.form.selectTeam')}
                 value={formData.teamId || ''}
                 onChange={handleTeamChange}
-                onSearch={floorballTeamSearchService.searchTeams}
+                onSearch={searchTeamsBySport}
+                disabled={!selectedSport}
                 emptyMessage={t('admin.persons.form.noTeams')}
                 searchPlaceholder={t('admin.persons.form.searchTeams')}
-                className={fieldErrors.teamId ? 'error' : ''}
+                className={fieldErrors.teamId ? 'person-error' : ''}
               />
               {fieldErrors.teamId && (
                 <div className="field-error">{fieldErrors.teamId}</div>
@@ -701,7 +773,7 @@ const PersonForm = ({
                   value={formData.position || ''}
                   onChange={handleInputChange}
                   required
-                  className={fieldErrors.position ? 'error' : ''}
+                  className={fieldErrors.position ? 'person-error' : ''}
                 >
                   <option value="">{t('admin.persons.form.selectPosition')}</option>
                   {Object.values(FloorballPosition).map(pos => (
@@ -727,7 +799,7 @@ const PersonForm = ({
                   onChange={handleInputChange}
                   min="1"
                   max="99"
-                  className={fieldErrors.jerseyNumber ? 'error' : ''}
+                  className={fieldErrors.jerseyNumber ? 'person-error' : ''}
                 />
                 {fieldErrors.jerseyNumber && (
                   <div className="field-error">{fieldErrors.jerseyNumber}</div>

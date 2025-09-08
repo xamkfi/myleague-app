@@ -55,7 +55,9 @@ export const EditSeasonModal = ({
       });
       
       if (response && response.data && Array.isArray(response.data)) {
-        setAllTeams(response.data);
+        // Only include teams in the same division as the season
+        const sameDivisionTeams = response.data.filter(team => team.divisionId === season.divisionId);
+        setAllTeams(sameDivisionTeams);
       } else {
         setAllTeams([]);
       }

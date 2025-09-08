@@ -5,7 +5,7 @@ import { useDivisions } from '../../../../../hooks/useDivisions';
 import './CreateSeasonModal.scss';
 
 interface CreateSeasonModalProps {
-  onSave: (seasonData: CreateFloorballSeasonRequest) => Promise<void>;
+  onSave: (seasonData: CreateFloorballSeasonRequest, shouldActivate: boolean) => Promise<void>;
   onClose: () => void;
 }
 
@@ -21,16 +21,22 @@ export const CreateSeasonModal = ({
     endDate: '',
     divisionId: ''
   });
+  const [isActive, setIsActive] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+  };
+
+
+  const handleActiveChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsActive(e.target.checked);
   };
 
   const parseApiError = (error: unknown): string => {
@@ -132,7 +138,7 @@ export const CreateSeasonModal = ({
         throw new Error(t('floorball.seasons.validation.seasonTooLong', 'Season duration cannot exceed 2 years'));
       }
 
-      await onSave(formData);
+      await onSave(formData, isActive);
     } catch (err) {
       setError(parseApiError(err));
     } finally {
@@ -247,6 +253,11 @@ export const CreateSeasonModal = ({
               </div>
             </div>
 
+
+            <div className="toggle-container">
+              <input type="checkbox" checked={isActive} id="create-active" name="isActive" onChange={handleActiveChange} />
+              <label htmlFor="create-active">{t('floorball.seasons.fields.isActive', 'Active')}</label>
+            </div>
             <div className="info-message">
               <i className="fas fa-info-circle"></i>
               {t('floorball.seasons.create.info', 'The season will be created as inactive by default')}

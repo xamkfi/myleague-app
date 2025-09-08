@@ -90,8 +90,10 @@
         "jerseyNumber": "Jersey Number",
         "jerseyNumberHint": "Optional: 1-99",
         "positions": {
+          "none": "No position",
           "center": "Center",
           "winger": "Winger",
+          "forward": "Forward",
           "defender": "Defender",
           "goalkeeper": "Goalkeeper"
         }
