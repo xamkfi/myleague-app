@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
@@ -41,12 +41,33 @@ const EditSeasonPage = () => {
   const [addedTeams, setAddedTeams] = useState<Set<string>>(new Set());
   const [removedTeams, setRemovedTeams] = useState<Set<string>>(new Set());
 
+  const loadSeason = useCallback(async () => {
+    if (!seasonId) return;
+
+    try {
+      setLoadingSeason(true);
+      const seasonData = await floorballSeasonService.getById(seasonId);
+      setSeason(seasonData.data);
+      setFormData({
+        name: seasonData.data.name,
+        startDate: seasonData.data.startDate.split('T')[0], // Convert to YYYY-MM-DD format
+        endDate: seasonData.data.endDate.split('T')[0],
+        divisionId: seasonData.data.divisionId
+      });
+    } catch (err) {
+      setError(t('floorball.seasons.errors.loadFailed', 'Failed to load season data'));
+      console.error('Error loading season:', err);
+    } finally {
+      setLoadingSeason(false);
+    }
+  }, [seasonId, t]);
+
   // Load season data when component mounts
   useEffect(() => {
     if (seasonId) {
       loadSeason();
     }
-  }, [seasonId]);
+  }, [seasonId, loadSeason]);
 
   // Load teams when modal opens
   useEffect(() => {
@@ -61,27 +82,6 @@ const EditSeasonPage = () => {
       }
     };
   }, [successTimeoutId]);
-
-  const loadSeason = async () => {
-    if (!seasonId) return;
-
-    try {
-      setLoadingSeason(true);
-      const seasonData = await floorballSeasonService.getById(seasonId);
-      setSeason(seasonData);
-      setFormData({
-        name: seasonData.name,
-        startDate: seasonData.startDate.split('T')[0], // Convert to YYYY-MM-DD format
-        endDate: seasonData.endDate.split('T')[0],
-        divisionId: seasonData.divisionId
-      });
-    } catch (err) {
-      setError(t('floorball.seasons.errors.loadFailed', 'Failed to load season data'));
-      console.error('Error loading season:', err);
-    } finally {
-      setLoadingSeason(false);
-    }
-  };
 
   const loadAllTeams = async () => {
     try {
