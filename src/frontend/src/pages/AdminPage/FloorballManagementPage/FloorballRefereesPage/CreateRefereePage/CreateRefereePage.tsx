@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
 import BackButton from '../../../../../components/BackButton/BackButton';
 import { personApi } from '../../../../../api/admin/personApi';
-import { floorballRefereeService, type FloorballRefereeDto } from '../../../../../api/floorball/floorballRefereeService';
+import { floorballRefereeService } from '../../../../../api/floorball/floorballRefereeService';
 import type { Person } from '../../../../../types/admin/personTypes';
 import './CreateRefereePage.scss';
 

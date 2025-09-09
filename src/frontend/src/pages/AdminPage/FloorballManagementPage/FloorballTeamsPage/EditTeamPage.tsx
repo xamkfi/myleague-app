@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
@@ -52,18 +52,8 @@ const EditTeamPage = () => {
     category: 'Adult' as TeamCategory,
     secondaryJerseyColor: ''
   });
-
-  // Load team data when component mounts
-  useEffect(() => {
-    if (teamId) {
-      loadTeamData();
-      loadClubs();
-      loadDivisions();
-      loadAllPlayers();
-    }
-  }, [teamId]);
-
-  const loadTeamData = async () => {
+  
+  const loadTeamData = useCallback(async () => {
     if (!teamId) return;
     
     try {
@@ -88,7 +78,17 @@ const EditTeamPage = () => {
     } finally {
       setLoadingTeam(false);
     }
-  };
+  }, [teamId]);
+
+  // Load team data when component mounts
+  useEffect(() => {
+    if (teamId) {
+      loadTeamData();
+      loadClubs();
+      loadDivisions();
+      loadAllPlayers();
+    }
+  }, [teamId, loadTeamData]);
 
   const loadClubs = async () => {
     try {
