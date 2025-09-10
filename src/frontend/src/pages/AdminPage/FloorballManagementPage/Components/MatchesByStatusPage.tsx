@@ -9,8 +9,10 @@ import type { FloorballMatchDto } from '../../../../types/floorball/floorballTyp
 import BackButton from '../../../../components/BackButton/BackButton';
 import MatchFilters from '../MatchOverviewPage/Components/MatchFilters/MatchFilters';
 import CollapsibleMatchSection from '../MatchOverviewPage/Components/CollapsibleMatchSection/CollapsibleMatchSection';
+import Navbar from '../../../../components/Navigation/Navbar';
 
 import './MatchesByStatusPage.scss';
+import '../MatchOverviewPage/MatchOverviewPage.scss';
 
 interface MatchesByStatusPageProps {
   status: FloorballMatchDto['status'];
@@ -108,47 +110,50 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
   if (error) return <p>{t('common.error', 'Error')}: {error}</p>;
 
   return (
-    <div className="matches-by-status-page">
-      <BackButton to="/admin/floorball/matches" text={t('common.back', 'Back to Match Management')} />
-      <h1>{title}</h1>
-      <MatchFilters
-        seasons={seasons}
-        selectedSeasonId={selectedSeasonId}
-        onSeasonChange={setSelectedSeasonId}
-      />
-      {!filtered.length ? (
-        <p>{t('matches.noMatches', 'No matches found.')}</p>
-      ) : (
-        <>
-          <CollapsibleMatchSection
-            title={`${title} (${filtered.length})`}
-            matches={paginated}
-            isCollapsed={collapsed}
-            onToggleCollapse={toggleCollapse}
-            onLiveMatch={handleLiveMatch}
-            onEditMatch={handleEditMatch}
-            actionLoading={actionLoading}
-            sectionType={sectionType}
-          />
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={filtered.length}
-            pageSize={pageSize}
-            onPageChange={page => setCurrentPage(page)}
-            onPageSizeChange={size => { setPageSize(size); setCurrentPage(1); }}
-          />
-          <MatchFormModal
-            isOpen={showForm}
-            onClose={handleCloseForm}
-            mode={formMode}
-            initialData={editMatch}
-            onSubmit={handleFormSubmit}
-            onCancelMatch={handleCancelMatch}
-            loading={actionLoading === 'edit' || actionLoading === 'cancelling'}
-          />
-        </>
-      )}
+    <div className="match-management">
+      <Navbar />
+      <div className="match-management__content matches-by-status-page">
+        <BackButton to="/admin/floorball/matches" text={t('common.back', 'Back to Match Management')} />
+        <h1>{title}</h1>
+        <MatchFilters
+          seasons={seasons}
+          selectedSeasonId={selectedSeasonId}
+          onSeasonChange={setSelectedSeasonId}
+        />
+        {!filtered.length ? (
+          <p>{t('matches.noMatches', 'No matches found.')}</p>
+        ) : (
+          <>
+            <CollapsibleMatchSection
+              title={`${title} (${filtered.length})`}
+              matches={paginated}
+              isCollapsed={collapsed}
+              onToggleCollapse={toggleCollapse}
+              onLiveMatch={handleLiveMatch}
+              onEditMatch={handleEditMatch}
+              actionLoading={actionLoading}
+              sectionType={sectionType}
+            />
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalCount={filtered.length}
+              pageSize={pageSize}
+              onPageChange={page => setCurrentPage(page)}
+              onPageSizeChange={size => { setPageSize(size); setCurrentPage(1); }}
+            />
+            <MatchFormModal
+              isOpen={showForm}
+              onClose={handleCloseForm}
+              mode={formMode}
+              initialData={editMatch}
+              onSubmit={handleFormSubmit}
+              onCancelMatch={handleCancelMatch}
+              loading={actionLoading === 'edit' || actionLoading === 'cancelling'}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 };

@@ -21,6 +21,7 @@ import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/Flo
 import FloorballRefereesPage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage';
 import FloorballSeasonsPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage';
 import MatchOverviewPage from '../pages/AdminPage/FloorballManagementPage/MatchOverviewPage/MatchOverviewPage';
+import CreateMatchPage from '../pages/AdminPage/FloorballManagementPage/CreateMatchPage/CreateMatchPage';
 import CompletedMatchesPage from '../pages/AdminPage/FloorballManagementPage/CompletedMatchesPage/CompletedMatchesPage';
 import ScheduledMatchesPage from '../pages/AdminPage/FloorballManagementPage/ScheduledMatchesPage/ScheduledMatchesPage';
 import InProgressMatchesPage from '../pages/AdminPage/FloorballManagementPage/InProgressMatchesPage/InProgressMatchesPage';
@@ -128,6 +129,7 @@ export const routes: RouteObject[] = [
         path: 'matches',
         children: [
           { index: true, element: <MatchOverviewPage /> },
+          { path: 'create', element: <CreateMatchPage /> },
           { path: 'completed', element: <CompletedMatchesPage /> },
           { path: 'scheduled', element: <ScheduledMatchesPage /> },
           { path: 'in-progress', element: <InProgressMatchesPage /> },
