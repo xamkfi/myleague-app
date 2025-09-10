@@ -9,11 +9,15 @@ import './FloorballTeamPage.scss';
 import { divisionService } from '../../api/common/divisionService';
 import type { DivisionType } from '../../types/common/divisionType';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
+import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto } from '../../api/floorball/floorballStatistics';
+import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
 import TeamNavbar from './components/TeamNavbar';
 import ResultsSection from './components/ResultsSection';
 import { useTranslation } from 'react-i18next';
 import RosterSection from './components/RosterSection';
 import SummarySection from './components/SummarySection';
+import Statistics from './components/Statistics';
+import LeagueStanding from './components/LeagueStanding';
 
 function FloorballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -23,13 +27,39 @@ function FloorballTeamPage() {
   const [team, setTeam] = useState<FloorballTeam | null>(null);
   const [division, setDivision] = useState<DivisionType | null>(null)
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null)
+  const [teamStatistics, setTeamStatistics] = useState<FloorballTeamSeasonStatisticsDto | null>(null);
+  const [standings, setStandings] = useState<FloorballTeamSeasonStatisticsDto[] | null>(null);
+  const [currentSeason, setCurrentSeason] = useState<FloorballSeasonDto | null>(null);
+  const [fetchedTabs, setFetchedTabs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('summary');
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [matchesError, setMatchesError] = useState<string | null>(null);
+  const [statisticsLoading, setStatisticsLoading] = useState(false);
+  const [statisticsError, setStatisticsError] = useState<string | null>(null);
+  const [standingsLoading, setStandingsLoading] = useState(false);
+  const [standingsError, setStandingsError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Function to get current season for the team's division
+  const getCurrentSeason = async (divisionId: string): Promise<FloorballSeasonDto | null> => {
+    try {
+      const activeSeasonsResponse = await floorballSeasonService.getActive();
+      const activeSeasons = activeSeasonsResponse.data || [];
+      
+      // Find the active season for this division
+      const seasonForDivision = activeSeasons.find(season => 
+        season.divisionId === divisionId && season.isActive
+      );
+      
+      return seasonForDivision || null;
+    } catch (error) {
+      console.error('Error fetching current season:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     const fetchTeamData = async () => {
@@ -56,6 +86,10 @@ function FloorballTeamPage() {
           // Fetch division the team is in
           const divisionResponse = await divisionService.getById(teamResponse.divisionId)
           setDivision(divisionResponse.data)
+
+          // Fetch current season for this division
+          const currentSeasonData = await getCurrentSeason(teamResponse.divisionId);
+          setCurrentSeason(currentSeasonData);
         } else {
           setError('Team not found');
         }
@@ -97,6 +131,42 @@ function FloorballTeamPage() {
     };
     fetchMatches();
   }, [team, currentPage]);
+
+  // Function to fetch data for specific tabs
+  const fetchTabData = async (tabId: string) => {
+    if (!team || !currentSeason) return;
+
+    try {
+      if (tabId === 'stats') {
+        setStatisticsLoading(true);
+        setStatisticsError(null);
+        
+        const teamStats = await floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id);
+        setTeamStatistics(teamStats);
+        
+      } else if (tabId === 'standings') {
+        setStandingsLoading(true);
+        setStandingsError(null);
+        
+        const standingsData = await floorballStatisticsService.getTeamStandings(currentSeason.id);
+        setStandings(standingsData);
+      }
+      
+    } catch (error) {
+      console.error(`Failed to fetch ${tabId} data:`, error);
+      if (tabId === 'stats') {
+        setStatisticsError('Failed to load team statistics');
+      } else if (tabId === 'standings') {
+        setStandingsError('Failed to load standings');
+      }
+    } finally {
+      if (tabId === 'stats') {
+        setStatisticsLoading(false);
+      } else if (tabId === 'standings') {
+        setStandingsLoading(false);
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -150,6 +220,12 @@ function FloorballTeamPage() {
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
     console.log('Active tab changed to:', tabId);
+    
+    // Fetch data for stats/standings tabs only when first accessed
+    if ((tabId === 'stats' || tabId === 'standings') && !fetchedTabs.has(tabId)) {
+      fetchTabData(tabId);
+      setFetchedTabs(prev => new Set([...prev, tabId]));
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -190,18 +266,22 @@ function FloorballTeamPage() {
 
       case 'stats':
         return (
-          <div className="stats-section">
-            <h3>🚧 Team Statistics</h3>
-            <p>Team statistics coming soon...</p>
-          </div>
+          <Statistics 
+            teamStatistics={teamStatistics}
+            loading={statisticsLoading}
+            error={statisticsError}
+            seasonName={currentSeason?.name}
+          />
         );
 
       case 'standings':
         return (
-          <div className="standings-section">
-            <h3>🚧 League Standings</h3>
-            <p>League standings coming soon...</p>
-          </div>
+          <LeagueStanding 
+            standings={standings}
+            loading={standingsLoading}
+            error={standingsError}
+            seasonName={currentSeason?.name}
+          />
         );
 
       default:

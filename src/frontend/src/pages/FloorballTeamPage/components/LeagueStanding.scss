@@ -1,0 +1,405 @@
+@use 'sass:map';
+@use '../../../styles/variables' as *;
+@use '../../../styles/common' as *;
+
+.standing-container {
+  @include container;
+  margin-bottom: map.get($spacing, "md");
+  color: $color-neutral-black;
+  background: $color-white;
+  border-radius: map.get($border-radius, "lg");
+  box-shadow: $box-shadow-drop-1;
+  overflow: hidden;
+}
+
+.standing-header {
+  background: $color-gradient-blue;
+  color: $color-white;
+  padding: map.get($spacing, "md") map.get($spacing, "lg");
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: map.get($spacing, "xl");
+
+  .league-selector {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, "sm");
+    
+    .dropdown-icon {
+      width: 16px;
+      height: 16px;
+      fill: $color-white;
+    }
+  }
+
+  .league-title {
+    font-size: map.get($font-sizes, "md");
+    font-weight: map.get($font-weights, "bold");
+    color: $color-white;
+  }
+
+  .table-headers {
+    display: flex;
+    gap: map.get($spacing, "lg");
+    font-size: map.get($font-sizes, "sm");
+    font-weight: map.get($font-weights, "bold");
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    
+    .header-spacer {
+      width: 20%;
+      min-width: 200px;
+    }
+
+    .header-item {
+      min-width: 30px;
+      text-align: center;
+      
+      &:nth-child(2) { // MP
+        width: 8%;
+      }
+      &:nth-child(3) { // W
+        width: 8%;
+      }
+      &:nth-child(4) { // D
+        width: 8%;
+      }
+      &:nth-child(5) { // L
+        width: 8%;
+      }
+      &:nth-child(6) { // G
+        width: 12%;
+      }
+      &:nth-child(7) { // GD
+        width: 8%;
+      }
+      &:nth-child(8) { // PTS
+        width: 8%;
+      }
+      &:nth-child(9) { // FORM
+        width: 20%;
+      }
+    }
+  }
+}
+
+.standing-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: $color-white;
+  
+  .table-row {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    td {
+      padding: map.get($spacing, "md") map.get($spacing, "sm");
+      vertical-align: middle;
+      font-size: map.get($font-sizes, "sm");
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+// Column-specific styling
+.rank-col {
+  width: 8%;
+  text-align: center;
+  font-weight: map.get($font-weights, "bold");
+  color: $color-neutral-black;
+}
+
+.team-col {
+  width: 25%;
+  text-align: left;
+
+  .team-info {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, "sm");
+  }
+}
+
+.spacer-col {
+  width: 20%;
+  min-width: 200px;
+}
+
+.stats-col {
+  text-align: center;
+  font-weight: map.get($font-weights, "medium");
+  color: $color-neutral-black;
+  width: 8%;
+}
+
+.team-col {
+  .team-logo {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: map.get($border-radius, "sm");
+    background: linear-gradient(135deg, #FFD700, #000000);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-white;
+    font-weight: map.get($font-weights, "bold");
+    font-size: map.get($font-sizes, "xs");
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        #FFD700 0px,
+        #FFD700 2px,
+        #000000 2px,
+        #000000 4px
+      );
+    }
+
+    .logo-text {
+      position: relative;
+      z-index: 1;
+      color: $color-white;
+      font-weight: map.get($font-weights, "bold");
+      font-size: map.get($font-sizes, "xs");
+    }
+  }
+
+  .team-name {
+    font-weight: map.get($font-weights, "medium");
+    color: $color-neutral-black;
+    font-size: map.get($font-sizes, "sm");
+  }
+}
+
+.stats-col {
+  text-align: center;
+  font-weight: map.get($font-weights, "medium");
+  color: $color-neutral-black;
+}
+
+.goals-col {
+  text-align: center;
+  font-weight: map.get($font-weights, "medium");
+  color: $color-neutral-black;
+  width: 12%;
+}
+
+.points-col {
+  text-align: center;
+  font-weight: map.get($font-weights, "bold");
+  color: $color-neutral-black;
+  width: 8%;
+}
+
+.form-col {
+  text-align: center;
+  width: 20%;
+
+  .form-indicators {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .form-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: map.get($border-radius, "sm");
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: map.get($font-sizes, "xs");
+    font-weight: map.get($font-weights, "bold");
+    color: $color-white;
+
+    &.form-w {
+      background: $color-green;
+    }
+
+    &.form-d {
+      background: $color-yellow;
+    }
+
+    &.form-l {
+      background: $color-red;
+    }
+
+    &.form-unknown {
+      background: $color-neutral-medium-grey;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .standing-container {
+    margin: map.get($spacing, "sm");
+  }
+
+  .standing-header {
+    padding: map.get($spacing, "sm") map.get($spacing, "md");
+
+    .table-headers {
+      gap: map.get($spacing, "md");
+      font-size: map.get($font-sizes, "xs");
+    }
+  }
+
+  .standing-table {
+    .table-row td {
+      padding: map.get($spacing, "sm") map.get($spacing, "xs");
+      font-size: map.get($font-sizes, "xs");
+    }
+  }
+
+  .team-col {
+    width: 30%;
+  }
+
+  .stats-col {
+    width: 7%;
+  }
+
+  .goals-col {
+    width: 10%;
+  }
+
+  .points-col {
+    width: 7%;
+  }
+
+  .form-col {
+    width: 18%;
+
+    .form-indicators {
+      gap: 5px;
+    }
+
+    .form-indicator {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .standing-header {
+    flex-direction: column;
+    gap: map.get($spacing, "sm");
+    padding: map.get($spacing, "sm");
+
+    .league-selector {
+      align-self: flex-start;
+    }
+
+    .table-headers {
+      align-self: flex-end;
+      gap: map.get($spacing, "sm");
+    }
+  }
+
+  .standing-table {
+    .table-row td {
+      padding: map.get($spacing, "xs");
+    }
+  }
+
+  .team-col {
+    width: 35%;
+
+    .team-logo {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .stats-col {
+    width: 6%;
+  }
+
+  .goals-col {
+    width: 8%;
+  }
+
+  .points-col {
+    width: 6%;
+  }
+
+  .form-col {
+    width: 15%;
+
+    .form-indicators {
+      gap: 4px;
+    }
+
+    .form-indicator {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .standing-container {
+    margin: map.get($spacing, "xs");
+  }
+
+  .standing-header {
+    .table-headers {
+      gap: map.get($spacing, "xs");
+      font-size: map.get($font-sizes, "xs");
+    }
+  }
+
+  .team-col {
+    width: 40%;
+
+    .team-name {
+      font-size: map.get($font-sizes, "xs");
+    }
+  }
+
+  .stats-col {
+    width: 5%;
+  }
+
+  .goals-col {
+    width: 7%;
+  }
+
+  .points-col {
+    width: 5%;
+  }
+
+  .form-col {
+    width: 12%;
+
+    .form-indicators {
+      gap: 3px;
+    }
+
+    .form-indicator {
+      width: 14px;
+      height: 14px;
+    }
+  }
+}
