@@ -1,0 +1,43 @@
+.edit-match-page {
+  .page-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+
+    .header-left, .header-right {
+      flex: 1;
+    }
+
+    .header-left {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .header-center {
+      flex: 2;
+      text-align: center;
+
+      h1 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+      }
+    }
+  }
+
+  .error-alert.page-error {
+    margin-bottom: 20px;
+  }
+
+  .form-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+}

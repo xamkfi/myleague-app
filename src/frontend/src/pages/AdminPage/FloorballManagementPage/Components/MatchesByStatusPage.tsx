@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
-import { useMatchManagement } from '../ManageMatchPage/hooks/useMatchManagement';
-import MatchFormModal from '../MatchOverviewPage/Components/MatchFormModal/MatchFormModal';
 import PaginationControls from '../FloorballTeamsPage/components/PaginationControls';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import BackButton from '../../../../components/BackButton/BackButton';
@@ -22,6 +21,7 @@ interface MatchesByStatusPageProps {
 
 const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPageProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // Data state
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
@@ -33,18 +33,6 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
   const [pageSize, setPageSize] = useState(50);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
   const [collapsed, setCollapsed] = useState(false);
-  // Modal and match management logic
-  const {
-    actionLoading,
-    showForm,
-    formMode,
-    editMatch,
-    handleLiveMatch,
-    handleEditMatch,
-    handleCloseForm,
-    handleFormSubmit,
-    handleCancelMatch
-  } = useMatchManagement({ setMatches });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,6 +67,14 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
     };
     fetchData();
   }, []);
+
+  const handleEditMatch = (match: FloorballMatchDto) => {
+    navigate(`/admin/floorball/matches/${match.id}/edit`);
+  };
+
+  const handleLiveMatch = (match: FloorballMatchDto) => {
+    navigate(`/admin/floorball/matches/manage/${match.id}`);
+  };
 
   // Filter by status and optionally season
   const filtered = useMemo(() => {
@@ -131,7 +127,6 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
               onToggleCollapse={toggleCollapse}
               onLiveMatch={handleLiveMatch}
               onEditMatch={handleEditMatch}
-              actionLoading={actionLoading}
               sectionType={sectionType}
             />
             <PaginationControls
@@ -141,15 +136,6 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
               pageSize={pageSize}
               onPageChange={page => setCurrentPage(page)}
               onPageSizeChange={size => { setPageSize(size); setCurrentPage(1); }}
-            />
-            <MatchFormModal
-              isOpen={showForm}
-              onClose={handleCloseForm}
-              mode={formMode}
-              initialData={editMatch}
-              onSubmit={handleFormSubmit}
-              onCancelMatch={handleCancelMatch}
-              loading={actionLoading === 'edit' || actionLoading === 'cancelling'}
             />
           </>
         )}

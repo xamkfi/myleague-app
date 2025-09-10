@@ -2,10 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import type { 
   CreateFloorballMatchRequest,
   FloorballMatchDto,
-  ChangeMatchSeasonRequest,
-  ChangeMatchTeamsRequest,
-  ChangeMatchVenueRequest,
-  ChangeMatchDateTimeRequest
 } from '../../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import { floorballSeasonSearchService } from '../../../../../../api/floorball/floorballTeamSearchService';
@@ -18,7 +14,7 @@ type MatchFormMode = 'create' | 'edit';
 interface MatchFormProps {
   mode: MatchFormMode;
   initialData?: FloorballMatchDto;
-  onSubmit: (matchData: CreateFloorballMatchRequest | ChangeMatchSeasonRequest | ChangeMatchTeamsRequest | ChangeMatchVenueRequest | ChangeMatchDateTimeRequest) => Promise<void>;
+  onSubmit: (matchData: CreateFloorballMatchRequest) => Promise<void>;
   onCancel: () => void;
   onCancelMatch?: (matchId: string) => Promise<void>;
   loading?: boolean;
@@ -284,28 +280,31 @@ const MatchForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (mode === 'create') {
-      if (!formData.seasonId || !formData.homeTeamId || !formData.awayTeamId || !formData.scheduledDateTime) {
-        setError('Please fill in all required fields');
-        return;
+
+    try {
+      setError(null);
+
+      if (mode === 'create') {
+        if (!formData.seasonId || !formData.homeTeamId || !formData.awayTeamId || !formData.scheduledDateTime) {
+          setError('Please fill in all required fields');
+          return;
+        }
+  
+        if (formData.homeTeamId === formData.awayTeamId) {
+          setError('Home team and away team cannot be the same');
+          return;
+        }
+  
+        // Validate time inputs
+        if (!selectedDate || !hoursInput || !minutesInput) {
+          setError('Please enter a valid date and time');
+          return;
+        }
       }
 
-      if (formData.homeTeamId === formData.awayTeamId) {
-        setError('Home team and away team cannot be the same');
-        return;
-      }
-
-      // Validate time inputs
-      if (!selectedDate || !hoursInput || !minutesInput) {
-        setError('Please enter a valid date and time');
-        return;
-      }
-
-      try {
-        setError(null);
-        await onSubmit(formData as CreateFloorballMatchRequest);
-        
+      await onSubmit(formData);
+      
+      if (mode === 'create') {
         // Reset form on success
         setFormData({
           seasonId: '',
@@ -321,51 +320,10 @@ const MatchForm = ({
         
         // Clear initial options
         createInitialOptions();
-      } catch (error) {
-        console.error('Error creating match:', error);
-        setError(error instanceof Error ? error.message : 'Failed to create match');
       }
-    } else {
-      // Edit mode - determine what changed and call appropriate endpoint
-      if (!initialData) {
-        setError('No match data provided for editing');
-        return;
-      }
-
-      try {
-        setError(null);
-        
-        // Check what fields changed and call appropriate endpoints
-        const changes: Promise<unknown>[] = [];
-        
-        if (formData.seasonId !== initialData.seasonId) {
-          changes.push(onSubmit({ seasonId: formData.seasonId } as ChangeMatchSeasonRequest));
-        }
-        
-        if (formData.homeTeamId !== initialData.homeTeamId || formData.awayTeamId !== initialData.awayTeamId) {
-          changes.push(onSubmit({ homeTeamId: formData.homeTeamId, awayTeamId: formData.awayTeamId } as ChangeMatchTeamsRequest));
-        }
-        
-        if (formData.venue !== initialData.venue) {
-          changes.push(onSubmit({ venue: formData.venue || '' } as ChangeMatchVenueRequest));
-        }
-        
-        if (formData.scheduledDateTime !== initialData.scheduledDateTime) {
-          changes.push(onSubmit({ scheduledDateTime: formData.scheduledDateTime } as ChangeMatchDateTimeRequest));
-        }
-        
-        if (changes.length === 0) {
-          setError('No changes detected');
-          return;
-        }
-        
-        // Execute all changes
-        await Promise.all(changes as Promise<unknown>[]);
-        
-      } catch (error) {
-        console.error('Error updating match:', error);
-        setError(error instanceof Error ? error.message : 'Failed to update match');
-      }
+    } catch (error) {
+      console.error(`Error ${mode === 'create' ? 'creating' : 'updating'} match:`, error);
+      setError(error instanceof Error ? error.message : `Failed to ${mode} match`);
     }
   };
 
