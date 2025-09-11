@@ -12,6 +12,7 @@ export interface FloorballPlayerSeasonStatisticsDto {
   seasonId: string;
   playerName: string;
   teamName: string;
+  teamLogo?: string | null;
   seasonName: string;
   gamesPlayed: number;
   goals: number;
@@ -64,6 +65,7 @@ export interface FloorballTeamSeasonStatisticsDto {
   homeLosses: number;
   awayWins: number;
   awayLosses: number;
+  lastFiveForm?: string[];
 }
 
 export interface FloorballMatchTeamStatisticsDto {

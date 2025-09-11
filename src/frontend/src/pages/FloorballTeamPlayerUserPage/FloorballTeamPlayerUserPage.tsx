@@ -80,6 +80,7 @@ const FloorballTeamPlayerUserPage = () => {
         seasonId: "",
         playerName: "",
         teamName: "",
+        teamLogo: null,
         seasonName: "",
         gamesPlayed: 0,
         goals: 0,
@@ -197,7 +198,15 @@ const FloorballTeamPlayerUserPage = () => {
         <div className="player-container">
           <div className="player-info-layout">
             <div className="player-info-box">
-              <div className="player-avatar-large"></div>
+              <div className="player-avatar-large">
+                {player.careerStats[0]?.stats.teamLogo && (
+                  <img
+                    className="team-logo-img"
+                    src={player.careerStats[0].stats.teamLogo}
+                    alt={player.teamName}
+                  />
+                )}
+              </div>
               <div className="player-details">
                 <div className="player-name">{player.playerName}</div>
                 <div className="player-details-row">
@@ -301,13 +310,11 @@ const FloorballTeamPlayerUserPage = () => {
                       <div className="match-cell">{match.matchDate}</div>
                       <div className="match-cell">{match.competition}</div>
                       <div className="match-cell teams-cell">
-                        <div className="team-info">
-                          <div className="team-logo fc-alapiha">FC</div>
+                        <div className="match-row-home-team">
                           <span className="team-name">FC Alapiha {match.homeScore}</span>
                         </div>
                         <div className="vs-separator">-</div>
-                        <div className="team-info">
-                          <div className="team-logo aurora">AU</div>
+                        <div className="match-row-away-team">
                           <span className="team-name">{match.opponent} {match.awayScore}</span>
                         </div>
                       </div>
@@ -353,8 +360,13 @@ const FloorballTeamPlayerUserPage = () => {
                   <div key={teamStats.teamId} className="career-row">
                     <div className="career-cell">{teamStats.seasonName}</div>
                     <div className="career-cell">
-                      <div className="team-info">
-                        <div className="team-logo fc-alapiha">FC</div>
+                      <div className="match-row-home-team">
+                        {teamStats.stats.teamLogo && (
+                          <img
+                            src={teamStats.stats.teamLogo}
+                            alt={`${teamStats.teamName} logo`}
+                          />
+                        )}
                         <span className="team-name">{teamStats.teamName}</span>
                       </div>
                     </div>

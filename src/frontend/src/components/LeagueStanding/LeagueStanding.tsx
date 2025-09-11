@@ -1,8 +1,8 @@
-// Moved to global component: src/frontend/src/components/LeagueStanding/LeagueStanding.tsx
+import './LeagueStanding.scss';
 import type { 
   FloorballPlayerSeasonStatisticsDto,
   FloorballSeasonStatisticsSummaryDto 
-} from '../../../api/floorball/floorballStatistics';
+} from '../../api/floorball/floorballStatistics';
 import { useState } from 'react';
 
 interface LeagueStandingProps {
@@ -133,7 +133,6 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                 </td>
                 <td className="spacer-col">
                   <div className="team-info">
-
                     <span className="team-name">{player.teamName}</span>
                   </div>
                 </td>
@@ -302,3 +301,5 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     </div>
   );
 }
+
+

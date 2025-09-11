@@ -114,6 +114,7 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
                 assistingPlayer, secondAssistingPlayer,
                 request.PeriodNumber, request.TimeInSeconds,
                 request.Description, request.GoalType);
+            // Ensure EF persists match score changes
 
             //Adding goals/assists to player statistics
             scoringPlayer.RecordGoal();
@@ -140,6 +141,9 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
 
             // Mark the goal event as added in the repository
             _matchRepository.MarkEventAsAdded(goal);
+
+            //Update match table (homescore/awayscore)
+            await _matchRepository.UpdateAsync(match);
 
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);

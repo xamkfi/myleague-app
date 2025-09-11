@@ -61,7 +61,7 @@ public static class FloorballStatisticsMapper
     /// <param name="teamName">Optional team name</param>
     /// <param name="seasonName">Optional season name</param>
     /// <returns>Statistics DTO</returns>
-    public static FloorballPlayerSeasonStatisticsDto ToDto(FloorballPlayerSeasonStatistics entity, string? playerName = null, string? teamName = null, string? seasonName = null)
+    public static FloorballPlayerSeasonStatisticsDto ToDto(FloorballPlayerSeasonStatistics entity, string? playerName = null, string? teamName = null, string? seasonName = null, string? teamLogo = null)
     {
         return new FloorballPlayerSeasonStatisticsDto
         {
@@ -72,6 +72,7 @@ public static class FloorballStatisticsMapper
             PlayerName = playerName ?? string.Empty,
             TeamName = teamName ?? string.Empty,
             SeasonName = seasonName ?? string.Empty,
+            TeamLogo = teamLogo,
             GamesPlayed = entity.GamesPlayed,
             Goals = entity.Goals,
             Assists = entity.Assists,

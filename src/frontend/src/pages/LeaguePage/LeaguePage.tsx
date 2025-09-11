@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import StandingsSection from './components/StandingsSection';
+import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import ResultsSection from './components/ResultsSection';
 import FixturesSection from './components/FixturesSection';
 import SummarySection from './components/SummarySection';
@@ -128,7 +128,7 @@ export default function LeaguePage() {
         );
       case 'standings':
         return (
-          <StandingsSection 
+          <LeagueStanding 
             seasonSummary={seasonSummary}
             loading={loading}
             error={error}

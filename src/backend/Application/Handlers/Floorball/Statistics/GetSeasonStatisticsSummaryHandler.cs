@@ -18,6 +18,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballPlayerRepository _floorballPlayerRepository;
     private readonly IFloorballTeamRepository _floorballTeamRepository;
+    private readonly IFloorballMatchRepository _floorballMatchRepository;
     private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetSeasonStatisticsSummaryHandler> _logger;
 
@@ -30,12 +31,14 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
         IFloorballStatisticsRepository statisticsRepository,
         IFloorballPlayerRepository floorballPlayerRepository,
         IFloorballTeamRepository floorballTeamRepository,
+        IFloorballMatchRepository floorballMatchRepository,
         IPersonRepository personRepository,
         ILogger<GetSeasonStatisticsSummaryHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
         _floorballPlayerRepository = floorballPlayerRepository;
         _floorballTeamRepository = floorballTeamRepository;
+        _floorballMatchRepository = floorballMatchRepository;
         _personRepository = personRepository;
         _logger = logger;
     }
@@ -72,6 +75,24 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             {
                 _logger.LogWarning("Season statistics not found for Season: {SeasonId}", request.SeasonId);
                 return Result<FloorballSeasonStatisticsSummaryDto>.NotFound("Season statistics", request.SeasonId.ToString());
+            }
+
+            // Build last-5 form per team
+            Dictionary<Guid, string[]> last5ByTeam = new Dictionary<Guid, string[]>();
+            foreach (Domain.Entities.Floorball.FloorballTeamSeasonStatistics ts in teamStats)
+            {
+                IEnumerable<Domain.Entities.Floorball.FloorballMatch> matches =
+                    await _floorballMatchRepository.GetLastCompletedByTeamAsync(ts.TeamId, request.SeasonId, 5);
+
+                string[] form = matches.Select(m =>
+                {
+                    if (m.HomeScore == m.AwayScore) return "T";
+                    bool teamIsHome = m.HomeTeamId == ts.TeamId;
+                    bool teamWon = (teamIsHome && m.HomeScore > m.AwayScore) || (!teamIsHome && m.AwayScore > m.HomeScore);
+                    return teamWon ? "W" : "L";
+                }).ToArray();
+
+                last5ByTeam[ts.TeamId] = form;
             }
 
             // Create lookups for team names and season names from team standings
@@ -158,6 +179,15 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
                 AverageGoalsPerGame = averageGoalsPerGame
             };
             
+            // Add last-5 form to each team's DTO
+            foreach (FloorballTeamSeasonStatisticsDto teamDto in summaryDto.TeamStandings)
+            {
+                if (last5ByTeam.TryGetValue(teamDto.TeamId, out string[]? form))
+                {
+                    teamDto.LastFiveForm = form;
+                }
+            }
+
             _logger.LogInformation("Successfully retrieved season statistics summary for Season: {SeasonId}", request.SeasonId);
             return Result<FloorballSeasonStatisticsSummaryDto>.Success(summaryDto);
         }

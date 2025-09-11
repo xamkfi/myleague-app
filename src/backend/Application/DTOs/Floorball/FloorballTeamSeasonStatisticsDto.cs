@@ -159,4 +159,9 @@ public class FloorballTeamSeasonStatisticsDto
     /// Gets or sets away losses
     /// </summary>
     public int AwayLosses { get; set; }
+
+    /// <summary>
+    /// Gets or sets last five form. values are W, L, T
+    /// </summary>
+    public string[] LastFiveForm { get; set; } = Array.Empty<string>();
 }

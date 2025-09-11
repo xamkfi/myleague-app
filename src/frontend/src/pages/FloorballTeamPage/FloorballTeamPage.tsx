@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import RosterSection from './components/RosterSection';
 import SummarySection from './components/SummarySection';
 import Statistics from './components/Statistics';
-import LeagueStanding from './components/LeagueStanding';
+import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 
 function FloorballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
