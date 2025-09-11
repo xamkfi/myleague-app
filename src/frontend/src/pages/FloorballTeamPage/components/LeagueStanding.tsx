@@ -1,7 +1,8 @@
 // Moved to global component: src/frontend/src/components/LeagueStanding/LeagueStanding.tsx
 import type { 
   FloorballPlayerSeasonStatisticsDto,
-  FloorballSeasonStatisticsSummaryDto 
+  FloorballSeasonStatisticsSummaryDto,
+  FloorballTeamSeasonStatisticsDto 
 } from '../../../api/floorball/floorballStatistics';
 import { useState } from 'react';
 
@@ -46,14 +47,14 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
 
   // Render standings table
   const renderStandingsTable = () => {
-    const data = seasonSummary?.teamStandings || [];
+    const data: FloorballTeamSeasonStatisticsDto[] = seasonSummary?.teamStandings || [];
     
     return (
       <table className="standing-table">
         <tbody>
           {data.map((team, index) => {
-            const form = Array.isArray((team as any).lastFiveForm)
-              ? ((team as any).lastFiveForm as string[])
+            const form = Array.isArray(team.lastFiveForm)
+              ? team.lastFiveForm as string[]
               : [];
             const rank = index + 1;
             
