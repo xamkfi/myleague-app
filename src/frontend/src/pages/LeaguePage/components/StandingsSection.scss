@@ -1,24 +1,10 @@
-@use 'sass:map';
-@use '../../../styles/variables' as *;
-@use '../../../styles/common' as *;
-
-.standing-container {
-  @include container;
-  margin-bottom: map.get($spacing, "md");
-  color: $color-neutral-black;
-  background: $color-white;
-  border-radius: map.get($border-radius, "lg");
-  box-shadow: $box-shadow-drop-1;
-  overflow: hidden;
-}
-
 .standing-header {
-  background: $color-gradient-blue;
-  color: $color-white;
-  padding: map.get($spacing, "md") map.get($spacing, "lg");
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: #fff;
+  padding: 1rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: map.get($spacing, "md");
+  gap: 1rem;
 
   .header-top-row {
     display: flex;
@@ -29,33 +15,33 @@
   .league-selector {
     display: flex;
     align-items: center;
-    gap: map.get($spacing, "sm");
+    gap: 0.5rem;
     
     .dropdown-icon {
       width: 16px;
       height: 16px;
-      fill: $color-white;
+      fill: #fff;
     }
   }
 
   .league-title {
-    font-size: map.get($font-sizes, "md");
-    font-weight: map.get($font-weights, "bold");
-    color: $color-white;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
   }
 
   .view-buttons {
     display: flex;
-    gap: map.get($spacing, "xs");
+    gap: 0.25rem;
     
     .view-button {
-      padding: map.get($spacing, "xs") map.get($spacing, "sm");
+      padding: 0.25rem 0.75rem;
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: map.get($border-radius, "sm");
-      color: $color-white;
-      font-size: map.get($font-sizes, "sm");
-      font-weight: map.get($font-weights, "medium");
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 500;
       cursor: pointer;
       transition: all 0.2s ease;
       
@@ -65,44 +51,44 @@
       }
       
       &.active {
-        background: $color-white;
-        color: $color-neutral-black;
-        border-color: $color-white;
-        font-weight: map.get($font-weights, "bold");
+        background: #fff;
+        color: #000;
+        border-color: #fff;
+        font-weight: bold;
       }
     }
   }
 
   .table-headers {
     display: flex;
-    font-size: map.get($font-sizes, "sm");
-    font-weight: map.get($font-weights, "bold");
+    font-size: 0.875rem;
+    font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    padding: map.get($spacing, "sm") map.get($spacing, "lg");
+    padding: 0.75rem 1.5rem;
     
     .header-rank {
       width: 8%;
       text-align: center;
-      padding-right: map.get($spacing, "sm");
+      padding-right: 0.75rem;
     }
 
     .header-team {
       width: 25%;
       text-align: left;
-      padding-right: map.get($spacing, "sm");
+      padding-right: 0.75rem;
     }
 
     .header-spacer {
       width: 20%;
       min-width: 200px;
-      padding-right: map.get($spacing, "sm");
+      padding-right: 0.75rem;
     }
 
     .header-item {
       width: 8%;
       text-align: center;
-      padding-right: map.get($spacing, "sm");
+      padding-right: 0.75rem;
       
       &:nth-child(6) { // Goals column
         width: 12%;
@@ -117,7 +103,7 @@
 .standing-table {
   width: 100%;
   border-collapse: collapse;
-  background: $color-white;
+  background: #fff;
   
   .table-row {
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -132,9 +118,9 @@
     }
 
     td {
-      padding: map.get($spacing, "sm");
+      padding: 0.75rem;
       vertical-align: middle;
-      font-size: map.get($font-sizes, "sm");
+      font-size: 0.875rem;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -145,8 +131,8 @@
 .rank-col {
   width: 8%;
   text-align: center;
-  font-weight: map.get($font-weights, "bold");
-  color: $color-neutral-black;
+  font-weight: bold;
+  color: #000;
 }
 
 .team-col {
@@ -167,9 +153,9 @@
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
-    border: 1px solid $color-neutral-medium-grey;
-    background-color: $color-neutral-light-grey;
-    margin-right: map.get($spacing, "sm");
+    border: 1px solid #9ca3af;
+    background-color: #f3f4f6;
+    margin-right: 0.75rem;
   }
 
   .logo-empty {
@@ -177,15 +163,15 @@
     height: 32px;
     border-radius: 50%;
     flex-shrink: 0;
-    border: 1px solid $color-neutral-medium-grey;
-    background-color: $color-neutral-light-grey;
-    margin-right: map.get($spacing, "sm");
+    border: 1px solid #9ca3af;
+    background-color: #f3f4f6;
+    margin-right: 0.75rem;
   }
 
   .team-name {
-    font-weight: map.get($font-weights, "bold");
-    color: $color-neutral-black;
-    font-size: map.get($font-sizes, "sm");
+    font-weight: bold;
+    color: #000;
+    font-size: 0.875rem;
     margin: 0;
     padding: 0;
   }
@@ -203,9 +189,9 @@
   }
 
   .team-name {
-    font-weight: map.get($font-weights, "medium");
-    color: $color-neutral-black;
-    font-size: map.get($font-sizes, "sm");
+    font-weight: 500;
+    color: #000;
+    font-size: 0.875rem;
     margin: 0;
     padding: 0;
   }
@@ -213,28 +199,22 @@
 
 .stats-col {
   text-align: center;
-  font-weight: map.get($font-weights, "medium");
-  color: $color-neutral-black;
+  font-weight: 500;
+  color: #000;
   width: 8%;
-}
-
-.stats-col {
-  text-align: center;
-  font-weight: map.get($font-weights, "medium");
-  color: $color-neutral-black;
 }
 
 .goals-col {
   text-align: center;
-  font-weight: map.get($font-weights, "medium");
-  color: $color-neutral-black;
+  font-weight: 500;
+  color: #000;
   width: 12%;
 }
 
 .points-col {
   text-align: center;
-  font-weight: map.get($font-weights, "bold");
-  color: $color-neutral-black;
+  font-weight: bold;
+  color: #000;
   width: 8%;
 }
 
@@ -251,44 +231,60 @@
   .form-indicator {
     width: 20px;
     height: 20px;
-    border-radius: map.get($border-radius, "sm");
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: map.get($font-sizes, "xs");
-    font-weight: map.get($font-weights, "bold");
-    color: $color-white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #fff;
 
     &.form-w {
-      background: $color-green;
+      background: #10b981;
     }
 
     &.form-d {
-      background: $color-yellow;
+      background: #f59e0b;
     }
 
     &.form-l {
-      background: $color-red;
+      background: #ef4444;
     }
 
     &.form-unknown {
-      background: $color-neutral-medium-grey;
+      background: #9ca3af;
     }
+  }
+}
+
+// Loading and Error States
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 2rem;
+  color: #374151;
+
+  h3 {
+    color: #1e40af;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  p {
+    color: #6b7280;
+    font-size: 0.9rem;
   }
 }
 
 // Responsive design
 @media (max-width: 1024px) {
-  .standing-container {
-    margin: map.get($spacing, "sm");
-  }
-
   .standing-header {
-    padding: map.get($spacing, "sm") map.get($spacing, "md");
+    padding: 0.75rem 1rem;
 
     .table-headers {
-      font-size: map.get($font-sizes, "xs");
-      padding: map.get($spacing, "sm") map.get($spacing, "md");
+      font-size: 0.75rem;
+      padding: 0.75rem 1rem;
       
       .header-team {
         width: 30%;
@@ -309,18 +305,13 @@
 
   .standing-table {
     .table-row td {
-      padding: map.get($spacing, "sm") map.get($spacing, "xs");
-      font-size: map.get($font-sizes, "xs");
+      padding: 0.75rem 0.5rem;
+      font-size: 0.75rem;
     }
   }
 
   .team-col {
     width: 30%;
-
-    .logo-image {
-      width: 28px;
-      height: 28px;
-    }
 
     .logo-empty {
       width: 28px;
@@ -357,8 +348,8 @@
 @media (max-width: 768px) {
   .standing-header {
     flex-direction: column;
-    gap: map.get($spacing, "sm");
-    padding: map.get($spacing, "sm");
+    gap: 0.75rem;
+    padding: 0.75rem;
 
     .league-selector {
       align-self: flex-start;
@@ -366,8 +357,8 @@
 
     .table-headers {
       align-self: flex-end;
-      font-size: map.get($font-sizes, "xs");
-      padding: map.get($spacing, "sm");
+      font-size: 0.75rem;
+      padding: 0.75rem;
       
       .header-team {
         width: 35%;
@@ -388,17 +379,12 @@
 
   .standing-table {
     .table-row td {
-      padding: map.get($spacing, "xs");
+      padding: 0.5rem;
     }
   }
 
   .team-col {
     width: 35%;
-
-    .logo-image {
-      width: 24px;
-      height: 24px;
-    }
 
     .logo-empty {
       width: 24px;
@@ -433,14 +419,10 @@
 }
 
 @media (max-width: 480px) {
-  .standing-container {
-    margin: map.get($spacing, "xs");
-  }
-
   .standing-header {
     .table-headers {
-      font-size: map.get($font-sizes, "xs");
-      padding: map.get($spacing, "xs");
+      font-size: 0.75rem;
+      padding: 0.5rem;
       
       .header-team {
         width: 40%;
@@ -462,18 +444,13 @@
   .team-col {
     width: 40%;
 
-    .logo-image {
-      width: 20px;
-      height: 20px;
-    }
-
     .logo-empty {
       width: 20px;
       height: 20px;
     }
 
     .team-name {
-      font-size: map.get($font-sizes, "xs");
+      font-size: 0.75rem;
     }
   }
 

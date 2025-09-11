@@ -2,7 +2,9 @@ using Application.Common;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Queries.Floorball.Statistics;
+using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
+using Domain.Entities.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -14,6 +16,9 @@ namespace Application.Handlers.Floorball.Statistics;
 public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatisticsSummaryQuery, Result<FloorballSeasonStatisticsSummaryDto>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
+    private readonly IFloorballPlayerRepository _floorballPlayerRepository;
+    private readonly IFloorballTeamRepository _floorballTeamRepository;
+    private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetSeasonStatisticsSummaryHandler> _logger;
 
     /// <summary>
@@ -23,9 +28,15 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
     /// <param name="logger">The logger</param>
     public GetSeasonStatisticsSummaryHandler(
         IFloorballStatisticsRepository statisticsRepository,
+        IFloorballPlayerRepository floorballPlayerRepository,
+        IFloorballTeamRepository floorballTeamRepository,
+        IPersonRepository personRepository,
         ILogger<GetSeasonStatisticsSummaryHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
+        _floorballPlayerRepository = floorballPlayerRepository;
+        _floorballTeamRepository = floorballTeamRepository;
+        _personRepository = personRepository;
         _logger = logger;
     }
 
@@ -63,6 +74,52 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
                 return Result<FloorballSeasonStatisticsSummaryDto>.NotFound("Season statistics", request.SeasonId.ToString());
             }
 
+            // Create lookups for team names and season names from team standings
+            Dictionary<Guid, string> teamNameLookup = teamStats.ToDictionary(ts => ts.TeamId, ts => ts.Team.Name ?? string.Empty);
+            string seasonName = teamStats.FirstOrDefault()?.Season.Name ?? string.Empty;
+
+            // Retrieve player names from person repository for top scorers and assists
+            Dictionary<Guid, Person> playerPersonLookup = new Dictionary<Guid, Person>();
+            
+            // Get all unique player IDs from top scorers and assists
+            IEnumerable<Guid> playerIds = topScorers.Select(ps => ps.PlayerId)
+                .Concat(topAssists.Select(ps => ps.PlayerId))
+                .Distinct()
+                .ToList();
+
+            if (playerIds.Any())
+            {
+                // Get players to map player ID to person ID
+                List<Domain.Entities.Floorball.FloorballPlayer> players = new List<Domain.Entities.Floorball.FloorballPlayer>();
+                foreach (Guid playerId in playerIds)
+                {
+                    Domain.Entities.Floorball.FloorballPlayer? player = await _floorballPlayerRepository.GetByIdAsync(playerId);
+                    if (player != null)
+                    {
+                        players.Add(player);
+                    }
+                }
+
+                // Extract person IDs from players
+                List<Guid> personIds = players.Select(p => p.PersonId).Distinct().ToList();
+                
+                // Load persons using PersonRepository
+                if (personIds.Any())
+                {
+                    IEnumerable<Person> persons = await _personRepository.GetByIdsAsync(personIds);
+                    Dictionary<Guid, Person> personLookup = persons.ToDictionary(p => p.Id, p => p);
+                    
+                    // Create lookup from player ID to person
+                    foreach (Domain.Entities.Floorball.FloorballPlayer player in players)
+                    {
+                        if (personLookup.TryGetValue(player.PersonId, out Person? person))
+                        {
+                            playerPersonLookup[player.Id] = person;
+                        }
+                    }
+                }
+            }
+
             // Calculate summary statistics
             int totalGames = teamStats.Sum(ts => ts.GamesPlayed) / 2; // Divide by 2 since each game involves 2 teams
             int totalGoals = teamStats.Sum(ts => ts.GoalsFor);
@@ -72,9 +129,30 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             {
                 SeasonId = request.SeasonId,
                 TeamStandings = teamStats.Select(ts => FloorballStatisticsMapper.ToDto(ts)).ToList(),
-                TopScorers = topScorers.Select(ps => FloorballStatisticsMapper.ToDto(ps)).ToList(),
-                TopAssists = topAssists.Select(ps => FloorballStatisticsMapper.ToDto(ps)).ToList(),
-                TopGoalies = topGoalies.Select(gs => FloorballStatisticsMapper.ToDto(gs)).ToList(),
+                TopScorers = topScorers.Select(ps => 
+                {
+                    string playerName = playerPersonLookup.TryGetValue(ps.PlayerId, out Person? person) 
+                        ? $"{person.FirstName} {person.LastName}" 
+                        : string.Empty;
+                    string teamName = teamNameLookup.TryGetValue(ps.TeamId, out string? team) ? team : string.Empty;
+                    return FloorballStatisticsMapper.ToDto(ps, playerName, teamName, seasonName);
+                }).ToList(),
+                TopAssists = topAssists.Select(ps => 
+                {
+                    string playerName = playerPersonLookup.TryGetValue(ps.PlayerId, out Person? person) 
+                        ? $"{person.FirstName} {person.LastName}" 
+                        : string.Empty;
+                    string teamName = teamNameLookup.TryGetValue(ps.TeamId, out string? team) ? team : string.Empty;
+                    return FloorballStatisticsMapper.ToDto(ps, playerName, teamName, seasonName);
+                }).ToList(),
+                TopGoalies = topGoalies.Select(gs => 
+                {
+                    string playerName = playerPersonLookup.TryGetValue(gs.PlayerId, out Person? person) 
+                        ? $"{person.FirstName} {person.LastName}" 
+                        : string.Empty;
+                    string teamName = teamNameLookup.TryGetValue(gs.TeamId, out string? team) ? team : string.Empty;
+                    return FloorballStatisticsMapper.ToDto(gs, playerName, teamName, seasonName);
+                }).ToList(),
                 TotalGames = totalGames,
                 TotalGoals = totalGoals,
                 AverageGoalsPerGame = averageGoalsPerGame

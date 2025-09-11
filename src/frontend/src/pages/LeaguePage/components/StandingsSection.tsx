@@ -1,25 +1,21 @@
-import './LeagueStanding.scss';
-import type { 
-  FloorballPlayerSeasonStatisticsDto,
-  FloorballSeasonStatisticsSummaryDto 
-} from '../../../api/floorball/floorballStatistics';
+import './StandingsSection.scss';
 import { useState } from 'react';
+import type { FloorballSeasonStatisticsSummaryDto } from '../../../api/floorball/floorballStatistics';
 
-interface LeagueStandingProps {
+interface StandingsSectionProps {
   seasonSummary?: FloorballSeasonStatisticsSummaryDto | null;
   loading?: boolean;
   error?: string | null;
 }
 
-export default function LeagueStanding({ seasonSummary, loading, error }: LeagueStandingProps) {
+export default function StandingsSection({ seasonSummary, loading, error }: StandingsSectionProps) {
   const [activeView, setActiveView] = useState<'standings' | 'scorers' | 'assists'>('standings');
+
   // Show loading state
   if (loading) {
     return (
-      <div className="standing-container">
-        <div className="loading-state">
-          <h3>Loading standings...</h3>
-        </div>
+      <div className="loading-state">
+        <h3>Loading standings...</h3>
       </div>
     );
   }
@@ -27,15 +23,12 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
   // Show error state
   if (error) {
     return (
-      <div className="standing-container">
-        <div className="error-state">
-          <h3>Error loading standings</h3>
-          <p>{error}</p>
-        </div>
+      <div className="error-state">
+        <h3>Error loading standings</h3>
+        <p>{error}</p>
       </div>
     );
   }
-
 
   // Generate recent form data (last 6 games) - 1 unknown + 5 wins as shown in image
   const generateForm = () => {
@@ -54,14 +47,15 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     </svg>
   );
 
+
   // Render standings table
   const renderStandingsTable = () => {
-    const data = seasonSummary?.teamStandings || [];
+    const teams = seasonSummary?.teamStandings || [];
     
     return (
       <table className="standing-table">
         <tbody>
-          {data.map((team, index) => {
+          {teams.map((team, index) => {
             const form = generateForm();
             const rank = index + 1;
             
@@ -70,22 +64,19 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    
-                      {team.teamLogo && team.teamLogo.trim() !== '' ? (
-                        <img 
-                          className="logo-image" 
-                          src={team.teamLogo} 
-                          alt={team.teamName}
-                          onError={(e) => {
-                            // Hide image if it fails to load - show empty container
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="logo-empty"></div>
-                      )}
-                    
+                    {team.teamLogo && team.teamLogo.trim() !== '' ? (
+                      <img 
+                        className="logo-image" 
+                        src={team.teamLogo} 
+                        alt={team.teamName}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="logo-empty"></div>
+                    )}
                     <span className="team-name">{team.teamName}</span>
                   </div>
                 </td>
@@ -124,7 +115,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     return (
       <table className="standing-table">
         <tbody>
-          {scorers.map((player: FloorballPlayerSeasonStatisticsDto, index: number) => {
+          {scorers.map((player, index) => {
             const rank = index + 1;
             
             return (
@@ -137,7 +128,6 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                 </td>
                 <td className="spacer-col">
                   <div className="team-info">
-
                     <span className="team-name">{player.teamName}</span>
                   </div>
                 </td>
@@ -163,7 +153,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     return (
       <table className="standing-table">
         <tbody>
-          {assists.map((player: FloorballPlayerSeasonStatisticsDto, index: number) => {
+          {assists.map((player, index) => {
             const rank = index + 1;
             
             return (
@@ -263,7 +253,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
   };
 
   return (
-    <div className="standing-container">
+    <>
       {/* Header with dropdown and view buttons */}
       <div className="standing-header">
         <div className="header-top-row">
@@ -303,6 +293,6 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
 
       {/* Dynamic content based on active view */}
       {renderContent()}
-    </div>
+    </>
   );
 }

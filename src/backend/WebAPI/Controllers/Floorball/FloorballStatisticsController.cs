@@ -216,6 +216,5 @@ namespace WebAPI.Controllers.Floorball
             return StatusCode(500, ApiResponse<List<FloorballTeamSeasonStatisticsDto>>.ErrorResponse(errorMessage));
         }
 
-
     }
 }

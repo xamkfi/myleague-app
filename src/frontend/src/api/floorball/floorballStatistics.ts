@@ -37,6 +37,7 @@ export interface FloorballTeamSeasonStatisticsDto {
   teamId: string;
   seasonId: string;
   teamName: string;
+  teamLogo: string;
   seasonName: string;
   gamesPlayed: number;
   wins: number;
@@ -120,16 +121,13 @@ export interface FloorballGoalieSeasonStatisticsDto {
 export interface FloorballSeasonStatisticsSummaryDto {
   seasonId: string;
   seasonName: string;
-  totalTeams: number;
-  totalPlayers: number;
-  totalMatches: number;
+  teamStandings: FloorballTeamSeasonStatisticsDto[];
+  topScorers: FloorballPlayerSeasonStatisticsDto[];
+  topAssists: FloorballPlayerSeasonStatisticsDto[];
+  topGoalies: FloorballGoalieSeasonStatisticsDto[];
+  totalGames: number;
   totalGoals: number;
-  averageGoalsPerMatch: number;
-  totalPenaltyMinutes: number;
-  averagePenaltyMinutesPerMatch: number;
-  mostGoalsInMatch: number;
-  mostGoalsByPlayer: number;
-  mostGoalsByTeam: number;
+  averageGoalsPerGame: number;
 }
 
 /**

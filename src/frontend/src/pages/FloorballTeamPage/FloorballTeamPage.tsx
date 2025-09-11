@@ -9,7 +9,7 @@ import './FloorballTeamPage.scss';
 import { divisionService } from '../../api/common/divisionService';
 import type { DivisionType } from '../../types/common/divisionType';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
-import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto } from '../../api/floorball/floorballStatistics';
+import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto, type FloorballSeasonStatisticsSummaryDto } from '../../api/floorball/floorballStatistics';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
 import TeamNavbar from './components/TeamNavbar';
 import ResultsSection from './components/ResultsSection';
@@ -28,7 +28,7 @@ function FloorballTeamPage() {
   const [division, setDivision] = useState<DivisionType | null>(null)
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null)
   const [teamStatistics, setTeamStatistics] = useState<FloorballTeamSeasonStatisticsDto | null>(null);
-  const [standings, setStandings] = useState<FloorballTeamSeasonStatisticsDto[] | null>(null);
+  const [seasonSummary, setSeasonSummary] = useState<FloorballSeasonStatisticsSummaryDto | null>(null);
   const [currentSeason, setCurrentSeason] = useState<FloorballSeasonDto | null>(null);
   const [fetchedTabs, setFetchedTabs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -38,8 +38,8 @@ function FloorballTeamPage() {
   const [matchesError, setMatchesError] = useState<string | null>(null);
   const [statisticsLoading, setStatisticsLoading] = useState(false);
   const [statisticsError, setStatisticsError] = useState<string | null>(null);
-  const [standingsLoading, setStandingsLoading] = useState(false);
-  const [standingsError, setStandingsError] = useState<string | null>(null);
+  const [seasonSummaryLoading, setSeasonSummaryLoading] = useState(false);
+  const [seasonSummaryError, setSeasonSummaryError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -140,16 +140,16 @@ function FloorballTeamPage() {
       if (tabId === 'stats') {
         setStatisticsLoading(true);
         setStatisticsError(null);
-        
         const teamStats = await floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id);
         setTeamStatistics(teamStats);
         
       } else if (tabId === 'standings') {
-        setStandingsLoading(true);
-        setStandingsError(null);
+        setSeasonSummaryLoading(true);
+        setSeasonSummaryError(null);
         
-        const standingsData = await floorballStatisticsService.getTeamStandings(currentSeason.id);
-        setStandings(standingsData);
+        // Fetch season summary data (includes standings)
+        const seasonSummaryData = await floorballStatisticsService.getSeasonStatistics(currentSeason.id);
+        setSeasonSummary(seasonSummaryData);
       }
       
     } catch (error) {
@@ -157,13 +157,13 @@ function FloorballTeamPage() {
       if (tabId === 'stats') {
         setStatisticsError('Failed to load team statistics');
       } else if (tabId === 'standings') {
-        setStandingsError('Failed to load standings');
+        setSeasonSummaryError('Failed to load season summary');
       }
     } finally {
       if (tabId === 'stats') {
         setStatisticsLoading(false);
       } else if (tabId === 'standings') {
-        setStandingsLoading(false);
+        setSeasonSummaryLoading(false);
       }
     }
   };
@@ -277,10 +277,9 @@ function FloorballTeamPage() {
       case 'standings':
         return (
           <LeagueStanding 
-            standings={standings}
-            loading={standingsLoading}
-            error={standingsError}
-            seasonName={currentSeason?.name}
+            seasonSummary={seasonSummary}
+            loading={seasonSummaryLoading}
+            error={seasonSummaryError}
           />
         );
 

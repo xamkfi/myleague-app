@@ -31,8 +31,8 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .HasComment("ID of the season these statistics are for");
 
             // Ignore navigation properties to prevent cross-context issues
-            builder.Ignore(s => s.Team);
-            builder.Ignore(s => s.Season);
+            //builder.Ignore(s => s.Team);
+            //builder.Ignore(s => s.Season);
 
             // Configure basic game statistics
             builder.Property(s => s.GamesPlayed)
