@@ -30,6 +30,11 @@
   min-width: 0; // Prevents grid items from overflowing
   flex-shrink: 0;
 
+  &:not(:first-child) {
+    cursor: pointer;
+    border-color: #3c3f4262;
+  }
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
@@ -81,7 +86,7 @@
   &.stat-card--create {
     background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
     cursor: pointer;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #3c3f4262;
 
     &:hover {
       background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);

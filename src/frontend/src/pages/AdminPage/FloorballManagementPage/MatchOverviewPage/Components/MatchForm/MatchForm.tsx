@@ -1,39 +1,33 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { 
   CreateFloorballMatchRequest,
   FloorballMatchDto,
-  ChangeMatchSeasonRequest,
-  ChangeMatchTeamsRequest,
-  ChangeMatchVenueRequest,
-  ChangeMatchDateTimeRequest
 } from '../../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import { floorballSeasonSearchService } from '../../../../../../api/floorball/floorballTeamSearchService';
 import { floorballTeamNameSearchService } from '../../../../../../api/floorball/floorballTeamNameSearchService';
 import { floorballRefereeSearchService } from '../../../../../../api/floorball/floorballRefereeSearchService';
-import './MatchFormModal.scss';
+import './MatchForm.scss';
 
 type MatchFormMode = 'create' | 'edit';
 
-interface MatchFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface MatchFormProps {
   mode: MatchFormMode;
   initialData?: FloorballMatchDto;
-  onSubmit: (matchData: CreateFloorballMatchRequest | ChangeMatchSeasonRequest | ChangeMatchTeamsRequest | ChangeMatchVenueRequest | ChangeMatchDateTimeRequest) => Promise<void>;
+  onSubmit: (matchData: CreateFloorballMatchRequest) => Promise<void>;
+  onCancel: () => void;
   onCancelMatch?: (matchId: string) => Promise<void>;
   loading?: boolean;
 }
 
-const MatchFormModal = ({
-  isOpen,
-  onClose,
+const MatchForm = ({
   mode,
   initialData,
   onSubmit,
+  onCancel,
   onCancelMatch,
   loading = false
-}: MatchFormModalProps) => {
+}: MatchFormProps) => {
   const [formData, setFormData] = useState<CreateFloorballMatchRequest>({
     seasonId: '',
     homeTeamId: '',
@@ -154,7 +148,7 @@ const MatchFormModal = ({
       // Clear initial options
       createInitialOptions();
     }
-  }, [mode, initialData, isOpen, createInitialOptions, preloadInitialOptions]);
+  }, [mode, initialData, createInitialOptions, preloadInitialOptions]);
 
   // Custom search functions that include initial options
   const searchSeasonsWithInitial = useCallback(async (query: string, page: number) => {
@@ -286,28 +280,31 @@ const MatchFormModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (mode === 'create') {
-      if (!formData.seasonId || !formData.homeTeamId || !formData.awayTeamId || !formData.scheduledDateTime) {
-        setError('Please fill in all required fields');
-        return;
+
+    try {
+      setError(null);
+
+      if (mode === 'create') {
+        if (!formData.seasonId || !formData.homeTeamId || !formData.awayTeamId || !formData.scheduledDateTime) {
+          setError('Please fill in all required fields');
+          return;
+        }
+  
+        if (formData.homeTeamId === formData.awayTeamId) {
+          setError('Home team and away team cannot be the same');
+          return;
+        }
+  
+        // Validate time inputs
+        if (!selectedDate || !hoursInput || !minutesInput) {
+          setError('Please enter a valid date and time');
+          return;
+        }
       }
 
-      if (formData.homeTeamId === formData.awayTeamId) {
-        setError('Home team and away team cannot be the same');
-        return;
-      }
-
-      // Validate time inputs
-      if (!selectedDate || !hoursInput || !minutesInput) {
-        setError('Please enter a valid date and time');
-        return;
-      }
-
-      try {
-        setError(null);
-        await onSubmit(formData as CreateFloorballMatchRequest);
-        
+      await onSubmit(formData);
+      
+      if (mode === 'create') {
         // Reset form on success
         setFormData({
           seasonId: '',
@@ -323,55 +320,14 @@ const MatchFormModal = ({
         
         // Clear initial options
         createInitialOptions();
-      } catch (error) {
-        console.error('Error creating match:', error);
-        setError(error instanceof Error ? error.message : 'Failed to create match');
       }
-    } else {
-      // Edit mode - determine what changed and call appropriate endpoint
-      if (!initialData) {
-        setError('No match data provided for editing');
-        return;
-      }
-
-      try {
-        setError(null);
-        
-        // Check what fields changed and call appropriate endpoints
-        const changes: Promise<unknown>[] = [];
-        
-        if (formData.seasonId !== initialData.seasonId) {
-          changes.push(onSubmit({ seasonId: formData.seasonId } as ChangeMatchSeasonRequest));
-        }
-        
-        if (formData.homeTeamId !== initialData.homeTeamId || formData.awayTeamId !== initialData.awayTeamId) {
-          changes.push(onSubmit({ homeTeamId: formData.homeTeamId, awayTeamId: formData.awayTeamId } as ChangeMatchTeamsRequest));
-        }
-        
-        if (formData.venue !== initialData.venue) {
-          changes.push(onSubmit({ venue: formData.venue || '' } as ChangeMatchVenueRequest));
-        }
-        
-        if (formData.scheduledDateTime !== initialData.scheduledDateTime) {
-          changes.push(onSubmit({ scheduledDateTime: formData.scheduledDateTime } as ChangeMatchDateTimeRequest));
-        }
-        
-        if (changes.length === 0) {
-          setError('No changes detected');
-          return;
-        }
-        
-        // Execute all changes
-        await Promise.all(changes as Promise<unknown>[]);
-        
-      } catch (error) {
-        console.error('Error updating match:', error);
-        setError(error instanceof Error ? error.message : 'Failed to update match');
-      }
+    } catch (error) {
+      console.error(`Error ${mode === 'create' ? 'creating' : 'updating'} match:`, error);
+      setError(error instanceof Error ? error.message : `Failed to ${mode} match`);
     }
   };
 
-  const handleClose = () => {
+  const handleCancel = () => {
     setFormData({
       seasonId: '',
       homeTeamId: '',
@@ -388,7 +344,7 @@ const MatchFormModal = ({
     // Clear initial options
     createInitialOptions();
     
-    onClose();
+    onCancel();
   };
 
   const handleCancelMatch = async () => {
@@ -401,7 +357,7 @@ const MatchFormModal = ({
       await onCancelMatch(initialData.id);
       
       // Close the modal after successful cancellation
-      handleClose();
+      handleCancel();
     } catch (error) {
       console.error('Error canceling match:', error);
       setError(error instanceof Error ? error.message : 'Failed to cancel match');
@@ -410,159 +366,150 @@ const MatchFormModal = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay">
-      <div className="modal create-match-modal" lang="fi">
-        <div className="modal-header">
-          <h2>{mode === 'create' ? 'Create New Match' : 'Edit Match'}</h2>
-          <button onClick={handleClose} className="modal-close">×</button>
+    <>
+      {error && (
+        <div className="error-alert">
+          <span className="error-icon">⚠️</span>
+          <span className="error-text">{error}</span>
+          <button onClick={() => setError(null)} className="error-close">×</button>
         </div>
-        
-        {error && (
-          <div className="error-alert">
-            <span className="error-icon">⚠️</span>
-            <span className="error-text">{error}</span>
-            <button onClick={() => setError(null)} className="error-close">×</button>
+      )}
+      
+      <form onSubmit={handleSubmit} className="modal-form">
+        <div className="form-group create-match-form-row">
+          <label htmlFor="season">Season *</label>
+          <div className="input-wrapper">
+            <SearchableInfiniteDropdown
+              placeholder="Select Season"
+              value={formData.seasonId}
+              onChange={(value) => setFormData(prev => ({ ...prev, seasonId: value }))}
+              onSearch={searchSeasonsWithInitial}
+              searchPlaceholder="Search seasons..."
+              emptyMessage="No seasons found"
+              required
+              loadInitialDataOnMount={mode === 'edit'}
+            />
+          </div>
+        </div>
+        <div className="form-group create-match-form-row">
+          <label htmlFor="homeTeam">Home Team *</label>
+          <div className="input-wrapper">
+            <SearchableInfiniteDropdown
+              placeholder="Select Home Team"
+              value={formData.homeTeamId}
+              onChange={(value) => setFormData(prev => ({ ...prev, homeTeamId: value }))}
+              onSearch={searchHomeTeamsWithInitial}
+              searchPlaceholder="Search teams..."
+              emptyMessage="No teams found"
+              required
+              loadInitialDataOnMount={mode === 'edit'}
+            />
+          </div>
+        </div>
+        <div className="form-group create-match-form-row">
+          <label htmlFor="awayTeam">Away Team *</label>
+          <div className="input-wrapper">
+            <SearchableInfiniteDropdown
+              placeholder="Select Away Team"
+              value={formData.awayTeamId}
+              onChange={(value) => setFormData(prev => ({ ...prev, awayTeamId: value }))}
+              onSearch={searchAwayTeamsWithInitial}
+              searchPlaceholder="Search teams..."
+              emptyMessage="No teams found"
+              required
+              loadInitialDataOnMount={mode === 'edit'}
+            />
+          </div>
+        </div>
+        {mode === 'create' && (
+          <div className="form-group create-match-form-row">
+            <label htmlFor="referee">Referee</label>
+            <div className="input-wrapper">
+              <SearchableInfiniteDropdown
+                placeholder="Select Referee"
+                value={formData.refereeId}
+                onChange={(value) => setFormData(prev => ({ ...prev, refereeId: value }))}
+                onSearch={floorballRefereeSearchService.searchReferees}
+                searchPlaceholder="Search referees..."
+                emptyMessage="No referees found"
+              />
+            </div>
           </div>
         )}
-        
-        <form onSubmit={handleSubmit} className="modal-form">
-          <div className="form-group create-match-form-row">
-            <label htmlFor="season">Season *</label>
-            <div className="input-wrapper">
-              <SearchableInfiniteDropdown
-                placeholder="Select Season"
-                value={formData.seasonId}
-                onChange={(value) => setFormData(prev => ({ ...prev, seasonId: value }))}
-                onSearch={searchSeasonsWithInitial}
-                searchPlaceholder="Search seasons..."
-                emptyMessage="No seasons found"
-                required
-                loadInitialDataOnMount={mode === 'edit'}
-              />
-            </div>
-          </div>
-          <div className="form-group create-match-form-row">
-            <label htmlFor="homeTeam">Home Team *</label>
-            <div className="input-wrapper">
-              <SearchableInfiniteDropdown
-                placeholder="Select Home Team"
-                value={formData.homeTeamId}
-                onChange={(value) => setFormData(prev => ({ ...prev, homeTeamId: value }))}
-                onSearch={searchHomeTeamsWithInitial}
-                searchPlaceholder="Search teams..."
-                emptyMessage="No teams found"
-                required
-                loadInitialDataOnMount={mode === 'edit'}
-              />
-            </div>
-          </div>
-          <div className="form-group create-match-form-row">
-            <label htmlFor="awayTeam">Away Team *</label>
-            <div className="input-wrapper">
-              <SearchableInfiniteDropdown
-                placeholder="Select Away Team"
-                value={formData.awayTeamId}
-                onChange={(value) => setFormData(prev => ({ ...prev, awayTeamId: value }))}
-                onSearch={searchAwayTeamsWithInitial}
-                searchPlaceholder="Search teams..."
-                emptyMessage="No teams found"
-                required
-                loadInitialDataOnMount={mode === 'edit'}
-              />
-            </div>
-          </div>
-          {mode === 'create' && (
-            <div className="form-group create-match-form-row">
-              <label htmlFor="referee">Referee</label>
-              <div className="input-wrapper">
-                <SearchableInfiniteDropdown
-                  placeholder="Select Referee"
-                  value={formData.refereeId}
-                  onChange={(value) => setFormData(prev => ({ ...prev, refereeId: value }))}
-                  onSearch={floorballRefereeSearchService.searchReferees}
-                  searchPlaceholder="Search referees..."
-                  emptyMessage="No referees found"
+        <div className="form-group create-match-form-row">
+          <label>Date & Time *</label>
+          <div className="input-wrapper">
+            <div className="datetime-input-group">
+              <div className="date-input">
+                <input
+                  type="date"
+                  value={selectedDate ? selectedDate.toISOString().split('T')[0] : ''}
+                  onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : null)}
+                  className="date-picker-input"
+                  required
+                />
+              </div>
+              <div className="time-input-group">
+                <input
+                  type="number"
+                  placeholder="HH"
+                  value={hoursInput}
+                  onChange={(e) => handleHoursChange(e.target.value)}
+                  min="0"
+                  max="23"
+                  className="time-input hours"
+                  required
+                />
+                <span className="time-separator">:</span>
+                <input
+                  type="number"
+                  placeholder="MM"
+                  value={minutesInput}
+                  onChange={(e) => handleMinutesChange(e.target.value)}
+                  min="0"
+                  max="59"
+                  className="time-input minutes"
+                  required
                 />
               </div>
             </div>
+          </div>
+        </div>
+        <div className="form-group create-match-form-row">
+          <label htmlFor="venue">Venue</label>
+          <div className="input-wrapper">
+            <input
+              type="text"
+              id="venue"
+              value={formData.venue}
+              onChange={(e) => setFormData(prev => ({ ...prev, venue: e.target.value }))}
+              placeholder="Enter venue"
+            />
+          </div>
+        </div>
+        
+        <div className="form-actions">
+          <button type="button" onClick={handleCancel} className="cancel-button">
+            Cancel
+          </button>
+          {mode === 'edit' && initialData && onCancelMatch && (
+            <button 
+              type="button" 
+              onClick={handleCancelMatch} 
+              disabled={cancelLoading || initialData.status === 'Cancelled' || initialData.status === 'Completed'}
+              className="cancel-match-button"
+            >
+              {cancelLoading ? 'Cancelling...' : 'Cancel Match'}
+            </button>
           )}
-          <div className="form-group create-match-form-row">
-            <label>Date & Time *</label>
-            <div className="input-wrapper">
-              <div className="datetime-input-group">
-                <div className="date-input">
-                  <input
-                    type="date"
-                    value={selectedDate ? selectedDate.toISOString().split('T')[0] : ''}
-                    onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : null)}
-                    className="date-picker-input"
-                    required
-                  />
-                </div>
-                <div className="time-input-group">
-                  <input
-                    type="number"
-                    placeholder="HH"
-                    value={hoursInput}
-                    onChange={(e) => handleHoursChange(e.target.value)}
-                    min="0"
-                    max="23"
-                    className="time-input hours"
-                    required
-                  />
-                  <span className="time-separator">:</span>
-                  <input
-                    type="number"
-                    placeholder="MM"
-                    value={minutesInput}
-                    onChange={(e) => handleMinutesChange(e.target.value)}
-                    min="0"
-                    max="59"
-                    className="time-input minutes"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="form-group create-match-form-row">
-            <label htmlFor="venue">Venue</label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="venue"
-                value={formData.venue}
-                onChange={(e) => setFormData(prev => ({ ...prev, venue: e.target.value }))}
-                placeholder="Enter venue"
-              />
-            </div>
-          </div>
-          
-          <div className="modal-actions">
-            <button type="button" onClick={handleClose} className="cancel-button">
-              Cancel
-            </button>
-            {mode === 'edit' && initialData && onCancelMatch && (
-              <button 
-                type="button" 
-                onClick={handleCancelMatch} 
-                disabled={cancelLoading || initialData.status === 'Cancelled' || initialData.status === 'Completed'}
-                className="cancel-match-button"
-              >
-                {cancelLoading ? 'Cancelling...' : 'Cancel Match'}
-              </button>
-            )}
-            <button type="submit" disabled={loading} className="submit-button">
-              {loading ? (mode === 'create' ? 'Creating...' : 'Updating...') : (mode === 'create' ? 'Create Match' : 'Update Match')}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          <button type="submit" disabled={loading} className="submit-button">
+            {loading ? (mode === 'create' ? 'Creating...' : 'Updating...') : (mode === 'create' ? 'Create Match' : 'Update Match')}
+          </button>
+        </div>
+      </form>
+    </>
   );
 };
 
-export default MatchFormModal; 
+export default MatchForm;

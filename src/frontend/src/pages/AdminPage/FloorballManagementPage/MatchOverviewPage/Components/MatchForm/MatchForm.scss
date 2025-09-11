@@ -1,85 +1,3 @@
-// CreateMatchModal styles
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-// Override base modal styles with more specific selectors
-.modal-overlay .modal.create-match-modal {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  width: 80% !important;
-  max-width: 700px !important;
-  min-width: 500px;
-  max-height: 95vh;
-  min-height: 600px;
-  overflow: hidden; // Prevent double scrollbar
-  animation: slideUp 0.3s ease-out;
-  z-index: 1001; // Ensure modal is above other elements
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.modal-overlay .modal.create-match-modal .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-
-  h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-
-  .modal-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-  }
-}
-
 .error-alert {
   background: #fef2f2;
   border: 1px solid #fecaca;
@@ -110,11 +28,10 @@
   }
 }
 
-.modal-overlay .modal.create-match-modal .modal-form {
+.modal-form {
   padding: 20px;
   overflow-y: auto;
-  overflow-x: visible; // Allow dropdowns to extend horizontally if needed
-  max-height: calc(95vh - 80px);
+  overflow-x: visible; 
   text-align: left;
 
   .form-group {
@@ -191,9 +108,8 @@
     select {
       cursor: pointer;
       position: relative;
-      z-index: 1002; // Ensure dropdown is above modal
+      z-index: 1002; 
       
-      // Ensure dropdown is scrollable with many options
       option {
         padding: 8px 12px;
         color: #374151;
@@ -208,16 +124,14 @@
         }
       }
       
-      // Style the select to indicate it's scrollable when needed
       &:focus {
         outline: none;
         border-color: #3b82f6;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        z-index: 1003; // Higher z-index when focused
+        z-index: 1003; 
       }
     }
 
-    // DatePicker styling
     .date-picker-input {
       width: 100%;
       padding: 8px 12px;
@@ -240,7 +154,6 @@
       }
     }
 
-    // DatePicker calendar popup styling
     .react-datepicker {
       font-family: inherit;
       border: 1px solid #d1d5db;
@@ -291,13 +204,12 @@
       }
     }
 
-    // DateTime input group styling - Override responsive styles
     .datetime-input-group {
       display: flex !important;
       gap: 4px;
       align-items: center;
       width: 100%;
-      flex-direction: row !important; // Force horizontal layout
+      flex-direction: row !important; 
 
       .date-input {
         flex: 0 0 auto;
@@ -314,7 +226,7 @@
         align-items: center;
         gap: 1px;
         flex-shrink: 0;
-        flex-direction: row !important; // Force horizontal layout
+        flex-direction: row !important; 
         margin-left: 10px;
 
         .time-input {
@@ -344,7 +256,6 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
           }
 
-          // Remove number input arrows
           &::-webkit-outer-spin-button,
           &::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -368,7 +279,7 @@
   }
 }
 
-.modal-overlay .modal.create-match-modal .modal-actions {
+.form-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
@@ -435,27 +346,13 @@
   }
 }
 
-// Override responsive styles to keep time inputs horizontal
 @media (max-width: 768px) {
-  .modal-overlay .modal.create-match-modal {
-    width: 95% !important;
-    margin: 2.5%;
-  }
-
-  .modal-overlay .modal.create-match-modal .modal-header {
-    padding: 16px;
-
-    h2 {
-      font-size: 1.25rem;
-    }
-  }
-
-  .modal-overlay .modal.create-match-modal .modal-form {
+  .modal-form {
     padding: 16px;
 
     .form-group {
       .datetime-input-group {
-        flex-direction: row !important; // Force horizontal even on mobile
+        flex-direction: row !important; 
         gap: 8px;
         align-items: center;
 
@@ -465,13 +362,13 @@
 
         .time-input-group {
           justify-content: flex-start;
-          flex-direction: row !important; // Force horizontal
+          flex-direction: row !important; 
         }
       }
     }
   }
 
-  .modal-overlay .modal.create-match-modal .modal-actions {
+  .form-actions {
     flex-direction: column;
 
     .cancel-button,
@@ -480,12 +377,3 @@
     }
   }
 }
-
-@media (max-width: 480px) {
-  .modal-overlay .modal.create-match-modal {
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-    max-height: 100vh;
-  }
-} 

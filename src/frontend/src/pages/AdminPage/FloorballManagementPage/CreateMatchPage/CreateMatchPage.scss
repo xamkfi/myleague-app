@@ -1,0 +1,58 @@
+.create-match-page {
+  .page-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+
+    .header-left, .header-right {
+      flex: 1;
+    }
+
+    .header-left {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .header-center {
+      flex: 2;
+      text-align: center;
+
+      h1 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+      }
+    }
+
+    .back-button {
+      background: white;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #f3f4f6;
+      }
+    }
+  }
+
+  .error-alert.page-error {
+    margin-bottom: 20px;
+  }
+
+  .form-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+}
