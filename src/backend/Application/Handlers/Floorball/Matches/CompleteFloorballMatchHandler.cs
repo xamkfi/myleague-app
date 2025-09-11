@@ -4,6 +4,7 @@ using Application.Mappings.Floorball;
 using Application.Common;
 using Application.Services.Common;
 using Domain.Entities.Floorball;
+using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
@@ -20,6 +21,7 @@ namespace Application.Handlers.Floorball.Matches;
 public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMatchCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
+    private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly IMatchTimerService _timerService;
     private readonly ILogger<CompleteFloorballMatchHandler> _logger;
@@ -28,16 +30,19 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
     /// Initializes a new instance of the CompleteFloorballMatchHandler class
     /// </summary>
     /// <param name="matchRepository">The floorball match repository</param>
+    /// <param name="statisticsRepository">The statistics repository</param>
     /// <param name="unitOfWork">The unit of work</param>
     /// <param name="timerService">The timer service</param>
     /// <param name="logger">The logger</param>
     public CompleteFloorballMatchHandler(
         IFloorballMatchRepository matchRepository,
+        IFloorballStatisticsRepository statisticsRepository,
         IFloorballUnitOfWork unitOfWork,
         IMatchTimerService timerService,
         ILogger<CompleteFloorballMatchHandler> logger)
     {
         _matchRepository = matchRepository;
+        _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
         _timerService = timerService;
         _logger = logger;
@@ -63,6 +68,9 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
 
             _logger.LogInformation("Completing floorball match: {MatchId}", request.Id);
             match.Complete();
+
+            // Update final team season statistics (wins/losses/ties)
+            await UpdateFinalTeamSeasonStatistics(match, cancellationToken);
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -90,5 +98,44 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             _logger.LogError(ex, "Error occurred while completing floorball match: {MatchId}", request.Id);
             return Result<FloorballMatchDto>.Failure("An error occurred while completing the match.");
         }
+    }
+
+    /// <summary>
+    /// Updates final team season statistics with match results (wins/losses/ties)
+    /// </summary>
+    private async Task UpdateFinalTeamSeasonStatistics(FloorballMatch match, CancellationToken cancellationToken)
+    {
+        // Update home team statistics
+        await UpdateTeamMatchResult(match.HomeTeamId, match.SeasonId, match.HomeScore, match.AwayScore, true, match, cancellationToken);
+        
+        // Update away team statistics  
+        await UpdateTeamMatchResult(match.AwayTeamId, match.SeasonId, match.AwayScore, match.HomeScore, false, match, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates team season statistics with match result
+    /// </summary>
+    private async Task UpdateTeamMatchResult(Guid teamId, Guid seasonId, int teamScore, int opponentScore, bool isHomeGame, FloorballMatch match, CancellationToken cancellationToken)
+    {
+        FloorballTeamSeasonStatistics? teamStats = await _statisticsRepository.GetTeamSeasonStatisticsAsync(teamId, seasonId, cancellationToken);
+        if (teamStats == null)
+        {
+            teamStats = new FloorballTeamSeasonStatistics(teamId, seasonId);
+        }
+
+        // Determine match result using enum
+        FloorballGameResult gameResult;
+        if (teamScore > opponentScore) gameResult = FloorballGameResult.Win;
+        else if (teamScore < opponentScore) gameResult = FloorballGameResult.Loss;
+        else gameResult = FloorballGameResult.Tie;
+
+        // Update team statistics with match result
+        teamStats.UpdateAfterMatch(
+            gameResult: gameResult,
+            isHomeGame: isHomeGame,
+            goalsFor: teamScore,
+            goalsAgainst: opponentScore);
+
+        await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
     }
 } 

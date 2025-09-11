@@ -12,11 +12,21 @@ public enum StatUpdateType
     /// Goal stat update
     /// </summary>
     Goal,
-    
+
     /// <summary>
     /// Assist stat update
     /// </summary>
-    Assist
+    Assist,
+
+    /// <summary>
+    /// Goal removed stat update
+    /// </summary>
+    GoalRemoved,
+
+    /// <summary>
+    /// Assist removed stat update
+    /// </summary>
+    AssistRemoved
 }
 
 /// <summary>

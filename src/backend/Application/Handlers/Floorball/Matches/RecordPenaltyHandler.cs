@@ -18,6 +18,7 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<RecordPenaltyHandler> _logger;
 
@@ -25,12 +26,14 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
         IFloorballMatchRepository matchRepository,
         IFloorballTeamRepository teamRepository,
         IFloorballPlayerRepository playerRepository,
+        IFloorballStatisticsRepository statisticsRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<RecordPenaltyHandler> logger)
     {
         _matchRepository = matchRepository;
         _teamRepository = teamRepository;
         _playerRepository = playerRepository;
+        _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -75,6 +78,15 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
                 request.TimeInSeconds,
                 request.Description);
 
+            // Update player season statistics for penalty minutes
+            if (player != null)
+            {
+                await UpdatePlayerSeasonPenaltyStatistics(player.Id, request.TeamId, match.SeasonId, request.Minutes, cancellationToken);
+            }
+
+            // Update match team statistics for penalty minutes
+            await UpdateMatchTeamPenaltyStatistics(match.Id, request.TeamId, request.Minutes, cancellationToken);
+
             _matchRepository.MarkEventAsAdded(penaltyEvent);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -87,6 +99,38 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
             _logger.LogError(ex, "Error occurred while recording penalty in match {MatchId}", request.MatchId);
             return Result<FloorballMatchDto>.Failure("An error occurred while recording the penalty.");
         }
+    }
+
+    /// <summary>
+    /// Updates player season statistics for penalty minutes
+    /// </summary>
+    private async Task UpdatePlayerSeasonPenaltyStatistics(Guid playerId, Guid teamId, Guid seasonId, int penaltyMinutes, CancellationToken cancellationToken)
+    {
+        FloorballPlayerSeasonStatistics? playerStats = await _statisticsRepository.GetPlayerSeasonStatisticsAsync(playerId, teamId, seasonId, cancellationToken);
+        if (playerStats == null)
+        {
+            playerStats = new FloorballPlayerSeasonStatistics(playerId, teamId, seasonId);
+        }
+
+        playerStats.RecordPenaltyMinutes(penaltyMinutes);
+
+        await _statisticsRepository.SavePlayerSeasonStatisticsAsync(playerStats, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates match team statistics for penalty minutes
+    /// </summary>
+    private async Task UpdateMatchTeamPenaltyStatistics(Guid matchId, Guid teamId, int penaltyMinutes, CancellationToken cancellationToken)
+    {
+        FloorballMatchTeamStatistics? matchStats = await _statisticsRepository.GetMatchTeamStatisticsAsync(matchId, teamId, cancellationToken);
+        if (matchStats == null)
+        {
+            matchStats = new FloorballMatchTeamStatistics(matchId, teamId);
+        }
+
+        matchStats.UpdatePenaltyMinutes(penaltyMinutes);
+
+        await _statisticsRepository.SaveMatchTeamStatisticsAsync(matchStats, cancellationToken);
     }
 }
 

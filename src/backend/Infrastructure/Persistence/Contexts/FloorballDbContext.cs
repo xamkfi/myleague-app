@@ -101,6 +101,31 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballStoredEvent> FloorballStoredEvents { get; set; } = null!;
 
         /// <summary>
+        /// Gets or sets the FloorballTeamSeasonStatistics DbSet.
+        /// </summary>
+        public DbSet<FloorballTeamSeasonStatistics> FloorballTeamSeasonStatistics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballPlayerSeasonStatistics DbSet.
+        /// </summary>
+        public DbSet<FloorballPlayerSeasonStatistics> FloorballPlayerSeasonStatistics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballGoalieSeasonStatistics DbSet.
+        /// </summary>
+        public DbSet<FloorballGoalieSeasonStatistics> FloorballGoalieSeasonStatistics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballMatchTeamStatistics DbSet.
+        /// </summary>
+        public DbSet<FloorballMatchTeamStatistics> FloorballMatchTeamStatistics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballStatisticsCache DbSet.
+        /// </summary>
+        public DbSet<FloorballStatisticsCache> FloorballStatisticsCache { get; set; }
+
+        /// <summary>
         /// Saves changes to the database with domain event dispatching.
         /// </summary>
         /// <returns>The number of state entries written to the database.</returns>
@@ -159,6 +184,13 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballGoalConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPenaltyConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballSaveConfiguration());
+            
+            // Apply statistics configurations
+            modelBuilder.ApplyConfiguration(new FloorballTeamSeasonStatisticsConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballPlayerSeasonStatisticsConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballGoalieSeasonStatisticsConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballMatchTeamStatisticsConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballStatisticsCacheConfiguration());
         }
     }
 }

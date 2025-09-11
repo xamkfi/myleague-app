@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 {
     [DbContext(typeof(FloorballDbContext))]
-    partial class FloorballDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250901161727_AddedStatistics")]
+    partial class AddedStatistics
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -246,9 +249,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AwayActiveGoalieId")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("AwayScore")
                         .HasColumnType("integer");
 
@@ -257,9 +257,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("HomeActiveGoalieId")
-                        .HasColumnType("uuid");
 
                     b.Property<int>("HomeScore")
                         .HasColumnType("integer");
