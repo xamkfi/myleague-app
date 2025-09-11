@@ -9,7 +9,6 @@ interface CollapsibleMatchSectionProps {
   onToggleCollapse: () => void;
   onLiveMatch: (match: FloorballMatchDto) => void;
   onEditMatch: (match: FloorballMatchDto) => void;
-  actionLoading: string | null;
   sectionType?: 'ongoing' | 'scheduled' | 'completed' | 'cancelled';
 }
 
@@ -20,7 +19,6 @@ const CollapsibleMatchSection = ({
   onToggleCollapse,
   onLiveMatch,
   onEditMatch,
-  actionLoading,
   sectionType
 }: CollapsibleMatchSectionProps) => {
   if (matches.length === 0) {
@@ -89,14 +87,12 @@ const CollapsibleMatchSection = ({
                         <button
                           onClick={() => onLiveMatch(match)}
                           className={match.status === 'InProgress' ? "live-button" : "go-live-button"}
-                          disabled={actionLoading !== null}
                         >
                           {match.status === 'InProgress' ? "🔴 Live" : "📊 Manage"}
                         </button>
                         <button
                           onClick={() => onEditMatch(match)}
                           className="edit-button"
-                          disabled={actionLoading !== null}
                         >
                           ✏️ Edit
                         </button>

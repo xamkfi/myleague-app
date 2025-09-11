@@ -1,20 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import { floorballRefereeService, type FloorballRefereeDto } from '../../../../api/floorball/floorballRefereeService';
 import RefereesTable from './components/RefereesTable';
-import CreateRefereeModal from './components/CreateRefereeModal';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import './FloorballRefereesPage.scss';
-import './components/CreateRefereeModal.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 
 const FloorballRefereesPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [referees, setReferees] = useState<FloorballRefereeDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [refereeToDelete, setRefereeToDelete] = useState<FloorballRefereeDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -102,17 +101,8 @@ const FloorballRefereesPage = () => {
     setRefereeToDelete(null);
   };
 
-  const handleRefereeCreated = (newReferee: FloorballRefereeDto) => {
-    setReferees(prevReferees => [...prevReferees, newReferee]);
-    setError(null);
-  };
-
   const handleCreateRefereeClick = () => {
-    setIsCreateModalOpen(true);
-  };
-
-  const handleCloseCreateModal = () => {
-    setIsCreateModalOpen(false);
+    navigate('/admin/floorball/referees/create');
   };
 
   if (loading) {
@@ -161,13 +151,6 @@ const FloorballRefereesPage = () => {
           />
         </div>
         
-        {/* Create Referee Modal */}
-        <CreateRefereeModal
-          isOpen={isCreateModalOpen}
-          onClose={handleCloseCreateModal}
-          onRefereeCreated={handleRefereeCreated}
-        />
-
         {/* Confirm Delete Modal */}
         <ConfirmDeleteModal
           isOpen={isDeleteModalOpen}

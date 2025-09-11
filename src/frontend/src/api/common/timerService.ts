@@ -207,6 +207,52 @@ export const timerService = {
   },
 
   /**
+   * Adjusts the timer by a specific number of seconds (can be positive or negative)
+   */
+  adjustTimer: async (matchId: string, adjustmentInSeconds: number): Promise<void> => {
+    console.log('=== timerService.adjustTimer CALLED ===');
+    console.log('Match ID:', matchId);
+    console.log('Adjustment in seconds:', adjustmentInSeconds);
+    
+    try {
+      // First, get the current timer status to get the elapsed time
+      const status = await timerService.getTimerStatus(matchId);
+      
+      if (!status.exists) {
+        throw new Error('Timer does not exist for this match');
+      }
+      
+      // Parse the current elapsed time to seconds
+      let currentSeconds = 0;
+      if (status.elapsedTime && status.elapsedTime.includes(':')) {
+        const parts = status.elapsedTime.split(':');
+        if (parts.length === 3) {
+          const [hours, minutes, seconds] = parts.map(p => parseInt(p, 10) || 0);
+          currentSeconds = hours * 3600 + minutes * 60 + seconds;
+        } else if (parts.length === 2) {
+          const [minutes, seconds] = parts.map(p => parseInt(p, 10) || 0);
+          currentSeconds = minutes * 60 + seconds;
+        }
+      }
+      
+      // Calculate new time (ensure it doesn't go below 0)
+      const newTimeInSeconds = Math.max(0, currentSeconds + adjustmentInSeconds);
+      
+      console.log('Current time in seconds:', currentSeconds);
+      console.log('New time in seconds:', newTimeInSeconds);
+      
+      // Use the existing setTimer method to set the new time
+      await timerService.setTimer(matchId, newTimeInSeconds);
+      
+      console.log('=== timerService.adjustTimer SUCCESS ===');
+    } catch (error) {
+      console.error('=== timerService.adjustTimer FAILED ===');
+      console.error('Error adjusting timer:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Destroys the timer for a match
    */
   destroyTimer: async (matchId: string): Promise<void> => {

@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
+import BackButton from '../../../../../components/BackButton/BackButton';
 import type { CreateFloorballSeasonRequest } from '../../../../../api/floorball/floorballSeasonService';
+import { floorballSeasonService } from '../../../../../api/floorball/floorballSeasonService';
 import { useDivisions } from '../../../../../hooks/useDivisions';
-import './CreateSeasonModal.scss';
+import './CreateSeasonPage.scss';
 
-interface CreateSeasonModalProps {
-  onSave: (seasonData: CreateFloorballSeasonRequest) => Promise<void>;
-  onClose: () => void;
-}
-
-export const CreateSeasonModal = ({
-  onSave,
-  onClose
-}: CreateSeasonModalProps) => {
+const CreateSeasonPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { divisions } = useDivisions();
   const [formData, setFormData] = useState<CreateFloorballSeasonRequest>({
     name: '',
@@ -24,6 +21,17 @@ export const CreateSeasonModal = ({
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successTimeoutId, setSuccessTimeoutId] = useState<number | null>(null);
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (successTimeoutId) {
+        clearTimeout(successTimeoutId);
+      }
+    };
+  }, [successTimeoutId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -91,6 +99,7 @@ export const CreateSeasonModal = ({
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       // Client-side validation
@@ -132,15 +141,40 @@ export const CreateSeasonModal = ({
         throw new Error(t('floorball.seasons.validation.seasonTooLong', 'Season duration cannot exceed 2 years'));
       }
 
-      await onSave(formData);
+      await floorballSeasonService.create(formData);
+
+      // Clear any existing timeout to prevent flickering
+      if (successTimeoutId) {
+        clearTimeout(successTimeoutId);
+      }
+
+      // Show success message
+      const message = t('floorball.seasons.seasonCreated', 'Season "{{seasonName}}" has been created successfully!', { 
+        seasonName: formData.name 
+      });
+      setSuccessMessage(message);
+      
+      // Auto-hide success message after 3 seconds and then navigate back
+      const timeoutId = setTimeout(() => {
+        setSuccessMessage(null);
+        setSuccessTimeoutId(null);
+        navigate('/admin/floorball/seasons');
+      }, 3000);
+      setSuccessTimeoutId(timeoutId);
+
+      // Reset form
+      setFormData({
+        name: '',
+        startDate: '',
+        endDate: '',
+        divisionId: ''
+      });
     } catch (err) {
       setError(parseApiError(err));
     } finally {
       setLoading(false);
     }
   };
-
-  //const divisions = Object.values(FloorballDivision).filter(div => div !== FloorballDivision.None);
 
   // Set default dates (current year season)
   const currentYear = new Date().getFullYear();
@@ -157,21 +191,23 @@ export const CreateSeasonModal = ({
   }, [defaultStartDate, defaultEndDate, formData.startDate, formData.endDate]);
 
   return (
-    <div className="create-season-modal-overlay">
-      <div className="create-season-modal-content">
-        <div className="create-season-modal-header">
-          <h3>{t('floorball.seasons.create.title', 'Create New Season')}</h3>
-          <button 
-            className="modal-close-btn"
-            onClick={onClose}
-            aria-label={t('common.close', 'Close')}
-          >
-            ×
-          </button>
+    <PageTemplate title={t('floorball.seasons.create.title', 'Create New Season')}>
+      {/* Floating Success Toast */}
+      {successMessage && (
+        <div className="success-toast">
+          <p>{successMessage}</p>
         </div>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="create-season-modal-body">
+      )}
+
+      <div className="create-season-container">
+        {/* Back button */}
+        <BackButton 
+          to="/admin/floorball/seasons" 
+          text={t('common.back', 'Back to Seasons')} 
+        />
+
+        <div className="create-season-form-container">
+          <form onSubmit={handleSubmit} className="create-season-form">
             {error && (
               <div className="error-message">
                 <i className="fas fa-exclamation-circle"></i>
@@ -214,7 +250,7 @@ export const CreateSeasonModal = ({
               </select>
             </div>
 
-            <div className="create-season-form-row">
+            <div className="form-row">
               <div className="form-group">
                 <label htmlFor="create-startDate">
                   {t('floorball.seasons.fields.startDate', 'Start Date')} *
@@ -251,34 +287,36 @@ export const CreateSeasonModal = ({
               <i className="fas fa-info-circle"></i>
               {t('floorball.seasons.create.info', 'The season will be created as inactive by default')}
             </div>
-          </div>
-          
-          <div className="create-season-modal-footer">
-            <button 
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-              disabled={loading}
-            >
-              {t('common.cancel', 'Cancel')}
-            </button>
-            <button 
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <i className="fas fa-spinner fa-spin"></i>
-                  {t('common.creating', 'Creating...')}
-                </>
-              ) : (
-                t('common.create', 'Create')
-              )}
-            </button>
-          </div>
-        </form>
+
+            <div className="form-actions">
+              <button 
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => navigate('/admin/floorball/seasons')}
+                disabled={loading}
+              >
+                {t('common.cancel', 'Cancel')}
+              </button>
+              <button 
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i>
+                    {t('common.creating', 'Creating...')}
+                  </>
+                ) : (
+                  t('common.create', 'Create')
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </PageTemplate>
   );
-}; 
+};
+
+export default CreateSeasonPage;

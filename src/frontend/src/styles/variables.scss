@@ -126,7 +126,7 @@ $transition-filter: filter 300ms;
 
 @mixin card-style($shadow: $box-shadow-drop-1) {
   border-radius: $border-radius-default;
-  background: $background-white;
+  background: $color-white;
   box-shadow: $shadow;
 } 
 

@@ -34,6 +34,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     stopTimer,
     resetTimer,
     setTimer,
+    adjustTimer,
     createTimer,
   } = useTimer({
     matchId,
@@ -116,6 +117,22 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     }
   };
 
+  const handleAdjustTime = async (adjustmentInSeconds: number) => {
+    try {
+      console.log('=== TIMER ADJUST TIME BUTTON CLICKED ===');
+      console.log('Match ID:', matchId);
+      console.log('Adjustment in seconds:', adjustmentInSeconds);
+      console.log('Timer Active:', isActive);
+      
+      await adjustTimer(adjustmentInSeconds);
+      
+      console.log('=== TIMER ADJUST TIME COMPLETED ===');
+    } catch (error) {
+      console.error('=== TIMER ADJUST TIME FAILED ===');
+      console.error('Error adjusting timer:', error);
+    }
+  };
+
   const handleOpenTimeInput = () => {
     setShowTimeInputModal(true);
   };
@@ -136,11 +153,13 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     const toggleDisabled = loading || !isActive;
     const resetDisabled = loading || !isActive;
     const setTimeDisabled = loading || !isActive;
+    const adjustDisabled = loading || !isActive;
     
     return {
       toggleDisabled,
       resetDisabled,
-      setTimeDisabled
+      setTimeDisabled,
+      adjustDisabled
     };
   }, [loading, isActive]);
 
@@ -194,6 +213,47 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
         >
           Set Time
         </button>
+      </div>
+
+      {/* Time Adjustment Controls */}
+      <div className="timer-adjustments">
+        <div className="adjustment-group">
+          <span className="adjustment-label">Quick Adjust</span>
+          <div className="adjustment-buttons">
+            <button
+              onClick={() => handleAdjustTime(-60)}
+              disabled={buttonStates.adjustDisabled}
+              className="timer-button adjust-time decrease minute-back"
+              title="Go back 1 minute"
+            >
+              ⏪ 1min
+            </button>
+            <button
+              onClick={() => handleAdjustTime(-10)}
+              disabled={buttonStates.adjustDisabled}
+              className="timer-button adjust-time decrease seconds-back"
+              title="Go back 10 seconds"
+            >
+              ◀ 10s
+            </button>
+            <button
+              onClick={() => handleAdjustTime(10)}
+              disabled={buttonStates.adjustDisabled}
+              className="timer-button adjust-time increase seconds-forward"
+              title="Advance 10 seconds"
+            >
+              ▶ 10s
+            </button>
+            <button
+              onClick={() => handleAdjustTime(60)}
+              disabled={buttonStates.adjustDisabled}
+              className="timer-button adjust-time increase minute-forward"
+              title="Advance 1 minute"
+            >
+              ⏩ 1min
+            </button>
+          </div>
+        </div>
       </div>
 
       {error && <div className="timer-error">Error: {error}</div>}
