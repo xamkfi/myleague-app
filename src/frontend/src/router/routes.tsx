@@ -17,9 +17,16 @@ import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
 import NewsCreateEditPage from '../pages/AdminPage/NewsPage/NewsCreateEditPage';
 import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/FloorballManagementPage';
 import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
+import CreateTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/CreateTeamPage';
+import EditTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditTeamPage';
 import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage';
+import CreatePlayerPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePlayerPage/CreatePlayerPage';
+import CreatePersonPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePersonPage/CreatePersonPage';
 import FloorballRefereesPage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage';
+import CreateRefereePage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/CreateRefereePage/CreateRefereePage';
 import FloorballSeasonsPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage';
+import CreateSeasonPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/CreateSeasonPage/CreateSeasonPage';
+import EditSeasonPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/EditSeasonPage/EditSeasonPage';
 import MatchOverviewPage from '../pages/AdminPage/FloorballManagementPage/MatchOverviewPage/MatchOverviewPage';
 import CompletedMatchesPage from '../pages/AdminPage/FloorballManagementPage/CompletedMatchesPage/CompletedMatchesPage';
 import ScheduledMatchesPage from '../pages/AdminPage/FloorballManagementPage/ScheduledMatchesPage/ScheduledMatchesPage';
@@ -110,19 +117,67 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'teams',
-        element: <FloorballTeamsPage/>
+        children: [
+          {
+            index: true,
+            element: <FloorballTeamsPage/>
+          },
+          {
+            path: 'new',
+            element: <CreateTeamPage/>
+          },
+          {
+            path: ':id/edit',
+            element: <EditTeamPage/>
+          }
+        ]
       },
       {
         path: 'players',
-        element: <FloorballPlayersPage />
+        children: [
+          {
+            index: true,
+            element: <FloorballPlayersPage />
+          },
+          {
+            path: 'create',
+            element: <CreatePlayerPage />
+          },
+          {
+            path: 'create-person',
+            element: <CreatePersonPage />
+          }
+        ]
       },
       {
         path: 'referees',
-        element: <FloorballRefereesPage />
+        children: [
+          {
+            index: true,
+            element: <FloorballRefereesPage />
+          },
+          {
+            path: 'create',
+            element: <CreateRefereePage />
+          }
+        ]
       },
       {
         path: 'seasons',
-        element: <FloorballSeasonsPage />
+        children: [
+          {
+            index: true,
+            element: <FloorballSeasonsPage />
+          },
+          {
+            path: 'create',
+            element: <CreateSeasonPage />
+          },
+          {
+            path: ':seasonId/edit',
+            element: <EditSeasonPage />
+          }
+        ]
       },
       {
         path: 'matches',
@@ -166,5 +221,4 @@ export const routes: RouteObject[] = [
     path: '/match/:id',
     element: <MatchPage/>
   }
-  
 ]; 

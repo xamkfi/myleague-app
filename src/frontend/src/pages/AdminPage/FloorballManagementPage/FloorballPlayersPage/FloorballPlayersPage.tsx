@@ -1,20 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../api/floorball/floorballPlayerService';
 import PlayersTable from './components/PlayersTable';
-import CreatePlayerModal from './components/CreatePlayerModal';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import './FloorballPlayersPage.scss';
-import './components/CreatePlayerModal.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 
 const FloorballPlayersPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [players, setPlayers] = useState<FloorballPlayerDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [playerToDelete, setPlayerToDelete] = useState<FloorballPlayerDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -40,6 +39,25 @@ const FloorballPlayersPage = () => {
 
     fetchPlayers();
   }, [t]);
+
+  // Refresh players when navigating back to this page
+  useEffect(() => {
+    const refreshPlayers = async () => {
+      try {
+        const response = await floorballPlayerService.getAll({ pageSize: 50 });
+        if (response.data) {
+          setPlayers(response.data);
+        }
+      } catch (err) {
+        console.error('Error refreshing players:', err);
+      }
+    };
+
+    // Only refresh if we're not loading initially
+    if (!loading) {
+      refreshPlayers();
+    }
+  }, [loading]); // This will trigger when we come back to this page
 
   const handleDelete = (playerId: string) => {
     const player = players.find(p => p.id === playerId);
@@ -88,17 +106,8 @@ const FloorballPlayersPage = () => {
     setPlayerToDelete(null);
   };
 
-  const handlePlayerCreated = (newPlayer: FloorballPlayerDto) => {
-    setPlayers(prevPlayers => [...prevPlayers, newPlayer]);
-    setError(null);
-  };
-
   const handleCreatePlayerClick = () => {
-    setIsCreateModalOpen(true);
-  };
-
-  const handleCloseCreateModal = () => {
-    setIsCreateModalOpen(false);
+    navigate('/admin/floorball/players/create');
   };
 
   if (loading) {
@@ -147,13 +156,6 @@ const FloorballPlayersPage = () => {
             onDelete={handleDelete} 
           />
         </div>
-
-        {/* Create Player Modal */}
-        <CreatePlayerModal
-          isOpen={isCreateModalOpen}
-          onClose={handleCloseCreateModal}
-          onPlayerCreated={handlePlayerCreated}
-        />
 
         {/* Confirm Delete Modal */}
         <ConfirmDeleteModal

@@ -1,3 +1,21 @@
+// Page layout for standalone mode
+.person-form-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .person-form-header {
+    margin-bottom: 2rem;
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #212529;
+      margin: 0;
+    }
+  }
+}
+
 .person-form {
   max-width: 800px;
   margin: 0 auto;

@@ -1,20 +1,24 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { FloorballTeamRequest, TeamCategory } from '../../../../../types/floorball/floorballTypes';
-import type { Club } from '../../../../../api/common/clubService';
-import { divisionService } from '../../../../../api/common/divisionService';
-import type { DivisionType } from '../../../../../types/common/divisionType';
+import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
+import BackButton from '../../../../components/BackButton/BackButton';
+import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
+import { getClubs, type Club } from '../../../../api/common/clubService';
+import { divisionService } from '../../../../api/common/divisionService';
+import { TeamCategory, type FloorballTeamRequest } from '../../../../types/floorball/floorballTypes';
+import type { DivisionType } from '../../../../types/common/divisionType';
+import './CreateTeamPage.scss';
 
-interface CreateTeamModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (teamData: FloorballTeamRequest) => Promise<void>;
-  clubs: Club[];
-}
-
-const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalProps) => {
+const CreateTeamPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [divisions, setDivisions] = useState<DivisionType[]>([]);
+  
   const [formData, setFormData] = useState<FloorballTeamRequest>({
     name: '',
     divisionId: '',
@@ -24,25 +28,43 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
     category: 'Adult' as TeamCategory,
     secondaryJerseyColor: ''
   });
-  const [divisions, setDivisions] = useState<DivisionType[]>([]);
-  // Reset form when modal opens
+
+  // Load clubs and divisions on component mount
   useEffect(() => {
-    if (isOpen) {
-      setFormData({
-        name: '',
-        divisionId: '',
-        clubId: '',
-        homeArena: '',
-        primaryJerseyColor: '#000000',
-        category: 'Adult' as TeamCategory,
-        secondaryJerseyColor: ''
-      });
+    loadClubs();
+    loadDivisions();
+  }, []);
+
+  const loadClubs = async () => {
+    try {
+      const clubsData = await getClubs();
+      setClubs(clubsData);
+    } catch (err) {
+      console.error('Error loading clubs:', err);
     }
-  }, [isOpen]);
+  };
+
+  const loadDivisions = async () => {
+    try {
+      const response = await divisionService.getAll();
+      setDivisions(response.data);
+    } catch (err) {
+      console.error('Error loading divisions:', err);
+      setDivisions([]);
+    }
+  };
+
+  const handleInputChange = (field: keyof FloorballTeamRequest, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     
     try {
       // Prepare create data with proper validation
@@ -60,47 +82,40 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
       };
       
       console.log('Creating team with data:', createData);
-      console.log('Secondary jersey color length:', formData.secondaryJerseyColor?.length || 0);
       
-      await onSubmit(createData);
-      onClose();
+      await floorballTeamService.create(createData);
+      
+      // Navigate back to teams list
+      navigate('/admin/floorball/teams');
     } catch (error) {
       console.error('Error creating team:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create team');
     } finally {
       setLoading(false);
     }
   };
 
-  const loadAllDivisions = async () => {
-    try {
-      const response = await divisionService.getAll();
-      setDivisions(response.data);
-    } catch (err) {
-      console.log('Error loading divisions:', err);
-      setDivisions([]);
-    }
-  }
-
-  const handleInputChange = (field: keyof FloorballTeamRequest, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleCancel = () => {
+    navigate('/admin/floorball/teams');
   };
 
-  useEffect(() => {
-    loadAllDivisions();
-  }, []);
-
-  if (!isOpen) return null;
-
   return (
-    <div className="create-team-modal-overlay" onClick={onClose}>
-      <div className="create-team-modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="create-team-modal-header">
-          <h2>{t('floorball.teams.createNew', 'Create New Team')}</h2>
-          <button className="modal-close" onClick={onClose}>×</button>
+    <PageTemplate title={t('floorball.teams.createNew', 'Create New Team')}>
+      <div className="create-team-page">
+        <BackButton 
+          to="/admin/floorball/teams" 
+          text={t('common.back', 'Back to Teams')} 
+        />
+        
+        <div className="create-team-header">
+          <h1>{t('floorball.teams.createNew', 'Create New Team')}</h1>
         </div>
+
+        {error && (
+          <div className="error-message">
+            <p>{error}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="create-team-form">
           <div className="form-group">
@@ -130,7 +145,7 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
             </select>
           </div>
 
-          <div className="create-team-form-row">
+          <div className="form-row">
             <div className="form-group">
               <label htmlFor="division">{t('floorball.teams.division', 'Division')} *</label>
               <select
@@ -173,10 +188,10 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
             />
           </div>
 
-          <div className="create-team-form-row">
+          <div className="form-row">
             <div className="form-group">
               <label htmlFor="primaryColor">{t('floorball.teams.primary', 'Primary Jersey Color')} *</label>
-              <div className="create-team-color-input-group">
+              <div className="color-input-group">
                 <input
                   id="primaryColor"
                   type="color"
@@ -195,7 +210,7 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
 
             <div className="form-group">
               <label htmlFor="secondaryColor">{t('floorball.teams.secondary', 'Secondary Jersey Color')}</label>
-              <div className="create-team-color-input-group">
+              <div className="color-input-group">
                 <input
                   id="secondaryColor"
                   type="color"
@@ -224,8 +239,8 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
             </div>
           </div>
 
-          <div className="create-team-form-actions">
-            <button type="button" onClick={onClose} className="cancel-button">
+          <div className="form-actions">
+            <button type="button" onClick={handleCancel} className="cancel-button" disabled={loading}>
               {t('common.cancel', 'Cancel')}
             </button>
             <button type="submit" disabled={loading} className="submit-button">
@@ -234,8 +249,8 @@ const CreateTeamModal = ({ isOpen, onClose, onSubmit, clubs }: CreateTeamModalPr
           </div>
         </form>
       </div>
-    </div>
+    </PageTemplate>
   );
 };
 
-export default CreateTeamModal; 
+export default CreateTeamPage;

@@ -1,19 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import BackButton from '../../../../components/BackButton/BackButton';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
-import { getClubs, type Club } from '../../../../api/common/clubService';
-import type { FloorballTeam, PaginatedApiResponse, FloorballTeamRequest } from '../../../../types/floorball/floorballTypes';
+import type { FloorballTeam, PaginatedApiResponse } from '../../../../types/floorball/floorballTypes';
 import TeamsTable from './components/TeamsTable';
 import PaginationControls from './components/PaginationControls';
-import CreateTeamModal from './components/CreateTeamModal';
 import './FloorballTeamsPage.scss';
-import './components/CreateTeamModal.scss';
-import './components/EditTeamModal.scss';
 
 const FloorballTeamsPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   
   const [teams, setTeams] = useState<FloorballTeam[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,8 +20,6 @@ const FloorballTeamsPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [pageSize, setPageSize] = useState(50);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [clubs, setClubs] = useState<Club[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch teams data
@@ -106,20 +102,9 @@ const FloorballTeamsPage = () => {
     }
   };
 
-  // Fetch clubs for the modal
-  const fetchClubs = async () => {
-    try {
-      const clubsData = await getClubs();
-      setClubs(clubsData);
-    } catch (err) {
-      console.error('Error fetching clubs:', err);
-    }
-  };
-
-  // Load teams and clubs on component mount  
+  // Load teams on component mount  
   useEffect(() => {
     fetchTeams();
-    fetchClubs();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter teams by search term (client-side)
@@ -143,26 +128,8 @@ const FloorballTeamsPage = () => {
   };
 
   // Handle edit team
-  const handleEdit = async (teamData: FloorballTeamRequest, teamId: string) => {
-    try {
-      console.log('Handling edit for team ID:', teamId);
-      console.log('Team data to update:', teamData);
-      
-      await floorballTeamService.update(teamId, teamData);
-      
-      // Clear any previous errors
-      setError(null);
-      
-      // Refresh the teams list
-      await fetchTeams(currentPage, pageSize);
-      
-      console.log('Team updated successfully');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update team';
-      setError(errorMessage);
-      console.error('Error updating team:', err);
-      throw err; // Re-throw to let modal handle the error
-    }
+  const handleEdit = (teamId: string) => {
+    navigate(`/admin/floorball/teams/${teamId}/edit`);
   };
 
   // Handle delete team
@@ -195,17 +162,8 @@ const FloorballTeamsPage = () => {
   };
 
   // Handle create team
-  const handleCreateTeam = async (teamData: FloorballTeamRequest) => {
-    try {
-      await floorballTeamService.create(teamData);
-      // Refresh the teams list
-      await fetchTeams(currentPage, pageSize);
-      setIsCreateModalOpen(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create team');
-      console.error('Error creating team:', err);
-      throw err; // Re-throw to let modal handle the error
-    }
+  const handleCreateTeam = () => {
+    navigate('/admin/floorball/teams/new');
   };
 
   // Do not early-return on loading; instead show loading inside TeamsTable
@@ -227,7 +185,7 @@ const FloorballTeamsPage = () => {
           <div className="teams-actions">
             <button
               className="create-team-button"
-              onClick={() => setIsCreateModalOpen(true)}
+              onClick={handleCreateTeam}
             >
               {t('floorball.teams.createNew', 'Create New Team')}
             </button>
@@ -281,16 +239,7 @@ const FloorballTeamsPage = () => {
           onPageSizeChange={handlePageSizeChange}
         />
 
-        
-        
 
-        {/* Create Team Modal */}
-        <CreateTeamModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onSubmit={handleCreateTeam}
-          clubs={clubs}
-        />
       </div>
     </PageTemplate>
   );
