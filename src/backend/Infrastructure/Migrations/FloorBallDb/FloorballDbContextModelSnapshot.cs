@@ -79,10 +79,174 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.ToTable("EventSourcedFloorballMatches", "floorball");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballGoalieSeasonStatistics", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
+
+                    b.Property<int>("GamesPlayed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of games played");
+
+                    b.Property<int>("GamesStarted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of games started");
+
+                    b.Property<int>("GoalsAgainst")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Goals allowed");
+
+                    b.Property<decimal>("GoalsAgainstAverage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(4,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Goals against average");
+
+                    b.Property<int>("Losses")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of losses");
+
+                    b.Property<int>("MinutesPlayed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total minutes played");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the goalie these statistics belong to");
+
+                    b.Property<decimal>("PowerPlaySavePercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Power play save percentage");
+
+                    b.Property<int>("PowerPlaySaves")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Power play saves");
+
+                    b.Property<int>("PowerPlayShotsAgainst")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Power play shots faced");
+
+                    b.Property<decimal>("SavePercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Save percentage");
+
+                    b.Property<int>("Saves")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total saves made");
+
+                    b.Property<Guid>("SeasonId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the season these statistics are for");
+
+                    b.Property<decimal>("ShortHandedSavePercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Short-handed save percentage");
+
+                    b.Property<int>("ShortHandedSaves")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Short-handed saves");
+
+                    b.Property<int>("ShortHandedShotsAgainst")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Short-handed shots faced");
+
+                    b.Property<int>("ShotsAgainst")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total shots faced");
+
+                    b.Property<int>("Shutouts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of shutouts");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the team the goalie played for");
+
+                    b.Property<int>("Ties")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of ties");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
+                    b.Property<int>("Wins")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of wins");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_PlayerId");
+
+                    b.HasIndex("SeasonId")
+                        .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_SeasonId");
+
+                    b.HasIndex("TeamId")
+                        .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_TeamId");
+
+                    b.HasIndex("SeasonId", "GoalsAgainstAverage")
+                        .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_SeasonId_GAA");
+
+                    b.HasIndex("SeasonId", "SavePercentage")
+                        .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_SeasonId_SavePercentage");
+
+                    b.HasIndex("SeasonId", "Wins")
+                        .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_SeasonId_Wins");
+
+                    b.HasIndex("PlayerId", "TeamId", "SeasonId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_PlayerId_TeamId_SeasonId");
+
+                    b.ToTable("FloorballGoalieSeasonStatistics", "floorball");
+                });
+
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatch", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AwayActiveGoalieId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("AwayScore")
@@ -93,6 +257,9 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("HomeActiveGoalieId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("HomeScore")
                         .HasColumnType("integer");
@@ -190,6 +357,145 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasDiscriminator<string>("EventType").HasValue("FloorballMatchEvent");
 
                     b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatchTeamStatistics", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("BlockedShots")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Shots blocked");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
+
+                    b.Property<int>("FaceoffAttempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total faceoffs");
+
+                    b.Property<decimal>("FaceoffPercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Faceoff win percentage");
+
+                    b.Property<int>("FaceoffWins")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Faceoffs won");
+
+                    b.Property<int>("Giveaways")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Giveaways");
+
+                    b.Property<int>("Hits")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Hits delivered");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the match these statistics belong to");
+
+                    b.Property<int>("PenaltyKillOpportunities")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Penalty kill opportunities");
+
+                    b.Property<int>("PenaltyKillSuccess")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Successful penalty kills");
+
+                    b.Property<int>("PenaltyMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Penalty minutes");
+
+                    b.Property<int>("PowerPlayGoals")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Power play goals");
+
+                    b.Property<int>("PowerPlayMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Power play minutes");
+
+                    b.Property<int>("PowerPlayOpportunities")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Power play opportunities");
+
+                    b.Property<int>("ShortHandedGoals")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Short-handed goals");
+
+                    b.Property<decimal>("ShotPercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Shot percentage");
+
+                    b.Property<int>("ShotsOnGoal")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Shots on goal");
+
+                    b.Property<int>("ShotsTotal")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total shots taken");
+
+                    b.Property<int>("Takeaways")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Takeaways");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the team these statistics are for");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId")
+                        .HasDatabaseName("IX_FloorballMatchTeamStatistics_MatchId");
+
+                    b.HasIndex("TeamId")
+                        .HasDatabaseName("IX_FloorballMatchTeamStatistics_TeamId");
+
+                    b.HasIndex("MatchId", "TeamId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballMatchTeamStatistics_MatchId_TeamId");
+
+                    b.ToTable("FloorballMatchTeamStatistics", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballPeriodScore", b =>
@@ -292,6 +598,161 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.ToTable("FloorballPlayers", "floorball");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballPlayerSeasonStatistics", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Assists")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Assists made");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
+
+                    b.Property<int>("FaceoffAttempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total faceoffs taken");
+
+                    b.Property<decimal>("FaceoffPercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Faceoff win percentage");
+
+                    b.Property<int>("FaceoffWins")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Faceoffs won");
+
+                    b.Property<int>("GameWinningGoals")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Game-winning goals");
+
+                    b.Property<int>("GamesPlayed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of games played");
+
+                    b.Property<int>("Goals")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Goals scored");
+
+                    b.Property<int>("OvertimeGoals")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Overtime goals");
+
+                    b.Property<int>("PenaltyMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Penalty minutes");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the player these statistics belong to");
+
+                    b.Property<int>("PlusMinusRating")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Plus/minus rating");
+
+                    b.Property<int>("Points")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total points (goals + assists)");
+
+                    b.Property<int>("PowerPlayAssists")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Power play assists");
+
+                    b.Property<int>("PowerPlayGoals")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Power play goals");
+
+                    b.Property<Guid>("SeasonId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the season these statistics are for");
+
+                    b.Property<int>("ShortHandedAssists")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Short-handed assists");
+
+                    b.Property<int>("ShortHandedGoals")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Short-handed goals");
+
+                    b.Property<decimal>("ShotPercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Shooting percentage");
+
+                    b.Property<int>("ShotsOnGoal")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Shots on goal");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the team the player played for");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_PlayerId");
+
+                    b.HasIndex("SeasonId")
+                        .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_SeasonId");
+
+                    b.HasIndex("TeamId")
+                        .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_TeamId");
+
+                    b.HasIndex("SeasonId", "Assists")
+                        .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_SeasonId_Assists");
+
+                    b.HasIndex("SeasonId", "Goals")
+                        .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_SeasonId_Goals");
+
+                    b.HasIndex("SeasonId", "Points")
+                        .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_SeasonId_Points");
+
+                    b.HasIndex("PlayerId", "TeamId", "SeasonId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_PlayerId_TeamId_SeasonId");
+
+                    b.ToTable("FloorballPlayerSeasonStatistics", "floorball");
+                });
+
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballReferee", b =>
                 {
                     b.Property<Guid>("Id")
@@ -359,6 +820,61 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasKey("Id");
 
                     b.ToTable("FloorballSeasons", "floorball");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballStatisticsCache", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CacheKey")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasComment("Unique cache key identifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("When this cache entry expires");
+
+                    b.Property<string>("JsonData")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasComment("Serialized JSON data");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("When this cache entry was last updated");
+
+                    b.Property<Guid?>("SeasonId")
+                        .HasColumnType("uuid")
+                        .HasComment("Optional season ID this cache is associated with");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CacheKey")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballStatisticsCache_CacheKey");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("IX_FloorballStatisticsCache_ExpiresAt");
+
+                    b.HasIndex("SeasonId")
+                        .HasDatabaseName("IX_FloorballStatisticsCache_SeasonId");
+
+                    b.HasIndex("SeasonId", "ExpiresAt")
+                        .HasDatabaseName("IX_FloorballStatisticsCache_SeasonId_ExpiresAt");
+
+                    b.ToTable("FloorballStatisticsCache", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeam", b =>
@@ -521,6 +1037,193 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_PlayerId");
 
                     b.ToTable("FloorballTeamPlayers", "floorball");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeamSeasonStatistics", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AwayLosses")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Away losses");
+
+                    b.Property<int>("AwayWins")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Away wins");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
+
+                    b.Property<int>("FaceoffAttempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total faceoffs taken");
+
+                    b.Property<decimal>("FaceoffPercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Faceoff win percentage");
+
+                    b.Property<int>("FaceoffWins")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Faceoffs won");
+
+                    b.Property<int>("GamesPlayed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of games played");
+
+                    b.Property<int>("GoalDifference")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Goal difference (goals for - goals against)");
+
+                    b.Property<int>("GoalsAgainst")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total goals conceded");
+
+                    b.Property<int>("GoalsFor")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total goals scored");
+
+                    b.Property<int>("HomeLosses")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Home losses");
+
+                    b.Property<int>("HomeWins")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Home wins");
+
+                    b.Property<int>("Losses")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of losses");
+
+                    b.Property<int>("PenaltyKillOpportunities")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Penalty kill opportunities");
+
+                    b.Property<decimal>("PenaltyKillPercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Penalty kill success percentage");
+
+                    b.Property<int>("PenaltyMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total penalty minutes");
+
+                    b.Property<int>("Points")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total points earned");
+
+                    b.Property<int>("PowerPlayGoals")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Power play goals scored");
+
+                    b.Property<int>("PowerPlayOpportunities")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Power play opportunities");
+
+                    b.Property<decimal>("PowerPlayPercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Power play success percentage");
+
+                    b.Property<Guid>("SeasonId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the season these statistics are for");
+
+                    b.Property<int>("ShortHandedGoals")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Short-handed goals scored");
+
+                    b.Property<decimal>("ShotPercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Shot percentage");
+
+                    b.Property<int>("ShotsAgainst")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total shots faced");
+
+                    b.Property<int>("ShotsFor")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Total shots taken");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the team these statistics belong to");
+
+                    b.Property<int>("Ties")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of ties/overtime losses");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
+                    b.Property<int>("Wins")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("Number of wins");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SeasonId")
+                        .HasDatabaseName("IX_FloorballTeamSeasonStatistics_SeasonId");
+
+                    b.HasIndex("TeamId")
+                        .HasDatabaseName("IX_FloorballTeamSeasonStatistics_TeamId");
+
+                    b.HasIndex("TeamId", "SeasonId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballTeamSeasonStatistics_TeamId_SeasonId");
+
+                    b.ToTable("FloorballTeamSeasonStatistics", "floorball");
                 });
 
             modelBuilder.Entity("FloorballMatchOfficial", b =>

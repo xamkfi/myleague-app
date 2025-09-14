@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.Enums.Floorball;
+using System;
 
 namespace Domain.Entities.Floorball;
 
@@ -144,8 +145,42 @@ public class FloorballTeamPlayer : BaseEntity
     {
         if (minutes < 0)
             throw new ArgumentException("Penalty minutes cannot be negative.", nameof(minutes));
-        
+
         PenaltyMinutes += minutes;
+    }
+
+    /// <summary>
+    /// Removes a goal from this player's statistics
+    /// </summary>
+    public void RemoveGoal()
+    {
+        if (Goals > 0)
+        {
+            Goals--;
+        }
+    }
+
+    /// <summary>
+    /// Removes an assist from this player's statistics
+    /// </summary>
+    public void RemoveAssist()
+    {
+        if (Assists > 0)
+        {
+            Assists--;
+        }
+    }
+
+    /// <summary>
+    /// Removes penalty minutes from this player
+    /// </summary>
+    /// <param name="minutes">The number of penalty minutes to remove</param>
+    public void RemovePenaltyMinutes(int minutes)
+    {
+        if (minutes < 0)
+            throw new ArgumentException("Penalty minutes to remove cannot be negative.", nameof(minutes));
+
+        PenaltyMinutes = Math.Max(0, PenaltyMinutes - minutes);
     }
 
     /// <summary>

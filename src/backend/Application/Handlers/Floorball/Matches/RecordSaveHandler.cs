@@ -7,6 +7,9 @@ using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -18,6 +21,7 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<RecordSaveHandler> _logger;
 
@@ -25,12 +29,14 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
         IFloorballMatchRepository matchRepository,
         IFloorballTeamRepository teamRepository,
         IFloorballPlayerRepository playerRepository,
+        IFloorballStatisticsRepository statisticsRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<RecordSaveHandler> logger)
     {
         _matchRepository = matchRepository;
         _teamRepository = teamRepository;
         _playerRepository = playerRepository;
+        _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -70,6 +76,21 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
                 request.WasInOvertime,
                 request.WasInShootout);
 
+            // Update goalie season statistics (1 save, 1 shot against, 0 goals allowed)
+            // First verify this is the active goalie
+            Guid? activeGoalieId = match.GetActiveGoalieId(request.TeamId);
+            if (activeGoalieId.HasValue && activeGoalieId.Value != goalie.Id)
+            {
+                _logger.LogWarning("Save recorded for goalie {GoalieId} but active goalie is {ActiveGoalieId} for team {TeamId}",
+                    goalie.Id, activeGoalieId.Value, request.TeamId);
+                // Still record the save but log the discrepancy
+            }
+
+            await UpdateGoalieSeasonStatistics(goalie.Id, request.TeamId, match.SeasonId, 1, 1, 0, cancellationToken);
+
+            // Update match team statistics for shots against
+            await UpdateMatchTeamStatistics(match.Id, request.TeamId, 1, cancellationToken);
+
             _matchRepository.MarkEventAsAdded(saveEvent);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -82,6 +103,38 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
             _logger.LogError(ex, "Error occurred while recording save in match {MatchId}", request.MatchId);
             return Result<FloorballMatchDto>.Failure("An error occurred while recording the save.");
         }
+    }
+
+    /// <summary>
+    /// Updates goalie season statistics for saves and shots faced
+    /// </summary>
+    private async Task UpdateGoalieSeasonStatistics(Guid goalieId, Guid teamId, Guid seasonId, int saves, int shotsAgainst, int goalsAllowed, CancellationToken cancellationToken)
+    {
+        FloorballGoalieSeasonStatistics? goalieStats = await _statisticsRepository.GetGoalieSeasonStatisticsAsync(goalieId, teamId, seasonId, cancellationToken);
+        if (goalieStats == null)
+        {
+            goalieStats = new FloorballGoalieSeasonStatistics(goalieId, teamId, seasonId);
+        }
+
+        goalieStats.RecordSaves(saves, shotsAgainst, goalsAllowed);
+        await _statisticsRepository.SaveGoalieSeasonStatisticsAsync(goalieStats, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates match team statistics for shots faced
+    /// </summary>
+    private async Task UpdateMatchTeamStatistics(Guid matchId, Guid teamId, int shotsAgainst, CancellationToken cancellationToken)
+    {
+        FloorballMatchTeamStatistics? matchStats = await _statisticsRepository.GetMatchTeamStatisticsAsync(matchId, teamId, cancellationToken);
+        if (matchStats == null)
+        {
+            matchStats = new FloorballMatchTeamStatistics(matchId, teamId);
+        }
+
+        // Only shots against, no shots on goal (since it was saved)
+        matchStats.UpdateShotStatistics(0, shotsAgainst);
+
+        await _statisticsRepository.SaveMatchTeamStatisticsAsync(matchStats, cancellationToken);
     }
 }
 

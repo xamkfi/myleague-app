@@ -156,6 +156,23 @@ export function useTimer(options: UseTimerOptions) {
     }
   }, [matchId]);
 
+  // Adjust timer by specific seconds (can be positive or negative)
+  const adjustTimer = useCallback(async (adjustmentInSeconds: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      await timerService.adjustTimer(matchId, adjustmentInSeconds);
+      
+      // Don't reload timer status - let SignalR handle the update
+    } catch (err) {
+      console.error('Error adjusting timer:', err);
+      setError(err instanceof Error ? err.message : 'Failed to adjust timer');
+    } finally {
+      setLoading(false);
+    }
+  }, [matchId]);
+
   // Destroy timer
   const destroyTimer = useCallback(async () => {
     try {
@@ -279,6 +296,7 @@ export function useTimer(options: UseTimerOptions) {
     stopTimer,
     resetTimer,
     setTimer,
+    adjustTimer,
     createTimer,
     destroyTimer,
     loadTimerStatus,

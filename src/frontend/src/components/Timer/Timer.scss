@@ -93,6 +93,123 @@
         }
       }
     }
+
+
+  }
+
+  // Adjustment button styles - use high specificity to override base timer-button styles
+  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease,
+  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase {
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-width: 65px;
+    padding: 0.6rem 1rem;
+    border: 2px solid;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+  }
+    
+  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease {
+    background: #ff6b35;
+    color: white;
+    border-color: #e55a2b;
+
+    &:hover:not(:disabled) {
+      background: #e55a2b;
+      border-color: #cc4922;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      background: #cc4922;
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #cccccc;
+      border-color: #aaaaaa;
+      color: #666666;
+      box-shadow: none;
+      transform: none;
+    }
+  }
+
+  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase {
+    background: #4caf50;
+    color: white;
+    border-color: #388e3c;
+
+    &:hover:not(:disabled) {
+      background: #45a049;
+      border-color: #2e7d32;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      background: #3d8b40;
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #cccccc;
+      border-color: #aaaaaa;
+      color: #666666;
+      box-shadow: none;
+      transform: none;
+    }
+  }
+
+  // Specific styles for each button type - explicit inheritance to ensure proper styling
+  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease.minute-back,
+  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease.seconds-back {
+    // Explicitly inherit decrease styles - no additional styles needed
+  }
+
+  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase.seconds-forward,
+  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase.minute-forward {
+    // Explicitly inherit increase styles - no additional styles needed
+  }
+
+  .timer-adjustments {
+    margin-top: 1rem;
+    width: 100%;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+
+    .adjustment-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+
+      .adjustment-label {
+        font-size: 0.9rem;
+        color: #495057;
+        font-weight: 600;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .adjustment-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+      }
+    }
   }
 
   .timer-error {

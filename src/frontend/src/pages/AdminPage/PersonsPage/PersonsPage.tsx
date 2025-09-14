@@ -1,53 +1,22 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../components/PageTemplate/PageTemplate';
 import PersonList from './components/PersonList/PersonList';
-import PersonFormModal from './components/PersonFormModal/PersonFormModal';
-import type { Person } from '../../../types/admin/personTypes';
 import './PersonsPage.scss';
 import BackButton from '../../../components/BackButton/BackButton';
 
 const PersonsPage = () => {
   const { t } = useTranslation();
-  const [modalState, setModalState] = useState<{
-    isOpen: boolean;
-    mode: 'create' | 'edit';
-    personId?: string;
-  }>({
-    isOpen: false,
-    mode: 'create'
-  });
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const navigate = useNavigate();
 
   const handleAddPerson = () => {
-    setModalState({
-      isOpen: true,
-      mode: 'create'
-    });
+    navigate('/admin/persons/new');
   };
 
   const handleEditPerson = (personId: string) => {
-    setModalState({
-      isOpen: true,
-      mode: 'edit',
-      personId
-    });
+    navigate(`/admin/persons/${personId}/edit`);
   };
 
-  const handleCloseModal = () => {
-    setModalState({
-      isOpen: false,
-      mode: 'create'
-    });
-  };
-
-  const handlePersonSuccess = (person: Person) => {
-    // You could add a toast notification here
-    console.log(`Person ${modalState.mode}d successfully:`, person);
-    // Trigger refresh of the person list
-    setRefreshTrigger(prev => prev + 1);
-    // The modal will close automatically via handleCloseModal
-  };
 
   return (
     <div className="persons-page-wrapper">
@@ -70,20 +39,9 @@ const PersonsPage = () => {
           <div className="persons-content">
             <PersonList 
               onEditPerson={handleEditPerson} 
-              refreshTrigger={refreshTrigger}
             />
           </div>
         </div>
-
-        {/* Person Form Modal */}
-        <PersonFormModal
-          isOpen={modalState.isOpen}
-          onClose={handleCloseModal}
-          mode={modalState.mode}
-          personId={modalState.personId}
-          onSuccess={handlePersonSuccess}
-          showTeamAssignment={true}
-        />
       </PageTemplate>
     </div>
   );

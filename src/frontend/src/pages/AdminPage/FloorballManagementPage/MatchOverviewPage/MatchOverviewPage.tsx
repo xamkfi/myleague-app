@@ -1,25 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
-import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import { signalRService, type MatchEvent } from '../../../../services/signalRService';
 import Navbar from '../../../../components/Navigation/Navbar';
-import MatchFormModal from './Components/MatchFormModal/MatchFormModal';
 import MatchStatsCards from './Components/MatchStatsCards/MatchStatsCards';
 import MatchFilters from './Components/MatchFilters/MatchFilters';
 import CollapsibleMatchSection from './Components/CollapsibleMatchSection/CollapsibleMatchSection';
-import type { 
-  FloorballMatchDto, 
-  CreateFloorballMatchRequest,
-  ChangeMatchSeasonRequest,
-  ChangeMatchTeamsRequest,
-  ChangeMatchVenueRequest,
-  ChangeMatchDateTimeRequest
-} from '../../../../types/floorball/floorballTypes';
+import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import './MatchOverviewPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
   
 const MatchOverviewPage = () => {
   const { t } = useTranslation();
@@ -30,12 +21,7 @@ const MatchOverviewPage = () => {
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
   
-  // Form state
-  const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
-  const [editMatch, setEditMatch] = useState<FloorballMatchDto | undefined>(undefined);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
 
   // Collapsible sections state
@@ -227,120 +213,12 @@ const MatchOverviewPage = () => {
     });
   }, []);
 
-  const handleCreateMatch = async (matchData: CreateFloorballMatchRequest) => {
-    try {
-      setActionLoading('create');
-      setError(null);
-
-      const response = await floorballMatchService.create(matchData);
-      
-      if (response.success && response.data) {
-        // Fetch the complete match data to ensure we have the correct team names
-        const completeMatchResponse = await floorballMatchService.getById(response.data.id);
-        
-        if (completeMatchResponse.success && completeMatchResponse.data) {
-          setMatches(prev => [...prev, completeMatchResponse.data!]);
-        } else {
-          // Fallback to the original response if fetching complete data fails
-          setMatches(prev => [...prev, response.data!]);
-        }
-        setShowForm(false);
-      }
-
-    } catch (error) {
-      console.error('Error creating match:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create match');
-      throw error; // Re-throw so the modal can handle it
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleUpdateMatch = async (updateData: ChangeMatchSeasonRequest | ChangeMatchTeamsRequest | ChangeMatchVenueRequest | ChangeMatchDateTimeRequest) => {
-    if (!editMatch) return;
-
-    try {
-      setActionLoading('edit');
-      setError(null);
-
-      let response;
-      
-      if ('seasonId' in updateData) {
-        response = await floorballMatchService.changeSeason(editMatch.id, updateData.seasonId);
-      } else if ('homeTeamId' in updateData && 'awayTeamId' in updateData) {
-        response = await floorballMatchService.changeTeams(editMatch.id, updateData.homeTeamId, updateData.awayTeamId);
-      } else if ('venue' in updateData) {
-        response = await floorballMatchService.changeVenue(editMatch.id, updateData.venue);
-      } else if ('scheduledDateTime' in updateData) {
-        response = await floorballMatchService.changeDateTime(editMatch.id, updateData.scheduledDateTime);
-      } else {
-        throw new Error('Invalid update data');
-      }
-
-      if (response.success && response.data) {
-        // Update the match in the list
-        setMatches(prev => prev.map(match => 
-          match.id === editMatch.id ? response.data! : match
-        ));
-        setShowForm(false);
-        setEditMatch(undefined);
-      }
-
-    } catch (error) {
-      console.error('Error updating match:', error);
-      setError(error instanceof Error ? error.message : 'Failed to update match');
-      throw error; // Re-throw so the modal can handle it
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   const handleLiveMatch = (match: FloorballMatchDto) => {
     navigate(`/admin/floorball/matches/manage/${match.id}`);
   };
 
   const handleEditMatch = (match: FloorballMatchDto) => {
-    setEditMatch(match);
-    setFormMode('edit');
-    setShowForm(true);
-  };
-
-  const handleCreateNew = () => {
-    setEditMatch(undefined);
-    setFormMode('create');
-    setShowForm(true);
-  };
-
-  const handleCloseForm = () => {
-    setShowForm(false);
-    setEditMatch(undefined);
-    setFormMode('create');
-  };
-
-  const handleFormSubmit = async (matchData: CreateFloorballMatchRequest | ChangeMatchSeasonRequest | ChangeMatchTeamsRequest | ChangeMatchVenueRequest | ChangeMatchDateTimeRequest) => {
-    if (formMode === 'create') {
-      await handleCreateMatch(matchData as CreateFloorballMatchRequest);
-    } else {
-      await handleUpdateMatch(matchData);
-    }
-  };
-
-  const handleCancelMatch = async (matchId: string) => {
-    try {
-      setActionLoading('cancelling');
-      setError(null);
-      
-      await floorballMatchEventService.cancelMatch(matchId);
-      
-      // Refresh the matches list to get the updated status
-      await fetchData();
-      
-    } catch (error) {
-      console.error('Error canceling match:', error);
-      setError(error instanceof Error ? error.message : 'Failed to cancel match');
-    } finally {
-      setActionLoading(null);
-    }
+    navigate(`/admin/floorball/matches/${match.id}/edit`);
   };
 
   const toggleSection = (section: keyof typeof collapsedSections) => {
@@ -403,7 +281,7 @@ const MatchOverviewPage = () => {
           allMatches={matches}
           filteredMatches={filteredMatches}
           selectedSeasonId={selectedSeasonId}
-          onCreateNew={handleCreateNew}
+          onCreateNew={() => navigate('/admin/floorball/matches/create')}
           onCompletedClick={() => navigate('/admin/floorball/matches/completed')}
           onScheduledClick={() => navigate('/admin/floorball/matches/scheduled')}
           onInProgressClick={() => navigate('/admin/floorball/matches/in-progress')}
@@ -426,7 +304,6 @@ const MatchOverviewPage = () => {
             onToggleCollapse={() => toggleSection('ongoing')}
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
-            actionLoading={actionLoading}
             sectionType="ongoing"
           />
 
@@ -438,7 +315,6 @@ const MatchOverviewPage = () => {
             onToggleCollapse={() => toggleSection('scheduled')}
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
-            actionLoading={actionLoading}
             sectionType="scheduled"
           />
 
@@ -450,7 +326,6 @@ const MatchOverviewPage = () => {
             onToggleCollapse={() => toggleSection('completed')}
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
-            actionLoading={actionLoading}
             sectionType="completed"
           />
 
@@ -462,7 +337,6 @@ const MatchOverviewPage = () => {
             onToggleCollapse={() => toggleSection('cancelled')}
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
-            actionLoading={actionLoading}
             sectionType="cancelled"
           />
 
@@ -475,23 +349,13 @@ const MatchOverviewPage = () => {
               <div className="empty-icon">📋</div>
               <h3>No matches found</h3>
               <p>{selectedSeasonId ? 'No matches found for the selected season' : 'Create your first match to get started'}</p>
-              <button onClick={handleCreateNew} className="create-button">
+              <Link to="/admin/floorball/matches/create" className="create-button">
                 Create New Match
-              </button>
+              </Link>
             </div>
           )}
         </div>
 
-        {/* Match Form Modal */}
-        <MatchFormModal
-          isOpen={showForm}
-          onClose={handleCloseForm}
-          mode={formMode}
-          initialData={editMatch}
-          onSubmit={handleFormSubmit}
-          onCancelMatch={handleCancelMatch}
-          loading={actionLoading !== null}
-        />
       </div>
     </div>
   );

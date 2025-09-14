@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import './FloorballSeasonsPage.scss';
 import { useSeasonsManagement } from './hooks/useSeasonsManagement';
@@ -9,11 +10,10 @@ import { LoadingState } from './components/LoadingState';
 import { SeasonsContent } from './components/SeasonsContent';
 import BackButton from '../../../../components/BackButton/BackButton';
 import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
-import { EditSeasonModal } from './components/EditSeasonModal';
-import { CreateSeasonModal } from './components/CreateSeasonModal';
 
 const FloorballSeasonsPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   
   const {
     // Data
@@ -29,23 +29,16 @@ const FloorballSeasonsPage = () => {
     divisionFilter,
     
     // Modal states
-    showCreateModal,
-    showEditModal,
     showDeleteModal,
     
     // Actions
-    setShowCreateModal,
     setDivisionFilter,
     handleShowActiveOnlyChange,
-    handleCreateSeason,
-    handleEditSeason,
     handleDeleteSeason,
     handleActivateToggle,
     handleCompleteSeason,
-    openEditModal,
     openDeleteModal,
-    closeModals,
-    loadSeasons
+    closeModals
   } = useSeasonsManagement();
 
   if (loading) {
@@ -68,7 +61,7 @@ const FloorballSeasonsPage = () => {
 
         <SeasonsPageHeader
           seasonsCount={seasons.length}
-          onCreateSeason={() => setShowCreateModal(true)}
+          onCreateSeason={() => navigate('/admin/floorball/seasons/create')}
         />
 
         {error && <ErrorMessage message={error} />}
@@ -83,30 +76,14 @@ const FloorballSeasonsPage = () => {
 
         <SeasonsContent
           seasons={seasons}
-          onEdit={openEditModal}
+          onEdit={(season) => navigate(`/admin/floorball/seasons/${season.id}/edit`)}
           onDelete={openDeleteModal}
           onActivateToggle={handleActivateToggle}
           onComplete={handleCompleteSeason}
           operationLoading={operationLoading}
         />
 
-        {/* Modals */}
-        {showCreateModal && (
-          <CreateSeasonModal
-            onSave={handleCreateSeason}
-            onClose={closeModals}
-          />
-        )}
-
-        {showEditModal && selectedSeason && (
-          <EditSeasonModal
-            season={selectedSeason}
-            onSave={handleEditSeason}
-            onClose={closeModals}
-            onTeamsChanged={loadSeasons}
-          />
-        )}
-
+        {/* Delete Modal */}
         {showDeleteModal && selectedSeason && (
           <ConfirmDeleteModal
             season={selectedSeason}
