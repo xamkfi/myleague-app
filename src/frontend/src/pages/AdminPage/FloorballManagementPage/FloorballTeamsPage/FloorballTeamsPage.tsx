@@ -6,7 +6,7 @@ import BackButton from '../../../../components/BackButton/BackButton';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import type { FloorballTeam, PaginatedApiResponse } from '../../../../types/floorball/floorballTypes';
 import TeamsTable from './components/TeamsTable';
-import PaginationControls from './components/PaginationControls';
+import Pagination from '../../../../components/Pagination';
 import './FloorballTeamsPage.scss';
 
 const FloorballTeamsPage = () => {
@@ -210,31 +210,18 @@ const FloorballTeamsPage = () => {
           </div>
         )}
 
-        {/* Pagination */}
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalCount={totalCount}
-          pageSize={pageSize}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-        />
-
-
         {/* Teams table */}
         <TeamsTable
           teams={filteredTeams}
           onEdit={handleEdit}
           onDelete={handleDelete}
           loading={loading}
-        />
-
-        {/* Pagination */}
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalCount={totalCount}
-          pageSize={pageSize}
+          pagination={{
+            currentPage,
+            totalPages,
+            totalCount,
+            pageSize
+          }}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
         />

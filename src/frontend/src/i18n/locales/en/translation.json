@@ -285,6 +285,7 @@
       "createNew": "Create New Team",
       "searchPlaceholder": "Search teams by name...",
       "noTeams": "No teams found",
+      "players": "Team Players",
       "hasMembers": "Yes",
       "noMembers": "No",
       "primary": "Primary",
@@ -326,7 +327,9 @@
       "createNewPerson": "Create New Person",
       "searchPersons": "Search available persons...",
       "createPlayer": "Create Player",
+      "createPlayers": "Create Multiple Players",
       "playerCreated": "{{personName}} is now a floorball player!",
+      "playersCreated": "{{personName}} are now floorball players!",
       "personCreated": "{{personName}} created successfully! You can now create a player from them.",
       "noPersonsFound": "No persons found matching your search",
       "noPersonsAvailable": "No available persons to convert to players. All persons are already players.",
@@ -337,11 +340,18 @@
         "status": "Status",
         "actions": "Actions"
       },
+      "position": "Position",
+      "games": "Games",
+      "goals": "Goals",
+      "assists": "Assists",
+      "penalties": "PIM",
       "confirmDelete": {
         "title": "Confirm Deletion",
         "message": "Are you sure you want to delete {{playerName}}?",
         "warning": "This action cannot be undone."
       },
+      "noPlayersInTeam": "This team has no players assigned yet.",
+      "addPlayersHelp": "Use the edit button to manage team roster and add players.",
       "errors": {
         "loadPlayers": "Failed to load players. Please try again.",
         "deleteFailed": "Failed to delete player. Please try again."
@@ -351,7 +361,8 @@
       "center": "Center",
       "winger": "Winger",
       "defender": "Defender",
-      "goalkeeper": "Goalkeeper"
+      "goalkeeper": "Goalkeeper",
+      "forward": "Forward"
     },
     "seasons": {
       "title": "Manage Seasons",
@@ -508,6 +519,27 @@
         "Cancelled": "Cancelled",
         "Postponed": "Postponed"
       }
+    }
+  },
+  "roster": {
+    "positions": {
+      "Goalkeeper": "Goalkeepers",
+      "Defender": "Defenders", 
+      "Center": "Centers",
+      "Forward": "Forwards"
+    },
+    "jerseyNumber": "#",
+    "name": "Name",
+    "age": "Age",
+    "matchesPlayed": "Games",
+    "goals": "Goals",
+    "assists": "Assists",
+    "tooltips": {
+      "jerseyNumber": "Jersey Number",
+      "age": "Age",
+      "matchesPlayed": "Matches Played",
+      "goals": "Goals",
+      "assists": "Assists"
     }
   },
   "common": {

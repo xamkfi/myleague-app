@@ -1,24 +1,28 @@
+@use "sass:map";
+@use '../../../../../styles/variables.scss' as *;
+@use '../../../../../styles/common.scss' as *;
+
 // Success toast
 .success-toast {
   position: fixed;
-  top: 2rem;
+  top: map.get($spacing, 'lg');
   left: 50%;
   transform: translateX(-50%);
   z-index: 1002;
   
-  padding: 1rem 1.5rem;
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: map.get($spacing, 'base') map.get($spacing, 'md');
+  background-color: lighten($color-green, 40%);
+  color: darken($color-green, 20%);
+  border: 1px solid lighten($color-green, 30%);
+  border-radius: map.get($border-radius, 'sm');
+  box-shadow: $box-shadow-drop-1;
   
   animation: slideInDown 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
   
   p {
     margin: 0;
-    font-weight: 500;
-    font-size: 0.95rem;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: map.get($font-sizes, 'sm');
     white-space: nowrap;
   }
 }
@@ -49,52 +53,49 @@
 .create-season-container {
   max-width: 600px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: map.get($spacing, 'lg');
 }
 
 .create-season-form-container {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  @include card-style;
   overflow: hidden;
 }
 
 .create-season-form {
-  padding: 2rem;
+  padding: map.get($spacing, 'lg');
 
   .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: map.get($spacing, 'md');
 
     label {
       display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #374151;
-      font-size: 0.875rem;
+      margin-bottom: map.get($spacing, 'xs');
+      font-weight: map.get($font-weights, 'bold');
+      color: $color-text-primary;
+      font-size: map.get($font-sizes, 'sm');
       text-transform: uppercase;
-      letter-spacing: 0.05em;
     }
 
     input, select {
       width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.375rem;
-      background-color: white;
-      color: #374151;
-      font-size: 1rem;
-      transition: border-color 0.2s ease;
+      padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      border: 1px solid $color-border;
+      border-radius: map.get($border-radius, 'sm');
+      background-color: $color-white;
+      color: $color-text-primary;
+      font-size: map.get($font-sizes, 'base');
+      @include transition(border-color);
       box-sizing: border-box;
 
       &:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: $color-blue-light;
+        box-shadow: 0 0 0 3px rgba(74, 103, 159, 0.1);
       }
 
       &:disabled {
-        background-color: #f9fafb;
-        color: #6b7280;
+        background-color: $color-background-light;
+        color: $color-text-muted;
         cursor: not-allowed;
       }
     }
@@ -111,7 +112,7 @@
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    gap: map.get($spacing, 'md');
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -119,37 +120,87 @@
   }
 
   .error-message {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1.5rem;
+    background: lighten($color-red, 40%);
+    border: 1px solid lighten($color-red, 30%);
+    border-radius: map.get($border-radius, 'sm');
+    padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+    margin-bottom: map.get($spacing, 'md');
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: #dc2626;
-    font-size: 0.875rem;
+    gap: map.get($spacing, 'xs');
+    color: darken($color-red, 10%);
+    font-size: map.get($font-sizes, 'sm');
 
     i {
-      color: #ef4444;
+      color: $color-red;
       flex-shrink: 0;
     }
   }
 
-  .info-message {
-    background: #f0f9ff;
-    border: 1px solid #bae6fd;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    margin: 1.5rem 0;
+  .toggle-container {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: #0c4a6e;
-    font-size: 0.875rem;
+    justify-content: space-between;
+    margin: map.get($spacing, 'md') 0;
+
+    .toggle-label {
+      font-weight: map.get($font-weights, 'bold');
+      color: $color-text-primary;
+      font-size: map.get($font-sizes, 'sm');
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    .toggle-button {
+      padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+      border: 2px solid $color-border;
+      border-radius: map.get($border-radius, 'sm');
+      background: $color-background-light;
+      color: $color-text-muted;
+      cursor: pointer;
+      @include transition(all);
+      font-weight: map.get($font-weights, 'medium');
+      font-size: map.get($font-sizes, 'sm');
+      min-width: 150px;
+      text-align: center;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      &:not(:disabled):hover {
+        border-color: $color-neutral-dark-grey;
+        background: $color-neutral-medium-grey;
+      }
+
+      &.active {
+        background: $color-green;
+        border-color: $color-green;
+        color: $color-white;
+
+        &:not(:disabled):hover {
+          background: darken($color-green, 10%);
+          border-color: darken($color-green, 10%);
+        }
+      }
+    }
+  }
+
+  .info-message {
+    background: lighten($color-blue-light, 40%);
+    border: 1px solid lighten($color-blue-light, 30%);
+    border-radius: map.get($border-radius, 'sm');
+    padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+    margin: map.get($spacing, 'md') 0;
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    color: darken($color-blue-light, 20%);
+    font-size: map.get($font-sizes, 'sm');
 
     i {
-      color: #0ea5e9;
+      color: $color-blue-light;
       flex-shrink: 0;
     }
   }
@@ -157,24 +208,24 @@
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e5e7eb;
+    gap: map.get($spacing, 'base');
+    margin-top: map.get($spacing, 'lg');
+    padding-top: map.get($spacing, 'md');
+    border-top: 1px solid $color-border;
 
     .btn {
-      padding: 0.75rem 1.5rem;
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
       border: none;
-      border-radius: 0.375rem;
-      font-size: 1rem;
-      font-weight: 500;
+      border-radius: map.get($border-radius, 'sm');
+      font-size: map.get($font-sizes, 'base');
+      font-weight: map.get($font-weights, 'medium');
       cursor: pointer;
-      transition: all 0.2s ease;
+      @include transition(all);
       min-width: 120px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
+      gap: map.get($spacing, 'xs');
 
       &:disabled {
         opacity: 0.6;
@@ -183,22 +234,22 @@
       }
 
       &.btn-secondary {
-        background-color: #6b7280;
-        color: white;
+        background-color: $color-button-secondary;
+        color: $color-white;
 
         &:hover:not(:disabled) {
-          background-color: #4b5563;
+          background-color: $color-primary-dark;
         }
       }
 
       &.btn-primary {
-        background-color: #3b82f6;
-        color: white;
+        background-color: $color-blue-light;
+        color: $color-white;
 
         &:hover:not(:disabled) {
-          background-color: #2563eb;
+          background-color: $color-blue-medium;
           transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+          box-shadow: $box-shadow-drop-1;
         }
 
         &:active:not(:disabled) {
@@ -221,11 +272,11 @@
 // Responsive styles
 @media (max-width: 768px) {
   .create-season-container {
-    padding: 1rem;
+    padding: map.get($spacing, 'base');
   }
 
   .create-season-form {
-    padding: 1.5rem;
+    padding: map.get($spacing, 'md');
   }
 
   .form-actions {
@@ -239,14 +290,14 @@
 
 @media (max-width: 480px) {
   .create-season-container {
-    padding: 0.5rem;
+    padding: map.get($spacing, 'xs');
   }
 
   .create-season-form-container {
-    border-radius: 0.5rem;
+    border-radius: map.get($border-radius, 'sm');
   }
 
   .create-season-form {
-    padding: 1rem;
+    padding: map.get($spacing, 'base');
   }
 }

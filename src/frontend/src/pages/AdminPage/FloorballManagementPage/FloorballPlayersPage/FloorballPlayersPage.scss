@@ -1,3 +1,5 @@
+@use '../../../../styles/variables.scss' as *;
+
 .delete-success-toast {
   position: fixed;
   top: 2rem;
@@ -116,12 +118,26 @@
   background-color: white;
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  // Must be visible for position: sticky children to work
+  overflow: visible;
   margin-bottom: 2rem;
 }
 
+.players-pagination  {
+  &.sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    background: white;
+    border-top: 1px solid #dee2e6;
+  }
+}
+
+
+
 .players-table {
   width: 100%;
+  min-height: 400px;
   border-collapse: collapse;
   background-color: white;
 

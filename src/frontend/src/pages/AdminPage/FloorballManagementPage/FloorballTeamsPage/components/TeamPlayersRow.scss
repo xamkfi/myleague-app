@@ -1,0 +1,175 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+@use '../../../../../styles/common' as *;
+
+.team-players-row {
+  &.is-closing {
+    animation: slideUp 0.3s ease-out forwards;
+  }
+}
+
+.team-players-container {
+  padding: map.get($spacing, "md");
+}
+
+.players-title {
+  font-size: map.get($font-sizes, "lg");
+  font-weight: map.get($font-weights, "bold");
+  color: $color-text-primary;
+  margin-bottom: map.get($spacing, "md");
+}
+
+.players-loading,
+.players-error,
+.no-players {
+  text-align: center;
+  padding: map.get($spacing, "lg");
+  color: $color-text-muted;
+}
+
+.retry-button {
+  @include card-style;
+  border: none;
+  cursor: pointer;
+  padding: map.get($spacing, "xs") map.get($spacing, "md");
+  font-size: map.get($font-sizes, "sm");
+  color: $color-white;
+  background-color: $color-primary;
+  border-radius: map.get($border-radius, "sm");
+  @include transition(background-color);
+  margin-top: map.get($spacing, "sm");
+
+  &:hover {
+    background-color: $color-primary-dark;
+  }
+}
+
+.help-text {
+  font-size: map.get($font-sizes, "sm");
+  color: $color-text-muted;
+  margin-top: map.get($spacing, "xs");
+}
+
+.roster-section {
+  .roster-container {
+    margin-bottom: map.get($spacing, "md");
+    box-shadow: $box-shadow-drop-1;
+    color: $color-text-primary;
+  }
+
+  .table {
+    display: grid;
+    grid-template-columns: 40px minmax(200px, 400px) 60px repeat(3, 1fr);
+    gap: 16px;
+    grid-template-areas: "jersey playerName age gamesPlayed goals assists";
+    
+    > * {
+      display: flex;
+      text-align: center;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  .stats-header {
+    border-radius: map.get($border-radius, "sm");
+    background: $color-gradient-blue;
+    font-size: map.get($font-sizes, "sm");
+    font-weight: map.get($font-weights, "bold");
+    padding: map.get($spacing, "xs") map.get($spacing, "sm");   
+    color: $color-white;
+  }
+
+  .roster-position-container {
+    margin-bottom: map.get($spacing, "base");
+    border-radius: 6px;
+  } 
+
+  .roster-position-header {
+    text-align: left;
+    border-radius: map.get($border-radius, "sm");
+    margin-bottom: map.get($spacing, "sm");
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, "lg");
+    font-weight: map.get($font-weights, "bold");
+  }
+
+  .roster-player {
+    padding: map.get($spacing, "xs") map.get($spacing, "sm");   
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 0px rgba(0, 0, 0, 0);
+    border-bottom: 1px solid $color-neutral-medium-grey;   
+    transform: scale(1);
+    transition:
+      background-color 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.25s ease;
+
+    &:hover {
+      background-color: #b5b5b5;
+      box-shadow: 0 0 32px rgba(0, 0, 0, 0.194);
+      transform: scale(1.005);
+      color: $color-neutral-light-grey !important;
+      cursor: pointer;
+      z-index: 10;
+      position: relative;
+    }
+
+    &.inactive {
+      opacity: 0.6;
+      background-color: $color-background-light;
+    }
+  }
+
+  .roster-jersey {
+    grid-area: jersey;
+    font-weight: map.get($font-weights, "bold");
+
+    &.row {
+      width: 32px;
+      height: 32px;
+      color: $color-neutral-dark-grey;
+      border-radius: map.get($border-radius, "lg");
+      border: 1px solid $color-neutral-medium-grey;
+    }
+  }
+
+  .roster-player-name {
+    grid-area: playerName;
+    justify-content: left;
+    font-weight: map.get($font-weights, "bold");
+  }
+
+  .roster-age {
+    grid-area: age;
+    text-align: center;
+  }
+
+  .roster-games-played {
+    grid-area: gamesPlayed;
+    text-align: center;
+  }
+
+  .roster-goals {
+    grid-area: goals;
+    text-align: center;
+  }
+
+  .roster-assists {
+    grid-area: assists;
+    text-align: center;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    max-height: 1000px;
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+  }
+}

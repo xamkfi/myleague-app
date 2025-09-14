@@ -45,9 +45,6 @@ export const CreateSeasonPage = () => {
   };
 
 
-  const handleActiveChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsActive(e.target.checked);
-  };
 
   const parseApiError = (error: unknown): string => {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -293,8 +290,18 @@ export const CreateSeasonPage = () => {
 
 
             <div className="toggle-container">
-              <input type="checkbox" checked={isActive} id="create-active" name="isActive" onChange={handleActiveChange} />
-              <label htmlFor="create-active">{t('floorball.seasons.fields.isActive', 'Active')}</label>
+              <label className="toggle-label">
+                {t('floorball.seasons.fields.isActive', 'Active')}
+              </label>
+              <button
+                type="button"
+                className={`toggle-button ${isActive ? 'active' : ''}`}
+                onClick={() => setIsActive(!isActive)}
+                disabled={loading}
+                aria-pressed={isActive}
+              >
+                {isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+              </button>
             </div>
             <div className="info-message">
               <i className="fas fa-info-circle"></i>

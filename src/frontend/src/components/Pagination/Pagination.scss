@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 2rem;
+  margin-top: 1rem;
   padding: 1.5rem;
   background-color: #f8f9fa;
   border-radius: 0.75rem;
@@ -17,6 +17,11 @@
     gap: 1rem;
     padding: 1rem;
   }
+}
+
+// Remove container top margin when used as sticky bottom controller
+.no-margin.pagination-container {
+  margin-top: 0;
 }
 
 .page-size-selector {
@@ -253,22 +258,7 @@
     color: #e2e8f0;
   }
 
-  .page-size-selector {
-    label {
-      color: #e2e8f0;
-    }
-
-    .page-size-select {
-      background-color: #4a5568;
-      border-color: #718096;
-      color: #e2e8f0;
-
-      &:focus {
-        border-color: #63b3ed;
-        box-shadow: 0 0 0 0.2rem rgba(99, 179, 237, 0.25);
-      }
-    }
-  }
+  
 
   .pagination-button {
     background-color: #4a5568;

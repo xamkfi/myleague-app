@@ -14,6 +14,11 @@ const FloorballPlayersPage = () => {
   const [players, setPlayers] = useState<FloorballPlayerDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [playerToDelete, setPlayerToDelete] = useState<FloorballPlayerDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -24,40 +29,32 @@ const FloorballPlayersPage = () => {
     const fetchPlayers = async () => {
       try {
         setLoading(true);
-        const response = await floorballPlayerService.getAll({ pageSize: 50 }); // Fetch up to 50 for now
-        if (response.data) {
-          setPlayers(response.data);
-        }
+        const response = await floorballPlayerService.getAll({ page: currentPage, pageSize });
+        setPlayers(response.data || []);
+        setTotalPages(response.pagination?.totalPages ?? 1);
+        setTotalCount(response.pagination?.totalCount ?? (response.data?.length || 0));
         setError(null);
       } catch (err) {
         setError(t('floorball.players.errors.loadPlayers', 'Failed to load players. Please try again.'));
         console.error(err);
       } finally {
         setLoading(false);
+        setIsInitialLoad(false);
       }
     };
 
     fetchPlayers();
-  }, [t]);
+  }, [currentPage, pageSize, t]);
 
-  // Refresh players when navigating back to this page
-  useEffect(() => {
-    const refreshPlayers = async () => {
-      try {
-        const response = await floorballPlayerService.getAll({ pageSize: 50 });
-        if (response.data) {
-          setPlayers(response.data);
-        }
-      } catch (err) {
-        console.error('Error refreshing players:', err);
-      }
-    };
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-    // Only refresh if we're not loading initially
-    if (!loading) {
-      refreshPlayers();
-    }
-  }, [loading]); // This will trigger when we come back to this page
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
 
   const handleDelete = (playerId: string) => {
     const player = players.find(p => p.id === playerId);
@@ -110,16 +107,6 @@ const FloorballPlayersPage = () => {
     navigate('/admin/floorball/players/create');
   };
 
-  if (loading) {
-    return (
-      <PageTemplate title={t('floorball.players.title', 'Manage Floorball Players')}>
-        <div className="floorball-players-loading">
-          <p>{t('common.loading', 'Loading...')}</p>
-        </div>
-      </PageTemplate>
-    );
-  }
-
   return (
     <PageTemplate title={t('floorball.players.title', 'Manage Floorball Players')}>      
       <div className="floorball-players-container">
@@ -152,8 +139,17 @@ const FloorballPlayersPage = () => {
         {/* Players table */}
         <div className="players-table-container">
           <PlayersTable 
-            players={players} 
-            onDelete={handleDelete} 
+            players={players}
+            onDelete={handleDelete}
+            pagination={{
+              currentPage,
+              totalPages,
+              totalCount,
+              pageSize
+            }}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            isLoading={loading && !isInitialLoad}
           />
         </div>
 
