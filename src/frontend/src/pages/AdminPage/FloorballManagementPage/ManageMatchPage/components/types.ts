@@ -56,6 +56,7 @@ export interface SaveEventData {
   MatchId: string;
   TeamId: string;
   GoalieId: string;
+  GoalieName: string;
   PeriodNumber: number;
   TimeInSeconds: number;
   IsOvertime: boolean;

@@ -95,14 +95,25 @@ export const useMatchEvents = ({
    * Handles real-time save events from SignalR
    */
   const handleSaveRecorded = useCallback((eventData: SaveEventData) => {
-    console.log('handleSaveRecorded called with eventData:', eventData);
     if (eventData.MatchId !== match.id) {
-      console.log('Save event is for different match, ignoring');
       return;
     }
-    console.log('Save recorded for team:', eventData.TeamId);
-    loadMatchEvents();
-  }, [match.id, loadMatchEvents]);
+
+    // Create a new event DTO from the SignalR data
+    const newSaveEvent: FloorballDomainEventDto = {
+      id: `save-${eventData.TeamId}-${eventData.GoalieId}-${eventData.PeriodNumber}-${eventData.TimeInSeconds}`,
+      eventType: 'FloorballSaveEvent',
+      occurredOn: new Date().toISOString(),
+      data: {
+        ...eventData,
+        // Ensure camelCase properties are included for consistency if needed,
+        // but the main thing is that GoalieName is now in eventData.
+      }
+    };
+    
+    // Prepend the new event to the existing events list
+    setMatchEvents(prevEvents => [newSaveEvent, ...prevEvents]);
+  }, [match.id, setMatchEvents]);
 
   /**
    * Processes and combines all match events (goals and penalties) from the backend
@@ -280,25 +291,27 @@ export const useMatchEvents = ({
             TimeInSeconds?: number; timeInSeconds?: number;
             IsOvertime?: boolean; wasInOvertime?: boolean;
             IsShootout?: boolean; wasInShootout?: boolean;
+            GoalieName?: string; goalieName?: string;
           }
           const d = event.data as AnySaveLike;
           const saveData: SaveEventData = {
             MatchId: (d.MatchId ?? d.matchId) || '',
             TeamId: (d.TeamId ?? d.teamId) || '',
             GoalieId: (d.GoalieId ?? d.goalieId) || '',
+            GoalieName: (d.GoalieName ?? d.goalieName) || '',
             PeriodNumber: (d.PeriodNumber ?? d.periodNumber) ?? 0,
             TimeInSeconds: (d.TimeInSeconds ?? d.timeInSeconds) ?? 0,
             IsOvertime: (d.IsOvertime ?? d.wasInOvertime) ?? false,
             IsShootout: (d.IsShootout ?? d.wasInShootout) ?? false
           };
-          const { TeamId, GoalieId, PeriodNumber, TimeInSeconds, IsOvertime, IsShootout } = saveData;
+          const { TeamId, GoalieId, GoalieName, PeriodNumber, TimeInSeconds, IsOvertime, IsShootout } = saveData;
           return {
             id: `save-${TeamId}-${GoalieId}-${PeriodNumber}-${TimeInSeconds}`,
             type: 'save' as const,
             teamId: TeamId,
             teamName: TeamId === currentMatch.homeTeamId ? homeTeam?.name || 'Home' : awayTeam?.name || 'Away',
             playerId: GoalieId,
-            playerName: getPlayerNameById(GoalieId),
+            playerName: GoalieName || getPlayerNameById(GoalieId),
             periodNumber: PeriodNumber,
             timeInSeconds: TimeInSeconds,
             timestamp: new Date(event.occurredOn),

@@ -204,6 +204,8 @@ export interface FloorballMatchDto {
   awayScore: number;
   wentToOvertime: boolean;
   wentToShootout: boolean;
+  homeActiveGoalieId?: string;
+  awayActiveGoalieId?: string;
   periodScores: Record<number, { homeScore: number; awayScore: number }>;
   officials: string[];
   goalEvents: FloorballGoalEventDto[];

@@ -685,5 +685,44 @@ namespace WebAPI.Controllers.Floorball
 
             return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
         }
+
+
+        /// <summary>
+        /// Changes the active goalie for a team in a match
+        /// </summary>
+        /// <param name="matchId">The ID of the match</param>
+        /// <param name="teamId">The ID of the team</param>
+        /// <param name="goalieId">The ID of the new goalie</param>
+        /// <returns>Updated match details</returns>
+        [HttpPut("{matchId:guid}/team/{teamId:guid}/goalie/{goalieId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeGoalie(Guid matchId, Guid teamId, Guid goalieId)
+        {
+            _logger.LogInformation("Changing goalie for match {matchId}, team {teamId} to {goalieId}", matchId, teamId, goalieId);
+
+            ChangeGoalieCommand command = new ChangeGoalieCommand
+            {
+                MatchId = matchId,
+                TeamId = teamId,
+                GoalieId = goalieId
+            };
+
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Goalie changed successfully"));
+            }
+            
+            string errorMessage = result.Error ?? "Failed to change goalie";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
     }
 }
