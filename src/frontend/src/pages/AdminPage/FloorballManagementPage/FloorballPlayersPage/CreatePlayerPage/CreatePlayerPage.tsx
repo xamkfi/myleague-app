@@ -27,6 +27,11 @@ const CreatePlayerPage = () => {
   // Sorting state
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  
+  // Selection state for multiselect
+  const [selectedPersons, setSelectedPersons] = useState<Set<string>>(new Set());
+  const [bulkCreating, setBulkCreating] = useState(false);
+  const [showBulkConfirmation, setShowBulkConfirmation] = useState(false);
 
   // Fetch persons and filter out those who are already players
   useEffect(() => {
@@ -152,6 +157,13 @@ const CreatePlayerPage = () => {
       // Remove the person from available persons list
       setAvailablePersons(prev => prev.filter(person => person.id !== personId));
       
+      // Clear selection if the created player was selected
+      setSelectedPersons(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(personId);
+        return newSet;
+      });
+      
       // Clear any existing timeout to prevent flickering
       if (successTimeoutId) {
         clearTimeout(successTimeoutId);
@@ -180,6 +192,85 @@ const CreatePlayerPage = () => {
 
   const handleCreateNewPerson = () => {
     navigate('/admin/floorball/players/create-person');
+  };
+
+  // Selection management functions
+  const togglePersonSelection = (personId: string) => {
+    setSelectedPersons(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(personId)) {
+        newSet.delete(personId);
+      } else {
+        newSet.add(personId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllFilteredPersons = () => {
+    setSelectedPersons(new Set(filteredAndSortedPersons.map(p => p.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedPersons(new Set());
+  };
+
+  const handleBulkCreatePlayers = () => {
+    if (selectedPersons.size === 0) return;
+    setShowBulkConfirmation(true);
+  };
+
+  const confirmBulkCreatePlayers = async () => {
+    if (selectedPersons.size === 0) return;
+
+    try {
+      setBulkCreating(true);
+      setError(null);
+      setSuccessMessage(null);
+      setShowBulkConfirmation(false);
+      
+      // Clear any existing timeout to prevent flickering
+      if (successTimeoutId) {
+        clearTimeout(successTimeoutId);
+      }
+      
+      const selectedPersonsList = availablePersons.filter(p => selectedPersons.has(p.id));
+      
+      // Create players for all selected persons
+      for (const person of selectedPersonsList) {
+        await floorballPlayerService.create({ personId: person.id });
+      }
+      
+      // Remove the created players from available persons list
+      setAvailablePersons(prev => prev.filter(person => !selectedPersons.has(person.id)));
+      
+      // Clear selection
+      setSelectedPersons(new Set());
+      
+      // Show success message
+      const message = t('floorball.players.bulkPlayersCreated', 
+        '{{count}} player(s) created successfully!', 
+        { count: selectedPersonsList.length }
+      );
+      setSuccessMessage(message);
+      
+      // Auto-hide success message after 3 seconds
+      const timeoutId = setTimeout(() => {
+        setSuccessMessage(null);
+        setSuccessTimeoutId(null);
+      }, 3000);
+      setSuccessTimeoutId(timeoutId);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create players');
+      console.error('Error creating players:', err);
+    } finally {
+      setBulkCreating(false);
+    }
+  };
+
+  const cancelBulkCreate = () => {
+    setShowBulkConfirmation(false);
   };
 
   if (loading) {
@@ -214,7 +305,10 @@ const CreatePlayerPage = () => {
             type="text"
             placeholder={t('floorball.players.searchPersons', 'Search available persons...')}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setSelectedPersons(new Set()); // Clear selection when searching
+            }}
             className="search-input"
           />
           <button
@@ -224,6 +318,52 @@ const CreatePlayerPage = () => {
           >
             ➕ {t('floorball.players.createNewPerson', 'Create New Person')}
           </button>
+        </div>
+        
+        {/* Selection Controls */}
+        <div className="selection-controls">
+          <div className="selection-info">
+            <span className="selected-count">
+              {t('floorball.players.selected', '{{count}} selected', { count: selectedPersons.size })}
+            </span>
+            {filteredAndSortedPersons.length > 0 && (
+              <div className="selection-buttons">
+                <button
+                  type="button"
+                  className="control-btn"
+                  onClick={selectAllFilteredPersons}
+                  disabled={selectedPersons.size === filteredAndSortedPersons.length}
+                >
+                  {t('common.selectAll', 'Select All')} ({filteredAndSortedPersons.length})
+                </button>
+                <button
+                  type="button"
+                  className="control-btn"
+                  onClick={clearSelection}
+                  disabled={selectedPersons.size === 0}
+                >
+                  {t('common.clear', 'Clear')}
+                </button>
+              </div>
+            )}
+          </div>
+          
+          {/* Bulk Actions */}
+          {selectedPersons.size > 0 && (
+            <div className="bulk-actions">
+              <button
+                type="button"
+                className="bulk-create-btn"
+                onClick={handleBulkCreatePlayers}
+                disabled={bulkCreating}
+              >
+                {bulkCreating 
+                  ? t('floorball.players.actions.bulkCreating', 'Creating players...')
+                  : t('floorball.players.actions.bulkCreatePlayers', 'Create {{count}} Player(s)', { count: selectedPersons.size })
+                }
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Error Message */}
@@ -246,6 +386,20 @@ const CreatePlayerPage = () => {
             <>
               {/* Table Header */}
               <div className="persons-table-header">
+                <div className="header-select">
+                  <input
+                    type="checkbox"
+                    checked={filteredAndSortedPersons.length > 0 && filteredAndSortedPersons.every(person => selectedPersons.has(person.id))}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        selectAllFilteredPersons();
+                      } else {
+                        clearSelection();
+                      }
+                    }}
+                    title={t('floorball.players.selectAllVisible', 'Select all visible persons')}
+                  />
+                </div>
                 <div className="header-birth-date" onClick={() => handleSort('birthDate')} style={{ cursor: 'pointer' }}>
                   {t('common.birthDate', 'BIRTH DATE')}
                   {sortField === 'birthDate' && (
@@ -278,17 +432,34 @@ const CreatePlayerPage = () => {
                 {filteredAndSortedPersons.map((person) => (
                   <div 
                     key={person.id} 
-                    className="create-player-person-item"
+                    className={`create-player-person-item ${selectedPersons.has(person.id) ? 'selected' : ''}`}
                   >
-                    <div className="create-player-person-birth-date">
+                    <div className="person-select-column">
+                      <input
+                        type="checkbox"
+                        checked={selectedPersons.has(person.id)}
+                        onChange={() => togglePersonSelection(person.id)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    <div 
+                      className="create-player-person-birth-date clickable-cell"
+                      onClick={() => togglePersonSelection(person.id)}
+                    >
                       {formatDate(person.birthDate)}
                     </div>
-                    <div className="create-player-person-registration">
+                    <div 
+                      className="create-player-person-registration clickable-cell"
+                      onClick={() => togglePersonSelection(person.id)}
+                    >
                       <span className={`registration-indicator ${person.isRegistered ? 'registered' : 'not-registered'}`}>
                         {person.isRegistered ? '✓' : '✗'}
                       </span>
                     </div>
-                    <div className="create-player-person-name">
+                    <div 
+                      className="create-player-person-name clickable-cell"
+                      onClick={() => togglePersonSelection(person.id)}
+                    >
                       {person.fullName}
                     </div>
                     <div className="create-player-person-actions">
@@ -309,6 +480,65 @@ const CreatePlayerPage = () => {
             </>
           )}
         </div>
+        
+        {/* Bulk Create Confirmation Modal */}
+        {showBulkConfirmation && (
+          <div className="modal-overlay" onClick={cancelBulkCreate}>
+            <div className="bulk-create-modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{t('floorball.players.confirmBulkCreate.title', 'Confirm Bulk Player Creation')}</h2>
+                <button
+                  className="modal-close"
+                  onClick={cancelBulkCreate}
+                  type="button"
+                  aria-label="Close modal"
+                  disabled={bulkCreating}
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="warning-icon">
+                  ⚠️
+                </div>
+                <div className="confirm-message">
+                  <p>
+                    {t('floorball.players.confirmBulkCreate.message', 
+                      'Are you sure you want to create {{count}} player(s) from the selected persons?', 
+                      { count: selectedPersons.size }
+                    )}
+                  </p>
+                  <p className="info-text">
+                    {t('floorball.players.confirmBulkCreate.info', 'This will convert the selected persons into floorball players.')}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  onClick={cancelBulkCreate}
+                  className="cancel-button"
+                  disabled={bulkCreating}
+                >
+                  {t('common.cancel', 'Cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmBulkCreatePlayers}
+                  className="create-button"
+                  disabled={bulkCreating}
+                >
+                  {bulkCreating 
+                    ? t('floorball.players.actions.bulkCreating', 'Creating players...')
+                    : t('floorball.players.actions.confirmBulkCreate', 'Create All Players')
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </PageTemplate>
   );

@@ -19,6 +19,11 @@ const FloorballPlayersPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [deleteTimeoutId, setDeleteTimeoutId] = useState<number | null>(null);
+  
+  // Selection state for multiselect
+  const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -79,6 +84,13 @@ const FloorballPlayersPage = () => {
       // Remove player from list
       setPlayers(prevPlayers => prevPlayers.filter(p => p.id !== playerToDelete.id));
       
+      // Clear selection if the deleted player was selected
+      setSelectedPlayers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(playerToDelete.id);
+        return newSet;
+      });
+      
       // Clear any existing timeout to prevent flickering
       if (deleteTimeoutId) {
         clearTimeout(deleteTimeoutId);
@@ -108,6 +120,63 @@ const FloorballPlayersPage = () => {
 
   const handleCreatePlayerClick = () => {
     navigate('/admin/floorball/players/create');
+  };
+
+  // Selection management functions
+  const togglePlayerSelection = (playerId: string) => {
+    setSelectedPlayers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(playerId)) {
+        newSet.delete(playerId);
+      } else {
+        newSet.add(playerId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllPlayers = () => {
+    setSelectedPlayers(new Set(players.map(p => p.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedPlayers(new Set());
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedPlayers.size === 0) return;
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  const handleConfirmBulkDelete = async () => {
+    if (selectedPlayers.size === 0) return;
+
+    try {
+      setIsBulkDeleting(true);
+      setError(null);
+      
+      // Delete each selected player
+      for (const playerId of selectedPlayers) {
+        await floorballPlayerService.delete(playerId);
+      }
+      
+      // Remove deleted players from list
+      setPlayers(prevPlayers => prevPlayers.filter(p => !selectedPlayers.has(p.id)));
+      
+      // Clear selection and close modal
+      setSelectedPlayers(new Set());
+      setIsBulkDeleteModalOpen(false);
+      
+    } catch (err) {
+      setError(t('floorball.players.errors.bulkDeleteFailed', 'Failed to delete selected players. Please try again.'));
+      console.error(err);
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  const handleCancelBulkDelete = () => {
+    setIsBulkDeleteModalOpen(false);
   };
 
   if (loading) {
@@ -142,6 +211,49 @@ const FloorballPlayersPage = () => {
           </div>
         </div>
         
+        {/* Selection Controls */}
+        <div className="selection-controls">
+          <div className="selection-info">
+            <span className="selected-count">
+              {t('floorball.players.selected', '{{count}} selected', { count: selectedPlayers.size })}
+            </span>
+            {players.length > 0 && (
+              <div className="selection-buttons">
+                <button
+                  type="button"
+                  className="control-btn"
+                  onClick={selectAllPlayers}
+                  disabled={selectedPlayers.size === players.length}
+                >
+                  {t('common.selectAll', 'Select All')} ({players.length})
+                </button>
+                <button
+                  type="button"
+                  className="control-btn"
+                  onClick={clearSelection}
+                  disabled={selectedPlayers.size === 0}
+                >
+                  {t('common.clear', 'Clear')}
+                </button>
+              </div>
+            )}
+          </div>
+          
+          {/* Bulk Actions */}
+          {selectedPlayers.size > 0 && (
+            <div className="bulk-actions">
+              <button
+                type="button"
+                className="bulk-delete-btn"
+                onClick={handleBulkDelete}
+                disabled={isBulkDeleting}
+              >
+                {t('floorball.players.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPlayers.size })}
+              </button>
+            </div>
+          )}
+        </div>
+        
         {/* Error message */}
         {error && (
           <div className="error-message">
@@ -153,7 +265,11 @@ const FloorballPlayersPage = () => {
         <div className="players-table-container">
           <PlayersTable 
             players={players} 
-            onDelete={handleDelete} 
+            onDelete={handleDelete}
+            selectedPlayers={selectedPlayers}
+            onToggleSelection={togglePlayerSelection}
+            onSelectAll={selectAllPlayers}
+            onClearSelection={clearSelection}
           />
         </div>
 
@@ -164,6 +280,16 @@ const FloorballPlayersPage = () => {
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}
           isDeleting={isDeleting}
+        />
+        
+        {/* Bulk Delete Modal */}
+        <ConfirmDeleteModal
+          isOpen={isBulkDeleteModalOpen}
+          player={null}
+          onConfirm={handleConfirmBulkDelete}
+          onCancel={handleCancelBulkDelete}
+          isDeleting={isBulkDeleting}
+          bulkCount={selectedPlayers.size}
         />
       </div>
     </PageTemplate>

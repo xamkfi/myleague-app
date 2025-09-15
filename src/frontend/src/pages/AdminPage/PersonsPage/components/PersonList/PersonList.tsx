@@ -26,6 +26,10 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Selection state for multiselect
+  const [selectedPersons, setSelectedPersons] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   const fetchPersons = useCallback(async () => {
     try {
       setLoading(true);
@@ -56,6 +60,12 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         await personApi.delete(id);
         // Refresh the list to get updated data
         await fetchPersons();
+        // Clear selection if the deleted person was selected
+        setSelectedPersons(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(id);
+          return newSet;
+        });
       } catch (error) {
         console.error('Failed to delete person:', error);
         setError(t('admin.persons.errors.deleteFailed', 'Failed to delete person'));
@@ -118,6 +128,62 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     }
   };
 
+  // Selection management functions
+  const togglePersonSelection = (personId: string) => {
+    setSelectedPersons(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(personId)) {
+        newSet.delete(personId);
+      } else {
+        newSet.add(personId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllFilteredPersons = () => {
+    setSelectedPersons(new Set(filteredPersons.map(p => p.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedPersons(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedPersons.size === 0) return;
+    
+    const confirmMessage = t('admin.persons.actions.confirmBulkDelete', 
+      'Are you sure you want to delete {{count}} selected person(s)? This action cannot be undone.', 
+      { count: selectedPersons.size }
+    );
+    
+    if (window.confirm(confirmMessage)) {
+      setBulkDeleting(true);
+      try {
+        // Delete each selected person
+        for (const personId of selectedPersons) {
+          await personApi.delete(personId);
+        }
+        
+        // Refresh the list and clear selection
+        await fetchPersons();
+        setSelectedPersons(new Set());
+        
+        // Show success message
+        const successMessage = t('admin.persons.success.bulkDeleted', 
+          '{{count}} person(s) deleted successfully', 
+          { count: selectedPersons.size }
+        );
+        console.log(successMessage);
+      } catch (error) {
+        console.error('Failed to delete selected persons:', error);
+        setError(t('admin.persons.errors.bulkDeleteFailed', 'Failed to delete selected persons'));
+      } finally {
+        setBulkDeleting(false);
+      }
+    }
+  };
+
   // Search filtering
   const filteredPersons = persons.filter(person =>
     person.fullName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -145,6 +211,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1); // Reset to first page when searching
+    setSelectedPersons(new Set()); // Clear selection when searching
   };
 
   if (loading) {
@@ -177,6 +244,52 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         )}
       </div>
 
+      {/* Selection Controls */}
+      <div className="selection-controls">
+        <div className="selection-info">
+          <span className="selected-count">
+            {t('admin.persons.selected', '{{count}} selected', { count: selectedPersons.size })}
+          </span>
+          {filteredPersons.length > 0 && (
+            <div className="selection-buttons">
+              <button
+                type="button"
+                className="control-btn"
+                onClick={selectAllFilteredPersons}
+                disabled={selectedPersons.size === filteredPersons.length}
+              >
+                {t('common.selectAll', 'Select All')} ({filteredPersons.length})
+              </button>
+              <button
+                type="button"
+                className="control-btn"
+                onClick={clearSelection}
+                disabled={selectedPersons.size === 0}
+              >
+                {t('common.clear', 'Clear')}
+              </button>
+            </div>
+          )}
+        </div>
+        
+        {/* Bulk Actions */}
+        {selectedPersons.size > 0 && (
+          <div className="bulk-actions">
+            <button
+              type="button"
+              className="bulk-delete-btn"
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+            >
+              {bulkDeleting 
+                ? t('admin.persons.actions.deleting', 'Deleting...') 
+                : t('admin.persons.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPersons.size })
+              }
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Pagination Controls - Top */}
       <PaginationControls
         currentPage={currentPage}
@@ -190,6 +303,24 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
       <table>
         <thead>
           <tr>
+            <th className="select-column">
+              <input
+                type="checkbox"
+                checked={paginatedPersons.length > 0 && paginatedPersons.every(person => selectedPersons.has(person.id))}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    const newSelection = new Set(selectedPersons);
+                    paginatedPersons.forEach(person => newSelection.add(person.id));
+                    setSelectedPersons(newSelection);
+                  } else {
+                    const newSelection = new Set(selectedPersons);
+                    paginatedPersons.forEach(person => newSelection.delete(person.id));
+                    setSelectedPersons(newSelection);
+                  }
+                }}
+                title={t('admin.persons.selectAllOnPage', 'Select all on this page')}
+              />
+            </th>
             <th>{t('admin.persons.table.name', 'Name')}</th>
             <th>{t('admin.persons.table.birthDate', 'Birth Date')}</th>
             <th>{t('admin.persons.table.email', 'Email')}</th>
@@ -200,10 +331,27 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         </thead>
         <tbody>
           {paginatedPersons.map(person => (
-            <tr key={person.id}>
-              <td>{person.fullName}</td>
-              <td>{new Date(person.birthDate).toLocaleDateString()}</td>
-              <td>{person.contactInfo?.email || '-'}</td>
+            <tr 
+              key={person.id}
+              className={selectedPersons.has(person.id) ? 'selected' : ''}
+            >
+              <td className="select-column">
+                <input
+                  type="checkbox"
+                  checked={selectedPersons.has(person.id)}
+                  onChange={() => togglePersonSelection(person.id)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </td>
+              <td onClick={() => togglePersonSelection(person.id)} className="clickable-cell">
+                {person.fullName}
+              </td>
+              <td onClick={() => togglePersonSelection(person.id)} className="clickable-cell">
+                {new Date(person.birthDate).toLocaleDateString()}
+              </td>
+              <td onClick={() => togglePersonSelection(person.id)} className="clickable-cell">
+                {person.contactInfo?.email || '-'}
+              </td>
               <td>
                 <button
                   className={`status-toggle ${person.isRegistered ? 'registered' : 'not-registered'} ${updatingRegistration === person.id ? 'updating' : ''}`}

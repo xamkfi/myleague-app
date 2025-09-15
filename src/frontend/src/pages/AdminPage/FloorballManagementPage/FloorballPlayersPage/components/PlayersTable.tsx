@@ -4,9 +4,13 @@ import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballP
 interface PlayersTableProps {
   players: FloorballPlayerDto[];
   onDelete: (playerId: string) => void;
+  selectedPlayers: Set<string>;
+  onToggleSelection: (playerId: string) => void;
+  onSelectAll: () => void;
+  onClearSelection: () => void;
 }
 
-const PlayersTable = ({ players, onDelete }: PlayersTableProps) => {
+const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
   const { t } = useTranslation();
 
   if (players.length === 0) {
@@ -17,6 +21,20 @@ const PlayersTable = ({ players, onDelete }: PlayersTableProps) => {
     <table className="players-table">
       <thead>
         <tr>
+          <th className="select-column">
+            <input
+              type="checkbox"
+              checked={players.length > 0 && players.every(player => selectedPlayers.has(player.id))}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  onSelectAll();
+                } else {
+                  onClearSelection();
+                }
+              }}
+              title={t('floorball.players.selectAll', 'Select all players')}
+            />
+          </th>
           <th>{t('floorball.players.table.name', 'Name')}</th>
           <th>{t('floorball.players.table.position', 'Position')}</th>
           <th>{t('floorball.players.table.status', 'Status')}</th>
@@ -25,10 +43,25 @@ const PlayersTable = ({ players, onDelete }: PlayersTableProps) => {
       </thead>
       <tbody>
         {players.map((player) => (
-          <tr key={player.id}>
-            <td>{player.person.fullName}</td>
-            <td>{player.position ? t(`floorball.positions.${player.position.toLowerCase()}`, player.position) : 'N/A'}</td>
-            <td>
+          <tr 
+            key={player.id}
+            className={selectedPlayers.has(player.id) ? 'selected' : ''}
+          >
+            <td className="select-column">
+              <input
+                type="checkbox"
+                checked={selectedPlayers.has(player.id)}
+                onChange={() => onToggleSelection(player.id)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </td>
+            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
+              {player.person.fullName}
+            </td>
+            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
+              {player.position ? t(`floorball.positions.${player.position.toLowerCase()}`, player.position) : 'N/A'}
+            </td>
+            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
               <span className={`status-badge ${player.isActive ? 'active' : 'inactive'}`}>
                 {player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
               </span>
