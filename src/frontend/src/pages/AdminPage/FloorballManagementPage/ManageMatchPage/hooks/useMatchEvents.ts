@@ -101,7 +101,6 @@ export const useMatchEvents = ({
 
     // Create a new event DTO from the SignalR data
     const newSaveEvent: FloorballDomainEventDto = {
-      id: `save-${eventData.TeamId}-${eventData.GoalieId}-${eventData.PeriodNumber}-${eventData.TimeInSeconds}`,
       eventType: 'FloorballSaveEvent',
       occurredOn: new Date().toISOString(),
       data: {
