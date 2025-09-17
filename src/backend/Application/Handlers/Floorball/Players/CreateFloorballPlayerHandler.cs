@@ -1,16 +1,17 @@
 using Application.Commands.Floorball.Player;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
+using Application.Mappings.Common;
 using Application.Common;
 using Domain.Entities.Floorball;
+using Domain.Entities.Common;
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Domain.Repositories.Common;
-using Domain.Entities.Common;
 
 namespace Application.Handlers.Floorball.Players;
 
@@ -28,6 +29,7 @@ public class CreateFloorballPlayerHandler : IRequestHandler<CreateFloorballPlaye
     /// Initializes a new instance of the CreateFloorballPlayerHandler class
     /// </summary>
     /// <param name="playerRepository">The floorball player repository</param>
+    /// <param name="personRepository">The person repository</param>
     /// <param name="floorballUnitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public CreateFloorballPlayerHandler(
@@ -45,7 +47,7 @@ public class CreateFloorballPlayerHandler : IRequestHandler<CreateFloorballPlaye
     /// <summary>
     /// Handles the CreateFloorballPlayerCommand request
     /// </summary>
-    /// <param name="request">The command containing player information</param>
+    /// <param name="request">The command containing the person ID for the new player</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The newly created player as a DTO wrapped in a Result</returns>
     public async Task<Result<FloorballPlayerDto>> Handle(CreateFloorballPlayerCommand request, CancellationToken cancellationToken)
@@ -70,7 +72,17 @@ public class CreateFloorballPlayerHandler : IRequestHandler<CreateFloorballPlaye
             // Save changes explicitly to trigger domain events
             await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballPlayerDto playerDto = FloorballPlayerMapper.ToDto(player);
+            // Create DTO with real person data (consistent with other handlers)
+            FloorballPlayerDto playerDto = new FloorballPlayerDto(
+                player.Id,
+                player.PersonId,
+                PersonMapper.ToDto(person),
+                player.IsActive,
+                player.Position.PrimaryPosition,
+                player.CareerGoals,
+                player.CareerAssists
+            );
+            
             _logger.LogInformation("Successfully created floorball player with ID: {PlayerId}", player.Id);
 
             return Result<FloorballPlayerDto>.Success(playerDto);

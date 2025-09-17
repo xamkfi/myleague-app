@@ -5,6 +5,7 @@ import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../api/floorball/floorballPlayerService';
 import PlayersTable from './components/PlayersTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
+import BulkStatusUpdateModal from './components/BulkStatusUpdateModal';
 import './FloorballPlayersPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 
@@ -24,35 +25,44 @@ const FloorballPlayersPage = () => {
   const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  
+  // Bulk status update state
+  const [isBulkStatusUpdateModalOpen, setIsBulkStatusUpdateModalOpen] = useState(false);
+  const [bulkStatusUpdateAction, setBulkStatusUpdateAction] = useState<'activate' | 'deactivate'>('activate');
+  const [isBulkStatusUpdating, setIsBulkStatusUpdating] = useState(false);
+
+  // Centralized function to fetch players
+  const fetchPlayers = async () => {
+    try {
+      const response = await floorballPlayerService.getAll({ pageSize: 50 });
+      if (response.data) {
+        setPlayers(response.data);
+      }
+      setError(null);
+    } catch (err) {
+      setError(t('floorball.players.errors.loadPlayers', 'Failed to load players. Please try again.'));
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
-    const fetchPlayers = async () => {
+    const loadInitialPlayers = async () => {
       try {
         setLoading(true);
-        const response = await floorballPlayerService.getAll({ pageSize: 50 }); // Fetch up to 50 for now
-        if (response.data) {
-          setPlayers(response.data);
-        }
-        setError(null);
-      } catch (err) {
-        setError(t('floorball.players.errors.loadPlayers', 'Failed to load players. Please try again.'));
-        console.error(err);
+        await fetchPlayers();
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPlayers();
+    loadInitialPlayers();
   }, [t]);
 
   // Refresh players when navigating back to this page
   useEffect(() => {
     const refreshPlayers = async () => {
       try {
-        const response = await floorballPlayerService.getAll({ pageSize: 50 });
-        if (response.data) {
-          setPlayers(response.data);
-        }
+        await fetchPlayers();
       } catch (err) {
         console.error('Error refreshing players:', err);
       }
@@ -179,6 +189,66 @@ const FloorballPlayersPage = () => {
     setIsBulkDeleteModalOpen(false);
   };
 
+  // Bulk status update functions
+  const handleBulkStatusUpdate = (action: 'activate' | 'deactivate') => {
+    if (selectedPlayers.size === 0) return;
+    setBulkStatusUpdateAction(action);
+    setIsBulkStatusUpdateModalOpen(true);
+  };
+
+  const handleConfirmBulkStatusUpdate = async () => {
+    if (selectedPlayers.size === 0) return;
+
+    try {
+      setIsBulkStatusUpdating(true);
+      setError(null);
+      
+      const newStatus = bulkStatusUpdateAction === 'activate';
+      let successfulUpdates = 0;
+      
+      // Update each selected player
+      for (const playerId of selectedPlayers) {
+        try {
+          await floorballPlayerService.update(playerId, {
+            isActive: newStatus
+          });
+          successfulUpdates++;
+        } catch (err) {
+          console.error(`Failed to update player ${playerId}:`, err);
+          // Continue with other players even if one fails
+        }
+      }
+      
+      // Refetch all players to ensure we have the most up-to-date data
+      // This guarantees that player names and all other data are correct
+      await fetchPlayers();
+      
+      // Clear selection and close modal
+      setSelectedPlayers(new Set());
+      setIsBulkStatusUpdateModalOpen(false);
+      
+      // Show success message
+      const actionText = bulkStatusUpdateAction === 'activate' ? 'activated' : 'deactivated';
+      console.log(`Successfully ${actionText} ${successfulUpdates} players`);
+      
+    } catch (err) {
+      const actionText = bulkStatusUpdateAction === 'activate' ? 'activate' : 'deactivate';
+      setError(t('floorball.players.errors.bulkStatusUpdateFailed', `Failed to ${actionText} selected players. Please try again.`));
+      console.error(err);
+    } finally {
+      setIsBulkStatusUpdating(false);
+    }
+  };
+
+  const handleCancelBulkStatusUpdate = () => {
+    setIsBulkStatusUpdateModalOpen(false);
+  };
+
+  // Get counts for bulk actions
+  const selectedPlayersData = players.filter(p => selectedPlayers.has(p.id));
+  const selectedActiveCount = selectedPlayersData.filter(p => p.isActive).length;
+  const selectedInactiveCount = selectedPlayersData.filter(p => !p.isActive).length;
+
   if (loading) {
     return (
       <PageTemplate title={t('floorball.players.title', 'Manage Floorball Players')}>
@@ -242,6 +312,26 @@ const FloorballPlayersPage = () => {
           {/* Bulk Actions */}
           {selectedPlayers.size > 0 && (
             <div className="bulk-actions">
+              {selectedInactiveCount > 0 && (
+                <button
+                  type="button"
+                  className="bulk-activate-btn"
+                  onClick={() => handleBulkStatusUpdate('activate')}
+                  disabled={isBulkStatusUpdating}
+                >
+                  {t('floorball.players.actions.bulkActivate', 'Activate Selected ({{count}})', { count: selectedInactiveCount })}
+                </button>
+              )}
+              {selectedActiveCount > 0 && (
+                <button
+                  type="button"
+                  className="bulk-deactivate-btn"
+                  onClick={() => handleBulkStatusUpdate('deactivate')}
+                  disabled={isBulkStatusUpdating}
+                >
+                  {t('floorball.players.actions.bulkDeactivate', 'Deactivate Selected ({{count}})', { count: selectedActiveCount })}
+                </button>
+              )}
               <button
                 type="button"
                 className="bulk-delete-btn"
@@ -291,9 +381,21 @@ const FloorballPlayersPage = () => {
           isDeleting={isBulkDeleting}
           bulkCount={selectedPlayers.size}
         />
+
+        {/* Bulk Status Update Modal */}
+        <BulkStatusUpdateModal
+          isOpen={isBulkStatusUpdateModalOpen}
+          action={bulkStatusUpdateAction}
+          selectedCount={selectedPlayers.size}
+          activeCount={selectedActiveCount}
+          inactiveCount={selectedInactiveCount}
+          onConfirm={handleConfirmBulkStatusUpdate}
+          onCancel={handleCancelBulkStatusUpdate}
+          isUpdating={isBulkStatusUpdating}
+        />
       </div>
     </PageTemplate>
   );
 };
 
-export default FloorballPlayersPage; 
+export default FloorballPlayersPage;
