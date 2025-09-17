@@ -138,4 +138,9 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
 
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
     }
+
+    private async Task UpdatePlayerGamesPlayedCount()
+    {
+        PlayerStatis
+    }
 } 

@@ -7,6 +7,7 @@ using Domain.Repositories.Floorball;
 using Domain.Entities.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Domain.Enums.Floorball;
 
 namespace Application.Handlers.Floorball.Statistics;
 
@@ -78,18 +79,18 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             }
 
             // Build last-5 form per team
-            Dictionary<Guid, string[]> last5ByTeam = new Dictionary<Guid, string[]>();
+            Dictionary<Guid, FloorballGameResult[]> last5ByTeam = new Dictionary<Guid, FloorballGameResult[]>();
             foreach (Domain.Entities.Floorball.FloorballTeamSeasonStatistics ts in teamStats)
             {
                 IEnumerable<Domain.Entities.Floorball.FloorballMatch> matches =
                     await _floorballMatchRepository.GetLastCompletedByTeamAsync(ts.TeamId, request.SeasonId, 5);
 
-                string[] form = matches.Select(m =>
+                FloorballGameResult[] form = matches.Select(m =>
                 {
-                    if (m.HomeScore == m.AwayScore) return "T";
+                    if (m.HomeScore == m.AwayScore) return FloorballGameResult.Tie;
                     bool teamIsHome = m.HomeTeamId == ts.TeamId;
                     bool teamWon = (teamIsHome && m.HomeScore > m.AwayScore) || (!teamIsHome && m.AwayScore > m.HomeScore);
-                    return teamWon ? "W" : "L";
+                    return teamWon ? FloorballGameResult.Win : FloorballGameResult.Loss;
                 }).ToArray();
 
                 last5ByTeam[ts.TeamId] = form;
@@ -153,26 +154,25 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
                 TopScorers = topScorers.Select(ps => 
                 {
                     string playerName = playerPersonLookup.TryGetValue(ps.PlayerId, out Person? person) 
-                        ? $"{person.FirstName} {person.LastName}" 
+                        ? person.FullName 
                         : string.Empty;
                     string teamName = teamNameLookup.TryGetValue(ps.TeamId, out string? team) ? team : string.Empty;
-                    return FloorballStatisticsMapper.ToDto(ps, playerName, teamName, seasonName);
+                    return FloorballStatisticsMapper.ToDto(ps, playerName);
                 }).ToList(),
                 TopAssists = topAssists.Select(ps => 
                 {
                     string playerName = playerPersonLookup.TryGetValue(ps.PlayerId, out Person? person) 
-                        ? $"{person.FirstName} {person.LastName}" 
-                        : string.Empty;
-                    string teamName = teamNameLookup.TryGetValue(ps.TeamId, out string? team) ? team : string.Empty;
-                    return FloorballStatisticsMapper.ToDto(ps, playerName, teamName, seasonName);
+                        ? person.FullName
+                        : string.Empty;                  
+                    return FloorballStatisticsMapper.ToDto(ps, playerName);
                 }).ToList(),
                 TopGoalies = topGoalies.Select(gs => 
                 {
                     string playerName = playerPersonLookup.TryGetValue(gs.PlayerId, out Person? person) 
-                        ? $"{person.FirstName} {person.LastName}" 
+                        ? person.FullName
                         : string.Empty;
                     string teamName = teamNameLookup.TryGetValue(gs.TeamId, out string? team) ? team : string.Empty;
-                    return FloorballStatisticsMapper.ToDto(gs, playerName, teamName, seasonName);
+                    return FloorballStatisticsMapper.ToDto(gs, playerName);
                 }).ToList(),
                 TotalGames = totalGames,
                 TotalGoals = totalGoals,
@@ -182,7 +182,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             // Add last-5 form to each team's DTO
             foreach (FloorballTeamSeasonStatisticsDto teamDto in summaryDto.TeamStandings)
             {
-                if (last5ByTeam.TryGetValue(teamDto.TeamId, out string[]? form))
+                if (last5ByTeam.TryGetValue(teamDto.TeamId, out FloorballGameResult[]? form))
                 {
                     teamDto.LastFiveForm = form;
                 }

@@ -2,6 +2,7 @@ using Application.Common;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Queries.Floorball.Statistics;
+using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -65,28 +66,17 @@ public class GetPlayerSeasonStatisticsHandler : IRequestHandler<GetPlayerSeasonS
                 return Result<FloorballPlayerSeasonStatisticsDto>.NotFound("Player season statistics", $"Player {request.PlayerId} in season {request.SeasonId}");
             }
 
-            // Resolve player's Person name and team info
-            string playerName = string.Empty;
-            string teamName = string.Empty;
-            string? teamLogo = null;
-            Domain.Entities.Floorball.FloorballPlayer? player = await _floorballPlayerRepository.GetByIdAsync(playerStats.PlayerId);
-            if (player != null)
+            Person? person = await _personRepository.GetByIdAsync(playerStats.Player.PersonId); 
+
+            if(person == null)
             {
-                Domain.Entities.Common.Person? person = await _personRepository.GetByIdAsync(player.PersonId);
-                if (person != null)
-                {
-                    playerName = $"{person.FirstName} {person.LastName}".Trim();
-                }
+                _logger.LogWarning("Player season statistics not found for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.SeasonId);
+                return Result<FloorballPlayerSeasonStatisticsDto>.NotFound("Player season statistics", $"Player {request.PlayerId} in season {request.SeasonId}");
             }
 
-            Domain.Entities.Floorball.FloorballTeam? team = await _floorballTeamRepository.GetByIdAsync(playerStats.TeamId);
-            if (team != null)
-            {
-                teamName = team.Name ?? string.Empty;
-                teamLogo = team.LogoUrl?.ToString();
-            }
+            string playerName = person.FullName;
 
-            FloorballPlayerSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(playerStats, playerName, teamName, null, teamLogo);
+            FloorballPlayerSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(playerStats, playerName);
             
             _logger.LogInformation("Successfully retrieved player season statistics for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.SeasonId);
             return Result<FloorballPlayerSeasonStatisticsDto>.Success(dto);

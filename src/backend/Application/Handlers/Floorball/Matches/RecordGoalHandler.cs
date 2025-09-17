@@ -114,7 +114,6 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
                 assistingPlayer, secondAssistingPlayer,
                 request.PeriodNumber, request.TimeInSeconds,
                 request.Description, request.GoalType);
-            // Ensure EF persists match score changes
 
             //Adding goals/assists to player statistics
             scoringPlayer.RecordGoal();
