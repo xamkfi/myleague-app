@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
@@ -32,7 +32,7 @@ const FloorballPlayersPage = () => {
   const [isBulkStatusUpdating, setIsBulkStatusUpdating] = useState(false);
 
   // Centralized function to fetch players
-  const fetchPlayers = async () => {
+  const fetchPlayers = useCallback(async () => {
     try {
       const response = await floorballPlayerService.getAll({ pageSize: 50 });
       if (response.data) {
@@ -43,7 +43,7 @@ const FloorballPlayersPage = () => {
       setError(t('floorball.players.errors.loadPlayers', 'Failed to load players. Please try again.'));
       console.error(err);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     const loadInitialPlayers = async () => {
@@ -56,7 +56,7 @@ const FloorballPlayersPage = () => {
     };
 
     loadInitialPlayers();
-  }, [t]);
+  }, [t, fetchPlayers]);
 
   // Refresh players when navigating back to this page
   useEffect(() => {
@@ -72,7 +72,7 @@ const FloorballPlayersPage = () => {
     if (!loading) {
       refreshPlayers();
     }
-  }, [loading]); // This will trigger when we come back to this page
+  }, [loading, fetchPlayers]); // This will trigger when we come back to this page
 
   const handleDelete = (playerId: string) => {
     const player = players.find(p => p.id === playerId);
