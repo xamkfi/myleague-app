@@ -1,17 +1,17 @@
+using System;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Application.Commands.Floorball.Match;
+using Application.Common;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
-using Application.Common;
 using Application.Services.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
-using Microsoft.Extensions.Logging;
 using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Domain.Repositories.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -137,10 +137,5 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             goalsAgainst: opponentScore);
 
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
-    }
-
-    private async Task UpdatePlayerGamesPlayedCount()
-    {
-        PlayerStatis
     }
 } 
