@@ -9,7 +9,6 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Domain.Repositories.Common;
 
 namespace Application.Handlers.Floorball.Players;
 
@@ -19,7 +18,7 @@ namespace Application.Handlers.Floorball.Players;
 public class UpdateFloorballPlayerHandler : IRequestHandler<UpdateFloorballPlayerCommand, Result<FloorballPlayerDto>>
 {
     private readonly IFloorballPlayerRepository _playerRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateFloorballPlayerHandler> _logger;
 
     /// <summary>
@@ -30,7 +29,7 @@ public class UpdateFloorballPlayerHandler : IRequestHandler<UpdateFloorballPlaye
     /// <param name="logger">The logger</param>
     public UpdateFloorballPlayerHandler(
         IFloorballPlayerRepository playerRepository, 
-        IUnitOfWork unitOfWork, 
+        IFloorballUnitOfWork unitOfWork, 
         ILogger<UpdateFloorballPlayerHandler> logger)
     {
         _playerRepository = playerRepository;
@@ -60,9 +59,9 @@ public class UpdateFloorballPlayerHandler : IRequestHandler<UpdateFloorballPlaye
             FloorballPlayerMapper.UpdateFromCommand(existingPlayer, request);
             
             _logger.LogInformation("Updating floorball player: {PlayerId}", existingPlayer.Id);
-            await _playerRepository.UpdateAsync(existingPlayer);
             
             // Save changes explicitly to trigger domain events
+            // Note: No need to call UpdateAsync since the entity is already tracked by EF Core
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballPlayerDto playerDto = FloorballPlayerMapper.ToDto(existingPlayer);
