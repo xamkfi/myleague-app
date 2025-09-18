@@ -6,6 +6,7 @@ import { floorballPlayerService, type FloorballPlayerDto } from '../../../../api
 import PlayersTable from './components/PlayersTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import BulkStatusUpdateModal from './components/BulkStatusUpdateModal';
+import PaginationControls from './components/PaginationControls';
 import './FloorballPlayersPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 
@@ -14,12 +15,17 @@ const FloorballPlayersPage = () => {
   const navigate = useNavigate();
   const [players, setPlayers] = useState<FloorballPlayerDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [paginationLoading, setPaginationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [playerToDelete, setPlayerToDelete] = useState<FloorballPlayerDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [deleteTimeoutId, setDeleteTimeoutId] = useState<number | null>(null);
+  
+  // Server pagination state
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   
   // Selection state for multiselect
   const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
@@ -31,48 +37,64 @@ const FloorballPlayersPage = () => {
   const [bulkStatusUpdateAction, setBulkStatusUpdateAction] = useState<'activate' | 'deactivate'>('activate');
   const [isBulkStatusUpdating, setIsBulkStatusUpdating] = useState(false);
 
-  // Centralized function to fetch players
-  const fetchPlayers = useCallback(async () => {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  
+
+
+  // Centralized function to fetch players with server-side pagination
+  const fetchPlayers = useCallback(async (isInitialLoad = false) => {
     try {
-      const response = await floorballPlayerService.getAll({ pageSize: 50 });
+      if (!isInitialLoad) {
+        setPaginationLoading(true);
+      }
+      
+      const response = await floorballPlayerService.getAll({
+        page: currentPage || 1,
+        pageSize: pageSize || 10,
+      });
+      
       if (response.data) {
         setPlayers(response.data);
+        setTotalCount(response.pagination.totalCount || 0);
+        setTotalPages(response.pagination.totalPages || 0);
       }
       setError(null);
     } catch (err) {
+      console.error('fetchPlayers error:', err);
       setError(t('floorball.players.errors.loadPlayers', 'Failed to load players. Please try again.'));
-      console.error(err);
+    } finally {
+      if (!isInitialLoad) {
+        setPaginationLoading(false);
+      }
     }
-  }, [t]);
+  }, [currentPage, pageSize, t]);
 
+  // Track if this is the initial load
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Load players when component mounts or when pagination parameters change
   useEffect(() => {
-    const loadInitialPlayers = async () => {
+    const loadPlayers = async () => {
       try {
-        setLoading(true);
-        await fetchPlayers();
+        if (isInitialLoad) {
+          setLoading(true);
+          await fetchPlayers(true);
+          setIsInitialLoad(false);
+        } else {
+          // For pagination changes, don't show the main loading spinner
+          await fetchPlayers(false);
+        }
       } finally {
-        setLoading(false);
+        if (isInitialLoad) {
+          setLoading(false);
+        }
       }
     };
 
-    loadInitialPlayers();
-  }, [t, fetchPlayers]);
-
-  // Refresh players when navigating back to this page
-  useEffect(() => {
-    const refreshPlayers = async () => {
-      try {
-        await fetchPlayers();
-      } catch (err) {
-        console.error('Error refreshing players:', err);
-      }
-    };
-
-    // Only refresh if we're not loading initially
-    if (!loading) {
-      refreshPlayers();
-    }
-  }, [loading, fetchPlayers]); // This will trigger when we come back to this page
+    loadPlayers();
+  }, [fetchPlayers, isInitialLoad]); // fetchPlayers includes currentPage, pageSize dependencies
 
   const handleDelete = (playerId: string) => {
     const player = players.find(p => p.id === playerId);
@@ -268,7 +290,19 @@ const FloorballPlayersPage = () => {
     }
   };
 
-  // Get counts for bulk actions
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+
+  // Get counts for bulk actions (based on current page data)
   const selectedPlayersData = players.filter(p => selectedPlayers.has(p.id));
   const selectedActiveCount = selectedPlayersData.filter(p => p.isActive).length;
   const selectedInactiveCount = selectedPlayersData.filter(p => !p.isActive).length;
@@ -296,7 +330,7 @@ const FloorballPlayersPage = () => {
         {/* Header with actions */}
         <div className="floorball-players-header">
           <div className="players-count">
-            <span>{t('floorball.players.totalCount', `${players.length} players`, { count: players.length })}</span>
+            <span>{t('floorball.players.totalCount', `${totalCount} players`, { count: totalCount })}</span>
           </div>
           <div className="players-actions">
             <button className="create-player-button" onClick={handleCreatePlayerClick}>
@@ -304,6 +338,7 @@ const FloorballPlayersPage = () => {
             </button>
           </div>
         </div>
+
         
         {/* Selection Controls */}
         <div className="selection-controls">
@@ -319,7 +354,7 @@ const FloorballPlayersPage = () => {
                   onClick={selectAllPlayers}
                   disabled={selectedPlayers.size === players.length}
                 >
-                  {t('common.selectAll', 'Select All')} ({players.length})
+                  {t('common.selectAll', 'Select All on Page')} ({players.length})
                 </button>
                 <button
                   type="button"
@@ -376,7 +411,7 @@ const FloorballPlayersPage = () => {
         )}
         
         {/* Players table */}
-        <div className="players-table-container">
+        <div className={`players-table-container ${paginationLoading ? 'pagination-loading' : ''}`}>
           <PlayersTable 
             players={players} 
             onDelete={handleDelete}
@@ -386,7 +421,29 @@ const FloorballPlayersPage = () => {
             onSelectAll={selectAllPlayers}
             onClearSelection={clearSelection}
           />
+          {paginationLoading && (
+            <div className="pagination-loading-overlay">
+              <div className="loading-spinner-small"></div>
+            </div>
+          )}
         </div>
+
+        {/* Pagination Controls - Bottom */}
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+
+        {/* No data states */}
+        {totalCount === 0 && !loading && (
+          <div className="no-data">
+            {t('floorball.players.noPlayers', 'No players found.')}
+          </div>
+        )}
 
         {/* Confirm Delete Modal */}
         <ConfirmDeleteModal
