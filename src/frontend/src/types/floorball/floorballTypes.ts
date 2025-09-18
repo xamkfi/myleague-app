@@ -181,7 +181,7 @@ export interface FloorballPenaltyEventDto {
 // Save event DTO
 export interface FloorballSaveEventDto {
   teamId: string;
-  playerId: string; // goalie id
+  goalieId: string; // goalie id
   periodNumber: number;
   timeInSeconds: number;
   wasInOvertime: boolean;

@@ -101,7 +101,6 @@ export interface FloorballPenaltyEventDto {
 export interface FloorballSaveEventDto {
   teamId: string;
   goalieId: string;
-  playerId: string;
   periodNumber: number;
   timeInSeconds: number;
   wasInOvertime: boolean;
@@ -181,7 +180,7 @@ export const floorballMatchEventService = {
       // Synthesize saves from DTO
       type SaveEventFromDto = {
         teamId: string;
-        playerId: string;
+        goalieId: string;
         periodNumber: number;
         timeInSeconds: number;
         wasInOvertime: boolean;
@@ -193,7 +192,7 @@ export const floorballMatchEventService = {
         data: {
           matchId,
           teamId: s.teamId,
-          goalieId: s.playerId,
+          goalieId: s.goalieId,
           periodNumber: s.periodNumber,
           timeInSeconds: s.timeInSeconds,
           wasInOvertime: s.wasInOvertime,

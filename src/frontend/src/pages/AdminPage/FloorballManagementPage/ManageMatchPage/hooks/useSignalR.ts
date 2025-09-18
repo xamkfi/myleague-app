@@ -35,7 +35,7 @@ export const useSignalR = ({
       onGoalScored(event.data as GoalEventData);
     } else if (event.eventType === 'FloorballPenaltyAssigned') {
       onPenaltyAssigned(event.data as PenaltyEventData);
-    } else if (event.eventType === 'FloorballSaveRecorded') {
+    } else if (event.eventType === 'FloorballSaveRecorded' || event.eventType === 'FloorballSaveEvent') {
       onSaveRecorded(event.data as SaveEventData);
     } else if (event.eventType === 'FloorballPeriodStartedEvent') {
       onPeriodStarted(event.data as PeriodEventData);
@@ -70,7 +70,7 @@ export const useSignalR = ({
         // Also subscribe to specific event types for broader coverage
         await signalRService.subscribeToEventType('FloorballGoalScored');
         await signalRService.subscribeToEventType('FloorballPenaltyAssigned');
-        await signalRService.subscribeToEventType('FloorballSaveEvent');
+        await signalRService.subscribeToEventType('FloorballSaveRecorded');
         await signalRService.subscribeToEventType('FloorballPeriodStartedEvent');
         
         const unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
@@ -97,7 +97,7 @@ export const useSignalR = ({
         // Unsubscribe from event types
         await signalRService.unsubscribeFromEventType('FloorballGoalScored');
         await signalRService.unsubscribeFromEventType('FloorballPenaltyAssigned');
-        await signalRService.unsubscribeFromEventType('FloorballSaveEvent');
+        await signalRService.unsubscribeFromEventType('FloorballSaveRecorded');
         await signalRService.unsubscribeFromEventType('FloorballPeriodStartedEvent');
       }
     } catch (error) {
