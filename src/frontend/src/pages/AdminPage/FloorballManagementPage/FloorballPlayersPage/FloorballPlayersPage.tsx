@@ -41,24 +41,206 @@ const FloorballPlayersPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   
+  // Search state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [allPlayers, setAllPlayers] = useState<FloorballPlayerDto[]>([]); // Cache for search
+  
 
 
-  // Centralized function to fetch players with server-side pagination
+  // Function to fetch all players for search (proper chunked approach)
+  const fetchAllPlayers = useCallback(async () => {
+    try {
+      console.log('Fetching all players for search...');
+      
+      let allPlayersData: FloorballPlayerDto[] = [];
+      let currentPage = 1;
+      let hasMoreData = true;
+      
+      // First, get the total count to know how many players exist
+      const firstResponse = await floorballPlayerService.getAll({
+        page: 1,
+        pageSize: 50, // Safe page size
+      });
+      
+      if (!firstResponse.data) {
+        console.log('No data returned from first API call');
+        return [];
+      }
+      
+      // Add first batch
+      allPlayersData = [...firstResponse.data];
+      const totalCount = firstResponse.pagination.totalCount || 0;
+      const totalPages = firstResponse.pagination.totalPages || 1;
+      
+      console.log(`First batch: ${firstResponse.data.length} players`);
+      console.log(`Total players: ${totalCount}, Total pages: ${totalPages}`);
+      
+      // Fetch remaining pages if there are more
+      currentPage = 2;
+      while (currentPage <= totalPages && hasMoreData) {
+        try {
+          console.log(`Fetching page ${currentPage}/${totalPages}...`);
+          
+          const response = await floorballPlayerService.getAll({
+            page: currentPage,
+            pageSize: 50,
+          });
+          
+          if (response.data && response.data.length > 0) {
+            allPlayersData = [...allPlayersData, ...response.data];
+            console.log(`Page ${currentPage}: ${response.data.length} players (total so far: ${allPlayersData.length})`);
+            currentPage++;
+          } else {
+            console.log(`Page ${currentPage}: No more data`);
+            hasMoreData = false;
+          }
+        } catch (pageErr) {
+          console.error(`Error fetching page ${currentPage}:`, pageErr);
+          hasMoreData = false;
+        }
+      }
+      
+      console.log(`Finished fetching all players: ${allPlayersData.length} total`);
+      setAllPlayers(allPlayersData);
+      return allPlayersData;
+      
+    } catch (err) {
+      console.error('Failed to fetch all players for search:', err);
+      
+      // Fallback: try with just the first page
+      try {
+        console.log('Trying fallback with single page...');
+        const fallbackResponse = await floorballPlayerService.getAll({
+          page: 1,
+          pageSize: 50,
+        });
+        
+        if (fallbackResponse.data) {
+          console.log(`Fallback fetched ${fallbackResponse.data.length} players`);
+          setAllPlayers(fallbackResponse.data);
+          return fallbackResponse.data;
+        }
+      } catch (fallbackErr) {
+        console.error('Fallback also failed:', fallbackErr);
+      }
+      
+      return [];
+    }
+  }, []);
+
+  // Centralized function to fetch players with server-side pagination or client-side search
   const fetchPlayers = useCallback(async (isInitialLoad = false) => {
     try {
       if (!isInitialLoad) {
         setPaginationLoading(true);
       }
       
-      const response = await floorballPlayerService.getAll({
-        page: currentPage || 1,
-        pageSize: pageSize || 10,
-      });
-      
-      if (response.data) {
-        setPlayers(response.data);
-        setTotalCount(response.pagination.totalCount || 0);
-        setTotalPages(response.pagination.totalPages || 0);
+      if (searchTerm) {
+        // Search mode: use cached players or fetch all if not cached
+        let playersToSearch = allPlayers;
+        if (allPlayers.length === 0) {
+          playersToSearch = await fetchAllPlayers();
+        }
+
+        // Apply client-side search filtering
+        console.log('=== SEARCH DEBUG INFO ===');
+        console.log('Search term:', searchTerm);
+        console.log('Players to search:', playersToSearch.length);
+        console.log('Sample player:', playersToSearch[0]);
+        console.log('All cached players count:', allPlayers.length);
+        console.log('First 5 player names:', playersToSearch.slice(0, 5).map(p => 
+          p.person.fullName || `${p.person.firstName} ${p.person.lastName}`
+        ));
+        console.log('Last 5 player names:', playersToSearch.slice(-5).map(p => 
+          p.person.fullName || `${p.person.firstName} ${p.person.lastName}`
+        ));
+        
+        const filteredPlayers = playersToSearch.filter(player => {
+          // Make sure we have valid data
+          if (!player || !player.person) {
+            console.log('Invalid player data:', player);
+            return false;
+          }
+          
+          const searchLower = searchTerm.toLowerCase().trim();
+          
+          // Build full name safely
+          const firstName = player.person.firstName || '';
+          const lastName = player.person.lastName || '';
+          const fullName = player.person.fullName || `${firstName} ${lastName}`.trim();
+          
+          // Check all possible matches
+          const nameMatch = fullName.toLowerCase().includes(searchLower);
+          const firstNameMatch = firstName.toLowerCase().includes(searchLower);
+          const lastNameMatch = lastName.toLowerCase().includes(searchLower);
+          
+          // Position match - handle enum values safely
+          const position = player.position || '';
+          const positionMatch = position.toLowerCase().includes(searchLower);
+          
+          const matches = nameMatch || firstNameMatch || lastNameMatch || positionMatch;
+          
+          // Debug first few players
+          if (playersToSearch.indexOf(player) < 3) {
+            console.log(`Player ${player.id}:`, {
+              fullName,
+              firstName,
+              lastName,
+              position,
+              searchTerm: searchLower,
+              nameMatch,
+              firstNameMatch,
+              lastNameMatch,
+              positionMatch,
+              matches
+            });
+          }
+          
+          return matches;
+        });
+        
+        console.log('Filtered players:', filteredPlayers.length);
+        
+        // Debug: Let's also check if a specific player exists in our cache
+        // (You can modify this to search for the player you're looking for)
+        const debugPlayerName = searchTerm; // Use the actual search term
+        const foundInCache = playersToSearch.find(p => {
+          const fullName = p.person.fullName || `${p.person.firstName} ${p.person.lastName}`;
+          return fullName.toLowerCase().includes(debugPlayerName.toLowerCase());
+        });
+        if (debugPlayerName && debugPlayerName.length > 1) {
+          console.log(`Debug: Looking for "${debugPlayerName}" in cache:`, foundInCache ? 'FOUND' : 'NOT FOUND');
+          if (foundInCache) {
+            console.log('Found player:', foundInCache.person.fullName || `${foundInCache.person.firstName} ${foundInCache.person.lastName}`);
+          }
+        }
+        
+        // Apply client-side pagination to filtered results
+        const totalCount = filteredPlayers.length;
+        const totalPages = Math.ceil(totalCount / pageSize);
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedPlayers = filteredPlayers.slice(startIndex, endIndex);
+
+        setPlayers(paginatedPlayers);
+        setTotalCount(totalCount);
+        setTotalPages(totalPages);
+      } else {
+        // Normal pagination mode: use server-side pagination
+        const response = await floorballPlayerService.getAll({
+          page: currentPage || 1,
+          pageSize: pageSize || 10,
+        });
+        
+        if (response.data) {
+          setPlayers(response.data);
+          setTotalCount(response.pagination.totalCount || 0);
+          setTotalPages(response.pagination.totalPages || 0);
+          
+          // Don't fetch all players immediately - only when search is actually used
+          // This prevents unnecessary API calls and validation errors
+        }
       }
       setError(null);
     } catch (err) {
@@ -69,7 +251,7 @@ const FloorballPlayersPage = () => {
         setPaginationLoading(false);
       }
     }
-  }, [currentPage, pageSize, t]);
+  }, [currentPage, pageSize, searchTerm, allPlayers, fetchAllPlayers, t]);
 
   // Track if this is the initial load
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -301,6 +483,22 @@ const FloorballPlayersPage = () => {
     setCurrentPage(1); // Reset to first page when changing page size
   };
 
+  // Handle search input change with debounce
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+    setSelectedPlayers(new Set()); // Clear selection when searching
+  };
+
+  // Debounce search term updates
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setSearchTerm(searchInput);
+      setCurrentPage(1); // Reset to first page when search term changes
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
+
 
   // Get counts for bulk actions (based on current page data)
   const selectedPlayersData = players.filter(p => selectedPlayers.has(p.id));
@@ -339,6 +537,36 @@ const FloorballPlayersPage = () => {
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="players-search-bar">
+          <form onSubmit={(e) => e.preventDefault()}>
+            <input
+              type="text"
+              value={searchInput}
+              onChange={handleSearchChange}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                }
+              }}
+              placeholder={t('floorball.players.searchPlaceholder', 'Search players by name or position...') as string}
+              className="players-search-input"
+            />
+          </form>
+          {searchInput && (
+            <button
+              type="button"
+              className="search-clear-button"
+              onClick={(e) => {
+                e.preventDefault();
+                setSearchInput('');
+              }}
+              title={t('floorball.players.clearSearch', 'Clear search')}
+            >
+              ✕
+            </button>
+          )}
+        </div>
         
         {/* Selection Controls */}
         <div className="selection-controls">
@@ -441,7 +669,10 @@ const FloorballPlayersPage = () => {
         {/* No data states */}
         {totalCount === 0 && !loading && (
           <div className="no-data">
-            {t('floorball.players.noPlayers', 'No players found.')}
+            {searchTerm 
+              ? t('floorball.players.noSearchResults', 'No players found matching "{{searchTerm}}"', { searchTerm })
+              : t('floorball.players.noPlayers', 'No players found.')
+            }
           </div>
         )}
 
