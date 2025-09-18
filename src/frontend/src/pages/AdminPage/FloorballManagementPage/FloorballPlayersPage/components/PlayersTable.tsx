@@ -1,16 +1,18 @@
 import { useTranslation } from 'react-i18next';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
+import PlayerActionsDropdown from './PlayerActionsDropdown';
 
 interface PlayersTableProps {
   players: FloorballPlayerDto[];
   onDelete: (playerId: string) => void;
+  onStatusChange: (playerId: string, isActive: boolean) => void;
   selectedPlayers: Set<string>;
   onToggleSelection: (playerId: string) => void;
   onSelectAll: () => void;
   onClearSelection: () => void;
 }
 
-const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
+const PlayersTable = ({ players, onDelete, onStatusChange, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
   const { t } = useTranslation();
 
   if (players.length === 0) {
@@ -68,9 +70,11 @@ const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, o
             </td>
             <td>
               <div className="action-buttons">
-                <button onClick={() => onDelete(player.id)} className="delete-btn">
-                  {t('common.delete', 'Delete')}
-                </button>
+                <PlayerActionsDropdown
+                  player={player}
+                  onDelete={onDelete}
+                  onStatusChange={onStatusChange}
+                />
               </div>
             </td>
           </tr>

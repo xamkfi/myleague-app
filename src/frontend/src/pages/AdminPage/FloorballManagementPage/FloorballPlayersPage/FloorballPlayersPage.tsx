@@ -244,6 +244,30 @@ const FloorballPlayersPage = () => {
     setIsBulkStatusUpdateModalOpen(false);
   };
 
+  // Individual status change handler
+  const handleStatusChange = async (playerId: string, isActive: boolean) => {
+    try {
+      setError(null);
+      
+      await floorballPlayerService.update(playerId, {
+        isActive: isActive
+      });
+      
+      // Update the player in the local state
+      setPlayers(prevPlayers => 
+        prevPlayers.map(player => 
+          player.id === playerId 
+            ? { ...player, isActive: isActive }
+            : player
+        )
+      );
+      
+    } catch (err) {
+      setError(t('floorball.players.errors.statusUpdateFailed', 'Failed to update player status. Please try again.'));
+      console.error(err);
+    }
+  };
+
   // Get counts for bulk actions
   const selectedPlayersData = players.filter(p => selectedPlayers.has(p.id));
   const selectedActiveCount = selectedPlayersData.filter(p => p.isActive).length;
@@ -356,6 +380,7 @@ const FloorballPlayersPage = () => {
           <PlayersTable 
             players={players} 
             onDelete={handleDelete}
+            onStatusChange={handleStatusChange}
             selectedPlayers={selectedPlayers}
             onToggleSelection={togglePlayerSelection}
             onSelectAll={selectAllPlayers}
