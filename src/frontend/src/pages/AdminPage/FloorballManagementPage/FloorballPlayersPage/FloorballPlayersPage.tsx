@@ -516,30 +516,29 @@ const FloorballPlayersPage = () => {
   }
 
   return (
-    <PageTemplate title={t('floorball.players.title', 'Manage Floorball Players')}>      
+    <div className="floorball-players-page">
       <div className="floorball-players-container">
-
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball" 
-          text={t('common.back', 'Back to Floorball Management')} 
-        />
-        
-        {/* Header with actions */}
-        <div className="floorball-players-header">
-          <div className="players-count">
-            <span>{t('floorball.players.totalCount', `${totalCount} players`, { count: totalCount })}</span>
+        {/* Header Section */}
+        <div className="page-header">
+          <div className="header-left">
+            <BackButton 
+              to="/admin/floorball" 
+              text={t('common.back', 'Back')} 
+            />
+            <h1 className="page-title">{t('floorball.players.title', 'MANAGE PLAYERS')}</h1>
           </div>
-          <div className="players-actions">
+          <div className="header-right">
             <button className="create-player-button" onClick={handleCreatePlayerClick}>
-              {t('floorball.players.createNew', 'Create New Player')}
+              <span className="plus-icon">+</span>
+              {t('floorball.players.createNew', 'Create new player')}
             </button>
           </div>
         </div>
 
         {/* Search Bar */}
-        <div className="players-search-bar">
-          <form onSubmit={(e) => e.preventDefault()}>
+        <div className="search-section">
+          <div className="search-bar">
+            <div className="search-icon">🔍</div>
             <input
               type="text"
               value={searchInput}
@@ -549,55 +548,51 @@ const FloorballPlayersPage = () => {
                   e.preventDefault();
                 }
               }}
-              placeholder={t('floorball.players.searchPlaceholder', 'Search players by name or position...') as string}
-              className="players-search-input"
+              placeholder={t('floorball.players.searchPlaceholder', 'Search players...') as string}
+              className="search-input"
             />
-          </form>
-          {searchInput && (
-            <button
-              type="button"
-              className="search-clear-button"
-              onClick={(e) => {
-                e.preventDefault();
-                setSearchInput('');
-              }}
-              title={t('floorball.players.clearSearch', 'Clear search')}
-            >
-              ✕
-            </button>
-          )}
+            {searchInput && (
+              <button
+                type="button"
+                className="search-clear-button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSearchInput('');
+                }}
+                title={t('floorball.players.clearSearch', 'Clear search')}
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
         
+        {/* Error message */}
+        {error && (
+          <div className="error-message">
+            <p>{error}</p>
+          </div>
+        )}
+
         {/* Selection Controls */}
-        <div className="selection-controls">
-          <div className="selection-info">
-            <span className="selected-count">
-              {t('floorball.players.selected', '{{count}} selected', { count: selectedPlayers.size })}
-            </span>
-            {players.length > 0 && (
+        {selectedPlayers.size > 0 && (
+          <div className="selection-controls">
+            <div className="selection-info">
+              <span className="selected-count">
+                {t('floorball.players.selected', '{{count}} selected', { count: selectedPlayers.size })}
+              </span>
               <div className="selection-buttons">
                 <button
                   type="button"
                   className="control-btn"
-                  onClick={selectAllPlayers}
-                  disabled={selectedPlayers.size === players.length}
-                >
-                  {t('common.selectAll', 'Select All on Page')} ({players.length})
-                </button>
-                <button
-                  type="button"
-                  className="control-btn"
                   onClick={clearSelection}
-                  disabled={selectedPlayers.size === 0}
                 >
                   {t('common.clear', 'Clear')}
                 </button>
               </div>
-            )}
-          </div>
-          
-          {/* Bulk Actions */}
-          {selectedPlayers.size > 0 && (
+            </div>
+            
+            {/* Bulk Actions */}
             <div className="bulk-actions">
               {selectedInactiveCount > 0 && (
                 <button
@@ -628,18 +623,11 @@ const FloorballPlayersPage = () => {
                 {t('floorball.players.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPlayers.size })}
               </button>
             </div>
-          )}
-        </div>
-        
-        {/* Error message */}
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
           </div>
         )}
         
         {/* Players table */}
-        <div className={`players-table-container ${paginationLoading ? 'pagination-loading' : ''}`}>
+        <div className={`players-table-wrapper ${paginationLoading ? 'pagination-loading' : ''}`}>
           <PlayersTable 
             players={players} 
             onDelete={handleDelete}
@@ -656,16 +644,6 @@ const FloorballPlayersPage = () => {
           )}
         </div>
 
-        {/* Pagination Controls - Bottom */}
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalCount={totalCount}
-          pageSize={pageSize}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-        />
-
         {/* No data states */}
         {totalCount === 0 && !loading && (
           <div className="no-data">
@@ -675,6 +653,16 @@ const FloorballPlayersPage = () => {
             }
           </div>
         )}
+
+        {/* Pagination Controls - Bottom */}
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
 
         {/* Confirm Delete Modal */}
         <ConfirmDeleteModal
@@ -707,7 +695,7 @@ const FloorballPlayersPage = () => {
           isUpdating={isBulkStatusUpdating}
         />
       </div>
-    </PageTemplate>
+    </div>
   );
 };
 
