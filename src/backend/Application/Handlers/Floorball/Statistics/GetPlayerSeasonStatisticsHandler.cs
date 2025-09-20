@@ -74,9 +74,7 @@ public class GetPlayerSeasonStatisticsHandler : IRequestHandler<GetPlayerSeasonS
                 return Result<FloorballPlayerSeasonStatisticsDto>.NotFound("Player season statistics", $"Player {request.PlayerId} in season {request.SeasonId}");
             }
 
-            string playerName = person.FullName;
-
-            FloorballPlayerSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(playerStats, playerName);
+            FloorballPlayerSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(playerStats, person.FullName);
             
             _logger.LogInformation("Successfully retrieved player season statistics for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.SeasonId);
             return Result<FloorballPlayerSeasonStatisticsDto>.Success(dto);
