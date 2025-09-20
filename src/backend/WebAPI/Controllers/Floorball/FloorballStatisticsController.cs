@@ -47,7 +47,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting team statistics for Team: {TeamId} in Season: {SeasonId}", teamId, seasonId);
 
-            GetTeamSeasonStatisticsQuery query = new GetTeamSeasonStatisticsQuery(teamId, seasonId);
+            GetTeamSeasonStatisticsQuery query = new GetTeamSeasonStatisticsQuery(seasonId, teamId);
             Result<FloorballTeamSeasonStatisticsDto> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
@@ -78,7 +78,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting player statistics for Player: {PlayerId} in Season: {SeasonId}", playerId, seasonId);
 
-            GetPlayerSeasonStatisticsQuery query = new GetPlayerSeasonStatisticsQuery(playerId, seasonId);
+            GetPlayerSeasonStatisticsQuery query = new GetPlayerSeasonStatisticsQuery(seasonId, playerId);
             Result<FloorballPlayerSeasonStatisticsDto> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
@@ -215,7 +215,6 @@ namespace WebAPI.Controllers.Floorball
 
             return StatusCode(500, ApiResponse<List<FloorballTeamSeasonStatisticsDto>>.ErrorResponse(errorMessage));
         }
-
 
     }
 }

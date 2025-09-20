@@ -2,6 +2,8 @@ using Application.Common;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Queries.Floorball.Statistics;
+using Domain.Entities.Common;
+using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -14,6 +16,7 @@ namespace Application.Handlers.Floorball.Statistics;
 public class GetTopScorersHandler : IRequestHandler<GetTopScorersQuery, Result<List<FloorballPlayerSeasonStatisticsDto>>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
+    private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetTopScorersHandler> _logger;
 
     /// <summary>
@@ -23,9 +26,11 @@ public class GetTopScorersHandler : IRequestHandler<GetTopScorersQuery, Result<L
     /// <param name="logger">The logger</param>
     public GetTopScorersHandler(
         IFloorballStatisticsRepository statisticsRepository,
+        IPersonRepository personRepository,
         ILogger<GetTopScorersHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
+        _personRepository = personRepository;
         _logger = logger;
     }
 
@@ -41,10 +46,24 @@ public class GetTopScorersHandler : IRequestHandler<GetTopScorersQuery, Result<L
         {
             _logger.LogInformation("Retrieving top {TopN} scorers for Season {SeasonId}", request.TopN, request.SeasonId);
 
-            var topScorers = await _statisticsRepository.GetTopScorersAsync(request.SeasonId, request.TopN, cancellationToken);
-            
-            var dtos = topScorers.Select(stats => FloorballStatisticsMapper.ToDto(stats)).ToList();
-            
+            List<Domain.Entities.Floorball.FloorballPlayerSeasonStatistics>? topScorers = await _statisticsRepository.GetTopScorersAsync(request.SeasonId, request.TopN, cancellationToken);
+
+            IEnumerable<Guid> PersonIds = topScorers.Select(x => x.Player.PersonId).ToList();
+            IEnumerable<Person>? persons = await _personRepository.GetByIdsAsync(PersonIds);
+
+            // Build lookup: PersonId -> FullName
+            var personLookup = persons.ToDictionary(p => p.Id, p => p.FullName);
+
+            // Map DTOs
+            var dtos = topScorers.Select(stats =>
+            {
+                string playerName = personLookup.TryGetValue(stats.Player.PersonId, out string? fullName)
+                    ? fullName
+                    : string.Empty;
+
+                return FloorballStatisticsMapper.ToDto(stats, playerName);
+            }).ToList();
+
             _logger.LogInformation("Successfully retrieved {Count} top scorers for Season {SeasonId}", dtos.Count, request.SeasonId);
             return Result<List<FloorballPlayerSeasonStatisticsDto>>.Success(dtos);
         }

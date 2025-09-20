@@ -36,6 +36,11 @@ public class FloorballPlayerSeasonStatisticsDto
     public string TeamName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets team logo URL
+    /// </summary>
+    public string? TeamLogo { get; set; }
+
+    /// <summary>
     /// Gets or sets season name
     /// </summary>
     public string SeasonName { get; set; } = string.Empty;

@@ -2,6 +2,8 @@ using Application.Common;
 using Application.DTOs.Floorball;
 using Application.Mappings.Floorball;
 using Application.Queries.Floorball.Statistics;
+using Domain.Entities.Common;
+using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -14,6 +16,9 @@ namespace Application.Handlers.Floorball.Statistics;
 public class GetPlayerSeasonStatisticsHandler : IRequestHandler<GetPlayerSeasonStatisticsQuery, Result<FloorballPlayerSeasonStatisticsDto>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
+    private readonly IFloorballPlayerRepository _floorballPlayerRepository;
+    private readonly IFloorballTeamRepository _floorballTeamRepository;
+    private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetPlayerSeasonStatisticsHandler> _logger;
 
     /// <summary>
@@ -23,9 +28,15 @@ public class GetPlayerSeasonStatisticsHandler : IRequestHandler<GetPlayerSeasonS
     /// <param name="logger">The logger</param>
     public GetPlayerSeasonStatisticsHandler(
         IFloorballStatisticsRepository statisticsRepository,
+        IFloorballPlayerRepository floorballPlayerRepository,
+        IFloorballTeamRepository floorballTeamRepository,
+        IPersonRepository personRepository,
         ILogger<GetPlayerSeasonStatisticsHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
+        _floorballPlayerRepository = floorballPlayerRepository;
+        _floorballTeamRepository = floorballTeamRepository;
+        _personRepository = personRepository;
         _logger = logger;
     }
 
@@ -55,7 +66,15 @@ public class GetPlayerSeasonStatisticsHandler : IRequestHandler<GetPlayerSeasonS
                 return Result<FloorballPlayerSeasonStatisticsDto>.NotFound("Player season statistics", $"Player {request.PlayerId} in season {request.SeasonId}");
             }
 
-            FloorballPlayerSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(playerStats);
+            Person? person = await _personRepository.GetByIdAsync(playerStats.Player.PersonId); 
+
+            if(person == null)
+            {
+                _logger.LogWarning("Player season statistics not found for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.SeasonId);
+                return Result<FloorballPlayerSeasonStatisticsDto>.NotFound("Player season statistics", $"Player {request.PlayerId} in season {request.SeasonId}");
+            }
+
+            FloorballPlayerSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(playerStats, person.FullName);
             
             _logger.LogInformation("Successfully retrieved player season statistics for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.SeasonId);
             return Result<FloorballPlayerSeasonStatisticsDto>.Success(dto);

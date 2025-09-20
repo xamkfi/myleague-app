@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 {
     [DbContext(typeof(FloorballDbContext))]
-    partial class FloorballDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250916143124_EnableTeamSeasonNavigationForPlayerSeasonStatistics")]
+    partial class EnableTeamSeasonNavigationForPlayerSeasonStatistics
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1431,33 +1434,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.Entities.Floorball.FloorballGoalieSeasonStatistics", b =>
-                {
-                    b.HasOne("Domain.Entities.Floorball.FloorballPlayer", "Player")
-                        .WithMany()
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Floorball.FloorballSeason", "Season")
-                        .WithMany()
-                        .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Floorball.FloorballTeam", "Team")
-                        .WithMany()
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Player");
-
-                    b.Navigation("Season");
-
-                    b.Navigation("Team");
-                });
-
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatch", b =>
                 {
                     b.HasOne("Domain.Entities.Floorball.FloorballTeam", "AwayTeam")
@@ -1546,12 +1522,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Floorball.FloorballSeason", "Season")
-                        .WithMany()
-                        .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entities.Floorball.FloorballTeam", "Team")
                         .WithMany()
                         .HasForeignKey("TeamId")
@@ -1559,8 +1529,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .IsRequired();
 
                     b.Navigation("Player");
-
-                    b.Navigation("Season");
 
                     b.Navigation("Team");
                 });
