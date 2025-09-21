@@ -5,18 +5,13 @@ import Pagination from '../../../../../components/Pagination';
 interface PlayersTableProps {
   players: FloorballPlayerDto[];
   onDelete: (playerId: string) => void;
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
-    pageSize: number;
-  };
-  onPageChange?: (page: number) => void;
-  onPageSizeChange?: (pageSize: number) => void;
-  isLoading?: boolean;
+  selectedPlayers: Set<string>;
+  onToggleSelection: (playerId: string) => void;
+  onSelectAll: () => void;
+  onClearSelection: () => void;
 }
 
-const PlayersTable = ({ players, onDelete, pagination, onPageChange, onPageSizeChange, isLoading }: PlayersTableProps) => {
+const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
   const { t } = useTranslation();
 
   if (players.length === 0) {
@@ -24,57 +19,65 @@ const PlayersTable = ({ players, onDelete, pagination, onPageChange, onPageSizeC
   }
 
   return (
-    <>
-        
-        
-      
-        <table className="players-table">
-
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left' }}>{t('floorball.players.table.name', 'Name')}</th>
-              <th style={{ textAlign: 'left' }}>{t('floorball.players.table.status', 'Status')}</th>
-              <th style={{ textAlign: 'left' }}>{t('floorball.players.table.actions', 'Actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={3} style={{ textAlign: 'center', padding: '1rem' }}>
-                  {t('common.loading', 'Loading...')}
-                </td>
-              </tr>
-            ) : players.map((player) => (
-              <tr key={player.id}>
-                <td style={{ textAlign: 'left' }}>{player.person.fullName}</td>
-                <td style={{ textAlign: 'left' }}>
-                  <span className={`status-badge ${player.isActive ? 'active' : 'inactive'}`}>
-                    {player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
-                  </span>
-                </td>
-                <td style={{ textAlign: 'left' }}>
-                  <div className="action-buttons">
-                    <button onClick={() => onDelete(player.id)} className="delete-btn">
-                      {t('common.delete', 'Delete')}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="players-pagination sticky-bottom">
-          <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
-            totalCount={pagination.totalCount}
-            pageSize={pagination.pageSize}
-            onPageChange={(p) => onPageChange ? onPageChange(p) : undefined}
-            onPageSizeChange={(s) => onPageSizeChange ? onPageSizeChange(s) : undefined}
-            className="no-margin"
-          />
-        </div>
-    </>
+    <table className="players-table">
+      <thead>
+        <tr>
+          <th className="select-column">
+            <input
+              type="checkbox"
+              checked={players.length > 0 && players.every(player => selectedPlayers.has(player.id))}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  onSelectAll();
+                } else {
+                  onClearSelection();
+                }
+              }}
+              title={t('floorball.players.selectAll', 'Select all players')}
+            />
+          </th>
+          <th>{t('floorball.players.table.name', 'Name')}</th>
+          <th>{t('floorball.players.table.position', 'Position')}</th>
+          <th>{t('floorball.players.table.status', 'Status')}</th>
+          <th>{t('floorball.players.table.actions', 'Actions')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {players.map((player) => (
+          <tr 
+            key={player.id}
+            className={selectedPlayers.has(player.id) ? 'selected' : ''}
+          >
+            <td className="select-column">
+              <input
+                type="checkbox"
+                checked={selectedPlayers.has(player.id)}
+                onChange={() => onToggleSelection(player.id)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </td>
+            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
+              {player.person.fullName}
+            </td>
+            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
+              {player.position ? t(`floorball.positions.${player.position.toLowerCase()}`, player.position) : 'N/A'}
+            </td>
+            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
+              <span className={`status-badge ${player.isActive ? 'active' : 'inactive'}`}>
+                {player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+              </span>
+            </td>
+            <td>
+              <div className="action-buttons">
+                <button onClick={() => onDelete(player.id)} className="delete-btn">
+                  {t('common.delete', 'Delete')}
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 };
 

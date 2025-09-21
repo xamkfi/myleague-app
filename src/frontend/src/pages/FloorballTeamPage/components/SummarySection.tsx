@@ -5,6 +5,7 @@ import type { FloorballMatchDto, FloorballTeam } from "../../../types/floorball/
 import { floorballSeasonService, type FloorballSeasonDto } from "../../../api/floorball/floorballSeasonService"
 import MatchRow from "../../../components/MatchRow"
 import { floorballMatchService } from "../../../api/floorball/floorballMatchService"
+import { useNavigate } from 'react-router-dom'
 
 interface SummarySectionProps {
    team: FloorballTeam
@@ -15,6 +16,7 @@ interface SummarySectionProps {
 export default function SummarySection({ team, matches }: SummarySectionProps) {
    const { t } = useTranslation();
    const [seasons, setSeasons] = useState<FloorballSeasonDto[] | null>(null);
+   const navigate = useNavigate();
 
    const [todaysMatches, setTodaysMatches] = useState<FloorballMatchDto[] | null>(null);
 
@@ -63,7 +65,13 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                      
                      return (
                         <div key={season.id}>
-                           <div className="summary-season-header">
+                           <div
+                              className="summary-season-header"
+                              onClick={() => navigate(`/league/${season.id}`)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate(`/league/${season.id}`); }}
+                           >
                               {season.name}
                            </div>
                            <div className="summary-season-container">
@@ -106,7 +114,13 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                
                return (
                   <div key={season.id}>
-                     <div className="summary-season-header">
+                     <div
+                        className="summary-season-header"
+                        onClick={() => navigate(`/league/${season.id}`)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate(`/league/${season.id}`); }}
+                     >
                         {season.name}
                      </div>
 

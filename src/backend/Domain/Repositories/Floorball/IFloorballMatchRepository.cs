@@ -159,4 +159,13 @@ public interface IFloorballMatchRepository
     /// </summary>
     /// <param name="matchEvent"></param>
     void MarkEventAsAdded(FloorballMatchEvent matchEvent);
+
+    /// <summary>
+    /// Gets last five game form
+    /// </summary>
+    /// <param name="teamId"></param>
+    /// <param name="seasonId"></param>
+    /// <param name="count"></param>
+    /// <returns></returns>
+    Task<IEnumerable<FloorballMatch>> GetLastCompletedByTeamAsync(Guid teamId, Guid? seasonId = null, int count = 5);
 } 

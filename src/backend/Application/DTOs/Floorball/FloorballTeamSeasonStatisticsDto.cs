@@ -1,3 +1,5 @@
+using Domain.Enums.Floorball;
+
 namespace Application.DTOs.Floorball;
 
 /// <summary>
@@ -24,6 +26,11 @@ public class FloorballTeamSeasonStatisticsDto
     /// Gets or sets team name
     /// </summary>
     public string TeamName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets team logo
+    /// </summary>
+    public Uri? TeamLogo { get; set; }
 
     /// <summary>
     /// Gets or sets season name
@@ -154,4 +161,9 @@ public class FloorballTeamSeasonStatisticsDto
     /// Gets or sets away losses
     /// </summary>
     public int AwayLosses { get; set; }
+
+    /// <summary>
+    /// Gets or sets last five form. values are W, L, T
+    /// </summary>
+    public FloorballGameResult[] LastFiveForm { get; set; } = Array.Empty<FloorballGameResult>();
 }

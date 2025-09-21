@@ -96,6 +96,17 @@
       border-radius: 6px;
       font-size: map.get($font-sizes, 'md');
       box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+      cursor: pointer;
+      transition: filter 0.2s ease, transform 0.05s ease;
+
+      &:hover {
+        filter: brightness(1.05);
+        text-decoration: underline;
+      }
+
+      &:active {
+        transform: scale(0.995);
+      }
       &:first-child{
          margin-top: 0;
       }

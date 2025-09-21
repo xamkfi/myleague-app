@@ -19,7 +19,7 @@
 }
 
 .search-container {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   display: flex;
   gap: 0.75rem;
   align-items: center;
@@ -77,6 +77,96 @@
     .create-person-button {
       width: 100%;
       justify-content: center;
+    }
+  }
+}
+
+// Selection controls styling
+.selection-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.375rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #dee2e6;
+
+  .selection-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .selected-count {
+      font-weight: 600;
+      color: #495057;
+      font-size: 0.9rem;
+    }
+
+    .selection-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+
+  .bulk-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .control-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #495057;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover:not(:disabled) {
+      background-color: #e9ecef;
+      border-color: #adb5bd;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .bulk-create-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    background-color: #28a745;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover:not(:disabled) {
+      background-color: #218838;
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    
+    .selection-info {
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
     }
   }
 }
@@ -162,7 +252,7 @@
 // Table Header
 .persons-table-header {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr 1fr;
+  grid-template-columns: 40px 1fr 1fr 2fr 1fr;
   gap: 1.5rem;
   padding: 1rem 1.5rem;
   background-color: #f8f9fa;
@@ -189,13 +279,23 @@
     align-self: center;
   }
 
+  .header-select {
+    justify-self: center;
+    align-self: center;
+    
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+  }
+  
   .header-actions {
     justify-self: center;
     align-self: center;
   }
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr 1fr 2fr 1fr;
+    grid-template-columns: 40px 1fr 1fr 2fr 1fr;
     gap: 1rem;
     padding: 0.75rem 1rem;
     font-size: 0.8rem;
@@ -249,7 +349,7 @@
 
 .create-player-person-item {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr 1fr;
+  grid-template-columns: 40px 1fr 1fr 2fr 1fr;
   gap: 1.5rem;
   align-items: center;
   justify-items: center;
@@ -275,6 +375,38 @@
     background-color: #e9ecef;
     box-shadow: inset 0 0 0 2px #0d6efd;
 
+  }
+  
+  // Selected row styling
+  &.selected {
+    background-color: #e3f2fd;
+    
+    &:hover {
+      background-color: #bbdefb;
+    }
+  }
+  
+  .person-select-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-self: center;
+    
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+  }
+  
+  // Clickable cells for selection
+  .clickable-cell {
+    cursor: pointer;
+    user-select: none;
+    
+    &:hover {
+      background-color: rgba(13, 110, 253, 0.1);
+      border-radius: 0.25rem;
+    }
   }
 
   .create-player-person-birth-date {
@@ -360,7 +492,7 @@
   }
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr 1fr 2fr 1fr;
+    grid-template-columns: 40px 1fr 1fr 2fr 1fr;
     gap: 1rem;
     padding: 0.75rem 1rem;
     min-height: 50px;
@@ -375,5 +507,153 @@
         font-size: 0.8rem;
       }
     }
+  }
+}
+
+// Bulk Create Modal Styling
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.bulk-create-modal {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease-out;
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+    
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #212529;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #6c757d;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease-in-out;
+      
+      &:hover:not(:disabled) {
+        background-color: #f8f9fa;
+        color: #495057;
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    
+    .warning-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+    
+    .confirm-message {
+      flex: 1;
+      
+      p {
+        margin: 0 0 1rem 0;
+        color: #212529;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+      
+      .info-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin: 0;
+      }
+    }
+  }
+  
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid #dee2e6;
+    
+    button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      border: none;
+      
+      &.cancel-button {
+        background-color: #6c757d;
+        color: white;
+        
+        &:hover:not(:disabled) {
+          background-color: #5a6268;
+        }
+      }
+      
+      &.create-button {
+        background-color: #28a745;
+        color: white;
+        
+        &:hover:not(:disabled) {
+          background-color: #218838;
+        }
+      }
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

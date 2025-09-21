@@ -1,0 +1,9 @@
+@use 'sass:map';
+@use '../../../styles/variables' as *;
+@use '../../../styles/common' as *;
+
+.statistics-container{
+   @include container;
+   margin-bottom: map.get($spacing, "md");
+   color: $color-neutral-black;
+}

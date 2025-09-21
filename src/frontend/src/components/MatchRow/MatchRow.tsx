@@ -14,6 +14,7 @@ export interface MatchRowProps {
   homeScore?: number;
   awayScore?: number;
   periodCount?: number;
+  periodScores?: Record<number, { homeScore: number; awayScore: number }>;
   statusComponent?: React.ReactNode;
   onClick?: () => void;
   className?: string;
@@ -29,11 +30,13 @@ export default function MatchRow({
   homeScore = 0,
   awayScore = 0,
   periodCount = 3,
+  periodScores,
   statusComponent,
   className = ''
 }: MatchRowProps) {
   const [formattedDate, formattedTime] = formatMatchDateTime(scheduledDateTime);
-  const periods = Array.from({ length: periodCount }, (_, i) => i + 1);
+  const computedPeriodCount = periodScores ? Math.max(...Object.keys(periodScores).map(k => Number(k))) : periodCount;
+  const periods = Array.from({ length: computedPeriodCount }, (_, i) => i + 1);
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -87,10 +90,10 @@ export default function MatchRow({
         {periods.map((period) => (
           <div key={period} className="match-row-period">
             <div className="match-row-home-period-score">
-              {homeScore > 0 ? homeScore : ''}
+              {periodScores && periodScores[period] ? periodScores[period].homeScore : ''}
             </div>
             <div className="match-row-away-period-score">
-              {awayScore > 0 ? awayScore : ''}
+              {periodScores && periodScores[period] ? periodScores[period].awayScore : ''}
             </div>
           </div>
         ))}
