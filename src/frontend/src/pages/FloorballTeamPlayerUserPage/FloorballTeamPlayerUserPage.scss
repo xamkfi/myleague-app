@@ -104,12 +104,12 @@
   text-align: right;
 
   &.active {
-    color: $color-green;
+    color: $color-green-primary;
     font-weight: map.get($font-weights, 'medium');
   }
 
   &.inactive {
-    color: $color-red;
+    color: $color-red-primary;
     font-weight: map.get($font-weights, 'medium');
   }
 }
@@ -345,15 +345,15 @@
     color: $color-white;
 
     &.w {
-      background: $color-green;
+      background: $color-green-primary;
     }
 
     &.l {
-      background: $color-red;
+      background: $color-red-primary;
     }
 
     &.d {
-      background: $color-yellow;
+      background: $color-yellow-primary;
     }
   }
 }

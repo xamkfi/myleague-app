@@ -8,6 +8,11 @@ import { floorballPlayerService } from '../../../../../api/floorball/floorballPl
 import type { Person } from '../../../../../types/admin/personTypes';
 import { formatDate } from '../../../../../utils/helpers';
 import './CreatePlayerPage.scss';
+import SearchIcon from '../../../../../assets/basicIcons/search.svg';
+import CheckIcon from '../../../../../assets/basicIcons/check.svg';
+import CloseIcon from '../../../../../assets/basicIcons/close.svg';
+import Button from '../../../../../components/Button/Button';
+import AddIcon from '../../../../../assets/basicIcons/add.svg';
 
 type SortField = 'birthDate' | 'registration' | 'name';
 type SortDirection = 'asc' | 'desc';
@@ -303,31 +308,34 @@ const CreatePlayerPage = () => {
         
         {/* Search Bar with Create Person Button */}
         <div className="search-container">
-          <input
-            type="text"
-            placeholder={t('floorball.players.searchPersons', 'Search available persons...')}
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setSelectedPersons(new Set()); // Clear selection when searching
-            }}
-            className="search-input"
-          />
-          <button
-            className="create-person-button"
+          <div className="search-input-wrapper">
+            <img src={SearchIcon} alt="Search" className="search-icon" />
+            <input
+              type="text"
+              placeholder={t('floorball.players.searchPersons', 'Search available persons...')}
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setSelectedPersons(new Set()); // Clear selection when searching
+              }}
+              className="search-input"
+            />
+          </div>
+          <Button
+            variant="primary"
+            size="md"
+            rounded="pill"
             onClick={handleCreateNewPerson}
-            type="button"
+            iconLeft={AddIcon}
           >
-            ➕ {t('floorball.players.createNewPerson', 'Create New Person')}
-          </button>
+            {t('floorball.players.createNewPerson', 'Create New Person')}
+          </Button>
         </div>
         
         {/* Selection Controls */}
         <div className="selection-controls">
           <div className="selection-info">
-            <span className="selected-count">
-              {t('floorball.players.selected', '{{count}} selected', { count: selectedPersons.size })}
-            </span>
+            
             {filteredAndSortedPersons.length > 0 && (
               <div className="selection-buttons">
                 <button
@@ -454,8 +462,16 @@ const CreatePlayerPage = () => {
                       className="create-player-person-registration clickable-cell"
                       onClick={() => togglePersonSelection(person.id)}
                     >
-                      <span className={`registration-indicator ${person.isRegistered ? 'registered' : 'not-registered'}`}>
-                        {person.isRegistered ? '✓' : '✗'}
+                      <span 
+                        className={`registration-badge ${person.isRegistered ? 'active' : 'inactive'}`}
+                        aria-label={person.isRegistered ? t('common.registered', 'Registered') : t('common.notRegistered', 'Not Registered')}
+                        title={person.isRegistered ? t('common.registered', 'Registered') : t('common.notRegistered', 'Not Registered')}
+                      >
+                        <img
+                          src={person.isRegistered ? CheckIcon : CloseIcon}
+                          alt={person.isRegistered ? t('common.registered', 'Registered') : t('common.notRegistered', 'Not Registered')}
+                          className="registration-icon"
+                        />
                       </span>
                     </div>
                     <div 

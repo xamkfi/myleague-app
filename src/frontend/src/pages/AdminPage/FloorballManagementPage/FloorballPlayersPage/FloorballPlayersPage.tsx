@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
@@ -7,6 +7,8 @@ import PlayersTable from './components/PlayersTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import './FloorballPlayersPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
+import AddIcon from '../../../../assets/basicIcons/add.svg';
+import SearchIcon from '../../../../assets/basicIcons/search.svg';
 
 const FloorballPlayersPage = () => {
   const { t } = useTranslation();
@@ -19,6 +21,8 @@ const FloorballPlayersPage = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const deferredSearchTerm = useDeferredValue(searchTerm);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [playerToDelete, setPlayerToDelete] = useState<FloorballPlayerDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -34,7 +38,7 @@ const FloorballPlayersPage = () => {
     const fetchPlayers = async () => {
       try {
         setLoading(true);
-        const response = await floorballPlayerService.getAll({ page: currentPage, pageSize });
+        const response = await floorballPlayerService.getAll({ page: currentPage, pageSize, searchTerm: deferredSearchTerm });
         setPlayers(response.data || []);
         setTotalPages(response.pagination?.totalPages ?? 1);
         setTotalCount(response.pagination?.totalCount ?? (response.data?.length || 0));
@@ -49,7 +53,7 @@ const FloorballPlayersPage = () => {
     };
 
     fetchPlayers();
-  }, [currentPage, pageSize, t]);
+  }, [currentPage, pageSize, deferredSearchTerm, t]);
 
   // Pagination handlers
   const handlePageChange = (page: number) => {
@@ -176,15 +180,7 @@ const FloorballPlayersPage = () => {
     setIsBulkDeleteModalOpen(false);
   };
 
-  if (loading) {
-    return (
-      <PageTemplate title={t('floorball.players.title', 'Manage Floorball Players')}>
-        <div className="floorball-players-loading">
-          <p>{t('common.loading', 'Loading...')}</p>
-        </div>
-      </PageTemplate>
-    );
-  }
+  // Keep rendering the page layout; show loading state only in the table area
 
   return (
     <PageTemplate title={t('floorball.players.title', 'Manage Floorball Players')}>      
@@ -198,11 +194,19 @@ const FloorballPlayersPage = () => {
         
         {/* Header with actions */}
         <div className="floorball-players-header">
-          <div className="players-count">
-            <span>{t('floorball.players.totalCount', `${players.length} players`, { count: players.length })}</span>
-          </div>
           <div className="players-actions">
+            <div className="search-input-wrapper">
+              <img src={SearchIcon} alt="Search" className="search-icon" />
+              <input
+                type="text"
+                className="search-input"
+                placeholder={t('floorball.players.searchPlayers', 'Search players...')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
             <button className="create-player-button" onClick={handleCreatePlayerClick}>
+              <img src={AddIcon} alt="Add" className="button-icon" />
               {t('floorball.players.createNew', 'Create New Player')}
             </button>
           </div>
@@ -257,17 +261,28 @@ const FloorballPlayersPage = () => {
             <p>{error}</p>
           </div>
         )}
-        
+        <div className="players-count">
+          <span>{t('floorball.players.totalCount', `${totalCount} players`, { count: totalCount })}</span>
+        </div>
         {/* Players table */}
         <div className="players-table-container">
-          <PlayersTable 
-            players={players} 
-            onDelete={handleDelete}
-            selectedPlayers={selectedPlayers}
-            onToggleSelection={togglePlayerSelection}
-            onSelectAll={selectAllPlayers}
-            onClearSelection={clearSelection}
-          />
+          {loading ? (
+            <div className="floorball-players-loading">
+              <p>{t('common.loading', 'Loading...')}</p>
+            </div>
+          ) : (
+            <PlayersTable 
+              players={players} 
+              onDelete={handleDelete}
+              selectedPlayers={selectedPlayers}
+              onToggleSelection={togglePlayerSelection}
+              onSelectAll={selectAllPlayers}
+              onClearSelection={clearSelection}
+              pagination={{ currentPage, totalPages, totalCount, pageSize }}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          )}
         </div>
 
         {/* Confirm Delete Modal */}

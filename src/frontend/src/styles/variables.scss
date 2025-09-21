@@ -49,10 +49,31 @@ $box-shadow-drop-1: 0 5px 25px 0 rgba(57, 62, 99, 0.15);
 // Common styles
 $border-radius-default: 8px;
 
-// Extra Colors
-$color-red: #EC3935;
-$color-yellow: #FFBB29;
-$color-green: #09AD4C;
+
+// Secondary Color Palette
+// Reds
+$color-red-primary: #F8403C;
+$color-red-muted: #D74440;
+$color-red-light: #F48280;
+$color-red-pale: #F9BAB8;
+
+// Yellows
+$color-yellow-primary: #FFBB29;
+$color-yellow-muted: #DE921A;
+$color-yellow-light: #FBCF6F;
+$color-yellow-pale: #FFEFB8;
+
+// Greens
+$color-green-primary: #2FCC6F;
+$color-green-muted: #1E9850;
+$color-green-light: #6DD698;
+$color-green-pale: #A9E3C1;
+
+// Blues
+$color-blue-primary: #447FEE;
+$color-blue-muted: #2F60BA;
+$color-blue-light-secondary: #85A8EA;
+$color-blue-pale: #BBCEF2;
 
 // Typography
 $font-sizes: (

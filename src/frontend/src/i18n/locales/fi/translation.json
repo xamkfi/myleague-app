@@ -61,8 +61,13 @@
         "actions": "Toiminnot"
       },
       "roles":{
-        "user": "Käyttäjä"
+        "user": "Käyttäjä",
+        "admin": "Ylläpitäjä",
+        "superAdmin": "Päällikkö"
       },
+      "selected": "{{count}} valittu",
+      "selectAllOnPage": "Valitse kaikki tällä sivulla",
+      "loading": "Ladataan henkilöitä...",
       "form": {
         "basicInfo": "Perustiedot",
         "firstName": "Etunimi",
@@ -326,6 +331,10 @@
       "createFromPerson": "Luo Pelaaja Olemassaolevista Henkilöistä",
       "createNewPerson": "Luo Uusi Henkilö",
       "searchPersons": "Hae saatavilla olevia henkilöitä...",
+      "searchPlayers": "Hae pelaajia...",
+      "selected": "{{count}} valittu",
+      "selectAll": "Valitse kaikki",
+      "selectAllVisible": "Valitse kaikki näkyvät henkilöt",
       "createPlayer": "Luo Pelaaja",
       "createPlayers": "Luo Monta Pelaajaa",
       "playerCreated": "{{personName}} on nyt salibandypelaaja!",
@@ -334,6 +343,7 @@
       "noPersonsFound": "Hakua vastaavia henkilöitä ei löytynyt",
       "noPersonsAvailable": "Ei saatavilla olevia henkilöitä muutettavaksi pelaajiksi. Kaikki henkilöt ovat jo pelaajia.",
       "backToPersonSelection": "Takaisin Henkilövalintaan",
+      "backToPlayerCreation": "Takaisin Pelaajan Luontiin",
       "table": {
         "name": "Nimi",
         "position": "Pelipaikka",
@@ -561,6 +571,8 @@
     "registered": "Rekisteröity",
     "notRegistered": "Ei Rekisteröity",
     "cancelSelection": "Peruuta Valinta",
+    "selectAll": "Valitse kaikki",
+    "clear": "Tyhjennä",
     "previous": "Edellinen",
     "next": "Seuraava",
     "pageInfo": "Sivu {{current}} / {{total}}",

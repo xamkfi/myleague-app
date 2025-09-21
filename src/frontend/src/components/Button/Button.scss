@@ -1,0 +1,67 @@
+@use '../../styles/variables' as *;
+@use 'sass:map';
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+  text-decoration: none;
+
+  &__icon {
+    width: 16px;
+    height: 16px;
+    &--left { margin-right: 0.125rem; }
+    &--right { margin-left: 0.125rem; }
+  }
+
+  &__label { white-space: nowrap; }
+
+  &--block { width: 100%; justify-content: center; }
+
+  &--pill { border-radius: 24px; }
+
+  &--sm { padding: 0.5rem 0.875rem; font-size: 0.875rem; }
+  &--md { padding: 0.75rem 1.5rem; font-size: 1rem; }
+  &--lg { padding: 0.9rem 1.75rem; font-size: 1.05rem; }
+
+  &--primary {
+    background-color: $color-blue-light;
+    color: white;
+
+    &:hover { background-color: $color-blue-deep; transform: translateY(-1px); }
+    &:active { transform: translateY(0); }
+    &:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+  }
+
+  &--secondary {
+    background-color: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
+    border: 1px solid $color-neutral-medium-grey;
+    &:hover { background-color: lighten($color-neutral-light-grey, 2%); }
+  }
+
+  &--danger {
+    background-color: #dc3545;
+    color: white;
+    &:hover { background-color: #bb2d3b; transform: translateY(-1px); }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $color-blue-deep;
+    &:hover { background-color: $color-neutral-light-grey; }
+  }
+
+  &--link {
+    background: transparent;
+    color: $color-blue-deep;
+    padding: 0;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+

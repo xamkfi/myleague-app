@@ -61,8 +61,13 @@
         "actions": "Actions"
       },
       "roles":{
-        "user": "User"
+        "user": "User",
+        "admin": "Admin",
+        "superAdmin": "Super Admin"
       },
+      "selected": "{{count}} selected",
+      "selectAllOnPage": "Select all on this page",
+      "loading": "Loading persons...",
       "form": {
         "basicInfo": "Basic Information",
         "firstName": "First Name",
@@ -326,6 +331,10 @@
       "createFromPerson": "Create Player from Available Persons",
       "createNewPerson": "Create New Person",
       "searchPersons": "Search available persons...",
+      "searchPlayers": "Search players...",
+      "selected": "{{count}} selected",
+      "selectAll": "Select All",
+      "selectAllVisible": "Select all visible persons",
       "createPlayer": "Create Player",
       "createPlayers": "Create Multiple Players",
       "playerCreated": "{{personName}} is now a floorball player!",
@@ -334,6 +343,7 @@
       "noPersonsFound": "No persons found matching your search",
       "noPersonsAvailable": "No available persons to convert to players. All persons are already players.",
       "backToPersonSelection": "Back to Person Selection",
+      "backToPlayerCreation": "Back to Player Creation",
       "table": {
         "name": "Name",
         "position": "Position",
@@ -561,6 +571,8 @@
     "registered": "Registered",
     "notRegistered": "Not Registered",
     "cancelSelection": "Cancel Selection",
+    "selectAll": "Select All",
+    "clear": "Clear",
     "previous": "Previous",
     "next": "Next",
     "pageInfo": "Page {{current}} of {{total}}",

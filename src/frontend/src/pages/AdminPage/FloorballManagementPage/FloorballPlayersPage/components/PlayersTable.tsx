@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import Pagination from '../../../../../components/Pagination';
+import CheckIcon from '../../../../../assets/basicIcons/check.svg';
+import CloseIcon from '../../../../../assets/basicIcons/close.svg';
 
 interface PlayersTableProps {
   players: FloorballPlayerDto[];
@@ -9,9 +11,17 @@ interface PlayersTableProps {
   onToggleSelection: (playerId: string) => void;
   onSelectAll: () => void;
   onClearSelection: () => void;
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    pageSize: number;
+  };
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
-const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
+const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection, pagination, onPageChange, onPageSizeChange }: PlayersTableProps) => {
   const { t } = useTranslation();
 
   if (players.length === 0) {
@@ -19,6 +29,7 @@ const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, o
   }
 
   return (
+    <>
     <table className="players-table">
       <thead>
         <tr>
@@ -37,16 +48,16 @@ const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, o
             />
           </th>
           <th>{t('floorball.players.table.name', 'Name')}</th>
-          <th>{t('floorball.players.table.position', 'Position')}</th>
           <th>{t('floorball.players.table.status', 'Status')}</th>
-          <th>{t('floorball.players.table.actions', 'Actions')}</th>
+          <th className="actions-column">{t('floorball.players.table.actions', 'Actions')}</th>
         </tr>
       </thead>
       <tbody>
         {players.map((player) => (
           <tr 
             key={player.id}
-            className={selectedPlayers.has(player.id) ? 'selected' : ''}
+            className={`clickable-row${selectedPlayers.has(player.id) ? ' selected' : ''}`}
+            onClick={() => onToggleSelection(player.id)}
           >
             <td className="select-column">
               <input
@@ -56,18 +67,23 @@ const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, o
                 onClick={(e) => e.stopPropagation()}
               />
             </td>
-            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
-              {player.person.fullName}
-            </td>
-            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
-              {player.position ? t(`floorball.positions.${player.position.toLowerCase()}`, player.position) : 'N/A'}
-            </td>
-            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
-              <span className={`status-badge ${player.isActive ? 'active' : 'inactive'}`}>
-                {player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
-              </span>
+            <td>
+              <span className="floorball-player-name">{player.person.fullName}</span>
             </td>
             <td>
+              <span 
+                className={`status-badge ${player.isActive ? 'active' : 'inactive'}`}
+                aria-label={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+                title={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+              >
+                <img
+                  src={player.isActive ? CheckIcon : CloseIcon}
+                  alt={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+                  className="status-icon"
+                />
+              </span>
+            </td>
+            <td className="actions-column">
               <div className="action-buttons">
                 <button onClick={() => onDelete(player.id)} className="delete-btn">
                   {t('common.delete', 'Delete')}
@@ -78,7 +94,21 @@ const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, o
         ))}
       </tbody>
     </table>
+    {pagination && (
+      <div className="players-pagination">
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalCount={pagination.totalCount}
+          pageSize={pagination.pageSize}
+          onPageChange={(p) => (onPageChange ? onPageChange(p) : undefined)}
+          onPageSizeChange={(s) => (onPageSizeChange ? onPageSizeChange(s) : undefined)}
+          className="no-margin"
+        />
+      </div>
+    )}
+    </>
   );
 };
 
-export default PlayersTable; 
+export default PlayersTable;
