@@ -17,7 +17,6 @@ const CreatePlayerPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [availablePersons, setAvailablePersons] = useState<Person[]>([]);
-  const [selectedPersons, setSelectedPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -191,44 +190,6 @@ const CreatePlayerPage = () => {
       setCreating(false);
     }
   };
-
-  const handleCreateMultiplePlayers = async () => {
-    try {
-      setCreating(true);
-      setError(null);
-      setSuccessMessage(null);
-      const personsToCreate = [...selectedPersons];
-      const results = await Promise.allSettled(
-        personsToCreate.map(person => floorballPlayerService.create({ personId: person.id }))
-      );
-
-      const succeededPersons = personsToCreate.filter((_, idx) => results[idx].status === 'fulfilled');
-      const failedPersons = personsToCreate.filter((_, idx) => results[idx].status === 'rejected');
-
-      if (succeededPersons.length > 0) {
-        // Remove created persons from available list
-        const succeededIds = new Set(succeededPersons.map(p => p.id));
-        setAvailablePersons(prev => prev.filter(person => !succeededIds.has(person.id)));
-        // Clear created persons from selection
-        setSelectedPersons(prev => prev.filter(person => !succeededIds.has(person.id)));
-
-        const message = t('floorball.players.playersCreated', '{{personName}} are now floorball players!', {
-          personName: succeededPersons.map(person => person.fullName).join(', ')
-        });
-        setSuccessMessage(message);
-      }
-
-      if (failedPersons.length > 0) {
-        const failedNames = failedPersons.map(p => p.fullName).join(', ');
-        setError(`Failed to create: ${failedNames}`);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create multiple players');
-      console.error('Error creating multiple players:', err);
-    } finally {
-      setCreating(false);
-    }
-  }
 
   const handleCreateNewPerson = () => {
     navigate('/admin/floorball/players/create-person');
