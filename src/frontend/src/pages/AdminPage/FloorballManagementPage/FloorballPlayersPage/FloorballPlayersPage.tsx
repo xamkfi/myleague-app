@@ -20,7 +20,6 @@ const FloorballPlayersPage = () => {
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -48,7 +47,6 @@ const FloorballPlayersPage = () => {
         console.error(err);
       } finally {
         setLoading(false);
-        setIsInitialLoad(false);
       }
     };
 

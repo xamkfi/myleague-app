@@ -6,7 +6,6 @@ import BackButton from '../../../../components/BackButton/BackButton';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import type { FloorballTeam, PaginatedApiResponse } from '../../../../types/floorball/floorballTypes';
 import TeamsTable from './components/TeamsTable';
-import Pagination from '../../../../components/Pagination';
 import './FloorballTeamsPage.scss';
 
 const FloorballTeamsPage = () => {

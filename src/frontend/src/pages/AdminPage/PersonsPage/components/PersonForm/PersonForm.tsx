@@ -449,7 +449,7 @@ const PersonForm = ({
   };
 
   // Search helpers for sport and teams by sport
-  const searchSports = async (query: string, _page: number) => {
+  const searchSports = async (query: string) => {
     const sports = SPORTS as unknown as string[];
     const filtered = query?.trim()
       ? sports.filter((s) => s.toLowerCase().includes(query.toLowerCase()))
