@@ -2,6 +2,8 @@ import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes'
 import type { TabType } from './MatchNavigation';
 import MatchEvents from './MatchEvents';
 import MatchLineups from './MatchLineups';
+import MatchStats from './MatchStats';
+import MatchStandings from './MatchStandings';
 
 interface MatchTabContentProps {
   activeTab: TabType;
@@ -32,10 +34,7 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
       case 'stats':
         return (
           <div className="tab-content">
-            <div className="stats-placeholder">
-              <h3>Match Statistics</h3>
-              <p>Detailed match statistics coming soon...</p>
-            </div>
+            <MatchStats match={match} />
           </div>
         );
       
@@ -49,10 +48,7 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
       case 'table':
         return (
           <div className="tab-content">
-            <div className="table-placeholder">
-              <h3>League Table</h3>
-              <p>League table and standings coming soon...</p>
-            </div>
+            <MatchStandings match={match} />
           </div>
         );
       

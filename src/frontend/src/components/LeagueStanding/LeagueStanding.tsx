@@ -93,15 +93,17 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                 <td className="form-col">
                   <div className="form-indicators">
                     {form.map((result, formIndex) => {
-                      const r = (result || '').toString().trim().toUpperCase();
-                      const cls = r === 'W' ? 'w' : r === 'L' ? 'l' : r === 'T' || r === 'D' ? 'd' : 'unknown';
+                      const r = (result || '').toString().trim();
+                      const cls = r === 'Win' ? 'win' : r === 'Loss' ? 'loss' : r === 'Tie' ? 'tie' : 'unknown';
+                      const letter = r === 'Win' ? 'W' : r === 'Loss' ? 'L' : r === 'Tie' ? 'T' : '-';
                       return (
-                        <span 
+                        <div 
                           key={formIndex} 
-                          className={`form-indicator form-${cls}`}
+                          className={`form-box form-${cls}`}
+                          title={r} // Add tooltip showing the full result
                         >
-                          {r}
-                        </span>
+                          {letter}
+                        </div>
                       );
                     })}
                   </div>

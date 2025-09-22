@@ -95,6 +95,7 @@ public static class FloorballMatchMapper
         return new FloorballMatchDto(
             match.Id,
             match.SeasonId,
+            match.Season.Name,
             match.HomeTeamId,
             match.HomeTeam.Name,
             match.HomeTeam.LogoUrl,
@@ -181,6 +182,7 @@ public static class FloorballMatchMapper
         return new FloorballMatchDto(
             match.Id,
             match.SeasonId,
+            "default",
             match.HomeTeamId,
             homeTeamName,
             null,

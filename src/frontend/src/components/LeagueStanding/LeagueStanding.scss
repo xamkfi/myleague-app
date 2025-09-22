@@ -248,10 +248,12 @@
     justify-content: center;
   }
 
-  .form-indicator {
+  .form-box {
     width: 20px;
     height: 20px;
     border-radius: map.get($border-radius, "sm");
+    cursor: default;
+    transition: transform 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -259,20 +261,29 @@
     font-weight: map.get($font-weights, "bold");
     color: $color-white;
 
-    &.form-w {
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &.form-win {
       background: $color-green;
+      box-shadow: 0 1px 2px rgba($color-green, 0.3);
     }
 
-    &.form-d {
+    &.form-tie {
       background: $color-yellow;
+      box-shadow: 0 1px 2px rgba($color-yellow, 0.3);
+      color: $color-neutral-black; // Dark text for yellow background
     }
 
-    &.form-l {
+    &.form-loss {
       background: $color-red;
+      box-shadow: 0 1px 2px rgba($color-red, 0.3);
     }
 
     &.form-unknown {
       background: $color-neutral-medium-grey;
+      box-shadow: 0 1px 2px rgba($color-neutral-medium-grey, 0.3);
     }
   }
 }
@@ -347,7 +358,7 @@
       gap: 5px;
     }
 
-    .form-indicator {
+    .form-box {
       width: 18px;
       height: 18px;
     }
@@ -425,7 +436,7 @@
       gap: 4px;
     }
 
-    .form-indicator {
+    .form-box {
       width: 16px;
       height: 16px;
     }
@@ -496,7 +507,7 @@
       gap: 3px;
     }
 
-    .form-indicator {
+    .form-box {
       width: 14px;
       height: 14px;
     }

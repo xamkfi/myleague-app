@@ -1,9 +1,18 @@
-export default function MatchBreadcrumb() {
+import { Link } from 'react-router-dom';
+import './MatchBreadcrumb.scss';
+
+interface MatchBreadcrumbProps {
+  seasonName: string;
+  seasonId: string;
+}
+
+export default function MatchBreadcrumb({ seasonName, seasonId }: MatchBreadcrumbProps) {
   return (
-    <div className="breadcrumb">
-      <span>🏒 FLOORBALL</span>
-      <span>🇫🇮 FINLAND</span>
-      <span>FLOORBALL LEAGUE · REGULAR SEASON</span>
+    <div className="match-breadcrumb">
+      <Link to={`/league/${seasonId}`} className="season-link">
+        {seasonName}
+        <span className="arrow">›</span>
+      </Link>
     </div>
   );
-} 
+}
