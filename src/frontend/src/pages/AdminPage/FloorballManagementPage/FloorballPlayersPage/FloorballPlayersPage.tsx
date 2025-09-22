@@ -1,18 +1,19 @@
 import { useState, useEffect, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../api/floorball/floorballPlayerService';
 import PlayersTable from './components/PlayersTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import './FloorballPlayersPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
+import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
 import SearchIcon from '../../../../assets/basicIcons/search.svg';
 
 const FloorballPlayersPage = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [players, setPlayers] = useState<FloorballPlayerDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -117,9 +118,9 @@ const FloorballPlayersPage = () => {
     setPlayerToDelete(null);
   };
 
-  const handleCreatePlayerClick = () => {
-    navigate('/admin/floorball/players/create');
-  };
+  // const handleCreatePlayerClick = () => {
+  //   navigate('/admin/floorball/players/create');
+  // };
 
   // Selection management functions
   const togglePlayerSelection = (playerId: string) => {
@@ -203,10 +204,13 @@ const FloorballPlayersPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button className="create-player-button" onClick={handleCreatePlayerClick}>
-              <img src={AddIcon} alt="Add" className="button-icon" />
+            <Button
+              className="create-player-button"
+              iconLeft={AddIcon}
+              to="/admin/floorball/players/create"
+            >
               {t('floorball.players.createNew', 'Create New Player')}
-            </button>
+            </Button>
           </div>
         </div>
         
