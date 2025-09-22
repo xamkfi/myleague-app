@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ReactNode, ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 import './Button.scss';
 
@@ -7,7 +7,7 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 type ButtonRounded = 'default' | 'pill';
 
 export interface ButtonProps {
-  children: React.ReactNode;
+  children: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
   isLoading?: boolean;
@@ -23,7 +23,7 @@ export interface ButtonProps {
   to?: string;
 }
 
-const Button: React.FC<ButtonProps> = ({
+function Button({
   children,
   onClick,
   disabled = false,
@@ -38,7 +38,7 @@ const Button: React.FC<ButtonProps> = ({
   iconLeft,
   iconRight,
   to,
-}) => {
+}: ButtonProps): ReactElement {
   const classes = [
     'btn',
     `btn--${variant}`,
@@ -88,7 +88,7 @@ const Button: React.FC<ButtonProps> = ({
       {content}
     </button>
   );
-};
+}
 
 export default Button;
 
