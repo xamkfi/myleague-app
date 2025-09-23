@@ -85,7 +85,8 @@ public class UpdateFloorballPlayerHandler : IRequestHandler<UpdateFloorballPlaye
                     existingPlayer.IsActive,
                     existingPlayer.Position.PrimaryPosition,
                     existingPlayer.CareerGoals,
-                    existingPlayer.CareerAssists
+                    existingPlayer.CareerAssists,
+                    null // Team information not retrieved in update handler
                 );
             }
             else

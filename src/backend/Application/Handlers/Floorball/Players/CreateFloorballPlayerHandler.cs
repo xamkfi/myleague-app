@@ -80,7 +80,8 @@ public class CreateFloorballPlayerHandler : IRequestHandler<CreateFloorballPlaye
                 player.IsActive,
                 player.Position.PrimaryPosition,
                 player.CareerGoals,
-                player.CareerAssists
+                player.CareerAssists,
+                null // New players don't have team assignments yet
             );
             
             _logger.LogInformation("Successfully created floorball player with ID: {PlayerId}", player.Id);

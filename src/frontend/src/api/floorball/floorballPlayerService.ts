@@ -26,6 +26,10 @@ export interface FloorballPlayerDto {
   position: FloorballPosition;
   careerGoals: number;
   careerAssists: number;
+  team?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 export interface GetFloorballPlayersRequest {

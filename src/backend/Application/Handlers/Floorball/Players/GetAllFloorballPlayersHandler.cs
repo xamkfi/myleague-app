@@ -93,8 +93,8 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
             // Check for cancellation before database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Use repository-level pagination with all filters
-            PagedResult<FloorballPlayer> pagedPlayers = await _playerRepository.GetPagedAsync(
+            // Use repository-level pagination with all filters and team information
+            PagedResult<(FloorballPlayer Player, FloorballTeam? Team)> pagedPlayersWithTeams = await _playerRepository.GetPagedWithTeamsAsync(
                 page: validationResult.Data.Page,
                 pageSize: actualPageSize,
                 isActive: request.IsActive,
@@ -106,15 +106,19 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Load Person data for each player
+            // Load Person data for each player and create DTOs with team information
             List<FloorballPlayerDto> playerDtos = new List<FloorballPlayerDto>();
-            foreach (FloorballPlayer player in pagedPlayers.Items)
+            foreach ((FloorballPlayer player, FloorballTeam? team) in pagedPlayersWithTeams.Items)
             {
                 // Get the associated person
                 Person? person = await _personRepository.GetByIdAsync(player.PersonId);
+                
+                // Create team DTO if team exists
+                FloorballTeamNameDto? teamDto = team != null ? new FloorballTeamNameDto { Id = team.Id, Name = team.Name } : null;
+                
                 if (person != null)
                 {
-                    // Create DTO with real person data
+                    // Create DTO with real person data and team information
                     FloorballPlayerDto playerDto = new FloorballPlayerDto(
                         player.Id,
                         player.PersonId,
@@ -122,26 +126,39 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
                         player.IsActive,
                         player.Position.PrimaryPosition,
                         player.CareerGoals,
-                        player.CareerAssists
+                        player.CareerAssists,
+                        teamDto
                     );
                     playerDtos.Add(playerDto);
                 }
                 else
                 {
                     // Fallback to placeholder if person not found
-                    playerDtos.Add(FloorballPlayerMapper.ToDto(player));
+                    FloorballPlayerDto fallbackDto = FloorballPlayerMapper.ToDto(player);
+                    // Create new DTO with team information
+                    FloorballPlayerDto playerDtoWithTeam = new FloorballPlayerDto(
+                        fallbackDto.Id,
+                        fallbackDto.PersonId,
+                        fallbackDto.Person,
+                        fallbackDto.IsActive,
+                        fallbackDto.Position,
+                        fallbackDto.CareerGoals,
+                        fallbackDto.CareerAssists,
+                        teamDto
+                    );
+                    playerDtos.Add(playerDtoWithTeam);
                 }
             }
             
             // Create the final paged result with DTOs
             PagedResult<FloorballPlayerDto> pagedResult = CreatePagedResult(
                 playerDtos, 
-                pagedPlayers.TotalCount, 
-                pagedPlayers.Page, 
-                pagedPlayers.PageSize);
+                pagedPlayersWithTeams.TotalCount, 
+                pagedPlayersWithTeams.Page, 
+                pagedPlayersWithTeams.PageSize);
             
             _logger.LogInformation("Successfully retrieved {Count} floorball players out of {TotalCount} total", 
-                pagedPlayers.ItemCount, pagedPlayers.TotalCount);
+                pagedPlayersWithTeams.ItemCount, pagedPlayersWithTeams.TotalCount);
 
             return Result<PagedResult<FloorballPlayerDto>>.Success(pagedResult);
         }
