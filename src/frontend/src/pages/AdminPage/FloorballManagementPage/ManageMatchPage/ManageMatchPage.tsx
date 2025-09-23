@@ -602,6 +602,28 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           <LiveMatchEventsHistory
             allEvents={matchEvents.allEvents}
             formatEventTime={timer.formatEventTime}
+            onDeleteEvent={async (event) => {
+              if (!event.eventId) {
+                matchData.setError('Cannot delete: missing event id');
+                return;
+              }
+              try {
+                matchData.setError(null);
+                if (event.type === 'goal') {
+                  await floorballMatchService.deleteGoal(match.id, event.eventId);
+                } else if (event.type === 'penalty') {
+                  await floorballMatchService.deletePenalty(match.id, event.eventId);
+                } else {
+                  // Do not touch saves yet
+                  return;
+                }
+                await matchData.loadCurrentMatchStatus();
+                await matchEvents.loadMatchEvents();
+              } catch (err) {
+                console.error('Failed to delete event', err);
+                matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
+              }
+            }}
           />
         </div>
       </div>

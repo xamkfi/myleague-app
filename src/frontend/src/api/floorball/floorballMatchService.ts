@@ -82,6 +82,36 @@ export const floorballMatchService = {
   },
 
   /**
+   * Delete a goal event from a match
+   */
+  deleteGoal: async (matchId: string, goalEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/goal/${goalEventId}`, {
+      method: 'DELETE'
+    });
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to delete goal');
+      throw new Error(errorMessage);
+    }
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+    return apiResponse;
+  },
+
+  /**
+   * Delete a penalty event from a match
+   */
+  deletePenalty: async (matchId: string, penaltyEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/penalty/${penaltyEventId}`, {
+      method: 'DELETE'
+    });
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to delete penalty');
+      throw new Error(errorMessage);
+    }
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+    return apiResponse;
+  },
+
+  /**
    * Get matches by season ID
    */
   getBySeason: async (seasonId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {

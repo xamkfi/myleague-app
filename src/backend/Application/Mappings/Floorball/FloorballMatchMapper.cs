@@ -52,6 +52,7 @@ public static class FloorballMatchMapper
         // Map goal events with player names
         List<FloorballGoalEventDto> goalEvents = match.GoalEvents
             .Select(g => new FloorballGoalEventDto(
+                g.Id,
                 g.TeamId,
                 g.ScoringPlayerId ?? Guid.Empty,
                 g.AssistingPlayerId,
@@ -68,6 +69,7 @@ public static class FloorballMatchMapper
         // Map penalty events with player names
         List<FloorballPenaltyEventDto> penaltyEvents = match.PenaltyEvents
             .Select(p => new FloorballPenaltyEventDto(
+                p.Id,
                 p.TeamId,
                 p.PlayerId,
                 p.PenaltyType,

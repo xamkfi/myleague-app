@@ -65,6 +65,7 @@ export interface SaveEventData {
 export interface ProcessedEvent {
   id: string;
   type: 'goal' | 'penalty' | 'save';
+  eventId?: string;
   teamId: string;
   teamName: string;
   playerId?: string;

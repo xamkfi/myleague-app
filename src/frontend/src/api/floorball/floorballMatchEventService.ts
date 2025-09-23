@@ -151,6 +151,7 @@ export const floorballMatchEventService = {
         occurredOn,
         data: {
           matchId,
+          eventId: g.id,
           teamId: g.teamId,
           playerId: g.playerId,
           periodNumber: g.periodNumber,
@@ -167,6 +168,7 @@ export const floorballMatchEventService = {
         occurredOn,
         data: {
           matchId,
+          eventId: p.id,
           teamId: p.teamId,
           playerId: p.playerId,
           periodNumber: p.periodNumber,

@@ -154,6 +154,7 @@ export interface AddPlayerToTeamRequest {
 
 // Match Event types
 export interface FloorballGoalEventDto {
+  id: string;
   teamId: string;
   playerId: string;
   assisterId?: string;
@@ -168,6 +169,7 @@ export interface FloorballGoalEventDto {
 }
 
 export interface FloorballPenaltyEventDto {
+  id: string;
   teamId: string;
   playerId?: string;
   penaltyType: string;
