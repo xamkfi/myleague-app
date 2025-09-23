@@ -1,10 +1,12 @@
-import { useState, useEffect, useDeferredValue } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 // import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../api/floorball/floorballPlayerService';
 import PlayersTable from './components/PlayersTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
+import BulkStatusUpdateModal from './components/BulkStatusUpdateModal';
+import PaginationControls from './components/PaginationControls';
 import './FloorballPlayersPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 import Button from '../../../../components/Button/Button';
@@ -16,53 +18,268 @@ const FloorballPlayersPage = () => {
   // const navigate = useNavigate();
   const [players, setPlayers] = useState<FloorballPlayerDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [paginationLoading, setPaginationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [totalCount, setTotalCount] = useState<number>(0);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const deferredSearchTerm = useDeferredValue(searchTerm);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [playerToDelete, setPlayerToDelete] = useState<FloorballPlayerDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [deleteTimeoutId, setDeleteTimeoutId] = useState<number | null>(null);
   
+  // Server pagination state
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  
   // Selection state for multiselect
   const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  
+  // Bulk status update state
+  const [isBulkStatusUpdateModalOpen, setIsBulkStatusUpdateModalOpen] = useState(false);
+  const [bulkStatusUpdateAction, setBulkStatusUpdateAction] = useState<'activate' | 'deactivate'>('activate');
+  const [isBulkStatusUpdating, setIsBulkStatusUpdating] = useState(false);
 
-  useEffect(() => {
-    const fetchPlayers = async () => {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  
+  // Search state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [allPlayers, setAllPlayers] = useState<FloorballPlayerDto[]>([]); // Cache for search
+  
+
+
+  // Function to fetch all players for search (proper chunked approach)
+  const fetchAllPlayers = useCallback(async () => {
+    try {
+      console.log('Fetching all players for search...');
+      
+      let allPlayersData: FloorballPlayerDto[] = [];
+      let currentPage = 1;
+      let hasMoreData = true;
+      
+      // First, get the total count to know how many players exist
+      const firstResponse = await floorballPlayerService.getAll({
+        page: 1,
+        pageSize: 50, // Safe page size
+      });
+      
+      if (!firstResponse.data) {
+        console.log('No data returned from first API call');
+        return [];
+      }
+      
+      // Add first batch
+      allPlayersData = [...firstResponse.data];
+      const totalCount = firstResponse.pagination.totalCount || 0;
+      const totalPages = firstResponse.pagination.totalPages || 1;
+      
+      console.log(`First batch: ${firstResponse.data.length} players`);
+      console.log(`Total players: ${totalCount}, Total pages: ${totalPages}`);
+      
+      // Fetch remaining pages if there are more
+      currentPage = 2;
+      while (currentPage <= totalPages && hasMoreData) {
+        try {
+          console.log(`Fetching page ${currentPage}/${totalPages}...`);
+          
+          const response = await floorballPlayerService.getAll({
+            page: currentPage,
+            pageSize: 50,
+          });
+          
+          if (response.data && response.data.length > 0) {
+            allPlayersData = [...allPlayersData, ...response.data];
+            console.log(`Page ${currentPage}: ${response.data.length} players (total so far: ${allPlayersData.length})`);
+            currentPage++;
+          } else {
+            console.log(`Page ${currentPage}: No more data`);
+            hasMoreData = false;
+          }
+        } catch (pageErr) {
+          console.error(`Error fetching page ${currentPage}:`, pageErr);
+          hasMoreData = false;
+        }
+      }
+      
+      console.log(`Finished fetching all players: ${allPlayersData.length} total`);
+      setAllPlayers(allPlayersData);
+      return allPlayersData;
+      
+    } catch (err) {
+      console.error('Failed to fetch all players for search:', err);
+      
+      // Fallback: try with just the first page
       try {
-        setLoading(true);
-        const response = await floorballPlayerService.getAll({ page: currentPage, pageSize, searchTerm: deferredSearchTerm });
-        setPlayers(response.data || []);
-        setTotalPages(response.pagination?.totalPages ?? 1);
-        setTotalCount(response.pagination?.totalCount ?? (response.data?.length || 0));
-        setError(null);
-      } catch (err) {
-        setError(t('floorball.players.errors.loadPlayers', 'Failed to load players. Please try again.'));
-        console.error(err);
+        console.log('Trying fallback with single page...');
+        const fallbackResponse = await floorballPlayerService.getAll({
+          page: 1,
+          pageSize: 50,
+        });
+        
+        if (fallbackResponse.data) {
+          console.log(`Fallback fetched ${fallbackResponse.data.length} players`);
+          setAllPlayers(fallbackResponse.data);
+          return fallbackResponse.data;
+        }
+      } catch (fallbackErr) {
+        console.error('Fallback also failed:', fallbackErr);
+      }
+      
+      return [];
+    }
+  }, []);
+
+  // Centralized function to fetch players with server-side pagination or client-side search
+  const fetchPlayers = useCallback(async (isInitialLoad = false) => {
+    try {
+      if (!isInitialLoad) {
+        setPaginationLoading(true);
+      }
+      
+      if (searchTerm) {
+        // Search mode: use cached players or fetch all if not cached
+        let playersToSearch = allPlayers;
+        if (allPlayers.length === 0) {
+          playersToSearch = await fetchAllPlayers();
+        }
+
+        // Apply client-side search filtering
+        console.log('=== SEARCH DEBUG INFO ===');
+        console.log('Search term:', searchTerm);
+        console.log('Players to search:', playersToSearch.length);
+        console.log('Sample player:', playersToSearch[0]);
+        console.log('All cached players count:', allPlayers.length);
+        console.log('First 5 player names:', playersToSearch.slice(0, 5).map(p => 
+          p.person.fullName || `${p.person.firstName} ${p.person.lastName}`
+        ));
+        console.log('Last 5 player names:', playersToSearch.slice(-5).map(p => 
+          p.person.fullName || `${p.person.firstName} ${p.person.lastName}`
+        ));
+        
+        const filteredPlayers = playersToSearch.filter(player => {
+          // Make sure we have valid data
+          if (!player || !player.person) {
+            console.log('Invalid player data:', player);
+            return false;
+          }
+          
+          const searchLower = searchTerm.toLowerCase().trim();
+          
+          // Build full name safely
+          const firstName = player.person.firstName || '';
+          const lastName = player.person.lastName || '';
+          const fullName = player.person.fullName || `${firstName} ${lastName}`.trim();
+          
+          // Check all possible matches
+          const nameMatch = fullName.toLowerCase().includes(searchLower);
+          const firstNameMatch = firstName.toLowerCase().includes(searchLower);
+          const lastNameMatch = lastName.toLowerCase().includes(searchLower);
+          
+          // Position match - handle enum values safely
+          const position = player.position || '';
+          const positionMatch = position.toLowerCase().includes(searchLower);
+          
+          const matches = nameMatch || firstNameMatch || lastNameMatch || positionMatch;
+          
+          // Debug first few players
+          if (playersToSearch.indexOf(player) < 3) {
+            console.log(`Player ${player.id}:`, {
+              fullName,
+              firstName,
+              lastName,
+              position,
+              searchTerm: searchLower,
+              nameMatch,
+              firstNameMatch,
+              lastNameMatch,
+              positionMatch,
+              matches
+            });
+          }
+          
+          return matches;
+        });
+        
+        console.log('Filtered players:', filteredPlayers.length);
+        
+        // Debug: Let's also check if a specific player exists in our cache
+        // (You can modify this to search for the player you're looking for)
+        const debugPlayerName = searchTerm; // Use the actual search term
+        const foundInCache = playersToSearch.find(p => {
+          const fullName = p.person.fullName || `${p.person.firstName} ${p.person.lastName}`;
+          return fullName.toLowerCase().includes(debugPlayerName.toLowerCase());
+        });
+        if (debugPlayerName && debugPlayerName.length > 1) {
+          console.log(`Debug: Looking for "${debugPlayerName}" in cache:`, foundInCache ? 'FOUND' : 'NOT FOUND');
+          if (foundInCache) {
+            console.log('Found player:', foundInCache.person.fullName || `${foundInCache.person.firstName} ${foundInCache.person.lastName}`);
+          }
+        }
+        
+        // Apply client-side pagination to filtered results
+        const totalCount = filteredPlayers.length;
+        const totalPages = Math.ceil(totalCount / pageSize);
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedPlayers = filteredPlayers.slice(startIndex, endIndex);
+
+        setPlayers(paginatedPlayers);
+        setTotalCount(totalCount);
+        setTotalPages(totalPages);
+      } else {
+        // Normal pagination mode: use server-side pagination
+        const response = await floorballPlayerService.getAll({
+          page: currentPage || 1,
+          pageSize: pageSize || 10,
+        });
+        
+        if (response.data) {
+          setPlayers(response.data);
+          setTotalCount(response.pagination.totalCount || 0);
+          setTotalPages(response.pagination.totalPages || 0);
+          
+          // Don't fetch all players immediately - only when search is actually used
+          // This prevents unnecessary API calls and validation errors
+        }
+      }
+      setError(null);
+    } catch (err) {
+      console.error('fetchPlayers error:', err);
+      setError(t('floorball.players.errors.loadPlayers', 'Failed to load players. Please try again.'));
+    } finally {
+      if (!isInitialLoad) {
+        setPaginationLoading(false);
+      }
+    }
+  }, [currentPage, pageSize, searchTerm, allPlayers, fetchAllPlayers, t]);
+
+  // Track if this is the initial load
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Load players when component mounts or when pagination parameters change
+  useEffect(() => {
+    const loadPlayers = async () => {
+      try {
+        if (isInitialLoad) {
+          setLoading(true);
+          await fetchPlayers(true);
+          setIsInitialLoad(false);
+        } else {
+          // For pagination changes, don't show the main loading spinner
+          await fetchPlayers(false);
+        }
       } finally {
-        setLoading(false);
+        if (isInitialLoad) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchPlayers();
-  }, [currentPage, pageSize, deferredSearchTerm, t]);
-
-  // Pagination handlers
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(1);
-  };
+    loadPlayers();
+  }, [fetchPlayers, isInitialLoad]); // fetchPlayers includes currentPage, pageSize dependencies
 
   const handleDelete = (playerId: string) => {
     const player = players.find(p => p.id === playerId);
@@ -179,10 +396,130 @@ const FloorballPlayersPage = () => {
     setIsBulkDeleteModalOpen(false);
   };
 
-  // Keep rendering the page layout; show loading state only in the table area
+  // Bulk status update functions
+  const handleBulkStatusUpdate = (action: 'activate' | 'deactivate') => {
+    if (selectedPlayers.size === 0) return;
+    setBulkStatusUpdateAction(action);
+    setIsBulkStatusUpdateModalOpen(true);
+  };
+
+  const handleConfirmBulkStatusUpdate = async () => {
+    if (selectedPlayers.size === 0) return;
+
+    try {
+      setIsBulkStatusUpdating(true);
+      setError(null);
+      
+      const newStatus = bulkStatusUpdateAction === 'activate';
+      let successfulUpdates = 0;
+      
+      // Update each selected player
+      for (const playerId of selectedPlayers) {
+        try {
+          await floorballPlayerService.update(playerId, {
+            isActive: newStatus
+          });
+          successfulUpdates++;
+        } catch (err) {
+          console.error(`Failed to update player ${playerId}:`, err);
+          // Continue with other players even if one fails
+        }
+      }
+      
+      // Refetch all players to ensure we have the most up-to-date data
+      // This guarantees that player names and all other data are correct
+      await fetchPlayers();
+      
+      // Clear selection and close modal
+      setSelectedPlayers(new Set());
+      setIsBulkStatusUpdateModalOpen(false);
+      
+      // Show success message
+      const actionText = bulkStatusUpdateAction === 'activate' ? 'activated' : 'deactivated';
+      console.log(`Successfully ${actionText} ${successfulUpdates} players`);
+      
+    } catch (err) {
+      const actionText = bulkStatusUpdateAction === 'activate' ? 'activate' : 'deactivate';
+      setError(t('floorball.players.errors.bulkStatusUpdateFailed', `Failed to ${actionText} selected players. Please try again.`));
+      console.error(err);
+    } finally {
+      setIsBulkStatusUpdating(false);
+    }
+  };
+
+  const handleCancelBulkStatusUpdate = () => {
+    setIsBulkStatusUpdateModalOpen(false);
+  };
+
+  // Individual status change handler
+  const handleStatusChange = async (playerId: string, isActive: boolean) => {
+    try {
+      setError(null);
+      
+      await floorballPlayerService.update(playerId, {
+        isActive: isActive
+      });
+      
+      // Update the player in the local state
+      setPlayers(prevPlayers => 
+        prevPlayers.map(player => 
+          player.id === playerId 
+            ? { ...player, isActive: isActive }
+            : player
+        )
+      );
+      
+    } catch (err) {
+      setError(t('floorball.players.errors.statusUpdateFailed', 'Failed to update player status. Please try again.'));
+      console.error(err);
+    }
+  };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  // Handle search input change with debounce
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+    setSelectedPlayers(new Set()); // Clear selection when searching
+  };
+
+  // Debounce search term updates
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setSearchTerm(searchInput);
+      setCurrentPage(1); // Reset to first page when search term changes
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
+
+
+  // Get counts for bulk actions (based on current page data)
+  const selectedPlayersData = players.filter(p => selectedPlayers.has(p.id));
+  const selectedActiveCount = selectedPlayersData.filter(p => p.isActive).length;
+  const selectedInactiveCount = selectedPlayersData.filter(p => !p.isActive).length;
+
+  if (loading) {
+    return (
+      <PageTemplate title={t('floorball.players.title', 'Manage Floorball Players')}>
+        <div className="floorball-players-loading">
+          <p>{t('common.loading', 'Loading...')}</p>
+        </div>
+      </PageTemplate>
+    );
+  }
 
   return (
-    <PageTemplate title={t('floorball.players.title', 'Manage Floorball Players')}>      
+    <div className="floorball-players-page">
       <div className="floorball-players-container">
 
         {/* Back button */}
@@ -190,7 +527,7 @@ const FloorballPlayersPage = () => {
           to="/admin/floorball" 
           text={t('common.back', 'Back to Floorball Management')} 
         />
-        
+        <h1 className="page-title">{t('floorball.players.title', 'MANAGE PLAYERS')}</h1>
         {/* Header with actions */}
         <div className="floorball-players-header">
           <div className="players-actions">
@@ -214,37 +551,53 @@ const FloorballPlayersPage = () => {
           </div>
         </div>
         
+        {/* Error message */}
+        {error && (
+          <div className="error-message">
+            <p>{error}</p>
+          </div>
+        )}
+
         {/* Selection Controls */}
-        <div className="selection-controls">
-          <div className="selection-info">
-            <span className="selected-count">
-              {t('floorball.players.selected', '{{count}} selected', { count: selectedPlayers.size })}
-            </span>
-            {players.length > 0 && (
+        {selectedPlayers.size > 0 && (
+          <div className="selection-controls">
+            <div className="selection-info">
+              <span className="selected-count">
+                {t('floorball.players.selected', '{{count}} selected', { count: selectedPlayers.size })}
+              </span>
               <div className="selection-buttons">
                 <button
                   type="button"
                   className="control-btn"
-                  onClick={selectAllPlayers}
-                  disabled={selectedPlayers.size === players.length}
-                >
-                  {t('common.selectAll', 'Select All')} ({players.length})
-                </button>
-                <button
-                  type="button"
-                  className="control-btn"
                   onClick={clearSelection}
-                  disabled={selectedPlayers.size === 0}
                 >
                   {t('common.clear', 'Clear')}
                 </button>
               </div>
-            )}
-          </div>
-          
-          {/* Bulk Actions */}
-          {selectedPlayers.size > 0 && (
+            </div>
+            
+            {/* Bulk Actions */}
             <div className="bulk-actions">
+              {selectedInactiveCount > 0 && (
+                <button
+                  type="button"
+                  className="bulk-activate-btn"
+                  onClick={() => handleBulkStatusUpdate('activate')}
+                  disabled={isBulkStatusUpdating}
+                >
+                  {t('floorball.players.actions.bulkActivate', 'Activate Selected ({{count}})', { count: selectedInactiveCount })}
+                </button>
+              )}
+              {selectedActiveCount > 0 && (
+                <button
+                  type="button"
+                  className="bulk-deactivate-btn"
+                  onClick={() => handleBulkStatusUpdate('deactivate')}
+                  disabled={isBulkStatusUpdating}
+                >
+                  {t('floorball.players.actions.bulkDeactivate', 'Deactivate Selected ({{count}})', { count: selectedActiveCount })}
+                </button>
+              )}
               <button
                 type="button"
                 className="bulk-delete-btn"
@@ -254,38 +607,48 @@ const FloorballPlayersPage = () => {
                 {t('floorball.players.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPlayers.size })}
               </button>
             </div>
-          )}
-        </div>
-        
-        {/* Error message */}
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
           </div>
         )}
         <div className="players-count">
           <span>{t('floorball.players.totalCount', `${totalCount} players`, { count: totalCount })}</span>
         </div>
         {/* Players table */}
-        <div className="players-table-container">
-          {loading ? (
-            <div className="floorball-players-loading">
-              <p>{t('common.loading', 'Loading...')}</p>
+        <div className={`players-table-wrapper ${paginationLoading ? 'pagination-loading' : ''}`}>
+          <PlayersTable 
+            players={players} 
+            onDelete={handleDelete}
+            onStatusChange={handleStatusChange}
+            selectedPlayers={selectedPlayers}
+            onToggleSelection={togglePlayerSelection}
+            onSelectAll={selectAllPlayers}
+            onClearSelection={clearSelection}
+          />
+          {paginationLoading && (
+            <div className="pagination-loading-overlay">
+              <div className="loading-spinner-small"></div>
             </div>
-          ) : (
-            <PlayersTable 
-              players={players} 
-              onDelete={handleDelete}
-              selectedPlayers={selectedPlayers}
-              onToggleSelection={togglePlayerSelection}
-              onSelectAll={selectAllPlayers}
-              onClearSelection={clearSelection}
-              pagination={{ currentPage, totalPages, totalCount, pageSize }}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-            />
           )}
         </div>
+
+        {/* No data states */}
+        {totalCount === 0 && !loading && (
+          <div className="no-data">
+            {searchTerm 
+              ? t('floorball.players.noSearchResults', 'No players found matching "{{searchTerm}}"', { searchTerm })
+              : t('floorball.players.noPlayers', 'No players found.')
+            }
+          </div>
+        )}
+
+        {/* Pagination Controls - Bottom */}
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
 
         {/* Confirm Delete Modal */}
         <ConfirmDeleteModal
@@ -305,9 +668,21 @@ const FloorballPlayersPage = () => {
           isDeleting={isBulkDeleting}
           bulkCount={selectedPlayers.size}
         />
+
+        {/* Bulk Status Update Modal */}
+        <BulkStatusUpdateModal
+          isOpen={isBulkStatusUpdateModalOpen}
+          action={bulkStatusUpdateAction}
+          selectedCount={selectedPlayers.size}
+          activeCount={selectedActiveCount}
+          inactiveCount={selectedInactiveCount}
+          onConfirm={handleConfirmBulkStatusUpdate}
+          onCancel={handleCancelBulkStatusUpdate}
+          isUpdating={isBulkStatusUpdating}
+        />
       </div>
-    </PageTemplate>
+    </div>
   );
 };
 
-export default FloorballPlayersPage; 
+export default FloorballPlayersPage;
