@@ -182,6 +182,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     clock: timer.localClock,
     currentTimerElapsedTime: timer.currentTimerElapsedTime,
     loadMatchEvents: matchEvents.loadMatchEvents,
+    loadCurrentMatchStatus: matchData.loadCurrentMatchStatus,
     setError: matchData.setError
   });
   // Loading state for save events and destructured dependencies
@@ -609,6 +610,9 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
               }
               try {
                 matchData.setError(null);
+                console.log('Deleting event', { type: event.type, eventId: event.eventId, matchId: match.id });
+                // Refresh match before delete to ensure scores/periods are up to date
+                await matchData.loadCurrentMatchStatus();
                 if (event.type === 'goal') {
                   await floorballMatchService.deleteGoal(match.id, event.eventId);
                 } else if (event.type === 'penalty') {

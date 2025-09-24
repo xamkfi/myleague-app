@@ -131,7 +131,6 @@ export const useMatchEvents = ({
           console.log('Raw event data:', event.data);
           
           const goalData = event.data as {
-            EventId?: string;
             MatchId?: string;
             TeamId?: string;
             PlayerId?: string;
@@ -189,7 +188,7 @@ export const useMatchEvents = ({
           return {
             id: `goal-${teamId}-${playerId}-${periodNumber}-${timeInSeconds}`,
             type: 'goal' as const,
-            eventId: goalData.EventId ?? goalData.eventId ?? '',
+            eventId: goalData.eventId ?? '',
             teamId: teamId,
             teamName: teamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
             playerId: playerId,
@@ -209,7 +208,6 @@ export const useMatchEvents = ({
           console.log('Raw penalty event data:', event.data);
           
           const penaltyData = event.data as {
-            EventId?: string;
             MatchId?: string;
             TeamId?: string;
             PlayerId?: string;
@@ -263,7 +261,7 @@ export const useMatchEvents = ({
           return {
             id: `penalty-${penaltyTeamId}-${penaltyPlayerId || 'team'}-${penaltyPeriodNumber}-${penaltyTimeInSeconds}`,
             type: 'penalty' as const,
-            eventId: penaltyData.EventId ?? penaltyData.eventId ?? '',
+            eventId: penaltyData.eventId ?? '',
             teamId: penaltyTeamId,
             teamName: penaltyTeamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
             playerId: penaltyPlayerId,

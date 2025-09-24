@@ -56,6 +56,11 @@ public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<Floor
 
             // Delete the goal event and get the deleted goal
             FloorballGoal deletedGoal = match.DeleteGoalEvent(request.GoalEventId);
+            _logger.LogInformation("Deleted goal period {Period} team {TeamId}; current period scores: H{Home}-A{Away}",
+                deletedGoal.PeriodNumber,
+                deletedGoal.TeamId,
+                match.PeriodScores.FirstOrDefault(ps => ps.PeriodNumber == deletedGoal.PeriodNumber)?.HomeScore,
+                match.PeriodScores.FirstOrDefault(ps => ps.PeriodNumber == deletedGoal.PeriodNumber)?.AwayScore);
 
             // Decrement player statistics
             if (deletedGoal.ScoringPlayerId.HasValue)
@@ -107,7 +112,7 @@ public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<Floor
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while deleting goal {GoalId} from match {MatchId}", request.GoalEventId, request.MatchId);
-            return Result<FloorballMatchDto>.Failure("An error occurred while deleting the goal.");
+            return Result<FloorballMatchDto>.Failure(ex.Message);
         }
     }
 

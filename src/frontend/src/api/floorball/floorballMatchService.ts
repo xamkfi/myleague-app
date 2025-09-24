@@ -85,7 +85,9 @@ export const floorballMatchService = {
    * Delete a goal event from a match
    */
   deleteGoal: async (matchId: string, goalEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
-    const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/goal/${goalEventId}`, {
+    const url = `${API_URL}/FloorballMatch/${matchId}/goal/${goalEventId}`;
+    console.log('DELETE goal URL:', url);
+    const response = await fetch(url, {
       method: 'DELETE'
     });
     if (!response.ok) {
@@ -100,7 +102,9 @@ export const floorballMatchService = {
    * Delete a penalty event from a match
    */
   deletePenalty: async (matchId: string, penaltyEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
-    const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/penalty/${penaltyEventId}`, {
+    const url = `${API_URL}/FloorballMatch/${matchId}/penalty/${penaltyEventId}`;
+    console.log('DELETE penalty URL:', url);
+    const response = await fetch(url, {
       method: 'DELETE'
     });
     if (!response.ok) {

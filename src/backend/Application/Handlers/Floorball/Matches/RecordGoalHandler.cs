@@ -138,10 +138,11 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
             // Update goalie statistics (shots against and goals allowed for the opposing team)
             await UpdateGoalieSeasonStatistics(match, request.ScoringTeamId, cancellationToken);
 
-            // Mark the goal event as added in the repository
+            // Mark the goal event as added and ensure the match is tracked as modified
             _matchRepository.MarkEventAsAdded(goal);
+            await _matchRepository.UpdateAsync(match);
 
-            // Save changes explicitly to trigger domain events
+            // Save changes explicitly to persist score and period updates and trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
