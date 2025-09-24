@@ -32,7 +32,7 @@ const EditSeasonPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'teams'>('details');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [successTimeoutId, setSuccessTimeoutId] = useState<number | null>(null);
+  const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
   
   // Team management state
   const [allTeams, setAllTeams] = useState<FloorballTeam[]>([]);

@@ -6,12 +6,12 @@ import { floorballPlayerService, type FloorballPlayerDto } from '../../../../api
 import PlayersTable from './components/PlayersTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import BulkStatusUpdateModal from './components/BulkStatusUpdateModal';
-import PaginationControls from './components/PaginationControls';
+import Pagination from '../../../../components/Pagination';
+import SearchField from '../../../../components/SearchField';
 import './FloorballPlayersPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
-import SearchIcon from '../../../../assets/basicIcons/search.svg';
 
 const FloorballPlayersPage = () => {
   const { t } = useTranslation();
@@ -24,7 +24,7 @@ const FloorballPlayersPage = () => {
   const [playerToDelete, setPlayerToDelete] = useState<FloorballPlayerDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [deleteTimeoutId, setDeleteTimeoutId] = useState<number | null>(null);
+  const [deleteTimeoutId, setDeleteTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
   
   // Server pagination state
   const [totalCount, setTotalCount] = useState(0);
@@ -46,7 +46,6 @@ const FloorballPlayersPage = () => {
   
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchInput, setSearchInput] = useState('');
   const [allPlayers, setAllPlayers] = useState<FloorballPlayerDto[]>([]); // Cache for search
   
 
@@ -486,21 +485,10 @@ const FloorballPlayersPage = () => {
     setCurrentPage(1); // Reset to first page when changing page size
   };
 
-  // Handle search input change with debounce
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(e.target.value);
-    setSelectedPlayers(new Set()); // Clear selection when searching
-  };
-
-  // Debounce search term updates
+  // Reset to first page when search term changes
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setSearchTerm(searchInput);
-      setCurrentPage(1); // Reset to first page when search term changes
-    }, 300); // 300ms debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [searchInput]);
+    setCurrentPage(1);
+  }, [searchTerm]);
 
 
   // Get counts for bulk actions (based on current page data)
@@ -531,16 +519,13 @@ const FloorballPlayersPage = () => {
         {/* Header with actions */}
         <div className="floorball-players-header">
           <div className="players-actions">
-            <div className="search-input-wrapper">
-              <img src={SearchIcon} alt="Search" className="search-icon" />
-              <input
-                type="text"
-                className="search-input"
-                placeholder={t('floorball.players.searchPlayers', 'Search players...')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+            <SearchField
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder={t('floorball.players.searchPlayers', 'Search players...')}
+              fullWidth
+              rounded="pill"
+            />
             <Button
               className="create-player-button"
               iconLeft={AddIcon}
@@ -548,6 +533,7 @@ const FloorballPlayersPage = () => {
             >
               {t('floorball.players.createNew', 'Create New Player')}
             </Button>
+            
           </div>
         </div>
         
@@ -640,8 +626,8 @@ const FloorballPlayersPage = () => {
           </div>
         )}
 
-        {/* Pagination Controls - Bottom */}
-        <PaginationControls
+        {/* Pagination - Bottom */}
+        <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           totalCount={totalCount}

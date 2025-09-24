@@ -1,5 +1,5 @@
 @use 'sass:map';
-@use '../../styles/variables' as *;
+@use '@variables' as *;
 
 .single-news-page-container {
   margin-top: map.get($spacing, 'md');

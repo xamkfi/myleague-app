@@ -8,7 +8,7 @@ import { floorballPlayerService } from '../../../../../api/floorball/floorballPl
 import type { Person } from '../../../../../types/admin/personTypes';
 import { formatDate } from '../../../../../utils/helpers';
 import './CreatePlayerPage.scss';
-import SearchIcon from '../../../../../assets/basicIcons/search.svg';
+import SearchField from '../../../../../components/SearchField';
 import CheckIcon from '../../../../../assets/basicIcons/check.svg';
 import CloseIcon from '../../../../../assets/basicIcons/close.svg';
 import Button from '../../../../../components/Button/Button';
@@ -27,7 +27,7 @@ const CreatePlayerPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [successTimeoutId, setSuccessTimeoutId] = useState<number | null>(null);
+  const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
   
   // Sorting state
   const [sortField, setSortField] = useState<SortField>('name');
@@ -308,19 +308,16 @@ const CreatePlayerPage = () => {
         
         {/* Search Bar with Create Person Button */}
         <div className="search-container">
-          <div className="search-input-wrapper">
-            <img src={SearchIcon} alt="Search" className="search-icon" />
-            <input
-              type="text"
-              placeholder={t('floorball.players.searchPersons', 'Search available persons...')}
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setSelectedPersons(new Set()); // Clear selection when searching
-              }}
-              className="search-input"
-            />
-          </div>
+          <SearchField
+            value={searchTerm}
+            onChange={(val) => {
+              setSearchTerm(val);
+              setSelectedPersons(new Set());
+            }}
+            placeholder={t('floorball.players.searchPersons', 'Search available persons...')}
+            fullWidth
+            rounded="pill"
+          />
           <Button
             variant="primary"
             size="md"

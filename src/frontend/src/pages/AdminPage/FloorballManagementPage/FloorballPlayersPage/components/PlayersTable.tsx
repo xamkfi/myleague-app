@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
-import Pagination from '../../../../../components/Pagination';
 import CheckIcon from '../../../../../assets/basicIcons/check.svg';
 import CloseIcon from '../../../../../assets/basicIcons/close.svg';
 import PlayerActionsDropdown from './PlayerActionsDropdown';
@@ -13,17 +12,9 @@ interface PlayersTableProps {
   onToggleSelection: (playerId: string) => void;
   onSelectAll: () => void;
   onClearSelection: () => void;
-  pagination?: {
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
-    pageSize: number;
-  };
-  onPageChange?: (page: number) => void;
-  onPageSizeChange?: (pageSize: number) => void;
 }
 
-const PlayersTable = ({ players, onDelete, onStatusChange, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection, pagination, onPageChange, onPageSizeChange }: PlayersTableProps) => {
+const PlayersTable = ({ players, onDelete, onStatusChange, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
   const { t } = useTranslation();
 
   if (players.length === 0) {
@@ -33,7 +24,7 @@ const PlayersTable = ({ players, onDelete, onStatusChange, selectedPlayers, onTo
   return (
     <table className="players-table">
       <thead>
-        <tr>
+        <tr className="players-table-header">
           <th className="select-column">
             <input
               type="checkbox"

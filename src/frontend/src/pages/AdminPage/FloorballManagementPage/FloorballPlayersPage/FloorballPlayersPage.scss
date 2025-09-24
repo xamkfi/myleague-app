@@ -1,4 +1,4 @@
-@use '../../../../styles/variables.scss' as *;
+@use '@variables' as *;
 @use "sass:map";
 
 .delete-success-toast {
@@ -48,9 +48,8 @@
 }
 // Main page wrapper
 .floorball-players-page {
-  background-color: #1e2139;
+  background-color: $color-blue-darkest;
   min-height: 100vh;
-  color: white;
 }
 
 .floorball-players-container {
@@ -68,7 +67,7 @@
   
   p {
     font-size: 1.1rem;
-    color: #6c757d;
+    color: $color-neutral-medium-grey;
   }
 }
 
@@ -92,10 +91,18 @@
   display: flex;
   gap: 1rem;
   align-items: center;
+  justify-content: flex-start;
   flex: 1; // allow the search to expand
 }
 
-.floorball-players-header .search-input-wrapper {
+.floorball-players-header  {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1; // match Create page behaviour
+}
+
+.search-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
@@ -111,14 +118,14 @@
   color: $color-neutral-dark-grey;
 }
 
-.floorball-players-header .search-input {
+.search-input{
   flex: 1; // take remaining horizontal space
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem; // match Create page
-  border: 1px solid $color-neutral-medium-grey;
-  border-radius: 24px;
+  padding: 0.75rem 1rem 0.75rem 2.5rem !important; // match Create page
   font-size: 1rem;
   transition: all 0.2s ease-in-out;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 24px;
 
   &:focus {
     outline: none;
@@ -154,7 +161,6 @@
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
   }
-  margin-bottom: 2rem;
 
   .header-left {
     display: flex;
@@ -203,57 +209,7 @@
   }
 }
 
-// Search Section
-.search-section {
-  margin-bottom: 2rem;
-
-  .search-bar {
-    position: relative;
-    display: flex;
-    align-items: center;
-    background-color: white;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
-
-    .search-icon {
-      margin-right: 0.75rem;
-      color: #6b7280;
-      font-size: 1rem;
-    }
-
-    .search-input {
-      flex: 1;
-      border: none;
-      outline: none;
-      font-size: 0.875rem;
-      color: #374151;
-      background: transparent;
-
-      &::placeholder {
-        color: #9ca3af;
-      }
-    }
-
-    .search-clear-button {
-      background: none;
-      border: none;
-      color: #6b7280;
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 0.25rem;
-      border-radius: 0.25rem;
-      transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
-      margin-left: 0.5rem;
-
-      &:hover {
-        color: #374151;
-        background-color: #f3f4f6;
-      }
-    }
-  }
-}
+ 
 
 // Selection controls
 .selection-controls {
@@ -394,6 +350,9 @@
 .players-table-wrapper {
   position: relative;
   margin-bottom: 2rem;
+  padding: map.get($spacing, "base") map.get($spacing, "md");
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: $border-radius-default;
 
   &.pagination-loading {
     .players-table-container {
@@ -401,6 +360,10 @@
       pointer-events: none;
     }
   }
+}
+
+.players-table-header{
+  color: $color-neutral-black;
 }
 
 .players-table-container {
@@ -459,11 +422,10 @@
     th {
       padding: 1rem 1.5rem;
       font-weight: 600;
-      color: #495057;
+      color: $color-neutral-black;
       font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      background-color: #f9fafb;
       
       &:first-child {
         padding-left: 2rem;
@@ -491,14 +453,14 @@
   tbody {
     tr {
       transition: background-color 0.2s ease-in-out;
-      border-bottom: 1px solid #f3f4f6;
+      border-bottom: 1px solid $color-neutral-medium-grey;
 
       // Selected row styling
       &.selected {
-        background-color: #eff6ff;
+        background-color: $color-blue-secondary-pale;
         
         &:hover {
-          background-color: #dbeafe;
+          background-color: $color-blue-secondary-pale;
         }
       }
 
@@ -576,11 +538,6 @@
     text-align: end;
   }
 
-  .action-buttons {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: end;
-  }
   .name-column {
     font-weight: 600;
     color: #111827;
@@ -589,14 +546,12 @@
   }
 
   .team-column {
-    color: #6b7280;
     font-size: 0.875rem;
     min-width: 120px;
     text-align: left;
   }
 
   .position-column {
-    color: #6b7280;
     font-size: 0.875rem;
     min-width: 100px;
     text-align: left;
@@ -627,42 +582,15 @@
   
   &.active {
     background-color: #dcfce7;
-    color: #16a34a;
+    color: $color-green-muted;
   }
   
   &.inactive {
     background-color: #fee2e2;
-    color: #dc2626;
+    color: $color-red-muted;
   }
 }
 
-// Action buttons - match the actual class names used in the component
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-}
-
-.delete-btn {
-  padding: 0.375rem 0.75rem;
-  border: none;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  background-color: #dc3545;
-  color: white;
-  
-  &:hover {
-    background-color: #bb2d3b;
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
 
 // Player Actions Dropdown
 .player-actions-dropdown {
@@ -742,7 +670,7 @@
       background: none;
       text-align: left;
       font-size: 0.875rem;
-      color: #495057;
+      color: $color-neutral-black;
       cursor: pointer;
       transition: background-color 0.2s ease-in-out;
 
@@ -751,29 +679,29 @@
       }
 
       &.status-item {
-        color: #495057;
+        color: $color-neutral-black;
         
         &:hover {
-          background-color: #e3f2fd;
+          background-color: $color-blue-secondary-pale;
         }
       }
 
       &.delete-item {
-        color: #dc3545;
+        color: $color-red-muted;
         
         &:hover {
-          background-color: #f8d7da;
+          background-color: $color-red-pale;
         }
       }
     }
   }
 
 .error-message {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: $color-red-pale;
+  color: $color-red-muted;
   padding: 1rem;
   border-radius: 0.375rem;
-  border: 1px solid #f5c6cb;
+  border: 1px solid $color-red-muted;
   margin-bottom: 1rem;
   
   p {
@@ -783,11 +711,11 @@
 }
 
 .success-message {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: $color-green-pale;
+  color: $color-green-muted;
   padding: 1rem;
   border-radius: 0.375rem;
-  border: 1px solid #c3e6cb;
+  border: 1px solid $color-green-muted;
   margin-bottom: 1rem;
   
   p {
@@ -801,18 +729,18 @@
 .no-search-results {
   text-align: center;
   padding: 3rem 2rem;
-  color: #6c757d;
+  color: $color-neutral-black;
   font-size: 1.1rem;
-  background-color: white;
+  background-color: $color-neutral-white;
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-top: 1rem;
 }
 
 .no-search-results {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
+  background-color: $color-yellow-pale;
+  color: $color-yellow-muted;
+  border: 1px solid $color-yellow-muted;
 }
 
 // Responsive design

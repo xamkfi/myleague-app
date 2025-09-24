@@ -18,7 +18,7 @@ const FloorballRefereesPage = () => {
   const [refereeToDelete, setRefereeToDelete] = useState<FloorballRefereeDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [deleteTimeoutId, setDeleteTimeoutId] = useState<number | null>(null);
+  const [deleteTimeoutId, setDeleteTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const fetchReferees = async () => {
