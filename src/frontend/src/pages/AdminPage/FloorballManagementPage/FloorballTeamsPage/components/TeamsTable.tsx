@@ -31,7 +31,7 @@ const TeamsTable = ({ teams, loading, onEdit, onDelete, pagination, onPageChange
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [closingDropdown, setClosingDropdown] = useState<string | null>(null);
-  const closeTimer = useRef<number | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const animationDuration = 350;
 
