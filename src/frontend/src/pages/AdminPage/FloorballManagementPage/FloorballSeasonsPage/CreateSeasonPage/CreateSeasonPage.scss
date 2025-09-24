@@ -1,6 +1,6 @@
 @use "sass:map";
 @use '@variables' as *;
-@use '../../../../../styles/common.scss' as *;
+@use '@common' as *;
 
 // Success toast
 .success-toast {
