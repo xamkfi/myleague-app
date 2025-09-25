@@ -29,10 +29,7 @@ namespace Application.Mappings.Common
             return new UserDto(
                 user.Id,
                 user.Username,
-                user.PersonId,
-                user.Person != null ? PersonMapper.ToDto(user.Person) : 
-                    new PersonDto(user.PersonId, "Unknown", "User", DateTime.MinValue, "Unknown User", 
-                        Domain.Enums.Common.PersonRole.User, false, null, null)
+                user.Role
             );
         }
 
@@ -65,8 +62,7 @@ namespace Application.Mappings.Common
             
             return new User(
                 command.Username,
-                hashedPassword,
-                command.PersonId
+                hashedPassword
             );
         }
 

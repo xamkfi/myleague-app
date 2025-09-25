@@ -20,13 +20,6 @@ public interface IUserRepository
     /// <param name="username">The username</param>
     /// <returns>The user if found, null otherwise</returns>
     Task<User?> GetByUsernameAsync(string username);
-    
-    /// <summary>
-    /// Gets a user by person ID
-    /// </summary>
-    /// <param name="personId">The person ID</param>
-    /// <returns>The user if found, null otherwise</returns>
-    Task<User?> GetByPersonIdAsync(Guid personId);
 
     /// <summary>
     /// Gets all users
@@ -65,11 +58,4 @@ public interface IUserRepository
     /// <param name="username">The username</param>
     /// <returns>True if a user with the username exists, false otherwise</returns>
     Task<bool> ExistsByUsernameAsync(string username);
-    
-    /// <summary>
-    /// Checks if a user with the given person ID exists
-    /// </summary>
-    /// <param name="personId">The person ID</param>
-    /// <returns>True if a user with the person ID exists, false otherwise</returns>
-    Task<bool> ExistsByPersonIdAsync(Guid personId);
 } 

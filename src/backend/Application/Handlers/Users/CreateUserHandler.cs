@@ -59,17 +59,10 @@ namespace Application.Handlers.Users
                     return Result<UserDto>.Failure($"Person with ID '{request.PersonId}' does not exist.");
                 }
 
-                // Check if person already has a user account
-                if (await _userRepository.ExistsByPersonIdAsync(request.PersonId))
-                {
-                    _logger.LogInformation("Attempt to create user for person who already has an account: {PersonId}", request.PersonId);
-                    return Result<UserDto>.Failure($"Person with ID '{request.PersonId}' already has a user account.");
-                }
-
                 // Create the User entity
                 User user = UserMapper.ToEntity(request);
 
-                _logger.LogInformation("Creating new user: {Username} for person: {PersonId}", user.Username, user.PersonId);
+                _logger.LogInformation("Creating new user: {Username}", user.Username);
                 await _userRepository.AddAsync(user);
 
                 // Save changes explicitly to trigger domain events

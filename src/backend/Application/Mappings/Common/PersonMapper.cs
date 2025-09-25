@@ -32,7 +32,6 @@ namespace Application.Mappings.Common
                 person.LastName,
                 person.BirthDate,
                 person.FullName,
-                person.role,
                 person.IsRegistered,
                 person.Address,
                 person.ContactInfo
@@ -166,7 +165,6 @@ namespace Application.Mappings.Common
                 command.FirstName,
                 command.LastName,
                 birthDateUtc,
-                Domain.Enums.Common.PersonRole.User,
                 ToAddress(command.Address),
                 ToContactInfo(command.ContactInfo)
             );

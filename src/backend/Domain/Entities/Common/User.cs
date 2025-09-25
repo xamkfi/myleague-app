@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.Entities;
+using Domain.Enums.Common;
 
 namespace Domain.Entities.Common
 {
@@ -24,14 +25,9 @@ namespace Domain.Entities.Common
         public string PasswordHash { get; set; }
 
         /// <summary>
-        /// PersonId of the user
+        /// Role of the user
         /// </summary>
-        public Guid PersonId { get; set; }
-
-        /// <summary>
-        /// Matching person entity of the user
-        /// </summary>
-        public Person? Person { get; set; }
+        public UserRole Role { get; set; }
 
         /// <summary>
         /// Protected constructor for EF Core
@@ -48,18 +44,15 @@ namespace Domain.Entities.Common
         /// <param name="username">The username of the user.</param>
         /// <param name="passwordHash">The password hash of the user.</param>
         /// <param name="personId">The person ID linked to this user.</param>
-        public User(string username, string passwordHash, Guid personId)
+        public User(string username, string passwordHash)
         {
             if (string.IsNullOrWhiteSpace(username))
                 throw new ArgumentException("Username cannot be null or empty.", nameof(username));
             if (string.IsNullOrWhiteSpace(passwordHash))
                 throw new ArgumentException("Password hash cannot be null or empty.", nameof(passwordHash));
-            if (personId == Guid.Empty)
-                throw new ArgumentException("Person ID cannot be empty.", nameof(personId));
 
             Username = username;
             PasswordHash = passwordHash;
-            PersonId = personId;
         }
     }
 }

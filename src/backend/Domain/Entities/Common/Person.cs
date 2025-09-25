@@ -21,11 +21,6 @@ public class Person : AggregateRoot
     public string LastName { get; private set; }
 
     /// <summary>
-    /// Gets the role of the person
-    /// </summary>
-    public PersonRole role { get; private set; }
-
-    /// <summary>
     /// Gets the birth date of the person
     /// </summary>
     public DateTime BirthDate { get; private set; }
@@ -69,7 +64,7 @@ public class Person : AggregateRoot
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="firstName"/> or <paramref name="lastName"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown if <paramref name="firstName"/> or <paramref name="lastName"/> is empty or whitespace, or if <paramref name="birthDate"/> is in the future.</exception>
     public Person(string firstName, string lastName, DateTime birthDate,
-        PersonRole role = PersonRole.User, Address? address = null, ContactInfo? contactInfo = null)
+        Address? address = null, ContactInfo? contactInfo = null)
     {
         ArgumentNullException.ThrowIfNull(firstName);
         ArgumentNullException.ThrowIfNull(lastName);
@@ -84,7 +79,6 @@ public class Person : AggregateRoot
         FirstName = firstName;
         LastName = lastName;
         BirthDate = birthDate;
-        this.role = role;
         Address = address;
         ContactInfo = contactInfo;
 
@@ -142,13 +136,5 @@ public class Person : AggregateRoot
     public void UpdateIsRegistered(bool isRegistered)
     {
         IsRegistered = isRegistered;
-    }
-
-    /// <summary>
-    /// Updates the person's role
-    /// </summary>
-    public void UpdateRole(PersonRole role)
-    {
-        this.role = role;
     }
 } 

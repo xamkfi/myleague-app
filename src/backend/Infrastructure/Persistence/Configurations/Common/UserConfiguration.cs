@@ -25,23 +25,14 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
                 .IsRequired()
                 .HasMaxLength(500);
 
-            builder.Property(u => u.PersonId)
-                .IsRequired();
-
-            // Configure relationship with Person
-            builder.HasOne(u => u.Person)
-                .WithMany() // Assuming Person doesn't have a Users collection
-                .HasForeignKey(u => u.PersonId)
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.Property(u => u.Role)
+                .IsRequired()
+                .HasConversion<int>();
 
             // Create unique index on Username
             builder.HasIndex(u => u.Username)
                 .IsUnique()
                 .HasDatabaseName("IX_User_Username");
-
-            // Create index on PersonId
-            builder.HasIndex(u => u.PersonId)
-                .HasDatabaseName("IX_User_PersonId");
         }
     }
 } 

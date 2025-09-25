@@ -9,10 +9,9 @@ using System.Threading.Tasks;
 
 namespace Domain.Enums.Common
 {
-    public enum PersonRole
+    public enum UserRole
     {
-        User = 0,
-        Admin = 1,
-        SuperAdmin = 2
+        Admin = 0,
+        SuperAdmin = 1
     }
 }

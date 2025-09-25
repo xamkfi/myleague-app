@@ -27,7 +27,7 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
     public override async Task<User?> GetByIdAsync(Guid id)
     {
         return await _entities
-            .Include(u => u.Person)
+            .Include(u => u)
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
@@ -39,20 +39,8 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
     public async Task<User?> GetByUsernameAsync(string username)
     {
         return await _entities
-            .Include(u => u.Person)
+            .Include(u => u)
             .FirstOrDefaultAsync(u => u.Username == username);
-    }
-
-    /// <summary>
-    /// Gets a user by person ID
-    /// </summary>
-    /// <param name="personId">The person ID</param>
-    /// <returns>The user if found, null otherwise</returns>
-    public async Task<User?> GetByPersonIdAsync(Guid personId)
-    {
-        return await _entities
-            .Include(u => u.Person)
-            .FirstOrDefaultAsync(u => u.PersonId == personId);
     }
 
     /// <summary>
@@ -62,7 +50,7 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
     public override async Task<IEnumerable<User>> GetAllAsync()
     {
         return await _entities
-            .Include(u => u.Person)
+            .Include(u => u)
             .ToListAsync();
     }
 
@@ -91,7 +79,7 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
     /// <param name="id">The ID of the user to delete</param>
     public async Task DeleteAsync(Guid id)
     {
-        var user = await _entities.FindAsync(id);
+        User? user = await _entities.FindAsync(id);
         if (user != null)
         {
             _entities.Remove(user);
@@ -116,15 +104,5 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
     public async Task<bool> ExistsByUsernameAsync(string username)
     {
         return await _entities.AnyAsync(u => u.Username == username);
-    }
-
-    /// <summary>
-    /// Checks if a user with the given person ID exists
-    /// </summary>
-    /// <param name="personId">The person ID</param>
-    /// <returns>True if a user with the person ID exists, false otherwise</returns>
-    public async Task<bool> ExistsByPersonIdAsync(Guid personId)
-    {
-        return await _entities.AnyAsync(u => u.PersonId == personId);
     }
 } 

@@ -17,7 +17,6 @@ namespace Application.DTOs.Common;
         string LastName,
         DateTime BirthDate, 
         string FullName,
-        PersonRole Role,
         bool IsRegistered,
         Address? Address,
         ContactInfo? ContactInfo);

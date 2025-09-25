@@ -423,40 +423,6 @@ namespace WebAPI.Controllers.Common
         }
 
         /// <summary>
-        /// Update person's role
-        /// </summary>
-        /// <param name="id">The person ID</param>
-        /// <param name="role">The new role</param>
-        /// <returns>The updated person</returns>
-        [HttpPatch("{id:guid}/role")]
-        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePersonRole(Guid id, [FromBody] Domain.Enums.Common.PersonRole role)
-        {
-            _logger.LogInformation("Updating person role with Id: {Id} to {Role}", id, role);
-
-            UpdatePersonRoleCommand command = new UpdatePersonRoleCommand(id, role);
-            Result<PersonDto> result = await _mediator.Send(command);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<PersonDto>.SuccessResponse(result.Data, "Person role updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
-            }
-            
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
-        }
-
-        /// <summary>
         /// Delete an existing person
         /// </summary>
         /// <param name="id"></param>
