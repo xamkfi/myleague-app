@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Person } from '../../../../../types/admin/personTypes';
-import { PersonRole } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
 import PaginationControls from '../PaginationControls/PaginationControls';
 import './PersonList.scss';
@@ -17,7 +16,6 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingRegistration, setUpdatingRegistration] = useState<string | null>(null);
-  const [updatingRole, setUpdatingRole] = useState<string | null>(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,33 +95,6 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         setError(t('admin.persons.errors.updateRegistrationFailed', 'Failed to update registration status'));
       } finally {
         setUpdatingRegistration(null);
-      }
-    }
-  };
-
-  const handleRoleChange = async (id: string, newRole: PersonRole) => {
-    console.log('Role change requested:', { id, newRole, type: typeof newRole }); // Debug log
-    const roleText = t(`admin.persons.roles.${newRole.toLowerCase()}`, newRole);
-    const confirmMessage = t('admin.persons.confirmRoleChange', 'Are you sure you want to change this person\'s role to {{role}}?', { role: roleText });
-    
-    if (window.confirm(confirmMessage)) {
-      setUpdatingRole(id);
-      try {
-        const updatedPerson = await personApi.updateRole(id, newRole);
-        console.log('Updated person received:', updatedPerson); // Debug log
-        setPersons(persons.map(person => 
-          person.id === id ? updatedPerson : person
-        ));
-        setError(null);
-        
-        // Show success message
-        const successMessage = t('admin.persons.success.roleUpdated', 'Person role updated successfully');
-        console.log(successMessage); // You can replace this with a toast notification system
-      } catch (error) {
-        console.error('Failed to update person role:', error);
-        setError(t('admin.persons.errors.updateRoleFailed', 'Failed to update person role'));
-      } finally {
-        setUpdatingRole(null);
       }
     }
   };
@@ -324,9 +295,8 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
             <th>{t('admin.persons.table.name', 'Name')}</th>
             <th>{t('admin.persons.table.birthDate', 'Birth Date')}</th>
             <th>{t('admin.persons.table.email', 'Email')}</th>
-            <th>{t('admin.persons.table.registered', 'Registered')}</th>
-            <th>{t('admin.persons.table.role', 'Role')}</th>
-            <th>{t('admin.persons.table.actions', 'Actions')}</th>
+            <th className="registered-column">{t('admin.persons.table.registered', 'Registered')}</th>
+            <th className="actions-column">{t('admin.persons.table.actions', 'Actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -352,7 +322,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
               <td onClick={() => togglePersonSelection(person.id)} className="clickable-cell">
                 {person.contactInfo?.email || '-'}
               </td>
-              <td>
+              <td className="registered-column">
                 <button
                   className={`status-toggle ${person.isRegistered ? 'registered' : 'not-registered'} ${updatingRegistration === person.id ? 'updating' : ''}`}
                   onClick={() => handleToggleRegistration(person.id, person.isRegistered)}
@@ -375,29 +345,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
                   )}
                 </button>
               </td>
-              <td className="role-cell">
-                <select
-                  className={`role-selector ${updatingRole === person.id ? 'updating' : ''}`}
-                  value={person.role}
-                  onChange={(e) => handleRoleChange(person.id, e.target.value as PersonRole)}
-                  disabled={updatingRole === person.id}
-                  title={t('admin.persons.actions.updateRole', 'Update Role')}
-                >
-                  <option value={PersonRole.User}>
-                    {t('admin.persons.roles.user', 'User')}
-                  </option>
-                  <option value={PersonRole.Admin}>
-                    {t('admin.persons.roles.admin', 'Admin')}
-                  </option>
-                  <option value={PersonRole.SuperAdmin}>
-                    {t('admin.persons.roles.superAdmin', 'Super Admin')}
-                  </option>
-                </select>
-                {updatingRole === person.id && (
-                  <span className="loading-spinner">⏳</span>
-                )}
-              </td>
-              <td>
+              <td className="actions-column">
                 <div className="action-buttons">
                   <button
                     className="edit-button"
