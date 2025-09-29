@@ -1,4 +1,4 @@
-@import '../../../../styles/variables.scss';
+@use '@variables' as *;
 
 .create-team-page {
   max-width: 800px;

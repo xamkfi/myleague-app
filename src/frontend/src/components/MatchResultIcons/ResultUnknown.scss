@@ -1,5 +1,5 @@
 @use 'sass:map';
-@use '../../styles/variables' as *;
+@use '@variables' as *;
 
 .result-unknown{
    font-size: 12px;

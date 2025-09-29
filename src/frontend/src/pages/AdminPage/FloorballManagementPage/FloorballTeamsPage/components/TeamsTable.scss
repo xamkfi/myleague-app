@@ -1,6 +1,6 @@
 @use 'sass:map';
 @use 'sass:color';
-@use '../../../../../styles/variables' as *;
+@use '@variables' as *;
 @use '../../../../../styles/common' as *;
 
 .teams-table-container {

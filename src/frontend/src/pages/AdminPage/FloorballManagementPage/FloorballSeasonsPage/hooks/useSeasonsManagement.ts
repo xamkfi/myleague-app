@@ -97,9 +97,17 @@ export const useSeasonsManagement = () => {
     }
   }, []);
 
-  const handleCreateSeason = async (seasonData: CreateFloorballSeasonRequest) => {
+  const handleCreateSeason = async (seasonData: CreateFloorballSeasonRequest, shouldActivate: boolean) => {
     try {
-      await floorballSeasonService.create(seasonData);
+      const created = await floorballSeasonService.create(seasonData);
+      if (shouldActivate && created?.data?.id) {
+        try {
+          await floorballSeasonService.activate(created.data.id);
+        } catch (activateErr) {
+          console.error('Error activating newly created season:', activateErr);
+          // Let UI still proceed, the user can toggle later
+        }
+      }
       setShowCreateModal(false);
       await loadSeasons();
     } catch (err) {
@@ -140,13 +148,21 @@ export const useSeasonsManagement = () => {
     try {
       setOperationLoading(season.id);
       setError(null);
-      
-      if (season.isActive) {
-        await floorballSeasonService.deactivate(season.id);
-      } else {
-        await floorballSeasonService.activate(season.id);
-      }
-      await loadSeasons();
+
+      const result = season.isActive
+        ? await floorballSeasonService.deactivate(season.id)
+        : await floorballSeasonService.activate(season.id);
+
+      // Update only the toggled season locally to avoid full reload
+      const updated = result?.data;
+      setSeasons(prev => prev.map(s => {
+        if (s.id !== season.id) return s;
+        if (updated) {
+          return { ...s, ...updated };
+        }
+        // Fallback: toggle isActive if API did not return data
+        return { ...s, isActive: !s.isActive };
+      }));
     } catch (err) {
       console.error('Error toggling season activation:', err);
       setError(parseApiError(err));
