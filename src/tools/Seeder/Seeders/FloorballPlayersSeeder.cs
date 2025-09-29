@@ -1,5 +1,9 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using Application.DTOs.Floorball;
+using Application.DTOs.Common;
+using WebAPI.Models.Floorball;
+using WebAPI.Models.Common;
 
 namespace Seeder;
 

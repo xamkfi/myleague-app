@@ -26,4 +26,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\backend\Application\Application.csproj" />
+    <ProjectReference Include="..\..\backend\Domain\Domain.csproj" />
+    <ProjectReference Include="..\..\backend\WebAPI\WebAPI.csproj" />
+  </ItemGroup>
+
 </Project>
