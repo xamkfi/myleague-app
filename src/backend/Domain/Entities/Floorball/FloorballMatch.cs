@@ -350,6 +350,11 @@ public class FloorballMatch : AggregateRoot
         if (_officials.Count == 0)
             throw new InvalidOperationException("Cannot start a match without officials.");
 
+        if (HomeActiveGoalieId is null || AwayActiveGoalieId is null)
+        {
+            throw new InvalidOperationException("A match cannot start without goalies assigned for both teams.");
+        }
+
         FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.InProgress;
 
@@ -787,8 +792,8 @@ public class FloorballMatch : AggregateRoot
     /// <exception cref="ArgumentException">Thrown when the goalie is not on the home team</exception>
     public void SetHomeActiveGoalie(Guid goalieId)
     {
-        if (Status != FloorballMatchStatus.InProgress)
-            throw new InvalidOperationException("Cannot change goalie when match is not in progress.");
+        if (Status != FloorballMatchStatus.InProgress && Status != FloorballMatchStatus.Scheduled)
+            throw new InvalidOperationException("Cannot change goalie when match is not in progress or scheduled.");
 
         // Validate that the goalie is on the home team
         bool goalieOnTeam = HomeTeam.Roster.Any(tp => tp.PlayerId == goalieId);
@@ -810,8 +815,8 @@ public class FloorballMatch : AggregateRoot
     /// <exception cref="ArgumentException">Thrown when the goalie is not on the away team</exception>
     public void SetAwayActiveGoalie(Guid goalieId)
     {
-        if (Status != FloorballMatchStatus.InProgress)
-            throw new InvalidOperationException("Cannot change goalie when match is not in progress.");
+        if (Status != FloorballMatchStatus.InProgress && Status != FloorballMatchStatus.Scheduled)
+            throw new InvalidOperationException("Cannot change goalie when match is not in progress or scheduled.");
 
         // Validate that the goalie is on the away team
         bool goalieOnTeam = AwayTeam.Roster.Any(tp => tp.PlayerId == goalieId);
