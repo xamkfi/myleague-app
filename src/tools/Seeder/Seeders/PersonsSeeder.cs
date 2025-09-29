@@ -70,8 +70,8 @@ public static class PersonsSeeder
                 LastName = person.LastName,
                 BirthDate = person.BirthDate,
                 IsRegistered = person.IsRegistered,
-                Address = person.Address,
-                ContactInfo = person.ContactInfo
+                Address = ToAddressDto(person.Address),
+                ContactInfo = ToContactInfoDto(person.ContactInfo)
             };
 
             HttpResponseMessage response = await http.PostAsJsonAsync("api/persons", request);
@@ -89,5 +89,34 @@ public static class PersonsSeeder
 
 		return created;
 	}
+
+    private static AddressDto? ToAddressDto(AddressSeed? seed)
+    {
+        if (seed == null)
+        {
+            return null;
+        }
+        string country = seed.Country ?? string.Empty;
+        return new AddressDto(
+            seed.Street1 ?? string.Empty,
+            seed.Street2 ?? string.Empty,
+            seed.City ?? string.Empty,
+            seed.PostalCode ?? string.Empty,
+            country
+        );
+    }
+
+    private static ContactInfoDto? ToContactInfoDto(ContactInfoSeed? seed)
+    {
+        if (seed == null)
+        {
+            return null;
+        }
+        return new ContactInfoDto(
+            seed.Email ?? string.Empty,
+            seed.Phone ?? string.Empty,
+            seed.AlternativePhone ?? string.Empty
+        );
+    }
 }
 

@@ -1,68 +1,35 @@
 using Microsoft.Extensions.Configuration;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
-using Application.DTOs.Common;
-using Application.DTOs.Floorball;
 
 namespace Seeder;
-
-public sealed class SeederConfiguration
+public class PersonSeed
 {
-	public string BaseUrl { get; set; } = "http://localhost:8080/";
-	public List<PersonSeed> Persons { get; set; } = new List<PersonSeed>();
-	public List<ClubSeed> Clubs { get; set; } = new List<ClubSeed>();
-	public List<DivisionSeed> Divisions { get; set; } = new List<DivisionSeed>();
-	public List<PersonSeed> PlayerPersons { get; set; } = new List<PersonSeed>();
-	public List<PersonSeed> GoaliePersons { get; set; } = new List<PersonSeed>();
-	public List<PersonSeed> RefereePersons { get; set; } = new List<PersonSeed>();
-	public List<FloorballSeasonSeed> FloorballSeasons { get; set; } = new List<FloorballSeasonSeed>();
-	public List<FloorballTeamSeed> FloorballTeams { get; set; } = new List<FloorballTeamSeed>();
-
-	public static SeederConfiguration Load()
-	{
-		IConfigurationRoot configuration = new ConfigurationBuilder()
-			.SetBasePath(Directory.GetCurrentDirectory())
-			.AddJsonFile("appsettings.json", optional: true)
-			.AddJsonFile("appsettings.Development.json", optional: true)
-			.AddEnvironmentVariables()
-			.Build();
-
-		SeederConfiguration cfg = new SeederConfiguration();
-		configuration.Bind("Seeder", cfg);
-
-		string? envBase = configuration["Seeder:BaseUrl"];
-		if (!string.IsNullOrWhiteSpace(envBase))
-		{
-			cfg.BaseUrl = envBase!;
-		}
-
-		string? rootBase = configuration["BaseUrl"];
-		if (!string.IsNullOrWhiteSpace(rootBase))
-		{
-			cfg.BaseUrl = rootBase!;
-		}
-
-		string? envVar = Environment.GetEnvironmentVariable("SEEDER_BASEURL");
-		if (!string.IsNullOrWhiteSpace(envVar))
-		{
-			cfg.BaseUrl = envVar!;
-		}
-
-		return cfg;
-	}
+	public string FirstName { get; set; } = "John";
+	public string LastName { get; set; } = "Doe";
+	public string BirthDate { get; set; } = "1990-01-01";
+	public bool IsRegistered { get; set; } = true;
+	public AddressSeed? Address { get; set; }
+	public ContactInfoSeed? ContactInfo { get; set; }
 }
 
-public record PersonSeed
+public class AddressSeed
 {
-	public string FirstName { get; init; } = "John";
-	public string LastName { get; init; } = "Doe";
-	public string BirthDate { get; init; } = "1990-01-01";
-	public bool IsRegistered { get; init; } = true;
-	public AddressDto? Address { get; init; }
-	public ContactInfoDto? ContactInfo { get; init; }
+	public string? Street1 { get; set; }
+	public string? Street2 { get; set; }
+	public string? City { get; set; }
+	public string? PostalCode { get; set; }
+	public string? Country { get; set; }
 }
 
-public record ClubSeed
+public class ContactInfoSeed
+{
+	public string? Email { get; set; }
+	public string? Phone { get; set; }
+	public string? AlternativePhone { get; set; }
+}
+
+public class ClubSeed
 {
 	public string Name { get; init; } = "Sample Club";
 	public string City { get; init; } = "City";
@@ -73,7 +40,7 @@ public record ClubSeed
 	public string? ContactEmail { get; init; }
 }
 
-public record DivisionSeed
+public class DivisionSeed
 {
 	public string Name { get; init; } = "First Division";
 	public string Description { get; init; } = "Top level";
@@ -81,7 +48,7 @@ public record DivisionSeed
 	public string SportType { get; init; } = "Floorball";
 }
 
-public record FloorballSeasonSeed
+public class FloorballSeasonSeed
 {
 	public string Name { get; init; } = "2025 Regular Season";
 	public string StartDate { get; init; } = "2025-01-01";
@@ -89,7 +56,7 @@ public record FloorballSeasonSeed
 	public string DivisionName { get; init; } = string.Empty;
 }
 
-public record FloorballTeamSeed
+public class FloorballTeamSeed
 {
 	public string Name { get; init; } = "Falcons";
 	public string DivisionName { get; init; } = string.Empty;
@@ -101,7 +68,7 @@ public record FloorballTeamSeed
 	public List<TeamPlayerByEmailSeed> Players { get; init; } = new List<TeamPlayerByEmailSeed>();
 }
 
-public record TeamPlayerByEmailSeed
+public class TeamPlayerByEmailSeed
 {
 	public string PersonEmail { get; init; } = string.Empty;
 	public FloorballPosition Position { get; init; } = FloorballPosition.Forward;
