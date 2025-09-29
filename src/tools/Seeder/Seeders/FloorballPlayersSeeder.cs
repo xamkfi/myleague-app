@@ -20,6 +20,27 @@ public static class FloorballPlayersSeeder
 
 		foreach (PersonDto person in all)
 		{
+			// Idempotent: if player already exists for person, skip
+			HttpResponseMessage listResp = await http.GetAsync("api/floorballplayer?Page=1&PageSize=0&IsActive=");
+			if (listResp.IsSuccessStatusCode)
+			{
+				PaginatedApiResponse<FloorballPlayerDto>? listApi = await listResp.Content.ReadFromJsonAsync<PaginatedApiResponse<FloorballPlayerDto>>(jsonOptions);
+				if (listApi != null && listApi.Success && listApi.Data != null)
+				{
+					FloorballPlayerDto? existing = listApi.Data.FirstOrDefault(p => p.PersonId == person.Id);
+					if (existing != null)
+					{
+						created.Add(existing);
+						string? emailExisting = person.ContactInfo != null ? person.ContactInfo.Email : null;
+						if (!string.IsNullOrWhiteSpace(emailExisting))
+						{
+							emailToPlayerId[emailExisting!] = existing.Id;
+						}
+						Console.WriteLine("Player exists for person, skipping: " + person.FullName + " (playerId: " + existing.Id + ")");
+						continue;
+					}
+				}
+			}
 			CreateFloorballPlayerRequest request = new CreateFloorballPlayerRequest
 			{
 				PersonId = person.Id

@@ -18,6 +18,24 @@ public static class FloorballTeamsSeeder
 			Guid divisionId = ResolveDivisionId(team.DivisionName, divisions);
 			Guid clubId = ResolveClubId(team.ClubName, clubs);
 
+			// Idempotent: check by name + club + division
+			HttpResponseMessage listResp = await http.GetAsync("api/floorballteam?Page=1&PageSize=0");
+			if (listResp.IsSuccessStatusCode)
+			{
+				PaginatedApiResponse<FloorballTeamDto>? listApi = await listResp.Content.ReadFromJsonAsync<PaginatedApiResponse<FloorballTeamDto>>(jsonOptions);
+				if (listApi != null && listApi.Success && listApi.Data != null)
+				{
+					FloorballTeamDto? existing = listApi.Data.FirstOrDefault(t => string.Equals(t.Name, team.Name, StringComparison.OrdinalIgnoreCase)
+						&& t.DivisionId == divisionId && t.Club != null && t.Club.Id == clubId);
+					if (existing != null)
+					{
+						created.Add(existing);
+						Console.WriteLine("Team exists, skipping: " + existing.Name + " (" + existing.Id + ")");
+						continue;
+					}
+				}
+			}
+
 			FloorballTeamRequest request = new FloorballTeamRequest
 			{
 				Name = team.Name,
@@ -45,18 +63,63 @@ public static class FloorballTeamsSeeder
 		return created;
 	}
 
-	public static async Task AddPlayersAsync(HttpClient http, JsonSerializerOptions jsonOptions, Guid teamId, List<TeamPlayerByEmailSeed> players, Dictionary<string, Guid> emailToPlayerId)
+    public static async Task AddPlayersAsync(HttpClient http, JsonSerializerOptions jsonOptions, Guid teamId, List<TeamPlayerByEmailSeed> players, Dictionary<string, Guid> emailToPlayerId)
 	{
-		foreach (TeamPlayerByEmailSeed player in players)
+        foreach (TeamPlayerByEmailSeed player in players)
 		{
-			if (!emailToPlayerId.TryGetValue(player.PersonEmail, out Guid playerId))
-			{
-				throw new InvalidOperationException("No player entity found for email: " + player.PersonEmail);
-			}
+            if (!emailToPlayerId.TryGetValue(player.PersonEmail, out Guid playerId))
+            {
+                // Fallback: resolve person by email -> ensure player exists -> cache id
+                HttpResponseMessage personResp = await http.GetAsync("api/persons/by-email?email=" + Uri.EscapeDataString(player.PersonEmail));
+                if (!personResp.IsSuccessStatusCode)
+                {
+                    throw new InvalidOperationException("No person found for email: " + player.PersonEmail);
+                }
 
-			int positionValue = (int)player.Position;
-			HttpResponseMessage response = await http.PostAsync($"api/floorballteam/{teamId}/players/{playerId}?position={positionValue}&jerseyNumber={player.JerseyNumber}", null);
-			await SeederHttp.EnsureSuccessWithBody(response, "Add Player To Team");
+                ApiResponse<PersonDto>? personApi = await personResp.Content.ReadFromJsonAsync<ApiResponse<PersonDto>>(jsonOptions);
+                if (personApi == null || !personApi.Success || personApi.Data == null)
+                {
+                    throw new InvalidOperationException("Failed to fetch person for email: " + player.PersonEmail);
+                }
+
+                Guid personId = personApi.Data.Id;
+
+                // Check existing players for this person
+                HttpResponseMessage listResp = await http.GetAsync("api/floorballplayer?Page=1&PageSize=0&IsActive=");
+                if (listResp.IsSuccessStatusCode)
+                {
+                    PaginatedApiResponse<FloorballPlayerDto>? listApi = await listResp.Content.ReadFromJsonAsync<PaginatedApiResponse<FloorballPlayerDto>>(jsonOptions);
+                    if (listApi != null && listApi.Success && listApi.Data != null)
+                    {
+                        FloorballPlayerDto? existing = listApi.Data.FirstOrDefault(p => p.PersonId == personId);
+                        if (existing != null)
+                        {
+                            emailToPlayerId[player.PersonEmail] = existing.Id;
+                            playerId = existing.Id;
+                        }
+                    }
+                }
+
+                if (playerId == Guid.Empty)
+                {
+                    CreateFloorballPlayerRequest createReq = new CreateFloorballPlayerRequest { PersonId = personId };
+                    HttpResponseMessage createResp = await http.PostAsJsonAsync("api/floorballplayer", createReq);
+                    await SeederHttp.EnsureSuccessWithBody(createResp, "Create Floorball Player (fallback)");
+
+                    ApiResponse<FloorballPlayerDto>? createApi = await createResp.Content.ReadFromJsonAsync<ApiResponse<FloorballPlayerDto>>(jsonOptions);
+                    if (createApi == null || !createApi.Success || createApi.Data == null)
+                    {
+                        throw new InvalidOperationException("Create floorball player (fallback) failed for email: " + player.PersonEmail);
+                    }
+
+                    playerId = createApi.Data.Id;
+                    emailToPlayerId[player.PersonEmail] = playerId;
+                }
+            }
+
+            int positionValue = (int)player.Position;
+            HttpResponseMessage response = await http.PostAsync($"api/floorballteam/{teamId}/players/{playerId}?position={positionValue}&jerseyNumber={player.JerseyNumber}", null);
+            await SeederHttp.EnsureSuccessWithBody(response, "Add Player To Team");
 		}
 	}
 

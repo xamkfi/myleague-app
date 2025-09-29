@@ -13,6 +13,24 @@ public static class DivisionsSeeder
 
 		foreach (DivisionSeed division in config.Divisions)
 		{
+            // Idempotent check by name + sport type
+            HttpResponseMessage listResp = await http.GetAsync("api/divisions");
+            if (listResp.IsSuccessStatusCode)
+            {
+                ApiResponse<List<DivisionDto>>? listApi = await listResp.Content.ReadFromJsonAsync<ApiResponse<List<DivisionDto>>>(jsonOptions);
+                if (listApi != null && listApi.Success && listApi.Data != null)
+                {
+                    DivisionDto? existingDiv = listApi.Data.FirstOrDefault(d => string.Equals(d.Name, division.Name, StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(d.SportType, division.SportType, StringComparison.OrdinalIgnoreCase));
+                    if (existingDiv != null)
+                    {
+                        created.Add(existingDiv);
+                        Console.WriteLine("Division exists, skipping: " + existingDiv.Name + " (" + existingDiv.Id + ")");
+                        continue;
+                    }
+                }
+            }
+
 			CreateDivisionRequest request = new CreateDivisionRequest
 			{
 				Name = division.Name,

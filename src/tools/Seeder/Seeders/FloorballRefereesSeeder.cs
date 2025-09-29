@@ -14,6 +14,22 @@ public static class FloorballRefereesSeeder
 
 		foreach (Guid personId in personIds)
 		{
+			// Idempotent: list referees and skip if already exists for person
+			HttpResponseMessage listResp = await http.GetAsync("api/floorballreferee?page=1&pageSize=0");
+			if (listResp.IsSuccessStatusCode)
+			{
+				PaginatedApiResponse<FloorballRefereeDto>? listApi = await listResp.Content.ReadFromJsonAsync<PaginatedApiResponse<FloorballRefereeDto>>(jsonOptions);
+				if (listApi != null && listApi.Success && listApi.Data != null)
+				{
+					FloorballRefereeDto? existing = listApi.Data.FirstOrDefault(r => r.PersonId == personId);
+					if (existing != null)
+					{
+						created.Add(existing);
+						Console.WriteLine("Referee exists for personId, skipping: " + personId + " (refereeId: " + existing.Id + ")");
+						continue;
+					}
+				}
+			}
 			CreateFloorballRefereeRequest request = new CreateFloorballRefereeRequest
 			{
 				PersonId = personId,

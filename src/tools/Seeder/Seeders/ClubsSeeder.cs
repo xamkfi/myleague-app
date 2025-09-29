@@ -13,6 +13,23 @@ public static class ClubsSeeder
 
 		foreach (ClubSeed club in config.Clubs)
 		{
+            // Idempotent check by name
+            HttpResponseMessage listResp = await http.GetAsync("api/clubs");
+            if (listResp.IsSuccessStatusCode)
+            {
+                ApiResponse<List<ClubDto>>? listApi = await listResp.Content.ReadFromJsonAsync<ApiResponse<List<ClubDto>>>(jsonOptions);
+                if (listApi != null && listApi.Success && listApi.Data != null)
+                {
+                    ClubDto? existingClub = listApi.Data.FirstOrDefault(c => string.Equals(c.Name, club.Name, StringComparison.OrdinalIgnoreCase));
+                    if (existingClub != null)
+                    {
+                        created.Add(existingClub);
+                        Console.WriteLine("Club exists, skipping: " + existingClub.Name + " (" + existingClub.Id + ")");
+                        continue;
+                    }
+                }
+            }
+
 			CreateClubRequest request = new CreateClubRequest
 			{
 				Name = club.Name,

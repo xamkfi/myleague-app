@@ -16,6 +16,23 @@ public static class FloorballSeasonsSeeder
 		foreach (FloorballSeasonSeed season in seasons)
 		{
 			Guid divisionId = ResolveDivisionId(season.DivisionName, divisions);
+			// Idempotent: check if season with same name exists
+			HttpResponseMessage listResp = await http.GetAsync("api/floorballseason");
+			if (listResp.IsSuccessStatusCode)
+			{
+				ApiResponse<List<FloorballSeasonDto>>? listApi = await listResp.Content.ReadFromJsonAsync<ApiResponse<List<FloorballSeasonDto>>>(jsonOptions);
+				if (listApi != null && listApi.Success && listApi.Data != null)
+				{
+					FloorballSeasonDto? existing = listApi.Data.FirstOrDefault(s => string.Equals(s.Name, season.Name, StringComparison.OrdinalIgnoreCase)
+						&& s.DivisionId == divisionId);
+					if (existing != null)
+					{
+						created.Add(existing);
+						Console.WriteLine("Season exists, skipping: " + existing.Name + " (" + existing.Id + ")");
+						continue;
+					}
+				}
+			}
 			CreateFloorballSeasonRequest request = new CreateFloorballSeasonRequest
 			{
 				Name = season.Name,

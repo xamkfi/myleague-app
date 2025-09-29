@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Application.DTOs.Common;
 using Application.DTOs.Floorball;
 
@@ -20,6 +21,8 @@ public static class Program
 
 		JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
 		jsonOptions.PropertyNameCaseInsensitive = true;
+		jsonOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+		jsonOptions.Converters.Add(new JsonStringEnumConverter());
 
 		try
 		{
