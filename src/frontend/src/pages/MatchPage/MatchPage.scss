@@ -191,14 +191,37 @@
   padding: 30px;
   max-width: 1000px;
   margin: 0 auto;
+
+  .summary-stats-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #e1e8ed;
+
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    // Make stats more compact in summary view
+    .match-stats {
+      padding: 0;
+      
+      .stats-header {
+        margin-bottom: 1.5rem;
+      }
+
+      .stats-content {
+        gap: 1rem;
+      }
+    }
+  }
 }
 
 .match-info {
   background-color: #f8f9fa;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 30px;
-
   p {
     margin: 0 0 10px 0;
     font-size: 14px;

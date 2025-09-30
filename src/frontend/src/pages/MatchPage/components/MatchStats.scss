@@ -6,10 +6,9 @@
   .stats-header {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    gap: 1rem;
+
     align-items: center;
     margin-bottom: 2rem;
-    padding: 1rem;
     background-color: var(--background-alt);
     border-radius: 8px;
 
@@ -27,7 +26,7 @@
     }
 
     .header-label {
-      font-size: 1.4rem;
+      font-size: 1rem;
       font-weight: bold;
       color: var(--text-muted);
     }
@@ -83,6 +82,30 @@
         border-radius: 12px;
         overflow: hidden;
         display: flex;
+
+        &.centered {
+          justify-content: center;
+
+          .home-bar {
+            position: absolute;
+            right: 50%;
+            transform-origin: right;
+          }
+
+          .away-bar {
+            position: absolute;
+            left: 50%;
+            transform-origin: left;
+          }
+
+          .center-line {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.5);
+            z-index: 1;
+          }
+        }
 
         .home-bar {
           height: 100%;

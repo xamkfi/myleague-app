@@ -27,6 +27,11 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
               </div>
               
               <MatchEvents match={match} />
+              
+              {/* Add stats section to summary */}
+              <div className="summary-stats-section">
+                <MatchStats match={match} />
+              </div>
             </div>
           </div>
         );
