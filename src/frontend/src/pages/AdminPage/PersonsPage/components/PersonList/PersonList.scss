@@ -1,3 +1,5 @@
+@use '@variables' as *;
+
 .persons-list {
   width: 100%;
   overflow-x: auto;
@@ -93,10 +95,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background-color: #f8f9fa;
   border-radius: 0.5rem;
   margin-bottom: 1rem;
-  border: 1px solid #dee2e6;
+  border: 1px solid $color-neutral-medium-grey;
 
   .selection-info {
     display: flex;

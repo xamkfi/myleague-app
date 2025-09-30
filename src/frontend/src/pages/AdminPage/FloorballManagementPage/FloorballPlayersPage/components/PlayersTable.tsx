@@ -1,16 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
+import CheckIcon from '../../../../../assets/basicIcons/check.svg';
+import CloseIcon from '../../../../../assets/basicIcons/close.svg';
+import PlayerActionsDropdown from './PlayerActionsDropdown';
 
 interface PlayersTableProps {
   players: FloorballPlayerDto[];
   onDelete: (playerId: string) => void;
+  onStatusChange: (playerId: string, isActive: boolean) => void;
   selectedPlayers: Set<string>;
   onToggleSelection: (playerId: string) => void;
   onSelectAll: () => void;
   onClearSelection: () => void;
 }
 
-const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
+const PlayersTable = ({ players, onDelete, onStatusChange, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
   const { t } = useTranslation();
 
   if (players.length === 0) {
@@ -20,7 +24,7 @@ const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, o
   return (
     <table className="players-table">
       <thead>
-        <tr>
+        <tr className="players-table-header">
           <th className="select-column">
             <input
               type="checkbox"
@@ -35,17 +39,19 @@ const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, o
               title={t('floorball.players.selectAll', 'Select all players')}
             />
           </th>
-          <th>{t('floorball.players.table.name', 'Name')}</th>
-          <th>{t('floorball.players.table.position', 'Position')}</th>
-          <th>{t('floorball.players.table.status', 'Status')}</th>
-          <th>{t('floorball.players.table.actions', 'Actions')}</th>
+          <th className="name-column">{t('floorball.players.table.name', 'Name')}</th>
+          <th className="team-column">{t('floorball.players.table.team', 'Team')}</th>
+          <th className="position-column">{t('floorball.players.table.position', 'Position')}</th>
+          <th className="status-column">{t('floorball.players.table.status', 'Status')}</th>
+          <th className="actions-column">{t('floorball.players.table.actions', 'Actions')}</th>
         </tr>
       </thead>
       <tbody>
         {players.map((player) => (
           <tr 
-            key={player.id}
-            className={selectedPlayers.has(player.id) ? 'selected' : ''}
+          key={player.id}
+          className={`clickable-row${selectedPlayers.has(player.id) ? ' selected' : ''}`}
+          onClick={() => onToggleSelection(player.id)}
           >
             <td className="select-column">
               <input
@@ -55,23 +61,34 @@ const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, o
                 onClick={(e) => e.stopPropagation()}
               />
             </td>
-            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
-              {player.person.fullName}
+            <td className="name-column">
+                {player.person.fullName || `${player.person.firstName} ${player.person.lastName}`}
+              </td>
+            <td className="team-column">
+              {player.team?.name || 'Not assigned'}
             </td>
-            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
-              {player.position ? t(`floorball.positions.${player.position.toLowerCase()}`, player.position) : 'N/A'}
-            </td>
-            <td onClick={() => onToggleSelection(player.id)} className="clickable-cell">
-              <span className={`status-badge ${player.isActive ? 'active' : 'inactive'}`}>
-                {player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
-              </span>
+            <td className="position-column">
+              {player.position ? t(`floorball.positions.${player.position.toLowerCase()}`, player.position) : 'None'}
             </td>
             <td>
-              <div className="action-buttons">
-                <button onClick={() => onDelete(player.id)} className="delete-btn">
-                  {t('common.delete', 'Delete')}
-                </button>
-              </div>
+              <span 
+                className={`status-badge ${player.isActive ? 'active' : 'inactive'}`}
+                aria-label={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+                title={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+              >
+                <img
+                  src={player.isActive ? CheckIcon : CloseIcon}
+                  alt={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+                  className="status-icon"
+                />
+              </span>
+            </td>
+            <td className="actions-column">
+                <PlayerActionsDropdown
+                  player={player}
+                  onDelete={onDelete}
+                  onStatusChange={onStatusChange}
+                />
             </td>
           </tr>
         ))}
@@ -80,4 +97,4 @@ const PlayersTable = ({ players, onDelete, selectedPlayers, onToggleSelection, o
   );
 };
 
-export default PlayersTable; 
+export default PlayersTable;

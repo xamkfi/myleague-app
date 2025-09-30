@@ -109,6 +109,8 @@ public static class FloorballMatchMapper
             match.AwayScore,
             match.WentToOvertime,
             match.WentToShootout,
+            match.HomeActiveGoalieId,
+            match.AwayActiveGoalieId,
             periodScores,
             officials,
             goalEvents,
@@ -196,6 +198,8 @@ public static class FloorballMatchMapper
             match.AwayScore,
             match.WentToOvertime,
             match.WentToShootout,
+            null, // EventSourcedFloorballMatch does not have HomeActiveGoalieId
+            null, // EventSourcedFloorballMatch does not have AwayActiveGoalieId
             periodScores,
             match.OfficialIds,
             new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed

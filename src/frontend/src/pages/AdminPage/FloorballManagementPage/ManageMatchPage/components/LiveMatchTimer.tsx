@@ -29,6 +29,7 @@ interface LiveMatchTimerProps {
   isInShootout: () => boolean;
   formatTime: (minutes: number, seconds: number) => string;
   keybindsEnabled: boolean;
+  isStartMatchDisabled: boolean;
 }
 
 const LiveMatchTimer = ({
@@ -48,7 +49,8 @@ const LiveMatchTimer = ({
   getPeriodControlButtonText,
   isInOvertime,
   isInShootout,
-  keybindsEnabled
+  keybindsEnabled,
+  isStartMatchDisabled
 }: LiveMatchTimerProps) => {
   return (
     <div className={`clock-score-section ${isInOvertime() ? 'overtime' : ''} ${isInShootout() ? 'shootout' : ''}`}>
@@ -78,13 +80,16 @@ const LiveMatchTimer = ({
           <div className="start-match-container">
             <button 
               onClick={onStartMatch}
-              disabled={loading}
+              disabled={loading || isStartMatchDisabled}
               className="start-match-btn"
             >
-              🏁 Start Match
+              {isStartMatchDisabled ? 'Select goalies to start' : '🏁 Start Match'}
             </button>
             <div className="start-match-hint">
-              Click to start the match. After starting, you can use the timer controls below.
+              {isStartMatchDisabled 
+                ? 'Both teams must have an active goalie selected before the match can be started.'
+                : 'Click to start the match. After starting, you can use the timer controls below.'
+              }
             </div>
           </div>
         ) : currentMatch.status === 'InProgress' ? (

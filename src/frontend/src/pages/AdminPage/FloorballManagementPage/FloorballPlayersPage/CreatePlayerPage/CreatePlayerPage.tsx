@@ -8,6 +8,11 @@ import { floorballPlayerService } from '../../../../../api/floorball/floorballPl
 import type { Person } from '../../../../../types/admin/personTypes';
 import { formatDate } from '../../../../../utils/helpers';
 import './CreatePlayerPage.scss';
+import SearchField from '../../../../../components/SearchField';
+import CheckIcon from '../../../../../assets/basicIcons/check.svg';
+import CloseIcon from '../../../../../assets/basicIcons/close.svg';
+import Button from '../../../../../components/Button/Button';
+import AddIcon from '../../../../../assets/basicIcons/add.svg';
 
 type SortField = 'birthDate' | 'registration' | 'name';
 type SortDirection = 'asc' | 'desc';
@@ -22,7 +27,7 @@ const CreatePlayerPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [successTimeoutId, setSuccessTimeoutId] = useState<number | null>(null);
+  const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
   
   // Sorting state
   const [sortField, setSortField] = useState<SortField>('name');
@@ -138,6 +143,7 @@ const CreatePlayerPage = () => {
       return sortDirection === 'asc' ? comparison : -comparison;
     });
 
+  
   const handleCreatePlayer = async (personId: string) => {
     try {
       setCreating(true);
@@ -283,6 +289,7 @@ const CreatePlayerPage = () => {
     );
   }
 
+  
   return (
     <PageTemplate title={t('floorball.players.createFromPerson', 'Create Player from Available Persons')}>
       <div className="create-player-container">
@@ -301,31 +308,31 @@ const CreatePlayerPage = () => {
         
         {/* Search Bar with Create Person Button */}
         <div className="search-container">
-          <input
-            type="text"
-            placeholder={t('floorball.players.searchPersons', 'Search available persons...')}
+          <SearchField
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setSelectedPersons(new Set()); // Clear selection when searching
+            onChange={(val) => {
+              setSearchTerm(val);
+              setSelectedPersons(new Set());
             }}
-            className="search-input"
+            placeholder={t('floorball.players.searchPersons', 'Search available persons...')}
+            fullWidth
+            rounded="pill"
           />
-          <button
-            className="create-person-button"
+          <Button
+            variant="primary"
+            size="md"
+            rounded="pill"
             onClick={handleCreateNewPerson}
-            type="button"
+            iconLeft={AddIcon}
           >
-            ➕ {t('floorball.players.createNewPerson', 'Create New Person')}
-          </button>
+            {t('floorball.players.createNewPerson', 'Create New Person')}
+          </Button>
         </div>
         
         {/* Selection Controls */}
         <div className="selection-controls">
           <div className="selection-info">
-            <span className="selected-count">
-              {t('floorball.players.selected', '{{count}} selected', { count: selectedPersons.size })}
-            </span>
+            
             {filteredAndSortedPersons.length > 0 && (
               <div className="selection-buttons">
                 <button
@@ -452,8 +459,16 @@ const CreatePlayerPage = () => {
                       className="create-player-person-registration clickable-cell"
                       onClick={() => togglePersonSelection(person.id)}
                     >
-                      <span className={`registration-indicator ${person.isRegistered ? 'registered' : 'not-registered'}`}>
-                        {person.isRegistered ? '✓' : '✗'}
+                      <span 
+                        className={`registration-badge ${person.isRegistered ? 'active' : 'inactive'}`}
+                        aria-label={person.isRegistered ? t('common.registered', 'Registered') : t('common.notRegistered', 'Not Registered')}
+                        title={person.isRegistered ? t('common.registered', 'Registered') : t('common.notRegistered', 'Not Registered')}
+                      >
+                        <img
+                          src={person.isRegistered ? CheckIcon : CloseIcon}
+                          alt={person.isRegistered ? t('common.registered', 'Registered') : t('common.notRegistered', 'Not Registered')}
+                          className="registration-icon"
+                        />
                       </span>
                     </div>
                     <div 

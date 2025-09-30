@@ -104,6 +104,7 @@ export const useMatchEvents = ({
     loadMatchEvents();
   }, [match.id, loadMatchEvents]);
 
+
   /**
    * Processes and combines all match events (goals and penalties) from the backend
    * The backend returns domain events, so we need to extract and format the relevant data

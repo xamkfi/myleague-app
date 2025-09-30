@@ -53,6 +53,8 @@ namespace Application.DTOs.Floorball
         int AwayScore,
         bool WentToOvertime,
         bool WentToShootout,
+        Guid? HomeActiveGoalieId,
+        Guid? AwayActiveGoalieId,
         IReadOnlyDictionary<int, PeriodScoreDto> PeriodScores,
         IReadOnlyCollection<Guid> Officials,
         IReadOnlyCollection<FloorballGoalEventDto> GoalEvents,

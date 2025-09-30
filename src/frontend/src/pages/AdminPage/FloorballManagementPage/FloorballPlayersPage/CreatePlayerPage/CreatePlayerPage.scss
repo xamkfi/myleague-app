@@ -1,7 +1,11 @@
+@use '@variables' as *;
+
+
 .create-player-container {
-  padding: 1rem;
+  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  background-color: $color-neutral-white;
 }
 
 .create-player-loading {
@@ -22,11 +26,27 @@
   align-items: center;
   width: 100%;
   
-  .search-input {
+  .search-input-wrapper {
+    position: relative;
     flex: 1;
-    padding: 0.75rem 1rem;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+    color: #6E6D75;
+  }
+
+  .player-search-input {
+    flex: 1;
+    padding: 0.75rem 1rem 0.75rem 2.5rem; // left padding for icon
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: 24px;
     font-size: 1rem;
     transition: all 0.2s ease-in-out;
 
@@ -84,7 +104,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background-color: #f8f9fa;
   border-radius: 0.375rem;
   margin-bottom: 1.5rem;
   border: 1px solid #dee2e6;
@@ -229,6 +248,8 @@
   flex-direction: column;
   min-height: 400px;
   width: 100%;
+  border: 1px solid $color-neutral-medium-grey;
+  padding: 1rem;
 }
 
 .no-persons {
@@ -249,12 +270,10 @@
 // Table Header
 .persons-table-header {
   display: grid;
-  grid-template-columns: 40px 1fr 1fr 2fr 1fr;
+  grid-template-columns: 40px 150px 1fr 2fr 1fr;
   gap: 1.5rem;
   padding: 1rem 1.5rem;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 0.375rem 0.375rem 0 0;
+
   font-weight: 600;
   font-size: 0.85rem;
   color: #495057;
@@ -267,12 +286,12 @@
   }
 
   .header-registration {
-    justify-self: center;
+    justify-self: left;
     align-self: center;
   }
 
   .header-name {
-    justify-self: center;
+    justify-self: left;
     align-self: center;
   }
 
@@ -303,7 +322,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  border: 1px solid #dee2e6;
   border-top: none;
   border-radius: 0 0 0.375rem 0.375rem;
   max-height: 60vh;
@@ -329,18 +347,34 @@
   }
 }
 
+.create-multiple-players-btn {
+  padding: 0.75rem 1.2rem;
+  background-color: $color-green-primary;
+  font-size: 0.9rem;
+  border-radius: 0.375rem;
+  color: white;
+  transition: all 0.1s ease-out;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+    background-color: $color-neutral-medium-grey;
+  }
+}
+
 .create-player-person-item {
   display: grid;
-  grid-template-columns: 40px 1fr 1fr 2fr 1fr;
+  grid-template-columns: 40px 150px 1fr 2fr 1fr;
   gap: 1.5rem;
   align-items: center;
-  padding: 1rem 1.5rem;
+  justify-items: center;
+  padding: 0.5rem 1.5rem;
   border-bottom: 1px solid #e9ecef;
-  background-color: white;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.1s ease-out;
   width: 100%;
   box-sizing: border-box;
-  min-height: 60px;
+  cursor: pointer;
+
 
   &:last-child {
     border-bottom: none;
@@ -348,7 +382,13 @@
 
   &:hover {
     background-color: #f8f9fa;
+    box-shadow: inset 0 0 0 2px #96c0ff;
+  }
+
+  &.selected {
+    background-color: #e9ecef;
     box-shadow: inset 0 0 0 2px #0d6efd;
+
   }
   
   // Selected row styling
@@ -371,17 +411,7 @@
       cursor: pointer;
     }
   }
-  
-  // Clickable cells for selection
-  .clickable-cell {
-    cursor: pointer;
-    user-select: none;
-    
-    &:hover {
-      background-color: rgba(13, 110, 253, 0.1);
-      border-radius: 0.25rem;
-    }
-  }
+
 
   .create-player-person-birth-date {
     font-size: 0.9rem;
@@ -393,28 +423,37 @@
 
   .create-player-person-registration {
     display: flex;
-    justify-content: center;
+  justify-content: flex-start;
     align-items: center;
     align-self: center;
+  justify-self: start;
 
-    .registration-indicator {
+    .registration-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      font-weight: bold;
-      font-size: 0.85rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 24px;
+      background: $color-green-pale;
+      min-width: auto;
+      max-width: none;
 
-      &.registered {
-        background-color: #d4edda;
-        color: #155724;
+      &.active {
+        background: $color-green-pale;
+        color: $color-green-muted;
       }
 
-      &.not-registered {
-        background-color: #f8d7da;
-        color: #721c24;
+      &.inactive {
+        background: $color-red-pale;
+        color: $color-red-muted;
+      }
+
+      .registration-icon {
+        width: 24px;
+        height: 24px;
+        min-width: auto;
+        object-fit: contain;
       }
     }
   }
@@ -423,7 +462,7 @@
     font-weight: 600;
     color: #212529;
     font-size: 1rem;
-    justify-self: center;
+    justify-self: left;
     align-self: center;
     text-align: center;
   }

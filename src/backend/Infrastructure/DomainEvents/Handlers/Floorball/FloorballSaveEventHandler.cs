@@ -40,9 +40,10 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>A tuple containing the event name and notification payload</returns>
         protected override async Task<(string EventName, object? Notification)> BuildNotificationAsync(
-            FloorballSaveEvent domainEvent, 
+            FloorballSaveEvent domainEvent,
             CancellationToken cancellationToken = default)
         {
+            // Ensure the match exists (optional; payload does not require team names)
             FloorballMatch? match = await _dbContext.FloorballMatches
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
@@ -50,41 +51,27 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 
             if (match == null)
             {
-                _logger.LogWarning("Floorball match with ID {MatchId} not found for Save event.", domainEvent.MatchId);
-                return (FloorballNotificationEvents.GoalieSave, null);
+                _logger.LogWarning("Floorball match with ID {MatchId} not found for SaveRecorded event.", domainEvent.MatchId);
+                // Still emit the event with minimal payload so FE can react
             }
 
-            string homeTeamName = match.HomeTeam?.Name ?? "Unknown";
-            string awayTeamName = match.AwayTeam?.Name ?? "Unknown";
-            string savingTeamName = domainEvent.TeamId == match.HomeTeam?.Id ? homeTeamName : awayTeamName;
-
-            // Create a FloorballSaveNotification object initializing all properties at once
-            FloorballSaveNotification notification = new()
+            FloorballSaveRecordedNotification notification = new()
             {
                 MatchId = domainEvent.MatchId,
                 TeamId = domainEvent.TeamId,
                 GoalieId = domainEvent.GoalieId,
                 PeriodNumber = domainEvent.PeriodNumber,
                 TimeInSeconds = domainEvent.TimeInSeconds,
-                EventTime = domainEvent.OccurredOn,
-                WasInOvertime = domainEvent.WasInOvertime,
-                WasInShootout = domainEvent.WasInShootout,
-                HomeTeam = new TeamInfo 
-                { 
-                    Id = match.HomeTeamId, 
-                    Name = homeTeamName 
-                },
-                AwayTeam = new TeamInfo 
-                { 
-                    Id = match.AwayTeamId, 
-                    Name = awayTeamName 
-                }
+                IsOvertime = domainEvent.WasInOvertime,
+                IsShootout = domainEvent.WasInShootout
             };
 
-            _logger.LogInformation("Save made by {TeamName} goalie in period {PeriodNumber} at {TimeInSeconds}s. Match: {HomeTeam} vs {AwayTeam}", 
-                savingTeamName, domainEvent.PeriodNumber, domainEvent.TimeInSeconds, homeTeamName, awayTeamName);
+            _logger.LogInformation("Save recorded for team {TeamId}, goalie {GoalieId} in period {PeriodNumber}",
+                domainEvent.TeamId, domainEvent.GoalieId, domainEvent.PeriodNumber);
 
-            return (FloorballNotificationEvents.GoalieSave, notification);
+            return (FloorballNotificationEvents.SaveRecorded, notification);
         }
     }
-} 
+}
+
+

@@ -4,7 +4,7 @@
 @use './components/ErrorMessage.scss';
 @use './components/LoadingState.scss';
 @use './components/BackButton.scss';
-@use '../../../../styles/variables.scss' as *;
+@use '@variables' as *;
 @use 'sass:map';
 
 
