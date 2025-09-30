@@ -4,6 +4,7 @@ import MatchEvents from './MatchEvents';
 import MatchLineups from './MatchLineups';
 import MatchStats from './MatchStats';
 import MatchStandings from './MatchStandings';
+import { useTranslation } from 'react-i18next';
 
 interface MatchTabContentProps {
   activeTab: TabType;
@@ -11,6 +12,7 @@ interface MatchTabContentProps {
 }
 
 export default function MatchTabContent({ activeTab, match }: MatchTabContentProps) {
+  const { t } = useTranslation();
   const renderTabContent = () => {
     switch (activeTab) {
       case 'summary':
@@ -19,11 +21,11 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
             <div className="summary-content">
               <div className="match-info">
                 {match.venue && (
-                  <p>📍 Venue: {match.venue}</p>
+                  <p>📍 {t('matchPage.matchInfo.venue')}: {match.venue}</p>
                 )}
-                <p>Status: {match.status}</p>
-                {match.wentToOvertime && <p>⏱️ Went to overtime</p>}
-                {match.wentToShootout && <p>🥅 Went to shootout</p>}
+                <p>{t('matchPage.matchInfo.status')}: {t(`matchPage.status.${match.status.toLowerCase()}`)}</p>
+                {match.wentToOvertime && <p>⏱️ {t('matchPage.matchInfo.overtime')}</p>}
+                {match.wentToShootout && <p>🥅 {t('matchPage.matchInfo.shootout')}</p>}
               </div>
               
               <MatchEvents match={match} />
