@@ -10,5 +10,4 @@ namespace Application.Commands.Users;
 /// </summary>
 public record CreateUserCommand(
     string Username,
-    string Password,
-    Guid PersonId) : IRequest<Result<UserDto>>; 
+    string Password) : IRequest<Result<UserDto>>; 

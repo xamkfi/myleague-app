@@ -43,7 +43,6 @@ namespace Domain.Entities.Common
         /// </summary>
         /// <param name="username">The username of the user.</param>
         /// <param name="passwordHash">The password hash of the user.</param>
-        /// <param name="personId">The person ID linked to this user.</param>
         public User(string username, string passwordHash)
         {
             if (string.IsNullOrWhiteSpace(username))
@@ -53,6 +52,7 @@ namespace Domain.Entities.Common
 
             Username = username;
             PasswordHash = passwordHash;
+            Role = UserRole.Admin; // Default role
         }
     }
 }

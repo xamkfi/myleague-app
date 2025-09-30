@@ -22,10 +22,6 @@ namespace Application.Validators.Commands.Users
                 .MinimumLength(8).WithMessage("Password must be at least 8 characters long")
                 .MaximumLength(100).WithMessage("Password cannot exceed 100 characters")
                 .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$").WithMessage("Password must contain at least one lowercase letter, one uppercase letter, and one digit");
-
-            RuleFor(x => x.PersonId)
-                .NotEmpty().WithMessage("Person ID is required")
-                .NotEqual(Guid.Empty).WithMessage("Person ID cannot be empty");
         }
     }
 } 

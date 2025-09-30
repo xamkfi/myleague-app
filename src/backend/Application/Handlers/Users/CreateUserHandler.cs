@@ -16,7 +16,6 @@ namespace Application.Handlers.Users
     public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserDto>>
     {
         private readonly IUserRepository _userRepository;
-        private readonly IPersonRepository _personRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CreateUserHandler> _logger;
 
@@ -24,13 +23,11 @@ namespace Application.Handlers.Users
         /// Initializes a new instance of the CreateUserHandler class
         /// </summary>
         /// <param name="userRepository">The user repository</param>
-        /// <param name="personRepository">The person repository</param>
         /// <param name="unitOfWork">The unit of work</param>
         /// <param name="logger">The logger</param>
-        public CreateUserHandler(IUserRepository userRepository, IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<CreateUserHandler> logger)
+        public CreateUserHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, ILogger<CreateUserHandler> logger)
         {
             _userRepository = userRepository;
-            _personRepository = personRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -52,13 +49,6 @@ namespace Application.Handlers.Users
                     return Result<UserDto>.Failure($"A user with the username '{request.Username}' already exists.");
                 }
 
-                // Check if person exists
-                if (!await _personRepository.ExistsAsync(request.PersonId))
-                {
-                    _logger.LogInformation("Attempt to create user with non-existent person ID: {PersonId}", request.PersonId);
-                    return Result<UserDto>.Failure($"Person with ID '{request.PersonId}' does not exist.");
-                }
-
                 // Create the User entity
                 User user = UserMapper.ToEntity(request);
 
@@ -68,7 +58,7 @@ namespace Application.Handlers.Users
                 // Save changes explicitly to trigger domain events
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                // Load the user with person data for the response
+                // Load the created user for the response
                 User? createdUser = await _userRepository.GetByIdAsync(user.Id);
                 if (createdUser == null)
                 {
@@ -84,7 +74,7 @@ namespace Application.Handlers.Users
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while creating user: {Username}", request.Username);
-                return Result<UserDto>.Failure("An error occurred while creating the user.");
+                return Result<UserDto>.Failure($"An error occurred while creating the user: {ex.Message}");
             }
         }
     }

@@ -22,12 +22,6 @@ public record CreateUserRequest
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters")]
     [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", ErrorMessage = "Password must contain at least one lowercase letter, one uppercase letter, and one digit")]
     public string Password { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets the person ID associated with this user
-    /// </summary>
-    [Required(ErrorMessage = "Person ID is required")]
-    public Guid PersonId { get; init; }
 }
 
 /// <summary>

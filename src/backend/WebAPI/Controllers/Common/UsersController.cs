@@ -127,39 +127,6 @@ namespace WebAPI.Controllers.Common
         }
 
         /// <summary>
-        /// Get user by person ID
-        /// </summary>
-        /// <param name="personId">The person ID to search for</param>
-        /// <returns>The user</returns>
-        [HttpGet("by-person/{personId:guid}")]
-        [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<UserDto>>> GetUserByPersonId(Guid personId)
-        {
-            _logger.LogInformation("Getting user by person ID: {PersonId}", personId);
-
-            GetUserByPersonIdQuery query = new GetUserByPersonIdQuery(personId);
-            Result<UserDto> result = await _mediator.Send(query);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                UserDto user = result.Data;
-                return Ok(ApiResponse<UserDto>.SuccessResponse(user, "User retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<UserDto>.ErrorResponse(errorMessage));
-            }
-            
-            return StatusCode(500, ApiResponse<UserDto>.ErrorResponse(errorMessage));
-        }
-
-        /// <summary>
         /// Create a new user
         /// </summary>
         /// <param name="request">The user creation request</param>
@@ -174,8 +141,7 @@ namespace WebAPI.Controllers.Common
 
             CreateUserCommand command = new CreateUserCommand(
                 request.Username,
-                request.Password,
-                request.PersonId);
+                request.Password);
 
             Result<UserDto> result = await _mediator.Send(command);
 
