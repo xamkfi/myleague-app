@@ -1,10 +1,16 @@
-﻿using System;
-using Application.Common;
+﻿using Application.Common;
 using Application.DTOs.Common;
+using Domain.Common;
 using MediatR;
 
-namespace Application.Queries.Persons;
-/// <summary>
-/// Query for retrieving all persons
-/// </summary>
-public record GetAllPersonsQuery() : IRequest<Result<IEnumerable<PersonDto>>>;
+public record GetAllPersonsQuery(
+    int page = 1,
+    int pageSize = 25,
+    string? firstName = "",
+    string? lastName = "",
+    string? birthDate = "",
+    bool? isRegistered = true
+) : IRequest<Result<PagedResult<PersonDto>>>
+{
+    public const string ResourceKey = "persons";
+}

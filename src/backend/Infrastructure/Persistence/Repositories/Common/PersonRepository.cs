@@ -1,6 +1,7 @@
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories;
 
@@ -11,12 +12,15 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
     /// </summary>
     public class PersonRepository : RepositoryBase<Person, CommonDbContext>, IPersonRepository
     {
+        private readonly ILogger<PersonRepository> _logger;
+
         /// <summary>
         /// Initializes a new instance of the PersonRepository class
         /// </summary>
         /// <param name="dbContext">The database context</param>
-        public PersonRepository(CommonDbContext dbContext) : base(dbContext)
+        public PersonRepository(CommonDbContext dbContext, ILogger<PersonRepository> logger) : base(dbContext)
         {
+            _logger = logger;
         }
 
         /// <summary>
@@ -55,13 +59,74 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
-        /// Gets all persons
+        /// Gets all Persons
         /// </summary>
-        /// <returns>A collection of all persons</returns>
-        public override async Task<IEnumerable<Person>> GetAllAsync()
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="birthDate"></param>
+        /// <param name="isRegistered"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Person>> GetAllAsync(
+            int page,
+            int pageSize,
+            string? firstName,
+            string? lastName,
+            string? birthDate,
+            bool? isRegistered,
+            CancellationToken cancellationToken = default)
         {
+            if (page <= 0)
+            {
+                _logger.LogWarning("GetAllAsync called with invalid page number: {Page}", page);
+                page = 1;
+            }
+
+            if (pageSize <= 0)
+            {
+                _logger.LogWarning("GetAllAsync called with invalid page size: {PageSize}", pageSize);
+                pageSize = 10;
+            }
+
+            // Build query
+            IQueryable<Person> query = _entities.AsQueryable();
+
+            // Apply filters
+            if (!string.IsNullOrWhiteSpace(firstName))
+            {
+                query = query.Where(p => p.FirstName.Contains(firstName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(lastName))
+            {
+                query = query.Where(p => p.LastName.Contains(lastName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(birthDate))
+            {
+                if (DateTime.TryParse(birthDate, out DateTime date))
+                {
+                    query = query.Where(p => p.BirthDate.Date == date.Date);
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid birth date format provided: {BirthDate}", birthDate);
+                }
+            }
+
+            query = query.Where(p => p.IsRegistered == isRegistered);
+
+            // Apply pagination
+            int skip = (page - 1) * pageSize;
+
             return await _entities
-                .ToListAsync();
+                .OrderBy(p => p.LastName)
+                .ThenBy(p => p.FirstName)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>
