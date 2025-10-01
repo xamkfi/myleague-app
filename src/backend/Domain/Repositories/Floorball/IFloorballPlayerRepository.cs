@@ -30,6 +30,26 @@ public interface IFloorballPlayerRepository
     Task<IEnumerable<FloorballPlayer>> GetAllAsync();
     
     /// <summary>
+    /// Gets paginated floorball players with their current team information
+    /// </summary>
+    /// <param name="page">Page number (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="isActive">Optional active status filter</param>
+    /// <param name="position">Optional position filter</param>
+    /// <param name="teamId">Optional team ID filter</param>
+    /// <param name="searchTerm">Optional search term for player names</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated collection of floorball players with team information</returns>
+    Task<PagedResult<(FloorballPlayer Player, FloorballTeam? Team)>> GetPagedWithTeamsAsync(
+        int page, 
+        int pageSize, 
+        bool? isActive = null,
+        FloorballPosition? position = null,
+        Guid? teamId = null,
+        string? searchTerm = null,
+        CancellationToken cancellationToken = default);
+        
+    /// <summary>
     /// Gets paginated floorball players with filtering support
     /// </summary>
     /// <param name="page">Page number (1-based)</param>

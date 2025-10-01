@@ -99,7 +99,15 @@ export default function ResultsSection({
                         return (
 
                            <React.Fragment key={season.id}>
-                              <div className="results-season-header"><span>{season.name}</span></div>
+                              <div
+                                 className="results-season-header"
+                                 onClick={() => navigate(`/league/${season.id}`)}
+                                 role="button"
+                                 tabIndex={0}
+                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate(`/league/${season.id}`); }}
+                              >
+                                 <span>{season.name}</span>
+                              </div>
                               {seasonMatches.map(match => (
                                  <MatchRow
                                     key={match.id}
@@ -110,6 +118,7 @@ export default function ResultsSection({
                                     homeScore={match.homeScore}
                                     awayScore={match.awayScore}
                                     periodCount={3}
+                                    periodScores={match.periodScores}
                                     statusComponent={<MatchStatusComponent match={match} />}
                                     onClick={() => navigateToTeamPage(match.homeTeamId)}
                                  />

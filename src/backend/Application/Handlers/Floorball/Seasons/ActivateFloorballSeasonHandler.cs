@@ -25,6 +25,7 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
     private readonly IClubRepository _clubRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFloorballUnitOfWork _floorballUnitOfWork;
+    private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly ILogger<ActivateFloorballSeasonHandler> _logger;
 
     /// <summary>
@@ -38,12 +39,14 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
         IClubRepository clubRepository,
         IUnitOfWork unitOfWork,
         IFloorballUnitOfWork floorballUnitOfWork,
+        IFloorballStatisticsRepository statisticsRepository,
         ILogger<ActivateFloorballSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
         _clubRepository = clubRepository;
         _unitOfWork = unitOfWork;
         _floorballUnitOfWork = floorballUnitOfWork;
+        _statisticsRepository = statisticsRepository;
         _logger = logger;
     }
 
@@ -67,7 +70,14 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
 
             _logger.LogInformation("Activating floorball season: {SeasonId}", request.Id);
             season.Activate();
-            
+
+            //Initializes the statistics table for every team when season is activated
+            foreach (FloorballTeam team in season.Teams)
+            {
+                FloorballTeamSeasonStatistics teamStatistics = new FloorballTeamSeasonStatistics(team.Id, request.Id);
+                await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics);
+            }
+
             // Update the season in the repository to track changes
             await _seasonRepository.UpdateAsync(season);
             

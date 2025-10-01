@@ -1,11 +1,4 @@
-@use './styles/variables' as *;
-
-#root {
-  max-width: var(--max-width-container);
-  margin: 0 auto;
-  padding: var(--spacing-lg);
-  text-align: center;
-}
+@use '@variables' as *;
 
 .logo {
   height: 6em;

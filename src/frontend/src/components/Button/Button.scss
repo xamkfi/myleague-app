@@ -1,0 +1,68 @@
+@use '@variables' as *;
+@use 'sass:map';
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: map.get($spacing, 'sm');
+  flex: 0 0 auto;
+  border: none;
+  cursor: pointer;
+  transition: all $transition-default;
+  font-weight: 500;
+  text-decoration: none;
+
+  &__icon {
+    width: 16px;
+    height: 16px;
+    &--left { margin-right: 0.125rem; }
+    &--right { margin-left: 0.125rem; }
+  }
+
+  &__label { white-space: nowrap; }
+
+  &--block { width: 100%; justify-content: center; }
+
+  &--pill { border-radius: map.get($border-radius, 'xl'); }
+
+  &--sm { padding: map.get($spacing, 'xs') map.get($spacing, 'sm'); font-size: map.get($font-sizes, 'sm'); }
+  &--md { padding: map.get($spacing, 'sm') map.get($spacing, 'lg'); font-size: map.get($font-sizes, 'base'); }
+  &--lg { padding: 0.9rem map.get($spacing, 'xl'); font-size: map.get($font-sizes, 'md'); }
+
+  &--primary {
+    background-color: $color-blue-light;
+    color: $color-white;
+
+    &:hover { background-color: $color-blue-deep; transform: translateY(-1px); }
+    &:active { transform: translateY(0); }
+    &:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+  }
+
+  &--secondary {
+    background-color: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
+    border: 1px solid $color-neutral-medium-grey;
+    &:hover { background-color: lighten($color-neutral-light-grey, 2%); }
+  }
+
+  &--danger {
+    background-color: $color-red-primary;
+    color: $color-white;
+    &:hover { background-color: $color-red-muted; transform: translateY(-1px); }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $color-blue-deep;
+    &:hover { background-color: $color-neutral-light-grey; }
+  }
+
+  &--link {
+    background: transparent;
+    color: $color-blue-deep;
+    padding: 0;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+

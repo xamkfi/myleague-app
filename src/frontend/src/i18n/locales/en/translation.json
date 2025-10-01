@@ -61,8 +61,13 @@
         "actions": "Actions"
       },
       "roles":{
-        "user": "User"
+        "user": "User",
+        "admin": "Admin",
+        "superAdmin": "Super Admin"
       },
+      "selected": "{{count}} selected",
+      "selectAllOnPage": "Select all on this page",
+      "loading": "Loading persons...",
       "form": {
         "basicInfo": "Basic Information",
         "firstName": "First Name",
@@ -90,8 +95,10 @@
         "jerseyNumber": "Jersey Number",
         "jerseyNumberHint": "Optional: 1-99",
         "positions": {
+          "none": "No position",
           "center": "Center",
           "winger": "Winger",
+          "forward": "Forward",
           "defender": "Defender",
           "goalkeeper": "Goalkeeper"
         }
@@ -283,6 +290,7 @@
       "createNew": "Create New Team",
       "searchPlaceholder": "Search teams by name...",
       "noTeams": "No teams found",
+      "players": "Team Players",
       "hasMembers": "Yes",
       "noMembers": "No",
       "primary": "Primary",
@@ -323,23 +331,37 @@
       "createFromPerson": "Create Player from Available Persons",
       "createNewPerson": "Create New Person",
       "searchPersons": "Search available persons...",
+      "searchPlayers": "Search players...",
+      "selected": "{{count}} selected",
+      "selectAll": "Select All",
+      "selectAllVisible": "Select all visible persons",
       "createPlayer": "Create Player",
+      "createPlayers": "Create Multiple Players",
       "playerCreated": "{{personName}} is now a floorball player!",
+      "playersCreated": "{{personName}} are now floorball players!",
       "personCreated": "{{personName}} created successfully! You can now create a player from them.",
       "noPersonsFound": "No persons found matching your search",
       "noPersonsAvailable": "No available persons to convert to players. All persons are already players.",
       "backToPersonSelection": "Back to Person Selection",
+      "backToPlayerCreation": "Back to Player Creation",
       "table": {
         "name": "Name",
         "position": "Position",
         "status": "Status",
         "actions": "Actions"
       },
+      "position": "Position",
+      "games": "Games",
+      "goals": "Goals",
+      "assists": "Assists",
+      "penalties": "PIM",
       "confirmDelete": {
         "title": "Confirm Deletion",
         "message": "Are you sure you want to delete {{playerName}}?",
         "warning": "This action cannot be undone."
       },
+      "noPlayersInTeam": "This team has no players assigned yet.",
+      "addPlayersHelp": "Use the edit button to manage team roster and add players.",
       "errors": {
         "loadPlayers": "Failed to load players. Please try again.",
         "deleteFailed": "Failed to delete player. Please try again."
@@ -349,7 +371,8 @@
       "center": "Center",
       "winger": "Winger",
       "defender": "Defender",
-      "goalkeeper": "Goalkeeper"
+      "goalkeeper": "Goalkeeper",
+      "forward": "Forward"
     },
     "seasons": {
       "title": "Manage Seasons",
@@ -508,6 +531,27 @@
       }
     }
   },
+  "roster": {
+    "positions": {
+      "Goalkeeper": "Goalkeepers",
+      "Defender": "Defenders", 
+      "Center": "Centers",
+      "Forward": "Forwards"
+    },
+    "jerseyNumber": "#",
+    "name": "Name",
+    "age": "Age",
+    "matchesPlayed": "Games",
+    "goals": "Goals",
+    "assists": "Assists",
+    "tooltips": {
+      "jerseyNumber": "Jersey Number",
+      "age": "Age",
+      "matchesPlayed": "Matches Played",
+      "goals": "Goals",
+      "assists": "Assists"
+    }
+  },
   "common": {
     "back": "Back",
     "backTo": "Back to",
@@ -527,6 +571,8 @@
     "registered": "Registered",
     "notRegistered": "Not Registered",
     "cancelSelection": "Cancel Selection",
+    "selectAll": "Select All",
+    "clear": "Clear",
     "previous": "Previous",
     "next": "Next",
     "pageInfo": "Page {{current}} of {{total}}",

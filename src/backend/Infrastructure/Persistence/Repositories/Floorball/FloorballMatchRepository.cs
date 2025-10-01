@@ -396,5 +396,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .ToListAsync(cancellationToken);
         }
 
+        /// <summary>
+        /// Retrieve last 5 completed matches
+        /// </summary>
+        /// <param name="teamId"></param>
+        /// <param name="seasonId"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<FloorballMatch>> GetLastCompletedByTeamAsync(Guid teamId, Guid? seasonId = null, int count = 5)
+        {
+            return await _entities
+                .AsNoTracking()
+                .Where(m =>
+                    (m.HomeTeamId == teamId || m.AwayTeamId == teamId) &&
+                    m.Status == FloorballMatchStatus.Completed &&
+                    (!seasonId.HasValue || m.SeasonId == seasonId.Value))
+                .OrderByDescending(m => m.ScheduledDateTime)
+                .Take(count)
+                .ToListAsync();
+        }
     }
 } 

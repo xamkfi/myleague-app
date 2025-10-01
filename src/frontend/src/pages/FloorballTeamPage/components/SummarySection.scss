@@ -1,5 +1,5 @@
 @use 'sass:map';
-@use '../../../styles/variables' as *;
+@use '@variables' as *;
 @use '../../../styles/common' as *;
 
 .summary-container{
@@ -38,6 +38,17 @@
       map.get($spacing, "xs") 
       map.get($spacing, "base");
    color: $color-white;
+   cursor: pointer;
+   transition: filter 0.2s ease, transform 0.05s ease;
+
+   &:hover{
+      filter: brightness(1.05);
+      text-decoration: underline;
+   }
+
+   &:active{
+      transform: scale(0.995);
+   }
 }
 
 .summary-header{

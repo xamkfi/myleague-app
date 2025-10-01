@@ -28,14 +28,14 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task<FloorballTeamSeasonStatistics?> GetTeamSeasonStatisticsAsync(Guid teamId, Guid seasonId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballTeamSeasonStatistics
+        return await _context.FloorballTeamSeasonStatistics.Include(x => x.Team).Include(x => x.Season)
             .FirstOrDefaultAsync(s => s.TeamId == teamId && s.SeasonId == seasonId, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<FloorballTeamSeasonStatistics>> GetTeamStatisticsBySeasonAsync(Guid seasonId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballTeamSeasonStatistics
+        return await _context.FloorballTeamSeasonStatistics.Include(x => x.Season).Include(x => x.Team)
             .Where(s => s.SeasonId == seasonId)
             .ToListAsync(cancellationToken);
     }
@@ -44,6 +44,8 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     public async Task<List<FloorballTeamSeasonStatistics>> GetTeamStandingsAsync(Guid seasonId, CancellationToken cancellationToken = default)
     {
         return await _context.FloorballTeamSeasonStatistics
+            .Include(x => x.Team)
+            .Include(x => x.Season)
             .Where(s => s.SeasonId == seasonId)
             .OrderByDescending(s => s.Points)
             .ThenByDescending(s => s.GoalDifference)
@@ -113,7 +115,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task<IEnumerable<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsBySeasonAsync(Guid seasonId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballPlayerSeasonStatistics
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
             .Where(s => s.SeasonId == seasonId)
             .ToListAsync(cancellationToken);
     }
@@ -121,8 +123,8 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task<List<FloorballPlayerSeasonStatistics>> GetTopScorersAsync(Guid seasonId, int topN, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballPlayerSeasonStatistics
-            .Where(s => s.SeasonId == seasonId && s.GamesPlayed > 0)
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
+            .Where(s => s.SeasonId == seasonId)
             .OrderByDescending(s => s.Goals)
             .ThenByDescending(s => s.Points)
             .ThenByDescending(s => s.Assists)
@@ -134,8 +136,8 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task<List<FloorballPlayerSeasonStatistics>> GetTopAssistsAsync(Guid seasonId, int topN, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballPlayerSeasonStatistics
-            .Where(s => s.SeasonId == seasonId && s.GamesPlayed > 0)
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
+            .Where(s => s.SeasonId == seasonId)
             .OrderByDescending(s => s.Assists)
             .ThenByDescending(s => s.Points)
             .ThenByDescending(s => s.Goals)
@@ -214,7 +216,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task<IEnumerable<FloorballGoalieSeasonStatistics>> GetGoalieStatisticsBySeasonAsync(Guid seasonId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballGoalieSeasonStatistics
+        return await _context.FloorballGoalieSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
             .Where(s => s.SeasonId == seasonId)
             .ToListAsync(cancellationToken);
     }

@@ -8,7 +8,9 @@ import { floorballSeasonService } from '../../../../../api/floorball/floorballSe
 import { useDivisions } from '../../../../../hooks/useDivisions';
 import './CreateSeasonPage.scss';
 
-const CreateSeasonPage = () => {
+
+
+export const CreateSeasonPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { divisions } = useDivisions();
@@ -18,11 +20,12 @@ const CreateSeasonPage = () => {
     endDate: '',
     divisionId: ''
   });
+  const [isActive, setIsActive] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [successTimeoutId, setSuccessTimeoutId] = useState<number | null>(null);
+  const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   // Cleanup timeout on unmount
   React.useEffect(() => {
@@ -33,13 +36,15 @@ const CreateSeasonPage = () => {
     };
   }, [successTimeoutId]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
   };
+
+
 
   const parseApiError = (error: unknown): string => {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -283,6 +288,21 @@ const CreateSeasonPage = () => {
               </div>
             </div>
 
+
+            <div className="toggle-container">
+              <label className="toggle-label">
+                {t('floorball.seasons.fields.isActive', 'Active')}
+              </label>
+              <button
+                type="button"
+                className={`toggle-button ${isActive ? 'active' : ''}`}
+                onClick={() => setIsActive(!isActive)}
+                disabled={loading}
+                aria-pressed={isActive}
+              >
+                {isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+              </button>
+            </div>
             <div className="info-message">
               <i className="fas fa-info-circle"></i>
               {t('floorball.seasons.create.info', 'The season will be created as inactive by default')}

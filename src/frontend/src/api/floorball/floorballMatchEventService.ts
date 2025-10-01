@@ -312,67 +312,6 @@ export const floorballMatchEventService = {
     }
   },
 
-  /**
-   * Update a goal event
-   */
-  updateGoal: async (data: UpdateGoalEventRequest): Promise<ApiResponse<FloorballGoalEventDto>> => {
-    try {
-      console.log('Updating goal:', data);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/goal`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      
-      return await handleApiResponse<FloorballGoalEventDto>(response);
-    } catch (error) {
-      console.error('Error updating goal:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Update a penalty event
-   */
-  updatePenalty: async (data: UpdatePenaltyEventRequest): Promise<ApiResponse<FloorballPenaltyEventDto>> => {
-    try {
-      console.log('Updating penalty:', data);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/penalty`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      
-      return await handleApiResponse<FloorballPenaltyEventDto>(response);
-    } catch (error) {
-      console.error('Error updating penalty:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Delete a match event (goal or penalty)
-   */
-  deleteEvent: async (eventId: string): Promise<ApiResponse<void>> => {
-    try {
-      console.log('Deleting event:', eventId);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/${eventId}`, {
-        method: 'DELETE',
-      });
-      
-      return await handleApiResponse<void>(response);
-    } catch (error) {
-      console.error('Error deleting event:', error);
-      throw error;
-    }
-  },
 
   /**
    * Start a period in a floorball match

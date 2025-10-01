@@ -1,0 +1,118 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../../styles/common' as *;
+
+// Styles specifically for the FixturesSection component
+.fixtures-section {
+  .matches-grid {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+  }
+
+  // Loading, error and no matches states
+  .loading-state,
+  .error-state,
+  .no-matches {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #666;
+
+    .retry-button {
+      margin-top: 1rem;
+      padding: 0.75rem 1.5rem;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: map.get($font-sizes, 'base');
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: #0056b3;
+      }
+    }
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding: 1rem;
+
+    .pagination-btn {
+      padding: 0.75rem 1.5rem;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: map.get($font-sizes, 'sm');
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: #0056b3;
+        transform: translateY(-1px);
+      }
+
+      &:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    }
+
+    .page-info {
+      color: #666;
+      font-weight: 500;
+      margin: 0 1rem;
+    }
+  }
+  
+  .fixtures-header {
+    text-align: left;
+    border-radius: map.get($border-radius, "sm");
+    margin-bottom: map.get($spacing, "sm");
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, "lg");
+    font-weight: map.get($font-weights, "bold");
+  }
+  
+  .fixtures-season-header {
+    display: flex;
+    align-items: center;
+    background: $color-gradient-blue;
+    color: #f6fbff;
+    font-weight: 600;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: map.get($font-sizes, 'md');
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+    &:first-child{
+      margin-top: 0;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .fixtures-section {
+    .pagination {
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .pagination-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.8rem;
+      }
+
+      .page-info {
+        margin: 0;
+      }
+    }
+  }
+}

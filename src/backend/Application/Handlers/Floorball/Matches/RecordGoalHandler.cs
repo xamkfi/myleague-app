@@ -140,6 +140,8 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
 
             // Mark the goal event as added and ensure the match is tracked as modified
             _matchRepository.MarkEventAsAdded(goal);
+
+            //Update match table (homescore/awayscore)
             await _matchRepository.UpdateAsync(match);
 
             // Save changes explicitly to persist score and period updates and trigger domain events
