@@ -8,6 +8,7 @@ using MyLeague.Infrastructure.SignalR;
 using MyLeague.Infrastructure.SignalR.Sports.Floorball;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Interfaces.Common;
 
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
@@ -17,6 +18,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
     public class FloorballPlayerPositionUpdatedEventHandler : NotificationDomainEventHandler<FloorballPlayerPositionUpdatedEvent>
     {
         private readonly FloorballDbContext _dbContext;
+        private readonly IPersonNameProvider _personNameProvider;
 
         /// <summary>
         /// Initializes a new instance of the FloorballPlayerPositionUpdatedEventHandler class
@@ -27,10 +29,12 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         public FloorballPlayerPositionUpdatedEventHandler(
             FloorballDbContext dbContext,
             INotificationSender notificationSender,
-            ILogger<FloorballPlayerPositionUpdatedEventHandler> logger)
+            ILogger<FloorballPlayerPositionUpdatedEventHandler> logger,
+            IPersonNameProvider personNameProvider)
             : base(notificationSender, logger)
         {
             _dbContext = dbContext;
+            _personNameProvider = personNameProvider;
         }
 
         /// <summary>
@@ -44,7 +48,6 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
             CancellationToken cancellationToken = default)
         {
             FloorballPlayer? player = await _dbContext.FloorballPlayers
-                .Include(p => p.Person)
                 .FirstOrDefaultAsync(p => p.Id == domainEvent.PlayerId, cancellationToken);
 
             if (player == null)
@@ -53,10 +56,14 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
                 return (FloorballNotificationEvents.PlayerPositionUpdated, null);
             }
 
+            string playerName = player != null
+                ? await _personNameProvider.GetFullNameAsync(player.PersonId, cancellationToken)
+                : "Unknown";
+
             FloorballPlayerPositionUpdatedNotification notification = new()
             {
                 PlayerId = domainEvent.PlayerId,
-                PlayerName = player.Person?.FullName ?? "Unknown",
+                PlayerName = playerName,
                 Position = domainEvent.Position!?.ToString() ?? "Unknown",
                 UpdatedOn = domainEvent.OccurredOn
             };
