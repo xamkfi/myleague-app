@@ -9,7 +9,7 @@ public record GetAllPersonsQuery(
     string? firstName = "",
     string? lastName = "",
     string? birthDate = "",
-    bool? isRegistered = true
+    bool? isRegistered = null
 ) : IRequest<Result<PagedResult<PersonDto>>>
 {
     public const string ResourceKey = "persons";

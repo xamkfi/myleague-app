@@ -39,7 +39,7 @@ public record GetPersonsRequest
     /// <summary>
     /// Gets whether the person is registered
     /// </summary>
-    public bool? IsRegistered { get; init; } = false;
+    public bool? IsRegistered { get; init; } = null;
 }
 
 /// <summary>

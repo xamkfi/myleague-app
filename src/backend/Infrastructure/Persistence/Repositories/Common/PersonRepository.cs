@@ -116,15 +116,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 }
             }
 
-            query = query.Where(p => p.IsRegistered == isRegistered);
+            // Only apply isRegistered filter if it has a value
+            if (isRegistered.HasValue)
+            {
+                query = query.Where(p => p.IsRegistered == isRegistered.Value);
+            }
 
-            // Apply pagination
-            int skip = (page - 1) * pageSize;
-
-            return await _entities
+            // Apply pagination and ordering to the final query
+            return await query
                 .OrderBy(p => p.LastName)
                 .ThenBy(p => p.FirstName)
-                .Skip(skip)
+                .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
         }
