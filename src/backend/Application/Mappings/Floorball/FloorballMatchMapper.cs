@@ -84,6 +84,7 @@ public static class FloorballMatchMapper
         List<FloorballSaveEventDto> saveEvents = match.SaveEvents
             .Select(s => new FloorballSaveEventDto
             {
+                Id = s.Id,
                 TeamId = s.TeamId,
                 GoalieId = s.GoalieId,
                 PeriodNumber = s.PeriodNumber,

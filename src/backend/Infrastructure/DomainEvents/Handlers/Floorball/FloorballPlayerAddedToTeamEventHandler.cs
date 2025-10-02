@@ -53,7 +53,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
             FloorballTeam? team = await _dbContext.FloorballTeams
                 .FirstOrDefaultAsync(t => t.Id == domainEvent.TeamId, cancellationToken);
 
-            if (player == null || team == null)
+            if (player is not FloorballPlayer p || team is not FloorballTeam t)
             {
                 _logger.LogWarning(
                     "Floorball player with ID {PlayerId} or team with ID {TeamId} not found for PlayerAddedToTeam event.",
@@ -61,15 +61,13 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
                 return (FloorballNotificationEvents.PlayerAddedToTeam, null);
             }
 
-            string playerName = player != null 
-                ? await _personNameProvider.GetFullNameAsync(player.PersonId, cancellationToken)
-                : "Unknown Player";
-            string teamName = team.Name ?? "Unknown Team";
+            string playerName = await _personNameProvider.GetFullNameAsync(p.PersonId, cancellationToken);
+            string teamName = t.Name ?? "Unknown Team";
 
             FloorballPlayerAddedToTeamNotification notification = new()
             {
-                PlayerId = player.Id,
-                TeamId = team.Id,
+                PlayerId = p.Id,
+                TeamId = t.Id,
                 PlayerName = playerName,
                 TeamName = teamName,
                 AddedOn = domainEvent.OccurredOn

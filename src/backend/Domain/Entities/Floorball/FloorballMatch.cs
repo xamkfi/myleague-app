@@ -767,6 +767,31 @@ public class FloorballMatch : AggregateRoot
         return penaltyEvent;
     }
 
+    /// <summary>
+    /// Deletes a save event from the match
+    /// </summary>
+    /// <param name="saveEventId">The ID of the save event to delete</param>
+    /// <returns>The deleted save event</returns>
+    /// <exception cref="ArgumentException">Thrown when the save event is not found</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in a state that allows deleting saves</exception>
+    public FloorballSave DeleteSaveEvent(Guid saveEventId)
+    {
+        if (Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException("Cannot delete save events unless match is in progress.");
+
+        // Find the save event
+        FloorballSave? saveEvent = _events.OfType<FloorballSave>().FirstOrDefault(s => s.Id == saveEventId);
+        if (saveEvent == null)
+            throw new ArgumentException($"Save event with ID {saveEventId} not found in this match.", nameof(saveEventId));
+
+        // Remove the save event
+        _events.Remove(saveEvent);
+
+        // No direct score changes for saves
+
+        return saveEvent;
+    }
+
     public void EndPeriod(int periodNumber)
     {
         if (Status != FloorballMatchStatus.InProgress)

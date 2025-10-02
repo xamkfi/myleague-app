@@ -7,6 +7,7 @@ namespace Application.DTOs.Floorball
     /// </summary>
     public class FloorballSaveEventDto
     {
+        public Guid Id { get; set; }
         public Guid TeamId { get; set; }
         public Guid GoalieId { get; set; }
         public int PeriodNumber { get; set; }

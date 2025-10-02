@@ -617,8 +617,9 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
                   await floorballMatchService.deleteGoal(match.id, event.eventId);
                 } else if (event.type === 'penalty') {
                   await floorballMatchService.deletePenalty(match.id, event.eventId);
+                } else if (event.type === 'save') {
+                  await floorballMatchService.deleteSave(match.id, event.eventId);
                 } else {
-                  // Do not touch saves yet
                   return;
                 }
                 await matchData.loadCurrentMatchStatus();

@@ -285,6 +285,7 @@ export const useMatchEvents = ({
             TimeInSeconds?: number; timeInSeconds?: number;
             IsOvertime?: boolean; wasInOvertime?: boolean;
             IsShootout?: boolean; wasInShootout?: boolean;
+            eventId?: string;
           }
           const d = event.data as AnySaveLike;
           const saveData: SaveEventData = {
@@ -300,6 +301,7 @@ export const useMatchEvents = ({
           return {
             id: `save-${TeamId}-${GoalieId}-${PeriodNumber}-${TimeInSeconds}`,
             type: 'save' as const,
+            eventId: d.eventId ?? '',
             teamId: TeamId,
             teamName: TeamId === currentMatch.homeTeamId ? homeTeam?.name || 'Home' : awayTeam?.name || 'Away',
             playerId: GoalieId,

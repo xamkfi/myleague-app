@@ -50,22 +50,20 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
             FloorballPlayer? player = await _dbContext.FloorballPlayers
                 .FirstOrDefaultAsync(p => p.Id == domainEvent.PlayerId, cancellationToken);
 
-            if (player == null)
+            if (player is not FloorballPlayer p)
             {
                 _logger.LogWarning("Floorball player with ID {PlayerId} not found for PlayerRegistered event.", domainEvent.PlayerId);
                 return (FloorballNotificationEvents.PlayerRegistered, null);
             }
 
-            string playerName = player != null
-                ? await _personNameProvider.GetFullNameAsync(player.PersonId, cancellationToken)
-                : "Unknown";
+            string playerName = await _personNameProvider.GetFullNameAsync(p.PersonId, cancellationToken);
 
             FloorballPlayerRegisteredNotification notification = new()
             {
-                PlayerId = player.Id,
+                PlayerId = p.Id,
                 PlayerName = playerName,
-                Position = player.Position?.ToString() ?? "Unknown",
-                PersonId = player.PersonId,
+                Position = p.Position?.ToString() ?? "Unknown",
+                PersonId = p.PersonId,
                 RegistrationTime = domainEvent.OccurredOn
             };
 

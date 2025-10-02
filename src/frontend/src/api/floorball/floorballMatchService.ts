@@ -116,6 +116,23 @@ export const floorballMatchService = {
   },
 
   /**
+   * Delete a save event from a match
+   */
+  deleteSave: async (matchId: string, saveEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const url = `${API_URL}/FloorballMatch/${matchId}/save/${saveEventId}`;
+    console.log('DELETE save URL:', url);
+    const response = await fetch(url, {
+      method: 'DELETE'
+    });
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to delete save');
+      throw new Error(errorMessage);
+    }
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+    return apiResponse;
+  },
+
+  /**
    * Get matches by season ID
    */
   getBySeason: async (seasonId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {
