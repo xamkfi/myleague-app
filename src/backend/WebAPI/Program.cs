@@ -1,14 +1,18 @@
-using Application.Configuration;
-using Application.DependencyInjections;
-using MyLeague.Infrastructure.DependencyInjections;
-using MyLeague.Infrastructure.SignalR;
-using WebAPI.Middlewares;
-using WebAPI.DependencyInjections;
-using Serilog;
-using Scalar.AspNetCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Application.Configuration;
+using Application.DependencyInjections;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.IdentityModel.Tokens;
+using MyLeague.Infrastructure.DependencyInjections;
+using MyLeague.Infrastructure.SignalR;
+using Scalar.AspNetCore;
+using Serilog;
+using WebAPI.DependencyInjections;
+using WebAPI.Middlewares;
+using WebAPI.Services;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +28,28 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+
+// Set app to use JWT token based authentication
+IConfigurationSection jwtSettings = builder.Configuration.GetSection("JwtSettings");
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)),
+        ClockSkew = TimeSpan.Zero // Remove default 5 minute clock skew
+    };
+});
 
 // Add API Explorer services for OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -43,6 +69,9 @@ builder.Services.AddApplication();
 
 // Register infrastructure services 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Register TokenService
+builder.Services.AddScoped<TokenService>();
 
 // Add Health Check UI configuration using extension method
 builder.Services.AddHealthCheckUIConfiguration(builder.Configuration);
@@ -73,6 +102,7 @@ app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseStaticFiles();
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Map controllers

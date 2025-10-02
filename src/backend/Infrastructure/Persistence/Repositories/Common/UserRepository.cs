@@ -27,7 +27,6 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
     public override async Task<User?> GetByIdAsync(Guid id)
     {
         return await _entities
-            .Include(u => u)
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
@@ -39,7 +38,6 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
     public async Task<User?> GetByUsernameAsync(string username)
     {
         return await _entities
-            .Include(u => u)
             .FirstOrDefaultAsync(u => u.Username == username);
     }
 
@@ -50,7 +48,6 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
     public override async Task<IEnumerable<User>> GetAllAsync()
     {
         return await _entities
-            .Include(u => u)
             .ToListAsync();
     }
 

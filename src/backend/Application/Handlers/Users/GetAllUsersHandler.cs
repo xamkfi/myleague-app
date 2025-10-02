@@ -41,16 +41,18 @@ namespace Application.Handlers.Users
                 _logger.LogInformation("Retrieving all users");
 
                 IEnumerable<Domain.Entities.Common.User> users = await _userRepository.GetAllAsync();
-                IEnumerable<UserDto> userDtos = UserMapper.ToDtos(users);
+                _logger.LogInformation("Retrieved {Count} users from repository", users.Count());
 
-                _logger.LogInformation("Successfully retrieved {Count} users", userDtos.Count());
+                IEnumerable<UserDto> userDtos = UserMapper.ToDtos(users);
+                _logger.LogInformation("Successfully mapped {Count} users to DTOs", userDtos.Count());
 
                 return Result<IEnumerable<UserDto>>.Success(userDtos);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while retrieving all users");
-                return Result<IEnumerable<UserDto>>.Failure("An error occurred while retrieving users.");
+                _logger.LogError(ex, "Error occurred while retrieving all users. Exception: {ExceptionType}, Message: {Message}, StackTrace: {StackTrace}", 
+                    ex.GetType().Name, ex.Message, ex.StackTrace);
+                return Result<IEnumerable<UserDto>>.Failure($"An error occurred while retrieving users: {ex.Message}");
             }
         }
     }
