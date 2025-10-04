@@ -284,7 +284,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Team ID</param>
         /// <returns>Success status</returns>
         [HttpDelete("{id:guid}")]
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
