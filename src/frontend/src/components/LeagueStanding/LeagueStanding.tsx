@@ -2,9 +2,10 @@ import './LeagueStanding.scss';
 import type { 
   FloorballPlayerSeasonStatisticsDto,
   FloorballSeasonStatisticsSummaryDto,
-  FloorballTeamSeasonStatisticsDto 
+  FloorballTeamSeasonStatisticsDto
 } from '../../api/floorball/floorballStatistics';
 import { useState } from 'react';
+import { FloorballGameResult } from '../../api/floorball/floorballStatistics';
 
 interface LeagueStandingProps {
   seasonSummary?: FloorballSeasonStatisticsSummaryDto | null;
@@ -54,7 +55,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
         <tbody>
           {data.map((team, index) => {
             const form = Array.isArray(team.lastFiveForm)
-              ? team.lastFiveForm as string[]
+              ? team.lastFiveForm
               : [];
             const rank = index + 1;
             
@@ -93,14 +94,13 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                 <td className="form-col">
                   <div className="form-indicators">
                     {form.map((result, formIndex) => {
-                      const r = (result || '').toString().trim();
-                      const cls = r === 'Win' ? 'win' : r === 'Loss' ? 'loss' : r === 'Tie' ? 'tie' : 'unknown';
-                      const letter = r === 'Win' ? 'W' : r === 'Loss' ? 'L' : r === 'Tie' ? 'T' : '-';
+                      const cls = result === FloorballGameResult.Win ? 'win' : result === FloorballGameResult.Loss ? 'loss' : result === FloorballGameResult.Tie ? 'tie' : 'unknown';
+                      const letter = result === FloorballGameResult.Win ? 'W' : result === FloorballGameResult.Loss ? 'L' : result === FloorballGameResult.Tie ? 'T' : '-';
                       return (
                         <div 
                           key={formIndex} 
                           className={`form-box form-${cls}`}
-                          title={r} // Add tooltip showing the full result
+                          title={result} // Add tooltip showing the full result
                         >
                           {letter}
                         </div>

@@ -261,15 +261,15 @@
     font-weight: map.get($font-weights, "bold");
     color: $color-white;
 
-    &.form-w {
+    &.form-win {
       background: $color-green-primary;
     }
 
-    &.form-d {
+    &.form-tie {
       background: $color-yellow-primary;
     }
 
-    &.form-l {
+    &.form-loss {
       background: $color-red-primary;
     }
 
