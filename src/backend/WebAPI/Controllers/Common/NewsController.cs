@@ -4,6 +4,7 @@ using Application.DTOs.Common;
 using Application.Commands.NewsArticles;
 using Application.Queries.NewsArticles;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using Application.Commands.Common;
@@ -102,7 +103,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The news article creation data</param>
         /// <returns>The created news article</returns>
         [HttpPost]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<NewsArticleDto>>> CreateNews([FromBody] CreateNewsArticleRequest request)
@@ -140,7 +144,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The news article update data</param>
         /// <returns>The updated news article</returns>
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]

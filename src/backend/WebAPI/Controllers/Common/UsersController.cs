@@ -3,7 +3,9 @@ using Application.Common;
 using Application.DTOs.Common;
 using Application.Queries.Users;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WebAPI.Models.Common;
 
 namespace WebAPI.Controllers.Common
@@ -132,7 +134,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The user creation request</param>
         /// <returns>The created user</returns>
         [HttpPost]
+        [Authorize(Roles = "SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] CreateUserRequest request)
@@ -165,7 +170,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The user update request</param>
         /// <returns>The updated user</returns>
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -205,12 +213,24 @@ namespace WebAPI.Controllers.Common
         /// <returns>Success status</returns>
         [HttpPatch("{id:guid}/password")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse>> UpdateUserPassword(Guid id, [FromBody] UpdateUserPasswordRequest request)
         {
             _logger.LogInformation("Updating password for user: {Id}", id);
+
+            // Check if user is updating their own password or if they're an admin
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            
+            if (currentUserId != id.ToString() && userRole != "Admin" && userRole != "SuperAdmin")
+            {
+                _logger.LogWarning("User {CurrentUserId} attempted to update password for user {TargetUserId} without permission", currentUserId, id);
+                return Forbid();
+            }
 
             UpdateUserPasswordCommand command = new UpdateUserPasswordCommand(
                 id,
@@ -242,7 +262,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="id">The user ID</param>
         /// <returns>Success status</returns>
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse>> DeleteUser(Guid id)

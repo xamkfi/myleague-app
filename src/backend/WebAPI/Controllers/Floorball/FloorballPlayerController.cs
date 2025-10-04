@@ -139,7 +139,10 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Create player request</param>
         /// <returns>Created player details</returns>
         [HttpPost]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballPlayerDto>>> CreatePlayer([FromBody] CreateFloorballPlayerRequest request)
@@ -166,7 +169,10 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update player request</param>
         /// <returns>Updated player details</returns>
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -234,7 +240,10 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Player ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]

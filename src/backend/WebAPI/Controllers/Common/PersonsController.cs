@@ -4,6 +4,7 @@ using Application.Common;
 using Application.DTOs.Common;
 using Application.Queries.Persons;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using Domain.ValueObjects.Common;
@@ -166,7 +167,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> CreatePerson([FromBody] CreatePersonRequest request)
@@ -207,7 +211,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The update request</param>
         /// <returns></returns>
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -249,7 +256,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The basic info update request</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/basic-info")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -283,7 +293,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The address update request</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/address")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -324,7 +337,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The contact info update request</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/contact-info")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -363,7 +379,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="isRegistered">The registration status</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/registration")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -428,7 +447,10 @@ namespace WebAPI.Controllers.Common
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Admin,SuperAdmin")] // Require Admin+
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse>> DeletePerson(Guid id)

@@ -97,9 +97,10 @@ namespace WebAPI.Controllers.Auth
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred during login for username: {Username}", loginRequest.Username);
-                return StatusCode(500, "An error occurred while processing your request");
+                return StatusCode(500, $"An error occurred while processing your request: {ex.Message}");
             }
         }
+
     }
 }
 
