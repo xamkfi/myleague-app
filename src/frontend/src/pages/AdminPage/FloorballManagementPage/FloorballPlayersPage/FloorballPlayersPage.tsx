@@ -12,6 +12,7 @@ import './FloorballPlayersPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
 const FloorballPlayersPage = () => {
   const { t } = useTranslation();
@@ -517,6 +518,7 @@ const FloorballPlayersPage = () => {
         />
         <h1 className="page-title">{t('floorball.players.title', 'MANAGE PLAYERS')}</h1>
         {/* Header with actions */}
+
         <div className="floorball-players-header">
           <div className="players-actions">
             <SearchField
@@ -538,11 +540,7 @@ const FloorballPlayersPage = () => {
         </div>
         
         {/* Error message */}
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
+        <ErrorPopup message={error} onClose={() => setError(null)} />
 
         {/* Selection Controls */}
         {selectedPlayers.size > 0 && (

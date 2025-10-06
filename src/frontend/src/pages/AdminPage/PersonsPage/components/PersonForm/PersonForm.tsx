@@ -13,6 +13,7 @@ import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
 import BackButton from '../../../../../components/BackButton/BackButton';
 import './PersonForm.scss';
 import { SPORTS, type SportType } from '../../../../../constants/sports';
+import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
 interface PersonFormProps {
   mode?: 'standalone' | 'embedded';
@@ -851,7 +852,7 @@ const PersonForm = ({
         </div>
       )}
 
-      {error && <div className="form-error">{error}</div>}
+      <ErrorPopup message={error} onClose={() => setError(null)} />
 
       <div className="form-actions">
         <button

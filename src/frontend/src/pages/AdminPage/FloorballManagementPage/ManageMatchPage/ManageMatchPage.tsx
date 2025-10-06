@@ -18,6 +18,7 @@ import PenaltyRecordingForm from './components/PenaltyRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ConfirmationDialog from './components/ConfirmationDialog';
 import SaveRecordingSection from './components/SaveRecordingSection';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
 // Import custom hooks
 import {
@@ -444,13 +445,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
       />
 
       {/* Error Display */}
-      {matchData.error && (
-        <div className="error-alert">
-          <span className="error-icon">⚠️</span>
-          <span className="error-text">{matchData.error}</span>
-          <button onClick={handleCloseError} className="error-close">×</button>
-        </div>
-      )}
+      <ErrorPopup message={matchData.error} onClose={handleCloseError} />
 
       {/* Confirmation Dialogs */}
       <ConfirmationDialog
@@ -646,7 +641,15 @@ const ManageMatchPage = () => {
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div className="manage-match-page">
+        <Navbar />
+        <div className="back-button-container">
+          <BackButton to="/admin/floorball/matches" text="Back to Overview" />
+        </div>
+        <ErrorPopup message={error} onClose={() => setError(null)} />
+      </div>
+    );
   }
 
   if (!match) {

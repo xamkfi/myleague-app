@@ -9,6 +9,7 @@ import CollapsibleMatchSection from './Components/CollapsibleMatchSection/Collap
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import './MatchOverviewPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
   
@@ -268,13 +269,7 @@ const MatchOverviewPage = () => {
         </div>
 
         {/* Error Message */}
-        {error && (
-          <div className="error-alert">
-            <span className="error-icon">⚠️</span>
-            <span className="error-text">{error}</span>
-            <button onClick={() => setError(null)} className="error-close">×</button>
-          </div>
-        )}
+        <ErrorPopup message={error} onClose={() => setError(null)} />
 
         {/* Stats and Filter Section */}
         <MatchStatsCards 

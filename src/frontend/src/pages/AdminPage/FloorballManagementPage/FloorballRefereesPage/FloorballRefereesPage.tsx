@@ -7,6 +7,7 @@ import RefereesTable from './components/RefereesTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import './FloorballRefereesPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
 const FloorballRefereesPage = () => {
   const { t } = useTranslation();
@@ -137,11 +138,7 @@ const FloorballRefereesPage = () => {
         </div>
         
         {/* Error message */}
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
+        <ErrorPopup message={error} onClose={() => setError(null)} />
         
         {/* Referees table */}
         <div className="referees-table-container">

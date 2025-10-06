@@ -7,6 +7,7 @@ import type { CreateFloorballSeasonRequest } from '../../../../../api/floorball/
 import { floorballSeasonService } from '../../../../../api/floorball/floorballSeasonService';
 import { useDivisions } from '../../../../../hooks/useDivisions';
 import './CreateSeasonPage.scss';
+import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
 
 
@@ -213,12 +214,7 @@ export const CreateSeasonPage = () => {
 
         <div className="create-season-form-container">
           <form onSubmit={handleSubmit} className="create-season-form">
-            {error && (
-              <div className="error-message">
-                <i className="fas fa-exclamation-circle"></i>
-                {error}
-              </div>
-            )}
+            <ErrorPopup message={error} onClose={() => setError(null)} />
 
             <div className="form-group">
               <label htmlFor="create-name">
