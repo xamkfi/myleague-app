@@ -1,4 +1,4 @@
-import type { Person, PersonFormData, PersonRole } from '../../types/admin/personTypes';
+import type { Person, PersonFormData } from '../../types/admin/personTypes';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -100,24 +100,5 @@ export const personApi = {
     }
     return apiResponse.data;
   },
-
-  updateRole: async (id: string, role: PersonRole): Promise<Person> => {
-    console.log('Sending role update request:', { id, role, type: typeof role }); // Debug log
-    const response = await fetch(`${API_URL}/persons/${id}/role`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(role),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to update person role');
-    }
-    const apiResponse: ApiResponse<Person> = await response.json();
-    console.log('Role update response:', apiResponse); // Debug log
-    if (!apiResponse.success) {
-      throw new Error(apiResponse.errors?.join(', ') || 'Failed to update person role');
-    }
-    return apiResponse.data;
-  },
+  
 }; 
