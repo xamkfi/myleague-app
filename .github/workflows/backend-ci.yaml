@@ -2,14 +2,14 @@ name: Backend CI
 
 on:
   push:
-    branches: [ master, development, jantoi/myl-65-do-ci-for-backend ]
+    branches: [ master, development, perttu123/myl-57-publish-app-to-azure ]
     paths:
       - 'src/backend/**'
       - 'tests/backend/**'
       - 'docker-compose.yml'
       - '.github/workflows/backend-ci.yaml'
   pull_request:
-    branches: [ master, development, jantoi/myl-65-do-ci-for-backend ]
+    branches: [ master, development, perttu123/myl-57-publish-app-to-azure ]
     paths:
       - 'src/backend/**'
       - 'tests/backend/**'
@@ -20,6 +20,9 @@ on:
 env:
   DOTNET_VERSION: '9.0.x'
   BUILD_CONFIGURATION: 'Release'
+  AZURE_CONTAINER_REGISTRY: acr_name
+  CONTAINER_APP_NAME: ca_name
+  RESOURCE_GROUP: rg_name
 
 jobs:
   build-and-test:
