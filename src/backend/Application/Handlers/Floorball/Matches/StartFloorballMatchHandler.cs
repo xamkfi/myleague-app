@@ -67,6 +67,11 @@ public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCom
 
             return Result<FloorballMatchDto>.Success(matchDto);
         }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error occurred while starting floorball match: {MatchId}", request.Id);
+            return Result<FloorballMatchDto>.Failure(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while starting floorball match: {MatchId}", request.Id);

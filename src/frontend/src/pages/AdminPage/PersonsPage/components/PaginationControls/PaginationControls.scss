@@ -1,8 +1,9 @@
+@use '@variables' as *;
+
 .pagination-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 2rem;
   padding: 1rem;
   background-color: #f8f9fa;
   border-radius: 0.5rem;
@@ -33,6 +34,7 @@
     background-color: white;
     font-size: 0.875rem;
     cursor: pointer;
+    color: #4b4e55;
 
     &:focus {
       outline: none;

@@ -1,5 +1,5 @@
 @use 'sass:map';
-@use '../../styles/variables' as *;
+@use '@variables' as *;
 @use '../../styles/common' as *;
 
 .standing-container {
@@ -260,15 +260,15 @@
     color: $color-white;
 
     &.form-w {
-      background: $color-green;
+      background: $color-green-primary;
     }
 
     &.form-d {
-      background: $color-yellow;
+      background: $color-yellow-primary;
     }
 
     &.form-l {
-      background: $color-red;
+      background: $color-red-primary;
     }
 
     &.form-unknown {

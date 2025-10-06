@@ -7,6 +7,7 @@ namespace MyLeague.Infrastructure.SignalR.Sports.Floorball
     {
         public const string PlayerAddedToTeam = "FloorballPlayerAddedToTeam";
         public const string GoalScored = "FloorballGoalScored";
+        public const string SaveRecorded = "FloorballSaveRecorded";
         public const string MatchAddedToSeason = "FloorballMatchAddedToSeason";
         public const string MatchCompleted = "FloorballMatchCompleted";
         public const string MatchCreated = "FloorballMatchCreated";

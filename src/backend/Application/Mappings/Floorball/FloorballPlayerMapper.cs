@@ -58,7 +58,8 @@ public static class FloorballPlayerMapper
             player.IsActive,
             player.Position.PrimaryPosition,
             player.CareerGoals,
-            player.CareerAssists);
+            player.CareerAssists,
+            null); // Team information not available in this mapping
     }
 
     /// <summary>

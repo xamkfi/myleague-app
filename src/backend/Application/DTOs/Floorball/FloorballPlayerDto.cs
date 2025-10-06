@@ -20,5 +20,6 @@ namespace Application.DTOs.Floorball
         bool IsActive,
         FloorballPosition Position,
         int CareerGoals,
-        int CareerAssists);
+        int CareerAssists,
+        FloorballTeamNameDto? Team = null);
 }

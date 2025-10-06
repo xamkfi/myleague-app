@@ -465,5 +465,33 @@ export const floorballMatchService = {
       console.error('Error in floorballMatchService.changeDateTime:', error);
       throw error;
     }
+  },
+
+  /**
+   * Changes the active goalie for a team in a match
+   */
+  changeGoalie: async (matchId: string, teamId: string, goalieId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/team/${teamId}/goalie/${goalieId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to change goalie');
+        throw new Error(errorMessage);
+      }
+
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to change goalie');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.changeGoalie:', error);
+      throw error;
+    }
   }
 }; 

@@ -26,6 +26,10 @@ export interface FloorballPlayerDto {
   position: FloorballPosition;
   careerGoals: number;
   careerAssists: number;
+  team?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 export interface GetFloorballPlayersRequest {
@@ -67,13 +71,7 @@ export const floorballPlayerService = {
       if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
 
       const url = `${API_URL}/FloorballPlayer?${searchParams.toString()}`;
-      console.log('Fetching players from URL:', url);
-      console.log('Request params:', params);
-      
       const response = await fetch(url);
-      
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -82,7 +80,6 @@ export const floorballPlayerService = {
       }
       
       const apiResponse: PaginatedApiResponse<FloorballPlayerDto> = await response.json();
-      console.log('API Response:', apiResponse);
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch floorball players');
