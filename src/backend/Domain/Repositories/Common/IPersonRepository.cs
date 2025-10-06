@@ -40,7 +40,7 @@ public interface IPersonRepository
     /// Gets all persons
     /// </summary>
     /// <returns>A collection of all persons</returns>
-    Task<IEnumerable<Person>> GetAllAsync();
+    Task<IEnumerable<Person>> GetAllAsync(int page, int pageSize, string? firstName, string? lastName, string? birthDate, bool? isRegistered, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets persons by first name
