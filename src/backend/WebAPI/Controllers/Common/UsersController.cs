@@ -223,8 +223,8 @@ namespace WebAPI.Controllers.Common
             _logger.LogInformation("Updating password for user: {Id}", id);
 
             // Check if user is updating their own password or if they're an admin
-            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            string? currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            string? userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             
             if (currentUserId != id.ToString() && userRole != "Admin" && userRole != "SuperAdmin")
             {
