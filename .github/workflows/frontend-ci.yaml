@@ -2,7 +2,7 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ master, development, jantoi/myl-24-do-ci-for-frontend ]
+    branches: [ master, development, perttu123/myl-57-publish-app-to-azure ]
     paths:
       - 'src/frontend/**'
       - 'docker-compose.yml'
