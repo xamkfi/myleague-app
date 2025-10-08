@@ -131,9 +131,10 @@ const PersonForm = ({
           position: undefined,
           jerseyNumber: undefined
         });
-      } catch (error) {
-        console.error('Failed to fetch person:', error);
-        setError(t('admin.persons.errors.fetchFailed'));
+      } catch (err) {
+        console.error('Failed to fetch person:', err);
+        setError(String(err));
+        console.log(err)
       } finally {
         setLoading(false);
       }
@@ -435,7 +436,7 @@ const PersonForm = ({
       }
     } catch (error) {
       console.error('Failed to save person:', error);
-              setError(t('admin.persons.errors.saveFailed'));
+              setError(String(error));
     } finally {
       setLoading(false);
     }
@@ -852,7 +853,7 @@ const PersonForm = ({
         </div>
       )}
 
-      <ErrorPopup message={error} onClose={() => setError(null)} />
+      <ErrorPopup message={error} />
 
       <div className="form-actions">
         <button

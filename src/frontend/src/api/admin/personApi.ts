@@ -27,10 +27,12 @@ export const personApi = {
     if (!response.ok) {
       throw new Error('Failed to fetch person');
     }
+
     const apiResponse: ApiResponse<Person> = await response.json();
     if (!apiResponse.success) {
       throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch person');
     }
+    
     return apiResponse.data;
   },
 
@@ -42,13 +44,12 @@ export const personApi = {
       },
       body: JSON.stringify(data),
     });
-    if (!response.ok) {
-      throw new Error('Failed to create person');
-    }
+
     const apiResponse: ApiResponse<Person> = await response.json();
-    if (!apiResponse.success) {
-      throw new Error(apiResponse.errors?.join(', ') || 'Failed to create person');
+    if (!response.ok || !apiResponse.success) {
+      throw new Error(apiResponse.message + ": " + apiResponse.errors.join(","));
     }
+
     return apiResponse.data;
   },
 
@@ -60,13 +61,12 @@ export const personApi = {
       },
       body: JSON.stringify(data),
     });
-    if (!response.ok) {
-      throw new Error('Failed to update person');
-    }
+    
     const apiResponse: ApiResponse<Person> = await response.json();
-    if (!apiResponse.success) {
-      throw new Error(apiResponse.errors?.join(', ') || 'Failed to update person');
+    if (!response.ok || !apiResponse.success) {
+      throw new Error(apiResponse.message + ": " + apiResponse.errors.join(","));
     }
+
     return apiResponse.data;
   },
 
@@ -74,12 +74,10 @@ export const personApi = {
     const response = await fetch(`${API_URL}/persons/${id}`, {
       method: 'DELETE',
     });
-    if (!response.ok) {
-      throw new Error('Failed to delete person');
-    }
-    const apiResponse: ApiResponse<void> = await response.json();
-    if (!apiResponse.success) {
-      throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete person');
+
+    const apiResponse: ApiResponse<Person> = await response.json();
+    if (!response.ok || !apiResponse.success) {
+      throw new Error(apiResponse.message + ": " + apiResponse.errors.join(","));
     }
   },
 
@@ -91,13 +89,12 @@ export const personApi = {
       },
       body: JSON.stringify(isRegistered),
     });
-    if (!response.ok) {
-      throw new Error('Failed to update registration status');
-    }
+
     const apiResponse: ApiResponse<Person> = await response.json();
-    if (!apiResponse.success) {
-      throw new Error(apiResponse.errors?.join(', ') || 'Failed to update registration status');
+    if (!response.ok || !apiResponse.success) {
+      throw new Error(apiResponse.message + ": " + apiResponse.errors.join(","));
     }
+    
     return apiResponse.data;
   },
 
@@ -110,14 +107,12 @@ export const personApi = {
       },
       body: JSON.stringify(role),
     });
-    if (!response.ok) {
-      throw new Error('Failed to update person role');
-    }
+
     const apiResponse: ApiResponse<Person> = await response.json();
-    console.log('Role update response:', apiResponse); // Debug log
-    if (!apiResponse.success) {
-      throw new Error(apiResponse.errors?.join(', ') || 'Failed to update person role');
+    if (!response.ok || !apiResponse.success) {
+      throw new Error(apiResponse.message + ": " + apiResponse.errors.join(","));
     }
+
     return apiResponse.data;
   },
 }; 

@@ -27,12 +27,10 @@ export const globalSearchService = {
   search: async (term: string): Promise<ApiResponse<GlobalSearchResult>> => {
     const url = `${API_URL}/Search?term=${encodeURIComponent(term)}`;
     const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error('Failed to perform global search');
-    }
     const apiResponse: ApiResponse<GlobalSearchResult> = await response.json();
-    if (!apiResponse.success) {
-      throw new Error(apiResponse.errors?.join(', ') || 'Search failed');
+    
+    if (!response.ok || !apiResponse.success) {
+      throw new Error(apiResponse.message + apiResponse.errors?.join(', '));
     }
     return apiResponse;
   },

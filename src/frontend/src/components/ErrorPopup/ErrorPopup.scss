@@ -26,6 +26,11 @@
    }
 }
 
+#error-list{
+   display: flex;
+   flex-direction: column;
+}
+
 .close-btn{
    text-align: end;
    font-weight: 600;
