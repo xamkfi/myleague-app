@@ -43,7 +43,6 @@ const MatchForm = ({
   const [minutesInput, setMinutesInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
-  const dateInputRef = useRef<HTMLInputElement | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
   const lastKeyIsBackspaceRef = useRef(false);
   
@@ -266,28 +265,7 @@ const MatchForm = ({
     setDateError(null);
   };
 
-  // Make entire date field clickable and control open behavior/format
-  const handleDateFieldMouseDown: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    const input = dateInputRef.current;
-    if (!input) return;
-
-    // If no date set, prevent native segment selection and open the picker immediately
-    if (!selectedDate) {
-      e.preventDefault();
-      // Clear any existing value so user can type freely
-      input.value = '';
-      input.focus();
-      // Open native picker when supported
-      if (typeof input.showPicker === 'function') input.showPicker();
-      return;
-    }
-
-    // If a date exists, allow native selection, then open picker after selection applies
-    // This preserves the highlighted segment behavior users expect (e.g., month only)
-    setTimeout(() => {
-      if (input && typeof input.showPicker === 'function') input.showPicker();
-    }, 0);
-  };
+  // TODO: If needed, extract date input logic into a reusable DateField utility to use elsewhere.
 
   // Parse DD/MM/YYYY safely
   const parseDdMmYyyy = (value: string): Date | null => {
@@ -560,7 +538,7 @@ const MatchForm = ({
           <label>Date & Time *</label>
           <div className="input-wrapper">
             <div className="datetime-input-group">
-              <div className="date-input" onMouseDown={handleDateFieldMouseDown}>
+              <div className="date-input">
                 <DatePicker
                   selected={selectedDate}
                   onChange={(date) => handleDateChange(date)}

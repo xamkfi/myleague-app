@@ -146,46 +146,7 @@
 
 // Stats Section - Removed conflicting styles, now handled by MatchStatsCards component
 
-.filter-section {
-  display: flex;
-  align-items: center;
-  gap: map.get($spacing, 'base');
-  justify-content: space-between;
-  
-  @media (max-width: 640px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  label {
-    font-size: 0.95rem;
-    font-weight: map.get($font-weights, 'medium');
-    color: $color-text-primary;
-    white-space: nowrap;
-  }
-
-  .season-filter {
-    min-width: 200px;
-    padding: 0.625rem 1rem;
-    border: 1px solid $color-border;
-    border-radius: $border-radius-default;
-    background-color: $color-white;
-    font-size: 0.95rem;
-    @include transition(border-color);
-
-    &:focus {
-      outline: none;
-      border-color: $color-blue-secondary;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-  }
-}
-
-.filter-left {
-  display: flex;
-  align-items: center;
-  gap: map.get($spacing, 'base');
-}
+// Filter styles live in component stylesheet (MatchFilters.scss) to avoid duplication
 
 // Page-scoped styles for the create button in the filter bar
 .create-match-button {
