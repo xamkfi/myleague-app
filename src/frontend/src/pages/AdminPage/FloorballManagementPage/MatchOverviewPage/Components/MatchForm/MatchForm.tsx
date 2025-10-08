@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { 
   CreateFloorballMatchRequest,
   FloorballMatchDto,
@@ -41,6 +41,7 @@ const MatchForm = ({
   const [minutesInput, setMinutesInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
   
   // State for pre-loaded dropdown options
   const [initialSeasonOptions, setInitialSeasonOptions] = useState<Array<{id: string, name: string}>>([]);
@@ -260,6 +261,29 @@ const MatchForm = ({
     updateScheduledDateTime(date, hoursInput, minutesInput);
   };
 
+  // Make entire date field clickable and control open behavior/format
+  const handleDateFieldMouseDown: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    const input = dateInputRef.current;
+    if (!input) return;
+
+    // If no date set, prevent native segment selection and open the picker immediately
+    if (!selectedDate) {
+      e.preventDefault();
+      // Clear any existing value so user can type freely
+      input.value = '';
+      input.focus();
+      // Open native picker when supported
+      if (typeof input.showPicker === 'function') input.showPicker();
+      return;
+    }
+
+    // If a date exists, allow native selection, then open picker after selection applies
+    // This preserves the highlighted segment behavior users expect (e.g., month only)
+    setTimeout(() => {
+      if (input && typeof input.showPicker === 'function') input.showPicker();
+    }, 0);
+  };
+
   const handleHoursChange = (value: string) => {
     // Validate hours (0-23)
     const numValue = parseInt(value);
@@ -441,9 +465,11 @@ const MatchForm = ({
           <label>Date & Time *</label>
           <div className="input-wrapper">
             <div className="datetime-input-group">
-              <div className="date-input">
+              <div className="date-input" onMouseDown={handleDateFieldMouseDown}>
                 <input
+                  ref={dateInputRef}
                   type="date"
+                  lang="en-GB" /* DD/MM/YYYY format on supported browsers */
                   value={selectedDate ? selectedDate.toISOString().split('T')[0] : ''}
                   onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : null)}
                   className="date-picker-input"
