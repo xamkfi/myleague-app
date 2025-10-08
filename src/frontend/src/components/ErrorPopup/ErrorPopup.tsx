@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import './ErrorPopup.scss'
 import CloseSVG from '../../assets/basicIcons/close.svg'
 
@@ -7,7 +7,7 @@ interface ErrorPopupProps {
 }
 
 function ErrorPopup({message}: ErrorPopupProps) {
-   const [isShown, setIsShown] = useState<Boolean>(true)
+   const [isShown, setIsShown] = useState<boolean>(true)
 
    const handleCloseClick = () => {
       setIsShown(false)
