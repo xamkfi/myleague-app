@@ -37,9 +37,6 @@ const CollapsibleMatchSection = ({
           </span>
           {title}
         </div>
-        <div className="section-count">
-          {matches.length} {matches.length === 1 ? 'match' : 'matches'}
-        </div>
       </div>
       
       {!isCollapsed && (
@@ -61,7 +58,11 @@ const CollapsibleMatchSection = ({
                   <tr key={match.id}>
                     <td className="match-cell clickable-cell" onClick={() => onLiveMatch(match)}>
                       <div className="match-teams">
-                        {match.homeTeamName} vs {match.awayTeamName}
+                        <div className="team-names">
+                          <div className="team-name team-name--home">{match.homeTeamName}</div>
+                          <div className="team-name team-name--away">{match.awayTeamName}</div>
+                        </div>
+                        <div className="vs-badge">VS</div>
                       </div>
                     </td>
                     <td className="date-cell clickable-cell" onClick={() => onLiveMatch(match)}>
