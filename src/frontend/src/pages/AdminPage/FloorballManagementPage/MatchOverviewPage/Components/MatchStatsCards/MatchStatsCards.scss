@@ -47,6 +47,9 @@
   }
 
   .stat-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 0.75rem;
     font-weight: 500;
     color: #64748b;
@@ -57,30 +60,13 @@
     width: 163px;
   }
 
-  .stat-indicator {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-
-    &.scheduled {
-      background: #3b82f6;
-    }
-
-    &.progress {
-      background: #f59e0b;
-      animation: pulse 2s infinite;
-    }
-
-    &.completed {
-      background: #10b981;
-    }
-    &.cancelled {
-      background: #ef4444;
-    }
+  .stat-icon {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
   }
+
+  // removed dot indicators in favor of inline icons
 
   // Create New button card styling
   &.stat-card--create {

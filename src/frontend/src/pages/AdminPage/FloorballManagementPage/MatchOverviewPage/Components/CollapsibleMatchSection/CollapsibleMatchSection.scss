@@ -54,6 +54,10 @@
           border-collapse: collapse;
           font-size: 0.85rem;
 
+          td.clickable-cell {
+            cursor: pointer;
+          }
+
           th {
             background: #f8f9fa;
             padding: 0.5rem 0.75rem;

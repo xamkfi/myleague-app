@@ -59,25 +59,25 @@ const CollapsibleMatchSection = ({
               <tbody>
                 {matches.map((match: FloorballMatchDto) => (
                   <tr key={match.id}>
-                    <td className="match-cell">
+                    <td className="match-cell clickable-cell" onClick={() => onLiveMatch(match)}>
                       <div className="match-teams">
                         {match.homeTeamName} vs {match.awayTeamName}
                       </div>
                     </td>
-                    <td className="date-cell">
+                    <td className="date-cell clickable-cell" onClick={() => onLiveMatch(match)}>
                       {formatDateTime(match.scheduledDateTime)}
                     </td>
-                    <td className="venue-cell">
+                    <td className="venue-cell clickable-cell" onClick={() => onLiveMatch(match)}>
                       {match.venue || <span className="tbd">TBD</span>}
                     </td>
-                    <td className="score-cell">
+                    <td className="score-cell clickable-cell" onClick={() => onLiveMatch(match)}>
                       {match.status === 'Scheduled' ? (
                         <span className="no-score">-</span>
                       ) : (
                         <span className="score">{match.homeScore} - {match.awayScore}</span>
                       )}
                     </td>
-                    <td className="status-cell">
+                    <td className="status-cell clickable-cell" onClick={() => onLiveMatch(match)}>
                       <span className={getStatusBadge(match.status)}>
                         {match.status}
                       </span>
