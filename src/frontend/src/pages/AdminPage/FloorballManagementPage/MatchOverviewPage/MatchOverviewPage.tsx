@@ -32,8 +32,6 @@ const MatchOverviewPage = () => {
     cancelled: false
   });
 
-  // Real-time connection status
-  const [signalRConnected, setSignalRConnected] = useState(false);
 
   // Fetch all required data
   const fetchData = useCallback(async () => {
@@ -154,15 +152,11 @@ const MatchOverviewPage = () => {
         const isBackendAccessible = await signalRService.testBackendAccessibility();
         if (!isBackendAccessible) {
           console.warn('Backend is not accessible, skipping SignalR setup');
-          setSignalRConnected(false);
           return;
         }
         
         // Connect to SignalR
         await signalRService.connect();
-        
-        // Update connection status
-        setSignalRConnected(signalRService.isConnected);
         
         if (!signalRService.isConnected) {
           console.warn('SignalR connection failed, skipping subscriptions');
@@ -175,36 +169,17 @@ const MatchOverviewPage = () => {
         // Set up event handler
         unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
         
-        // Set up connection state monitoring
-        const checkConnectionStatus = () => {
-          setSignalRConnected(signalRService.isConnected);
-        };
-        
-        // Check connection status every 5 seconds
-        const connectionInterval = setInterval(checkConnectionStatus, 5000);
-        
         console.log('SignalR subscriptions set up for MatchOverviewPage');
-        
-        return () => {
-          clearInterval(connectionInterval);
-        };
       } catch (error) {
         console.error('Error setting up SignalR subscriptions:', error);
-        setSignalRConnected(false);
-        // Don't set error - SignalR is not critical for basic functionality
       }
     };
 
-    setupSignalR().then(cleanupInterval => {
+    setupSignalR().then(() => {
       return () => {
         // Cleanup SignalR subscriptions
         if (unsubscribe) {
           unsubscribe();
-        }
-        
-        // Cleanup connection interval
-        if (cleanupInterval) {
-          cleanupInterval();
         }
         
         // Unsubscribe from event types
@@ -230,9 +205,9 @@ const MatchOverviewPage = () => {
 
   if (loading) {
     return (
-      <div className="match-management">
+      <div className="match-overview">
         <Navbar />
-        <div className="match-management__content">
+        <div className="match-overview__content">
           <div className="loading-spinner">
             <div className="spinner"></div>
             <p>{t('floorball.matches.loading', 'Loading matches...')}</p>
@@ -243,9 +218,9 @@ const MatchOverviewPage = () => {
   }
 
   return (
-    <div className="match-management">
+    <div className="match-overview">
       <Navbar />
-      <div className="match-management__content">
+      <div className="match-overview__content">
         {/* Header Section */}
         <div className="page-header">
           <div className="page-header__top">
@@ -253,17 +228,7 @@ const MatchOverviewPage = () => {
               to="/admin/floorball" 
               text={t('common.back', 'Back to Floorball Management')} 
             />
-            {/* Real-time Status Indicator */}
-            <div className={`realtime-status ${signalRConnected ? 'connected' : 'disconnected'}`}>
-              <span className="status-dot"></span>
-              <span className="status-text">
-                {signalRConnected ? 'Real-time updates active' : 'Real-time updates offline'}
-              </span>
-            </div>
-          </div>
-          <div className="page-header__main">
-            <h1 className="page-title">{t('floorball.matches.title', 'Match Management')}</h1>
-            <p className="page-subtitle">{t('floorball.matches.subtitle', 'Manage your floorball matches, track live games, and organize your season')}</p>
+            <h1 className="page-title-compact font-title">MATCH OVERVIEW</h1>
           </div>
         </div>
 
@@ -281,7 +246,6 @@ const MatchOverviewPage = () => {
           allMatches={matches}
           filteredMatches={filteredMatches}
           selectedSeasonId={selectedSeasonId}
-          onCreateNew={() => navigate('/admin/floorball/matches/create')}
           onCompletedClick={() => navigate('/admin/floorball/matches/completed')}
           onScheduledClick={() => navigate('/admin/floorball/matches/scheduled')}
           onInProgressClick={() => navigate('/admin/floorball/matches/in-progress')}
@@ -292,6 +256,7 @@ const MatchOverviewPage = () => {
           seasons={seasons}
           selectedSeasonId={selectedSeasonId}
           onSeasonChange={setSelectedSeasonId}
+          onCreateNew={() => navigate('/admin/floorball/matches/create')}
         />
 
         {/* Matches Sections */}

@@ -1,33 +1,23 @@
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  justify-content: stretch;
-  gap: 12px;
+  grid-auto-flow: column;
+  grid-auto-columns: 210px;
+  gap: 8px;
   margin-bottom: 24px;
   width: 100%;
-  grid-auto-flow: column; // Force items to stay in columns
-  overflow-x: auto; // Allow horizontal scroll if needed on very small screens
-}
-
-// Force 5 columns on desktop/tablet screens
-@media (min-width: 769px) {
-  .stats-grid {
-    grid-template-columns: repeat(6, 1fr);
-    overflow-x: visible;
-    gap: 12px;
-  }
 }
 
 .stat-card {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 12px;
   text-align: center;
   transition: all 0.2s;
   position: relative;
   overflow: hidden;
-  min-width: 0; // Prevents grid items from overflowing
+  width: 210px;
+  height: 128px;
   flex-shrink: 0;
 
   &:not(:first-child) {
@@ -41,11 +31,19 @@
   }
 
   .stat-number {
-    font-size: 2rem;
-    font-weight: 700;
+    width: 163px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    font-weight: 600;
+    font-size: 36px;
+    line-height: 48px;
+    letter-spacing: 0;
     color: #1e293b;
-    margin-bottom: 6px;
-    font-family: 'Courier New', monospace;
+    margin: 0 0 6px 0;
+    font-family: inherit;
   }
 
   .stat-label {
@@ -55,6 +53,8 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     line-height: 1.2;
+    text-align: left;
+    width: 163px;
   }
 
   .stat-indicator {

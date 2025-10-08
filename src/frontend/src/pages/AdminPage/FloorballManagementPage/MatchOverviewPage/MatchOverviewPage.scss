@@ -1,36 +1,39 @@
-// Match Management Page - Fresh Modern Design
 @use 'sass:map';
 @use '../../../../styles/variables' as *;
-.match-management {
+.match-overview {
   min-height: 100vh;
   background-color: $color-blue-background;
   width: 100%;
 
   &__content {
-    max-width: $max-width-page;
+    max-width: 1152px;
     margin: 0 auto;
-    padding: map.get($spacing, 'lg');
+    margin-top: map.get($spacing, 'lg');
+    padding: 0 24px 24px;
+    background-color: $color-white;
+    border-radius: 8px;
+
     
-    @media (max-width: 768px) {
-      padding: map.get($spacing, 'base');
+    @media (max-width: 1152px) {
+      padding: 0 map.get($spacing, 'base') map.get($spacing, 'base');
     }
   }
 }
 
 // Page Header
 .page-header {
-  margin-bottom: map.get($spacing, 'md');
+  margin-bottom: map.get($spacing, 'sm');
 
   &__top {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: map.get($spacing, 'md');
+    align-items: flex-start;
+    margin-bottom: map.get($spacing, 'xs');
+    min-height: 56px;
     
     @media (max-width: 640px) {
-      flex-direction: column;
-      gap: map.get($spacing, 'base');
-      align-items: stretch;
+      min-height: 48px;
     }
   }
 
@@ -39,59 +42,13 @@
   }
 }
 
-// Real-time Status Indicator
-.realtime-status {
-  display: flex;
-  align-items: center;
-  gap: map.get($spacing, 'xs');
-  padding: map.get($spacing, 'xs') map.get($spacing, 'base');
-  border-radius: map.get($border-radius, 'xl');
-  font-size: map.get($font-sizes, 'sm');
-  font-weight: map.get($font-weights, 'medium');
-  @include transition(all);
-
-  &.connected {
-    background-color: $color-green-pale;
-    color: $color-green-muted;
-    border: 1px solid $color-green-light;
-
-    .status-dot {
-      background-color: $color-green-primary;
-      animation: pulse 2s infinite;
-    }
-  }
-
-  &.disconnected {
-    background-color: $color-red-pale;
-    color: $color-red-muted;
-    border: 1px solid $color-red-light;
-
-    .status-dot {
-      background-color: $color-red-primary;
-    }
-  }
-
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: map.get($border-radius, 'full');
-    display: inline-block;
-  }
-
-  .status-text {
-    font-size: map.get($font-sizes, 'sm');
-    font-weight: map.get($font-weights, 'medium');
-  }
+// Compact page title under back button
+.page-title-compact {
+  margin: 0;
+  padding: 0;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
+
 
 .page-title {
   font-size: 2rem;
@@ -111,47 +68,16 @@
 }
 
 // Buttons
-.back-button {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.75rem 1.5rem;
-  background-color: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #e5e7eb;
-    color: #111827;
-  }
+.match-overview .global-back-button-container {
+  top: 0;
 }
 
-.create-button {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.75rem 1.5rem;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #2563eb;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.match-overview .global-back-button {
+    padding: 0;
+    gap: 0;
 }
+
+
 
 // Loading Spinner
 .loading-spinner {
@@ -224,6 +150,7 @@
   display: flex;
   align-items: center;
   gap: map.get($spacing, 'base');
+  justify-content: space-between;
   
   @media (max-width: 640px) {
     flex-direction: column;
@@ -252,6 +179,32 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
   }
+}
+
+.filter-left {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'base');
+}
+
+// Page-scoped styles for the create button in the filter bar
+.create-match-button {
+  width: 174px;
+  height: 40px;
+  padding: 8px 16px;
+  border-radius: 24px;
+  background-color: #4A679F;
+  color: #FFFFFF;
+  border: none;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 // Matches Section

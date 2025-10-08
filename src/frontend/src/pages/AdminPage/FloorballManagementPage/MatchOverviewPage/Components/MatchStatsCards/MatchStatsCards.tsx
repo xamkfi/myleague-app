@@ -11,7 +11,6 @@ interface MatchStatsCardsProps {
     cancelled: FloorballMatchDto[];
   };
   selectedSeasonId: string;
-  onCreateNew?: () => void;
   onCompletedClick?: () => void;
   onScheduledClick?: () => void;
   onInProgressClick?: () => void;
@@ -22,7 +21,6 @@ const MatchStatsCards = ({
   allMatches,
   filteredMatches,
   selectedSeasonId,
-  onCreateNew,
   onCompletedClick,
   onScheduledClick,
   onInProgressClick,
@@ -58,10 +56,6 @@ const MatchStatsCards = ({
         <div className="stat-number">{getMatchCountByStatus('Cancelled')}</div>
         <div className="stat-label">{t('floorball.matches.stats.cancelled', 'Cancelled')}</div>
         <div className="stat-indicator cancelled"></div>
-      </div>
-      <div className="stat-card stat-card--create" onClick={onCreateNew}>
-        <div className="stat-number stat-number--plus">+</div>
-        <div className="stat-label">{t('floorball.matches.stats.createNew', 'Create New')}</div>
       </div>
     </div>
   );
