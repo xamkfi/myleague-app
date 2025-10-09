@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import './ErrorPopup.scss'
 import CloseSVG from '../../assets/basicIcons/close.svg'
 
@@ -7,26 +7,28 @@ interface ErrorPopupProps {
 }
 
 function ErrorPopup({message}: ErrorPopupProps) {
-   const [isShown, setIsShown] = useState<boolean>(true)
+   const [isShown, setIsShown] = useState<boolean>(false)
+   const popUpDisplay = useRef<HTMLDivElement>(null)
 
    const handleCloseClick = () => {
       setIsShown(false)
    }
 
    useEffect(() => {
-      setIsShown(true)
+      if (message && message?.length > 1){
+         setIsShown(true)
+         console.log(message)
+      }
    }, [message])
 
 
    return (
       <>
-         {(message && isShown) &&
-            <div className={`error-popup ${isShown ? "show" : "hide"}`}>
-               <img src={CloseSVG} />
-               <div id='error-msg'>{message}</div>
-               <div onClick={() => handleCloseClick()} className='close-btn'>x</div>
-            </div>
-         }
+         <div className={`error-popup ${isShown ? "show" : "hide"}`} ref={popUpDisplay}>
+            <img src={CloseSVG} />
+            <div id='error-msg'>{message}</div>
+            <div onClick={() => handleCloseClick()} className='close-btn'>x</div>
+         </div>
       </>
    )
 }
