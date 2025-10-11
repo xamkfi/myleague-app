@@ -39,6 +39,7 @@ namespace Application.DTOs.Floorball
     public record FloorballMatchDto(
         Guid Id,
         Guid SeasonId,
+        string SeasonName,
         Guid HomeTeamId,
         string HomeTeamName,
         Uri? HomeTeamLogo,

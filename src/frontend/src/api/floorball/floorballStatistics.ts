@@ -1,5 +1,5 @@
 import type { 
-  ApiResponse,
+  ApiResponse
 } from '../../types/floorball/floorballTypes';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -65,7 +65,7 @@ export interface FloorballTeamSeasonStatisticsDto {
   homeLosses: number;
   awayWins: number;
   awayLosses: number;
-  lastFiveForm?: string[];
+  lastFiveForm?: FloorballGameResult[];
 }
 
 export interface FloorballMatchTeamStatisticsDto {
@@ -130,6 +130,12 @@ export interface FloorballSeasonStatisticsSummaryDto {
   totalGames: number;
   totalGoals: number;
   averageGoalsPerGame: number;
+}
+
+export enum FloorballGameResult {
+  Win = 'Win',
+  Loss = 'Loss', 
+  Tie = 'Tie'
 }
 
 /**

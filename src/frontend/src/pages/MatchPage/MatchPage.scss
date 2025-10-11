@@ -3,27 +3,38 @@
 @use '../../styles/common' as *;
 
 .match-page {
-  min-height: 100vh;
-  background-color: #f8f9fa;
-  padding: 0;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
 }
 
-.breadcrumb {
-  background-color: #1a1a1a;
+.match-breadcrumb {
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
   color: white;
-  padding: 8px 20px;
-  font-size: 12px;
+  padding: 12px 20px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
+  border-radius: 8px 8px 0 0;
 
-  .settings-link {
-    margin-left: auto;
-    color: #ccc;
+  .season-link {
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
-    
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
     &:hover {
       color: white;
+      transform: translateX(2px);
+    }
+
+    .arrow {
+      font-size: 18px;
+      line-height: 1;
+      margin-top: -2px;
     }
   }
 }
@@ -33,12 +44,22 @@
   color: white;
   padding: 30px 20px;
   text-align: center;
-}
 
-.match-date-time {
-  font-size: 14px;
-  opacity: 0.9;
-  margin-bottom: 20px;
+  .match-info {
+    margin-bottom: 1.5rem;
+    
+    .match-date-time {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .season-name {
+      font-size: 16px;
+      font-weight: 500;
+      margin-top: 8px;
+      opacity: 0.95;
+    }
+  }
 }
 
 .teams-container {
@@ -170,14 +191,37 @@
   padding: 30px;
   max-width: 1000px;
   margin: 0 auto;
+
+  .summary-stats-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #e1e8ed;
+
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    // Make stats more compact in summary view
+    .match-stats {
+      padding: 0;
+      
+      .stats-header {
+        margin-bottom: 1.5rem;
+      }
+
+      .stats-content {
+        gap: 1rem;
+      }
+    }
+  }
 }
 
 .match-info {
   background-color: #f8f9fa;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 30px;
-
   p {
     margin: 0 0 10px 0;
     font-size: 14px;

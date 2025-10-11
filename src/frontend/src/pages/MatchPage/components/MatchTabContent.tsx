@@ -2,6 +2,9 @@ import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes'
 import type { TabType } from './MatchNavigation';
 import MatchEvents from './MatchEvents';
 import MatchLineups from './MatchLineups';
+import MatchStats from './MatchStats';
+import MatchStandings from './MatchStandings';
+import { useTranslation } from 'react-i18next';
 
 interface MatchTabContentProps {
   activeTab: TabType;
@@ -9,6 +12,7 @@ interface MatchTabContentProps {
 }
 
 export default function MatchTabContent({ activeTab, match }: MatchTabContentProps) {
+  const { t } = useTranslation();
   const renderTabContent = () => {
     switch (activeTab) {
       case 'summary':
@@ -17,14 +21,19 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
             <div className="summary-content">
               <div className="match-info">
                 {match.venue && (
-                  <p>📍 Venue: {match.venue}</p>
+                  <p>📍 {t('matchPage.matchInfo.venue')}: {match.venue}</p>
                 )}
-                <p>Status: {match.status}</p>
-                {match.wentToOvertime && <p>⏱️ Went to overtime</p>}
-                {match.wentToShootout && <p>🥅 Went to shootout</p>}
+                <p>{t('matchPage.matchInfo.status')}: {t(`floorball.matches.status.${match.status}`)}</p>
+                {match.wentToOvertime && <p>⏱️ {t('matchPage.matchInfo.overtime')}</p>}
+                {match.wentToShootout && <p>🥅 {t('matchPage.matchInfo.shootout')}</p>}
               </div>
               
               <MatchEvents match={match} />
+              
+              {/* Add stats section to summary */}
+              <div className="summary-stats-section">
+                <MatchStats match={match} />
+              </div>
             </div>
           </div>
         );
@@ -32,10 +41,7 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
       case 'stats':
         return (
           <div className="tab-content">
-            <div className="stats-placeholder">
-              <h3>Match Statistics</h3>
-              <p>Detailed match statistics coming soon...</p>
-            </div>
+            <MatchStats match={match} />
           </div>
         );
       
@@ -49,10 +55,7 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
       case 'table':
         return (
           <div className="tab-content">
-            <div className="table-placeholder">
-              <h3>League Table</h3>
-              <p>League table and standings coming soon...</p>
-            </div>
+            <MatchStandings match={match} />
           </div>
         );
       

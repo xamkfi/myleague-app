@@ -43,9 +43,44 @@ export default function MatchEvents({ match }: MatchEventsProps) {
     eventsByPeriod[parseInt(period)].sort((a, b) => a.time - b.time);
   });
 
-  const getPeriodScore = (period: number) => {
-    const scores = match.periodScores[period];
-    return scores ? `${scores.homeScore} - ${scores.awayScore}` : '0 - 0';
+  const getScoreAtEvent = (event: FloorballGoalEventDto) => {
+    let homeScore = 0;
+    let awayScore = 0;
+
+    // Sort goals by period and time
+    const sortedGoals = [...match.goalEvents].sort((a, b) => {
+      if (a.periodNumber !== b.periodNumber) {
+        return a.periodNumber - b.periodNumber;
+      }
+      if (a.timeInSeconds !== b.timeInSeconds) {
+        return a.timeInSeconds - b.timeInSeconds;
+      }
+      // If same time, use array index to maintain consistent order
+      return match.goalEvents.indexOf(a) - match.goalEvents.indexOf(b);
+    });
+
+    // Count goals up to and including this one
+    for (const goal of sortedGoals) {
+      // Stop if we've reached a future goal
+      if (goal.periodNumber > event.periodNumber || 
+          (goal.periodNumber === event.periodNumber && goal.timeInSeconds > event.timeInSeconds)) {
+        break;
+      }
+
+      // Count this goal
+      if (goal.teamId === match.homeTeamId) {
+        homeScore++;
+      } else {
+        awayScore++;
+      }
+
+      // If this is the current goal, stop here
+      if (goal === event) {
+        break;
+      }
+    }
+
+    return `${homeScore} - ${awayScore}`;
   };
 
   const isHomeTeam = (teamId: string) => teamId === match.homeTeamId;
@@ -55,13 +90,13 @@ export default function MatchEvents({ match }: MatchEventsProps) {
       <div className="event-left">
         {isHome && (
           <>
-            <span className="event-time">{Math.floor(event.timeInSeconds / 60)}</span>
+            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
             <div className="event-icon goal">⚽</div>
-            <span className="event-score">{getPeriodScore(event.periodNumber)}</span>
+            <span className="event-score">{getScoreAtEvent(event)}</span>
             <div className="goal-info">
               <span className="event-player">{event.playerName || 'Unknown Player'}</span>
-              {event.assisterName && <span className="event-assist">{event.assisterName}</span>}
-              {event.secondaryAssisterName && <span className="event-assist">{event.secondaryAssisterName}</span>}
+              {event.assisterName && event.assisterName !== 'Unknown Player' && <span className="event-assist"> ({event.assisterName})</span>}
+              {event.secondaryAssisterName && event.secondaryAssisterName !== 'Unknown Player' && <span className="event-assist"> ({event.secondaryAssisterName})</span>}
             </div>
           </>
         )}
@@ -72,12 +107,12 @@ export default function MatchEvents({ match }: MatchEventsProps) {
             <div className="goal-info">
 
               <span className="event-player">{event.playerName || 'Unknown Player'}</span>
-              {event.assisterName && <span className="event-assist">{event.assisterName}</span>}
-              {event.secondaryAssisterName && <span className="event-assist">{event.secondaryAssisterName}</span>}
+              {event.assisterName && event.assisterName !== 'Unknown Player' && <span className="event-assist"> ({event.assisterName})</span>}
+              {event.secondaryAssisterName && event.secondaryAssisterName !== 'Unknown Player' && <span className="event-assist"> ({event.secondaryAssisterName})</span>}
             </div>
-            <span className="event-score">{getPeriodScore(event.periodNumber)}</span>
+            <span className="event-score">{getScoreAtEvent(event)}</span>
             <div className="event-icon goal">⚽</div>
-            <span className="event-time">{Math.floor(event.timeInSeconds / 60)}</span>
+            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
           </>
         )}
       </div>
@@ -89,18 +124,24 @@ export default function MatchEvents({ match }: MatchEventsProps) {
       <div className="event-left">
         {isHome && (
           <>
-            <span className="event-time">{Math.floor(event.timeInSeconds / 60)}</span>
+            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
             <div className="event-icon penalty">🟨</div>
-            <span className="event-player">{event.playerName || 'Team penalty'}</span>
+            <span className="event-player">
+              {event.playerName || 'Team penalty'}
+              {event.penaltyType && ` (${event.penaltyType.toLowerCase()})`}
+            </span>
           </>
         )}
       </div>
       <div className="event-right">
         {!isHome && (
           <>
-            <span className="event-player">{event.playerName || 'Team penalty'}</span>
+            <span className="event-player">
+              {event.playerName || 'Team penalty'}
+              {event.penaltyType && ` (${event.penaltyType.toLowerCase()})`}
+            </span>
             <div className="event-icon penalty">🟨</div>
-            <span className="event-time">{Math.floor(event.timeInSeconds / 60)}</span>
+            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
           </>
         )}
       </div>
