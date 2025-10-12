@@ -8,13 +8,17 @@ interface MatchHeaderProps {
 export default function MatchHeader({ match }: MatchHeaderProps) {
   return (
     <div className="match-header">
-      <div className="match-date-time">
-        <div className="weekday">{formatDate(match.scheduledDateTime).weekday}</div>
-        <div className="date-time">
-          <span className="date">{formatDate(match.scheduledDateTime).date}</span>
-          <span className="time">{formatDate(match.scheduledDateTime).time}</span>
+      <div className="match-info">
+        <div className="match-date-time">
+          <div className="weekday">{formatDate(match.scheduledDateTime).weekday}</div>
+          <div className="date-time">
+            <span className="date">{formatDate(match.scheduledDateTime).date}</span>
+            <span className="time">{formatDate(match.scheduledDateTime).time}</span>
+          </div>
         </div>
+        <div className="season-name">{match.seasonName}</div>
       </div>
+      
       <div className="teams-container">
         <div className="team-section home">
           <div className="team-crest">
@@ -24,6 +28,7 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
                 src={match.homeTeamLogo} 
                 alt="Home Team Logo" 
                 className="team-logo"
+                loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
@@ -56,6 +61,7 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
                 src={match.awayTeamLogo} 
                 alt="Away Team Logo" 
                 className="team-logo"
+                loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
@@ -71,14 +77,14 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
 
       {match.status === FloorballMatchStatus.InProgress && (
         <div className="match-status">
-          <span className="status-indicator">🔴</span>
+          <span className="status-indicator" aria-label="Live match">🔴</span>
           <span>LIVE</span>
         </div>
       )}
       
       {match.status === FloorballMatchStatus.Completed && (
         <div className="match-status">
-          <span className="status-indicator">✅</span>
+          <span className="status-indicator" aria-label="Match completed">✅</span>
           <span>FINAL</span>
         </div>
       )}
