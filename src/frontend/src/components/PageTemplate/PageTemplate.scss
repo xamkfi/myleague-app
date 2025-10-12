@@ -8,6 +8,11 @@
     flex-direction: column;
     min-height: 100vh;
     align-items: stretch;
+    padding-top: $navbar-height; // Account for fixed navbar
+    
+    @media (max-width: map.get($breakpoints, 'tablet')) {
+      padding-top: $mobile-navbar-height;
+    }
   }
   
   &-content {
@@ -16,11 +21,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0px;
+    padding: map.get($spacing, 'lg');
 
     > * {
       width: 100%;
       max-width: $max-width-page;
+    }
+    
+    @media (max-width: map.get($breakpoints, 'tablet')) {
+      padding: map.get($spacing, 'sm');
+    }
+    
+    @media (max-width: map.get($breakpoints, 'mobile')) {
+      padding: map.get($spacing, 'xs');
     }
   }
 
@@ -31,6 +44,17 @@
     text-align: center;
     border-bottom: 2px solid $color-border;
     padding-bottom: map.get($spacing, 'sm');
+    
+    @media (max-width: map.get($breakpoints, 'tablet')) {
+      font-size: map.get($font-sizes, 'lg');
+      margin-bottom: map.get($spacing, 'md');
+      padding-bottom: map.get($spacing, 'xs');
+    }
+    
+    @media (max-width: map.get($breakpoints, 'mobile')) {
+      font-size: map.get($font-sizes, 'md');
+      margin-bottom: map.get($spacing, 'sm');
+    }
   }
 
   &-body {
@@ -39,9 +63,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: map.get($spacing, 'base');
 
     > * {
       width: 100%;
+    }
+    
+    @media (max-width: map.get($breakpoints, 'tablet')) {
+      padding: map.get($spacing, 'sm');
+    }
+    
+    @media (max-width: map.get($breakpoints, 'mobile')) {
+      padding: map.get($spacing, 'xs');
     }
   }
 }
@@ -51,4 +84,64 @@
   margin-top: map.get($spacing, 'xl');
   text-align: center;
   color: $color-text-muted;
+  
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    font-size: map.get($font-sizes, 'sm');
+    margin-top: map.get($spacing, 'lg');
+  }
+  
+  @media (max-width: map.get($breakpoints, 'mobile')) {
+    font-size: map.get($font-sizes, 'base');
+    margin-top: map.get($spacing, 'md');
+  }
+}
+
+// Mobile utility classes
+.mobile-only {
+  display: none;
+  
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    display: block;
+  }
+}
+
+.desktop-only {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    display: none;
+  }
+}
+
+.mobile-padding {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    padding: map.get($spacing, 'sm');
+  }
+  
+  @media (max-width: map.get($breakpoints, 'mobile')) {
+    padding: map.get($spacing, 'xs');
+  }
+}
+
+.mobile-text-center {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    text-align: center;
+  }
+}
+
+// Mobile-first responsive mixins
+@mixin mobile-first {
+  @media (max-width: map.get($breakpoints, 'mobile')) {
+    @content;
+  }
+}
+
+@mixin tablet-up {
+  @media (min-width: #{map.get($breakpoints, 'tablet') + 1px}) {
+    @content;
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: #{map.get($breakpoints, 'desktop') + 1px}) {
+    @content;
+  }
 } 

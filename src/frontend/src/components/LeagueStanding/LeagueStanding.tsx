@@ -2,9 +2,10 @@ import './LeagueStanding.scss';
 import type { 
   FloorballPlayerSeasonStatisticsDto,
   FloorballSeasonStatisticsSummaryDto,
-  FloorballTeamSeasonStatisticsDto 
+  FloorballTeamSeasonStatisticsDto
 } from '../../api/floorball/floorballStatistics';
 import { useState } from 'react';
+import { FloorballGameResult } from '../../api/floorball/floorballStatistics';
 
 interface LeagueStandingProps {
   seasonSummary?: FloorballSeasonStatisticsSummaryDto | null;
@@ -54,7 +55,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
         <tbody>
           {data.map((team, index) => {
             const form = Array.isArray(team.lastFiveForm)
-              ? team.lastFiveForm as string[]
+              ? team.lastFiveForm
               : [];
             const rank = index + 1;
             
@@ -93,15 +94,16 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                 <td className="form-col">
                   <div className="form-indicators">
                     {form.map((result, formIndex) => {
-                      const r = (result || '').toString().trim().toUpperCase();
-                      const cls = r === 'W' ? 'w' : r === 'L' ? 'l' : r === 'T' || r === 'D' ? 'd' : 'unknown';
+                      const cls = result === FloorballGameResult.Win ? 'win' : result === FloorballGameResult.Loss ? 'loss' : result === FloorballGameResult.Tie ? 'tie' : 'unknown';
+                      const letter = result === FloorballGameResult.Win ? 'W' : result === FloorballGameResult.Loss ? 'L' : result === FloorballGameResult.Tie ? 'T' : '-';
                       return (
-                        <span 
+                        <div 
                           key={formIndex} 
-                          className={`form-indicator form-${cls}`}
+                          className={`form-box form-${cls}`}
+                          title={result} // Add tooltip showing the full result
                         >
-                          {r}
-                        </span>
+                          {letter}
+                        </div>
                       );
                     })}
                   </div>

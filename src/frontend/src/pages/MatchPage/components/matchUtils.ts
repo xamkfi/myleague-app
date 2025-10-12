@@ -2,16 +2,20 @@ import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes'
 
 export function formatDate(dateString: string) {
   const date = new Date(dateString);
-  const formattedDate = date.toLocaleDateString('fi-FI', {
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric'
-  });
-  const formattedTime = date.toLocaleTimeString('fi-FI', {
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
+  const day = date.toLocaleDateString('en-US', { day: 'numeric' });
+  const month = date.toLocaleDateString('en-US', { month: 'short' });
+  const time = date.toLocaleTimeString('en-US', {
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    hour12: false
   });
-  return `${formattedDate} ${formattedTime}`;
+  
+  return {
+    weekday,
+    date: `${day} ${month}`,
+    time
+  };
 }
 
 export function getTeamInitials(name: string): string {
