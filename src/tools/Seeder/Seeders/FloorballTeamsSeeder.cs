@@ -9,7 +9,7 @@ namespace Seeder;
 
 public static class FloorballTeamsSeeder
 {
-	public static async Task<List<FloorballTeamDto>> SeedTeamsAsync(HttpClient http, JsonSerializerOptions jsonOptions, List<FloorballTeamSeed> teams, List<DivisionDto> divisions, List<ClubDto> clubs)
+    public static async Task<List<FloorballTeamDto>> SeedTeamsAsync(HttpClient http, JsonSerializerOptions jsonOptions, List<FloorballTeamSeed> teams, List<DivisionDto> divisions, List<ClubDto> clubs)
 	{
 		List<FloorballTeamDto> created = new List<FloorballTeamDto>();
 
@@ -56,12 +56,45 @@ public static class FloorballTeamsSeeder
 				throw new InvalidOperationException("Create floorball team failed: " + (api != null ? api.Message : "null response"));
 			}
 
-			created.Add(api.Data);
+            created.Add(api.Data);
 			Console.WriteLine("Created floorball team " + api.Data.Name + " (" + api.Data.Id + ")");
 		}
 
-		return created;
+        return created;
 	}
+
+    public static async Task AssignTeamsToSeasonsAsync(HttpClient http, JsonSerializerOptions jsonOptions, List<FloorballSeasonDto> seasons, List<FloorballTeamSeed> teamSeeds, List<FloorballTeamDto> teams, List<DivisionDto> divisions)
+    {
+        foreach (FloorballSeasonSeed seasonSeed in Program.Configuration.FloorballSeasons)
+        {
+            FloorballSeasonDto? season = seasons.FirstOrDefault(s => string.Equals(s.Name, seasonSeed.Name, StringComparison.OrdinalIgnoreCase));
+            if (season == null) continue;
+
+            HashSet<Guid> seasonDivisionIds = new HashSet<Guid>();
+            Guid primaryDivisionId = ResolveDivisionId(seasonSeed.DivisionName, divisions);
+            seasonDivisionIds.Add(primaryDivisionId);
+            if (seasonSeed.AdditionalDivisionNames != null)
+            {
+                foreach (string dn in seasonSeed.AdditionalDivisionNames)
+                {
+                    seasonDivisionIds.Add(ResolveDivisionId(dn, divisions));
+                }
+            }
+
+            foreach (FloorballTeamSeed teamSeed in teamSeeds)
+            {
+                Guid teamDivisionId = ResolveDivisionId(teamSeed.DivisionName, divisions);
+                if (!seasonDivisionIds.Contains(teamDivisionId)) continue;
+
+                FloorballTeamDto? team = teams.FirstOrDefault(t => string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
+                if (team == null) continue;
+
+                HttpResponseMessage resp = await http.PostAsync("api/floorballseason/" + season.Id + "/divisions/" + teamDivisionId + "/teams/" + team.Id, null);
+                await SeederHttp.EnsureSuccess(resp, "Assign Team to Season Division");
+                Console.WriteLine("Assigned team " + team.Name + " to season " + season.Name + " division " + teamSeed.DivisionName);
+            }
+        }
+    }
 
     public static async Task AddPlayersAsync(HttpClient http, JsonSerializerOptions jsonOptions, Guid teamId, List<TeamPlayerByEmailSeed> players, Dictionary<string, Guid> emailToPlayerId)
 	{
