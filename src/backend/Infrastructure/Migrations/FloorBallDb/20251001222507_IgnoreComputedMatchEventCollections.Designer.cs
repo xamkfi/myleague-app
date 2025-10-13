@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 {
     [DbContext(typeof(FloorballDbContext))]
-    partial class FloorballDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251001222507_IgnoreComputedMatchEventCollections")]
+    partial class IgnoreComputedMatchEventCollections
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -822,69 +825,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.ToTable("FloorballSeasons", "floorball");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeasonDivision", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("DivisionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SeasonId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SeasonId", "DivisionId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_FloorballSeasonDivisions_Season_Division");
-
-                    b.ToTable("FloorballSeasonDivisions", "floorball");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeasonDivisionTeam", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("SeasonDivisionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SeasonId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TeamId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TeamId");
-
-                    b.HasIndex("SeasonDivisionId", "TeamId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_FloorballSeasonDivisionTeams_SeasonDivision_Team");
-
-                    b.HasIndex("SeasonId", "TeamId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_FloorballSeasonDivisionTeams_Season_Team");
-
-                    b.ToTable("FloorballSeasonDivisionTeams", "floorball");
-                });
-
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballStatisticsCache", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1591,22 +1531,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasOne("Domain.Entities.Floorball.FloorballSeason", "Season")
                         .WithMany()
                         .HasForeignKey("SeasonId")
-            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeasonDivision", b =>
-                {
-                    b.HasOne("Domain.Entities.Floorball.FloorballSeason", "Season")
-                        .WithMany()
-                        .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Season");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeasonDivisionTeam", b =>
-                {
-                    b.HasOne("Domain.Entities.Floorball.FloorballSeasonDivision", "SeasonDivision")
-                        .WithMany("Teams")
-                        .HasForeignKey("SeasonDivisionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1619,10 +1543,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Navigation("Player");
 
                     b.Navigation("Season");
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("SeasonDivision");
 
                     b.Navigation("Team");
                 });
@@ -1710,11 +1630,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeason", b =>
                 {
                     b.Navigation("Matches");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeasonDivision", b =>
-                {
-                    b.Navigation("Teams");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeam", b =>
