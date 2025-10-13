@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Models.Auth;
-using WebAPI.Services;
+using Application.Interfaces.Common;
 using BCrypt.Net;
 using Domain.Enums.Common;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -17,7 +17,8 @@ namespace WebAPI.Controllers.Auth
     public class UserController : ControllerBase
     {
         private readonly CommonDbContext _context;
-        private readonly TokenService _tokenService;
+        private readonly ITokenService _tokenService;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<UserController> _logger;
 
         /// <summary>
@@ -25,15 +26,18 @@ namespace WebAPI.Controllers.Auth
         /// </summary>
         /// <param name="context"></param>
         /// <param name="tokenService"></param>
+        /// <param name="configuration"></param>
         /// <param name="logger"></param>
         public UserController(
             CommonDbContext context,
-            TokenService tokenService,
-            ILogger<UserController> logger)
+            ITokenService tokenService,
+            ILogger<UserController> logger,
+            IConfiguration configuration)
         {
             _context = context;
             _tokenService = tokenService;
             _logger = logger;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -79,7 +83,8 @@ namespace WebAPI.Controllers.Auth
 
                 // Generate JWT token
                 string token = _tokenService.GenerateToken(user);
-                DateTime expiresAt = DateTime.UtcNow.AddMinutes(30); // Should match token expiry
+                int expiryInMinutes = int.Parse(_configuration.GetSection("JwtSettings")["ExpiryInMinutes"]!);
+                DateTime expiresAt = DateTime.UtcNow.AddMinutes(expiryInMinutes);
 
                 _logger.LogInformation("Successful login for user: {Username}", user.Username);
 

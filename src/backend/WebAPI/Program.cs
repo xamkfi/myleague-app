@@ -12,7 +12,7 @@ using Scalar.AspNetCore;
 using Serilog;
 using WebAPI.DependencyInjections;
 using WebAPI.Middlewares;
-using WebAPI.Services;
+using Application.Interfaces.Common;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -70,8 +70,7 @@ builder.Services.AddApplication();
 // Register infrastructure services 
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// Register TokenService
-builder.Services.AddScoped<TokenService>();
+// Token service is registered in Infrastructure DI
 
 // Add Health Check UI configuration using extension method
 builder.Services.AddHealthCheckUIConfiguration(builder.Configuration);

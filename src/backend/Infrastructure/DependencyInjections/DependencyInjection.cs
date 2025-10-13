@@ -14,6 +14,7 @@ using MyLeague.Infrastructure.Persistence.UnitOfWork;
 using MyLeague.Infrastructure.HealthChecks;
 using Application.Interfaces.Common;
 using Application.Services.Common;
+using Application.Interfaces.Common;
 using MyLeague.Infrastructure.Services.ImageStorage;
 using MyLeague.Infrastructure.Services.Common;
 
@@ -74,6 +75,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
             services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
             services.AddScoped<IImageStorageService, AzureBlobImageStorageService>();
+            services.AddScoped<ITokenService, JwtTokenService>();
             
             // Add timer services
             services.AddScoped<ITimerRepository, TimerRepository>();

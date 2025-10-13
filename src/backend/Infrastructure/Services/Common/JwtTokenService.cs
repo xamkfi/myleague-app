@@ -1,33 +1,25 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Application.Interfaces.Common;
 using Domain.Entities.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace WebAPI.Services
+namespace MyLeague.Infrastructure.Services.Common
 {
     /// <summary>
-    /// Class for generating and managing JWT tokens
+    /// Infrastructure implementation of ITokenService using JWT
     /// </summary>
-    public class TokenService
+    public class JwtTokenService : ITokenService
     {
         private readonly IConfiguration _configuration;
 
-        /// <summary>
-        /// Service for generating and managing JWT tokens
-        /// </summary>
-        /// <param name="configuration"></param>
-        public TokenService(IConfiguration configuration)
+        public JwtTokenService(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
-        /// <summary>
-        /// Generates a JWT token for the specified user
-        /// </summary>
-        /// <param name="user">The user to generate the token for</param>
-        /// <returns>JWT token string</returns>
         public string GenerateToken(User user)
         {
             IConfigurationSection jwtSettings = _configuration.GetSection("JwtSettings");
@@ -56,3 +48,5 @@ namespace WebAPI.Services
         }
     }
 }
+
+
