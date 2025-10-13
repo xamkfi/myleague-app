@@ -60,7 +60,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories
         public virtual async Task AddAsync(TEntity entity)
         {
             await _entities.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -70,7 +69,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories
         public virtual async Task UpdateAsync(TEntity entity)
         {
             _dbContext.Entry(entity).State = EntityState.Modified;
-            await _dbContext.SaveChangesAsync();
+
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories
         public virtual async Task DeleteAsync(TEntity entity)
         {
             _entities.Remove(entity);
-            await _dbContext.SaveChangesAsync();
+            await Task.CompletedTask;
         }
 
         /// <summary>

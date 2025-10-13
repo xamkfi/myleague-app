@@ -1,0 +1,55 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Domain.Entities.Floorball;
+
+namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball;
+
+/// <summary>
+/// Entity Framework configuration for FloorballTeamManager entity
+/// </summary>
+public class FloorballTeamManagerConfiguration : IEntityTypeConfiguration<FloorballTeamManager>
+{
+    /// <summary>
+    /// Configures the FloorballTeamManager entity
+    /// </summary>
+    /// <param name="builder">The entity type builder</param>
+    public void Configure(EntityTypeBuilder<FloorballTeamManager> builder)
+    {
+        // Table name
+        builder.ToTable("FloorballTeamManagers");
+
+        // Primary key
+        builder.HasKey(tm => tm.Id);
+
+        // Properties
+        builder.Property(tm => tm.Id)
+            .IsRequired();
+
+        builder.Property(tm => tm.PersonId)
+            .IsRequired();
+
+        builder.Property(tm => tm.TeamId)
+            .IsRequired();
+
+        builder.Property(tm => tm.IsActive)
+            .IsRequired()
+            .HasDefaultValue(true);
+
+        // Foreign key relationships
+        builder.HasOne<FloorballTeam>()
+            .WithMany()
+            .HasForeignKey(tm => tm.TeamId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Indexes
+        builder.HasIndex(tm => tm.PersonId)
+            .IsUnique()
+            .HasDatabaseName("IX_FloorballTeamManager_PersonId");
+
+        builder.HasIndex(tm => tm.TeamId)
+            .HasDatabaseName("IX_FloorballTeamManager_TeamId");
+
+        builder.HasIndex(tm => tm.IsActive)
+            .HasDatabaseName("IX_FloorballTeamManager_IsActive");
+    }
+} 

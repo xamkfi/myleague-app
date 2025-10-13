@@ -1,0 +1,173 @@
+@use '@variables' as *;
+
+.create-team-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .create-team-header {
+    margin-bottom: 2rem;
+    
+    h1 {
+      color: $color-primary;
+      font-size: 2rem;
+      margin: 0;
+    }
+  }
+
+  .error-message {
+    background-color: #fee;
+    border: 1px solid #fcc;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: #c33;
+  }
+
+  .create-team-form {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+    .form-group {
+      margin-bottom: 1.5rem;
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: $color-text-primary;
+        font-size: 0.95rem;
+      }
+
+      input, select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: $color-primary;
+          box-shadow: 0 0 0 2px rgba($color-primary, 0.1);
+        }
+
+        &:required {
+          border-left: 3px solid $color-primary;
+        }
+      }
+
+      select {
+        background-color: white;
+        cursor: pointer;
+      }
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+
+    .color-input-group {
+      display: flex;
+      gap: 0.5rem;
+
+      input[type="color"] {
+        width: 60px;
+        height: 45px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        padding: 2px;
+
+        &::-webkit-color-swatch-wrapper {
+          padding: 0;
+        }
+
+        &::-webkit-color-swatch {
+          border: none;
+          border-radius: 2px;
+        }
+      }
+
+      input[type="text"] {
+        flex: 1;
+      }
+    }
+
+    .validation-error {
+      color: #c33;
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #eee;
+
+      button {
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      .cancel-button {
+        background-color: #f5f5f5;
+        color: $color-text-primary;
+
+        &:hover:not(:disabled) {
+          background-color: #e0e0e0;
+        }
+      }
+
+      .submit-button {
+        background-color: $color-primary;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: $color-primary-dark;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .create-team-page {
+    padding: 1rem;
+
+    .create-team-form {
+      padding: 1.5rem;
+    }
+
+    .form-actions {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

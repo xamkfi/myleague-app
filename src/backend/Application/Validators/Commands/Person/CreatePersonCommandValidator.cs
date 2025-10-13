@@ -31,28 +31,24 @@ namespace Application.Validators.Commands.Person
             When(x => x.Address != null, () =>
             {
                 RuleFor(x => x.Address!.Street1)
-                    .NotEmpty().WithMessage("Street address is required")
-                    .MaximumLength(200).WithMessage("Street address cannot exceed 200 characters");
+                    .MaximumLength(200).WithMessage("Street address cannot exceed 200 characters")
+                    .When(x => !string.IsNullOrEmpty(x.Address!.Street1));
 
                 RuleFor(x => x.Address!.City)
-                    .NotEmpty().WithMessage("City is required")
-                    .MaximumLength(100).WithMessage("City cannot exceed 100 characters");
+                    .MaximumLength(100).WithMessage("City cannot exceed 100 characters")
+                    .When(x => !string.IsNullOrEmpty(x.Address!.City));
 
                 RuleFor(x => x.Address!.PostalCode)
-                    .NotEmpty().WithMessage("Postal code is required")
-                    .MaximumLength(20).WithMessage("Postal code cannot exceed 20 characters");
+                    .MaximumLength(20).WithMessage("Postal code cannot exceed 20 characters")
+                    .When(x => !string.IsNullOrEmpty(x.Address!.PostalCode));
 
                 RuleFor(x => x.Address!.Country)
                     .NotEmpty().WithMessage("Country is required")
                     .MaximumLength(100).WithMessage("Country cannot exceed 100 characters");
 
-                // Street2 is optional, validate only if provided
-                When(x => x.Address!.Street2 != null, () =>
-                {
-                    RuleFor(x => x.Address!.Street2)
-                        .NotEmpty().WithMessage("Street address is required")
-                        .MaximumLength(200).WithMessage("Street address cannot exceed 200 characters");
-                });
+                RuleFor(x => x.Address!.Street2)
+                    .MaximumLength(200).WithMessage("Street address 2 cannot exceed 200 characters")
+                    .When(x => !string.IsNullOrEmpty(x.Address!.Street2));
             });
 
             // Contact info validation (optional)
@@ -67,12 +63,9 @@ namespace Application.Validators.Commands.Person
                     .MaximumLength(50).WithMessage("Phone number cannot exceed 50 characters")
                     .When(x => !string.IsNullOrEmpty(x.ContactInfo!.Phone));
 
-                // Alternative phone is optional, validate only if provided
-                When(x => x.ContactInfo!.AlternativePhone != null, () =>
-                {
-                    RuleFor(x => x.ContactInfo!.AlternativePhone)
-                        .MaximumLength(50).WithMessage("Alternative phone number cannot exceed 50 characters");
-                });
+                RuleFor(x => x.ContactInfo!.AlternativePhone)
+                    .MaximumLength(50).WithMessage("Alternative phone number cannot exceed 50 characters")
+                    .When(x => !string.IsNullOrEmpty(x.ContactInfo!.AlternativePhone));
             });
         }
     }

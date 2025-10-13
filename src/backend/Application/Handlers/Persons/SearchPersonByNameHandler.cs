@@ -1,6 +1,5 @@
 ﻿using Application.Common;
 using Application.DTOs.Common;
-using Application.Handlers.Clubs;
 using Application.Mappings.Common;
 using Application.Queries.Persons;
 using Domain.Entities.Common;
@@ -16,14 +15,14 @@ namespace Application.Handlers.Persons
     public class SearchPersonByNameHandler : IRequestHandler<SearchPersonByNameQuery, Result<IEnumerable<PersonDto>>>
     {
         private readonly IPersonRepository _personRepository;
-        private readonly ILogger<GetClubByIdHandler> _logger;
+        private readonly ILogger<SearchPersonByNameHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the SearchPersonByNameHandler class
         /// </summary>
-        /// <param name="clubRepository">The club repository</param>
+        /// <param name="personRepository">The person repository</param>
         /// <param name="logger">The logger</param>
-        public SearchPersonByNameHandler(IPersonRepository personRepository, ILogger<GetClubByIdHandler> logger)
+        public SearchPersonByNameHandler(IPersonRepository personRepository, ILogger<SearchPersonByNameHandler> logger)
         {
             _personRepository = personRepository;
             _logger = logger;
@@ -39,7 +38,8 @@ namespace Application.Handlers.Persons
         {
             try
             {
-                IEnumerable<Person> persons = await _personRepository.SearchByNameAsync(request.name);
+                const int defaultSearchResultCount = 10;
+                IEnumerable<Person> persons = await _personRepository.SearchByNameAsync(request.name, defaultSearchResultCount, cancellationToken);
                 if(!persons.Any())
                 {
                     _logger.LogWarning("Person with name {search} not found", request.name);

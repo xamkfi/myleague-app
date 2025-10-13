@@ -1,9 +1,10 @@
-using Domain.Enums.Floorball;
 using Domain.ValueObjects.Floorball;
 using Domain.Entities;
 using Domain.EventSourcing;
 using Domain.Entities.Common;
 using Domain.DomainEvents.Floorball;
+using Domain.Enums.Common;
+using Domain.Enums.Floorball;
 
 namespace Domain.Entities.Floorball;
 
@@ -12,11 +13,6 @@ namespace Domain.Entities.Floorball;
 /// </summary>
 public class FloorballTeam : AggregateRoot
 {
-    /// <summary>
-    /// Gets the unique identifier of the team
-    /// </summary>
-    public Guid Id { get; private set; }
-
     /// <summary>
     /// Gets the name of the team
     /// </summary>
@@ -30,12 +26,24 @@ public class FloorballTeam : AggregateRoot
     /// <summary>
     /// Gets the division level of the team
     /// </summary>
-    public FloorballDivision Division { get; private set; }
+    public Division Division { get; private set; }
+
+    /// <summary>
+    /// Gets the ID of the division this team belongs to
+    /// </summary>
+    public Guid DivisionId { get; private set; }
 
     /// <summary>
     /// Gets the club this team belongs to
     /// </summary>
     public Club Club { get; private set; }
+
+    /// <summary>
+    /// Gets the ID of the club this team belongs to
+    /// </summary>
+    public Guid ClubId { get; private set; }
+
+    public TeamCategory TeamCategory { get; private set; }
 
     /// <summary>
     /// Gets the team's roster of players
@@ -64,6 +72,11 @@ public class FloorballTeam : AggregateRoot
     public string SecondaryJerseyColor { get; private set; }
 
     /// <summary>
+    /// Gets the logo URL of the team
+    /// </summary>
+    public Uri? LogoUrl { get; private set; }
+
+    /// <summary>
     /// Private constructor for EF Core
     /// </summary>
     private FloorballTeam()
@@ -72,11 +85,15 @@ public class FloorballTeam : AggregateRoot
         _roster = new List<FloorballTeamPlayer>();
         Name = string.Empty;
         Club = null!; // Marked as non-nullable, but initialized to null for EF Core
+        ClubId = Guid.Empty; // Default to empty Guid for EF Core
         HomeArena = string.Empty; // Default to an empty string
         PrimaryJerseyColor = string.Empty; // Default to an empty string
         SecondaryJerseyColor = string.Empty; // Default to an empty string
-        Division = FloorballDivision.None; // Default to None division
+        Division = default!; // Default to None division
+        DivisionId = Guid.Empty; // Default to empty Guid for EF Core
         ShortName = string.Empty; // Default to an empty string
+        TeamCategory = TeamCategory.Adult; // Default to Adult category
+        LogoUrl = null; // Default to null
     }
 
     /// <summary>
@@ -87,16 +104,21 @@ public class FloorballTeam : AggregateRoot
     /// <param name="club">The club this team belongs to</param>
     /// <param name="homeArena">The team's home arena</param>
     /// <param name="primaryJerseyColor">The team's primary jersey color</param>
+    /// <param name="teamCategory">The category of the team (Adult, Youth, Women)</param>
     /// <param name="secondaryJerseyColor">The team's secondary jersey color (optional)</param>
+    /// <param name="shortName">The team's short name (optional)</param>
+    /// <param name="logoUrl">The team's logo URL (optional)</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballTeam(
         string name, 
-        FloorballDivision division, 
+        Guid divisionId, 
         Club club,
         string homeArena,
         string primaryJerseyColor,
+        TeamCategory teamCategory,
         string? secondaryJerseyColor = null,
-        string? shortName = null)
+        string? shortName = null,
+        Uri? logoUrl = null)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(club);
@@ -124,16 +146,20 @@ public class FloorballTeam : AggregateRoot
             ShortName = name.Length > 3 ? name.Substring(0, 3).ToUpperInvariant() : name.ToUpperInvariant();
         }
 
-        Division = division;
+        DivisionId = divisionId;
+        Division = default!;
         Club = club;
+        ClubId = club.Id;
         HomeArena = homeArena;
         PrimaryJerseyColor = primaryJerseyColor;
         SecondaryJerseyColor = secondaryJerseyColor ?? string.Empty;
+        TeamCategory = teamCategory;
+        LogoUrl = logoUrl;
         
         AddDomainEvent(new FloorballTeamRegisteredEvent(
             Id, 
             name, 
-            division, 
+            divisionId, 
             club.Id, 
             homeArena, 
             primaryJerseyColor, 
@@ -157,9 +183,9 @@ public class FloorballTeam : AggregateRoot
     /// Updates the team's division
     /// </summary>
     /// <param name="division">The new division</param>
-    public void UpdateDivision(FloorballDivision division)
+    public void UpdateDivision(Guid divisionId)
     {
-        Division = division;
+        DivisionId = divisionId;
     }
     
     /// <summary>
@@ -188,6 +214,34 @@ public class FloorballTeam : AggregateRoot
 
         PrimaryJerseyColor = primaryColor;
         SecondaryJerseyColor = secondaryColor ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Updates the team's category
+    /// </summary>
+    /// <param name="teamCategory">The new team category</param>
+    public void UpdateTeamCategory(TeamCategory teamCategory)
+    {
+        TeamCategory = teamCategory;
+    }
+
+    /// <summary>
+    /// Updates the team's logo URL
+    /// </summary>
+    /// <param name="logoUrl">The new logo URL (optional)</param>
+    public void UpdateLogo(Uri? logoUrl)
+    {
+        LogoUrl = logoUrl;
+    }
+
+    /// <summary>
+    /// Gets the effective logo URL for the team, using the club's logo as fallback
+    /// </summary>
+    /// <param name="clubLogoUrl">The club's logo URL to use as fallback</param>
+    /// <returns>The team's logo URL or the club's logo URL if team logo is not set</returns>
+    public Uri? GetEffectiveLogoUrl(Uri? clubLogoUrl)
+    {
+        return LogoUrl ?? clubLogoUrl;
     }
 
     /// <summary>
@@ -265,5 +319,37 @@ public class FloorballTeam : AggregateRoot
             throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
 
         teamPlayer.UpdateJerseyNumber(jerseyNumber);
+    }
+
+    /// <summary>
+    /// Updates a player's information in the team (position, jersey number, and active status)
+    /// </summary>
+    /// <param name="playerId">The ID of the player</param>
+    /// <param name="position">The new position</param>
+    /// <param name="jerseyNumber">The new jersey number</param>
+    /// <param name="isActive">The new active status</param>
+    /// <exception cref="InvalidOperationException">Thrown when the player is not found or the jersey number is already taken</exception>
+    public void UpdateTeamPlayer(Guid playerId, FloorballPosition position, int? jerseyNumber, bool isActive)
+    {
+        FloorballTeamPlayer? teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
+        if (teamPlayer == null)
+            throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
+
+        // Check if jersey number is already taken by another player
+        if (jerseyNumber.HasValue && _roster.Any(p => p.JerseyNumber == jerseyNumber && p.PlayerId != playerId))
+            throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
+
+        // Update all properties
+        teamPlayer.UpdatePosition(position);
+        teamPlayer.UpdateJerseyNumber(jerseyNumber);
+        teamPlayer.SetActiveStatus(isActive);
+        
+        // Create and add a domain event for player update
+        AddDomainEvent(new FloorballPlayerUpdatedInTeamEvent(
+            Id,
+            playerId,
+            position,
+            jerseyNumber,
+            isActive));
     }
 } 

@@ -32,6 +32,8 @@ namespace Application.Mappings.Common
                 person.LastName,
                 person.BirthDate,
                 person.FullName,
+                person.role,
+                person.IsRegistered,
                 person.Address,
                 person.ContactInfo
             );
@@ -78,6 +80,7 @@ namespace Application.Mappings.Common
             person.UpdateAddress(ToAddress(command.Address));
             person.UpdateContactInfo(ToContactInfo(command.ContactInfo));
             person.UpdateBirthDate(birthDateUtc);
+            person.UpdateIsRegistered(command.IsRegistered);
         }
 
 
@@ -118,7 +121,7 @@ namespace Application.Mappings.Common
         {
             if (dto == null) return null;
             return new ContactInfo(
-                dto.Email,
+                dto.Email ?? string.Empty,
                 dto.Phone,
                 dto.AlternativePhone
             );
@@ -138,7 +141,7 @@ namespace Application.Mappings.Common
         }
 
         /// <summary>
-        /// Maps a CreatePersonCommand to a Club entity
+        /// Maps a CreatePersonCommand to a Person entity
         /// </summary>
         /// <param name="command"></param>
         /// <returns></returns>
@@ -159,13 +162,19 @@ namespace Application.Mappings.Common
                 _ => DateTime.SpecifyKind(command.BirthDate, DateTimeKind.Utc)
             };
 
-            return new Person(
+            Person person = new Person(
                 command.FirstName,
                 command.LastName,
                 birthDateUtc,
+                Domain.Enums.Common.PersonRole.User,
                 ToAddress(command.Address),
                 ToContactInfo(command.ContactInfo)
             );
+            
+            // Set the registration status
+            person.UpdateIsRegistered(command.IsRegistered);
+            
+            return person;
         }
     }
 }

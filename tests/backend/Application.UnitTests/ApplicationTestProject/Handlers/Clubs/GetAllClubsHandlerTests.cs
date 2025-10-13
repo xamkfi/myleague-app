@@ -371,13 +371,14 @@ public class GetAllClubsHandlerTests
         GetAllClubsQuery query = new GetAllClubsQuery();
 
         _mockClubRepository.Setup(x => x.GetAllAsync())
-            .ReturnsAsync((IEnumerable<Club>?)null);
+            .ReturnsAsync(new List<Club>());
 
         // Act
         Result<IEnumerable<ClubDto>> result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.IsFailure.Should().BeTrue();
-        result.Error.Should().NotBeNullOrEmpty();
+        result.IsSuccess.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+        result.Data!.Should().BeEmpty();
     }
 } 

@@ -1,11 +1,12 @@
 using Domain.DomainEvents;
+using Domain.Entities;
 
 namespace Domain.EventSourcing;
 
 /// <summary>
 /// Base class for all aggregate roots in the domain model
 /// </summary>
-public abstract class AggregateRoot
+public abstract class AggregateRoot : BaseEntity
 {
     private readonly List<IDomainEvent> _domainEvents = new();
 
@@ -13,6 +14,21 @@ public abstract class AggregateRoot
     /// Gets the domain events raised by this aggregate
     /// </summary>
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+
+    /// <summary>
+    /// Protected constructor for aggregate roots
+    /// </summary>
+    protected AggregateRoot() : base()
+    {
+    }
+
+    /// <summary>
+    /// Protected constructor with existing ID
+    /// </summary>
+    /// <param name="id">The existing ID for the entity</param>
+    protected AggregateRoot(Guid id) : base(id)
+    {
+    }
 
     /// <summary>
     /// Adds a domain event to this aggregate

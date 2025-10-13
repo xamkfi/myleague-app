@@ -17,7 +17,7 @@ namespace MyLeague.Infrastructure.Persistence.EventStores
     /// <summary>
     /// Common-specific EventStore implementation for storing and retrieving domain events
     /// </summary>
-    public class CommonEventStore : IEventStore
+    public class CommonEventStore : ICommonEventStore
     {
         private readonly CommonDbContext _commonDbContext;
         private readonly ILogger<CommonEventStore> _logger;

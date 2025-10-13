@@ -9,29 +9,19 @@ namespace Domain.Entities.Floorball;
 public class FloorballTeamManager : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the team manager
-    /// </summary>
-    public Guid Id { get; private set; }
-    
-    /// <summary>
     /// Gets the ID of the person this team manager profile belongs to (FK)
     /// </summary>
     public Guid PersonId { get; private set; }
     
     /// <summary>
+    /// Gets the ID of the team this manager is responsible for (FK)
+    /// </summary>
+    public Guid TeamId { get; private set; }
+    
+    /// <summary>
     /// Gets whether the team manager is currently active
     /// </summary>
     public bool IsActive { get; private set; }
-    
-    /// <summary>
-    /// Gets the team manager's primary responsibility area
-    /// </summary>
-    public string? PrimaryResponsibility { get; private set; }
-    
-    /// <summary>
-    /// Gets the years of experience as a team manager
-    /// </summary>
-    public int YearsOfExperience { get; private set; }
 
     /// <summary>
     /// Private constructor for EF Core
@@ -40,33 +30,30 @@ public class FloorballTeamManager : AggregateRoot
     {
         Id = Guid.NewGuid();
         PersonId = Guid.Empty;
+        TeamId = Guid.Empty;
         IsActive = true;
-        YearsOfExperience = 0;
     }
 
     /// <summary>
     /// Initializes a new instance of the FloorballTeamManager class
     /// </summary>
     /// <param name="personId">The ID of the person this team manager profile belongs to</param>
-    /// <param name="primaryResponsibility">The primary responsibility area (optional)</param>
-    /// <param name="yearsOfExperience">The years of experience (optional)</param>
+    /// <param name="teamId">The ID of the team this manager is responsible for</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballTeamManager(
         Guid personId,
-        string? primaryResponsibility = null,
-        int yearsOfExperience = 0)
+        Guid teamId)
     {
         if (personId == Guid.Empty)
             throw new ArgumentException("Person ID cannot be empty.", nameof(personId));
             
-        if (yearsOfExperience < 0)
-            throw new ArgumentException("Years of experience cannot be negative.", nameof(yearsOfExperience));
+        if (teamId == Guid.Empty)
+            throw new ArgumentException("Team ID cannot be empty.", nameof(teamId));
             
         Id = Guid.NewGuid();
         PersonId = personId;
+        TeamId = teamId;
         IsActive = true;
-        PrimaryResponsibility = primaryResponsibility;
-        YearsOfExperience = yearsOfExperience;
     }
 
     /// <summary>
@@ -79,23 +66,15 @@ public class FloorballTeamManager : AggregateRoot
     }
     
     /// <summary>
-    /// Updates the team manager's primary responsibility
+    /// Updates the team that this manager is responsible for
     /// </summary>
-    /// <param name="primaryResponsibility">The new primary responsibility</param>
-    public void UpdatePrimaryResponsibility(string? primaryResponsibility)
+    /// <param name="teamId">The new team ID</param>
+    /// <exception cref="ArgumentException">Thrown when teamId is empty</exception>
+    public void UpdateTeam(Guid teamId)
     {
-        PrimaryResponsibility = primaryResponsibility;
-    }
-    
-    /// <summary>
-    /// Updates the team manager's experience
-    /// </summary>
-    /// <param name="yearsOfExperience">The new years of experience</param>
-    public void UpdateExperience(int yearsOfExperience)
-    {
-        if (yearsOfExperience < 0)
-            throw new ArgumentException("Years of experience cannot be negative.", nameof(yearsOfExperience));
+        if (teamId == Guid.Empty)
+            throw new ArgumentException("Team ID cannot be empty.", nameof(teamId));
             
-        YearsOfExperience = yearsOfExperience;
+        TeamId = teamId;
     }
 } 

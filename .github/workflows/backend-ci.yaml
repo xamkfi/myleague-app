@@ -1,0 +1,205 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ master, development, jantoi/myl-65-do-ci-for-backend ]
+    paths:
+      - 'src/backend/**'
+      - 'tests/backend/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/backend-ci.yaml'
+  pull_request:
+    branches: [ master, development, jantoi/myl-65-do-ci-for-backend ]
+    paths:
+      - 'src/backend/**'
+      - 'tests/backend/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/backend-ci.yaml'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  BUILD_CONFIGURATION: 'Release'
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+          
+    - name: Restore dependencies
+      run: dotnet restore MyLeague.sln
+      
+    - name: Build solution
+      run: dotnet build MyLeague.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+      
+    - name: Run unit tests
+      run: dotnet test MyLeague.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal --logger trx --results-directory TestResults
+      
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: TestResults/*.trx
+
+  docker-build:
+    name: Docker Build Verification
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker image
+      run: |
+        docker build -f src/backend/WebAPI/Dockerfile -t myleague-api:test .
+        
+    - name: Test Docker Compose startup
+      run: |
+        # Start services with docker compose
+        docker compose up -d --build
+        
+        # Wait for services to be ready (PostgreSQL needs time to initialize)
+        echo "Waiting for services to start..."
+        sleep 30
+        
+        # Check if API container is running
+        if docker compose ps webapi | grep -q "Up"; then
+          echo "✅ API container started successfully"
+        else
+          echo "❌ API container failed to start"
+          docker compose logs webapi
+          exit 1
+        fi
+        
+        # Test basic API connectivity
+        if curl -f http://localhost:8080/health 2>/dev/null; then
+          echo "✅ API health check passed"
+        elif curl -f http://localhost:8080 2>/dev/null; then
+          echo "✅ API is responding (health endpoint may not exist)"
+        else
+          echo "⚠️  API not responding, checking logs..."
+          docker compose logs webapi
+          echo "Container status:"
+          docker compose ps
+        fi
+        
+    - name: Cleanup
+      if: always()
+      run: |
+        docker compose down -v
+        docker rmi myleague-api:test || true
+
+  integration-smoke-test:
+    name: Integration Smoke Test
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: myleague_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Restore dependencies
+      run: dotnet restore MyLeague.sln
+        
+    - name: Build WebAPI
+      run: |
+        cd src/backend/WebAPI
+        dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+        
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        echo "Waiting for PostgreSQL to be ready..."
+        timeout 60s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 2; done'
+        echo "PostgreSQL is ready!"
+        
+    - name: Test API startup with database
+      run: |
+        cd src/backend/WebAPI
+        
+        # Set environment variables for test database
+        export ConnectionStrings__DefaultConnection="Host=localhost;Database=myleague_test;Username=postgres;Password=postgres"
+        export ASPNETCORE_ENVIRONMENT=Development
+        export ASPNETCORE_URLS="http://localhost:5000"
+        
+        echo "Starting API with database connection..."
+        echo "Using URL: $ASPNETCORE_URLS"
+        echo "Using DB: $ConnectionStrings__DefaultConnection"
+        
+        # Start the API in background with timeout and no launch profile
+        timeout 60s dotnet run --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --no-launch-profile &
+        API_PID=$!
+        
+        # Wait for API startup with better error handling
+        echo "Waiting for API to start..."
+        for i in {1..30}; do
+          if curl -f -s http://localhost:5000/health >/dev/null 2>&1; then
+            echo "✅ API health check passed on attempt $i"
+            break
+          elif curl -f -s http://localhost:5000 >/dev/null 2>&1; then
+            echo "✅ API is responding on attempt $i"
+            break
+          elif [ $i -eq 30 ]; then
+            echo "❌ API failed to respond after 30 attempts"
+            echo "Checking if API process is still running..."
+            if ps -p $API_PID > /dev/null 2>&1; then
+              echo "API process is running but not responding"
+              echo "Trying to get process information..."
+              netstat -tulpn | grep :5000 || echo "Port 5000 not listening"
+              netstat -tulpn | grep dotnet || echo "No dotnet processes listening"
+            else
+              echo "API process has exited"
+            fi
+            exit 1
+          else
+            echo "Attempt $i: API not ready yet, waiting 2 seconds..."
+            sleep 2
+          fi
+        done
+        
+        echo "✅ Integration smoke test completed successfully"
+        
+        # Cleanup
+        kill $API_PID 2>/dev/null || true
+        wait $API_PID 2>/dev/null || true

@@ -14,11 +14,6 @@ namespace Domain.Entities.Floorball;
 public class FloorballPlayer : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the player
-    /// </summary>
-    public Guid Id { get; private set; }
-    
-    /// <summary>
     /// Gets the ID of the person this player profile belongs to (FK)
     /// </summary>
     public Guid PersonId { get; private set; }
@@ -123,7 +118,43 @@ public class FloorballPlayer : AggregateRoot
     public void RecordAssist()
     {
         CareerAssists++;
-        
+
         AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.Assist));
+    }
+
+    /// <summary>
+    /// Removes a goal from the player's career statistics
+    /// </summary>
+    public void RemoveGoal()
+    {
+        if (CareerGoals > 0)
+        {
+            CareerGoals--;
+
+            AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.GoalRemoved));
+        }
+    }
+
+    /// <summary>
+    /// Removes an assist from the player's career statistics
+    /// </summary>
+    public void RemoveAssist()
+    {
+        if (CareerAssists > 0)
+        {
+            CareerAssists--;
+
+            AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.AssistRemoved));
+        }
+    }
+    
+    /// <summary>
+    /// Sets the person for this player (used when loading navigation properties)
+    /// </summary>
+    /// <param name="person">The person to associate with this player</param>
+    public void SetPerson(Person person)
+    {
+        ArgumentNullException.ThrowIfNull(person);
+        Person = person;
     }
 } 

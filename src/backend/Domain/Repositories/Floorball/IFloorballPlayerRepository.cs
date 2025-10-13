@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 
@@ -16,10 +17,73 @@ public interface IFloorballPlayerRepository
     Task<FloorballPlayer?> GetByIdAsync(Guid id);
     
     /// <summary>
+    /// Gets a floorball player by Person ID
+    /// </summary>
+    /// <param name="personId">The person ID</param>
+    /// <returns>The player if found, null otherwise</returns>
+    Task<FloorballPlayer?> GetByPersonIdAsync(Guid personId);
+    
+    /// <summary>
     /// Gets all floorball players
     /// </summary>
     /// <returns>A collection of all floorball players</returns>
     Task<IEnumerable<FloorballPlayer>> GetAllAsync();
+    
+    /// <summary>
+    /// Gets paginated floorball players with their current team information
+    /// </summary>
+    /// <param name="page">Page number (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="isActive">Optional active status filter</param>
+    /// <param name="position">Optional position filter</param>
+    /// <param name="teamId">Optional team ID filter</param>
+    /// <param name="searchTerm">Optional search term for player names</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated collection of floorball players with team information</returns>
+    Task<PagedResult<(FloorballPlayer Player, FloorballTeam? Team)>> GetPagedWithTeamsAsync(
+        int page, 
+        int pageSize, 
+        bool? isActive = null,
+        FloorballPosition? position = null,
+        Guid? teamId = null,
+        string? searchTerm = null,
+        CancellationToken cancellationToken = default);
+        
+    /// <summary>
+    /// Gets paginated floorball players with filtering support
+    /// </summary>
+    /// <param name="page">Page number (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="isActive">Optional active status filter</param>
+    /// <param name="position">Optional position filter</param>
+    /// <param name="teamId">Optional team ID filter</param>
+    /// <param name="searchTerm">Optional search term for player names</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated collection of floorball players</returns>
+    Task<PagedResult<FloorballPlayer>> GetPagedAsync(
+        int page, 
+        int pageSize, 
+        bool? isActive = null,
+        FloorballPosition? position = null,
+        Guid? teamId = null,
+        string? searchTerm = null,
+        CancellationToken cancellationToken = default);
+        
+    /// <summary>
+    /// Gets the total count of floorball players with filtering
+    /// </summary>
+    /// <param name="isActive">Optional active status filter</param>
+    /// <param name="position">Optional position filter</param>
+    /// <param name="teamId">Optional team ID filter</param>
+    /// <param name="searchTerm">Optional search term for player names</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Total count of matching floorball players</returns>
+    Task<int> GetCountAsync(
+        bool? isActive = null,
+        FloorballPosition? position = null,
+        Guid? teamId = null,
+        string? searchTerm = null,
+        CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets floorball players by team ID
@@ -75,6 +139,14 @@ public interface IFloorballPlayerRepository
     /// <param name="searchTerm">The search term</param>
     /// <returns>A collection of floorball players matching the search term</returns>
     Task<IEnumerable<FloorballPlayer>> SearchByNameAsync(string searchTerm);
+
+    /// <summary>
+    /// Gets floorball players by a set of person IDs, as a dictionary keyed by PersonId.
+    /// </summary>
+    /// <param name="personIds">Collection of person IDs.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Dictionary where key is PersonId and value is FloorballPlayer.</returns>
+    Task<Dictionary<Guid, FloorballPlayer>> GetByPersonIdsAsync(IEnumerable<Guid> personIds, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Checks if a floorball player exists

@@ -1,0 +1,215 @@
+.floorball-management-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Feature Status Legend
+.feature-status-legend {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  border: 1px solid #dee2e6;
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: #495057;
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      
+      &.available {
+        background-color: #28a745;
+      }
+      
+      &.coming-soon {
+        background-color: #ffc107;
+      }
+    }
+  }
+}
+
+.floorball-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.floorball-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  border: 1px solid;
+  border-radius: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  min-height: 120px;
+  text-align: center;
+  cursor: pointer;
+
+  .button-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+
+    .emoji {
+      font-size: 2rem;
+    line-height: 1;
+      transition: transform 0.2s ease;
+    }
+
+    .text {
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      
+      &.available {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      
+      &.coming-soon {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+      }
+    }
+  }
+
+  // Available Features Styling
+  &.available {
+    background-color: #f8fff8;
+    border-color: #28a745;
+    color: #155724;
+
+  &:hover {
+      background-color: #e8f5e8;
+      border-color: #20c997;
+    transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+
+      .button-content .emoji {
+        transform: scale(1.05);
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px);
+    }
+  }
+
+  // Coming Soon Features Styling
+  &.coming-soon {
+    background-color: #fffbf0;
+    border-color: #ffc107;
+    color: #856404;
+    opacity: 0.8;
+
+    &:hover {
+      background-color: #fef5e7;
+      border-color: #fd7e14;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(255, 193, 7, 0.2);
+      opacity: 0.9;
+
+      .button-content .emoji {
+        transform: scale(1.02);
+      }
+  }
+
+  &:active {
+    transform: translateY(0);
+    }
+  }
+}
+
+.back-button-container {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+}
+
+.back-button {
+  padding: 0.75rem 2rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .floorball-management-container {
+    padding: 1rem;
+  }
+
+  .feature-status-legend {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .floorball-actions {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .floorball-action-button {
+    min-height: 100px;
+    padding: 1rem;
+
+    .button-content {
+      gap: 0.5rem;
+
+      .emoji {
+        font-size: 1.8rem;
+      }
+
+      .text {
+        font-size: 1rem;
+      }
+
+      .status-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+      }
+    }
+  }
+} 

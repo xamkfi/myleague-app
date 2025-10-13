@@ -5,6 +5,7 @@ using Application.Commands.Clubs;
 using Application.Queries.Clubs;
 using Application.DTOs.Common;
 using Application.Behaviors;
+using Application.Services.Common;
 using MediatR;
 using FluentValidation;
 
@@ -30,10 +31,19 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssembly(assembly);
             
             // Add pipeline behaviors - order matters!
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         });
         
+        // Register FluentValidation
+        services.AddValidatorsFromAssembly(assembly);
         
+        // Register application services
+        services.AddScoped<IPaginationService, PaginationService>();
+        
+        // Register timer services
+        services.AddScoped<IMatchTimerService, PersistentMatchTimerService>();
+
         return services;
     }
 } 

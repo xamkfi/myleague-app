@@ -40,7 +40,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(m => m.WentToShootout)
                 .IsRequired();
 
-            // Configure foreign key relationships without navigation properties to avoid cross-context issues
+            // Configure foreign key relationships with navigation properties within the same context
             builder.Property(m => m.HomeTeamId)
                 .IsRequired();
 
@@ -49,6 +49,22 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
 
             builder.Property(m => m.SeasonId)
                 .IsRequired();
+
+            // Configure relationships within FloorballDbContext
+            builder.HasOne(m => m.Season)
+                .WithMany(s => s.Matches)
+                .HasForeignKey(m => m.SeasonId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(m => m.HomeTeam)
+                .WithMany()
+                .HasForeignKey(m => m.HomeTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(m => m.AwayTeam)
+                .WithMany()
+                .HasForeignKey(m => m.AwayTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Configure the relationship with referees using a simple many-to-many join table
             builder.HasMany(m => m.Officials)
@@ -59,27 +75,30 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                     j => j.HasOne<FloorballMatch>().WithMany().HasForeignKey("MatchesId")
                 );
 
-            // Configure owned types for period scores
-            builder.OwnsMany(m => m.PeriodScores, periodBuilder =>
-            {
-                periodBuilder.WithOwner().HasForeignKey("MatchId");
-                periodBuilder.Property<int>("Id").ValueGeneratedOnAdd();
-                periodBuilder.HasKey("Id");
+            // Configure relationship with PeriodScores - they are now separate entities
+            builder.HasMany(m => m.PeriodScores)
+                .WithOne()
+                .HasForeignKey(p => p.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-                periodBuilder.Property(p => p.PeriodNumber)
-                    .IsRequired();
+            // Configure the backing field for PeriodScores so EF can populate it properly
+            builder.Navigation(m => m.PeriodScores)
+                .HasField("_periodScores")
+                .EnableLazyLoading(false);
 
-                periodBuilder.Property(p => p.HomeScore)
-                    .IsRequired();
+            //// Ignore complex event configurations for now to avoid navigationName issues
+            //builder.Ignore(m => m.Events);
+            //builder.Ignore(m => m.GoalEvents);
+            //builder.Ignore(m => m.PenaltyEvents);
 
-                periodBuilder.Property(p => p.AwayScore)
-                    .IsRequired();
-            });
+            builder.HasMany(m => m.Events)
+               .WithOne()                        // no back-link on the event entity
+               .HasForeignKey("MatchId")         // ← Explicitly specify the column name
+               .OnDelete(DeleteBehavior.Cascade);
 
-            // Ignore complex event configurations for now to avoid navigationName issues
-            builder.Ignore(m => m.Events);
-            builder.Ignore(m => m.GoalEvents);
-            builder.Ignore(m => m.PenaltyEvents);
+            builder.Navigation(m => m.Events)
+                .HasField("_events")
+                .EnableLazyLoading(false);        // optional
         }
     }
 } 

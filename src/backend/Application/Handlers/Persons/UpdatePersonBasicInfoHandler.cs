@@ -2,7 +2,6 @@
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Handlers.Clubs;
 using Application.Mappings.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
@@ -18,7 +17,7 @@ namespace Application.Handlers.Persons
     {
         private readonly IPersonRepository _personRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<UpdateClubHandler> _logger;
+        private readonly ILogger<UpdatePersonBasicInfoHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the UpdatePersonBasicInfoHandler class
@@ -26,7 +25,7 @@ namespace Application.Handlers.Persons
         /// <param name="personRepository"></param>
         /// <param name="unitOfWork"></param>
         /// <param name="logger"></param>
-        public UpdatePersonBasicInfoHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<UpdateClubHandler> logger)
+        public UpdatePersonBasicInfoHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<UpdatePersonBasicInfoHandler> logger)
         {
             _personRepository = personRepository;
             _unitOfWork = unitOfWork;
@@ -43,14 +42,20 @@ namespace Application.Handlers.Persons
         {
             try
             {
+                //Check if the person exists
                 Person? personExists = await _personRepository.GetByIdAsync(request.Id);
                 if(personExists == null)
                 {
                     return Result<PersonDto>.NotFound("Person", request.Id);
                 }
 
+                //Update name and lastname
                 personExists.UpdateBasicInfo(request.FirstName, request.LastName);
 
+                //save changes to database
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                //Create dto for returning data
                 PersonDto personDto = PersonMapper.ToDto(personExists);
 
                 return Result<PersonDto>.Success(personDto);

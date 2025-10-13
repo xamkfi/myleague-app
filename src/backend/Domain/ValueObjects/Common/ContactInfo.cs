@@ -75,5 +75,8 @@ public class ContactInfo : IEquatable<ContactInfo>
         return left.Equals(right);
     }
 
-    public static bool operator !=(ContactInfo? left, ContactInfo? right) => !(left == right);
+    public static bool operator !=(ContactInfo? left, ContactInfo? right)
+    {
+        return !(left == right);
+    }
 } 

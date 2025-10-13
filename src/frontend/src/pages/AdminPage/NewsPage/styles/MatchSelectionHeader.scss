@@ -1,0 +1,33 @@
+// Match Selection Header
+.match-selection-header {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.match-selection-header__controls {
+  margin-bottom: 1rem;
+}
+
+.match-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  background: white;
+}
+
+.match-item {
+  margin-bottom: 0.5rem;
+  
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+  
+  input[type="checkbox"] {
+    margin: 0;
+  }
+} 

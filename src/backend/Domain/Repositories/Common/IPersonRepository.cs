@@ -15,6 +15,13 @@ public interface IPersonRepository
     Task<Person?> GetByIdAsync(Guid id);
     
     /// <summary>
+    /// Gets multiple persons by their IDs
+    /// </summary>
+    /// <param name="ids">The person IDs</param>
+    /// <returns>A collection of persons found with the specified IDs</returns>
+    Task<IEnumerable<Person>> GetByIdsAsync(IEnumerable<Guid> ids);
+    
+    /// <summary>
     /// Gets a person by full name
     /// </summary>
     /// <param name="firstName">The first name</param>
@@ -33,7 +40,7 @@ public interface IPersonRepository
     /// Gets all persons
     /// </summary>
     /// <returns>A collection of all persons</returns>
-    Task<IEnumerable<Person>> GetAllAsync();
+    Task<IEnumerable<Person>> GetAllAsync(int page, int pageSize, string? firstName, string? lastName, string? birthDate, bool? isRegistered, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets persons by first name
@@ -77,11 +84,13 @@ public interface IPersonRepository
     Task DeleteAsync(Guid id);
     
     /// <summary>
-    /// Searches for persons by name
+    /// Searches for persons by name.
     /// </summary>
-    /// <param name="searchTerm">The search term</param>
-    /// <returns>A collection of persons matching the search term</returns>
-    Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm);
+    /// <param name="searchTerm">The search term.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A collection of persons matching the search term.</returns>
+    Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Checks if a person exists

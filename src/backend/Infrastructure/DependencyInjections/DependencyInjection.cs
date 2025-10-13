@@ -1,5 +1,6 @@
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
+using Domain.Services.Floorball;
 using Domain.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +11,11 @@ using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
 using MyLeague.Infrastructure.Persistence.Repositories.Common;
 using MyLeague.Infrastructure.Persistence.EventStores;
 using MyLeague.Infrastructure.Persistence.UnitOfWork;
+using MyLeague.Infrastructure.HealthChecks;
+using Application.Interfaces.Common;
+using Application.Services.Common;
+using MyLeague.Infrastructure.Services.ImageStorage;
+using MyLeague.Infrastructure.Services.Common;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -28,7 +34,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? "Host=postgres;Database=myleague;Username=postgres;Password=postgres";
+            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? "";
 
             services.AddDbContext<CommonDbContext>(options =>
                 options.UseNpgsql(
@@ -56,22 +62,41 @@ namespace MyLeague.Infrastructure.DependencyInjections
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
             services.AddScoped<IPersonRepository, PersonRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
+            services.AddScoped<IDivisionRepository, DivisionRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
+            services.AddScoped<IFloorballTeamManagerRepository, FloorballTeamManagerRepository>();
             services.AddScoped<IFloorballRefereeRepository, FloorballRefereeRepository>();
             services.AddScoped<IFloorballMatchRepository, FloorballMatchRepository>();
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
+            services.AddScoped<IFloorballSeasonDivisionRepository, FloorballSeasonDivisionRepository>();
             services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
+            services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
+            services.AddScoped<IImageStorageService, AzureBlobImageStorageService>();
+            
+            // Add timer services
+            services.AddScoped<ITimerRepository, TimerRepository>();
+            services.AddScoped<ITimerNotificationService, TimerNotificationService>();
+            services.AddSingleton<ITimerStore, InMemoryTimerStore>();
+            
+            // Register timer background service
+            services.AddHostedService<TimerBackgroundService>();
 
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
+            services.AddScoped<IFloorballUnitOfWork, FloorballUnitOfWork>();
 
             // Add event sourcing
-            services.AddScoped<IEventStore, FloorballEventStore>();
-            services.AddScoped<IEventStore, CommonEventStore>();
+            services.AddScoped<IFloorballEventStore, FloorballEventStore>();
+            services.AddScoped<ICommonEventStore, CommonEventStore>();
 
             // Add domain events
             services.AddDomainEvents();
+
+            // Add health checks
+            services.AddMyLeagueHealthChecks(configuration);
 
             return services;
         }

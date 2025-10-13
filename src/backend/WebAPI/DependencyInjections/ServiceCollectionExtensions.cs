@@ -1,5 +1,6 @@
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 
 namespace WebAPI.DependencyInjections;
 
@@ -9,10 +10,11 @@ namespace WebAPI.DependencyInjections;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Add OpenAPI and Scalar configuration
+    /// Add OpenAPI and Scalar configuration with thread-safety improvements
     /// </summary>
     public static IServiceCollection AddOpenApiConfiguration(this IServiceCollection services)
     {
+        // Configure OpenAPI with minimal transformers to avoid concurrency issues
         services.AddOpenApi(options =>
         {
             var info = new OpenApiInfo
@@ -32,6 +34,7 @@ public static class ServiceCollectionExtensions
                 }
             };
 
+            // Use a simple document transformer that doesn't access complex validation attributes
             options.AddDocumentTransformer((document, context, cancellationToken) =>
             {
                 document.Info = info;
@@ -67,9 +70,14 @@ public static class ServiceCollectionExtensions
         {
             options.AddPolicy("AllowAll", policy =>
             {
-                policy.AllowAnyOrigin()
+                policy.WithOrigins(
+                        "http://localhost:3000",
+                        "http://localhost:5173",
+                        "http://localhost:4200",
+                        "http://127.0.0.1:5173")
                       .AllowAnyMethod()
-                      .AllowAnyHeader();
+                      .AllowAnyHeader()
+                      .AllowCredentials(); // Required for SignalR
             });
 
             // You can add more specific policies here for production
@@ -84,4 +92,25 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-} 
+
+    /// <summary>
+    /// Add Health Check UI configuration
+    /// </summary>
+    public static IServiceCollection AddHealthCheckUIConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHealthChecksUI(options =>
+        {
+            options.SetEvaluationTimeInSeconds(30); // Check every 30 seconds
+            options.MaximumHistoryEntriesPerEndpoint(50);
+            options.SetApiMaxActiveRequests(1);
+            options.SetMinimumSecondsBetweenFailureNotifications(60);
+
+            // Add health check endpoint from configuration
+            string healthCheckEndpoint = configuration.GetValue<string>("HealthChecks:UI:Endpoint") ?? "http://localhost:8080/health";
+            options.AddHealthCheckEndpoint("MyLeague API", healthCheckEndpoint);
+        })
+        .AddInMemoryStorage();
+
+        return services;
+    }
+}

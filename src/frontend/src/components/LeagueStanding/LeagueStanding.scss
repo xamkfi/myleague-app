@@ -1,0 +1,507 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../styles/common' as *;
+
+.standing-container {
+  @include container;
+  margin-bottom: map.get($spacing, "md");
+  color: $color-neutral-black;
+  background: $color-white;
+  border-radius: map.get($border-radius, "lg");
+  box-shadow: $box-shadow-drop-1;
+  overflow: hidden;
+}
+
+.standing-header {
+  background: $color-gradient-blue;
+  color: $color-white;
+  padding: map.get($spacing, "md") map.get($spacing, "lg");
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, "md");
+
+  .header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .league-selector {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, "sm");
+    
+    .dropdown-icon {
+      width: 16px;
+      height: 16px;
+      fill: $color-white;
+    }
+  }
+
+  .league-title {
+    font-size: map.get($font-sizes, "md");
+    font-weight: map.get($font-weights, "bold");
+    color: $color-white;
+  }
+
+  .view-buttons {
+    display: flex;
+    gap: map.get($spacing, "xs");
+    
+    .view-button {
+      padding: map.get($spacing, "xs") map.get($spacing, "sm");
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: map.get($border-radius, "sm");
+      color: $color-white;
+      font-size: map.get($font-sizes, "sm");
+      font-weight: map.get($font-weights, "medium");
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+      
+      &.active {
+        background: $color-white;
+        color: $color-neutral-black;
+        border-color: $color-white;
+        font-weight: map.get($font-weights, "bold");
+      }
+    }
+  }
+
+  .table-headers {
+    display: flex;
+    font-size: map.get($font-sizes, "sm");
+    font-weight: map.get($font-weights, "bold");
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: map.get($spacing, "sm") map.get($spacing, "lg");
+    
+    .header-rank {
+      width: 8%;
+      text-align: center;
+      padding-right: map.get($spacing, "sm");
+    }
+
+    .header-team {
+      width: 25%;
+      text-align: left;
+      padding-right: map.get($spacing, "sm");
+    }
+
+    .header-spacer {
+      width: 20%;
+      min-width: 200px;
+      padding-right: map.get($spacing, "sm");
+    }
+
+    .header-item {
+      width: 8%;
+      text-align: center;
+      padding-right: map.get($spacing, "sm");
+      
+      &:nth-child(6) { // Goals column
+        width: 12%;
+      }
+      &:nth-child(11) { // Form column
+        width: 20%;
+      }
+    }
+  }
+}
+
+.standing-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: $color-white;
+  
+  .table-row {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    td {
+      padding: map.get($spacing, "sm");
+      vertical-align: middle;
+      font-size: map.get($font-sizes, "sm");
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+// Column-specific styling
+.rank-col {
+  width: 8%;
+  text-align: center;
+  font-weight: map.get($font-weights, "bold");
+  color: $color-neutral-black;
+}
+
+.team-col {
+  width: 25%;
+  text-align: left;
+
+  .team-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .logo-image {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid $color-neutral-medium-grey;
+    background-color: $color-neutral-light-grey;
+    margin-right: map.get($spacing, "sm");
+  }
+
+  .logo-empty {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid $color-neutral-medium-grey;
+    background-color: $color-neutral-light-grey;
+    margin-right: map.get($spacing, "sm");
+  }
+
+  .team-name {
+    font-weight: map.get($font-weights, "bold");
+    color: $color-neutral-black;
+    font-size: map.get($font-sizes, "sm");
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.spacer-col {
+  width: 20%;
+  min-width: 200px;
+  text-align: left;
+
+  .team-info {
+    gap: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .team-name {
+    font-weight: map.get($font-weights, "medium");
+    color: $color-neutral-black;
+    font-size: map.get($font-sizes, "sm");
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.stats-col {
+  text-align: center;
+  font-weight: map.get($font-weights, "medium");
+  color: $color-neutral-black;
+  width: 8%;
+}
+
+.stats-col {
+  text-align: center;
+  font-weight: map.get($font-weights, "medium");
+  color: $color-neutral-black;
+}
+
+.goals-col {
+  text-align: center;
+  font-weight: map.get($font-weights, "medium");
+  color: $color-neutral-black;
+  width: 12%;
+}
+
+.points-col {
+  text-align: center;
+  font-weight: map.get($font-weights, "bold");
+  color: $color-neutral-black;
+  width: 8%;
+}
+
+.form-col {
+  text-align: center;
+  width: 20%;
+
+  .form-indicators {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .form-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: map.get($border-radius, "sm");
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: map.get($font-sizes, "xs");
+    font-weight: map.get($font-weights, "bold");
+    color: $color-white;
+
+    &.form-w {
+      background: $color-green-primary;
+    }
+
+    &.form-d {
+      background: $color-yellow-primary;
+    }
+
+    &.form-l {
+      background: $color-red-primary;
+    }
+
+    &.form-unknown {
+      background: $color-neutral-medium-grey;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .standing-container {
+    margin: map.get($spacing, "sm");
+  }
+
+  .standing-header {
+    padding: map.get($spacing, "sm") map.get($spacing, "md");
+
+    .table-headers {
+      font-size: map.get($font-sizes, "xs");
+      padding: map.get($spacing, "sm") map.get($spacing, "md");
+      
+      .header-team {
+        width: 30%;
+      }
+      
+      .header-item {
+        width: 7%;
+        
+        &:nth-child(6) { // Goals column
+          width: 10%;
+        }
+        &:nth-child(11) { // Form column
+          width: 18%;
+        }
+      }
+    }
+  }
+
+  .standing-table {
+    .table-row td {
+      padding: map.get($spacing, "sm") map.get($spacing, "xs");
+      font-size: map.get($font-sizes, "xs");
+    }
+  }
+
+  .team-col {
+    width: 30%;
+
+    .logo-image {
+      width: 28px;
+      height: 28px;
+    }
+
+    .logo-empty {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  .stats-col {
+    width: 7%;
+  }
+
+  .goals-col {
+    width: 10%;
+  }
+
+  .points-col {
+    width: 7%;
+  }
+
+  .form-col {
+    width: 18%;
+
+    .form-indicators {
+      gap: 5px;
+    }
+
+    .form-indicator {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .standing-header {
+    flex-direction: column;
+    gap: map.get($spacing, "sm");
+    padding: map.get($spacing, "sm");
+
+    .league-selector {
+      align-self: flex-start;
+    }
+
+    .table-headers {
+      align-self: flex-end;
+      font-size: map.get($font-sizes, "xs");
+      padding: map.get($spacing, "sm");
+      
+      .header-team {
+        width: 35%;
+      }
+      
+      .header-item {
+        width: 6%;
+        
+        &:nth-child(6) { // Goals column
+          width: 8%;
+        }
+        &:nth-child(11) { // Form column
+          width: 15%;
+        }
+      }
+    }
+  }
+
+  .standing-table {
+    .table-row td {
+      padding: map.get($spacing, "xs");
+    }
+  }
+
+  .team-col {
+    width: 35%;
+
+    .logo-image {
+      width: 24px;
+      height: 24px;
+    }
+
+    .logo-empty {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .stats-col {
+    width: 6%;
+  }
+
+  .goals-col {
+    width: 8%;
+  }
+
+  .points-col {
+    width: 6%;
+  }
+
+  .form-col {
+    width: 15%;
+
+    .form-indicators {
+      gap: 4px;
+    }
+
+    .form-indicator {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .standing-container {
+    margin: map.get($spacing, "xs");
+  }
+
+  .standing-header {
+    .table-headers {
+      font-size: map.get($font-sizes, "xs");
+      padding: map.get($spacing, "xs");
+      
+      .header-team {
+        width: 40%;
+      }
+      
+      .header-item {
+        width: 5%;
+        
+        &:nth-child(6) { // Goals column
+          width: 7%;
+        }
+        &:nth-child(11) { // Form column
+          width: 12%;
+        }
+      }
+    }
+  }
+
+  .team-col {
+    width: 40%;
+
+    .logo-image {
+      width: 20px;
+      height: 20px;
+    }
+
+    .logo-empty {
+      width: 20px;
+      height: 20px;
+    }
+
+    .team-name {
+      font-size: map.get($font-sizes, "xs");
+    }
+  }
+
+  .stats-col {
+    width: 5%;
+  }
+
+  .goals-col {
+    width: 7%;
+  }
+
+  .points-col {
+    width: 5%;
+  }
+
+  .form-col {
+    width: 12%;
+
+    .form-indicators {
+      gap: 3px;
+    }
+
+    .form-indicator {
+      width: 14px;
+      height: 14px;
+    }
+  }
+}
+
+
+

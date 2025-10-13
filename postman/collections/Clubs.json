@@ -1,0 +1,1992 @@
+{
+	"info": {
+		"_postman_id": "a00bdfd4-7d0e-456e-ad53-4310d31f52ea",
+		"name": "CreateClubsAndTeams",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46030570",
+		"_collection_link": "https://winter-meadow-601065.postman.co/workspace/MyLeague~a57cf57f-45f6-4e8a-ae69-c662f5001d81/collection/29553869-a00bdfd4-7d0e-456e-ad53-4310d31f52ea?action=share&source=collection_link&creator=46030570"
+	},
+	"item": [
+		{
+			"name": "CreateClubs",
+			"item": [
+				{
+					"name": "CreateClub1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"TestiClubi\",\r\n  \"city\": \"Helsinki\",\r\n  \"country\": \"Suomi\",\r\n  \"foundingDate\": \"1992-06-16\",\r\n  \"websiteUrl\": \"http://testi.com\",\r\n  \"logoUrl\": \"http://testi.com/logo.png\",\r\n  \"contactEmail\": \"testiclubi@testi.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Sunrise United FC\",\r\n  \"city\": \"Manchester\",\r\n  \"country\": \"England\",\r\n  \"foundingDate\": \"1988-03-22\",\r\n  \"websiteUrl\": \"http://sunriseunited.co.uk\",\r\n  \"logoUrl\": \"http://sunriseunited.co.uk/assets/logo.png\",\r\n  \"contactEmail\": \"info@sunriseunited.co.uk\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Barcelona Eagles\",\r\n  \"city\": \"Barcelona\",\r\n  \"country\": \"Spain\",\r\n  \"foundingDate\": \"1995-11-08\",\r\n  \"websiteUrl\": \"https://barcelonaeagles.es\",\r\n  \"logoUrl\": \"https://barcelonaeagles.es/images/eagle-logo.jpg\",\r\n  \"contactEmail\": \"contact@barcelonaeagles.es\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub4",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Berlin Thunder\",\r\n  \"city\": \"Berlin\",\r\n  \"country\": \"Germany\",\r\n  \"foundingDate\": \"1987-09-14\",\r\n  \"websiteUrl\": \"https://berlinthunder.de\",\r\n  \"logoUrl\": \"https://berlinthunder.de/logo/thunder.svg\",\r\n  \"contactEmail\": \"hello@berlinthunder.de\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub5",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Milano Dragons\",\r\n  \"city\": \"Milan\",\r\n  \"country\": \"Italy\",\r\n  \"foundingDate\": \"2001-05-30\",\r\n  \"websiteUrl\": \"http://milanodrágons.it\",\r\n  \"logoUrl\": \"http://milanodrágons.it/static/dragon-logo.png\",\r\n  \"contactEmail\": \"dragons@milanofc.it\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub6",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Paris Wolves\",\r\n  \"city\": \"Paris\",\r\n  \"country\": \"France\",\r\n  \"foundingDate\": \"1993-12-04\",\r\n  \"websiteUrl\": \"https://pariswolves.fr\",\r\n  \"logoUrl\": \"https://pariswolves.fr/media/wolf-emblem.png\",\r\n  \"contactEmail\": \"administration@pariswolves.fr\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub7",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Amsterdam Lions\",\r\n  \"city\": \"Amsterdam\",\r\n  \"country\": \"Netherlands\",\r\n  \"foundingDate\": \"1990-02-18\",\r\n  \"websiteUrl\": \"http://amsterdamlions.nl\",\r\n  \"logoUrl\": \"http://amsterdamlions.nl/uploads/lion-badge.jpg\",\r\n  \"contactEmail\": \"info@amsterdamlions.nl\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub8",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Stockholm Vikings\",\r\n  \"city\": \"Stockholm\",\r\n  \"country\": \"Sweden\",\r\n  \"foundingDate\": \"1985-07-12\",\r\n  \"websiteUrl\": \"https://stockholmvikings.se\",\r\n  \"logoUrl\": \"https://stockholmvikings.se/assets/viking-helmet.png\",\r\n  \"contactEmail\": \"vikings@stockholmfc.se\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub9",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Dublin Shamrocks\",\r\n  \"city\": \"Dublin\",\r\n  \"country\": \"Ireland\",\r\n  \"foundingDate\": \"1996-04-01\",\r\n  \"websiteUrl\": \"http://dublinshamrocks.ie\",\r\n  \"logoUrl\": \"http://dublinshamrocks.ie/images/shamrock-logo.svg\",\r\n  \"contactEmail\": \"shamrocks@dublin-fc.ie\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub10",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Vienna Hawks\",\r\n  \"city\": \"Vienna\",\r\n  \"country\": \"Austria\",\r\n  \"foundingDate\": \"1991-10-25\",\r\n  \"websiteUrl\": \"https://viennahawks.at\",\r\n  \"logoUrl\": \"https://viennahawks.at/logos/hawk-crest.png\",\r\n  \"contactEmail\": \"office@viennahawks.at\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub11",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Prague Panthers\",\r\n  \"city\": \"Prague\",\r\n  \"country\": \"Czech Republic\",\r\n  \"foundingDate\": \"1999-08-17\",\r\n  \"websiteUrl\": \"http://praguepanthers.cz\",\r\n  \"logoUrl\": \"http://praguepanthers.cz/static/panther-logo.jpg\",\r\n  \"contactEmail\": \"panthers@praguefc.cz\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub12",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Oslo Polar Bears\",\r\n  \"city\": \"Oslo\",\r\n  \"country\": \"Norway\",\r\n  \"foundingDate\": \"1989-01-09\",\r\n  \"websiteUrl\": \"https://oslopolar.no\",\r\n  \"logoUrl\": \"https://oslopolar.no/media/polarbear-emblem.png\",\r\n  \"contactEmail\": \"polar@oslofc.no\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub13",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Copenhagen Serpents\",\r\n  \"city\": \"Copenhagen\",\r\n  \"country\": \"Denmark\",\r\n  \"foundingDate\": \"1994-06-28\",\r\n  \"websiteUrl\": \"http://copenhagenserpents.dk\",\r\n  \"logoUrl\": \"http://copenhagenserpents.dk/images/serpent-badge.svg\",\r\n  \"contactEmail\": \"serpents@copenhagenfc.dk\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub14",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Zurich Falcons\",\r\n  \"city\": \"Zurich\",\r\n  \"country\": \"Switzerland\",\r\n  \"foundingDate\": \"1986-11-13\",\r\n  \"websiteUrl\": \"https://zurichfalcons.ch\",\r\n  \"logoUrl\": \"https://zurichfalcons.ch/assets/falcon-wings.png\",\r\n  \"contactEmail\": \"falcons@zurichfc.ch\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub15",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Brussels Titans\",\r\n  \"city\": \"Brussels\",\r\n  \"country\": \"Belgium\",\r\n  \"foundingDate\": \"1997-03-05\",\r\n  \"websiteUrl\": \"http://brusselstitans.be\",\r\n  \"logoUrl\": \"http://brusselstitans.be/logos/titan-shield.jpg\",\r\n  \"contactEmail\": \"contact@brusselstitans.be\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateClub16",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Lisbon Pirates\",\r\n  \"city\": \"Lisbon\",\r\n  \"country\": \"Portugal\",\r\n  \"foundingDate\": \"2000-09-21\",\r\n  \"websiteUrl\": \"https://lisbonpirates.pt\",\r\n  \"logoUrl\": \"https://lisbonpirates.pt/media/pirate-skull.png\",\r\n  \"contactEmail\": \"pirates@lisbonfc.pt\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/Clubs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"Clubs"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CreateFloorballTeams",
+			"item": [
+				{
+					"name": "CreateTeam1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"TestiClubi Phoenixs\",\r\n  \"divisionId\": \"{{team1_divisionId}}\",\r\n  \"clubId\": \"{{testiclubi_id}}\",\r\n  \"homeArena\": \"Helsinki Central Arena\",\r\n  \"primaryJerseyColor\": \"Red\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"TestiClubi Ravens\",\r\n  \"divisionId\": \"{{team2_divisionId}}\",\r\n  \"clubId\": \"{{testiclubi_id}}\",\r\n  \"homeArena\": \"Helsinki Sports Center\",\r\n  \"primaryJerseyColor\": \"Black\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"TestiClubi Titans\",\r\n  \"divisionId\": \"{{team3_divisionId}}\",\r\n  \"clubId\": \"{{testiclubi_id}}\",\r\n  \"homeArena\": \"Helsinki Olympic Hall\",\r\n  \"primaryJerseyColor\": \"Blue\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam4",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Sunrise United Dynamo\",\r\n  \"divisionId\": \"{{team4_divisionId}}\",\r\n  \"clubId\": \"{{sunriseunited_id}}\",\r\n  \"homeArena\": \"Manchester United Arena\",\r\n  \"primaryJerseyColor\": \"Maroon\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam5",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Sunrise United Rovers\",\r\n  \"divisionId\": \"{{team5_divisionId}}\",\r\n  \"clubId\": \"{{sunriseunited_id}}\",\r\n  \"homeArena\": \"Manchester Sports Complex\",\r\n  \"primaryJerseyColor\": \"Yellow\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam6",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Sunrise United Rangers\",\r\n  \"divisionId\": \"{{team6_divisionId}}\",\r\n  \"clubId\": \"{{sunriseunited_id}}\",\r\n  \"homeArena\": \"Manchester City Hall\",\r\n  \"primaryJerseyColor\": \"Forest Green\",\r\n  \"secondaryJerseyColor\": \"Orange\",\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam7",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Barcelona Eagles Condors\",\r\n  \"divisionId\": \"{{team7_divisionId}}\",\r\n  \"clubId\": \"{{barcelonaeagles_id}}\",\r\n  \"homeArena\": \"Barcelona Sports Palace\",\r\n  \"primaryJerseyColor\": \"Crimson\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam8",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Barcelona Eagles Hawks\",\r\n  \"divisionId\": \"{{team8_divisionId}}\",\r\n  \"clubId\": \"{{barcelonaeagles_id}}\",\r\n  \"homeArena\": \"Barcelona Olympic Center\",\r\n  \"primaryJerseyColor\": \"Royal Blue\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam9",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Barcelona Eagles Falcons\",\r\n  \"divisionId\": \"{{team9_divisionId}}\",\r\n  \"clubId\": \"{{barcelonaeagles_id}}\",\r\n  \"homeArena\": \"Barcelona Arena del Mar\",\r\n  \"primaryJerseyColor\": \"Orange\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam10",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Berlin Thunder Storm\",\r\n  \"divisionId\": \"{{team10_divisionId}}\",\r\n  \"clubId\": \"{{berlinthunder_id}}\",\r\n  \"homeArena\": \"Berlin Lightning Arena\",\r\n  \"primaryJerseyColor\": \"Electric Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam11",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Berlin Thunder Bolts\",\r\n  \"divisionId\": \"{{team11_divisionId}}\",\r\n  \"clubId\": \"{{berlinthunder_id}}\",\r\n  \"homeArena\": \"Berlin Youth Center\",\r\n  \"primaryJerseyColor\": \"Purple\",\r\n  \"secondaryJerseyColor\": \"Yellow\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam12",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Berlin Thunder Lightning\",\r\n  \"divisionId\": \"{{team12_divisionId}}\",\r\n  \"clubId\": \"{{berlinthunder_id}}\",\r\n  \"homeArena\": \"Berlin Metropolitan Hall\",\r\n  \"primaryJerseyColor\": \"Dark Gray\",\r\n  \"secondaryJerseyColor\": \"Electric Blue\",\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam13",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Milano Dragons Fire\",\r\n  \"divisionId\": \"{{team13_divisionId}}\",\r\n  \"clubId\": \"{{milanodragons_id}}\",\r\n  \"homeArena\": \"Milano Arena Drago\",\r\n  \"primaryJerseyColor\": \"Emerald Green\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam14",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Milano Dragons Wyverns\",\r\n  \"divisionId\": \"{{team14_divisionId}}\",\r\n  \"clubId\": \"{{milanodragons_id}}\",\r\n  \"homeArena\": \"Milano Junior Stadium\",\r\n  \"primaryJerseyColor\": \"Deep Red\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam15",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Milano Dragons Scales\",\r\n  \"divisionId\": \"{{team15_divisionId}}\",\r\n  \"clubId\": \"{{milanodragons_id}}\",\r\n  \"homeArena\": \"Milano Sports Complex\",\r\n  \"primaryJerseyColor\": \"Teal\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam16",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Paris Wolves Pack\",\r\n  \"divisionId\": \"{{team16_divisionId}}\",\r\n  \"clubId\": \"{{pariswolves_id}}\",\r\n  \"homeArena\": \"Palais des Sports Paris\",\r\n  \"primaryJerseyColor\": \"Midnight Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam17",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Paris Wolves Cubs\",\r\n  \"divisionId\": \"{{team17_divisionId}}\",\r\n  \"clubId\": \"{{pariswolves_id}}\",\r\n  \"homeArena\": \"Paris Youth Arena\",\r\n  \"primaryJerseyColor\": \"Gray\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam18",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Paris Wolves Alpha\",\r\n  \"divisionId\": \"{{team18_divisionId}}\",\r\n  \"clubId\": \"{{pariswolves_id}}\",\r\n  \"homeArena\": \"Stade Charlety\",\r\n  \"primaryJerseyColor\": \"Burgundy\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam19",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Amsterdam Lions Pride\",\r\n  \"divisionId\": \"{{team19_divisionId}}\",\r\n  \"clubId\": \"{{amsterdamlions_id}}\",\r\n  \"homeArena\": \"Amsterdam Sports Palace\",\r\n  \"primaryJerseyColor\": \"Orange\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam20",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Amsterdam Lions Mane\",\r\n  \"divisionId\": \"{{team20_divisionId}}\",\r\n  \"clubId\": \"{{amsterdamlions_id}}\",\r\n  \"homeArena\": \"Vondelpark Arena\",\r\n  \"primaryJerseyColor\": \"Golden Yellow\",\r\n  \"secondaryJerseyColor\": \"Brown\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam21",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Amsterdam Lions Roar\",\r\n  \"divisionId\": \"{{team21_divisionId}}\",\r\n  \"clubId\": \"{{amsterdamlions_id}}\",\r\n  \"homeArena\": \"Dam Square Sports Center\",\r\n  \"primaryJerseyColor\": \"Royal Blue\",\r\n  \"secondaryJerseyColor\": \"Orange\",\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam22",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Stockholm Vikings Berserkers\",\r\n  \"divisionId\": \"{{team22_divisionId}}\",\r\n  \"clubId\": \"{{stockholmvikings_id}}\",\r\n  \"homeArena\": \"Viking Hall Stockholm\",\r\n  \"primaryJerseyColor\": \"Navy Blue\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam23",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Stockholm Vikings Shields\",\r\n  \"divisionId\": \"{{team23_divisionId}}\",\r\n  \"clubId\": \"{{stockholmvikings_id}}\",\r\n  \"homeArena\": \"Gamla Stan Arena\",\r\n  \"primaryJerseyColor\": \"Steel Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam24",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Stockholm Vikings Valkyries\",\r\n  \"divisionId\": \"{{team24_divisionId}}\",\r\n  \"clubId\": \"{{stockholmvikings_id}}\",\r\n  \"homeArena\": \"Stockholm Olympic Stadium\",\r\n  \"primaryJerseyColor\": \"Crimson Red\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam25",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Dublin Shamrocks Clover\",\r\n  \"divisionId\": \"{{team25_divisionId}}\",\r\n  \"clubId\": \"{{dublinshamrocks_id}}\",\r\n  \"homeArena\": \"Croke Park Arena\",\r\n  \"primaryJerseyColor\": \"Emerald Green\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam26",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Dublin Shamrocks Leprechauns\",\r\n  \"divisionId\": \"{{team26_divisionId}}\",\r\n  \"clubId\": \"{{dublinshamrocks_id}}\",\r\n  \"homeArena\": \"Temple Bar Sports Hall\",\r\n  \"primaryJerseyColor\": \"Kelly Green\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam27",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Dublin Shamrocks Trinity\",\r\n  \"divisionId\": \"{{team27_divisionId}}\",\r\n  \"clubId\": \"{{dublinshamrocks_id}}\",\r\n  \"homeArena\": \"Phoenix Park Center\",\r\n  \"primaryJerseyColor\": \"Forest Green\",\r\n  \"secondaryJerseyColor\": \"Orange\",\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam28",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Vienna Hawks Talons\",\r\n  \"divisionId\": \"{{team28_divisionId}}\",\r\n  \"clubId\": \"{{viennahawks_id}}\",\r\n  \"homeArena\": \"Wiener Stadthalle\",\r\n  \"primaryJerseyColor\": \"Burgundy\",\r\n  \"secondaryJerseyColor\": \"Gold\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam29",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Vienna Hawks Feathers\",\r\n  \"divisionId\": \"{{team29_divisionId}}\",\r\n  \"clubId\": \"{{viennahawks_id}}\",\r\n  \"homeArena\": \"Schönbrunn Sports Complex\",\r\n  \"primaryJerseyColor\": \"Brown\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam30",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Vienna Hawks Wings\",\r\n  \"divisionId\": \"{{team30_divisionId}}\",\r\n  \"clubId\": \"{{viennahawks_id}}\",\r\n  \"homeArena\": \"Prater Arena\",\r\n  \"primaryJerseyColor\": \"Dark Red\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam31",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Prague Panthers Shadows\",\r\n  \"divisionId\": \"{{team31_divisionId}}\",\r\n  \"clubId\": \"{{praguepanthers_id}}\",\r\n  \"homeArena\": \"O2 Arena Prague\",\r\n  \"primaryJerseyColor\": \"Black\",\r\n  \"secondaryJerseyColor\": \"Purple\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam32",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Prague Panthers Prowlers\",\r\n  \"divisionId\": \"{{team32_divisionId}}\",\r\n  \"clubId\": \"{{praguepanthers_id}}\",\r\n  \"homeArena\": \"Wenceslas Square Center\",\r\n  \"primaryJerseyColor\": \"Dark Purple\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam33",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Prague Panthers Claws\",\r\n  \"divisionId\": \"{{team33_divisionId}}\",\r\n  \"clubId\": \"{{praguepanthers_id}}\",\r\n  \"homeArena\": \"Prague Castle Arena\",\r\n  \"primaryJerseyColor\": \"Charcoal Gray\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam34",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Oslo Polar Bears Arctic\",\r\n  \"divisionId\": \"{{team34_divisionId}}\",\r\n  \"clubId\": \"{{oslopolarbears_id}}\",\r\n  \"homeArena\": \"Oslo Ice Palace\",\r\n  \"primaryJerseyColor\": \"Ice Blue\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam35",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Oslo Polar Bears Cubs\",\r\n  \"divisionId\": \"{{team35_divisionId}}\",\r\n  \"clubId\": \"{{oslopolarbears_id}}\",\r\n  \"homeArena\": \"Vigeland Park Arena\",\r\n  \"primaryJerseyColor\": \"Polar White\",\r\n  \"secondaryJerseyColor\": \"Light Blue\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam36",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Oslo Polar Bears Frost\",\r\n  \"divisionId\": \"{{team36_divisionId}}\",\r\n  \"clubId\": \"{{oslopolarbears_id}}\",\r\n  \"homeArena\": \"Holmenkollen Sports Center\",\r\n  \"primaryJerseyColor\": \"Arctic Blue\",\r\n  \"secondaryJerseyColor\": \"Gray\",\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam37",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Copenhagen Serpents Venom\",\r\n  \"divisionId\": \"{{team37_divisionId}}\",\r\n  \"clubId\": \"{{copenhagenserpents_id}}\",\r\n  \"homeArena\": \"Parken Stadium Complex\",\r\n  \"primaryJerseyColor\": \"Viper Green\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam38",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Copenhagen Serpents Scales\",\r\n  \"divisionId\": \"{{team38_divisionId}}\",\r\n  \"clubId\": \"{{copenhagenserpents_id}}\",\r\n  \"homeArena\": \"Tivoli Gardens Arena\",\r\n  \"primaryJerseyColor\": \"Emerald\",\r\n  \"secondaryJerseyColor\": \"Yellow\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam39",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Copenhagen Serpents Coils\",\r\n  \"divisionId\": \"{{team39_divisionId}}\",\r\n  \"clubId\": \"{{copenhagenserpents_id}}\",\r\n  \"homeArena\": \"Nyhavn Sports Hall\",\r\n  \"primaryJerseyColor\": \"Forest Green\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam40",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Zurich Falcons Soar\",\r\n  \"divisionId\": \"{{team40_divisionId}}\",\r\n  \"clubId\": \"{{zurichfalcons_id}}\",\r\n  \"homeArena\": \"Zurich Sports Arena\",\r\n  \"primaryJerseyColor\": \"Sky Blue\",\r\n  \"secondaryJerseyColor\": \"White\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam41",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Zurich Falcons Flight\",\r\n  \"divisionId\": \"{{team41_divisionId}}\",\r\n  \"clubId\": \"{{zurichfalcons_id}}\",\r\n  \"homeArena\": \"Lake Zurich Center\",\r\n  \"primaryJerseyColor\": \"Royal Blue\",\r\n  \"secondaryJerseyColor\": \"Silver\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam42",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Zurich Falcons Wings\",\r\n  \"divisionId\": \"{{team42_divisionId}}\",\r\n  \"clubId\": \"{{zurichfalcons_id}}\",\r\n  \"homeArena\": \"Swiss Alpine Arena\",\r\n  \"primaryJerseyColor\": \"Steel Blue\",\r\n  \"secondaryJerseyColor\": \"Red\",\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam43",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Brussels Titans Force\",\r\n  \"divisionId\": \"{{team43_divisionId}}\",\r\n  \"clubId\": \"{{brusselstitans_id}}\",\r\n  \"homeArena\": \"Brussels Europa Complex\",\r\n  \"primaryJerseyColor\": \"Gold\",\r\n  \"secondaryJerseyColor\": \"Blue\",\r\n  \"category\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam44",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Brussels Titans Power\",\r\n  \"divisionId\": \"{{team44_divisionId}}\",\r\n  \"clubId\": \"{{brusselstitans_id}}\",\r\n  \"homeArena\": \"Atomium Sports Center\",\r\n  \"primaryJerseyColor\": \"Bronze\",\r\n  \"secondaryJerseyColor\": \"Black\",\r\n  \"category\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateTeam45",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Brussels Titans Strength\",\r\n  \"divisionId\": \"{{team45_divisionId}}\",\r\n  \"clubId\": \"{{brusselstitans_id}}\",\r\n  \"homeArena\": \"Grand Place Arena\",\r\n  \"primaryJerseyColor\": \"Dark Gold\",\r\n  \"secondaryJerseyColor\": null,\r\n  \"category\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/FloorballTeam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"FloorballTeam"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"// Fetch clubs first\r",
+							"pm.sendRequest({\r",
+							"    url: \"http://localhost:8080/api/Clubs\",\r",
+							"    method: 'GET'\r",
+							"}, function (err, response) {\r",
+							"    if (err) {\r",
+							"        console.log('Error fetching clubs:', err);\r",
+							"        return;\r",
+							"    }\r",
+							"    \r",
+							"    const clubs = response.json();\r",
+							"    if (clubs.success && clubs.data) {\r",
+							"        clubs.data.forEach(club => {\r",
+							"            switch(club.name) {\r",
+							"                case 'TestiClubi':\r",
+							"                    pm.globals.set('testiclubi_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Sunrise United FC':\r",
+							"                    pm.globals.set('sunriseunited_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Barcelona Eagles':\r",
+							"                    pm.globals.set('barcelonaeagles_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Berlin Thunder':\r",
+							"                    pm.globals.set('berlinthunder_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Milano Dragons':\r",
+							"                    pm.globals.set('milanodragons_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Paris Wolves':\r",
+							"                    pm.globals.set('pariswolves_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Amsterdam Lions':\r",
+							"                    pm.globals.set('amsterdamlions_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Stockholm Vikings':\r",
+							"                    pm.globals.set('stockholmvikings_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Dublin Shamrocks':\r",
+							"                    pm.globals.set('dublinshamrocks_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Vienna Hawks':\r",
+							"                    pm.globals.set('viennahawks_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Prague Panthers':\r",
+							"                    pm.globals.set('praguepanthers_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Oslo Polar Bears':\r",
+							"                    pm.globals.set('oslopolarbears_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Copenhagen Serpents':\r",
+							"                    pm.globals.set('copenhagenserpents_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Zurich Falcons':\r",
+							"                    pm.globals.set('zurichfalcons_id', club.id);\r",
+							"                    break;\r",
+							"                case 'Brussels Titans':\r",
+							"                    pm.globals.set('brusselstitans_id', club.id);\r",
+							"                    break;\r",
+							"            }\r",
+							"        });\r",
+							"        console.log('All club IDs fetched and stored!');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Fetch divisions dynamically\r",
+							"pm.sendRequest({\r",
+							"    url: \"http://localhost:8080/api/Divisions/sport/Floorball?activeOnly=true\",\r",
+							"    method: 'GET'\r",
+							"}, function (err, response) {\r",
+							"    if (err) {\r",
+							"        console.log('Error fetching divisions:', err);\r",
+							"        return;\r",
+							"    }\r",
+							"    \r",
+							"    const result = response.json();\r",
+							"    if (result.success && result.data && result.data.length > 0) {\r",
+							"        const divisions = result.data;\r",
+							"        \r",
+							"        // Sort divisions by level for consistent ordering\r",
+							"        divisions.sort((a, b) => a.level - b.level);\r",
+							"        \r",
+							"        console.log(`Found ${divisions.length} active Floorball divisions`);\r",
+							"        \r",
+							"        // Clear any existing team division variables\r",
+							"        for (let i = 1; i <= 45; i++) {\r",
+							"            pm.globals.unset(`team${i}_divisionId`);\r",
+							"        }\r",
+							"        \r",
+							"        // Create cycling team-specific division assignments\r",
+							"        const totalTeams = 45;\r",
+							"        for (let teamNum = 1; teamNum <= totalTeams; teamNum++) {\r",
+							"            const divisionIndex = (teamNum - 1) % divisions.length;\r",
+							"            const division = divisions[divisionIndex];\r",
+							"            const variableName = `team${teamNum}_divisionId`;\r",
+							"            pm.globals.set(variableName, division.id);\r",
+							"            console.log(`Team ${teamNum} -> ${division.name} (${division.id})`);\r",
+							"        }\r",
+							"        \r",
+							"        pm.globals.set('totalDivisions', divisions.length);\r",
+							"        console.log(`Cycling division assignment complete. ${totalTeams} teams distributed across ${divisions.length} divisions.`);\r",
+							"        \r",
+							"    } else {\r",
+							"        console.log('No active Floorball divisions found! Team creation will fail.');\r",
+							"        for (let i = 1; i <= 45; i++) {\r",
+							"            pm.globals.unset(`team${i}_divisionId`);\r",
+							"        }\r",
+							"        pm.globals.unset('totalDivisions');\r",
+							"    }\r",
+							"});"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "ClubGetAll",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/Clubs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Clubs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ClubGetById",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/Clubs/1703f5dd-bffe-4a15-90cc-6a4f67352c70",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Clubs",
+						"1703f5dd-bffe-4a15-90cc-6a4f67352c70"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ClubPutById",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n        \"id\": \"1703f5dd-bffe-4a15-90cc-6a4f67352c70\",\r\n        \"name\": \"Lisbon Pirates\",\r\n        \"foundingDate\": \"2001-09-21T00:00:00Z\",\r\n        \"city\": \"Lisbon\",\r\n        \"country\": \"Portugal\",\r\n        \"websiteUrl\": \"https://lisbonpirates.pt/\",\r\n        \"logoUrl\": \"https://lisbonpirates.pt/media/pirate-skull.png\",\r\n        \"contactEmail\": \"pirates@lisbonfc.pt\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Clubs/1703f5dd-bffe-4a15-90cc-6a4f67352c70",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Clubs",
+						"1703f5dd-bffe-4a15-90cc-6a4f67352c70"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

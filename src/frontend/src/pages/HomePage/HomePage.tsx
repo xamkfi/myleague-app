@@ -1,7 +1,6 @@
-import React from 'react';
-import Navbar from '../../components/Navigation/Navbar';
 import HeroSection from '../../components/HeroSection/HeroSection';
 import MatchSidebar from '../../components/MatchSidebar/MatchSidebar';
+import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './HomePage.scss';
 
 const mockStandings = {
@@ -22,36 +21,33 @@ const mockTeamStats = [
 ];
 
 function HomePage() {
-  const handleLogin = () => {
-    console.log('Login button clicked');
-  };
-
   const handleExploreEvents = () => {
     console.log('Explore events button clicked');
   };
 
   return (
-    <div className="home-page">
-      <Navbar onLogin={handleLogin} />
-      <div className="main-content">
-        <div className="hero-container">
-          <HeroSection 
-            onButtonClick={handleExploreEvents}
-          />
-        </div>
-        <div className="sidebar-container">
-          <MatchSidebar 
-            match={{
-              date: '12/6/2025',
-              homeTeam: { name: 'Team 1' },
-              awayTeam: { name: 'Team 2' }
-            }}
-            standings={mockStandings}
-            teamStats={mockTeamStats}
-          />
+    <PageTemplate title="Home" >
+      <div className="home-page">
+        <div className="main-content">
+          <div className="hero-container">
+            <HeroSection
+              onButtonClick={handleExploreEvents}
+            />
+          </div>
+          <div className="sidebar-container">
+            <MatchSidebar
+              match={{
+                date: '12/6/2025',
+                homeTeam: { name: 'Team 1' },
+                awayTeam: { name: 'Team 2' }
+              }}
+              standings={mockStandings}
+              teamStats={mockTeamStats}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </PageTemplate>
   );
 }
 

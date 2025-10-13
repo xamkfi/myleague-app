@@ -1,6 +1,7 @@
-import React from 'react';
 import type { ReactNode } from 'react';
+import { useEffect } from 'react';
 import Navbar from '../Navigation/Navbar';
+import Footer from '../Footer/Footer';
 import './PageTemplate.scss';
 
 interface PageTemplateProps {
@@ -9,17 +10,24 @@ interface PageTemplateProps {
 }
 
 function PageTemplate({ title, children }: PageTemplateProps) {
+  useEffect(() => {
+    document.title = `${title} - MAHL`;
+    return () => {
+      document.title = 'MAHL';
+    };
+  }, [title]);
+
   return (
     <div className="page-container">
       <Navbar />
       <div className="page-content">
-        <h1 className="page-title">{title}</h1>
         <div className="page-body">
           {children || (
             <p className="placeholder-text">This page is under construction.</p>
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

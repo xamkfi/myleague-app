@@ -9,7 +9,7 @@ using WebAPI.Models.Common;
 namespace WebAPI.Controllers.Club;
 
 /// <summary>
-/// Controller for managing football clubs
+/// Controller for managing clubs
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -191,5 +191,39 @@ public class ClubsController : ControllerBase
         }
 
         return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
+    }
+
+    /// <summary>
+    /// Update the logo of a club
+    /// </summary>
+    /// <param name="id">Club ID</param>
+    /// <param name="logoUrl">New logo URL</param>
+    /// <returns>Updated club details</returns>
+    [HttpPatch("{id:guid}/logo")]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<ClubDto>>> UpdateClubLogo(Guid id, [FromBody] string? logoUrl)
+    {
+        _logger.LogInformation("Updating logo for club with ID: {ClubId}", id);
+
+        UpdateClubLogoCommand command = new UpdateClubLogoCommand(id, logoUrl);
+        Result<ClubDto> result = await _mediator.Send(command);
+
+        if (result.IsSuccess && result.Data != null)
+        {
+            return Ok(ApiResponse<ClubDto>.SuccessResponse(result.Data, "Club logo updated successfully"));
+        }
+
+        string errorMessage = result.Error ?? result.GetErrorsString();
+        
+        // Check if it's a not found error
+        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+        {
+            return NotFound(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
+        }
+
+        return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
     }
 } 

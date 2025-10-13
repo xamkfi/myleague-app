@@ -1,0 +1,120 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../../../../styles/common' as *;
+
+.player-item.editable {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'sm');
+  padding: map.get($spacing, 'sm');
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'md');
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+
+  &.newly-added {
+    background-color: #e6ffed;
+    border-left: 4px solid #28a745;
+  }
+
+  &.marked-for-removal {
+    background-color: #fff1f2;
+    border-left: 4px solid #dc3545;
+    opacity: 0.7;
+
+    .player-info, .player-controls {
+      text-decoration: line-through;
+    }
+  }
+
+  .player-info {
+    flex: 1;
+    min-width: 0;
+
+    .player-name {
+      font-weight: map.get($font-weights, 'medium');
+      font-size: map.get($font-sizes, 'sm');
+      color: $color-text-primary;
+    }
+  }
+
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'base');
+  }
+
+  .position-control, .jersey-control, .active-control {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+
+    label {
+      font-size: map.get($font-sizes, 'xs');
+      color: $color-text-muted;
+      margin: 0;
+      white-space: nowrap;
+    }
+  }
+
+  .position-select, .jersey-input {
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    background-color: $color-background-light;
+    max-width: 120px;
+    
+    &:focus {
+      outline: none;
+      border-color: #86b7fe;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+  }
+
+  .jersey-input {
+    text-align: center;
+    max-width: 60px;
+  }
+
+  .active-toggle {
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+    border: none;
+    border-radius: map.get($border-radius, 'pill');
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'medium');
+    cursor: pointer;
+    min-width: 80px;
+    text-align: center;
+    transition: background-color 0.2s ease;
+
+    &.active {
+      background: #d1edff;
+      color: #0d6efd;
+    }
+    
+    &.inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  }
+
+  .remove-button {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0 map.get($spacing, 'sm');
+    transition: color 0.2s ease;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      color: #a71d2a;
+    }
+  }
+} 

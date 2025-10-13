@@ -1,0 +1,62 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../../styles/common' as *;
+
+.team-navbar {
+   display: flex;
+   overflow: hidden;
+   width: 100%;
+   justify-content: space-between;
+
+   
+}
+
+.team-navbar-btn {
+   flex: 1 1 1;
+   padding: 8px 16px;//0.8rem;
+   text-align: center;
+   cursor: pointer;
+   color: $color-neutral-white;
+   transition: all 0.2s ease;
+   position: relative;
+   overflow: hidden;
+
+   // &::after {
+   //    content: '';
+   //    position: absolute;
+   //    bottom: 0;
+   //    left: 0;
+   //    right: 0;
+   //    height: 3px;
+   //    background: $color-blue-light;
+   //    transform: scaleX(0);
+   //    transition: transform 0.2s ease;
+   // }
+
+   &:hover {
+      background: $color-neutral-white-alpha;
+
+      color: $color-neutral-white;
+   }
+
+   &.active {
+      border-radius: 20px;
+      background: $color-neutral-white;
+      
+      span {
+         color: $color-neutral-black;
+      }
+   }
+
+   &:last-child {
+      border-right: none;
+   }
+
+   span {
+      font-weight: map.get($font-weights, "bold");
+
+      font-size: map.get($font-sizes, "sm");
+
+      transition: all 0.2s ease;
+   }
+}

@@ -1,6 +1,7 @@
 using Domain.EventSourcing;
 using Domain.ValueObjects.Common;
 using Domain.DomainEvents.Common;
+using Domain.Enums.Common;
 
 namespace Domain.Entities.Common;
 
@@ -10,11 +11,6 @@ namespace Domain.Entities.Common;
 public class Person : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the person
-    /// </summary>
-    public Guid Id { get; private set; }
-
-    /// <summary>
     /// Gets the first name of the person
     /// </summary>
     public string FirstName { get; private set; }
@@ -23,6 +19,11 @@ public class Person : AggregateRoot
     /// Gets the last name of the person
     /// </summary>
     public string LastName { get; private set; }
+
+    /// <summary>
+    /// Gets the role of the person
+    /// </summary>
+    public PersonRole role { get; private set; }
 
     /// <summary>
     /// Gets the birth date of the person
@@ -51,7 +52,6 @@ public class Person : AggregateRoot
     /// </summary>
     protected Person()
     {
-        Id = Guid.NewGuid();
         FirstName = string.Empty;
         LastName = string.Empty;
     }
@@ -63,12 +63,13 @@ public class Person : AggregateRoot
     /// <param name="firstName">The first name of the person.</param>
     /// <param name="lastName">The last name of the person.</param>
     /// <param name="birthDate">The birth date of the person.</param>
+    /// <param name="role">The role of the person (defaults to User).</param>
     /// <param name="address">The address of the person (optional).</param>
     /// <param name="contactInfo">The contact information of the person (optional).</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="firstName"/> or <paramref name="lastName"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown if <paramref name="firstName"/> or <paramref name="lastName"/> is empty or whitespace, or if <paramref name="birthDate"/> is in the future.</exception>
     public Person(string firstName, string lastName, DateTime birthDate,
-        Address? address = null, ContactInfo? contactInfo = null)
+        PersonRole role = PersonRole.User, Address? address = null, ContactInfo? contactInfo = null)
     {
         ArgumentNullException.ThrowIfNull(firstName);
         ArgumentNullException.ThrowIfNull(lastName);
@@ -80,10 +81,10 @@ public class Person : AggregateRoot
         if (birthDate > DateTime.UtcNow)
             throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
 
-        Id = Guid.NewGuid();
         FirstName = firstName;
         LastName = lastName;
         BirthDate = birthDate;
+        this.role = role;
         Address = address;
         ContactInfo = contactInfo;
 
@@ -141,5 +142,13 @@ public class Person : AggregateRoot
     public void UpdateIsRegistered(bool isRegistered)
     {
         IsRegistered = isRegistered;
+    }
+
+    /// <summary>
+    /// Updates the person's role
+    /// </summary>
+    public void UpdateRole(PersonRole role)
+    {
+        this.role = role;
     }
 } 

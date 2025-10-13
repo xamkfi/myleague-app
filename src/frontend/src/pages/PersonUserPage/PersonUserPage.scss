@@ -1,0 +1,170 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../styles/common' as *;
+
+.person {
+  &-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'base');
+    border-bottom: 2px solid $color-border;
+    padding-bottom: map.get($spacing, 'base');
+    margin-bottom: map.get($spacing, 'lg');
+  }
+
+  &-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: map.get($border-radius, 'full');
+    background-color: $color-placeholder;
+  }
+
+  &-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &-name {
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+  }
+
+  &-subtitle {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
+}
+
+.stats {
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: map.get($spacing, 'base');
+    margin-bottom: map.get($spacing, 'lg');
+    width: 100%;
+  }
+
+  &-box {
+    background-color: $color-background-light;
+    padding: map.get($spacing, 'base');
+    border-radius: map.get($border-radius, 'sm');
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+  }
+
+  &-label {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
+
+  &-value {
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+  }
+}
+
+.teams {
+  &-section {
+    width: 100%;
+    //padding-top: map.get($spacing, 'base');
+
+    h3 {
+      font-size: map.get($font-sizes, 'lg');
+      margin-bottom: map.get($spacing, 'base');
+      color: $color-text-primary;
+    }
+  }
+
+  &-list {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'base');
+  }
+}
+
+.team {
+  &-card {
+    background-color: $color-background-light;
+    border-radius: map.get($border-radius, 'sm');
+    box-shadow: var(--shadow-sm);
+    padding: map.get($spacing, 'base');
+    border: 1px solid $color-border;
+    transition: transform 0.2s ease-in-out;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: map.get($spacing, 'sm');
+    border-bottom: 1px solid $color-border;
+    padding-bottom: map.get($spacing, 'xs');
+  }
+
+  &-name {
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+  }
+
+  &-role {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+    background-color: $color-background-light;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'sm');
+    border: 1px solid $color-border;
+  }
+
+  &-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: map.get($spacing, 'sm');
+  }
+
+  &-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: map.get($font-sizes, 'sm');
+
+    .stat-label {
+      color: $color-text-muted;
+    }
+
+    .stat-value {
+      font-weight: map.get($font-weights, 'bold');
+      color: $color-text-primary;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .team {
+    &-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: map.get($spacing, 'xs');
+    }
+
+    &-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+}

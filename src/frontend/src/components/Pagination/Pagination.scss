@@ -1,0 +1,324 @@
+@use '@variables' as *;
+@use 'sass:map';
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: map.get($spacing, 'base');
+  padding: map.get($spacing, 'md');
+  background-color: $color-neutral-light-grey;
+  border-radius: map.get($border-radius, 'md');
+  border: 1px solid #e9ecef;
+  flex-wrap: wrap;
+  gap: map.get($spacing, 'md');
+  box-shadow: $box-shadow-drop-1;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: map.get($spacing, 'md');
+    padding: map.get($spacing, 'md');
+  }
+}
+
+// Remove container top margin when used as sticky bottom controller
+.pagination-container {
+  &.no-margin {
+    margin-top: 0;
+  }
+}
+
+.page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'sm');
+  flex-shrink: 0;
+
+  label {
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-neutral-black;
+    white-space: nowrap;
+    font-size: map.get($font-sizes, 'sm-md');
+  }
+
+  .page-size-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'sm');
+    background-color: white;
+    font-size: map.get($font-sizes, 'sm-md');
+    cursor: pointer;
+    min-width: 80px;
+    transition: all 0.2s ease-in-out;
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-secondary;
+      box-shadow: 0 0 0 map.get($spacing, 'xs') rgba(0, 123, 255, 0.25);
+    }
+
+    &:hover {
+      border-color: $color-neutral-medium-grey;
+    }
+  }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  @media (max-width: 480px) {
+    gap: map.get($spacing, 'xs');
+  }
+}
+
+.pagination-button {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'sm');
+  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+  border: 1px solid $color-blue-secondary;
+  background-color: $color-neutral-white;
+  color: $color-blue-secondary;
+  border-radius: map.get($border-radius, 'sm');
+  cursor: pointer;
+  font-size: map.get($font-sizes, 'sm-md');
+  font-weight: map.get($font-weights, 'medium');
+  transition: all 0.2s ease-in-out;
+  min-height: 40px;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background-color: $color-blue-secondary;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: $color-neutral-medium-grey;
+    color: $color-neutral-medium-grey;
+    transform: none;
+    box-shadow: none;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 480px) {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    font-size: map.get($font-sizes, 'sm-md');
+    gap: map.get($spacing, 'xs');
+  }
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'xs');
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pagination-page-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0.5rem;
+  border: 1px solid $color-neutral-medium-grey;
+  background-color: white;
+  color: $color-neutral-black;
+  border-radius: map.get($border-radius, 'sm');
+  cursor: pointer;
+  font-size: map.get($font-sizes, 'sm-md');
+  font-weight: map.get($font-weights, 'medium');
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+
+  &:hover:not(.active) {
+    background-color: $color-neutral-light-grey;
+    border-color: $color-neutral-medium-grey;
+    color: $color-neutral-black;
+  }
+
+  &.active {
+    background-color: $color-blue-secondary;
+    border-color: $color-blue-secondary;
+    color: $color-neutral-white;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+
+  @media (max-width: 480px) {
+    min-width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
+  }
+}
+
+.pagination-ellipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0.5rem;
+  color: $color-neutral-medium-grey;
+  font-weight: map.get($font-weights, 'medium');
+  user-select: none;
+
+  @media (max-width: 480px) {
+    min-width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
+  }
+}
+
+.pagination-summary {
+  font-size: map.get($font-sizes, 'sm-md');
+  color: $color-neutral-medium-grey;
+  white-space: nowrap;
+  text-align: center;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    text-align: center;
+    order: -1;
+  }
+}
+
+// Compact variant
+.pagination-container.compact {
+  padding: 1rem;
+  gap: 1rem;
+
+  .pagination-button {
+    padding: 0.5rem 0.75rem;
+    font-size: map.get($font-sizes, 'sm-md');
+  }
+
+  .pagination-page-button {
+    min-width: 36px;
+    height: 36px;
+    font-size: map.get($font-sizes, 'sm-md');
+  }
+
+  .pagination-ellipsis {
+    min-width: 36px;
+    height: 36px;
+    font-size: map.get($font-sizes, 'sm-md');
+  }
+}
+
+// Minimal variant
+.pagination-container.minimal {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0.5rem 0;
+
+  .pagination-button {
+    border: 1px solid $color-neutral-medium-grey;
+    background-color: white;
+
+    &:hover:not(:disabled) {
+      background-color: $color-neutral-light-grey;
+      color: $color-blue-secondary;
+      border-color: $color-blue-secondary;
+    }
+  }
+
+  .pagination-page-button {
+    border: 1px solid $color-neutral-medium-grey;
+
+    &:hover:not(.active) {
+      background-color: $color-neutral-light-grey;
+    }
+  }
+}
+
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .pagination-container {
+    background-color: $color-neutral-black;
+    border-color: $color-neutral-dark-grey;
+    color: $color-neutral-white;
+  }
+
+  
+
+  .pagination-button {
+    background-color: $color-neutral-dark-grey;
+    border-color: $color-blue-secondary;
+    color: $color-neutral-white;
+
+    &:hover:not(:disabled) {
+      background-color: $color-blue-secondary;
+      color: $color-neutral-black;
+    }
+
+    &:disabled {
+      border-color: $color-neutral-medium-grey;
+      color: $color-neutral-medium-grey;
+    }
+  }
+
+  .pagination-page-button {
+    background-color: $color-neutral-dark-grey;
+    border-color: $color-neutral-medium-grey;
+    color: $color-neutral-white;
+
+    &:hover:not(.active) {
+      background-color: $color-neutral-medium-grey;
+      border-color: $color-neutral-medium-grey;
+    }
+
+    &.active {
+      background-color: $color-blue-secondary;
+      border-color: $color-blue-secondary;
+      color: $color-neutral-black;
+    }
+  }
+
+  .pagination-summary {
+    color: $color-neutral-medium-grey;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .pagination-container {
+    border-width: 2px;
+  }
+
+  .pagination-button,
+  .pagination-page-button {
+    border-width: 2px;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .pagination-button,
+  .pagination-page-button {
+    transition: none;
+  }
+} 

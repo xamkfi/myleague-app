@@ -1,0 +1,360 @@
+{
+	"info": {
+		"_postman_id": "floorball-referee-2024",
+		"name": "FloorballReferee - Create from Persons",
+		"description": "Collection for creating FloorballReferee entities from existing persons with referee surnames\n\n## Overview:\nThis collection finds persons with referee surnames and creates FloorballReferee entities from them.\n\n## Prerequisites:\n- Backend API running on localhost:8080\n- Persons with referee surnames exist in database (created by Persons.json collection)\n\n## Flow:\n1. **Setup**: Fetch persons with referee surnames\n2. **Create Referees**: Create FloorballReferee entities from those persons\n3. **Verify**: Check that referees were created successfully\n\n## License Details:\n- Issue Date: 2020-01-01\n- Expiry Date: 2030-12-31 (within 10-year validation limit)\n\n## Endpoints Used:\n- GET /Persons (fetch persons)\n- POST /FloorballReferee (create referees)\n- GET /FloorballReferee (verify referees)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		},
+		{
+			"key": "referee_person_1_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "referee_person_2_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "referee_person_3_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Setup",
+			"item": [
+				{
+					"name": "01 - Get Persons with Referee Surnames",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Persons",
+							"host": ["{{baseUrl}}"],
+							"path": ["Persons"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🔍 Fetching persons to find referees...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        const persons = response.data;",
+									"        let refereeCount = 0;",
+									"        ",
+									"        // Find persons with referee surnames",
+									"        persons.forEach(person => {",
+									"            if (person.lastName && person.lastName.toLowerCase().includes('referee')) {",
+									"                refereeCount++;",
+									"                console.log(`✅ Found referee person: ${person.firstName} ${person.lastName} (${person.id})`);",
+									"                ",
+									"                // Store the first 3 referee persons",
+									"                if (refereeCount === 1) {",
+									"                    pm.collectionVariables.set('referee_person_1_id', person.id);",
+									"                } else if (refereeCount === 2) {",
+									"                    pm.collectionVariables.set('referee_person_2_id', person.id);",
+									"                } else if (refereeCount === 3) {",
+									"                    pm.collectionVariables.set('referee_person_3_id', person.id);",
+									"                }",
+									"                ",
+									"                // Validate the person ID is a valid GUID",
+									"                if (!person.id || person.id === '00000000-0000-0000-0000-000000000000') {",
+									"                    console.log(`⚠️  Invalid person ID for ${person.firstName} ${person.lastName}`);",
+									"                }",
+									"            }",
+									"        });",
+									"        ",
+									"        console.log(`📊 Found ${refereeCount} persons with referee surnames`);",
+									"        ",
+									"        if (refereeCount === 0) {",
+									"            console.log('⚠️  No persons with referee surnames found!');",
+									"            console.log('   Make sure to run the Persons.json collection first to create referee persons');",
+									"        }",
+									"    } else {",
+									"        console.log('❌ No persons data found in response');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to fetch persons, status:', pm.response.code);",
+									"}"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Create Referees",
+			"item": [
+				{
+					"name": "01 - Create Referee from Person 1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"{{referee_person_1_id}}\",\n  \"licenseIssueDate\": \"2020-01-01T00:00:00\",\n  \"licenseExpiryDate\": \"2030-12-31T23:59:59\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballReferee",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballReferee"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('👨‍⚖️ Creating referee from person 1...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"// Check if person ID is set",
+									"const personId = pm.collectionVariables.get('referee_person_1_id');",
+									"if (!personId || personId === '') {",
+									"    console.log('❌ No person ID found for referee 1. Run Setup first.');",
+									"    return;",
+									"}",
+									"",
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Referee 1 created successfully!');",
+									"        console.log('   Referee ID:', response.data.id);",
+									"        console.log('   Person ID:', response.data.personId);",
+									"        console.log('   License valid until:', response.data.licenseExpiryDate);",
+									"    } else {",
+									"        console.log('❌ Referee created but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to create referee, status:', pm.response.code);",
+									"    try {",
+									"        const errorResponse = pm.response.json();",
+									"        console.log('Error details:', JSON.stringify(errorResponse, null, 2));",
+									"    } catch (e) {",
+									"        console.log('Error response:', pm.response.text());",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "02 - Create Referee from Person 2",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"{{referee_person_2_id}}\",\n  \"licenseIssueDate\": \"2020-01-01T00:00:00\",\n  \"licenseExpiryDate\": \"2030-12-31T23:59:59\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballReferee",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballReferee"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('👨‍⚖️ Creating referee from person 2...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"// Check if person ID is set",
+									"const personId = pm.collectionVariables.get('referee_person_2_id');",
+									"if (!personId || personId === '') {",
+									"    console.log('❌ No person ID found for referee 2. Run Setup first.');",
+									"    return;",
+									"}",
+									"",
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Referee 2 created successfully!');",
+									"        console.log('   Referee ID:', response.data.id);",
+									"        console.log('   Person ID:', response.data.personId);",
+									"        console.log('   License valid until:', response.data.licenseExpiryDate);",
+									"    } else {",
+									"        console.log('❌ Referee created but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to create referee, status:', pm.response.code);",
+									"    try {",
+									"        const errorResponse = pm.response.json();",
+									"        console.log('Error details:', JSON.stringify(errorResponse, null, 2));",
+									"    } catch (e) {",
+									"        console.log('Error response:', pm.response.text());",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "03 - Create Referee from Person 3",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"{{referee_person_3_id}}\",\n  \"licenseIssueDate\": \"2020-01-01T00:00:00\",\n  \"licenseExpiryDate\": \"2030-12-31T23:59:59\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/FloorballReferee",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballReferee"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('👨‍⚖️ Creating referee from person 3...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"// Check if person ID is set",
+									"const personId = pm.collectionVariables.get('referee_person_3_id');",
+									"if (!personId || personId === '') {",
+									"    console.log('❌ No person ID found for referee 3. Run Setup first.');",
+									"    return;",
+									"}",
+									"",
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        console.log('✅ Referee 3 created successfully!');",
+									"        console.log('   Referee ID:', response.data.id);",
+									"        console.log('   Person ID:', response.data.personId);",
+									"        console.log('   License valid until:', response.data.licenseExpiryDate);",
+									"    } else {",
+									"        console.log('❌ Referee created but unexpected response structure');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to create referee, status:', pm.response.code);",
+									"    try {",
+									"        const errorResponse = pm.response.json();",
+									"        console.log('Error details:', JSON.stringify(errorResponse, null, 2));",
+									"    } catch (e) {",
+									"        console.log('Error response:', pm.response.text());",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Verify",
+			"item": [
+				{
+					"name": "01 - Get All Referees",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/FloorballReferee",
+							"host": ["{{baseUrl}}"],
+							"path": ["FloorballReferee"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"console.log('🔍 Verifying created referees...');",
+									"console.log('Response status:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.success && response.data) {",
+									"        const referees = response.data;",
+									"        console.log(`✅ Found ${referees.length} referees in total`);",
+									"        ",
+									"        referees.forEach((referee, index) => {",
+									"            console.log(`   ${index + 1}. ${referee.fullName || referee.name || 'ID: ' + referee.id}`);",
+									"            console.log(`      - Referee ID: ${referee.id}`);",
+									"            console.log(`      - Person ID: ${referee.personId}`);",
+									"            console.log(`      - License expires: ${referee.licenseExpiryDate}`);",
+									"        });",
+									"    } else {",
+									"        console.log('❌ No referees data found in response');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Failed to fetch referees, status:', pm.response.code);",
+									"}"
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+} 

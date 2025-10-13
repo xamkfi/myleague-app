@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Player, TeamsData, Goalkeeper, FieldPlayer } from "../../types/playerTypes";
 import teamsData from "./testdata.json";
@@ -12,15 +12,16 @@ const PlayerPage = () => {
   //fetch(`/api/player/${playerId}`).then(...)
 
   useEffect(() => {
-    const playerId = parseInt(id || "1", 10);
+    if (!id) return;
+    
     const data = teamsData as unknown as TeamsData;
     const team = data.Teams.find(t =>
-      [...t.Players.Goalkeepers, ...t.Players.Fieldplayers].some(p => p.Id === playerId)
+      [...t.Players.Goalkeepers, ...t.Players.Fieldplayers].some(p => p.Id === id)
     );
     if (!team) return;
 
     const allPlayers = [...team.Players.Goalkeepers, ...team.Players.Fieldplayers];
-    const found = allPlayers.find(p => p.Id === playerId);
+    const found = allPlayers.find(p => p.Id === id);
 
     if (found) {
       setPlayer({ ...found, teamName: team.Name });

@@ -11,11 +11,6 @@ namespace Domain.Entities.Floorball;
 public class FloorballReferee : AggregateRoot
 {
     /// <summary>
-    /// Gets the unique identifier of the referee
-    /// </summary>
-    public Guid Id { get; private set; }
-    
-    /// <summary>
     /// Gets the ID of the person this referee profile belongs to (FK)
     /// </summary>
     public Guid PersonId { get; private set; }
@@ -125,5 +120,15 @@ public class FloorballReferee : AggregateRoot
     public bool HasValidLicense(DateTime checkDate)
     {
         return IsActive && LicenseExpiryDate.HasValue && checkDate <= LicenseExpiryDate;
+    }
+    
+    /// <summary>
+    /// Sets the person for this referee (used when loading navigation properties)
+    /// </summary>
+    /// <param name="person">The person to associate with this referee</param>
+    public void SetPerson(Person person)
+    {
+        ArgumentNullException.ThrowIfNull(person);
+        Person = person;
     }
 } 

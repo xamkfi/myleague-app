@@ -2,7 +2,6 @@
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Handlers.Clubs;
 using Application.Mappings.Common;
 using Application.Validators.Commands.Person;
 using Domain.Entities.Common;
@@ -19,15 +18,15 @@ namespace Application.Handlers.Persons
     {
         private readonly IPersonRepository _personRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<UpdateClubHandler> _logger;
+        private readonly ILogger<UpdatePersonAddressHandler> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the UpdatePersonAddressCommandHandler class
+        /// Initializes a new instance of the UpdatePersonAddressHandler class
         /// </summary>
         /// <param name="personRepository"></param>
         /// <param name="unitOfWork"></param>
         /// <param name="logger"></param>
-        public UpdatePersonAddressHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<UpdateClubHandler> logger)
+        public UpdatePersonAddressHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<UpdatePersonAddressHandler> logger)
         {
             _personRepository = personRepository;
             _unitOfWork = unitOfWork;

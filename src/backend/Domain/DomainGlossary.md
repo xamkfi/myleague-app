@@ -26,9 +26,6 @@ A Person with a player role in floorball. Tracks player-specific attributes like
 ### FloorballReferee 
 A Person with a referee role in floorball. Tracks referee-specific attributes like license status and match count.
 
-### FloorballCoach
-A Person with a coaching role for a floorball team. Tracks coach-specific attributes like experience and certification.
-
 ### FloorballTeamManager
 A Person with a team management role. Handles administrative responsibilities for a floorball team.
 
@@ -86,6 +83,17 @@ Raised when a penalty is assigned during a match.
 ### FloorballOfficialAssignedEvent
 Raised when a referee is assigned to a match.
 
+## News Article
+A published piece of content containing information relevant to the league, including match reports, announcements, player updates, and general league news. Each article has a unique identifier, title, HTML content, and optional metadata such as author, category, and tags.
+## News Category
+A high-level classification system for organizing news content into logical groups such as Match Reports, League News, Player Updates, Team News, Announcements, Events, Transfers, Injuries, and Awards.
+## News Tags
+Flexible labels applied to news articles for enhanced organization and searchability. Tags allow for cross-cutting categorization beyond the primary category system.
+## Content HTML
+Rich formatted content of a news article stored as HTML markup, allowing for proper formatting, links, and embedded media within the article body.
+## News Summary
+An optional brief description or excerpt of a news article used for preview purposes in lists, feeds, or search results.
+
 ## Aggregate Roots
 
 The following entities serve as aggregate roots in our domain model:
@@ -96,6 +104,5 @@ The following entities serve as aggregate roots in our domain model:
 4. **FloorballMatch** - Manages all match-related data and events
 5. **FloorballTeam** - Manages roster and team details
 6. **FloorballPlayer** - Manages player-specific attributes
-7. **FloorballReferee** - Manages referee-specific attributes
-8. **FloorballCoach** - Manages coach-specific attributes
-9. **FloorballTeamManager** - Manages team manager-specific attributes 
+7. **FloorballTeamManager** - Manages team administrative responsibilities
+8. **FloorballReferee** - Manages referee qualifications and match assignments

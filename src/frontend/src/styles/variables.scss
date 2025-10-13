@@ -1,3 +1,4 @@
+@use "sass:map";
 /**
  * Global SCSS Variables
  * 
@@ -17,10 +18,67 @@ $color-text-muted: #888;
 $color-border: #ddd;
 $color-sidebar: #ccc;
 $color-placeholder: #999;
+$color-box-shadow: #00000019;
+
+// Neutral Colors
+$color-neutral-black: #1C1C1E;
+$color-neutral-dark-grey: #6E6D75;
+$color-neutral-medium-grey: #D1D0D6;
+$color-neutral-light-grey: #F1F2F7;
+$color-neutral-white: #FBFBFD;
+
+// Neutral Colors with 0.25 alpha
+$color-neutral-black-alpha: #1C1C1E40;
+$color-neutral-dark-grey-alpha: #6E6D7540;
+$color-neutral-medium-grey-alpha: #D1D0D640;
+$color-neutral-light-grey-alpha: #F1F2F740;
+$color-neutral-white-alpha: #FBFBFD40;
+
+// Colour (Blue Spectrum)
+$color-blue-darkest: #0C1D3E;
+$color-blue-deep: #16346B;
+$color-blue-medium: #2A4A63;
+$color-blue-light: #4A679F;
+$color-blue-background: #CFDAEF;
+
+$color-gradient-blue: linear-gradient(270deg, var(--Colour-Medium, #2A4A83) 0%, var(--Colour-Light, #4A679F) 100%);
+
+// Box Shadow
+$box-shadow-drop-1: 0 5px 25px 0 rgba(57, 62, 99, 0.15);
+
+// Common styles
+$border-radius-default: 8px;
+
+
+// Secondary Color Palette
+// Reds
+$color-red-primary: #F8403C;
+$color-red-muted: #D74440;
+$color-red-light: #F48280;
+$color-red-pale: #F9BAB8;
+
+// Yellows
+$color-yellow-primary: #FFBB29;
+$color-yellow-muted: #DE921A;
+$color-yellow-light: #FBCF6F;
+$color-yellow-pale: #FFEFB8;
+
+// Greens
+$color-green-primary: #2FCC6F;
+$color-green-muted: #1E9850;
+$color-green-light: #6DD698;
+$color-green-pale: #A9E3C1;
+
+// Blues
+$color-blue-secondary: #447FEE;
+$color-blue-secondary-muted: #2F60BA;
+$color-blue-secondary-light: #85A8EA;
+$color-blue-secondary-pale: #BBCEF2;
 
 // Typography
 $font-sizes: (
   'xs': 0.6rem,
+  'sm-xs': 0.75rem,
   'sm': 0.9rem,
   'base': 1rem,
   'md': 1.2rem,
@@ -30,8 +88,10 @@ $font-sizes: (
 );
 
 $font-weights: (
+  'light': 400,
   'medium': 500,
-  'bold': 600
+  'bold': 600,
+  'extrabold': 800,
 );
 
 $letter-spacing-wide: 4px;
@@ -55,6 +115,8 @@ $max-width-page: 1200px;
 $sidebar-width: 280px;
 $border-radius: (
   'sm': 4px,
+  'lg': 8px,
+  'xl': 24px,
   'full': 50%
 );
 
@@ -72,9 +134,20 @@ $transition-filter: filter 300ms;
 @mixin container {
   width: 100%;
   max-width: $max-width-container;
+  padding: map.get($spacing, "md");
   margin: 0 auto;
+  box-shadow: $box-shadow-drop-1;
+  border-radius: $border-radius-default;
+  background: $color-neutral-white;
 }
 
 @mixin transition($property: all) {
   transition: $property $transition-default;
+}
+
+@mixin card-style($shadow: $box-shadow-drop-1) {
+  border-radius: $border-radius-default;
+  background: $color-white;
+  box-shadow: $shadow;
 } 
+

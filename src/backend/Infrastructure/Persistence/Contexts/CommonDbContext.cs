@@ -35,9 +35,29 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<Person> Persons { get; set; }
 
         /// <summary>
+        /// Gets or sets the Users DbSet.
+        /// </summary>
+        public DbSet<User> Users { get; set; }
+
+        /// <summary>
         /// Gets or sets the Clubs DbSet.
         /// </summary>
         public DbSet<Club> Clubs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the NewsArticles DbSet.
+        /// </summary>
+        public DbSet<NewsArticle> NewsArticles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Divisions DbSet.
+        /// </summary>
+        public DbSet<Division> Divisions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the TimerStates DbSet.
+        /// </summary>
+        public DbSet<TimerState> TimerStates { get; set; }
         
         /// <summary>
         /// Saves changes to the database with domain event dispatching.
@@ -80,9 +100,16 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         {
             base.OnModelCreating(modelBuilder);
 
+            // Set default schema for all Common entities
+            modelBuilder.HasDefaultSchema("common");
+
             // Apply only Common configurations to avoid cross-context conflicts
             modelBuilder.ApplyConfiguration(new PersonConfiguration());
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new ClubConfiguration());
+            modelBuilder.ApplyConfiguration(new NewsArticleConfiguration());
+            modelBuilder.ApplyConfiguration(new DivisionConfiguration());
+            modelBuilder.ApplyConfiguration(new TimerStateConfiguration());
         }
     }
 } 

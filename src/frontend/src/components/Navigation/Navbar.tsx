@@ -1,16 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle/LanguageToggle';
-import type { Club } from '../../api/clubService';
-import { getClubs } from '../../api/clubService';
+import type { Club } from '../../api/common/clubService';
+import { getClubs } from '../../api/common/clubService';
+import { createClubSlug } from '../../utils/slugUtils';
 import './Navbar.scss';
+import SearchBar from '../SearchBar';
 
-interface NavbarProps {
-  onLogin?: () => void;
-}
 
-function Navbar({ onLogin }: NavbarProps) {
+function Navbar() {
   const { t } = useTranslation();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [clubs, setClubs] = useState<Club[]>([]);
@@ -57,6 +56,9 @@ function Navbar({ onLogin }: NavbarProps) {
           <h1>MAHL</h1>
         </Link>
       </div>
+      <div className="navbar-search">
+        <SearchBar />
+      </div>
       <div className="navbar-menu">
         <ul className="navbar-items">
           <li className="navbar-item">
@@ -98,7 +100,7 @@ function Navbar({ onLogin }: NavbarProps) {
                 ) : (
                   clubs.map((club) => (
                     <li key={club.id}>
-                      <Link to={`/club/${club.id}`}>
+                      <Link to={`/club/${createClubSlug(club)}`}>
                         {club.name}
                       </Link>
                     </li>
@@ -113,9 +115,6 @@ function Navbar({ onLogin }: NavbarProps) {
         <div className="navbar-language">
           <LanguageToggle />
         </div>
-        <button className="button button-primary" onClick={onLogin}>
-          Somelinkit
-        </button>
       </div>
     </nav>
   );

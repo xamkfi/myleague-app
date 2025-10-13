@@ -2,7 +2,6 @@
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Handlers.Clubs;
 using Application.Mappings.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
@@ -18,7 +17,7 @@ namespace Application.Handlers.Persons
     {
         private readonly IPersonRepository _personRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<UpdateClubHandler> _logger;
+        private readonly ILogger<UpdatePersonContactInfoHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the UpdatePersonContactInfoHandler class
@@ -26,7 +25,7 @@ namespace Application.Handlers.Persons
         /// <param name="personRepository"></param>
         /// <param name="unitOfWork"></param>
         /// <param name="logger"></param>
-        public UpdatePersonContactInfoHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<UpdateClubHandler> logger)
+        public UpdatePersonContactInfoHandler(IPersonRepository personRepository, IUnitOfWork unitOfWork, ILogger<UpdatePersonContactInfoHandler> logger)
         {
             _personRepository = personRepository;
             _unitOfWork = unitOfWork;

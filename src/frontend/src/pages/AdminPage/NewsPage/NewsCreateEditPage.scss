@@ -1,0 +1,403 @@
+.QuillEditor {
+  width: 100% !important; /* Make it responsive instead of fixed 800px */
+  height: 500px; /* Reduce height from 600px to 400px for better fit */
+  
+  /* Ensure the editor content area respects the container */
+  .ql-container {
+    height: calc(100% - 42px); /* Subtract toolbar height */
+  }
+  
+  .ql-editor {
+    min-height: 300px;
+    padding: 1rem;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Make toolbar responsive */
+  .ql-toolbar {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .ql-container {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    font-family: inherit;
+  }
+  
+  /* Style images inside the editor to be responsive */
+  img {
+    max-width: 100% !important; /* Changed from fixed 600px */
+    height: auto;
+    display: block;
+    margin: 1rem auto; /* Center images */
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Remove the old PreviewNews styles since we're using the new component */
+.PreviewNews {
+  /* Remove all the fixed width styling */
+  text-align: left;
+  padding: 1rem;
+  margin: 0 auto;
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  
+  img {
+    max-width: 100% !important; /* Changed from fixed 600px */
+    height: auto;
+    display: block;
+    margin: 1rem auto; /* Center images */
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Add responsive breakpoints for mobile */
+@media (max-width: 768px) {
+  .QuillEditor {
+    height: 300px; /* Smaller height on mobile */
+    
+    .ql-editor {
+      min-height: 200px;
+      padding: 0.75rem;
+      font-size: 14px;
+    }
+    
+    /* Ensure toolbar buttons wrap properly on mobile */
+    .ql-toolbar {
+      padding: 0.5rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .QuillEditor {
+    height: 250px;
+    
+    .ql-editor {
+      min-height: 150px;
+      padding: 0.5rem;
+    }
+  }
+}
+
+/* Sticky Action Panel */
+.sticky-action-panel {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(229, 231, 235, 1);
+  }
+}
+
+/* Enhanced Button Styles */
+.action-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  
+  &:hover {
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  &:active {
+    transform: translateY(0) scale(1);
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Progress Bar with Glow Effect */
+.progress-bar-glow {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    animation: progress-shimmer 3s infinite;
+  }
+}
+
+@keyframes progress-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Floating Animation for Panel */
+.sticky-panel-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .sticky-action-panel {
+    margin: 0 -1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    
+    .panel-content {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: stretch;
+    }
+    
+    .progress-section {
+      justify-content: center;
+    }
+    
+    .action-buttons {
+      justify-content: center;
+      gap: 0.75rem;
+      
+      button {
+        flex: 1;
+        justify-content: center;
+        min-width: 0;
+        
+        span {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .sticky-action-panel {
+    .action-buttons {
+      flex-wrap: wrap;
+      
+      button {
+        flex: 1 1 45%;
+        min-height: 44px; /* Touch-friendly */
+      }
+    }
+  }
+}
+
+/* Button Pulse Animation for Important Actions */
+.pulse-button {
+  animation: button-pulse 2s infinite;
+}
+
+@keyframes button-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+  }
+}
+
+/* Minimize/Maximize Panel States */
+.panel-minimized {
+  .panel-content {
+    padding: 0.5rem;
+  }
+  
+  .progress-section,
+  .button-text {
+    display: none;
+  }
+  
+  .action-buttons {
+    gap: 0.25rem;
+    
+    button {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+.quill-editor-container {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.quill-editor-main {
+  flex: 2;
+  min-width: 0; // Important for flex item to shrink
+}
+
+.quill-editor-sidebar {
+  flex: 1;
+  min-width: 320px;
+  max-width: 400px;
+}
+
+// Responsive design
+@media (max-width: 1200px) {
+  .quill-editor-container {
+    flex-direction: column;
+  }
+  
+  .quill-editor-sidebar {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+.quill-editor-header {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.match-selector-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &__icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+.match-selector-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+
+  &__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  &__content {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    animation: modalEnter 0.2s ease-out;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  &__close {
+    padding: 0.5rem;
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    overflow: hidden;
+  }
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

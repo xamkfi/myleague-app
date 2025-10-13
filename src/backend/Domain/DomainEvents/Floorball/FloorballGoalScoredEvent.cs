@@ -43,9 +43,19 @@ public class FloorballGoalScoredEvent : FloorballDomainEvent
     public bool IsPenaltyShot { get; }
 
     /// <summary>
+    /// Gets whether the goal was scored in shootout
+    /// </summary>
+    public bool IsShootout { get; }
+
+    /// <summary>
     /// Gets the ID of the player who assisted (if any)
     /// </summary>
     public Guid? AssisterId { get; }
+
+    /// <summary>
+    /// Gets the ID of the second player who assisted (if any)
+    /// </summary>
+    public Guid? SecondaryAssisterId { get; }
 
     /// <summary>
     /// Initializes a new instance of the FloorballGoalScoredEvent class
@@ -57,7 +67,9 @@ public class FloorballGoalScoredEvent : FloorballDomainEvent
     /// <param name="timeInSeconds">The time in seconds when the goal was scored in the period</param>
     /// <param name="isOvertime">Whether the goal was scored in overtime</param>
     /// <param name="isPenaltyShot">Whether the goal was scored from a penalty shot</param>
+    /// <param name="isShootout">Whether the goal was scored in shootout</param>
     /// <param name="assisterId">The ID of the player who assisted (optional)</param>
+    /// <param name="secondaryAssisterId">The ID of the second player who assisted (optional)</param>
     public FloorballGoalScoredEvent(
         Guid matchId,
         Guid teamId,
@@ -66,7 +78,9 @@ public class FloorballGoalScoredEvent : FloorballDomainEvent
         int timeInSeconds,
         bool isOvertime = false,
         bool isPenaltyShot = false,
-        Guid? assisterId = null)
+        bool isShootout = false,
+        Guid? assisterId = null,
+        Guid? secondaryAssisterId = null)
     {
         if (periodNumber < 1)
         {
@@ -85,6 +99,10 @@ public class FloorballGoalScoredEvent : FloorballDomainEvent
         TimeInSeconds = timeInSeconds;
         IsOvertime = isOvertime;
         IsPenaltyShot = isPenaltyShot;
+        IsShootout = isShootout;
         AssisterId = assisterId;
+        SecondaryAssisterId = secondaryAssisterId;
     }
+
+    private FloorballGoalScoredEvent() { }
 } 
