@@ -3,11 +3,13 @@ import type { ProcessedEvent } from './types';
 interface LiveMatchEventsHistoryProps {
   allEvents: ProcessedEvent[];
   formatEventTime: (timeInSeconds: number) => string;
+  onDeleteEvent?: (event: ProcessedEvent) => void;
 }
 
 const LiveMatchEventsHistory = ({
   allEvents,
-  formatEventTime
+  formatEventTime,
+  onDeleteEvent
 }: LiveMatchEventsHistoryProps) => {
   return (
     <div className="events-history">
@@ -51,6 +53,14 @@ const LiveMatchEventsHistory = ({
                   </div>
                 ) : null}
               </div>
+              <button
+                className="event-delete"
+                title="Delete event"
+                onClick={() => onDeleteEvent && onDeleteEvent(event)}
+                aria-label="Delete event"
+              >
+                ×
+              </button>
             </div>
           ))}
         </div>

@@ -81,6 +81,7 @@ public class DeleteGoalEventHandler : IRequestHandler<DeleteGoalEventCommand, Re
 
             // Create the DTO before deleting the goal
             FloorballGoalEventDto goalEventDto = new FloorballGoalEventDto(
+                goalToDelete.Id,
                 goalToDelete.TeamId,
                 goalToDelete.ScoringPlayerId ?? Guid.Empty,
                 goalToDelete.AssistingPlayerId,

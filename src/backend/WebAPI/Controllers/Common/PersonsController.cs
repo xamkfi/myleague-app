@@ -2,13 +2,15 @@
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
+using Application.Handlers.Common;
+using Application.Mappings.Common;
 using Application.Queries.Persons;
+using Domain.Common;
+using Domain.ValueObjects.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
-using Domain.ValueObjects.Common;
-using Application.Mappings.Common;
 
 namespace WebAPI.Controllers.Common
 {
@@ -41,17 +43,38 @@ namespace WebAPI.Controllers.Common
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<PersonDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<PersonDto>>>> GetAllPersons()
+        public async Task<ActionResult<ApiResponse<List<PersonDto>>>> GetAllPersons([FromQuery] GetPersonsRequest request)
         {
             _logger.LogInformation("Getting all persons");
 
-            GetAllPersonsQuery query = new GetAllPersonsQuery();
-            Result<IEnumerable<PersonDto>> result = await _mediator.Send(query);
+            GetAllPersonsQuery query = new GetAllPersonsQuery(
+                request.Page,
+                request.PageSize,
+                request.FirstName,
+                request.LastName,
+                request.BirthDate,
+                request.IsRegistered
+                );
+
+            Result<PagedResult<PersonDto>> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
             {
-                PersonDto[] personList = result.Data.OrderByDescending(x => x.LastName).ToArray();
-                return Ok(ApiResponse<PersonDto[]>.SuccessResponse(personList, "Persons retrieved successfully"));
+                return Ok(new PaginatedApiResponse<PersonDto>
+                {
+                    Success = true,
+                    Data = result.Data.Items,
+                    Message = "Persons retrieved successfully",
+                    Pagination = new PaginationMetadata
+                    {
+                        CurrentPage = result.Data.Page,
+                        TotalPages = result.Data.TotalPages,
+                        PageSize = result.Data.PageSize,
+                        TotalCount = result.Data.TotalCount,
+                        StartItem = ((result.Data.Page - 1) * result.Data.PageSize) + 1,
+                        EndItem = Math.Min(result.Data.Page * result.Data.PageSize, result.Data.TotalCount)
+                    }
+                });
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();

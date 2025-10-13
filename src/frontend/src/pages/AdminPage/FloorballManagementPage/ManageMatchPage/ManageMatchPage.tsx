@@ -182,6 +182,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     clock: timer.localClock,
     currentTimerElapsedTime: timer.currentTimerElapsedTime,
     loadMatchEvents: matchEvents.loadMatchEvents,
+    loadCurrentMatchStatus: matchData.loadCurrentMatchStatus,
     setError: matchData.setError
   });
   // Loading state for save events and destructured dependencies
@@ -602,6 +603,32 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           <LiveMatchEventsHistory
             allEvents={matchEvents.allEvents}
             formatEventTime={timer.formatEventTime}
+            onDeleteEvent={async (event) => {
+              if (!event.eventId) {
+                matchData.setError('Cannot delete: missing event id');
+                return;
+              }
+              try {
+                matchData.setError(null);
+                console.log('Deleting event', { type: event.type, eventId: event.eventId, matchId: match.id });
+                // Refresh match before delete to ensure scores/periods are up to date
+                await matchData.loadCurrentMatchStatus();
+                if (event.type === 'goal') {
+                  await floorballMatchService.deleteGoal(match.id, event.eventId);
+                } else if (event.type === 'penalty') {
+                  await floorballMatchService.deletePenalty(match.id, event.eventId);
+                } else if (event.type === 'save') {
+                  await floorballMatchService.deleteSave(match.id, event.eventId);
+                } else {
+                  return;
+                }
+                await matchData.loadCurrentMatchStatus();
+                await matchEvents.loadMatchEvents();
+              } catch (err) {
+                console.error('Failed to delete event', err);
+                matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
+              }
+            }}
           />
         </div>
       </div>

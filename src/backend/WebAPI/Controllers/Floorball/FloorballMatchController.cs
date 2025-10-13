@@ -556,6 +556,34 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Deletes a save event from a floorball match
+        /// </summary>
+        [HttpDelete("{matchId:guid}/save/{saveEventId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> DeleteSave(Guid matchId, Guid saveEventId)
+        {
+            _logger.LogInformation("Deleting save {saveEventId} for match ID: {matchId}", saveEventId, matchId);
+
+            DeleteSaveCommand command = new DeleteSaveCommand(matchId, saveEventId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Save deleted successfully"));
+            }
+
+            string? errorMessage = result.Error ?? "Failed to delete save";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Records overtime for a floorball match
         /// </summary>
         [HttpPost("{matchId:guid}/overtime")]

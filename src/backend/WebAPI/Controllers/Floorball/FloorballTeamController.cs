@@ -350,7 +350,7 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to add player to team";
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage, result.Errors.ToList()));
         }
 
         /// <summary>

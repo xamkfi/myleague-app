@@ -72,10 +72,12 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballRefereeRepository, FloorballRefereeRepository>();
             services.AddScoped<IFloorballMatchRepository, FloorballMatchRepository>();
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
+            services.AddScoped<IFloorballSeasonDivisionRepository, FloorballSeasonDivisionRepository>();
             services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
             services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
             services.AddScoped<IImageStorageService, AzureBlobImageStorageService>();
             services.AddScoped<ITokenService, JwtTokenService>();
+            services.AddScoped<IPersonNameProvider, PersonNameProvider>();
             
             // Add timer services
             services.AddScoped<ITimerRepository, TimerRepository>();

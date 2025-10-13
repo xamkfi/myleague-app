@@ -26,7 +26,7 @@ public class Result<T>
 
     public static Result<T> Success(T data) => new(true, data, null);
     public static Result<T> Failure(string error) => new(false, default, error);
-    public static Result<T> Failure(IEnumerable<string> errors) => new(false, default, null, errors);
+    public static Result<T> Failure(string error, IEnumerable<string> errors) => new(false, default, error, errors);
     
     /// <summary>
     /// Creates a failure result from validation errors (string messages)
