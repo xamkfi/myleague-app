@@ -71,6 +71,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballRefereeRepository, FloorballRefereeRepository>();
             services.AddScoped<IFloorballMatchRepository, FloorballMatchRepository>();
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
+            services.AddScoped<IFloorballSeasonDivisionRepository, FloorballSeasonDivisionRepository>();
             services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
             services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
             services.AddScoped<IImageStorageService, AzureBlobImageStorageService>();

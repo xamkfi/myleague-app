@@ -21,6 +21,7 @@ namespace Application.Handlers.Floorball.Seasons;
 public class GetFloorballSeasonByIdHandler : IRequestHandler<GetFloorballSeasonByIdQuery, Result<FloorballSeasonDto>>
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetFloorballSeasonByIdHandler> _logger;
 
@@ -31,10 +32,12 @@ public class GetFloorballSeasonByIdHandler : IRequestHandler<GetFloorballSeasonB
     /// <param name="logger">The logger</param>
     public GetFloorballSeasonByIdHandler(
         IFloorballSeasonRepository seasonRepository,
+        IFloorballSeasonDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         ILogger<GetFloorballSeasonByIdHandler> logger)
     {
         _seasonRepository = seasonRepository;
+        _seasonDivisionRepository = seasonDivisionRepository;
         _clubRepository = clubRepository;
         _logger = logger;
     }
