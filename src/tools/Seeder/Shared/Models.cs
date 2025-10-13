@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using System.Net.Http;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 
@@ -54,6 +55,8 @@ public class FloorballSeasonSeed
 	public string StartDate { get; init; } = "2025-01-01";
 	public string EndDate { get; init; } = "2025-12-31";
 	public string DivisionName { get; init; } = string.Empty;
+    // Optional extra divisions this season should include
+    public List<string>? AdditionalDivisionNames { get; init; }
 }
 
 public class FloorballTeamSeed
@@ -87,5 +90,16 @@ public static class SeederHttp
 		string body = await response.Content.ReadAsStringAsync();
 		throw new HttpRequestException(operation + " failed with " + (int)response.StatusCode + " " + response.StatusCode + ": " + body);
 	}
+
+    public static async Task EnsureSuccess(HttpResponseMessage response, string operation)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        string body = await response.Content.ReadAsStringAsync();
+        throw new HttpRequestException(operation + " failed with " + (int)response.StatusCode + " " + response.StatusCode + ": " + body);
+    }
 }
 
