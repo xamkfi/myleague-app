@@ -204,7 +204,7 @@ const FloorballTeamsPage = () => {
         </div>
 
         {/* Error message */}
-        <ErrorPopup message={error} onClose={() => setError(null)} />
+        <ErrorPopup message={error} />
 
         {/* Teams table */}
         <TeamsTable

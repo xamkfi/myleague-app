@@ -540,7 +540,7 @@ const FloorballPlayersPage = () => {
         </div>
         
         {/* Error message */}
-        <ErrorPopup message={error} onClose={() => setError(null)} />
+        <ErrorPopup message={error} />
 
         {/* Selection Controls */}
         {selectedPlayers.size > 0 && (

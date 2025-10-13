@@ -64,7 +64,7 @@ const FloorballSeasonsPage = () => {
           onCreateSeason={() => navigate('/admin/floorball/seasons/create')}
         />
 
-        <ErrorPopup message={error} onClose={() => {}} />
+        <ErrorPopup message={error} />
 
         <SeasonsFilters
           showActiveOnly={showActiveOnly}

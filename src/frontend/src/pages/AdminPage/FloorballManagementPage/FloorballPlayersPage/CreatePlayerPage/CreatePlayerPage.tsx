@@ -375,7 +375,7 @@ const CreatePlayerPage = () => {
         </div>
 
         {/* Error Message */}
-        <ErrorPopup message={error} onClose={() => setError(null)} />
+        <ErrorPopup message={error} />
 
         {/* Persons List */}
         <div className="persons-container">

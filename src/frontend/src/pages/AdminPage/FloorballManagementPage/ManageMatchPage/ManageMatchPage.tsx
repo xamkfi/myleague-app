@@ -427,10 +427,11 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setShowPenaltyForm(false);
   }, [setShowPenaltyForm]);
 
+  // Is this still needed?
   // MEMOIZED: Error close handler
-  const handleCloseError = useCallback(() => {
-    matchData.setError(null);
-  }, [matchData]);
+  // const handleCloseError = useCallback(() => {
+  //   matchData.setError(null);
+  // }, [matchData]);
 
 
   return (
@@ -445,7 +446,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
       />
 
       {/* Error Display */}
-      <ErrorPopup message={matchData.error} onClose={handleCloseError} />
+      <ErrorPopup message={matchData.error} />
 
       {/* Confirmation Dialogs */}
       <ConfirmationDialog
@@ -647,7 +648,7 @@ const ManageMatchPage = () => {
         <div className="back-button-container">
           <BackButton to="/admin/floorball/matches" text="Back to Overview" />
         </div>
-        <ErrorPopup message={error} onClose={() => setError(null)} />
+        <ErrorPopup message={error} />
       </div>
     );
   }

@@ -269,7 +269,7 @@ const MatchOverviewPage = () => {
         </div>
 
         {/* Error Message */}
-        <ErrorPopup message={error} onClose={() => setError(null)} />
+        <ErrorPopup message={error} />
 
         {/* Stats and Filter Section */}
         <MatchStatsCards 

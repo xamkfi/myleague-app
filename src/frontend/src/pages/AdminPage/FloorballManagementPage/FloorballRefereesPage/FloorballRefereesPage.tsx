@@ -138,7 +138,7 @@ const FloorballRefereesPage = () => {
         </div>
         
         {/* Error message */}
-        <ErrorPopup message={error} onClose={() => setError(null)} />
+        <ErrorPopup message={error} />
         
         {/* Referees table */}
         <div className="referees-table-container">

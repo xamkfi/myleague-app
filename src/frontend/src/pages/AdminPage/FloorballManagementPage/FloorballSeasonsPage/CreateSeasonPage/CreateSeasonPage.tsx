@@ -214,7 +214,7 @@ export const CreateSeasonPage = () => {
 
         <div className="create-season-form-container">
           <form onSubmit={handleSubmit} className="create-season-form">
-            <ErrorPopup message={error} onClose={() => setError(null)} />
+            <ErrorPopup message={error} />
 
             <div className="form-group">
               <label htmlFor="create-name">

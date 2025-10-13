@@ -112,7 +112,7 @@ const CreateTeamPage = () => {
           <h1>{t('floorball.teams.createNew', 'Create New Team')}</h1>
         </div>
 
-        <ErrorPopup message={error} onClose={() => setError(null)} />
+        <ErrorPopup message={error} />
 
         <form onSubmit={handleSubmit} className="create-team-form">
           <div className="form-group">

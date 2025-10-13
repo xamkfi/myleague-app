@@ -218,7 +218,7 @@ const CreateRefereePage = () => {
               />
             </div>
 
-            <ErrorPopup message={error} onClose={() => setError(null)} />
+            <ErrorPopup message={error} />
 
             {/* Persons List */}
             <div className="persons-container">

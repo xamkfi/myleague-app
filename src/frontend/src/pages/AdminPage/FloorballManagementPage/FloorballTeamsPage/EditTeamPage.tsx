@@ -407,7 +407,7 @@ const EditTeamPage = () => {
   if (!teamId) {
     return (
       <PageTemplate title={t('floorball.teams.editTeam', 'Edit Team')}>
-        <ErrorPopup message={'Team ID is required'} onClose={() => {}} />
+        <ErrorPopup message={'Team ID is required'} />
       </PageTemplate>
     );
   }
@@ -424,7 +424,7 @@ const EditTeamPage = () => {
           <h1>{t('floorball.teams.editTeam', 'Edit Team')}: {currentTeam?.name}</h1>
         </div>
 
-        <ErrorPopup message={error} onClose={() => setError(null)} />
+        <ErrorPopup message={error} />
 
         {/* Tab Navigation */}
         <div className="tab-navigation">

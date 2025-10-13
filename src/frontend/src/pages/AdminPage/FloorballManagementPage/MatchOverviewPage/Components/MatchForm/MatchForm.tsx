@@ -370,7 +370,7 @@ const MatchForm = ({
   return (
     <>
       {error && (
-        <ErrorPopup message={error} onClose={() => setError(null)} />
+        <ErrorPopup message={error} />
 
         // <div className="error-alert">
         //   <span className="error-icon">⚠️</span>

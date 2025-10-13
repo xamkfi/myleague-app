@@ -138,7 +138,7 @@ const EditMatchPage = () => {
           <div className="header-right"></div>
         </div>
 
-        <ErrorPopup message={error} onClose={() => setError(null)} />
+        <ErrorPopup message={error} />
 
         <div className="form-container">
           {matchData ? (

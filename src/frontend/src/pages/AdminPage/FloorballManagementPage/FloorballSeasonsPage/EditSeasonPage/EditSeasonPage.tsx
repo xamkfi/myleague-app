@@ -402,8 +402,7 @@ const EditSeasonPage = () => {
     return (
       <PageTemplate title={t('floorball.seasons.edit.title', 'Edit Season')}>
         <ErrorPopup 
-          message={t('floorball.seasons.errors.notFound', 'Season not found')} 
-          onClose={() => navigate('/admin/floorball/seasons')} 
+          message={t('floorball.seasons.errors.notFound', 'Season not found')}
         />
         <BackButton 
           to="/admin/floorball/seasons" 
@@ -465,7 +464,7 @@ const EditSeasonPage = () => {
           {/* Season Details Tab */}
           {activeTab === 'details' && (
             <form onSubmit={handleSubmit} className="edit-season-form">
-              <ErrorPopup message={error} onClose={() => setError(null)} />
+              <ErrorPopup message={error} />
 
               <div className="form-group">
                 <label htmlFor="edit-name">
@@ -567,7 +566,7 @@ const EditSeasonPage = () => {
           {/* Teams Management Tab */}
           {activeTab === 'teams' && (
             <div className="teams-management">
-              <ErrorPopup message={error} onClose={() => setError(null)} />
+              <ErrorPopup message={error} />
 
               <div className="teams-sections-container">
                 {/* Current Teams */}
