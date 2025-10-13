@@ -24,6 +24,16 @@ a {
 
 img {
   max-width: 100%;
+  height: auto;
+}
+
+/* Status badge icons should not stretch */
+.status-badge img {
+  width: 24px;
+  height: 24px;
+  min-width: auto;
+  max-width: none;
+  object-fit: contain;
 }
 
 /* Global utility classes */

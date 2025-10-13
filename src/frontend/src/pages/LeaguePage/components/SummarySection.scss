@@ -1,0 +1,133 @@
+.summary-section {
+  .summary-content {
+    .league-overview {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+
+      .overview-card {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+
+        h3 {
+          color: #1e40af;
+          font-size: 1.3rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
+        }
+
+        .info-grid {
+          display: grid;
+          gap: 0.75rem;
+
+          .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .label {
+              font-weight: 500;
+              color: #374151;
+            }
+
+            .value {
+              font-weight: 600;
+              color: #1e40af;
+            }
+          }
+        }
+
+        .activity-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+
+          .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+
+            .activity-icon {
+              font-size: 1.2rem;
+              flex-shrink: 0;
+            }
+
+            .activity-text {
+              flex: 1;
+              color: #374151;
+              font-weight: 500;
+            }
+
+            .activity-time {
+              font-size: 0.8rem;
+              color: #6b7280;
+              flex-shrink: 0;
+            }
+          }
+        }
+      }
+    }
+
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+
+      .stat-card {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+        .stat-icon {
+          font-size: 2rem;
+          flex-shrink: 0;
+        }
+
+        .stat-content {
+          .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+          }
+
+          .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .summary-content {
+      .league-overview {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .quick-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+  }
+}

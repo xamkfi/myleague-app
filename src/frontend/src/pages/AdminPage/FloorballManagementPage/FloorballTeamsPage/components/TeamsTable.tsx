@@ -5,6 +5,7 @@ import TeamPlayersRow from './TeamPlayersRow';
 import React from 'react';
 import type { DivisionType } from '../../../../../types/common/divisionType';
 import { divisionService } from '../../../../../api/common/divisionService';
+import Pagination from '../../../../../components/Pagination';
 import './TeamsTable.scss';
 
 interface TeamsTableProps {
@@ -12,9 +13,17 @@ interface TeamsTableProps {
   loading: boolean;
   onEdit: (teamId: string) => void;
   onDelete: (teamId: string, teamName: string) => void;
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    pageSize: number;
+  };
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
-const TeamsTable = ({ teams, loading, onEdit, onDelete }: TeamsTableProps) => {
+const TeamsTable = ({ teams, loading, onEdit, onDelete, pagination, onPageChange, onPageSizeChange }: TeamsTableProps) => {
   const { t } = useTranslation();
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [closingTeams, setClosingTeams] = useState<Set<string>>(new Set());
@@ -22,7 +31,7 @@ const TeamsTable = ({ teams, loading, onEdit, onDelete }: TeamsTableProps) => {
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [closingDropdown, setClosingDropdown] = useState<string | null>(null);
-  const closeTimer = useRef<number | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const animationDuration = 350;
 
@@ -246,6 +255,20 @@ const TeamsTable = ({ teams, loading, onEdit, onDelete }: TeamsTableProps) => {
             ))
           )}
         </div>
+
+        {pagination && (
+          <div className="teams-pagination sticky-bottom">
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalCount={pagination.totalCount}
+              pageSize={pagination.pageSize}
+              onPageChange={(p) => onPageChange ? onPageChange(p) : undefined}
+              onPageSizeChange={(s) => onPageSizeChange ? onPageSizeChange(s) : undefined}
+              className="no-margin"
+            />
+          </div>
+        )}
       </div>
     </>
   );

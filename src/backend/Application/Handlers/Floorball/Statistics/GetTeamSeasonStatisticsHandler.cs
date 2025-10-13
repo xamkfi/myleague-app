@@ -57,11 +57,7 @@ public class GetTeamSeasonStatisticsHandler : IRequestHandler<GetTeamSeasonStati
                 return Result<FloorballTeamSeasonStatisticsDto>.NotFound("TeamSeasonStatistics", $"TeamId: {request.TeamId}, SeasonId: {request.SeasonId}");
             }
 
-            // Get team and season names for the DTO
-            Domain.Entities.Floorball.FloorballTeam? team = await _teamRepository.GetByIdAsync(request.TeamId);
-            Domain.Entities.Floorball.FloorballSeason? season = await _seasonRepository.GetByIdAsync(request.SeasonId);
-
-            FloorballTeamSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(statistics, team?.Name, season?.Name);
+            FloorballTeamSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(statistics);
             
             _logger.LogInformation("Successfully retrieved team statistics for Team {TeamId} in Season {SeasonId}", request.TeamId, request.SeasonId);
             return Result<FloorballTeamSeasonStatisticsDto>.Success(dto);

@@ -17,7 +17,7 @@ const CreateRefereePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [successTimeoutId, setSuccessTimeoutId] = useState<number | null>(null);
+  const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [selectedPersonId, setSelectedPersonId] = useState<string>('');
   const [licenseIssueDate, setLicenseIssueDate] = useState('');
   const [licenseExpiryDate, setLicenseExpiryDate] = useState('');

@@ -39,6 +39,7 @@ import FloorballTeamPage from '../pages/FloorballTeamPage/FloorballTeamPage';
 import NewsManagementPage from '../pages/AdminPage/NewsPage/NewsManagementPage';
 import FloorballTeamPlayerUserPage from '../pages/FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage';
 import MatchPage from '../pages/MatchPage/MatchPage';
+import LeaguePage from '../pages/LeaguePage/LeaguePage';
 
 export const routes: RouteObject[] = [
   {
@@ -224,5 +225,9 @@ export const routes: RouteObject[] = [
   {
     path: '/match/:id',
     element: <MatchPage/>
+  },
+  {
+    path: '/league/:id',
+    element: <LeaguePage/>
   }
 ]; 

@@ -32,7 +32,7 @@ const EditSeasonPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'teams'>('details');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [successTimeoutId, setSuccessTimeoutId] = useState<number | null>(null);
+  const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
   
   // Team management state
   const [allTeams, setAllTeams] = useState<FloorballTeam[]>([]);
@@ -71,8 +71,30 @@ const EditSeasonPage = () => {
 
   // Load teams when modal opens
   useEffect(() => {
+    const loadAllTeams = async () => {
+      try {
+        setLoadingTeams(true);
+        const response = await floorballTeamService.getAll({
+          pageSize: 50 // Get all teams
+        });
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          // Only include teams in the same division as the season
+          const sameDivisionTeams = season ? response.data.filter(team => team.divisionId === season.divisionId) : response.data;
+          setAllTeams(sameDivisionTeams);
+        } else {
+          setAllTeams([]);
+        }
+      } catch (err) {
+        console.error('Error loading teams:', err);
+        setAllTeams([]);
+      } finally {
+        setLoadingTeams(false);
+      }
+    };
+
     loadAllTeams();
-  }, []);
+  }, [season]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -83,25 +105,7 @@ const EditSeasonPage = () => {
     };
   }, [successTimeoutId]);
 
-  const loadAllTeams = async () => {
-    try {
-      setLoadingTeams(true);
-      const response = await floorballTeamService.getAll({
-        pageSize: 50 // Get all teams
-      });
-      
-      if (response && response.data && Array.isArray(response.data)) {
-        setAllTeams(response.data);
-      } else {
-        setAllTeams([]);
-      }
-    } catch (err) {
-      console.error('Error loading teams:', err);
-      setAllTeams([]);
-    } finally {
-      setLoadingTeams(false);
-    }
-  };
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

@@ -34,11 +34,6 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .IsRequired()
                 .HasComment("ID of the season these statistics are for");
 
-            // Ignore navigation properties to prevent cross-context issues
-            builder.Ignore(s => s.Player);
-            builder.Ignore(s => s.Team);
-            builder.Ignore(s => s.Season);
-
             // Configure basic goalie statistics
             builder.Property(s => s.GamesPlayed)
                 .IsRequired()

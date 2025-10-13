@@ -61,8 +61,13 @@
         "actions": "Toiminnot"
       },
       "roles":{
-        "user": "Käyttäjä"
+        "user": "Käyttäjä",
+        "admin": "Ylläpitäjä",
+        "superAdmin": "Päällikkö"
       },
+      "selected": "{{count}} valittu",
+      "selectAllOnPage": "Valitse kaikki tällä sivulla",
+      "loading": "Ladataan henkilöitä...",
       "form": {
         "basicInfo": "Perustiedot",
         "firstName": "Etunimi",
@@ -90,8 +95,10 @@
         "jerseyNumber": "Pelinumero",
         "jerseyNumberHint": "Valinnainen: 1-99",
         "positions": {
+          "none": "Ei pelipaikkaa",
           "center": "Keskihyökkääjä",
-          "winger": "Laitahyökkääjä", 
+          "winger": "Laitahyökkääjä",
+          "forward": "Hyökkääjä",
           "defender": "Puolustaja",
           "goalkeeper": "Maalivahti"
         }
@@ -283,6 +290,7 @@
       "createNew": "Luo Uusi Joukkue",
       "searchPlaceholder": "Hae joukkueita nimellä...",
       "noTeams": "Joukkueita ei löytynyt",
+      "players": "Joukkueen Pelaajat",
       "hasMembers": "Kyllä",
       "noMembers": "Ei",
       "primary": "Ensisijainen",
@@ -323,23 +331,37 @@
       "createFromPerson": "Luo Pelaaja Olemassaolevista Henkilöistä",
       "createNewPerson": "Luo Uusi Henkilö",
       "searchPersons": "Hae saatavilla olevia henkilöitä...",
+      "searchPlayers": "Hae pelaajia...",
+      "selected": "{{count}} valittu",
+      "selectAll": "Valitse kaikki",
+      "selectAllVisible": "Valitse kaikki näkyvät henkilöt",
       "createPlayer": "Luo Pelaaja",
+      "createPlayers": "Luo Monta Pelaajaa",
       "playerCreated": "{{personName}} on nyt salibandypelaaja!",
+      "playersCreated": "{{personName}} ovat nyt salibandypelaajia!",
       "personCreated": "{{personName}} luotu onnistuneesti! Voit nyt luoda heistä pelaajan.",
       "noPersonsFound": "Hakua vastaavia henkilöitä ei löytynyt",
       "noPersonsAvailable": "Ei saatavilla olevia henkilöitä muutettavaksi pelaajiksi. Kaikki henkilöt ovat jo pelaajia.",
       "backToPersonSelection": "Takaisin Henkilövalintaan",
+      "backToPlayerCreation": "Takaisin Pelaajan Luontiin",
       "table": {
         "name": "Nimi",
         "position": "Pelipaikka",
         "status": "Tila",
         "actions": "Toiminnot"
       },
+      "position": "Pelipaikka",
+      "games": "Pelit",
+      "goals": "Maalit",
+      "assists": "Syötöt",
+      "penalties": "Jäähyt",
       "confirmDelete": {
         "title": "Vahvista Poisto",
         "message": "Oletko varma että haluat poistaa pelaajan {{playerName}}?",
         "warning": "Tätä toimintoa ei voi perua."
       },
+      "noPlayersInTeam": "Tällä joukkueella ei ole vielä pelaajia määritelty.",
+      "addPlayersHelp": "Käytä muokkaa-painiketta hallitaksesi joukkueen kokoonpanoa ja lisätäksesi pelaajia.",
       "errors": {
         "loadPlayers": "Pelaajien lataus epäonnistui. Yritä uudelleen.",
         "deleteFailed": "Pelaajan poisto epäonnistui. Yritä uudelleen."
@@ -349,7 +371,8 @@
       "center": "Keskushyökkääjä",
       "winger": "Laitahyökkääjä",
       "defender": "Puolustaja",
-      "goalkeeper": "Maalivahti"
+      "goalkeeper": "Maalivahti",
+      "forward": "Hyökkääjä"
     },
     "seasons": {
       "title": "Hallitse Kausia",
@@ -508,6 +531,27 @@
       }
     }
   },
+  "roster": {
+    "positions": {
+      "Goalkeeper": "Maalivahdit",
+      "Defender": "Puolustajat", 
+      "Center": "Keskushyökkääjät",
+      "Forward": "Hyökkääjät"
+    },
+    "jerseyNumber": "#",
+    "name": "Nimi",
+    "age": "Ikä",
+    "matchesPlayed": "Pelit",
+    "goals": "Maalit",
+    "assists": "Syötöt",
+    "tooltips": {
+      "jerseyNumber": "Pelinumero",
+      "age": "Ikä",
+      "matchesPlayed": "Pelatut ottelut",
+      "goals": "Maalit",
+      "assists": "Syötöt"
+    }
+  },
   "common": {
     "back": "Takaisin",
     "backTo": "Takaisin",
@@ -527,6 +571,8 @@
     "registered": "Rekisteröity",
     "notRegistered": "Ei Rekisteröity",
     "cancelSelection": "Peruuta Valinta",
+    "selectAll": "Valitse kaikki",
+    "clear": "Tyhjennä",
     "previous": "Edellinen",
     "next": "Seuraava",
     "pageInfo": "Sivu {{current}} / {{total}}",
