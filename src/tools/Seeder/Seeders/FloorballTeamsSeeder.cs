@@ -98,8 +98,33 @@ public static class FloorballTeamsSeeder
 
     public static async Task AddPlayersAsync(HttpClient http, JsonSerializerOptions jsonOptions, Guid teamId, List<TeamPlayerByEmailSeed> players, Dictionary<string, Guid> emailToPlayerId)
 	{
+        // Build a set of existing jersey numbers to avoid duplicates when seeding
+        HashSet<int> existingJerseyNumbers = new HashSet<int>();
+        HttpResponseMessage teamResp = await http.GetAsync("api/floorballteam/" + teamId);
+        if (teamResp.IsSuccessStatusCode)
+        {
+            ApiResponse<FloorballTeamDto>? teamApi = await teamResp.Content.ReadFromJsonAsync<ApiResponse<FloorballTeamDto>>(jsonOptions);
+            if (teamApi != null && teamApi.Success && teamApi.Data != null && teamApi.Data.Roster != null)
+            {
+                foreach (FloorballTeamPlayerDto rosterPlayer in teamApi.Data.Roster)
+                {
+                    if (rosterPlayer.JerseyNumber.HasValue)
+                    {
+                        existingJerseyNumbers.Add(rosterPlayer.JerseyNumber.Value);
+                    }
+                }
+            }
+        }
+
         foreach (TeamPlayerByEmailSeed player in players)
 		{
+            // Skip adding if jersey number already exists on the team
+            if (existingJerseyNumbers.Contains(player.JerseyNumber))
+            {
+                Console.WriteLine("Jersey number already in use (" + player.JerseyNumber + ") for team " + teamId + ", skipping " + player.PersonEmail);
+                continue;
+            }
+
             if (!emailToPlayerId.TryGetValue(player.PersonEmail, out Guid playerId))
             {
                 // Fallback: resolve person by email -> ensure player exists -> cache id
@@ -153,6 +178,9 @@ public static class FloorballTeamsSeeder
             int positionValue = (int)player.Position;
             HttpResponseMessage response = await http.PostAsync($"api/floorballteam/{teamId}/players/{playerId}?position={positionValue}&jerseyNumber={player.JerseyNumber}", null);
             await SeederHttp.EnsureSuccessWithBody(response, "Add Player To Team");
+
+            // Track newly used jersey numbers to prevent duplicates within this batch
+            existingJerseyNumbers.Add(player.JerseyNumber);
 		}
 	}
 
