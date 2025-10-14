@@ -1,4 +1,6 @@
 using Application.DTOs.Floorball;
+using Application.Mappings.Common;
+using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 
 namespace Application.Mappings.Floorball;
@@ -164,6 +166,51 @@ public static class FloorballStatisticsMapper
             ShortHandedSaves = entity.ShortHandedSaves,
             ShortHandedShotsAgainst = entity.ShortHandedShotsAgainst,
             ShortHandedSavePercentage = entity.ShortHandedSavePercentage
+        };
+    }
+
+    public static FloorballPlayerProfileDto ToDto(FloorballPlayer player, Person person, List<FloorballPlayerSeasonStatistics> statistics)
+    {
+        return new FloorballPlayerProfileDto
+        {
+            Player = new FloorballPlayerDto(
+                player.Id,
+                player.PersonId,
+                PersonMapper.ToDto(person),
+                player.IsActive,
+                player.Position.PrimaryPosition,
+                player.CareerGoals,
+                player.CareerAssists,
+                null
+            ),
+            SeasonStatistics = statistics.Select(stat => new FloorballPlayerSeasonStatisticsDto
+            {
+                Id = stat.Id,
+                PlayerId = stat.PlayerId,
+                TeamId = stat.TeamId,
+                SeasonId = stat.SeasonId,
+                PlayerName = "",
+                TeamName = stat.Team?.Name ?? string.Empty,
+                TeamLogo = stat.Team?.LogoUrl?.ToString(),
+                SeasonName = stat.Season?.Name ?? string.Empty,
+                GamesPlayed = stat.GamesPlayed,
+                Goals = stat.Goals,
+                Assists = stat.Assists,
+                Points = stat.Points,
+                PenaltyMinutes = stat.PenaltyMinutes,
+                PlusMinusRating = stat.PlusMinusRating,
+                ShotsOnGoal = stat.ShotsOnGoal,
+                ShotPercentage = stat.ShotPercentage,
+                PowerPlayGoals = stat.PowerPlayGoals,
+                PowerPlayAssists = stat.PowerPlayAssists,
+                ShortHandedGoals = stat.ShortHandedGoals,
+                ShortHandedAssists = stat.ShortHandedAssists,
+                GameWinningGoals = stat.GameWinningGoals,
+                OvertimeGoals = stat.OvertimeGoals,
+                FaceoffWins = stat.FaceoffWins,
+                FaceoffAttempts = stat.FaceoffAttempts,
+                FaceoffPercentage = stat.FaceoffPercentage
+            }).ToList()
         };
     }
 }

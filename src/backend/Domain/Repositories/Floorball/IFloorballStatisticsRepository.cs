@@ -66,6 +66,14 @@ public interface IFloorballStatisticsRepository
     Task<IEnumerable<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsBySeasonAsync(Guid seasonId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all seasons statistics for player
+    /// </summary>
+    /// <param name="PlayerId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<FloorballPlayerSeasonStatistics>> GetAllSeasonStatisticsForPlayerAsync(Guid PlayerId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets top scorers for a specific season
     /// </summary>
     /// <param name="seasonId">The season ID</param>

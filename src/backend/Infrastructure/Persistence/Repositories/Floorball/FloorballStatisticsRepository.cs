@@ -90,6 +90,12 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<FloorballPlayerSeasonStatistics>> GetAllSeasonStatisticsForPlayerAsync(Guid PlayerId, CancellationToken cancellationToken = default)
+    {
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
+            .Where(x => x.PlayerId == PlayerId).ToListAsync(cancellationToken);
+    }
+
     /// <inheritdoc />
     public async Task<List<FloorballPlayerSeasonStatistics>> GetTopScorersAsync(Guid seasonId, int topN, CancellationToken cancellationToken = default)
     {
