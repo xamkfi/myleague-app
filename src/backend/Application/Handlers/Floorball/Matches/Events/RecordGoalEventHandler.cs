@@ -63,6 +63,7 @@ public class RecordGoalEventHandler : IRequestHandler<RecordGoalEventCommand, Re
 
             // Create the DTO response
             FloorballGoalEventDto goalEventDto = new FloorballGoalEventDto(
+                Guid.Empty,
                 request.TeamId,
                 request.PlayerId,
                 request.AssisterId,

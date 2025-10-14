@@ -62,6 +62,7 @@ public class RecordPenaltyEventHandler : IRequestHandler<RecordPenaltyEventComma
 
             // Create the DTO response
             FloorballPenaltyEventDto penaltyEventDto = new FloorballPenaltyEventDto(
+                Guid.Empty,
                 request.TeamId,
                 request.PlayerId,
                 request.PenaltyType,

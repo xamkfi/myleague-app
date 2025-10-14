@@ -21,7 +21,7 @@ namespace Application.Handlers.Floorball.Seasons;
 /// </summary>
 public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorballSeasonsByDivisionQuery, Result<IEnumerable<FloorballSeasonDto>>>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetFloorballSeasonsByDivisionHandler> _logger;
 
@@ -31,11 +31,11 @@ public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorball
     /// <param name="seasonRepository">The floorball season repository</param>
     /// <param name="logger">The logger</param>
     public GetFloorballSeasonsByDivisionHandler(
-        IFloorballSeasonRepository seasonRepository,
+        IFloorballSeasonDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         ILogger<GetFloorballSeasonsByDivisionHandler> logger)
     {
-        _seasonRepository = seasonRepository;
+        _seasonDivisionRepository = seasonDivisionRepository;
         _clubRepository = clubRepository;
         _logger = logger;
     }
@@ -52,7 +52,7 @@ public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorball
         {
             _logger.LogInformation("Retrieving floorball seasons for division: {DivisionId}", request.DivisionId);
             
-            IEnumerable<FloorballSeason> seasons = await _seasonRepository.GetByDivisionAsync(request.DivisionId);
+            IEnumerable<FloorballSeason> seasons = await _seasonDivisionRepository.GetSeasonsByDivisionAsync(request.DivisionId);
 
             // Load clubs for all teams across all seasons
             Dictionary<Guid, Club> clubsDict = new Dictionary<Guid, Club>();

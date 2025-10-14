@@ -1,57 +1,96 @@
-﻿using System;
-using Application.Common;
+﻿using Application.Queries.Persons;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
-using Application.Queries.Persons;
+using Application.Common;
+using Domain.Common;
+using Application.Handlers.Common;
+using Application.Services.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
-using MediatR;
 using Microsoft.Extensions.Logging;
+using MediatR;
 
 namespace Application.Handlers.Persons
 {
     /// <summary>
-    /// Handler for retrieving all persons
+    /// Handler for retrieving all persons with pagination
     /// </summary>
-    public class GetAllPersonsHandler : IRequestHandler<GetAllPersonsQuery, Result<IEnumerable<PersonDto>>>
+    public class GetAllPersonsHandler : BasePagedQueryHandler<GetAllPersonsQuery, PersonDto>,
+        IRequestHandler<GetAllPersonsQuery, Result<PagedResult<PersonDto>>>
     {
         private readonly IPersonRepository _personRepository;
-        private readonly ILogger<GetAllPersonsHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the GetAllPersonsHandler class
         /// </summary>
-        /// <param name="personRepository"></param>
-        /// <param name="logger"></param>
-        public GetAllPersonsHandler(IPersonRepository personRepository, ILogger<GetAllPersonsHandler> logger)
+        /// <param name="personRepository">The person repository</param>
+        /// <param name="logger">The logger</param>
+        /// <param name="paginationService">The pagination service</param>
+        public GetAllPersonsHandler(
+            IPersonRepository personRepository,
+            ILogger<GetAllPersonsHandler> logger,
+            IPaginationService paginationService) : base(paginationService, logger)
         {
             _personRepository = personRepository;
-            _logger = logger;
         }
 
         /// <summary>
-        /// Handles the GetAllPersonQuery request
+        /// Handles the GetAllPersonsQuery request
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async Task<Result<IEnumerable<PersonDto>>> Handle(GetAllPersonsQuery request, CancellationToken cancellationToken)
+        /// <param name="request">The query request</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>A Result containing paginated persons</returns>
+        public async Task<Result<PagedResult<PersonDto>>> Handle(
+            GetAllPersonsQuery request,
+            CancellationToken cancellationToken)
         {
             try
             {
-                _logger.LogInformation("Retrieving all Persons");
+                _logger.LogInformation("Retrieving persons - Page: {Page}, PageSize: {PageSize}",
+                    request.page, request.pageSize);
 
-                IEnumerable<Person> persons = await _personRepository.GetAllAsync();
+                // Validate pagination parameters
+                Result<PaginationValidationResult> validationResult = ValidatePaginationParameters(
+                    request.page,
+                    request.pageSize,
+                    GetAllPersonsQuery.ResourceKey);
+
+                if (validationResult.IsFailure)
+                {
+                    return Result<PagedResult<PersonDto>>.Failure(validationResult.Error!);
+                }
+
+                int actualPageSize = validationResult.Data!.ActualPageSize;
+
+                // Get persons
+                IEnumerable<Person> persons = await _personRepository.GetAllAsync(
+                    request.page,
+                    actualPageSize,
+                    request.firstName,
+                    request.lastName,
+                    request.birthDate,
+                    request.isRegistered,
+                    cancellationToken);
+
                 IEnumerable<PersonDto> personDtos = PersonMapper.ToDtos(persons);
 
-                _logger.LogInformation("Successfully retrieved {PersonCount} persons", personDtos.Count());
+                // Create paged result
+                PagedResult<PersonDto> pagedResult = CreatePagedResult(
+                    personDtos,
+                    personDtos.Count(),
+                    request.page,
+                    actualPageSize);
 
-                return Result<IEnumerable<PersonDto>>.Success(personDtos);
+                _logger.LogInformation("Successfully retrieved {Count} persons",
+                    personDtos.Count());
+
+                return Result<PagedResult<PersonDto>>.Success(pagedResult);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while retrieving all persons");
-                return Result<IEnumerable<PersonDto>>.Failure("An error occurred while retrieving persons.");
+                _logger.LogError(ex, "Error occurred while retrieving persons");
+                return Result<PagedResult<PersonDto>>.Failure(
+                    "An error occurred while retrieving persons.");
             }
         }
     }

@@ -65,13 +65,10 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         }
         else
         {
-            // Use SetValues for domain entities with private setters - this is the correct EF Core approach
             _context.Entry(existing).CurrentValues.SetValues(statistics);
-            // Update the UpdatedAt timestamp
             _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
         }
-
-        // Let UnitOfWork handle the save to preserve domain events
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion
@@ -139,13 +136,10 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         }
         else
         {
-            // Use SetValues for domain entities with private setters - this is the correct EF Core approach
             _context.Entry(existing).CurrentValues.SetValues(statistics);
-            // Update the UpdatedAt timestamp
             _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
         }
-
-        // Let UnitOfWork handle the save to preserve domain events
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion
@@ -200,13 +194,10 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         }
         else
         {
-            // Use SetValues for domain entities with private setters - this is the correct EF Core approach
             _context.Entry(existing).CurrentValues.SetValues(statistics);
-            // Update the UpdatedAt timestamp
             _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
         }
-
-        // Let UnitOfWork handle the save to preserve domain events
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion
@@ -241,8 +232,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         {
             _context.Entry(existing).CurrentValues.SetValues(statistics);
         }
-        
-        // Let UnitOfWork handle the save to preserve domain events
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion

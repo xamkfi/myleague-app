@@ -119,7 +119,8 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while adding player {PlayerId} to team {TeamId}", request.PlayerId, request.TeamId);
-            return Result<FloorballTeamDto>.Failure("An error occurred while adding the player to the team.");
+
+            return Result<FloorballTeamDto>.Failure($"An error occurred while adding the player to the team.", new List<string>() { ex.Message });
         }
     }
 } 

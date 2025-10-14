@@ -8,9 +8,11 @@ namespace Seeder;
 
 public static class Program
 {
+    public static SeederConfiguration Configuration { get; private set; } = new SeederConfiguration();
 	public static async Task<int> Main(string[] args)
 	{
-		SeederConfiguration config = SeederConfiguration.Load();
+        SeederConfiguration config = SeederConfiguration.Load();
+        Configuration = config;
 
 		HttpClient http = new HttpClient();
 		http.BaseAddress = new Uri(config.BaseUrl);
@@ -41,6 +43,9 @@ public static class Program
 			// Optional: create seasons and teams (requires Divisions and Clubs)
 			List<FloorballSeasonDto> seasons = await FloorballSeasonsSeeder.SeedAsync(http, jsonOptions, config.FloorballSeasons, divisionResults);
 			List<FloorballTeamDto> teams = await FloorballTeamsSeeder.SeedTeamsAsync(http, jsonOptions, config.FloorballTeams, divisionResults, clubResults);
+
+			// Assign teams to season divisions based on their division names
+			await FloorballTeamsSeeder.AssignTeamsToSeasonsAsync(http, jsonOptions, seasons, config.FloorballTeams, teams, divisionResults);
 
 			// Add players to teams per config
 			foreach (FloorballTeamSeed teamSeed in config.FloorballTeams)
