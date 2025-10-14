@@ -93,16 +93,14 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                 <td className="points-col">{team.points}</td>
                 <td className="form-col">
                   <div className="form-indicators">
-                    {form.map((result, formIndex) => {
-                      const cls = result === FloorballGameResult.Win ? 'win' : result === FloorballGameResult.Loss ? 'loss' : result === FloorballGameResult.Tie ? 'tie' : 'unknown';
-                      const letter = result === FloorballGameResult.Win ? 'W' : result === FloorballGameResult.Loss ? 'L' : result === FloorballGameResult.Tie ? 'T' : '-';
+                    {form.map((result: FloorballGameResult, formIndex: number) => {    
                       return (
                         <div 
                           key={formIndex} 
-                          className={`form-box form-${cls}`}
+                          className={`form-box form-${result.toString()}`}
                           title={result} // Add tooltip showing the full result
                         >
-                          {letter}
+                          {result.charAt(0)}
                         </div>
                       );
                     })}

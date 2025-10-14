@@ -261,19 +261,19 @@
     font-weight: map.get($font-weights, "bold");
     color: $color-white;
 
-    &.form-win {
+    &.form-Win {
       background: $color-green-primary;
     }
 
-    &.form-tie {
+    &.form-Tie {
       background: $color-yellow-primary;
     }
 
-    &.form-loss {
+    &.form-Loss {
       background: $color-red-primary;
     }
 
-    &.form-unknown {
+    &.form-Unknown {
       background: $color-neutral-medium-grey;
       box-shadow: 0 1px 2px rgba($color-neutral-medium-grey, 0.3);
     }
