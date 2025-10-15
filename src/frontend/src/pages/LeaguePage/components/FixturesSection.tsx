@@ -87,8 +87,8 @@ export default function FixturesSection({
                       scheduledDateTime={match.scheduledDateTime}
                       homeTeamName={match.homeTeamName}
                       awayTeamName={match.awayTeamName}
-                      homeTeamLogo={match.homeClub?.logoUrl}
-                      awayTeamLogo={match.awayClub?.logoUrl}
+                      homeTeamLogo={match.homeTeamLogo || undefined}
+                      awayTeamLogo={match.awayTeamLogo || undefined}
                       homeScore={match.homeScore}
                       awayScore={match.awayScore}
                       periodCount={3}

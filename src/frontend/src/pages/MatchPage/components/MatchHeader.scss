@@ -1,0 +1,163 @@
+.match-header {
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  color: white;
+  padding: 30px 20px;
+  text-align: center;
+
+  .match-date-time {
+    margin-bottom: 20px;
+    text-align: center;
+
+    .weekday {
+      font-size: 16px;
+      font-weight: 500;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .date-time {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 14px;
+      opacity: 0.8;
+
+      .date {
+        font-weight: 500;
+      }
+
+      .time {
+        &::before {
+          content: "•";
+          margin-right: 12px;
+          opacity: 0.6;
+        }
+      }
+    }
+  }
+
+  .teams-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .team-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 150px;
+  }
+
+  .team-crest {
+    width: 80px;
+    height: 80px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+  }
+
+  .team-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .team-name {
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .score-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .match-score {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 48px;
+    font-weight: bold;
+  }
+
+  .vs-separator {
+    font-size: 24px;
+    opacity: 0.7;
+  }
+
+  .score-separator {
+    opacity: 0.7;
+  }
+
+  .match-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .match-header {
+    .teams-container {
+      gap: 20px;
+    }
+
+    .team-crest {
+      width: 60px;
+      height: 60px;
+      font-size: 14px;
+    }
+
+    .team-name {
+      font-size: 14px;
+    }
+
+    .match-score {
+      font-size: 36px;
+      gap: 10px;
+    }
+
+    .match-date-time {
+      .weekday {
+        font-size: 14px;
+      }
+
+      .date-time {
+        font-size: 12px;
+        gap: 8px;
+
+        .time {
+          &::before {
+            margin-right: 8px;
+          }
+        }
+      }
+    }
+  }
+}

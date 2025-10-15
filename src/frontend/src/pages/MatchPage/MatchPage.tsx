@@ -13,6 +13,8 @@ import MatchTabContent from './components/MatchTabContent';
 // SignalR event names used by the backend. Consider centralising these to a constants file if reused elsewhere.
 const GOAL_SCORED_EVENT = 'FloorballGoalScored';
 const PENALTY_ASSIGNED_EVENT = 'FloorballPenaltyAssigned';
+const MATCH_STARTED_EVENT = 'FloorballMatchStarted';
+const MATCH_COMPLETED_EVENT = 'FloorballMatchCompleted';
 
 
 
@@ -62,10 +64,26 @@ export default function MatchPage() {
         // Listen for match-specific events
         unsubscribeCallback = signalRService.onMatchEvent((evt: MatchEvent) => {
           // These are events specific to our match, no need to filter by matchId
-          if (evt.eventType === GOAL_SCORED_EVENT || evt.eventType === PENALTY_ASSIGNED_EVENT) {
-            console.log(`Received match event for match ${id}:`, evt);
-            // Simply reload the match so UI stays consistent
-            loadMatch();
+          switch (evt.eventType) {
+            case GOAL_SCORED_EVENT:
+              console.log(`Goal scored in match ${id}:`, evt);
+              loadMatch();
+              break;
+            case PENALTY_ASSIGNED_EVENT:
+              console.log(`Penalty assigned in match ${id}:`, evt);
+              loadMatch();
+              break;
+            case MATCH_STARTED_EVENT:
+              console.log(`Match ${id} has started:`, evt);
+              loadMatch();
+              break;
+            case MATCH_COMPLETED_EVENT:
+              console.log(`Match ${id} has completed:`, evt);
+              loadMatch();
+              break;
+            default:
+              // Ignore other events
+              break;
           }
         });
         
@@ -126,7 +144,10 @@ export default function MatchPage() {
   return (
     <PageTemplate title="Match Details">
       <div className="match-page">
-        <MatchBreadcrumb />
+        <MatchBreadcrumb 
+          seasonName={match.seasonName}
+          seasonId={match.seasonId}
+        />
         <MatchHeader match={match} />
         <MatchNavigation activeTab={activeTab} onTabChange={setActiveTab} />
         <MatchTabContent activeTab={activeTab} match={match} />

@@ -8,17 +8,26 @@ interface MatchHeaderProps {
 export default function MatchHeader({ match }: MatchHeaderProps) {
   return (
     <div className="match-header">
-      <div className="match-date-time">{formatDate(match.scheduledDateTime)}</div>
-      
+      <div className="match-date-time">
+        <div className="weekday">{formatDate(match.scheduledDateTime).weekday}</div>
+        <div className="date-time">
+          <span className="date">{formatDate(match.scheduledDateTime).date}</span>
+          <span className="time">{formatDate(match.scheduledDateTime).time}</span>
+        </div>
+      </div>
       <div className="teams-container">
         <div className="team-section home">
           <div className="team-crest">
             {getTeamInitials(match.homeTeamName)}
-            {match.homeClub && match.homeClub.logoUrl && (
+            {match.homeTeamLogo && (
               <img 
-                src={match.homeClub.logoUrl} 
+                src={match.homeTeamLogo} 
                 alt="Home Team Logo" 
                 className="team-logo"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
               />
             )}
           </div>
@@ -42,11 +51,15 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
         <div className="team-section away">
           <div className="team-crest">
             {getTeamInitials(match.awayTeamName)}
-            {match.awayClub && match.awayClub.logoUrl && (
+            {match.awayTeamLogo && (
               <img 
-                src={match.awayClub.logoUrl} 
+                src={match.awayTeamLogo} 
                 alt="Away Team Logo" 
                 className="team-logo"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
               />
             )}
           </div>

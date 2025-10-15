@@ -192,14 +192,16 @@ export interface FloorballSaveEventDto {
   playerName?: string;
 }
 
-// Match-related interfaces
 export interface FloorballMatchDto {
   id: string;
   seasonId: string;
+  seasonName: string;
   homeTeamId: string;
   homeTeamName: string;
+  homeTeamLogo: string | null;
   awayTeamId: string;
   awayTeamName: string;
+  awayTeamLogo: string | null;
   scheduledDateTime: string;
   venue?: string;
   status: FloorballMatchStatus;
@@ -214,8 +216,6 @@ export interface FloorballMatchDto {
   goalEvents: FloorballGoalEventDto[];
   penaltyEvents: FloorballPenaltyEventDto[];
   saveEvents: FloorballSaveEventDto[];
-  homeClub?: Club;
-  awayClub?: Club;
 }
 
 export interface CreateFloorballMatchRequest {
