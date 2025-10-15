@@ -25,6 +25,7 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IClubRepository _clubRepository;
     private readonly IFloorballUnitOfWork _floorballUnitOfWork;
+    private readonly IFloorballStatisticsRepository _floorballStatisticsRepository;
     private readonly ILogger<AddTeamToSeasonHandler> _logger;
 
     /// <summary>
@@ -39,12 +40,14 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
         IFloorballTeamRepository teamRepository,
         IClubRepository clubRepository,
         IFloorballUnitOfWork floorballUnitOfWork,
+        IFloorballStatisticsRepository floorballStatisticsRepository,
         ILogger<AddTeamToSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
         _teamRepository = teamRepository;
         _clubRepository = clubRepository;
         _floorballUnitOfWork = floorballUnitOfWork;
+        _floorballStatisticsRepository = floorballStatisticsRepository;
         _logger = logger;
     }
 
@@ -78,7 +81,16 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
             
             // Use the domain method to add the team (includes business logic validation)
             season.AddTeam(team);
-            
+
+            //Initialize the player season statistics for the added team players
+            List<FloorballPlayerSeasonStatistics> players = new List<FloorballPlayerSeasonStatistics>();
+            foreach (FloorballTeamPlayer player in team.Roster)
+            {
+                FloorballPlayerSeasonStatistics playerSeasonStatistics = new FloorballPlayerSeasonStatistics(player.PlayerId, request.TeamId, request.SeasonId);
+                players.Add(playerSeasonStatistics);
+            }
+            await _floorballStatisticsRepository.SavePlayerSeasonStatisticsBatchAsync(players, cancellationToken);
+
             // Save changes explicitly to trigger domain events
             await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 

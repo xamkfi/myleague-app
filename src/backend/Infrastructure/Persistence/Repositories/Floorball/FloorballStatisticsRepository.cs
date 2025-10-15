@@ -90,12 +90,6 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<List<FloorballPlayerSeasonStatistics>> GetAllSeasonStatisticsForPlayerAsync(Guid PlayerId, CancellationToken cancellationToken = default)
-    {
-        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
-            .Where(x => x.PlayerId == PlayerId).ToListAsync(cancellationToken);
-    }
-
     /// <inheritdoc />
     public async Task<List<FloorballPlayerSeasonStatistics>> GetTopScorersAsync(Guid seasonId, int topN, CancellationToken cancellationToken = default)
     {
@@ -123,9 +117,9 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
+    public async Task<List<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballPlayerSeasonStatistics
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Season).Include(x => x.Team)
             .Where(s => s.PlayerId == playerId)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -181,9 +175,9 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
+    public async Task<List<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballGoalieSeasonStatistics
+        return await _context.FloorballGoalieSeasonStatistics.Include(x => x.Team).Include(x => x.Season).Include(x => x.Player)
             .Where(s => s.PlayerId == playerId)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);

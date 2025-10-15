@@ -54,11 +54,15 @@ namespace Application.Handlers.Floorball.Statistics
                     return Result<FloorballPlayerProfileDto>.NotFound("Player not found by id {id}.", request.playerId);
                 }
 
+                //Retrieve goalie statistics if player has any.
+                 List<FloorballGoalieSeasonStatistics>? goalieCareerStatistics = await _floorballStatisticsRepository.GetGoalieCareerStatisticsAsync(request.playerId);
+
                 Person? person = await _personRepository.GetByIdAsync(player.PersonId);
 
-                List<FloorballPlayerSeasonStatistics> PlayerSeasonStatistics = await _floorballStatisticsRepository.GetAllSeasonStatisticsForPlayerAsync(request.playerId);
+                //Retrieve player statistics if player has any.
+                List<FloorballPlayerSeasonStatistics>? PlayerSeasonStatistics = await _floorballStatisticsRepository.GetPlayerCareerStatisticsAsync(request.playerId);
 
-                FloorballPlayerProfileDto playerProfile = FloorballStatisticsMapper.ToDto(player, person, PlayerSeasonStatistics);
+                FloorballPlayerProfileDto playerProfile = FloorballStatisticsMapper.ToDto(player, person, PlayerSeasonStatistics, goalieCareerStatistics);
 
                 _logger.LogInformation("Succesfully retrieved player profile for player: {id}", request.playerId);
                 return Result<FloorballPlayerProfileDto>.Success(playerProfile);

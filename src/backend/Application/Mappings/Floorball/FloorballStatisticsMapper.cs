@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+using Application.DTOs.Common;
 using Application.DTOs.Floorball;
 using Application.Mappings.Common;
 using Domain.Entities.Common;
@@ -169,14 +171,14 @@ public static class FloorballStatisticsMapper
         };
     }
 
-    public static FloorballPlayerProfileDto ToDto(FloorballPlayer player, Person person, List<FloorballPlayerSeasonStatistics> statistics)
+    public static FloorballPlayerProfileDto ToDto(FloorballPlayer player, Person person, List<FloorballPlayerSeasonStatistics> statistics, List<FloorballGoalieSeasonStatistics> goalieStatistics)
     {
         return new FloorballPlayerProfileDto
         {
-            Player = new FloorballPlayerDto(
+            Player = new FloorballPlayerPublicDto(
                 player.Id,
                 player.PersonId,
-                PersonMapper.ToDto(person),
+                PersonMapper.ToPublicDto(person),
                 player.IsActive,
                 player.Position.PrimaryPosition,
                 player.CareerGoals,
@@ -210,6 +212,34 @@ public static class FloorballStatisticsMapper
                 FaceoffWins = stat.FaceoffWins,
                 FaceoffAttempts = stat.FaceoffAttempts,
                 FaceoffPercentage = stat.FaceoffPercentage
+            }).ToList(),
+            SeasonStatisticsForGoalie = goalieStatistics.Select(stat => new FloorballGoalieSeasonStatisticsDto
+            {
+                Id = stat.Id,
+                PlayerId = stat.PlayerId,
+                TeamId = stat.TeamId,
+                SeasonId = stat.SeasonId,
+                PlayerName = person.FullName,
+                TeamName = stat.Team?.Name ?? string.Empty,
+                SeasonName = stat.Season?.Name ?? string.Empty,
+                GamesPlayed = stat.GamesPlayed,
+                GamesStarted = stat.GamesStarted,
+                Wins = stat.Wins,
+                Losses = stat.Losses,
+                Ties = stat.Ties,
+                Saves = stat.Saves,
+                ShotsAgainst = stat.ShotsAgainst,
+                SavePercentage = stat.SavePercentage,
+                GoalsAgainst = stat.GoalsAgainst,
+                GoalsAgainstAverage = stat.GoalsAgainstAverage,
+                Shutouts = stat.Shutouts,
+                MinutesPlayed = stat.MinutesPlayed,
+                PowerPlaySaves = stat.PowerPlaySaves,
+                PowerPlayShotsAgainst = stat.PowerPlayShotsAgainst,
+                PowerPlaySavePercentage = stat.PowerPlaySavePercentage,
+                ShortHandedSaves = stat.ShortHandedSaves,
+                ShortHandedShotsAgainst = stat.ShortHandedShotsAgainst,
+                ShortHandedSavePercentage = stat.ShortHandedSavePercentage
             }).ToList()
         };
     }

@@ -66,14 +66,6 @@ public interface IFloorballStatisticsRepository
     Task<IEnumerable<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsBySeasonAsync(Guid seasonId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets all seasons statistics for player
-    /// </summary>
-    /// <param name="PlayerId"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<List<FloorballPlayerSeasonStatistics>> GetAllSeasonStatisticsForPlayerAsync(Guid PlayerId, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Gets top scorers for a specific season
     /// </summary>
     /// <param name="seasonId">The season ID</param>
@@ -97,7 +89,7 @@ public interface IFloorballStatisticsRepository
     /// <param name="playerId">The player ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Player statistics across all seasons</returns>
-    Task<IEnumerable<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default);
+    Task<List<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds or updates player season statistics
@@ -145,7 +137,7 @@ public interface IFloorballStatisticsRepository
     /// <param name="playerId">The player ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Goalie statistics across all seasons</returns>
-    Task<IEnumerable<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default);
+    Task<List<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds or updates goalie season statistics
