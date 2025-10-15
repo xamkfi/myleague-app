@@ -24,6 +24,78 @@
     "fi": "Finnish",
     "switchLanguage": "Switch language"
   },
+  "matchPage": {
+    "navigation": {
+      "summary": "SUMMARY",
+      "stats": "STATS",
+      "lineups": "LINEUPS",
+      "table": "TABLE"
+    },
+    "dateTime": {
+      "weekdays": {
+        "Monday": "Monday",
+        "Tuesday": "Tuesday",
+        "Wednesday": "Wednesday",
+        "Thursday": "Thursday",
+        "Friday": "Friday",
+        "Saturday": "Saturday",
+        "Sunday": "Sunday"
+      },
+      "months": {
+        "Jan": "Jan",
+        "Feb": "Feb",
+        "Mar": "Mar",
+        "Apr": "Apr",
+        "May": "May",
+        "Jun": "Jun",
+        "Jul": "Jul",
+        "Aug": "Aug",
+        "Sep": "Sep",
+        "Oct": "Oct",
+        "Nov": "Nov",
+        "Dec": "Dec"
+      }
+    },
+    "matchInfo": {
+      "venue": "Venue",
+      "status": "Status",
+      "overtime": "Went to overtime",
+      "shootout": "Went to shootout"
+    },
+    "stats": {
+      "title": "Team Statistics",
+      "shotsOnTarget": "Shots on Target",
+      "goalieSaves": "Goalie Saves",
+      "savePercentage": "Save Percentage",
+      "penaltyMinutes": "Penalty Minutes",
+      "loading": "Loading live match statistics...",
+      "realTimeEnabled": "Real-time updates enabled",
+      "noStats": "No statistics available"
+    },
+    "events": {
+      "goal": "Goal",
+      "penalty": "Penalty",
+      "matchStart": "Match Started",
+      "matchEnd": "Match Ended",
+      "periodStart": "Period Started",
+      "periodEnd": "Period Ended",
+      "timeout": "Timeout",
+      "noEvents": "No match events yet"
+    },
+    "timer": {
+      "start": "Start Timer",
+      "stop": "Stop Timer",
+      "reset": "Reset Timer",
+      "adjust": "Adjust Time",
+      "period": "Period {{number}}"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
   "admin": {
     "title": "Admin Dashboard",
     "actions": {
@@ -689,4 +761,4 @@
       "redCards": "Red cards"
     }
   }
-} 
+}
