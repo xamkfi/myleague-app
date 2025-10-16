@@ -8,7 +8,7 @@ interface ErrorPopupProps {
 }
 
 function ErrorPopup({message}: ErrorPopupProps) {
-   const [errors, setErrors] = useState<Object | string>("")
+   const [errors, setErrors] = useState<object | string>("")
    const [errorTitle, setErrorTitle] = useState<string>("")
    const [isShown, setIsShown] = useState<boolean>(false)
    const popUpDisplay = useRef<HTMLDivElement>(null)
