@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FloorballPosition } from "../../types/floorball/floorballTypes";
-import { floorballPlayerService } from "../../api/floorball/floorballPlayerService";
 import { floorballStatisticsService, type FloorballPlayerSeasonStatisticsDto } from "../../api/floorball/floorballStatistics";
-import { floorballSeasonService } from "../../api/floorball/floorballSeasonService";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
 import './FloorballTeamPlayerUserPage.scss';
 
@@ -40,6 +38,7 @@ interface PlayerWithMatches {
   teamName: string;
   teamId: string;
   isActive: boolean;
+  birthDateIso?: string;
   careerStats: TeamCareerStats[];
   recentMatches: MatchPlayerStats[];
 }
@@ -111,51 +110,29 @@ const FloorballTeamPlayerUserPage = () => {
         setLoading(true);
         setError(null);
         
-        // First, get the player information
-        const playerResponse = await floorballPlayerService.getById(id);
-        const playerData = playerResponse;
-        
-        // For now, we'll need to get team information differently since player doesn't have teamId
-        // This is a limitation of the current API structure
-        // We'll use the teamId from the statistics data instead
-        
-        // Get the current season - we'll need to get this from all active seasons
-        const activeSeasonsResponse = await floorballSeasonService.getActive();
-        const activeSeasons = activeSeasonsResponse.data || [];
-        
-        // For now, use the first active season as fallback
-        // In a real implementation, you'd need to determine which season/division the player belongs to
-        const currentSeasonData = activeSeasons.length > 0 ? activeSeasons[0] : null;
-        
-        if (!currentSeasonData) {
-          throw new Error('No active season found');
-        }
-        
-        // Fetch player statistics for the current season
-        const playerStats = await floorballStatisticsService.getPlayerStatistics(
-          currentSeasonData.id, 
-          id
-        );
-        
-        // Create career stats array (for now, just current season)
-        const careerStats: TeamCareerStats[] = [{
-          teamId: playerStats.teamId,
-          teamName: playerStats.teamName,
-          seasonName: playerStats.seasonName,
-          stats: playerStats
-        }];
+        // Fetch full player profile with career statistics
+        const profile = await floorballStatisticsService.getPlayerProfile(id);
+
+        // Map career player statistics into UI structure
+        const careerStats: TeamCareerStats[] = (profile.seasonStatistics || []).map(s => ({
+          teamId: s.teamId,
+          teamName: s.teamName,
+          seasonName: s.seasonName,
+          stats: s
+        }));
         
         // For now, use empty array for recent matches since we don't have match-specific player stats API
         const recentMatches: MatchPlayerStats[] = [];
         
         const transformedData: PlayerWithMatches = {
-          id: playerData.id,
-          playerName: playerStats.playerName,
-          position: playerData.position,
-          jerseyNumber: undefined, // Not available in current API
-          teamName: playerStats.teamName,
-          teamId: playerStats.teamId,
-          isActive: playerData.isActive,
+          id: profile.player.id,
+          playerName: profile.player.person.fullName,
+          position: profile.player.position,
+          jerseyNumber: undefined,
+          birthDateIso: profile.player.person.birthDate,
+          teamName: careerStats[0]?.teamName ?? 'Ei joukkuetta',
+          teamId: careerStats[0]?.teamId ?? '',
+          isActive: profile.player.isActive,
           careerStats,
           recentMatches
         };
@@ -171,6 +148,25 @@ const FloorballTeamPlayerUserPage = () => {
 
     loadPlayerData();
   }, [id]);
+
+  const formatDate = (isoDate?: string) => {
+    if (!isoDate) return '';
+    const d = new Date(isoDate);
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const yyyy = d.getUTCFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  };
+
+  const calculateAgeFrom = (isoDate?: string) => {
+    if (!isoDate) return undefined;
+    const birth = new Date(isoDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
 
   const getPositionText = (position: FloorballPosition) => {
     switch (position) {
@@ -220,7 +216,7 @@ const FloorballTeamPlayerUserPage = () => {
             <div className="player-stats-box">
               <div className="stat-item">
                 <span className="stat-label">Age:</span>
-                <span className="stat-value">22 (26/01/2003)</span>
+                <span className="stat-value">{`${calculateAgeFrom(player.birthDateIso) ?? '-'}`}{player.birthDateIso ? ` (${formatDate(player.birthDateIso)})` : ''}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">Status:</span>

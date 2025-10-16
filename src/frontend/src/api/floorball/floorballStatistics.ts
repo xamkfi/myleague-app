@@ -1,6 +1,7 @@
 import type { 
   ApiResponse
 } from '../../types/floorball/floorballTypes';
+import { FloorballPosition } from '../../types/floorball/floorballTypes';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -132,6 +133,29 @@ export interface FloorballSeasonStatisticsSummaryDto {
   averageGoalsPerGame: number;
 }
 
+// Player profile DTO returned by backend playerprofile endpoint
+export interface FloorballPlayerProfileDto {
+  player: {
+    id: string;
+    personId: string;
+    person: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      birthDate: string;
+      fullName: string;
+      isRegistered: boolean;
+    };
+    isActive: boolean;
+    position: FloorballPosition;
+    careerGoals: number;
+    careerAssists: number;
+    team: unknown | null;
+  };
+  seasonStatistics: FloorballPlayerSeasonStatisticsDto[];
+  seasonStatisticsForGoalie: FloorballGoalieSeasonStatisticsDto[];
+}
+
 export enum FloorballGameResult {
   Win = 'Win',
   Loss = 'Loss', 
@@ -217,6 +241,31 @@ export const floorballStatisticsService = {
       return apiResponse.data;
     } catch (error) {
       console.error('Error fetching player statistics:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get a player's full profile with career statistics
+   */
+  getPlayerProfile: async (playerId: string): Promise<FloorballPlayerProfileDto> => {
+    try {
+      const response = await fetch(`${API_URL}/floorball/statistics/playerprofile/${playerId}`);
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch player profile');
+        throw new Error(errorMessage);
+      }
+
+      const apiResponse: ApiResponse<FloorballPlayerProfileDto> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch player profile');
+      }
+
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching player profile:', error);
       throw error;
     }
   },
