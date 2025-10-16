@@ -7,6 +7,7 @@
    position: fixed;
    background-color: $color-red-almost;
    border: 1.5px solid $color-red-muted;
+   border-radius: map.get($border-radius, "sm");
    color: $color-red-muted;
    min-width: 256px;
    padding: 16px 24px;
