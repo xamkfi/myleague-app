@@ -124,8 +124,30 @@
 // Responsive design
 @media (max-width: 768px) {
   .match-header {
+    display: flex;
+    flex-direction: column;
+
     .teams-container {
+      order: 1;
       gap: 20px;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      align-items: stretch;
+    }
+
+    .match-status {
+      order: 2;
+      margin-top: 8px;
+    }
+
+    .match-info {
+      order: 3;
+      margin-top: 8px;
     }
 
     .team-crest {

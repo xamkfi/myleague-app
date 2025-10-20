@@ -121,3 +121,117 @@
    grid-area: assists;
    text-align: center;
 }
+
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+  .roster-container {
+    padding: map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .roster-position-header {
+    font-size: map.get($font-sizes, 'md');
+    text-align: center;
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .table {
+    grid-template-columns: 30px minmax(150px, 1fr) 50px repeat(3, 60px);
+    gap: map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .stats-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
+  }
+
+  .roster-player {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-jersey.row {
+    width: 24px;
+    height: 24px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .roster-container {
+    padding: map.get($spacing, 'xs');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .roster-position-header {
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .table {
+    grid-template-columns: 25px minmax(120px, 1fr) 40px repeat(3, 50px);
+    gap: map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .stats-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xxs');
+  }
+
+  .roster-player {
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-jersey.row {
+    width: 20px;
+    height: 20px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-player-name {
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .roster-container {
+    padding: map.get($spacing, 'xxs');
+  }
+
+  .roster-position-header {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .table {
+    grid-template-columns: 20px minmax(100px, 1fr) 35px repeat(3, 45px);
+    gap: 2px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .stats-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: 2px 4px;
+  }
+
+  .roster-player {
+    padding: 2px 4px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-jersey.row {
+    width: 18px;
+    height: 18px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-player-name {
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
