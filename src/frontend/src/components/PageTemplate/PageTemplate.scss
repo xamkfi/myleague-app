@@ -33,7 +33,7 @@
     }
     
     @media (max-width: map.get($breakpoints, 'mobile')) {
-      padding: map.get($spacing, 'xs');
+      padding: map.get($spacing, 'xxs'); // Reduced from 'xs' to 'xxs' for better mobile width utilization
     }
   }
 
@@ -74,7 +74,7 @@
     }
     
     @media (max-width: map.get($breakpoints, 'mobile')) {
-      padding: map.get($spacing, 'xs');
+      padding: map.get($spacing, 'xxs'); // Reduced from 'xs' to 'xxs' for better mobile width utilization
     }
   }
 }
@@ -117,7 +117,7 @@
   }
   
   @media (max-width: map.get($breakpoints, 'mobile')) {
-    padding: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'xxs'); // Reduced from 'xs' to 'xxs' for better mobile width utilization
   }
 }
 

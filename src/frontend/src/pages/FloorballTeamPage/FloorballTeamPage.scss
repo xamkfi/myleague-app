@@ -310,39 +310,156 @@
   // Responsive Design
 }
 
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
 @media (max-width: 768px) {
   .floorball-team-page {
-    padding: map.get($spacing, 'base');
+    padding: 0;
 
     .hero-image-container {
-      min-height: 350px;
+      min-height: 300px;
+      margin-bottom: map.get($spacing, 'sm');
       
       .team-header {
-        margin-top: 40px;
-        border-radius: 0 0 map.get($border-radius, 'sm') map.get($border-radius, 'sm');
+        margin-top: map.get($spacing, 'md');
+        padding: 0 map.get($spacing, 'sm');
+        
+        .left-navigation-container {
+          padding-left: map.get($spacing, 'sm');
+          margin-bottom: map.get($spacing, 'sm');
+          
+          .breadcrumb {
+            margin-bottom: map.get($spacing, 'sm');
+            font-size: map.get($font-sizes, 'xs');
+          }
+          
+          .team-navigation {
+            margin-bottom: map.get($spacing, 'sm');
+            
+            .back-button {
+              padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+              font-size: map.get($font-sizes, 'xs');
+            }
+          }
+        }
         
         .header-content {
           flex-direction: column;
-          padding: map.get($spacing, 'md');
+          padding: map.get($spacing, 'sm');
           gap: map.get($spacing, 'md');
-        }
-
-        .team-info {
-          h1 { 
-            font-size: map.get($font-sizes, 'lg'); 
-          }
-          
-          .team-meta {
-            gap: map.get($spacing, 'xs');
-          }
+          align-items: center;
         }
 
         .team-branding {
           align-self: center;
+          min-width: 120px;
+          min-height: 120px;
           
-          .team-logo {
-            width: 100px;
-            margin: map.get($spacing, 'xs') 0;
+          .floorball-page-team-logo {
+            min-width: 120px;
+            min-height: 120px;
+            
+            img {
+              width: 120px;
+              height: 120px;
+              border-radius: map.get($border-radius, 'sm');
+            }
+            
+            .logo-placeholder {
+              width: 120px;
+              height: 120px;
+              font-size: map.get($font-sizes, 'sm');
+              border-radius: map.get($border-radius, 'sm');
+            }
+          }
+        }
+
+        .team-info {
+          align-items: center;
+          text-align: center;
+          
+          h1 { 
+            font-size: map.get($font-sizes, 'lg');
+            margin-bottom: map.get($spacing, 'sm');
+          }
+          
+          .team-meta {
+            flex-direction: column;
+            gap: map.get($spacing, 'xs');
+            align-items: center;
+            font-size: map.get($font-sizes, 'sm');
+            
+            .division-badge,
+            .club-badge,
+            .arena {
+              padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+              background: rgba(255, 255, 255, 0.1);
+              border-radius: map.get($border-radius, 'sm');
+              backdrop-filter: blur(4px);
+            }
+          }
+        }
+
+        .header-navigation {
+          width: 100%;
+          margin-top: map.get($spacing, 'md');
+        }
+      }
+    }
+
+    .tab-content-container {
+      padding: map.get($spacing, 'sm') 0;
+    }
+
+    .tab-content { 
+      padding: map.get($spacing, 'sm');
+      margin: 0 map.get($spacing, 'sm');
+      border-radius: map.get($border-radius, 'lg');
+    }
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .floorball-team-page {
+    .hero-image-container {
+      min-height: 280px;
+      
+      .team-header {
+        margin-top: map.get($spacing, 'sm');
+        padding: 0 map.get($spacing, 'xs');
+        
+        .left-navigation-container {
+          padding-left: map.get($spacing, 'xs');
+          
+          .breadcrumb {
+            font-size: map.get($font-sizes, 'xs');
+            margin-bottom: map.get($spacing, 'xs');
+          }
+          
+          .team-navigation {
+            margin-bottom: map.get($spacing, 'xs');
+            
+            .back-button {
+              padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+              font-size: map.get($font-sizes, 'xs');
+            }
+          }
+        }
+        
+        .header-content {
+          padding: map.get($spacing, 'xs');
+          gap: map.get($spacing, 'sm');
+        }
+
+        .team-branding {
+          min-width: 100px;
+          min-height: 100px;
+          
+          .floorball-page-team-logo {
+            min-width: 100px;
+            min-height: 100px;
             
             img {
               width: 100px;
@@ -352,17 +469,74 @@
             .logo-placeholder {
               width: 100px;
               height: 100px;
-              font-size: 0.8rem;
+              font-size: map.get($font-sizes, 'xs');
             }
           }
-          
+        }
 
+        .team-info {
+          h1 { 
+            font-size: map.get($font-sizes, 'md');
+          }
+          
+          .team-meta {
+            font-size: map.get($font-sizes, 'xs');
+            
+            .division-badge,
+            .club-badge,
+            .arena {
+              padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+            }
+          }
         }
       }
     }
 
+    .tab-content-container {
+      padding: map.get($spacing, 'xs') 0;
+    }
+
     .tab-content { 
-      padding: map.get($spacing, 'base'); 
+      padding: map.get($spacing, 'xs');
+      margin: 0 map.get($spacing, 'xs');
+    }
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .floorball-team-page {
+    .hero-image-container {
+      min-height: 250px;
+      
+      .team-header {
+        .team-branding {
+          min-width: 80px;
+          min-height: 80px;
+          
+          .floorball-page-team-logo {
+            min-width: 80px;
+            min-height: 80px;
+            
+            img {
+              width: 80px;
+              height: 80px;
+            }
+            
+            .logo-placeholder {
+              width: 80px;
+              height: 80px;
+              font-size: map.get($font-sizes, 'xs');
+            }
+          }
+        }
+
+        .team-info {
+          h1 { 
+            font-size: map.get($font-sizes, 'sm');
+          }
+        }
+      }
     }
   }
 }

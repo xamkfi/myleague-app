@@ -6,4 +6,36 @@
    @include container;
    margin-bottom: map.get($spacing, "md");
    color: $color-neutral-black;
+   padding: map.get($spacing, 'sm');
+   background: $color-neutral-white;
+   border-radius: map.get($border-radius, 'lg');
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+  .statistics-container {
+    padding: map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .statistics-container {
+    padding: map.get($spacing, 'xs');
+    margin-bottom: map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .statistics-container {
+    padding: map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'xs');
+  }
 }

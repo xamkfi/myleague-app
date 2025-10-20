@@ -422,6 +422,13 @@
 
   .match-header {
     padding: map.get($spacing, 'lg') map.get($spacing, 'md');
+    display: flex;
+    flex-direction: column;
+
+    // Ensure stacking order on mobile: teams on top, then status, then info
+    .teams-container { order: 1; }
+    .match-status { order: 2; }
+    .match-info { order: 3; }
     
     .match-info {
       margin-bottom: map.get($spacing, 'md');
@@ -440,8 +447,10 @@
   .teams-container {
     gap: map.get($spacing, 'md');
     margin-bottom: map.get($spacing, 'md');
-    flex-direction: column;
+    flex-direction: row; // keep in a single row on mobile
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
   }
 
   .team-section {
@@ -473,8 +482,8 @@
   }
 
   .score-container {
-    order: -1;
-    margin-bottom: map.get($spacing, 'md');
+    order: 0; // keep score in the middle row-wise
+    margin-bottom: 0;
   }
 
   .match-score {
@@ -610,6 +619,13 @@
 
   .match-header {
     padding: map.get($spacing, 'md') map.get($spacing, 'sm');
+    display: flex;
+    flex-direction: column;
+
+    // Ensure stacking order on smaller phones as well
+    .teams-container { order: 1; }
+    .match-status { order: 2; }
+    .match-info { order: 3; }
     
     .match-info {
       margin-bottom: map.get($spacing, 'sm');

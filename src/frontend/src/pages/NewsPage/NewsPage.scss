@@ -623,16 +623,17 @@
     padding: map.get($spacing, 'md');
     width: calc(100% - #{map.get($spacing, 'sm') * 2});
     border-radius: map.get($border-radius, 'lg');
+    gap: map.get($spacing, 'sm');
   }
   
   .news-list-title {
     font-size: 1.5rem;
     text-align: center;
-    margin-bottom: map.get($spacing, 'md');
+    margin-bottom: map.get($spacing, 'sm');
   }
   
   .news-filter-wrapper {
-    margin-bottom: map.get($spacing, 'md');
+    margin-bottom: map.get($spacing, 'sm');
   }
   
   .no-news-message {
@@ -741,6 +742,7 @@
     margin: map.get($spacing, 'xs');
     padding: map.get($spacing, 'sm');
     width: calc(100% - #{map.get($spacing, 'xs') * 2});
+    gap: map.get($spacing, 'xs');
   }
   
   .news-list-title {
@@ -748,7 +750,7 @@
   }
   
   .news-filter-wrapper {
-    margin-bottom: map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
   }
   
   .no-news-message {
