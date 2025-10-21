@@ -4,6 +4,14 @@
   margin: 0 auto;
 }
 
+.admin-overview {
+  font-size: 2rem;
+}
+
+.admin-sport-selection {
+  font-size: 2rem;
+}
+
 .admin-actions {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -13,8 +21,9 @@
 
 .admin-action-button {
   display: flex;
+  flex-direction: row; //added
   align-items: center;
-  justify-content: center;
+  justify-content: space-between; //changed from center
   padding: 1.5rem;
   background-color: #f8f9fa;
   border: 1px solid #dee2e6;
@@ -24,15 +33,9 @@
   color: #212529;
   transition: all 0.2s ease-in-out;
   min-height: 100px;
-  text-align: center;
+  text-align: left; //changed from center
   cursor: pointer;
   gap: 0.5rem;
-
-  // Make emojis bigger by targeting the first character (emoji)
-  &::first-letter {
-    font-size: 1.8em;
-    line-height: 1;
-  }
 
   &:hover {
     background-color: #e9ecef;
@@ -43,4 +46,23 @@
   &:active {
     transform: translateY(0);
   }
-} 
+}
+
+.button-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.button-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: left;
+}
+
+.button-subtitle {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #6c757d;
+}

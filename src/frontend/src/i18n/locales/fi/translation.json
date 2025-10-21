@@ -27,9 +27,12 @@
   "admin": {
     "title": "Hallintapaneeli",
     "actions": {
-      "managePerson": "Muokkaa/Lisää Henkilö",
-      "news": "Luo Uutinen",
-      "floorball": "Salibandyn Hallinta"
+      "persons": "Henkilöt",
+      "managePerson": "Hallitse henkilöitä",
+      "news": "Uutiset",
+      "manageNews": "Hallitse uutisia",
+      "floorball": "Salibandy",
+      "manageFloorball": "Hallitse salibandya"
     },
     "persons":{
       "title": "Henkilöiden hallinta",

@@ -27,9 +27,12 @@
   "admin": {
     "title": "Admin Dashboard",
     "actions": {
-      "managePerson": "Edit/Add Person",
-      "news": "Create News",
-      "floorball": "Floorball Management"
+      "persons": "Persons",
+      "managePerson": "Manage persons",
+      "news": "News",
+      "manageNews": "Manage news",
+      "floorball": "Floorball",
+      "manageFloorball": "Manage floorball"
     },
     "persons":{
       "title": "Person Management",
