@@ -8,6 +8,7 @@ using MyLeague.Infrastructure.SignalR;
 using MyLeague.Infrastructure.SignalR.Sports.Floorball;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Interfaces.Common;
 
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
@@ -17,6 +18,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
     public class FloorballPlayerRemovedFromTeamEventHandler : NotificationDomainEventHandler<FloorballPlayerRemovedFromTeamEvent>
     {
         private readonly FloorballDbContext _dbContext;
+        private readonly IPersonNameProvider _personNameProvider;
 
         /// <summary>
         /// Initializes a new instance of the FloorballPlayerRemovedFromTeamEventHandler class
@@ -27,10 +29,12 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         public FloorballPlayerRemovedFromTeamEventHandler(
             FloorballDbContext dbContext,
             INotificationSender notificationSender,
-            ILogger<FloorballPlayerRemovedFromTeamEventHandler> logger)
+            ILogger<FloorballPlayerRemovedFromTeamEventHandler> logger,
+            IPersonNameProvider personNameProvider)
             : base(notificationSender, logger)
         {
             _dbContext = dbContext;
+            _personNameProvider = personNameProvider;
         }
 
         /// <summary>
@@ -44,7 +48,6 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
             CancellationToken cancellationToken = default)
         {
             FloorballPlayer? player = await _dbContext.FloorballPlayers
-                .Include(p => p.Person)
                 .FirstOrDefaultAsync(p => p.Id == domainEvent.PlayerId, cancellationToken);
 
             FloorballTeam? team = await _dbContext.FloorballTeams
@@ -58,17 +61,21 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 
             string teamName = team?.Name ?? "Unknown Team";
 
+            string playerName = player != null
+                ? await _personNameProvider.GetFullNameAsync(player.PersonId, cancellationToken)
+                : "Unknown";
+
             FloorballPlayerRemovedFromTeamNotification notification = new()
             {
                 PlayerId = domainEvent.PlayerId,
                 TeamId = domainEvent.TeamId,
-                PlayerName = player.Person?.FullName ?? "Unknown",
+                PlayerName = playerName,
                 TeamName = teamName,
                 RemovedOn = domainEvent.OccurredOn
             };
 
             _logger.LogInformation("Player {PlayerName} removed from team {TeamName}", 
-                player.Person?.FullName ?? "Unknown", teamName);
+                playerName, teamName);
 
             return (FloorballNotificationEvents.PlayerRemovedFromTeam, notification);
         }

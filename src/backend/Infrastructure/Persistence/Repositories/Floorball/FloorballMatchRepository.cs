@@ -349,10 +349,12 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public override async Task UpdateAsync(FloorballMatch match)
         {
             _dbContext.Entry(match).State = EntityState.Modified;
-            foreach (var periodScore in match.PeriodScores)
+            // Ensure related PeriodScores modifications are tracked and persisted
+            foreach (FloorballPeriodScore periodScore in match.PeriodScores)
             {
                 _dbContext.Entry(periodScore).State = EntityState.Modified;
             }
+
             await Task.CompletedTask;
         }
 

@@ -151,6 +151,7 @@ export const floorballMatchEventService = {
         occurredOn,
         data: {
           matchId,
+          eventId: g.id,
           teamId: g.teamId,
           playerId: g.playerId,
           periodNumber: g.periodNumber,
@@ -167,6 +168,7 @@ export const floorballMatchEventService = {
         occurredOn,
         data: {
           matchId,
+          eventId: p.id,
           teamId: p.teamId,
           playerId: p.playerId,
           periodNumber: p.periodNumber,
@@ -179,6 +181,7 @@ export const floorballMatchEventService = {
 
       // Synthesize saves from DTO
       type SaveEventFromDto = {
+        id: string;
         teamId: string;
         goalieId: string;
         periodNumber: number;
@@ -191,6 +194,7 @@ export const floorballMatchEventService = {
         occurredOn,
         data: {
           matchId,
+          eventId: s.id,
           teamId: s.teamId,
           goalieId: s.goalieId,
           periodNumber: s.periodNumber,

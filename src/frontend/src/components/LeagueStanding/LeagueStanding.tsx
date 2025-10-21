@@ -2,9 +2,10 @@ import './LeagueStanding.scss';
 import type { 
   FloorballPlayerSeasonStatisticsDto,
   FloorballSeasonStatisticsSummaryDto,
-  FloorballTeamSeasonStatisticsDto 
+  FloorballTeamSeasonStatisticsDto
 } from '../../api/floorball/floorballStatistics';
 import { useState } from 'react';
+import { FloorballGameResult } from '../../api/floorball/floorballStatistics';
 
 interface LeagueStandingProps {
   seasonSummary?: FloorballSeasonStatisticsSummaryDto | null;
@@ -54,7 +55,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
         <tbody>
           {data.map((team, index) => {
             const form = Array.isArray(team.lastFiveForm)
-              ? team.lastFiveForm as string[]
+              ? team.lastFiveForm
               : [];
             const rank = index + 1;
             
@@ -92,16 +93,15 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                 <td className="points-col">{team.points}</td>
                 <td className="form-col">
                   <div className="form-indicators">
-                    {form.map((result, formIndex) => {
-                      const r = (result || '').toString().trim().toUpperCase();
-                      const cls = r === 'W' ? 'w' : r === 'L' ? 'l' : r === 'T' || r === 'D' ? 'd' : 'unknown';
+                    {form.map((result: FloorballGameResult, formIndex: number) => {    
                       return (
-                        <span 
+                        <div 
                           key={formIndex} 
-                          className={`form-indicator form-${cls}`}
+                          className={`form-box form-${result.toString()}`}
+                          title={result} // Add tooltip showing the full result
                         >
-                          {r}
-                        </span>
+                          {result.charAt(0)}
+                        </div>
                       );
                     })}
                   </div>

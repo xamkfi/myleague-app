@@ -1,4 +1,76 @@
 {
+  "matchPage": {
+    "navigation": {
+      "summary": "YHTEENVETO",
+      "stats": "TILASTOT",
+      "lineups": "KOKOONPANOT",
+      "table": "SARJATAULUKKO"
+    },
+    "dateTime": {
+      "weekdays": {
+        "Monday": "Maanantai",
+        "Tuesday": "Tiistai",
+        "Wednesday": "Keskiviikko",
+        "Thursday": "Torstai",
+        "Friday": "Perjantai",
+        "Saturday": "Lauantai",
+        "Sunday": "Sunnuntai"
+      },
+      "months": {
+        "Jan": "Tammi",
+        "Feb": "Helmi",
+        "Mar": "Maalis",
+        "Apr": "Huhti",
+        "May": "Touko",
+        "Jun": "Kesä",
+        "Jul": "Heinä",
+        "Aug": "Elo",
+        "Sep": "Syys",
+        "Oct": "Loka",
+        "Nov": "Marras",
+        "Dec": "Joulu"
+      }
+    },
+    "matchInfo": {
+      "venue": "Pelipaikka",
+      "status": "Tila",
+      "overtime": "Jatkoaika",
+      "shootout": "Voittomaalikilpailu"
+    },
+    "stats": {
+      "title": "Joukkuetilastot",
+      "shotsOnTarget": "Laukaukset maalia kohti",
+      "goalieSaves": "Torjunnat",
+      "savePercentage": "Torjuntaprosentti",
+      "penaltyMinutes": "Jäähyminuutit",
+      "loading": "Ladataan ottelutilastoja...",
+      "realTimeEnabled": "Reaaliaikaiset päivitykset käytössä",
+      "noStats": "Tilastoja ei saatavilla"
+    },
+    "events": {
+      "goal": "Maali",
+      "penalty": "Jäähy",
+      "matchStart": "Ottelu alkoi",
+      "matchEnd": "Ottelu päättyi",
+      "periodStart": "Erä alkoi",
+      "periodEnd": "Erä päättyi",
+      "timeout": "Aikalisä",
+      "noEvents": "Ei ottelutapahtumia"
+    },
+    "timer": {
+      "start": "Käynnistä kello",
+      "stop": "Pysäytä kello",
+      "reset": "Nollaa kello",
+      "adjust": "Säädä aikaa",
+      "period": "{{number}}. erä"
+    },
+    "status": {
+      "scheduled": "Tuleva",
+      "inProgress": "Käynnissä",
+      "completed": "Päättynyt",
+      "cancelled": "Peruttu"
+    }
+  },
   "nav": {
     "news": "Uutiset",
     "rules": "Säännöt",
