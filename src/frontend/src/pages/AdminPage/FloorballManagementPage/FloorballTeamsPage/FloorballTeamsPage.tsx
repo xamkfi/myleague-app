@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import BackButton from '../../../../components/BackButton/BackButton';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import type { FloorballTeam, PaginatedApiResponse } from '../../../../types/floorball/floorballTypes';

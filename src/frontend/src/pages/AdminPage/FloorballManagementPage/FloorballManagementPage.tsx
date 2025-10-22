@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { divisionService } from '../../../api/common/divisionService';
-import PageTemplate from '../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
 import './FloorballManagementPage.scss';
 import BackButton from '../../../components/BackButton/BackButton';
 

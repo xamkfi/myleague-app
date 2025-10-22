@@ -1,0 +1,192 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../styles/common' as *;
+
+.admin-navbar {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  min-height: 100vh;
+  background-color: #0f2847;
+  color: $color-white;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  overflow-y: auto;
+
+  &-header {
+    padding: map.get($spacing, 'lg') map.get($spacing, 'lg');
+    border-bottom: none;
+  }
+
+  &-brand {
+    text-decoration: none;
+    
+    h1 {
+      font-size: 2.5rem;
+      font-weight: map.get($font-weights, 'bold');
+      margin: 0;
+      color: $color-white;
+      letter-spacing: 0.1em;
+    }
+  }
+
+  &-subtitle {
+    font-size: 1.125rem;
+    font-weight: map.get($font-weights, 'normal');
+    margin: 2px 0 0 0;
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  &-content {
+    flex: 1;
+    padding: map.get($spacing, 'base') 0;
+  }
+
+  &-section {
+    margin-bottom: map.get($spacing, 'lg');
+    
+    &:not(:last-child)::after {
+      content: '';
+      display: block;
+      height: 1px;
+      background-color: rgba(255, 255, 255, 0.2);
+      margin: map.get($spacing, 'base') map.get($spacing, 'lg') 0;
+    }
+    
+    &-title {
+      font-size: 0.875rem;
+      font-weight: map.get($font-weights, 'semibold');
+      color: rgba(255, 255, 255, 0.9);
+      padding: 0 map.get($spacing, 'lg');
+      margin: 0 0 map.get($spacing, 'xs') 0;
+      text-transform: capitalize;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  &-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &-item {
+    margin: 0 map.get($spacing, 'sm');
+    border-radius: 8px;
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, 'sm');
+      padding: 0.5rem map.get($spacing, 'base');
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      
+      .icon {
+        width: 20px;
+        height: 20px;
+        filter: brightness(0) invert(1);
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        
+        .icon {
+          opacity: 1;
+        }
+      }
+    }
+
+    &.active {
+      a {
+        background-color: rgba(255, 255, 255, 0.95);
+        color: #0f2847;
+        font-weight: map.get($font-weights, 'semibold');
+        
+        .icon {
+          filter: brightness(0) saturate(100%) invert(15%) sepia(30%) saturate(1500%) hue-rotate(180deg);
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  &-footer {
+    padding: map.get($spacing, 'base');
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin-top: auto;
+  }
+
+  &-user {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+
+    &-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    &-name {
+      font-size: 0.9rem;
+      font-weight: map.get($font-weights, 'semibold');
+      color: $color-white;
+      letter-spacing: 0.5px;
+    }
+
+    &-role {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    &-dropdown-icon {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.75);
+      transition: transform 0.2s ease;
+    }
+
+    &.open {
+      .admin-navbar-user-dropdown-icon {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  // Scrollbar styling
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import './FloorballSeasonsPage.scss';
 import { useSeasonsManagement } from './hooks/useSeasonsManagement';
 import { SeasonsPageHeader } from './components/SeasonsPageHeader';

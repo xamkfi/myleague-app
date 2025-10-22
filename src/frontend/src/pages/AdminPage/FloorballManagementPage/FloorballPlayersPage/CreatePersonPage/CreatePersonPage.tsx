@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import BackButton from '../../../../../components/BackButton/BackButton';
 import PersonForm from '../../../PersonsPage/components/PersonForm/PersonForm';
 import type { Person } from '../../../../../types/admin/personTypes';

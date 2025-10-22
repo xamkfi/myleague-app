@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 // import { useNavigate } from 'react-router-dom';
-import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../api/floorball/floorballPlayerService';
 import PlayersTable from './components/PlayersTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
@@ -507,7 +507,7 @@ const FloorballPlayersPage = () => {
   }
 
   return (
-    <div className="floorball-players-page">
+    <PageTemplate title={t('floorball.players.title', 'MANAGE PLAYERS')}>
       <div className="floorball-players-container">
 
         {/* Back button */}
@@ -515,7 +515,6 @@ const FloorballPlayersPage = () => {
           to="/admin/floorball" 
           text={t('common.back', 'Back to Floorball Management')} 
         />
-        <h1 className="page-title">{t('floorball.players.title', 'MANAGE PLAYERS')}</h1>
         {/* Header with actions */}
         <div className="floorball-players-header">
           <div className="players-actions">
@@ -667,7 +666,7 @@ const FloorballPlayersPage = () => {
           isUpdating={isBulkStatusUpdating}
         />
       </div>
-    </div>
+    </PageTemplate>
   );
 };
 

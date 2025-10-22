@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import AdminPageTemplate from '../../components/PageTemplate/AdminPageTemplate';
 import './AdminPage.scss';
 import PersonIcon from '../../assets/adminIcons/Persons.svg';
 import NewsIcon from '../../assets/adminIcons/News.svg';
@@ -11,7 +11,7 @@ const AdminPage = () => {
   const { t } = useTranslation();
 
   return (
-    <PageTemplate title={t('admin.title', 'Admin Dashboard')}>
+    <AdminPageTemplate title={t('admin.title', 'Admin Dashboard')}>
       <div className="admin-container">
         <h2 className="admin-overview">OVERVIEW</h2>
         <div className="admin-actions">
@@ -51,7 +51,7 @@ const AdminPage = () => {
           </button>
         </div>
       </div>
-    </PageTemplate>
+    </AdminPageTemplate>
   );
 };
 
