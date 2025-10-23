@@ -353,7 +353,8 @@
       },
       "comingSoonAlert": "🚧 {{featureName}} tulossa pian! 🚧\n\nKehitystiimimme työskentelee kovasti tuodakseen sinulle tämän ominaisuuden. Pysy kuulolla päivityksistä! 🎯",
       "actions": {
-        "teams": "Hallitse Joukkueita",
+        "teams": "Joukkueet",
+        "manageTeams": "Hallitse joukkueita",
         "players": "Hallitse Pelaajia",
         "coaches": "Hallitse Valmentajia",
         "teamManagers": "Hallitse Joukkueenjohtajia",

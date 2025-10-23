@@ -353,7 +353,8 @@
       },
       "comingSoonAlert": "🚧 {{featureName}} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯",
       "actions": {
-        "teams": "Manage Teams",
+        "teams": "Teams",
+        "manageTeams": "Manage teams",
         "players": "Manage Players",
         "coaches": "Manage Coaches",
         "teamManagers": "Manage Team Managers",
