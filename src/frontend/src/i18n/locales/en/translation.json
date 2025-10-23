@@ -98,7 +98,11 @@
   },
   "admin": {
     "title": "Admin Dashboard",
+    "database": "Database",
+    "sportsTitle": "Sports",
+    "view": "Admin view",
     "actions": {
+      "home": "Home",
       "persons": "Persons",
       "managePerson": "Manage persons",
       "news": "News",

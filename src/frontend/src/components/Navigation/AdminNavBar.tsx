@@ -21,41 +21,41 @@ function AdminNavBar() {
         <Link to="/admin" className="admin-navbar-brand">
           <h1>MAHL</h1>
         </Link>
-        <p className="admin-navbar-subtitle">Admin view</p>
+        <p className="admin-navbar-subtitle">{t('admin.view', 'Admin view')}</p>
       </div>
 
       <div className="admin-navbar-content">
         <div className="admin-navbar-section">
-          <h3 className="admin-navbar-section-title">Database</h3>
+          <h3 className="admin-navbar-section-title">{t('admin.database', 'Database')}</h3>
           <ul className="admin-navbar-menu">
             <li className={`admin-navbar-item ${isActive('/admin') ? 'active' : ''}`}>
               <Link to="/admin">
                 <img src={SportsIcon} alt="Home" className="icon" />
-                <span>Home</span>
+                <span>{t('admin.actions.home', 'Home')}</span>
               </Link>
             </li>
             <li className={`admin-navbar-item ${isActive('/admin/persons') ? 'active' : ''}`}>
               <Link to="/admin/persons">
                 <img src={PersonsIcon} alt="Persons" className="icon" />
-                <span>Persons</span>
+                <span>{t('admin.actions.persons', 'Persons')}</span>
               </Link>
             </li>
             <li className={`admin-navbar-item ${isActive('/admin/news') ? 'active' : ''}`}>
               <Link to="/admin/news">
                 <img src={NewsIcon} alt="News" className="icon" />
-                <span>News</span>
+                <span>{t('admin.actions.news', 'News')}</span>
               </Link>
             </li>
           </ul>
         </div>
 
         <div className="admin-navbar-section">
-          <h3 className="admin-navbar-section-title">Sports</h3>
+          <h3 className="admin-navbar-section-title">{t('admin.sportsTitle', 'Sports')}</h3>
           <ul className="admin-navbar-menu">
             <li className={`admin-navbar-item ${isActive('/admin/floorball') ? 'active' : ''}`}>
               <Link to="/admin/floorball">
                 <img src={SportsIcon} alt="Floorball" className="icon" />
-                <span>Floorball</span>
+                <span>{t('admin.actions.floorball', 'Floorball')}</span>
               </Link>
             </li>
           </ul>

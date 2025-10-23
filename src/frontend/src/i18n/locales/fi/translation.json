@@ -98,7 +98,11 @@
   },
   "admin": {
     "title": "Hallintapaneeli",
+    "database": "Tietokanta",
+    "sportsTitle": "Urheilulajit",
+    "view": "Admin näkymä",
     "actions": {
+      "home": "Koti",
       "persons": "Henkilöt",
       "managePerson": "Hallitse henkilöitä",
       "news": "Uutiset",
