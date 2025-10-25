@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import './ActivePlayersSelector.scss';
 import type { ChangeEvent } from 'react';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 

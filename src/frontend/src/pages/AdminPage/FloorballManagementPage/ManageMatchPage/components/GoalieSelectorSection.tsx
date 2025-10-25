@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'react';
+import './GoalieSelectorSection.scss';
 import { useMemo } from 'react';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';

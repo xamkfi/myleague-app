@@ -1,4 +1,5 @@
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
+import './LiveMatchQuickActions.scss';
 
 interface LiveMatchQuickActionsProps {
   loading: boolean;

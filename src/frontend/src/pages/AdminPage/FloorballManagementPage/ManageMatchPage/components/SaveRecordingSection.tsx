@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import './SaveRecordingSection.scss';
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 
 interface SaveRecordingSectionProps {

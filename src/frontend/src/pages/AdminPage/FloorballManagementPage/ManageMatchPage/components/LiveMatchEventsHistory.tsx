@@ -1,4 +1,5 @@
 import type { ProcessedEvent } from './types';
+import './LiveMatchEventsHistory.scss';
 
 interface LiveMatchEventsHistoryProps {
   allEvents: ProcessedEvent[];

@@ -436,7 +436,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
 
   return (
-    <div className="manage-match-content">
+    <>
       {/* Header */}
       <LiveMatchModalHeader
         homeTeam={matchData.homeTeam}
@@ -646,7 +646,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           />
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -697,10 +697,13 @@ const ManageMatchPage = () => {
   return (
     <div className="manage-match-page">
       <Navbar />
-      <div className="back-button-container">
-        <BackButton to="/admin/floorball/matches" text="Back to Overview" />
-      </div>
-      <div className="manage-match-page-content">
+      <div className="manage-match-content">
+        <div className="page-header">
+          <div className="page-header__top">
+            <BackButton to="/admin/floorball/matches" />
+            <h1 className="page-title-compact font-title">MATCH MANAGEMENT</h1>
+          </div>
+        </div>
         <ManageMatchPageContent match={match} setMatch={setMatch} />
       </div>
     </div>

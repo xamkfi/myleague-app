@@ -1,4 +1,5 @@
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floorball/floorballTypes';
+import './LiveMatchModalHeader.scss';
 
 interface LiveMatchModalHeaderProps {
   homeTeam: FloorballTeam | null;

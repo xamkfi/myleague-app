@@ -1,4 +1,5 @@
 import React from 'react';
+import './LiveMatchTimer.scss';
 import { Timer } from '../../../../../components/Timer/Timer';
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 import type { TimerUpdate } from '../../../../../api/common/timerService';

@@ -1,0 +1,26 @@
+.events-history {
+  h3 { margin: 0 0 8px 0; color: #1e293b; font-size: 1.1rem; font-weight: 600; }
+
+  .no-events {
+    text-align: center; color: #9ca3af; font-style: italic; padding: 24px;
+    background: #f9fafb; border-radius: 6px; border: 2px dashed #e5e7eb;
+  }
+
+  .events-list {
+    flex: 1; border: 1px solid #e5e7eb; border-radius: 6px; background: white; min-height: 0;
+  }
+
+  .event-item {
+    padding: 8px 12px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 8px; transition: background-color 0.2s;
+    &:hover { background: #f8fafc; }
+    &:last-child { border-bottom: none; }
+    &.goal { border-left: 4px solid #10b981; }
+    &.penalty { border-left: 4px solid #f59e0b; }
+    &.save { border-left: 4px solid #3b82f6; }
+
+    .event-time { font-family: 'Courier New', monospace; font-size: 0.875rem; color: #6b7280; font-weight: 500; min-width: 80px; }
+    .event-details { flex: 1; }
+  }
+}
+
+
