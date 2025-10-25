@@ -18,6 +18,8 @@ import PenaltyRecordingForm from './components/PenaltyRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ConfirmationDialog from './components/ConfirmationDialog';
 import SaveRecordingSection from './components/SaveRecordingSection';
+import ActivePlayersSelector from './components/ActivePlayersSelector';
+import GoalieSelectorSection from './components/GoalieSelectorSection';
 
 // Import custom hooks
 import {
@@ -536,18 +538,16 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             keybindsEnabled={keybindsEnabled}
             isStartMatchDisabled={!homeGoalieId || !awayGoalieId}
           />
+          {/* Save buttons (Record Save) */}
         <SaveRecordingSection
           currentMatch={matchData.currentMatch}
-          homePlayers={matchData.homePlayers}
-          awayPlayers={matchData.awayPlayers}
           homeGoalieId={homeGoalieId}
           awayGoalieId={awayGoalieId}
-          setHomeGoalieId={setHomeGoalieId}
-          setAwayGoalieId={setAwayGoalieId}
           onRecordSave={handleRecordSave}
           loading={saveLoading}
           keybindsEnabled={keybindsEnabled}
         />
+
           {/* Quick Actions */}
           <LiveMatchQuickActions
             loading={forms.loading}
@@ -556,6 +556,20 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             awayTeamId={matchData.awayTeam?.id}
             onShowGoalForm={forms.openGoalFormForTeam}
             onShowPenaltyForm={forms.openPenaltyFormForTeam}
+          />
+
+          <ActivePlayersSelector
+            homePlayers={matchData.homePlayers}
+            awayPlayers={matchData.awayPlayers}
+          />
+
+          <GoalieSelectorSection
+            homePlayers={matchData.homePlayers}
+            awayPlayers={matchData.awayPlayers}
+            homeGoalieId={homeGoalieId}
+            awayGoalieId={awayGoalieId}
+            setHomeGoalieId={setHomeGoalieId}
+            setAwayGoalieId={setAwayGoalieId}
           />
 
           {/* Forms */}
