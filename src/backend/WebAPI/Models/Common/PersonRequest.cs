@@ -4,6 +4,45 @@ using Application.DTOs.Common;
 namespace WebAPI.Models.Common;
 
 /// <summary>
+/// Request model for retrieving persons
+/// </summary>
+public record GetPersonsRequest
+{
+
+    /// <summary>
+    /// Gets the page number (1-based)
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
+    public int Page { get; init; } = 1;
+
+    /// <summary>
+    /// Gets the number of items per page (0 means use default)
+    /// </summary>
+    [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
+    public int PageSize { get; init; } = 25;
+
+    /// <summary>
+    /// Gets the first name of the person
+    /// </summary>
+    public string? FirstName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the last name of the person
+    /// </summary>
+    public string? LastName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the birth date of the person
+    /// </summary>
+    public string? BirthDate { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets whether the person is registered
+    /// </summary>
+    public bool? IsRegistered { get; init; } = null;
+}
+
+/// <summary>
 /// Request model for creating a new person
 /// </summary>
 public record CreatePersonRequest

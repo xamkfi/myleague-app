@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 type TabType = 'summary' | 'stats' | 'lineups' | 'table';
 
 interface MatchNavigationProps {
@@ -6,31 +8,32 @@ interface MatchNavigationProps {
 }
 
 export default function MatchNavigation({ activeTab, onTabChange }: MatchNavigationProps) {
+  const { t } = useTranslation();
   return (
     <div className="navigation-tabs">
       <button 
         className={`nav-tab ${activeTab === 'summary' ? 'active' : ''}`}
         onClick={() => onTabChange('summary')}
       >
-        SUMMARY
+        {t('matchPage.navigation.summary')}
       </button>
       <button 
         className={`nav-tab ${activeTab === 'stats' ? 'active' : ''}`}
         onClick={() => onTabChange('stats')}
       >
-        STATS
+        {t('matchPage.navigation.stats')}
       </button>
       <button 
         className={`nav-tab ${activeTab === 'lineups' ? 'active' : ''}`}
         onClick={() => onTabChange('lineups')}
       >
-        LINEUPS
+        {t('matchPage.navigation.lineups')}
       </button>
       <button 
         className={`nav-tab ${activeTab === 'table' ? 'active' : ''}`}
         onClick={() => onTabChange('table')}
       >
-        TABLE
+        {t('matchPage.navigation.table')}
       </button>
     </div>
   );

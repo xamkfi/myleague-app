@@ -126,6 +126,16 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballStatisticsCache> FloorballStatisticsCache { get; set; }
 
         /// <summary>
+        /// Gets or sets the FloorballSeasonDivisions DbSet.
+        /// </summary>
+        public DbSet<FloorballSeasonDivision> FloorballSeasonDivisions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballSeasonDivisionTeams DbSet.
+        /// </summary>
+        public DbSet<FloorballSeasonDivisionTeam> FloorballSeasonDivisionTeams { get; set; }
+
+        /// <summary>
         /// Saves changes to the database with domain event dispatching.
         /// </summary>
         /// <returns>The number of state entries written to the database.</returns>
@@ -191,6 +201,8 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballGoalieSeasonStatisticsConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchTeamStatisticsConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballStatisticsCacheConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballSeasonDivisionConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballSeasonDivisionTeamConfiguration());
         }
     }
 }

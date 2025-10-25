@@ -9,7 +9,7 @@ namespace Seeder;
 
 public static class FloorballSeasonsSeeder
 {
-	public static async Task<List<FloorballSeasonDto>> SeedAsync(HttpClient http, JsonSerializerOptions jsonOptions, List<FloorballSeasonSeed> seasons, List<DivisionDto> divisions)
+    public static async Task<List<FloorballSeasonDto>> SeedAsync(HttpClient http, JsonSerializerOptions jsonOptions, List<FloorballSeasonSeed> seasons, List<DivisionDto> divisions)
 	{
 		List<FloorballSeasonDto> created = new List<FloorballSeasonDto>();
 
@@ -52,6 +52,21 @@ public static class FloorballSeasonsSeeder
 
 			created.Add(api.Data);
 			Console.WriteLine("Created floorball season " + api.Data.Name + " (" + api.Data.Id + ")");
+
+            // Add additional divisions to this season if defined
+            if (season.AdditionalDivisionNames != null && season.AdditionalDivisionNames.Count > 0)
+            {
+                foreach (string divName in season.AdditionalDivisionNames)
+                {
+                    Guid extraDivisionId = ResolveDivisionId(divName, divisions);
+                    if (extraDivisionId != divisionId)
+                    {
+                        HttpResponseMessage addDivResp = await http.PostAsync("api/floorballseason/" + api.Data.Id + "/divisions/" + extraDivisionId, null);
+                        await SeederHttp.EnsureSuccess(addDivResp, "Add Division to Season");
+                        Console.WriteLine("  Added division to season: " + divName + " (" + extraDivisionId + ")");
+                    }
+                }
+            }
 		}
 
 		return created;
