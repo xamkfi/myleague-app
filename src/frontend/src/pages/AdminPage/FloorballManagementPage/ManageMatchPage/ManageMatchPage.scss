@@ -1,14 +1,20 @@
+@use 'sass:map';
+@use '../../../../styles/variables' as *;
+
 .manage-match-page {
+  /* Page-wide token to unify border color across all blocks */
+  --mm-border-color: #D1D0D6;
   .manage-match-content {
     width: 1152px;
     min-height: 1124px;
     margin: 0 auto;
-    background: #ffffff;
+    background: #FBFBFD;
     border-radius: 8px;
     padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    align-items: stretch;
 
     // Align with overview page back button behavior
     .global-back-button-container { top: 0; }
@@ -32,7 +38,13 @@
       }
     }
 
-    .page-title-compact { margin: 0; padding: 0; }
+    .page-title-compact {
+      margin: 0;
+      padding: 0;
+      color: $color-blue-deep; /* #16346B */
+      font-size: 22px;
+      font-weight: map.get($font-weights, 'medium'); /* 500 */
+    }
   }
   .manage-match-page-content {
     display: flex;
@@ -42,17 +54,6 @@
     margin: auto;
     margin-top: 1rem;
   }
-
-  
-  .manage-match-content {
-    flex-grow: 1; // Allow the main content to take up the remaining space
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
 }
 
 .back-button-container {
@@ -60,86 +61,7 @@
   position:absolute;
   margin-left: 2rem;
 }
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
 
-  .match-info {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-
-    h2 {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 600;
-    }
-
-    .status-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      .match-status {
-        background: #ef4444;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        animation: pulse 2s infinite;
-      }
-
-      .cancel-live-button {
-        background: rgba(239, 68, 68, 0.2);
-        border: 1px solid rgba(239, 68, 68, 0.4);
-        color: white;
-        font-size: 0.8rem;
-        font-weight: 500;
-        padding: 6px 12px;
-        border-radius: 16px;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-
-        &:hover {
-          background: rgba(239, 68, 68, 0.3);
-          border-color: rgba(239, 68, 68, 0.6);
-          transform: translateY(-1px);
-        }
-
-        &:active {
-          transform: translateY(0);
-        }
-      }
-    }
-  }
-
-  .close-button {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-  }
-}
 
 @keyframes pulse {
   0%, 100% {
@@ -182,106 +104,7 @@
 }
 
 // Confirmation Dialog Styles
-.confirmation-dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
 
-.confirmation-dialog {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: slideIn 0.3s ease-out;
-
-  .confirmation-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-
-    .confirmation-icon {
-      font-size: 1.5rem;
-    }
-
-    h3 {
-      margin: 0;
-      color: #1f2937;
-      font-size: 1.25rem;
-      font-weight: 600;
-    }
-  }
-
-  .confirmation-content {
-    margin-bottom: 20px;
-
-    p {
-      margin: 0 0 8px 0;
-      color: #374151;
-      line-height: 1.5;
-    }
-
-    .confirmation-warning {
-      color: #dc2626;
-      font-weight: 500;
-      font-size: 0.9rem;
-    }
-  }
-
-  .confirmation-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-
-    button {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-
-      &.confirm-btn {
-        background: #dc2626;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background: #b91c1c;
-        }
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-      }
-
-      &.cancel-btn {
-        background: #6b7280;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background: #4b5563;
-        }
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-      }
-    }
-  }
-}
 
 @keyframes slideIn {
   from {
@@ -298,9 +121,13 @@
   display: flex;
   flex-direction: row;
   gap: 16px;
-  padding: 16px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 16px;
+  padding-bottom: 16px;
   width: 100%;
-  max-width: 100%;
+  max-width: none;
+  align-self: stretch;
   height: auto;
   overflow: visible;
 
@@ -313,26 +140,6 @@
   }
 }
 
-.clock-score-section {
-  gap: 16px;
-  margin-bottom: 12px;
-  padding: 12px;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-
-  &.overtime {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border: 2px solid #f59e0b;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
-  }
-
-  &.shootout {
-    background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
-    border: 2px solid #ec4899;
-    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
-  }
-}
 
 .match-clock {
   text-align: center;
@@ -508,137 +315,6 @@
   }
 
 
-}
-
-.scoreboard {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-
-  .team-score {
-    text-align: center;
-    flex: 1;
-
-    .team-name {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #475569;
-      margin-bottom: 4px;
-    }
-
-    .score {
-      font-size: 3rem;
-      font-weight: 700;
-      color: #1e293b;
-      font-family: 'Courier New', monospace;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-  }
-
-  .score-separator {
-    font-size: 3rem;
-    font-weight: 300;
-    color: #94a3b8;
-  }
-}
-
-.period-management {
-  display: flex;
-  gap: 1px;
-  justify-content: center;
-  margin: 1px 0;
-  padding: 1px;
-
-  .period-status {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #374151;
-    text-align: center;
-    margin: 0;
-    padding: 2px 6px;
-    background: #f3f4f6;
-    border-radius: 4px;
-    border: 1px solid #e5e7eb;
-  }
-
-
-}
-
-.quick-actions-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  
-  .team-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-}
-
-.active-players-selector {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 6px;
-
-  .team-selects {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 6px;
-
-    select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      background: #fff;
-    }
-  }
-}
-
-.action-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 140px;
-  justify-content: center;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &.goal-btn {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-
-    &:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-    }
-  }
-
-  &.penalty-btn {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-
-    &:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
-    }
-  }
 }
 
 .quick-actions {
@@ -940,6 +616,12 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+
+    /* Default border color for direct child cards/blocks */
+    > * {
+      border-color: var(--mm-border-color, #D1D0D6);
+      border-radius: 8px;
+    }
   }
 }
 
@@ -1149,95 +831,6 @@
       background: #9ca3af;
       border-color: #9ca3af;
       box-shadow: none;
-    }
-  }
-}
-
-/* Save Recording Section */
-.save-recording-section {
-  margin: 1px 0;
-
-  .goalie-dropdowns {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 4px;
-  }
-
-  .goalie-dropdown {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-
-    select {
-      width: 100%;
-      padding: 8px 12px 8px 12px;
-      padding-right: 32px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background-color: #fff;
-      /* Use native arrow */
-      appearance: auto;
-    }
-
-    .save-btn {
-      padding: 4px 12px;
-      font-size: 14px;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-
-      // Keep to pure CSS to avoid Sass color functions in some pipelines
-      &:hover:not(:disabled) {
-        filter: brightness(0.9);
-      }
-
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-    }
-
-    /* Keybind label styling */
-    .key-label {
-      margin-right: 8px;
-      font-weight: bold;
-      font-size: 1.2rem;
-      color: #000000;
-    }
-    .key-label.disabled {
-      opacity: 0.4;
-    }
-  }
-} 
-
-/* Goalie Selector Section (dropdowns only) */
-.goalie-selector-section {
-  margin: 1px 0;
-
-  .goalie-dropdowns {
-    display: flex;
-    gap: 10px;
-    margin-top: 4px;
-  }
-
-  .goalie-dropdown {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-
-    select {
-      width: 100%;
-      padding: 8px 12px 8px 12px;
-      padding-right: 32px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background-color: #fff;
-      appearance: auto;
     }
   }
 }

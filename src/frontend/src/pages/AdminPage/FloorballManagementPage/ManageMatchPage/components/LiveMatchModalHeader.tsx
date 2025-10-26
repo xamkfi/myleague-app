@@ -30,10 +30,10 @@ const LiveMatchModalHeader = ({
             </>
           ) : currentMatch.status === 'InProgress' ? (
             <>
-              <span className="match-status">🔴 LIVE</span>
-              <button onClick={onCompleteLive} className="cancel-live-button" title="Stop live tracking and mark match as finished">
+          <button onClick={onCompleteLive} className="cancel-live-button" title="Stop live tracking and mark match as finished">
                 ⏹️ Finish Match
               </button>
+          <span className="match-status">🔴 LIVE</span>
             </>
           ) : (
             <>
@@ -42,7 +42,6 @@ const LiveMatchModalHeader = ({
           )}
         </div>
       </div>
-      <button onClick={onClose} className="close-button">×</button>
     </div>
   );
 };
