@@ -3,6 +3,7 @@ import { useTimer } from '../../hooks/useTimer';
 import { TimeInputModal } from './TimeInputModal';
 import './Timer.scss';
 import type { TimerUpdate } from '../../api/common/timerService';
+import EditIcon from '../../assets/basicIcons/edit.svg';
 
 interface TimerProps {
   matchId: string;
@@ -189,71 +190,69 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
 
       <div className="timer-controls">
         <button
-          onClick={handleToggle}
-          disabled={buttonStates.toggleDisabled}
-          className={`timer-button ${timerState.isRunning ? 'pause' : 'start'}`}
+          onClick={handleOpenTimeInput}
+          disabled={buttonStates.setTimeDisabled}
+          className="timer-button set-time"
+          title="Edit time"
         >
-          <span className={`key-label ${keybindsEnabled ? '' : 'disabled'}`}>(Space) </span>
-          {timerState.isRunning ? 'Pause' : 'Start'}
+          <img src={EditIcon} alt="" aria-hidden="true" />
         </button>
-        
+
+        <div className="timer-adjustments">
+          <div className="adjustment-group">
+            <span className="adjustment-label">Quick Adjust</span>
+            <div className="adjustment-buttons">
+              <button
+                onClick={() => handleAdjustTime(-60)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time decrease minute-back"
+                title="Go back 1 minute"
+              >
+                1 min
+              </button>
+              <button
+                onClick={() => handleAdjustTime(-10)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time decrease seconds-back"
+                title="Go back 10 seconds"
+              >
+                10s
+              </button>
+              <button
+                onClick={handleToggle}
+                disabled={buttonStates.toggleDisabled}
+                className={`timer-button ${timerState.isRunning ? 'pause' : 'start'}`}
+              >
+                {timerState.isRunning ? 'Pause' : 'Play'}
+              </button>
+              <button
+                onClick={() => handleAdjustTime(10)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time increase seconds-forward"
+                title="Advance 10 seconds"
+              >
+                10s
+              </button>
+              <button
+                onClick={() => handleAdjustTime(60)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time increase minute-forward"
+                title="Advance 1 minute"
+              >
+                1 min
+              </button>
+            </div>
+          </div>
+        </div>
+
         <button
           onClick={handleReset}
           disabled={buttonStates.resetDisabled}
           className="timer-button reset"
+          title="Reset clock"
         >
           Reset
         </button>
-
-        <button
-          onClick={handleOpenTimeInput}
-          disabled={buttonStates.setTimeDisabled}
-          className="timer-button set-time"
-          title="Set specific time"
-        >
-          Set Time
-        </button>
-      </div>
-
-      {/* Time Adjustment Controls */}
-      <div className="timer-adjustments">
-        <div className="adjustment-group">
-          <span className="adjustment-label">Quick Adjust</span>
-          <div className="adjustment-buttons">
-            <button
-              onClick={() => handleAdjustTime(-60)}
-              disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time decrease minute-back"
-              title="Go back 1 minute"
-            >
-              ⏪ 1min
-            </button>
-            <button
-              onClick={() => handleAdjustTime(-10)}
-              disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time decrease seconds-back"
-              title="Go back 10 seconds"
-            >
-              ◀ 10s
-            </button>
-            <button
-              onClick={() => handleAdjustTime(10)}
-              disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time increase seconds-forward"
-              title="Advance 10 seconds"
-            >
-              ▶ 10s
-            </button>
-            <button
-              onClick={() => handleAdjustTime(60)}
-              disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time increase minute-forward"
-              title="Advance 1 minute"
-            >
-              ⏩ 1min
-            </button>
-          </div>
-        </div>
       </div>
 
       {error && <div className="timer-error">Error: {error}</div>}

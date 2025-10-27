@@ -1,3 +1,5 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
 .scoreboard {
   box-sizing: border-box;
   width: 480px;
@@ -17,12 +19,53 @@
   .team-score {
     text-align: center;
     flex: 1;
+    min-width: 0; /* allow ellipsis in flex children */
 
-    .team-name { font-size: 1rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
-    .score { font-size: 3rem; font-weight: 700; color: #1e293b; font-family: 'Courier New', monospace; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+    .team-name {
+      font-family: $font-family-body;
+      font-size: 16px;
+      font-weight: map.get($font-weights, 'semibold');
+      line-height: 24px;
+      letter-spacing: 0;
+      color: $color-neutral-black;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .score {
+      font-family: $font-family-display;
+      font-size: 48px;
+      line-height: 64px;
+      font-weight: map.get($font-weights, 'medium');
+      letter-spacing: 0.05em;
+      color: $color-neutral-black;
+      text-align: center;
+    }
   }
 
-  .score-separator { font-size: 3rem; font-weight: 300; color: #94a3b8; }
+  .score-separator {
+    align-self: center;
+    height: 40px;
+    width: 28px;
+    min-width: 28px;
+    flex: 0 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    position: relative;
+    top: 14px;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 4px;
+      background: $color-neutral-dark-grey;
+      border-radius: 1px;
+    }
+  }
 }
 
 

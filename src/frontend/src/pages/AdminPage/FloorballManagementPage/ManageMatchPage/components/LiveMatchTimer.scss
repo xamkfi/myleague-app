@@ -1,88 +1,180 @@
-.clock-score-section {
-  gap: 16px;
-  margin-bottom: 12px;
-  padding: 12px;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
+.clock-card {
+  box-sizing: border-box;
+  width: 622px;
+  height: 200px;
+  padding: 24px;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
-
-  &.overtime {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border: 2px solid #f59e0b;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
-  }
-
-  &.shootout {
-    background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
-    border: 2px solid #ec4899;
-    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
-  }
-}
-
-.period-management {
+  background: $color-neutral-white;
+  border: 1px solid $color-neutral-medium-grey;
   display: flex;
-  gap: 1px;
-  justify-content: center;
-  margin: 1px 0;
-  padding: 1px;
-
-  .period-status {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #374151;
-    text-align: center;
-    margin: 0;
-    padding: 2px 6px;
-    background: #f3f4f6;
-    border-radius: 4px;
-    border: 1px solid #e5e7eb;
-  }
-}
-
-.timer-container {
-  display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  margin: 16px 0;
+  gap: 16px;
+}
+
+.clock-inner {
+  width: 574px;
+  height: 170px; /* increased to ensure controls sit inside the box */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.period-row {
+  width: 369px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.period-chip {
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-family-body;
+  font-weight: map.get($font-weights, 'medium');
+  font-size: 12px;
+  letter-spacing: 0;
+  color: $color-neutral-dark-grey;
+
+  &.started {
+    color: $color-green-muted;
+    width: 105px;
+  }
+  &.upcoming {
+    width: 119px;
+  }
+  &.completed {
+    width: 119px;
+  }
+}
+
+.clock-time {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
 }
 
-.clock-start-reset {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin: 4px 0;
 
-  .period-control-btn {
-    background: #dc2626;
-    color: white;
-    min-width: 120px;
-    padding: 4px 10px;
-    border: 2px solid #dc2626;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-block;
-    text-decoration: none;
-    outline: none;
-    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
-
-    &:hover:not(:disabled) {
-      background: #b91c1c;
-      border-color: #b91c1c;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: #9ca3af;
-      border-color: #9ca3af;
-    }
+.clock-digits {
+  font-family: $font-family-display;
+  font-weight: map.get($font-weights, 'medium');
+  font-size: 96px;
+  line-height: 80px;
+  letter-spacing: 0.05em;
+  color: $color-neutral-black;
+  .timer-component {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    min-width: 0;
   }
+  .timer-display {
+    text-align: center;
+  }
+  .timer-time {
+    font-family: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background: transparent;
+    padding: 0;
+    border: none;
+    min-width: auto;
+    border-radius: 0;
+  }
+}
+
+/* Re-enable and restyle Timer controls for this clock */
+.clock-time .timer-controls { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: nowrap; }
+.clock-time .timer-adjustments { display: contents; }
+.clock-time .adjustment-group { display: contents; }
+.clock-time .adjustment-label { display: none; }
+
+.clock-time .timer-display { margin-bottom: 6px; }
+
+.clock-time .timer-button,
+.clock-time .adjustment-buttons .timer-button {
+  height: 32px;
+  padding: 8px 16px;
+  border-radius: 16px;
+  border: 1px solid $color-neutral-medium-grey !important;
+  background: $color-neutral-light-grey !important;
+  color: $color-neutral-dark-grey !important;
+  font-family: $font-family-body;
+  font-weight: map.get($font-weights, 'semibold');
+  font-size: 12px;
+  line-height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: none !important;
+}
+
+.clock-time .timer-button.set-time { min-width: 40px; order: 1; }
+.clock-time .minute-back { min-width: 80px; order: 2; }
+.clock-time .seconds-back { min-width: 64px; order: 3; }
+.clock-time .timer-button.start,
+.clock-time .timer-button.pause {
+  min-width: 32px;
+  width: 32px;
+  padding: 8px;
+  order: 4;
+}
+.clock-time .seconds-forward { min-width: 64px; order: 5; }
+.clock-time .minute-forward { min-width: 80px; order: 6; }
+.clock-time .timer-button.reset { min-width: 46px; order: 7; background: #FFEFB8 !important; border-color: $color-neutral-medium-grey !important; color: $color-neutral-dark-grey !important; }
+
+/* Override old color-coded styles from Timer.scss */
+.clock-time .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease,
+.clock-time .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase {
+  background: $color-neutral-light-grey !important;
+  border-color: $color-neutral-medium-grey !important;
+  color: $color-neutral-dark-grey !important;
+}
+
+.clock-time .end-period-inline {
+  order: 8;
+  min-width: 95px;
+  height: 32px;
+  padding: 8px 16px;
+  border-radius: 16px;
+  border: 1px solid #D43330;
+  background: #D43330;
+  color: $color-neutral-white;
+  font-family: $font-family-body;
+  font-weight: map.get($font-weights, 'semibold');
+  font-size: 12px;
+  line-height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+}
+
+
+.clock-toolbar {
+  margin-top: 12px;
+  display: flex;
+  width: 622px;
+  justify-content: flex-end;
 }
 
 .start-match-btn {
