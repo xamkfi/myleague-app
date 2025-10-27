@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import { signalRService, type MatchEvent } from '../../../../services/signalRService';
-import Navbar from '../../../../components/Navigation/Navbar';
 import MatchStatsCards from './Components/MatchStatsCards/MatchStatsCards';
 import MatchFilters from './Components/MatchFilters/MatchFilters';
 import CollapsibleMatchSection from './Components/CollapsibleMatchSection/CollapsibleMatchSection';
@@ -11,6 +10,7 @@ import './MatchOverviewPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
+import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
   
 const MatchOverviewPage = () => {
   const { t } = useTranslation();
@@ -230,8 +230,8 @@ const MatchOverviewPage = () => {
 
   if (loading) {
     return (
+      <PageTemplate title={t('floorball.matches.title', 'Manage matches')}>
       <div className="match-management">
-        <Navbar />
         <div className="match-management__content">
           <div className="loading-spinner">
             <div className="spinner"></div>
@@ -239,12 +239,13 @@ const MatchOverviewPage = () => {
           </div>
         </div>
       </div>
+      </PageTemplate>
     );
   }
 
   return (
+    <PageTemplate title={t('floorball.matches.title', 'Manage matches')}>
     <div className="match-management">
-      <Navbar />
       <div className="match-management__content">
         {/* Header Section */}
         <div className="page-header">
@@ -358,6 +359,7 @@ const MatchOverviewPage = () => {
 
       </div>
     </div>
+    </PageTemplate>
   );
 };
 
