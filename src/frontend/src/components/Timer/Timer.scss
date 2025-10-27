@@ -32,53 +32,90 @@
     }
   }
 
-  .timer-inactive {
-    font-size: 0.9rem;
-    color: #666;
-    font-style: italic;
-    text-align: center;
-    padding: 0.5rem;
-    background: #f0f0f0;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-  }
-
   .timer-controls {
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap; /* keep controls on one row */
     justify-content: center;
+    align-items: center;
 
     .timer-button {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 4px;
+      height: 32px;
+      padding: 8px 16px;
+      border-radius: 16px;
+      border: 1px solid $color-neutral-medium-grey;
+      background: $color-neutral-light-grey;
+      color: $color-neutral-dark-grey;
+      font-family: $font-family-body;
+      font-weight: map.get($font-weights, 'semibold');
+      font-size: 12px;
+      line-height: 16px;
+      letter-spacing: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       cursor: pointer;
-      font-weight: 500;
+      box-shadow: none;
       transition: all 0.2s ease;
-      min-width: 60px;
 
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
       }
-
     }
-
-
   }
 
-  // Adjustment button styles - use high specificity to override base timer-button styles
+  // Adjustment buttons inherit neutral style
   .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease,
   .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase {
-    font-size: 0.85rem;
-    font-weight: 600;
-    min-width: 65px;
-    padding: 0.6rem 1rem;
-    border: 2px solid;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
+    border-color: $color-neutral-medium-grey;
+    background: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
   }
+
+  // End/Start period button styles (used when parent passes period controls)
+  .end-period-inline {
+    min-width: 95px;
+    width: 95px;
+    height: 32px;
+    padding: 8px 16px;
+    border-radius: 16px;
+    border: 1px solid #D74440;
+    background: #D74440;
+    color: #FBFBFD;
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: 12px;
+    line-height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  
+  .timer-button.set-time { min-width: 48px; width: 48px; padding: 8px; }
+  .timer-button.minute-back { min-width: 88px; width: 88px; }
+  .timer-button.seconds-back { min-width: 69px; width: 69px; }
+  .timer-button.start,
+  .timer-button.pause { min-width: 44px; width: 44px; padding: 8px; }
+  .timer-button.seconds-forward { min-width: 69px; width: 69px; }
+  .timer-button.minute-forward { min-width: 88px; width: 88px; }
+  .timer-button.reset { min-width: 46px; width: 46px; background: #FFEFB8; border-color: $color-neutral-medium-grey; color: $color-neutral-dark-grey; }
+
+  /* Placeholder icons using text glyphs */
+  .timer-button.minute-back::before { content: '«'; font-size: 12px; line-height: 16px; }
+  .timer-button.seconds-back::before { content: '‹'; font-size: 12px; line-height: 16px; }
+  .timer-button.seconds-forward::before { content: '›'; font-size: 12px; line-height: 16px; }
+  .timer-button.minute-forward::before { content: '»'; font-size: 12px; line-height: 16px; }
+
+  /* placeholder icons for start/pause */
+  .timer-button.start, .timer-button.pause { font-size: 0; }
+  .timer-button.start::before { content: '▶'; font-size: 12px; line-height: 16px; }
+  .timer-button.pause::before { content: '⏸'; font-size: 12px; line-height: 16px; }
+
+  /* Edit icon sizing */
+  .timer-button.set-time img { width: 16px; height: 16px; }
 
   .timer-adjustments {
 
@@ -88,19 +125,12 @@
       align-items: center;
       gap: 0.75rem;
 
-      .adjustment-label {
-        font-size: 0.9rem;
-        color: #495057;
-        font-weight: 600;
-        text-align: center;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
+      .adjustment-label { display: none; }
 
       .adjustment-buttons {
         display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
+        gap: 8px;
+        flex-wrap: nowrap;
         justify-content: center;
         align-items: center;
       }

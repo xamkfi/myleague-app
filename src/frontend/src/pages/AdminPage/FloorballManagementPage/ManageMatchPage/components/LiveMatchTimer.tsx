@@ -92,16 +92,14 @@ const LiveMatchTimer = ({
                     onGetCurrentTime={onGetCurrentTime}
                     onGetToggleFunction={onGetToggleFunction}
                     keybindsEnabled={keybindsEnabled}
+                    onPeriodControlClick={onPeriodControlClick}
+                    canEndPeriod={canEndPeriod}
+                    getPeriodControlButtonText={getPeriodControlButtonText}
+                    periodLoading={periodLoading}
+                    nextPeriodToStart={nextPeriodToStart}
                   />
                 </div>
-                <button
-                  onClick={onPeriodControlClick}
-                  className="end-period-inline"
-                  title={canEndPeriod() ? 'End the current period' : 'Start the next period'}
-                  disabled={periodLoading[canEndPeriod() ? clock.period : nextPeriodToStart]}
-                >
-                  {getPeriodControlButtonText()}
-                </button>
+
               </>
             )}
           </div>

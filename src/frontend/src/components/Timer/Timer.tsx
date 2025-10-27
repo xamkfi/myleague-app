@@ -13,9 +13,15 @@ interface TimerProps {
   onGetToggleFunction?: (toggleFunction: () => Promise<void>) => void;
   isActive?: boolean; // New prop to control when timer should be active
   keybindsEnabled?: boolean; // New prop to show keybind indicator
+  // Optional period control wiring (used by pages like ManageMatch)
+  onPeriodControlClick?: () => void;
+  canEndPeriod?: () => boolean;
+  getPeriodControlButtonText?: () => string;
+  periodLoading?: Record<number, boolean>;
+  nextPeriodToStart?: number;
 }
 
-export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetToggleFunction, isActive = true, keybindsEnabled = false }: TimerProps) => {
+export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetToggleFunction, isActive = true, keybindsEnabled = false, onPeriodControlClick, canEndPeriod, getPeriodControlButtonText, periodLoading, nextPeriodToStart }: TimerProps) => {
   // State for time input modal
   const [showTimeInputModal, setShowTimeInputModal] = useState(false);
 
@@ -151,10 +157,10 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
 
   // Memoize button disabled states to prevent blinking during SignalR updates
   const buttonStates = useMemo(() => {
-    const toggleDisabled = loading || !isActive;
-    const resetDisabled = loading || !isActive;
-    const setTimeDisabled = loading || !isActive;
-    const adjustDisabled = loading || !isActive;
+    const toggleDisabled = loading;
+    const resetDisabled = loading;
+    const setTimeDisabled = loading;
+    const adjustDisabled = loading;
     
     return {
       toggleDisabled,
@@ -162,26 +168,27 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
       setTimeDisabled,
       adjustDisabled
     };
-  }, [loading, isActive]);
+  }, [loading]);
 
-  // Don't render timer controls if not active
-  if (!isActive) {
-    return (
-      <div className="timer-component">
-        <div className="timer-display">
-          <div className="timer-time">
-            {timerState.elapsedTime}
-          </div>
-        </div>
-        <div className="timer-inactive">
-          Timer inactive
-        </div>
-      </div>
-    );
-  }
+  // Derive end/start period control state if the parent provided handlers
+  const endPeriod = useMemo(() => {
+    if (!getPeriodControlButtonText) {
+      return { disabled: false, title: '', label: '' };
+    }
+    const canEnd = canEndPeriod ? canEndPeriod() : false;
+    const targetPeriod = canEnd ? periodNumber : nextPeriodToStart;
+    const disabled = (targetPeriod !== undefined && periodLoading)
+      ? Boolean(periodLoading[targetPeriod])
+      : false;
+    const title = canEnd ? 'End the current period' : 'Start the next period';
+    const label = getPeriodControlButtonText();
+    return { disabled, title, label };
+  }, [canEndPeriod, periodNumber, nextPeriodToStart, periodLoading, getPeriodControlButtonText]);
+
+
 
   return (
-    <div className="timer-component">
+    <div className="timer-component" data-keybinds-enabled={keybindsEnabled ? 'true' : undefined}>
       <div className="timer-display">
         <div className="timer-time">
           {timerState.elapsedTime}
@@ -200,7 +207,6 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
 
         <div className="timer-adjustments">
           <div className="adjustment-group">
-            <span className="adjustment-label">Quick Adjust</span>
             <div className="adjustment-buttons">
               <button
                 onClick={() => handleAdjustTime(-60)}
@@ -251,8 +257,19 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
           className="timer-button reset"
           title="Reset clock"
         >
-          Reset
+          R
         </button>
+
+        {onPeriodControlClick && getPeriodControlButtonText && (
+          <button
+            onClick={onPeriodControlClick}
+            className="timer-button end-period-inline"
+            title={endPeriod.title}
+            disabled={endPeriod.disabled}
+          >
+            {endPeriod.label}
+          </button>
+        )}
       </div>
 
       {error && <div className="timer-error">Error: {error}</div>}
