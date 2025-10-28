@@ -96,6 +96,35 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Gets a player profile with all season statistics
+        /// </summary>
+        /// <param name="playerId"></param>
+        /// <returns></returns>
+        [HttpGet("playerprofile/{playerId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballPlayerProfileDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballPlayerProfileDto>>> GetPlayerProfile(Guid playerId)
+        {
+            GetPlayerProfileQuery query = new GetPlayerProfileQuery(playerId);
+
+            Result<FloorballPlayerProfileDto> result = await _mediator.Send(query);
+
+            if(result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballPlayerProfileDto>.SuccessResponse(result.Data, "Player profile retrieved succesfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to retrieve player profile";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<List<FloorballPlayerProfileDto>>.ErrorResponse(errorMessage));
+            }
+
+            return StatusCode(500, ApiResponse<List<FloorballPlayerProfileDto>>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Gets match statistics for a specific match
         /// </summary>
         /// <param name="matchId">The match ID</param>
