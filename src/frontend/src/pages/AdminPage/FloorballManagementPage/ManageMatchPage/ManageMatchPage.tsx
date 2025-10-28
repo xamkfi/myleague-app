@@ -17,7 +17,6 @@ import GoalRecordingForm from './components/GoalRecordingForm';
 import PenaltyRecordingForm from './components/PenaltyRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ConfirmationDialog from './components/ConfirmationDialog';
-import SaveRecordingSection from './components/SaveRecordingSection';
 import ActivePlayersSelector from './components/ActivePlayersSelector';
 import GoalieSelectorSection from './components/GoalieSelectorSection';
 
@@ -538,24 +537,21 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             keybindsEnabled={keybindsEnabled}
             isStartMatchDisabled={!homeGoalieId || !awayGoalieId}
           />
-          {/* Save buttons (Record Save) */}
-        <SaveRecordingSection
-          currentMatch={matchData.currentMatch}
-          homeGoalieId={homeGoalieId}
-          awayGoalieId={awayGoalieId}
-          onRecordSave={handleRecordSave}
-          loading={saveLoading}
-          keybindsEnabled={keybindsEnabled}
-        />
-
           {/* Quick Actions */}
           <LiveMatchQuickActions
             loading={forms.loading}
             currentMatch={matchData.currentMatch}
             homeTeamId={matchData.homeTeam?.id}
             awayTeamId={matchData.awayTeam?.id}
+            homeTeamName={matchData.homeTeam?.name}
+            awayTeamName={matchData.awayTeam?.name}
             onShowGoalForm={forms.openGoalFormForTeam}
             onShowPenaltyForm={forms.openPenaltyFormForTeam}
+            homeGoalieId={homeGoalieId}
+            awayGoalieId={awayGoalieId}
+            onRecordSave={handleRecordSave}
+            keybindsEnabled={keybindsEnabled}
+            saveLoading={saveLoading}
           />
 
           <ActivePlayersSelector
