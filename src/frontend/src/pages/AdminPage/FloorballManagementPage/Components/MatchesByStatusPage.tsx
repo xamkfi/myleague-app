@@ -8,7 +8,6 @@ import type { FloorballMatchDto } from '../../../../types/floorball/floorballTyp
 import BackButton from '../../../../components/BackButton/BackButton';
 import MatchFilters from '../MatchOverviewPage/Components/MatchFilters/MatchFilters';
 import CollapsibleMatchSection from '../MatchOverviewPage/Components/CollapsibleMatchSection/CollapsibleMatchSection';
-import Navbar from '../../../../components/Navigation/Navbar';
 
 import './MatchesByStatusPage.scss';
 import '../MatchOverviewPage/MatchOverviewPage.scss';
@@ -107,7 +106,6 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
 
   return (
     <div className="match-management">
-      <Navbar />
       <div className="match-management__content matches-by-status-page">
         <BackButton to="/admin/floorball/matches" text={t('common.back', 'Back to Match Management')} />
         <h1>{title}</h1>
