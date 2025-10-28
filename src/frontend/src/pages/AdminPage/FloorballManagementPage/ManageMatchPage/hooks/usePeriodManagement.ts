@@ -293,7 +293,7 @@ export const usePeriodManagement = ({
         return '🔴 End Shootout';
       }
       
-      return '🔴 End Period';
+      return 'End period';
     } else {
       // Show start period text
       if (periodLoading[nextPeriodToStart]) {
@@ -308,7 +308,7 @@ export const usePeriodManagement = ({
         return '🎯 Start Shootout';
       }
       
-      return `🟢 Start Period ${nextPeriodToStart}`;
+      return `Start period ${nextPeriodToStart}`;
     }
   }, [canEndPeriod, periodLoading, clock.period, nextPeriodToStart]);
 

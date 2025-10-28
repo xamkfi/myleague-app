@@ -12,6 +12,7 @@
     text-align: center;
     background: transparent;
     padding: 0;
+    margin-bottom: 10px;
     
     .timer-time {
       
@@ -21,6 +22,10 @@
       line-height: 80px;
       letter-spacing: 0.05em;
       color: $color-neutral-black;
+      /* Prevent digit width jitter: use tabular numerals */
+      font-variant-numeric: tabular-nums;
+      -webkit-font-feature-settings: 'tnum' 1, 'lnum' 1;
+      font-feature-settings: 'tnum' 1, 'lnum' 1;
 
       /* Remove inner card look so parent layout can style the box */
       background: transparent;
@@ -34,7 +39,7 @@
 
   .timer-controls {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     flex-wrap: nowrap; /* keep controls on one row */
     justify-content: center;
     align-items: center;
@@ -55,6 +60,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      white-space: nowrap;
       cursor: pointer;
       box-shadow: none;
       transition: all 0.2s ease;
@@ -74,16 +80,16 @@
     color: $color-neutral-dark-grey;
   }
 
-  // End/Start period button styles (used when parent passes period controls)
-  .end-period-inline {
+  // End/Start period button styles (increase specificity to beat .timer-controls .timer-button)
+  .timer-controls .timer-button.end-period-inline {
     min-width: 95px;
     width: 95px;
     height: 32px;
     padding: 8px 16px;
     border-radius: 16px;
-    border: 1px solid #D74440;
-    background: #D74440;
-    color: #FBFBFD;
+    border: 1px solid $color-red-muted;
+    background: $color-red-muted;
+    color: $color-neutral-white;
     font-family: $font-family-body;
     font-weight: map.get($font-weights, 'semibold');
     font-size: 12px;
@@ -91,7 +97,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    list-style: none;
   }
+
+  // Ensure no pseudo-element glyph renders inside the end period button
+  .timer-controls .timer-button.end-period-inline::before,
+  .timer-controls .timer-button.end-period-inline::after { content: none; }
 
   
   .timer-button.set-time { min-width: 48px; width: 48px; padding: 8px; }

@@ -99,15 +99,11 @@ const LiveMatchTimer = ({
                     nextPeriodToStart={nextPeriodToStart}
                   />
                 </div>
-
               </>
             )}
           </div>
         </div>
       </div>
-
-      {/* Keep toolbar wrapper for future additions if needed */}
-      <div className="clock-toolbar" />
     </>
   );
 };
