@@ -4,6 +4,7 @@ import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes'
 import { signalRService, type MatchEvent } from '../../../services/signalRService';
 import { useTranslation } from 'react-i18next';
 import './MatchStats.scss';
+import StatRow from './StatRow';
 
 // SignalR event names that should trigger stats refresh
 const STATS_UPDATE_EVENTS = [
@@ -84,69 +85,7 @@ export default function MatchStats({ match }: MatchStatsProps) {
     penaltyMinutes: 0
   };
 
-  const StatRow = ({ 
-    label, 
-    home, 
-    away, 
-    homeValue, 
-    awayValue,
-    total,
-    isCentered = label === "Save Percentage"  // Center the save percentage bars
-  }: { 
-    label: string; 
-    home: number | string; 
-    away: number | string;
-    homeValue: number;
-    awayValue: number;
-    total: number;
-    isCentered?: boolean;
-  }) => {
-    // Save percentage uses centered bars, other stats use regular bars
-    
-    return (
-      <div className="stat-row">
-        <div className="stat-values">
-          <div className="home-value">{home}</div>
-          <div className="stat-label">{label}</div>
-          <div className="away-value">{away}</div>
-        </div>
-        <div className="stat-bars">
-          <div className={`bar-container ${label === "Save Percentage" ? 'centered' : ''}`}>
-            {label === "Save Percentage" && <div className="center-line" />}
-            <div 
-              className="home-bar" 
-              style={{ 
-                width: label === "Save Percentage" 
-                  ? `${(homeValue / 2)}%` // Half width for centered bars
-                  : `${(homeValue / total) * 100}%`
-              }}
-            />
-            <div 
-              className="away-bar" 
-              style={{ 
-                width: label === "Save Percentage"
-                  ? `${(awayValue / 2)}%` // Half width for centered bars
-                  : `${(awayValue / total) * 100}%`
-              }}
-            />
-          </div>
-          <div className="percentage-values">
-            {total > 0 ? (
-              <>
-                <span className="home-percentage">{(homeValue / (isCentered ? 100 : total) * 100).toFixed(1)}%</span>
-                <span className="away-percentage">{(awayValue / (isCentered ? 100 : total) * 100).toFixed(1)}%</span>
-              </>
-            ) : (
-              <>
-                <span className="home-percentage">0.0%</span>
-                <span className="away-percentage">0.0%</span>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  
 
   return (
     <div className="match-stats">

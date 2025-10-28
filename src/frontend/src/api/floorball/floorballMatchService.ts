@@ -82,6 +82,57 @@ export const floorballMatchService = {
   },
 
   /**
+   * Delete a goal event from a match
+   */
+  deleteGoal: async (matchId: string, goalEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const url = `${API_URL}/FloorballMatch/${matchId}/goal/${goalEventId}`;
+    console.log('DELETE goal URL:', url);
+    const response = await fetch(url, {
+      method: 'DELETE'
+    });
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to delete goal');
+      throw new Error(errorMessage);
+    }
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+    return apiResponse;
+  },
+
+  /**
+   * Delete a penalty event from a match
+   */
+  deletePenalty: async (matchId: string, penaltyEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const url = `${API_URL}/FloorballMatch/${matchId}/penalty/${penaltyEventId}`;
+    console.log('DELETE penalty URL:', url);
+    const response = await fetch(url, {
+      method: 'DELETE'
+    });
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to delete penalty');
+      throw new Error(errorMessage);
+    }
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+    return apiResponse;
+  },
+
+  /**
+   * Delete a save event from a match
+   */
+  deleteSave: async (matchId: string, saveEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const url = `${API_URL}/FloorballMatch/${matchId}/save/${saveEventId}`;
+    console.log('DELETE save URL:', url);
+    const response = await fetch(url, {
+      method: 'DELETE'
+    });
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to delete save');
+      throw new Error(errorMessage);
+    }
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+    return apiResponse;
+  },
+
+  /**
    * Get matches by season ID
    */
   getBySeason: async (seasonId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {

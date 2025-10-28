@@ -18,6 +18,7 @@ namespace Application.DTOs.Floorball
     /// <param name="AssisterName">The name of the player who assisted (optional)</param>
     /// <param name="SecondaryAssisterName">The name of the player who provided secondary assist (optional)</param>
     public record FloorballGoalEventDto(
+        Guid Id,
         Guid TeamId,
         Guid PlayerId,
         Guid? AssisterId,
@@ -42,6 +43,7 @@ namespace Application.DTOs.Floorball
     /// <param name="Description">Description of the penalty</param>
     /// <param name="PlayerName">The name of the player who received the penalty (optional for team penalties)</param>
     public record FloorballPenaltyEventDto(
+        Guid Id,
         Guid TeamId,
         Guid? PlayerId,
         FloorballPenaltyType PenaltyType,

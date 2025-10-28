@@ -6,7 +6,7 @@
             "Players": {
                 "Goalkeepers": [
                     {
-                        "Id":1,
+                        "Id":"1",
                         "Number":23,
                         "Name": "Veli Ponteva",
                         "Age": 25,
@@ -16,7 +16,7 @@
                         "ShutOuts": 0
                     },
                     {
-                        "Id":2,
+                        "Id":"2",
                         "Number":23,
                         "Name": "Kroisos Pennonen",
                         "Age": 58,
@@ -28,7 +28,7 @@
                 ],
                 "Fieldplayers":[
                     {
-                        "Id": 4,
+                        "Id": "4",
                         "Number":30,
                         "Name": "Aku Ankka",
                         "Age": 27,
@@ -38,7 +38,7 @@
                         "Points": 14
                     },
                     {
-                        "Id": 5,
+                        "Id": "5",
                         "Number":30,
                         "Name": "Iines Ankka",
                         "Age": 26,

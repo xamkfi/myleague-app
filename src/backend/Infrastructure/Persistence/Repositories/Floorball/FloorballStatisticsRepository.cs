@@ -65,13 +65,10 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         }
         else
         {
-            // Use SetValues for domain entities with private setters - this is the correct EF Core approach
             _context.Entry(existing).CurrentValues.SetValues(statistics);
-            // Update the UpdatedAt timestamp
             _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
         }
-
-        // Let UnitOfWork handle the save to preserve domain events
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion
@@ -120,9 +117,9 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
+    public async Task<List<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballPlayerSeasonStatistics
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Season).Include(x => x.Team)
             .Where(s => s.PlayerId == playerId)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -139,13 +136,10 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         }
         else
         {
-            // Use SetValues for domain entities with private setters - this is the correct EF Core approach
             _context.Entry(existing).CurrentValues.SetValues(statistics);
-            // Update the UpdatedAt timestamp
             _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
         }
-
-        // Let UnitOfWork handle the save to preserve domain events
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion
@@ -181,9 +175,9 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
+    public async Task<List<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballGoalieSeasonStatistics
+        return await _context.FloorballGoalieSeasonStatistics.Include(x => x.Team).Include(x => x.Season).Include(x => x.Player)
             .Where(s => s.PlayerId == playerId)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -200,13 +194,10 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         }
         else
         {
-            // Use SetValues for domain entities with private setters - this is the correct EF Core approach
             _context.Entry(existing).CurrentValues.SetValues(statistics);
-            // Update the UpdatedAt timestamp
             _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
         }
-
-        // Let UnitOfWork handle the save to preserve domain events
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion
@@ -241,8 +232,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         {
             _context.Entry(existing).CurrentValues.SetValues(statistics);
         }
-        
-        // Let UnitOfWork handle the save to preserve domain events
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion

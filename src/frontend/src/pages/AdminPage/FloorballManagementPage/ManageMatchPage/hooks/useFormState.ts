@@ -12,6 +12,7 @@ interface UseFormStateProps {
   clock: LocalClock;
   currentTimerElapsedTime: number;
   loadMatchEvents: () => Promise<void>;
+  loadCurrentMatchStatus: () => Promise<void>;
   setError: (error: string | null) => void;
 }
 
@@ -20,6 +21,7 @@ export const useFormState = ({
   clock,
   currentTimerElapsedTime,
   loadMatchEvents,
+  loadCurrentMatchStatus,
   setError
 }: UseFormStateProps) => {
   // Form visibility states
@@ -99,6 +101,8 @@ export const useFormState = ({
       
       // Refresh events from backend
       await loadMatchEvents();
+      // Refresh match status to sync scores
+      await loadCurrentMatchStatus();
       
       // Reset form
       setGoalForm({ teamId: '', playerId: '', assisterId: '' });
@@ -111,7 +115,7 @@ export const useFormState = ({
     } finally {
       setLoading(false);
     }
-  }, [goalForm, currentMatch, clock.period, currentTimerElapsedTime, loadMatchEvents, setError]);
+  }, [goalForm, currentMatch, clock.period, currentTimerElapsedTime, loadMatchEvents, loadCurrentMatchStatus, setError]);
 
   /**
    * Records a penalty event
@@ -140,6 +144,8 @@ export const useFormState = ({
       
       // Refresh events from backend
       await loadMatchEvents();
+      // Refresh match status to sync scores
+      await loadCurrentMatchStatus();
       
       // Reset form
       setPenaltyForm({ 
@@ -161,7 +167,7 @@ export const useFormState = ({
     } finally {
       setLoading(false);
     }
-  }, [penaltyForm, currentMatch, clock.period, currentTimerElapsedTime, loadMatchEvents, setError]);
+  }, [penaltyForm, currentMatch, clock.period, currentTimerElapsedTime, loadMatchEvents, loadCurrentMatchStatus, setError]);
 
   return {
     // Form visibility

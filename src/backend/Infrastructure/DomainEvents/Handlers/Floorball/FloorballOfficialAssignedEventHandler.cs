@@ -9,6 +9,7 @@ using MyLeague.Infrastructure.SignalR;
 using MyLeague.Infrastructure.SignalR.Sports.Floorball;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Interfaces.Common;
 
 namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 {
@@ -18,6 +19,7 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
     public class FloorballOfficialAssignedEventHandler : NotificationDomainEventHandler<FloorballOfficialAssignedEvent>
     {
         private readonly FloorballDbContext _dbContext;
+        private readonly IPersonNameProvider _personNameProvider;
 
         /// <summary>
         /// Initializes a new instance of the FloorballOfficialAssignedEventHandler class
@@ -28,10 +30,12 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
         public FloorballOfficialAssignedEventHandler(
             FloorballDbContext dbContext,
             INotificationSender notificationSender,
-            ILogger<FloorballOfficialAssignedEventHandler> logger)
+            ILogger<FloorballOfficialAssignedEventHandler> logger,
+            IPersonNameProvider personNameProvider)
             : base(notificationSender, logger)
         {
             _dbContext = dbContext;
+            _personNameProvider = personNameProvider;
         }
 
         /// <summary>
@@ -50,7 +54,6 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
                 .FirstOrDefaultAsync(m => m.Id == domainEvent.MatchId, cancellationToken);
 
             FloorballReferee? referee = await _dbContext.Set<FloorballReferee>()
-                .Include(r => r.Person)
                 .FirstOrDefaultAsync(r => r.Id == domainEvent.RefereeId, cancellationToken);
 
             if (match == null)
@@ -61,7 +64,9 @@ namespace MyLeague.Infrastructure.DomainEvents.Handlers.Floorball
 
             string homeTeamName = match.HomeTeam?.Name ?? "Unknown";
             string awayTeamName = match.AwayTeam?.Name ?? "Unknown";
-            string officialName = referee?.Person?.FullName ?? "Unknown Official";
+            string officialName = referee != null
+                ? await _personNameProvider.GetFullNameAsync(referee.PersonId, cancellationToken)
+                : "Unknown Official";
 
             // Create team info objects first
             TeamInfo homeTeamInfo = new TeamInfo

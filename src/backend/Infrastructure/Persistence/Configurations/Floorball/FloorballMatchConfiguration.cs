@@ -86,10 +86,10 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .HasField("_periodScores")
                 .EnableLazyLoading(false);
 
-            //// Ignore complex event configurations for now to avoid navigationName issues
-            //builder.Ignore(m => m.Events);
-            //builder.Ignore(m => m.GoalEvents);
-            //builder.Ignore(m => m.PenaltyEvents);
+            // Ignore computed collections so EF doesn't treat them as navigations
+            builder.Ignore(m => m.GoalEvents);
+            builder.Ignore(m => m.PenaltyEvents);
+            builder.Ignore(m => m.SaveEvents);
 
             builder.HasMany(m => m.Events)
                .WithOne()                        // no back-link on the event entity
