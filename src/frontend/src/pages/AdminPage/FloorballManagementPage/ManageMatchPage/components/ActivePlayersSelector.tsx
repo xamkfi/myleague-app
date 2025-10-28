@@ -2,10 +2,18 @@ import { useMemo, useState } from 'react';
 import './ActivePlayersSelector.scss';
 import type { ChangeEvent } from 'react';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
+import GoalieSelectorSection from './GoalieSelectorSection';
 
 interface ActivePlayersSelectorProps {
   homePlayers: FloorballPlayerDto[];
   awayPlayers: FloorballPlayerDto[];
+  homeTeamName?: string;
+  awayTeamName?: string;
+  // Goalie selection (required to start match)
+  homeGoalieId: string;
+  awayGoalieId: string;
+  setHomeGoalieId: (id: string) => void;
+  setAwayGoalieId: (id: string) => void;
 }
 
 const renderPlayerOptions = (players: FloorballPlayerDto[]) => (
@@ -19,7 +27,7 @@ const renderPlayerOptions = (players: FloorballPlayerDto[]) => (
   </>
 );
 
-const ActivePlayersSelector = ({ homePlayers, awayPlayers }: ActivePlayersSelectorProps) => {
+const ActivePlayersSelector = ({ homePlayers, awayPlayers, homeTeamName, awayTeamName, homeGoalieId, awayGoalieId, setHomeGoalieId, setAwayGoalieId }: ActivePlayersSelectorProps) => {
   const activeHomePlayers = useMemo(() => homePlayers.filter((p) => p.isActive), [homePlayers]);
   const activeAwayPlayers = useMemo(() => awayPlayers.filter((p) => p.isActive), [awayPlayers]);
 
@@ -45,7 +53,9 @@ const ActivePlayersSelector = ({ homePlayers, awayPlayers }: ActivePlayersSelect
 
   return (
     <div className="active-players-selector">
+      <div className="aps-title">ACTIVE PLAYERS</div>
       <div className="team-selects home-team-selects">
+        <div className="team-name home">{homeTeamName || 'Home Team'}</div>
         {homeSelected.map((value, idx) => (
           <select
             key={`home-active-${idx}`}
@@ -58,6 +68,7 @@ const ActivePlayersSelector = ({ homePlayers, awayPlayers }: ActivePlayersSelect
         ))}
       </div>
       <div className="team-selects away-team-selects">
+        <div className="team-name away">{awayTeamName || 'Away Team'}</div>
         {awaySelected.map((value, idx) => (
           <select
             key={`away-active-${idx}`}
@@ -68,6 +79,16 @@ const ActivePlayersSelector = ({ homePlayers, awayPlayers }: ActivePlayersSelect
             {renderPlayerOptions(activeAwayPlayers)}
           </select>
         ))}
+      </div>
+      <div className="goalkeeper-row">
+        <GoalieSelectorSection
+          homePlayers={homePlayers}
+          awayPlayers={awayPlayers}
+          homeGoalieId={homeGoalieId}
+          awayGoalieId={awayGoalieId}
+          setHomeGoalieId={setHomeGoalieId}
+          setAwayGoalieId={setAwayGoalieId}
+        />
       </div>
     </div>
   );

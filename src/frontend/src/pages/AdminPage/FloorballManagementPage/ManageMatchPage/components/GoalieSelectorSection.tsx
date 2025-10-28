@@ -35,6 +35,7 @@ const GoalieSelectorSection = ({
     <div className="goalie-selector-section">
       <div className="goalie-dropdowns">
         <div className="goalie-dropdown">
+          <div className="goalie-header">GOALKEEPER</div>
           <select value={homeGoalieId} onChange={(e: ChangeEvent<HTMLSelectElement>) => setHomeGoalieId(e.target.value)}>
             <option value="">SELECT GOALIE</option>
             {homeGoalkeepers.map((gk: FloorballPlayerDto) => (
@@ -45,6 +46,7 @@ const GoalieSelectorSection = ({
           </select>
         </div>
         <div className="goalie-dropdown">
+          <div className="goalie-header">GOALKEEPER</div>
           <select value={awayGoalieId} onChange={(e: ChangeEvent<HTMLSelectElement>) => setAwayGoalieId(e.target.value)}>
             <option value="">SELECT GOALIE</option>
             {awayGoalkeepers.map((gk: FloorballPlayerDto) => (

@@ -18,7 +18,6 @@ import PenaltyRecordingForm from './components/PenaltyRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ConfirmationDialog from './components/ConfirmationDialog';
 import ActivePlayersSelector from './components/ActivePlayersSelector';
-import GoalieSelectorSection from './components/GoalieSelectorSection';
 
 // Import custom hooks
 import {
@@ -557,11 +556,8 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           <ActivePlayersSelector
             homePlayers={matchData.homePlayers}
             awayPlayers={matchData.awayPlayers}
-          />
-
-          <GoalieSelectorSection
-            homePlayers={matchData.homePlayers}
-            awayPlayers={matchData.awayPlayers}
+            homeTeamName={matchData.homeTeam?.name}
+            awayTeamName={matchData.awayTeam?.name}
             homeGoalieId={homeGoalieId}
             awayGoalieId={awayGoalieId}
             setHomeGoalieId={setHomeGoalieId}

@@ -1,20 +1,72 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
 .active-players-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-areas:
+    "title title"
+    "home away"
+    "goalie goalie";
+  gap: 8px;
   margin-top: 6px;
+  width: 622px;
+  height: 428px;
+  padding: 24px;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 8px;
+  box-sizing: border-box;
+  align-content: start;
+  justify-items: stretch;
+
+  .aps-title {
+    grid-area: title;
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 14px;
+    line-height: 24px;
+    letter-spacing: 0;
+    color: $color-neutral-black;
+    height: 24px;
+  }
+  .home-team-selects { grid-area: home; }
+  .away-team-selects { grid-area: away; }
+  .goalkeeper-row { grid-area: goalie; }
+
+  .team-name {
+    margin: 0;
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0;
+    color: $color-neutral-black;
+    display: flex;
+    align-items: center;
+    justify-self: start;
+    padding-left: 0;
+  }
 
   .team-selects {
     display: grid;
     grid-template-columns: 1fr;
     gap: 6px;
+    justify-items: start;
 
     select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      background: #fff;
+      justify-self: start;
+      width: 279px;
+      height: 40px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: $color-neutral-light-grey;
+      font-family: $font-family-body;
+      font-weight: map.get($font-weights, 'regular');
+      font-size: 14px;
+      line-height: 24px;
+      letter-spacing: 0;
+      color: $color-neutral-black;
     }
   }
 }
