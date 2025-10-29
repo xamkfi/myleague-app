@@ -333,6 +333,7 @@
 @media (max-width: 768px) {
   .standing-container {
     margin: map.get($spacing, "xs");
+    padding: 0 map.get($spacing, "xs"); // reduce side padding to 8px
   }
 
   .standing-header {
@@ -425,6 +426,7 @@
 @media (max-width: 480px) {
   .standing-container {
     margin: map.get($spacing, "xs");
+    padding: 0 map.get($spacing, "xs"); // ensure side padding is 8px on small phones
   }
 
   .standing-header {
