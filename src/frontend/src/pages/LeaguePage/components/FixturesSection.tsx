@@ -69,7 +69,7 @@ export default function FixturesSection({
         <>
           <div className="matches-grid">
             <div className="fixtures-header">
-              {t('teamUserPage.fixturesTitle')}
+              {t('teamUserPage.scheduled')}
             </div>
             {seasons && matches && seasons.map((season) => {
               // Filter for upcoming/scheduled matches only (opposite of ResultsSection)

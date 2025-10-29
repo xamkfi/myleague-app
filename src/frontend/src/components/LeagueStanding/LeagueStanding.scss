@@ -10,6 +10,8 @@
   border-radius: map.get($border-radius, "lg");
   box-shadow: $box-shadow-drop-1;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 .standing-header {
@@ -76,11 +78,20 @@
   // Removed old flex headers; headers now in table thead
 }
 
+.table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .standing-table {
   width: 100%;
   border-collapse: collapse;
   background: $color-white;
   table-layout: fixed;
+  max-width: 100%;
+  min-width: 600px; // Ensure table has minimum width for readability
 
   // Use colgroup-driven widths to ensure th/td alignment
   col.rank-col { width: 8%; }
@@ -320,15 +331,30 @@
 }
 
 @media (max-width: 768px) {
+  .standing-container {
+    margin: map.get($spacing, "xs");
+  }
+
   .standing-header {
     flex-direction: column;
     gap: map.get($spacing, "sm");
     padding: map.get($spacing, "sm");
 
+    .header-top-row {
+      flex-direction: column;
+      gap: map.get($spacing, "sm");
+      align-items: flex-start;
+    }
+
     .view-buttons {
+      width: 100%;
+      flex-wrap: wrap;
+      
       .view-button {
         padding: map.get($spacing, "2xs") map.get($spacing, "xs");
         font-size: map.get($font-sizes, "xs");
+        flex: 1;
+        min-width: 80px;
       }
     }
 
@@ -433,6 +459,8 @@
   }
 
   .standing-table {
+    min-width: 400px; // Reduced minimum width for very small screens
+    
     // Hide spacer column entirely on very small screens
     col.spacer-col { display: none; }
     th.spacer-col, td.spacer-col { display: none; }

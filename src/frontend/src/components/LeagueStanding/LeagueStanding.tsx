@@ -315,7 +315,9 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
       </div>
 
       {/* Dynamic content based on active view */}
-      {renderContent()}
+      <div className="table-wrapper">
+        {renderContent()}
+      </div>
     </div>
   );
 }

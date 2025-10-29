@@ -6,17 +6,20 @@ interface MatchHeaderProps {
 }
 
 export default function MatchHeader({ match }: MatchHeaderProps) {
+  const scheduled = formatDate(match.scheduledDateTime);
   return (
     <div className="match-header">
       <div className="match-info">
         <div className="match-date-time">
-          <div className="weekday">{formatDate(match.scheduledDateTime).weekday}</div>
-          <div className="date-time">
-            <span className="date">{formatDate(match.scheduledDateTime).date}</span>
-            <span className="time">{formatDate(match.scheduledDateTime).time}</span>
+          <div className="date-line">
+            <span className="weekday">{scheduled.weekday}</span>
+            {'\u00A0\u00A0'}
+            <span className="date">{scheduled.date}</span>
+          </div>
+          <div className="time-line">
+            <span className="time">{scheduled.time}</span>
           </div>
         </div>
-        <div className="season-name">{match.seasonName}</div>
       </div>
       
       <div className="teams-container">
