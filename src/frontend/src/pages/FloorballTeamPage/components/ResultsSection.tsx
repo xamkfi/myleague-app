@@ -1,4 +1,4 @@
-import React from 'react';
+
 import type { FloorballMatchDto, FloorballTeam } from "../../../types/floorball/floorballTypes";
 import MatchesList from '../../../components/MatchesList/MatchesList';
 
