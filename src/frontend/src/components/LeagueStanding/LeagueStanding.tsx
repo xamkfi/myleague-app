@@ -95,6 +95,15 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
   const renderStandingsTable = () => {
     const data: FloorballTeamSeasonStatisticsDto[] = seasonSummary?.teamStandings || [];
     
+    if (!seasonSummary || data.length === 0) {
+      return (
+        <div className="empty-state">
+          <h3>Standings are not available</h3>
+          <p>League standings will appear here once data is available.</p>
+        </div>
+      );
+    }
+
     return (
       <table className="standing-table">
         <colgroup>
@@ -177,6 +186,15 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
   const renderTopScorersTable = () => {
     const scorers = seasonSummary?.topScorers || [];
     
+    if (!seasonSummary || scorers.length === 0) {
+      return (
+        <div className="empty-state">
+          <h3>Top scorers are not available</h3>
+          <p>Player scoring leaders will appear here once data is available.</p>
+        </div>
+      );
+    }
+
     return (
       <table className="standing-table">
         <colgroup>
@@ -221,6 +239,15 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
   const renderTopAssistsTable = () => {
     const assists = seasonSummary?.topAssists || [];
     
+    if (!seasonSummary || assists.length === 0) {
+      return (
+        <div className="empty-state">
+          <h3>Top assists are not available</h3>
+          <p>Player assist leaders will appear here once data is available.</p>
+        </div>
+      );
+    }
+
     return (
       <table className="standing-table">
         <colgroup>

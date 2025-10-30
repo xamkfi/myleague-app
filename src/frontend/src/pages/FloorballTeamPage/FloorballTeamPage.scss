@@ -418,27 +418,7 @@
       border-radius: map.get($border-radius, 'lg');
     }
 
-    // Standings (imported component) spacing overrides for mobile
-    .tab-content-container {
-      .standing-container {
-        margin: 0 !important;
-      }
-
-      .standing-header {
-        padding: 0 !important;
-      }
-
-      .table-wrapper {
-        padding: 0 !important;
-      }
-
-      .standing-table {
-        thead th,
-        tbody tr td {
-          padding: 0 !important;
-        }
-      }
-    }
+    // Removed standings overrides to keep LeagueStanding consistent across pages
   }
 }
 
@@ -523,27 +503,7 @@
       margin: 0 map.get($spacing, 'xs');
     }
 
-    // Standings (imported component) spacing overrides for small phones
-    .tab-content-container {
-      .standing-container {
-        margin: 0 !important;
-      }
-
-      .standing-header {
-        padding: 0 !important;
-      }
-
-      .table-wrapper {
-        padding: 0 !important;
-      }
-
-      .standing-table {
-        thead th,
-        tbody tr td {
-          padding: 0 !important;
-        }
-      }
-    }
+    // Removed standings overrides to keep LeagueStanding consistent across pages
   }
 }
 
