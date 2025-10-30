@@ -515,6 +515,7 @@ const FloorballPlayersPage = () => {
           to="/admin/floorball" 
           text={t('common.back', 'Back to Floorball Management')} 
         />
+        <h2 className="floorball-players-title">{t('floorball.players.title', 'MANAGE PLAYERS')}</h2>
         {/* Header with actions */}
         <div className="floorball-players-header">
           <div className="players-actions">

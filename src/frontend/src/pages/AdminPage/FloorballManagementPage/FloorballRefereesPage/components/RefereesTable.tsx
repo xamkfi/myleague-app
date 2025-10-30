@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { FloorballRefereeDto } from '../../../../../api/floorball/floorballRefereeService';
+import CheckIcon from '../../../../../assets/basicIcons/check.svg';
+import CloseIcon from '../../../../../assets/basicIcons/close.svg';
 
 interface RefereesTableProps {
   referees: FloorballRefereeDto[];
@@ -53,8 +55,16 @@ const RefereesTable = ({ referees, onDelete }: RefereesTableProps) => {
             <tr key={referee.id}>
               <td>{referee.person.fullName}</td>
               <td>
-                <span className={`status-badge ${referee.isActive ? 'active' : 'inactive'}`}>
-                  {referee.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+                <span 
+                  className={`status-badge ${referee.isActive ? 'active' : 'inactive'}`}
+                  aria-label={referee.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+                  title={referee.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+                >
+                  <img
+                    src={referee.isActive ? CheckIcon : CloseIcon}
+                    alt={referee.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+                    className="status-icon"
+                  />
                 </span>
               </td>
               <td>

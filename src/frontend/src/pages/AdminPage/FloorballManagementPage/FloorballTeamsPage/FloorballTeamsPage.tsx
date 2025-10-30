@@ -175,6 +175,7 @@ const FloorballTeamsPage = () => {
         <BackButton 
           to="/admin/floorball" 
         />
+        <h2 className="floorball-teams-title">{t('floorball.teams.title', 'MANAGE TEAMS')}</h2>
         
         {/* Header with actions */}
         <div className="floorball-teams-header">

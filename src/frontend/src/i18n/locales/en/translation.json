@@ -501,7 +501,7 @@
       "women": "Women"
     },
     "referees": {
-      "title": "Manage Floorball Referees",
+      "title": "Manage Referees",
       "totalCount": "{{count}} referees",
       "createNew": "Create New Referee",
       "createFromPerson": "Create Referee from Available Persons",

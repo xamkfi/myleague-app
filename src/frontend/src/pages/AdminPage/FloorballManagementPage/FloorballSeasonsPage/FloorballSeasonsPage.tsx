@@ -58,7 +58,7 @@ const FloorballSeasonsPage = () => {
           to="/admin/floorball" 
           text={t('common.back', 'Back to Floorball Management')} 
         />
-
+        <h2 className="floorball-seasons-title">{t('floorball.seasons.title', 'MANAGE SEASONS')}</h2>
         <SeasonsPageHeader
           seasonsCount={seasons.length}
           onCreateSeason={() => navigate('/admin/floorball/seasons/create')}

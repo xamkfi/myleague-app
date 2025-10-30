@@ -1,24 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballRefereeService, type FloorballRefereeDto } from '../../../../api/floorball/floorballRefereeService';
 import RefereesTable from './components/RefereesTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
+import SearchField from '../../../../components/SearchField';
+import Button from '../../../../components/Button/Button';
+import AddIcon from '../../../../assets/basicIcons/add.svg';
 import './FloorballRefereesPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
 
 const FloorballRefereesPage = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [referees, setReferees] = useState<FloorballRefereeDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [refereeToDelete, setRefereeToDelete] = useState<FloorballRefereeDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [deleteTimeoutId, setDeleteTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  // Filter referees based on search term
+  const filteredReferees = referees.filter(referee => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase().trim();
+    const fullName = referee.person.fullName || '';
+    return fullName.toLowerCase().includes(searchLower);
+  });
 
   useEffect(() => {
     const fetchReferees = async () => {
@@ -101,10 +111,6 @@ const FloorballRefereesPage = () => {
     setRefereeToDelete(null);
   };
 
-  const handleCreateRefereeClick = () => {
-    navigate('/admin/floorball/referees/create');
-  };
-
   if (loading) {
     return (
       <PageTemplate title={t('floorball.referees.title', 'Manage Floorball Referees')}>
@@ -116,23 +122,32 @@ const FloorballRefereesPage = () => {
   }
 
   return (
-    <PageTemplate title={t('floorball.referees.title', 'Manage Floorball Referees')}>      
+    <PageTemplate title={t('floorball.referees.title', 'MANAGE REFEREES')}>      
       <div className="floorball-referees-container">
         {/* Back button */}
         <BackButton 
           to="/admin/floorball" 
           text={t('common.back', 'Back to Floorball Management')} 
         />
+        <h2 className="floorball-referees-title">{t('floorball.referees.title', 'MANAGE REFEREES')}</h2>
 
-        {/* Header with actions */}
+        {/* Header with search and create button */}
         <div className="floorball-referees-header">
-          <div className="referees-count">
-            <span>{t('floorball.referees.totalCount', `${Array.isArray(referees) ? referees.length : 0} referees`, { count: Array.isArray(referees) ? referees.length : 0 })}</span>
-          </div>
           <div className="referees-actions">
-            <button className="create-referee-button" onClick={handleCreateRefereeClick}>
-              {t('floorball.referees.createNew', 'Create New Referee')}
-            </button>
+            <SearchField
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder={t('floorball.referees.searchReferees', 'Search referees...')}
+              fullWidth
+              rounded="pill"
+            />
+            <Button
+              className="create-referee-button"
+              iconLeft={AddIcon}
+              to="/admin/floorball/referees/create"
+            >
+              {t('floorball.referees.createNew', 'Create new referee')}
+            </Button>
           </div>
         </div>
         
@@ -142,14 +157,29 @@ const FloorballRefereesPage = () => {
             <p>{error}</p>
           </div>
         )}
+
+        {/* Referees count */}
+        <div className="referees-count">
+          <span>{t('floorball.referees.totalCount', `${filteredReferees.length} referees`, { count: filteredReferees.length })}</span>
+        </div>
         
         {/* Referees table */}
-        <div className="referees-table-container">
+        <div className="referees-table-wrapper">
           <RefereesTable 
-            referees={Array.isArray(referees) ? referees : []} 
+            referees={filteredReferees} 
             onDelete={handleDelete} 
           />
         </div>
+
+        {/* No data states */}
+        {filteredReferees.length === 0 && !loading && (
+          <div className="no-data">
+            {searchTerm 
+              ? t('floorball.referees.noSearchResults', 'No referees found matching "{{searchTerm}}"', { searchTerm })
+              : t('floorball.referees.noReferees', 'No referees found.')
+            }
+          </div>
+        )}
         
         {/* Confirm Delete Modal */}
         <ConfirmDeleteModal
