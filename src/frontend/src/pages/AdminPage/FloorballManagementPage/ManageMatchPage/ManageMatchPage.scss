@@ -1,6 +1,10 @@
 @use 'sass:map';
 @use '../../../../styles/variables' as *;
 
+.admin-page-body {
+  padding-top: 0.5rem;
+}
+
 .manage-match-page {
   /* Page-wide token to unify border color across all blocks */
   --mm-border-color: #D1D0D6;
