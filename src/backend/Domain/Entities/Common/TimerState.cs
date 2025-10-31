@@ -20,6 +20,10 @@ namespace Domain.Entities.Common
         // when the system clock adjusts (e.g., NTP) while using DateTime.UtcNow
         private TimeSpan _lastElapsed = TimeSpan.Zero;
 
+        // Runtime-only: monotonic stopwatch for current run, plus base accumulated
+        private System.Diagnostics.Stopwatch? _stopwatch;
+        private TimeSpan _accumulatedAtRunStart = TimeSpan.Zero;
+
         /// <summary>
         /// Calculates the elapsed time based on stored state
         /// </summary>
@@ -29,6 +33,18 @@ namespace Domain.Entities.Common
             {
                 if (!StartedAt.HasValue)
                     return TimeSpan.Zero;
+
+                // Prefer monotonic stopwatch while running to avoid wall-clock jitter
+                if (IsRunning && _stopwatch != null)
+                {
+                    TimeSpan computedNow = _accumulatedAtRunStart + _stopwatch.Elapsed;
+                    if (computedNow < _lastElapsed)
+                    {
+                        return _lastElapsed;
+                    }
+                    _lastElapsed = computedNow;
+                    return computedNow;
+                }
 
                 DateTime now = DateTime.UtcNow;
 
@@ -89,10 +105,23 @@ namespace Domain.Entities.Common
         {
             if (!StartedAt.HasValue)
                 StartedAt = DateTime.UtcNow;
-            LastResumedAt = DateTime.UtcNow;
+            DateTime resumedAt = DateTime.UtcNow;
+            LastResumedAt = resumedAt;
             IsRunning = true;
-            LastUpdated = DateTime.UtcNow;
+            LastUpdated = resumedAt;
             // Do not reset _lastElapsed on resume; preserve monotonicity
+            // If we are resuming from a pause, add the pause duration now and clear PausedAt
+            if (PausedAt.HasValue)
+            {
+                TimeSpan pauseDuration = resumedAt - PausedAt.Value;
+                if (pauseDuration > TimeSpan.Zero)
+                {
+                    TotalPausedDuration += pauseDuration;
+                }
+                PausedAt = null;
+            }
+            _accumulatedAtRunStart = GetElapsedTimeAsOf(resumedAt);
+            _stopwatch = System.Diagnostics.Stopwatch.StartNew();
         }
 
         /// <summary>
@@ -100,12 +129,16 @@ namespace Domain.Entities.Common
         /// </summary>
         public void Pause()
         {
-            if (IsRunning && LastResumedAt.HasValue)
+            if (IsRunning)
             {
-                TotalPausedDuration += DateTime.UtcNow - LastResumedAt.Value;
-                PausedAt = DateTime.UtcNow;
+                DateTime now = DateTime.UtcNow;
+                PausedAt = now;
                 IsRunning = false;
-                LastUpdated = DateTime.UtcNow;
+                LastUpdated = now;
+                if (_stopwatch != null && _stopwatch.IsRunning)
+                {
+                    _stopwatch.Stop();
+                }
             }
         }
 
@@ -121,6 +154,8 @@ namespace Domain.Entities.Common
             IsRunning = false;
             LastUpdated = DateTime.UtcNow;
             _lastElapsed = TimeSpan.Zero;
+            _stopwatch = null;
+            _accumulatedAtRunStart = TimeSpan.Zero;
         }
 
         /// <summary>

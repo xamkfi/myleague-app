@@ -23,6 +23,11 @@ namespace Application.DTOs.Common
         public string ElapsedTime { get; set; } = string.Empty;
 
         /// <summary>
+        /// The elapsed time in milliseconds for precise client handling
+        /// </summary>
+        public long ElapsedMilliseconds { get; set; }
+
+        /// <summary>
         /// Whether the timer is currently running
         /// </summary>
         public bool IsRunning { get; set; }
@@ -38,6 +43,11 @@ namespace Application.DTOs.Common
         public string EventType { get; set; } = string.Empty;
 
         /// <summary>
+        /// Monotonically increasing sequence number per match (set by publisher)
+        /// </summary>
+        public long Sequence { get; set; }
+
+        /// <summary>
         /// Creates a timer update for a started timer
         /// </summary>
         /// <param name="matchId">The match ID</param>
@@ -51,6 +61,7 @@ namespace Application.DTOs.Common
                 MatchId = matchId,
                 PeriodNumber = periodNumber,
                 ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss"),
+                ElapsedMilliseconds = (long)elapsedTime.TotalMilliseconds,
                 IsRunning = true,
                 LastUpdated = DateTime.UtcNow,
                 EventType = "TimerStarted"
@@ -71,6 +82,7 @@ namespace Application.DTOs.Common
                 MatchId = matchId,
                 PeriodNumber = periodNumber,
                 ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss"),
+                ElapsedMilliseconds = (long)elapsedTime.TotalMilliseconds,
                 IsRunning = false,
                 LastUpdated = DateTime.UtcNow,
                 EventType = "TimerStopped"
@@ -90,6 +102,7 @@ namespace Application.DTOs.Common
                 MatchId = matchId,
                 PeriodNumber = periodNumber,
                 ElapsedTime = TimeSpan.Zero.ToString(@"hh\:mm\:ss"),
+                ElapsedMilliseconds = 0,
                 IsRunning = false,
                 LastUpdated = DateTime.UtcNow,
                 EventType = "TimerReset"
@@ -111,6 +124,7 @@ namespace Application.DTOs.Common
                 MatchId = matchId,
                 PeriodNumber = periodNumber,
                 ElapsedTime = elapsedTime.ToString(@"hh\:mm\:ss"),
+                ElapsedMilliseconds = (long)elapsedTime.TotalMilliseconds,
                 IsRunning = isRunning,
                 LastUpdated = DateTime.UtcNow,
                 EventType = "TimerUpdate"
