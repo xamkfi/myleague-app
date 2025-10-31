@@ -12,9 +12,9 @@ import { floorballMatchService } from '../../../../api/floorball/floorballMatchS
 import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
 import MatchForm from '../MatchOverviewPage/Components/MatchForm/MatchForm';
 import BackButton from '../../../../components/BackButton/BackButton';
-import Navbar from '../../../../components/Navigation/Navbar';
 import './EditMatchPage.scss';
 import '../MatchOverviewPage/MatchOverviewPage.scss';
+import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 
 const EditMatchPage = () => {
   const [loading, setLoading] = useState(false);
@@ -124,8 +124,8 @@ const EditMatchPage = () => {
   }
   
   return (
+    <PageTemplate title={'Edit match'}>
     <div className="match-management">
-      <Navbar />
       <div className="match-management__content edit-match-page">
         <div className="page-header">
           <div className="header-left">
@@ -161,6 +161,7 @@ const EditMatchPage = () => {
         </div>
       </div>
     </div>
+    </PageTemplate>
   );
 };
 

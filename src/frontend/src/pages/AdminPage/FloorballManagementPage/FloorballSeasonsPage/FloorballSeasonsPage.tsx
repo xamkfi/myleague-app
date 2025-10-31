@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import './FloorballSeasonsPage.scss';
 import { useSeasonsManagement } from './hooks/useSeasonsManagement';
 import { SeasonsPageHeader } from './components/SeasonsPageHeader';
@@ -58,7 +58,7 @@ const FloorballSeasonsPage = () => {
           to="/admin/floorball" 
           text={t('common.back', 'Back to Floorball Management')} 
         />
-
+        <h2 className="floorball-seasons-title">{t('floorball.seasons.title', 'MANAGE SEASONS')}</h2>
         <SeasonsPageHeader
           seasonsCount={seasons.length}
           onCreateSeason={() => navigate('/admin/floorball/seasons/create')}

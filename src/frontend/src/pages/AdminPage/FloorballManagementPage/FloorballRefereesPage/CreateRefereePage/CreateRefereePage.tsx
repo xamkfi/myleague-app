@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import BackButton from '../../../../../components/BackButton/BackButton';
 import { personApi } from '../../../../../api/admin/personApi';
 import { floorballRefereeService } from '../../../../../api/floorball/floorballRefereeService';
@@ -18,7 +18,7 @@ const CreateRefereePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [selectedPersonId, setSelectedPersonId] = useState<string>('');
+  const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(new Set());
   const [licenseIssueDate, setLicenseIssueDate] = useState('');
   const [licenseExpiryDate, setLicenseExpiryDate] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -89,13 +89,33 @@ const CreateRefereePage = () => {
   }, [showCreateForm, licenseIssueDate]);
 
   const handlePersonSelect = (personId: string) => {
-    setSelectedPersonId(personId);
-    setShowCreateForm(true);
+    setSelectedPersonIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(personId)) {
+        newSet.delete(personId);
+      } else {
+        newSet.add(personId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectedPersonIds(new Set(filteredPersons.map(p => p.id)));
+  };
+
+  const handleClearSelection = () => {
+    setSelectedPersonIds(new Set());
+  };
+
+  const handleProceedToForm = () => {
+    if (selectedPersonIds.size > 0) {
+      setShowCreateForm(true);
+    }
   };
 
   const handleBackToList = () => {
     setShowCreateForm(false);
-    setSelectedPersonId('');
     setLicenseIssueDate('');
     setLicenseExpiryDate('');
     setError(null);
@@ -104,7 +124,7 @@ const CreateRefereePage = () => {
   const handleCreateReferee = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedPersonId || !licenseIssueDate || !licenseExpiryDate) {
+    if (selectedPersonIds.size === 0 || !licenseIssueDate || !licenseExpiryDate) {
       setError('All fields are required');
       return;
     }
@@ -123,32 +143,35 @@ const CreateRefereePage = () => {
       setError(null);
       setSuccessMessage(null);
       
-      // Find the person to get their name for the success message
-      const person = availablePersons.find(p => p.id === selectedPersonId);
-      if (!person) {
-        setError('Person not found');
-        return;
+      let successCount = 0;
+      const selectedPersonsList = availablePersons.filter(p => selectedPersonIds.has(p.id));
+      
+      // Create referee for each selected person
+      for (const person of selectedPersonsList) {
+        try {
+          await floorballRefereeService.create({ 
+            PersonId: person.id,
+            LicenseIssueDate: licenseIssueDate,
+            LicenseExpiryDate: licenseExpiryDate
+          });
+          successCount++;
+        } catch (err) {
+          console.error(`Failed to create referee for ${person.fullName}:`, err);
+        }
       }
       
-      // Create the referee using the floorball referee service
-      await floorballRefereeService.create({ 
-        PersonId: selectedPersonId,
-        LicenseIssueDate: licenseIssueDate,
-        LicenseExpiryDate: licenseExpiryDate
-      });
-      
-      // Remove the person from available persons list
-      setAvailablePersons(prev => prev.filter(p => p.id !== selectedPersonId));
+      // Remove the created persons from available persons list
+      setAvailablePersons(prev => prev.filter(p => !selectedPersonIds.has(p.id)));
       
       // Clear any existing timeout to prevent flickering
       if (successTimeoutId) {
         clearTimeout(successTimeoutId);
       }
       
-      // Show success message with person's name
-      const message = t('floorball.referees.refereeCreated', '{{personName}} is now a floorball referee!', { 
-        personName: person.fullName 
-      });
+      // Show success message
+      const message = successCount === 1
+        ? t('floorball.referees.refereeCreated', '{{count}} referee created successfully!', { count: successCount })
+        : t('floorball.referees.refereesCreated', '{{count}} referees created successfully!', { count: successCount });
       setSuccessMessage(message);
       
       // Auto-hide success message after 3 seconds and then navigate back
@@ -161,18 +184,18 @@ const CreateRefereePage = () => {
       
       // Reset form
       setShowCreateForm(false);
-      setSelectedPersonId('');
+      setSelectedPersonIds(new Set());
       setLicenseIssueDate('');
       setLicenseExpiryDate('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create referee');
-      console.error('Error creating referee:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create referees');
+      console.error('Error creating referees:', err);
     } finally {
       setCreating(false);
     }
   };
 
-  const selectedPerson = availablePersons.find(p => p.id === selectedPersonId);
+  const selectedPersons = availablePersons.filter(p => selectedPersonIds.has(p.id));
 
   if (loading) {
     return (
@@ -187,8 +210,8 @@ const CreateRefereePage = () => {
   return (
     <PageTemplate title={
       showCreateForm 
-        ? t('floorball.referees.createRefereeFor', 'Create Referee for {{name}}', { name: selectedPerson?.fullName })
-        : t('floorball.referees.createNew', 'Create New Referee')
+        ? t('floorball.referees.createRefereeForMultiple', 'Create Referees for {{count}} person(s)', { count: selectedPersonIds.size })
+        : t('floorball.referees.createNew', 'CREATE REFEREE FROM AVAILABLE PERSONS')
     }>
       {/* Floating Success Toast */}
       {successMessage && (
@@ -206,15 +229,21 @@ const CreateRefereePage = () => {
 
         {!showCreateForm ? (
           <>
-            {/* Search Bar */}
-            <div className="search-container">
-              <input
-                type="text"
-                placeholder={t('floorball.referees.searchPersons', 'Search available persons...')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
+            {/* Search Bar and Create Button */}
+            <div className="search-header">
+              <div className="search-container">
+                <input
+                  type="text"
+                  placeholder={t('floorball.referees.searchPersons', 'Search available persons...')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+              <button className="create-person-link" onClick={() => navigate('/admin/persons/create')}>
+                <span className="plus-icon">+</span>
+                {t('floorball.referees.createNewPerson', 'Create new person')}
+              </button>
             </div>
 
             {/* Error Message */}
@@ -224,8 +253,26 @@ const CreateRefereePage = () => {
               </div>
             )}
 
-            {/* Persons List */}
-            <div className="persons-container">
+            {/* Selection Controls */}
+            {selectedPersonIds.size > 0 && (
+              <div className="selection-controls">
+                <div className="selection-info">
+                  <span className="selected-count">
+                    {t('floorball.referees.selectedCount', '{{count}} selected', { count: selectedPersonIds.size })}
+                  </span>
+                  <button
+                    type="button"
+                    className="clear-selection-btn"
+                    onClick={handleClearSelection}
+                  >
+                    {t('common.clear', 'Clear')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Persons Table */}
+            <div className="persons-table-wrapper">
               {filteredPersons.length === 0 ? (
                 <div className="no-persons">
                   <p>{searchTerm ? 
@@ -234,35 +281,73 @@ const CreateRefereePage = () => {
                   }</p>
                 </div>
               ) : (
-                <div className="persons-list">
-                  {filteredPersons.map((person) => (
-                    <div key={person.id} className="person-item">
-                      <div className="person-info">
-                        <div className="person-name">{person.fullName}</div>
-                        <div className="person-details">
-                          <span className="birth-date">
-                            {t('common.birthDate', 'Birth Date')}: {new Date(person.birthDate).toLocaleDateString()}
-                          </span>
-                          <span className={`registration-status ${person.isRegistered ? 'registered' : 'not-registered'}`}>
+                <table className="persons-table">
+                  <thead>
+                    <tr>
+                      <th className="select-column">
+                        <input
+                          type="checkbox"
+                          checked={filteredPersons.length > 0 && filteredPersons.every(p => selectedPersonIds.has(p.id))}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              handleSelectAll();
+                            } else {
+                              handleClearSelection();
+                            }
+                          }}
+                          title={t('common.selectAll', 'Select all')}
+                        />
+                      </th>
+                      <th className="name-column">{t('common.name', 'Name')}</th>
+                      <th className="birthdate-column">{t('common.birthDate', 'Birth date')}</th>
+                      <th className="registration-column">{t('common.registration', 'Registration')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredPersons.map((person) => (
+                      <tr key={person.id}>
+                        <td className="select-cell">
+                          <input
+                            type="checkbox"
+                            checked={selectedPersonIds.has(person.id)}
+                            onChange={() => handlePersonSelect(person.id)}
+                            className="person-checkbox"
+                          />
+                        </td>
+                        <td className="name-cell">
+                          <div className="person-name">{person.fullName}</div>
+                          <div className="person-birthdate-mobile">{new Date(person.birthDate).toLocaleDateString()}</div>
+                        </td>
+                        <td className="birthdate-cell">
+                          {new Date(person.birthDate).toLocaleDateString()}
+                        </td>
+                        <td className="registration-cell">
+                          <span className={`registration-badge ${person.isRegistered ? 'registered' : 'not-registered'}`}>
                             {person.isRegistered ? 
                               t('common.registered', 'Registered') : 
                               t('common.notRegistered', 'Not Registered')
                             }
                           </span>
-                        </div>
-                      </div>
-                      <button
-                        className="select-person-btn"
-                        onClick={() => handlePersonSelect(person.id)}
-                        disabled={creating}
-                      >
-                        {t('floorball.referees.selectPerson', 'Select')}
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
+
+            {/* Proceed Button - Only show when persons are selected */}
+            {selectedPersonIds.size > 0 && (
+              <div className="proceed-action">
+                <button
+                  onClick={handleProceedToForm}
+                  className="proceed-button"
+                  disabled={creating}
+                >
+                  {t('floorball.referees.createReferees', 'Create referee(s) ({{count}})', { count: selectedPersonIds.size })}
+                </button>
+              </div>
+            )}
           </>
         ) : (
           <form onSubmit={handleCreateReferee} className="create-referee-form">
@@ -272,6 +357,16 @@ const CreateRefereePage = () => {
                 <p>{error}</p>
               </div>
             )}
+
+            {/* Show selected persons */}
+            <div className="selected-persons-list">
+              <h3>{t('floorball.referees.selectedPersons', 'Selected persons:')}</h3>
+              <ul>
+                {selectedPersons.map(person => (
+                  <li key={person.id}>{person.fullName}</li>
+                ))}
+              </ul>
+            </div>
 
             <div className="form-group">
               <label htmlFor="licenseIssueDate">
@@ -305,19 +400,19 @@ const CreateRefereePage = () => {
               <button
                 type="button"
                 onClick={handleBackToList}
-                className="back-to-list-button"
+                className="cancel-button"
                 disabled={creating}
               >
-                {t('common.cancelSelection', 'Cancel Selection')}
+                {t('common.cancel', 'Cancel')}
               </button>
               <button
                 type="submit"
-                className="create-referee-btn"
+                className="create-referee-button"
                 disabled={creating}
               >
                 {creating ? 
                   t('common.creating', 'Creating...') : 
-                  t('floorball.referees.createReferee', 'Create Referee')
+                  t('floorball.referees.createReferee', 'Create referee')
                 }
               </button>
             </div>

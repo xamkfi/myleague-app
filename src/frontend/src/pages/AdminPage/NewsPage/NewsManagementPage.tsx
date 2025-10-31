@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import NewsList from './components/NewsList';
 import './NewsManagementPage.scss';
-import PageTemplate from '../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
 import NewsFilter from './components/NewsFilter';
 
 const NewsManagementPage = () => {
