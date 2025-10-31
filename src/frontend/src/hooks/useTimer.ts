@@ -28,6 +28,7 @@ export function useTimer(options: UseTimerOptions) {
   const [error, setError] = useState<string | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const handleTimerUpdateRef = useRef<((event: MatchEvent) => void) | null>(null);
+  const lastSeqRef = useRef<number>(-1);
 
   // Load initial timer status
   const loadTimerStatus = useCallback(async () => {
@@ -79,7 +80,12 @@ export function useTimer(options: UseTimerOptions) {
       
       await timerService.startTimer(matchId, periodNumber);
       
-      // Don't reload timer status - let SignalR handle the update
+      // Optimistically update local state; SignalR will reconcile
+      setTimerState(prev => ({
+        ...prev,
+        isRunning: true,
+        lastUpdated: new Date().toISOString(),
+      }));
     } catch (err) {
       console.error('Error starting timer:', err);
       setError(err instanceof Error ? err.message : 'Failed to start timer');
@@ -96,7 +102,12 @@ export function useTimer(options: UseTimerOptions) {
       
       await timerService.stopTimer(matchId);
       
-      // Don't reload timer status - let SignalR handle the update
+      // Optimistically update local state; SignalR will reconcile
+      setTimerState(prev => ({
+        ...prev,
+        isRunning: false,
+        lastUpdated: new Date().toISOString(),
+      }));
     } catch (err) {
       console.error('Error stopping timer:', err);
       setError(err instanceof Error ? err.message : 'Failed to stop timer');
@@ -113,7 +124,12 @@ export function useTimer(options: UseTimerOptions) {
       
       await timerService.resetTimer(matchId);
       
-      // Don't reload timer status - let SignalR handle the update
+      // Optimistically update local state; SignalR will reconcile
+      setTimerState({
+        isRunning: false,
+        elapsedTime: '00:00',
+        lastUpdated: new Date().toISOString(),
+      });
     } catch (err) {
       console.error('Error resetting timer:', err);
       setError(err instanceof Error ? err.message : 'Failed to reset timer');
@@ -199,9 +215,27 @@ export function useTimer(options: UseTimerOptions) {
       const timerUpdate = event.data as TimerUpdate;
       
       if (timerUpdate.MatchId === matchId) {
+        // Lenient ordering: accept updates even if Sequence repeats; only drop if clearly older
+        if (typeof timerUpdate.Sequence === 'number') {
+          if (lastSeqRef.current !== -1 && timerUpdate.Sequence < lastSeqRef.current) {
+            return;
+          }
+          lastSeqRef.current = Math.max(lastSeqRef.current, timerUpdate.Sequence);
+        }
         // Format the elapsed time to only show hours when needed
         let formattedTime = timerUpdate.ElapsedTime;
-        if (timerUpdate.ElapsedTime && timerUpdate.ElapsedTime.includes(':')) {
+
+        // Prefer ElapsedMilliseconds if provided
+        if (typeof timerUpdate.ElapsedMilliseconds === 'number') {
+          const totalMs = Math.max(0, timerUpdate.ElapsedMilliseconds);
+          const totalSeconds = Math.floor(totalMs / 1000);
+          const hours = Math.floor(totalSeconds / 3600);
+          const minutes = Math.floor((totalSeconds % 3600) / 60);
+          const seconds = totalSeconds % 60;
+          formattedTime = hours > 0
+            ? `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+            : `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        } else if (timerUpdate.ElapsedTime && timerUpdate.ElapsedTime.includes(':')) {
           const parts = timerUpdate.ElapsedTime.split(':');
           if (parts.length === 3) {
             const [hours, minutes, seconds] = parts;
