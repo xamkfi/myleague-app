@@ -1,3 +1,5 @@
+import './ConfirmationDialog.scss';
+
 interface ConfirmationDialogProps {
   isOpen: boolean;
   icon: string;
@@ -26,8 +28,8 @@ const ConfirmationDialog = ({
   if (!isOpen) return null;
 
   return (
-    <div className="confirmation-dialog-overlay">
-      <div className="confirmation-dialog">
+  <div className="confirmation-dialog-overlay" onClick={onCancel}>
+      <div className="confirmation-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="confirmation-header">
           <span className="confirmation-icon">{icon}</span>
           <h3>{title}</h3>
