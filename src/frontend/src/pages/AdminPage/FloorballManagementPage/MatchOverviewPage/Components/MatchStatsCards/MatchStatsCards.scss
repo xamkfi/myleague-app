@@ -1,7 +1,6 @@
 .stats-grid {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 210px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 8px;
   margin-bottom: 24px;
   width: 100%;
@@ -16,9 +15,7 @@
   transition: all 0.2s;
   position: relative;
   overflow: hidden;
-  width: 210px;
   height: 128px;
-  flex-shrink: 0;
 
   &:not(:first-child) {
     cursor: pointer;
@@ -31,7 +28,6 @@
   }
 
   .stat-number {
-    width: 163px;
     height: 48px;
     display: flex;
     align-items: center;
@@ -57,7 +53,6 @@
     letter-spacing: 0.05em;
     line-height: 1.2;
     text-align: left;
-    width: 163px;
   }
 
   .stat-icon {

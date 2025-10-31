@@ -689,8 +689,6 @@ const ManageMatchPage = () => {
   return (
     <PageTemplate title={'Manage match page'}>
     <div className="manage-match-page">
-      <Navbar />
-      <div className="manage-match-content">
         <div className="page-header">
           <div className="page-header__top">
             <BackButton to="/admin/floorball/matches" />
@@ -698,7 +696,6 @@ const ManageMatchPage = () => {
           </div>
         </div>
         <ManageMatchPageContent match={match} setMatch={setMatch} />
-      </div>
     </div>
     </PageTemplate>
   );

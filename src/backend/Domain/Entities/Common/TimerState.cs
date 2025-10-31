@@ -16,6 +16,10 @@ namespace Domain.Entities.Common
         public bool IsRunning { get; set; }
         public DateTime LastUpdated { get; set; }
 
+        // Maintain a monotonic view of elapsed time to avoid backward jumps
+        // when the system clock adjusts (e.g., NTP) while using DateTime.UtcNow
+        private TimeSpan _lastElapsed = TimeSpan.Zero;
+
         /// <summary>
         /// Calculates the elapsed time based on stored state
         /// </summary>
@@ -28,18 +32,29 @@ namespace Domain.Entities.Common
 
                 DateTime now = DateTime.UtcNow;
 
+                TimeSpan computed;
+
                 if (IsRunning)
                 {
-                    return (now - StartedAt.Value) - TotalPausedDuration;
+                    computed = (now - StartedAt.Value) - TotalPausedDuration;
                 }
                 else if (PausedAt.HasValue)
                 {
-                    return (PausedAt.Value - StartedAt.Value) - TotalPausedDuration;
+                    computed = (PausedAt.Value - StartedAt.Value) - TotalPausedDuration;
                 }
                 else
                 {
-                    return TimeSpan.Zero;
+                    computed = TimeSpan.Zero;
                 }
+
+                // Ensure monotonic non-decreasing elapsed time within this process
+                if (computed < _lastElapsed)
+                {
+                    return _lastElapsed;
+                }
+
+                _lastElapsed = computed;
+                return computed;
             }
         }
 
@@ -77,6 +92,7 @@ namespace Domain.Entities.Common
             LastResumedAt = DateTime.UtcNow;
             IsRunning = true;
             LastUpdated = DateTime.UtcNow;
+            // Do not reset _lastElapsed on resume; preserve monotonicity
         }
 
         /// <summary>
@@ -104,6 +120,7 @@ namespace Domain.Entities.Common
             TotalPausedDuration = TimeSpan.Zero;
             IsRunning = false;
             LastUpdated = DateTime.UtcNow;
+            _lastElapsed = TimeSpan.Zero;
         }
 
         /// <summary>

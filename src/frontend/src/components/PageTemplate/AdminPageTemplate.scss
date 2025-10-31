@@ -6,7 +6,7 @@
   &-container {
     display: flex;
     min-height: 100vh;
-    background-color: #0f2847; // Dark blue background
+    background-color: $color-blue-darkest;
   }
   
   &-content {

@@ -2,22 +2,8 @@
 @use '../../../../styles/variables' as *;
 .match-overview {
   min-height: 100vh;
-  background-color: $color-blue-background;
+  background-color: $color-white;
   width: 100%;
-
-  &__content {
-    max-width: 1152px;
-    margin: 0 auto;
-    margin-top: map.get($spacing, 'lg');
-    padding: 0 24px 24px;
-    background-color: $color-white;
-    border-radius: 8px;
-
-    
-    @media (max-width: 1152px) {
-      padding: 0 map.get($spacing, 'base') map.get($spacing, 'base');
-    }
-  }
 }
 
 // Page Header
@@ -144,10 +130,6 @@
   }
 }
 
-// Stats Section - Removed conflicting styles, now handled by MatchStatsCards component
-
-// Filter styles live in component stylesheet (MatchFilters.scss) to avoid duplication
-
 // Page-scoped styles for the create button in the filter bar
 .create-match-button {
   width: 174px;
@@ -170,10 +152,7 @@
 
 // Matches Section
 .matches-section {
-  // Remove the background and border since each section has its own styling
-  // The individual sections will handle their own styling
-  
-  // Add some spacing between sections
+
   .collapsible-match-section {
     margin-bottom: map.get($spacing, 'sm');
     

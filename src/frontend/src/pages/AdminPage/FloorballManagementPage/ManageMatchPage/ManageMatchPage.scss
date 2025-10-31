@@ -4,47 +4,34 @@
 .manage-match-page {
   /* Page-wide token to unify border color across all blocks */
   --mm-border-color: #D1D0D6;
-  .manage-match-content {
-    width: 1152px;
-    min-height: 1124px;
-    margin: 0 auto;
-    background: #FBFBFD;
-    border-radius: 8px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: stretch;
+  // Align with overview page back button behavior
+  .global-back-button-container { top: 0; }
+  .global-back-button { padding: 0; gap: 0; }
 
-    // Align with overview page back button behavior
-    .global-back-button-container { top: 0; }
-    .global-back-button { padding: 0; gap: 0; }
+  // Header structure mirroring overview page
+  .page-header {
+    margin-bottom: 8px;
 
-    // Header structure mirroring overview page
-    .page-header {
-      margin-bottom: 8px;
-
-      .page-header__top {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 4px;
-        min-height: 56px;
-      }
-
-      .page-header__main {
-        text-align: center;
-      }
+    .page-header__top {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 4px;
+      min-height: 56px;
     }
 
-    .page-title-compact {
-      margin: 0;
-      padding: 0;
-      color: $color-blue-deep; /* #16346B */
-      font-size: 22px;
-      font-weight: map.get($font-weights, 'medium'); /* 500 */
+    .page-header__main {
+      text-align: center;
     }
+  }
+
+  .page-title-compact {
+    margin: 0;
+    padding: 0;
+    color: $color-blue-deep;
+    font-size: 22px;
+    font-weight: map.get($font-weights, 'medium');
   }
   .manage-match-page-content {
     display: flex;

@@ -205,23 +205,20 @@ const MatchOverviewPage = () => {
 
   if (loading) {
     return (
+      <PageTemplate title={'Match Overview'}>
       <div className="match-overview">
-        <Navbar />
-        <div className="match-overview__content">
           <div className="loading-spinner">
             <div className="spinner"></div>
             <p>{t('floorball.matches.loading', 'Loading matches...')}</p>
           </div>
-        </div>
       </div>
       </PageTemplate>
     );
   }
 
   return (
+    <PageTemplate title={'Match Overview'}>
     <div className="match-overview">
-      <Navbar />
-      <div className="match-overview__content">
         {/* Header Section */}
         <div className="page-header">
           <div className="page-header__top">
@@ -322,7 +319,6 @@ const MatchOverviewPage = () => {
           )}
         </div>
 
-      </div>
     </div>
     </PageTemplate>
   );
