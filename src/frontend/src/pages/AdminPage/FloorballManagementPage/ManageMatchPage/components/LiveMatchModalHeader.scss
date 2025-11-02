@@ -12,8 +12,8 @@
   padding: 24px;
   box-sizing: border-box;
   border: 1px solid var(--mm-border-color, #D1D0D6);
-  background: #FBFBFD;
-  color: #111827;
+  background-color: $color-neutral-white;
+  color: $color-neutral-black;
   border-radius: 8px;
 
   .match-info {

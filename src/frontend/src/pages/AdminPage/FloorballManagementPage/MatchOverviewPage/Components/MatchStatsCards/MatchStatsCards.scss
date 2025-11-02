@@ -1,3 +1,6 @@
+@use 'sass:map';
+@use '../../../../../../styles/variables' as *;
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -7,7 +10,7 @@
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: $color-neutral-white;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 12px;

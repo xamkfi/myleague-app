@@ -30,7 +30,7 @@
   .events-list { flex: 1; min-height: 0; }
 
   .event-item {
-    padding: 8px 12px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 10px; transition: background-color 0.2s;
+    padding: 8px 12px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 10px; transition: background-color 0.2s; background: $color-neutral-white;
     &:hover { background: #f8fafc; }
     &:last-child { border-bottom: none; }
     &.goal { border-left: 4px solid #10b981; }
