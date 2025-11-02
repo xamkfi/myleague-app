@@ -1,15 +1,14 @@
 using Domain.Enums;
 using Domain.Enums.Floorball;
 using System.Collections.Generic;
-using Domain.EventSourcing;
-using Domain.DomainEvents.Floorball;
+
 
 namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a floorball match
 /// </summary>
-public class FloorballMatch : AggregateRoot
+public class FloorballMatch : BaseEntity
 {
     /// <summary>
     /// Gets the season this match belongs to
@@ -318,8 +317,6 @@ public class FloorballMatch : AggregateRoot
 
         Status = FloorballMatchStatus.Scheduled;
         
-        // Add domain event
-        AddDomainEvent(new FloorballMatchRescheduledEvent(Id, oldDateTime, newDateTime, oldVenue, Venue ?? string.Empty));
     }
 
     /// <summary>
@@ -333,9 +330,7 @@ public class FloorballMatch : AggregateRoot
 
         FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Postponed;
-        
-        // Add domain event
-        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
+
     }
 
     /// <summary>
@@ -358,9 +353,6 @@ public class FloorballMatch : AggregateRoot
         FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.InProgress;
 
-        //Add domain events
-        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
-        AddDomainEvent(new FloorballMatchStartedEvent(Id, DateTime.UtcNow));
     }
 
     /// <summary>
@@ -457,19 +449,6 @@ public class FloorballMatch : AggregateRoot
             }
         }
 
-        // Add domain event
-        AddDomainEvent(new FloorballGoalScoredEvent(
-            Id,
-            scoringTeam.Id,
-            scoringPlayer.Id,
-            periodNumber,
-            timeInSeconds,
-            WentToOvertime,
-            false, // isPenaltyShot
-            WentToShootout, // isShootout
-            assistingPlayer?.Id,
-            secondaryAssistingPlayer?.Id));
-
         return goalEvent;
     }
 
@@ -521,16 +500,7 @@ public class FloorballMatch : AggregateRoot
             description ?? string.Empty);
         _events.Add(penaltyEvent);
         
-        // Add domain event
-        AddDomainEvent(new FloorballPenaltyAssignedEvent(
-            Id,
-            team.Id,
-            player?.Id,
-            penaltyType,
-            minutes,
-            periodNumber,
-            timeInSeconds,
-            description ?? string.Empty));
+
 
         return penaltyEvent;
     }
@@ -580,15 +550,7 @@ public class FloorballMatch : AggregateRoot
             wasInShootout);
         _events.Add(saveEvent);
 
-        // Add domain event
-        AddDomainEvent(new FloorballSaveEvent(
-            Id,
-            team.Id,
-            goalie.Id,
-            periodNumber,
-            timeInSeconds,
-            wasInOvertime,
-            wasInShootout));
+
 
         return saveEvent;
     }
@@ -613,8 +575,7 @@ public class FloorballMatch : AggregateRoot
         _officials.Add(referee);
 
 
-        // Add domain event
-        AddDomainEvent(new FloorballOfficialAssignedEvent(Id, referee.Id));
+
 
     }
 
@@ -625,8 +586,7 @@ public class FloorballMatch : AggregateRoot
     {
         WentToOvertime = true;
         
-        // Add domain event
-        AddDomainEvent(new FloorballMatchOvertimeStartedEvent(Id));
+
     }
 
     /// <summary>
@@ -636,8 +596,6 @@ public class FloorballMatch : AggregateRoot
     {
         WentToShootout = true;
         
-        // Add domain event
-        AddDomainEvent(new FloorballMatchShootoutStartedEvent(Id));
     }
 
     /// <summary>
@@ -658,9 +616,6 @@ public class FloorballMatch : AggregateRoot
             referee.RecordMatchOfficiated();
         }
 
-        //Add domain events
-        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
-        AddDomainEvent(new FloorballMatchCompletedEvent(Id, HomeScore, AwayScore, WentToOvertime, WentToShootout));
     }
 
     /// <summary>
@@ -674,9 +629,7 @@ public class FloorballMatch : AggregateRoot
             
         FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Cancelled;
-        
-        // Add domain event
-        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
+
     }
 
     /// <summary>
@@ -721,15 +674,6 @@ public class FloorballMatch : AggregateRoot
             }
         }
 
-        // Add domain event for goal deletion
-        AddDomainEvent(new FloorballGoalDeletedEvent(
-            Id,
-            goalEvent.TeamId,
-            goalEvent.ScoringPlayerId,
-            goalEvent.PeriodNumber,
-            goalEvent.TimeInSeconds,
-            goalEvent.AssistingPlayerId));
-
         return goalEvent;
     }
 
@@ -753,16 +697,6 @@ public class FloorballMatch : AggregateRoot
         // Remove the penalty event
         _events.Remove(penaltyEvent);
 
-        // Add domain event for penalty deletion
-        AddDomainEvent(new FloorballPenaltyDeletedEvent(
-            Id,
-            penaltyEvent.TeamId,
-            penaltyEvent.PlayerId,
-            penaltyEvent.PenaltyType,
-            penaltyEvent.DurationInMinutes,
-            penaltyEvent.PeriodNumber,
-            penaltyEvent.TimeInSeconds,
-            penaltyEvent.Description));
 
         return penaltyEvent;
     }
@@ -806,7 +740,6 @@ public class FloorballMatch : AggregateRoot
 
         periodScore.Complete();
 
-        AddDomainEvent(new FloorballPeriodEndedEvent(Id, periodNumber, HomeScore, AwayScore, periodNumber == 3));
     }
 
     /// <summary>
@@ -828,8 +761,6 @@ public class FloorballMatch : AggregateRoot
         Guid? previousGoalieId = HomeActiveGoalieId;
         HomeActiveGoalieId = goalieId;
 
-        // Add domain event
-        AddDomainEvent(new FloorballGoalieChangedEvent(Id, HomeTeamId, previousGoalieId, goalieId));
     }
 
     /// <summary>
@@ -851,8 +782,6 @@ public class FloorballMatch : AggregateRoot
         Guid? previousGoalieId = AwayActiveGoalieId;
         AwayActiveGoalieId = goalieId;
 
-        // Add domain event
-        AddDomainEvent(new FloorballGoalieChangedEvent(Id, AwayTeamId, previousGoalieId, goalieId));
     }
 
     /// <summary>

@@ -1,7 +1,6 @@
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
 using Domain.Services.Floorball;
-using Domain.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +8,6 @@ using MyLeague.Infrastructure.Persistence;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
 using MyLeague.Infrastructure.Persistence.Repositories.Common;
-using MyLeague.Infrastructure.Persistence.EventStores;
 using MyLeague.Infrastructure.Persistence.UnitOfWork;
 using MyLeague.Infrastructure.HealthChecks;
 using Application.Interfaces.Common;
@@ -72,7 +70,6 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballMatchRepository, FloorballMatchRepository>();
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
             services.AddScoped<IFloorballSeasonDivisionRepository, FloorballSeasonDivisionRepository>();
-            services.AddScoped<IEventSourcedFloorballMatchRepository, EventSourcedFloorballMatchRepository>();
             services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
             services.AddScoped<IImageStorageService, AzureBlobImageStorageService>();
             services.AddScoped<IPersonNameProvider, PersonNameProvider>();
@@ -89,11 +86,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
             services.AddScoped<IFloorballUnitOfWork, FloorballUnitOfWork>();
 
-            // Add event sourcing
-            services.AddScoped<IFloorballEventStore, FloorballEventStore>();
-            services.AddScoped<ICommonEventStore, CommonEventStore>();
 
-            // Add domain events
+            // Add domain events / SignalR
             services.AddDomainEvents();
 
             // Add health checks

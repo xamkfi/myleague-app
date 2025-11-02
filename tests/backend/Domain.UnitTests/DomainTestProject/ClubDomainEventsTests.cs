@@ -4,8 +4,6 @@ using Domain.Entities.Hockey;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 using Domain.Enums.Hockey;
-using Domain.DomainEvents.Common;
-using Domain.DomainEvents.Floorball;
 
 namespace DomainTestProject;
 

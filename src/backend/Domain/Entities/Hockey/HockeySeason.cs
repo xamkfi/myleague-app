@@ -1,12 +1,11 @@
 ﻿using Domain.Enums.Hockey;
-using Domain.EventSourcing;
 
 namespace Domain.Entities.Hockey;
 
 /// <summary>
 /// Represents a Hockey season
 /// </summary>
-public class HockeySeason : AggregateRoot
+public class HockeySeason : BaseEntity
 {
     /// <summary>
     /// Gets the name of the season (e.g., "2023-2024")

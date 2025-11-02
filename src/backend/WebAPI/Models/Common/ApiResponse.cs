@@ -95,8 +95,9 @@ public record ApiResponse<T> : ApiResponse
     /// Creates an error response without data
     /// </summary>
     /// <param name="message">The error message</param>
+    /// <param name="errors">List of errors</param>
     /// <returns>An error API response</returns>
-    public static new ApiResponse<T> ErrorResponse(string message, List<string> errors)
+    public static ApiResponse<T> ErrorResponse(string message, List<string> errors)
     {
         return new ApiResponse<T> { Success = false, Message = message, Errors = errors };
     }

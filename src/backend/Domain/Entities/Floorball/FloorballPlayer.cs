@@ -1,9 +1,7 @@
 using Domain.Enums.Floorball;
 using Domain.Entities;
 using Domain.Entities.Common;
-using Domain.EventSourcing;
 using Domain.ValueObjects.Floorball;
-using Domain.DomainEvents.Floorball;
 using Domain.ValueObjects.Common;
 
 namespace Domain.Entities.Floorball;
@@ -11,7 +9,7 @@ namespace Domain.Entities.Floorball;
 /// <summary>
 /// Represents a floorball player in the system
 /// </summary>
-public class FloorballPlayer : AggregateRoot
+public class FloorballPlayer : BaseEntity
 {
     /// <summary>
     /// Gets the ID of the person this player profile belongs to (FK)
@@ -78,7 +76,6 @@ public class FloorballPlayer : AggregateRoot
         CareerGoals = 0;
         CareerAssists = 0;
         
-        AddDomainEvent(new FloorballPlayerRegisteredEvent(Id, personId, position));
     }
 
     /// <summary>
@@ -99,7 +96,6 @@ public class FloorballPlayer : AggregateRoot
         ArgumentNullException.ThrowIfNull(position);
         Position = position;
         
-        AddDomainEvent(new FloorballPlayerPositionUpdatedEvent(Id, position));
     }
     
     /// <summary>
@@ -109,7 +105,6 @@ public class FloorballPlayer : AggregateRoot
     {
         CareerGoals++;
         
-        AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.Goal));
     }
     
     /// <summary>
@@ -118,8 +113,6 @@ public class FloorballPlayer : AggregateRoot
     public void RecordAssist()
     {
         CareerAssists++;
-
-        AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.Assist));
     }
 
     /// <summary>
@@ -131,7 +124,6 @@ public class FloorballPlayer : AggregateRoot
         {
             CareerGoals--;
 
-            AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.GoalRemoved));
         }
     }
 
@@ -144,7 +136,6 @@ public class FloorballPlayer : AggregateRoot
         {
             CareerAssists--;
 
-            AddDomainEvent(new FloorballPlayerStatUpdatedEvent(Id, CareerGoals, CareerAssists, StatUpdateType.AssistRemoved));
         }
     }
     
