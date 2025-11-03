@@ -15,7 +15,7 @@ export default function TeamNavbar({ currentTab, onTabChange }: TeamNavbarProps)
       { id: 'summary', label: t('teamUserPage.summary'), icon: '🏠' },
       { id: 'results', label: t('teamUserPage.results') , icon: '📅' },
       { id: 'roster', label: t('teamUserPage.roster'), icon: '📋' },
-      { id: 'stats', label: t('teamUserPage.stats'), icon: '📊' },
+      { id: 'stats', label: t('teamUserPage.stats.Stats'), icon: '📊' },
       { id: 'standings', label: t('teamUserPage.standings'), icon: '🏆' }
    ];
 
