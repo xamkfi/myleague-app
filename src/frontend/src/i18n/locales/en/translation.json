@@ -735,6 +735,32 @@
     "loading": "Loading results…",
     "noResults": "No results found."
   },
+  "leaguePage": {
+    "title": "League",
+    "defaultTitle": "League",
+    "tabs": {
+      "summary": "Summary",
+      "standings": "Standings",
+      "results": "Results",
+      "fixtures": "Fixtures"
+    },
+    "summary": {
+      "title": "League Summary",
+      "leagueInformation": "League Information",
+      "season": "Season:",
+      "teams": "Teams:",
+      "matchesPlayed": "Matches Played:",
+      "goalsScored": "Goals Scored:",
+      "avgGoalsPerGame": "Avg Goals/Game:",
+      "loading": "Loading summary...",
+      "error": "Error: {{error}}",
+      "noData": "No data available"
+    },
+    "errors": {
+      "loadLeagueData": "Failed to load league data",
+      "loadMatches": "Failed to load matches"
+    }
+  },
   "roster": {
     "jerseyNumber": "#",
     "name": "Name",

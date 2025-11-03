@@ -728,5 +728,31 @@
   "searchBar": {
     "placeholder": "Hae...",
     "button": "Hae"
+  },
+  "leaguePage": {
+    "title": "Sarja",
+    "defaultTitle": "Sarja",
+    "tabs": {
+      "summary": "Yhteenveto",
+      "standings": "Sarjataulukko",
+      "results": "Tulokset",
+      "fixtures": "Otteluohjelma"
+    },
+    "summary": {
+      "title": "Sarjan Yhteenveto",
+      "leagueInformation": "Sarjan Tiedot",
+      "season": "Kausi:",
+      "teams": "Joukkueet:",
+      "matchesPlayed": "Pelatut ottelut:",
+      "goalsScored": "Tehdyt maalit:",
+      "avgGoalsPerGame": "Keskim. maalit/ottelu:",
+      "loading": "Ladataan yhteenvetoa...",
+      "error": "Virhe: {{error}}",
+      "noData": "Tietoja ei saatavilla"
+    },
+    "errors": {
+      "loadLeagueData": "Sarjan tietojen lataus epäonnistui",
+      "loadMatches": "Otteluiden lataus epäonnistui"
+    }
   }
 } 
