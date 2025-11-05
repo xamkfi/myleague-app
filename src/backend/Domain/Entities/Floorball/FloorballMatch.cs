@@ -624,7 +624,13 @@ public class FloorballMatch : AggregateRoot
     public void RecordOvertime()
     {
         WentToOvertime = true;
-        
+
+        // Create a periodscore for non-regular period (Overtime)
+        if (_periodScores.All(ps => ps.PeriodNumber != 4))
+        {
+            _periodScores.Add(new FloorballPeriodScore(Id, 4, HomeTeamId, AwayTeamId));
+        }
+
         // Add domain event
         AddDomainEvent(new FloorballMatchOvertimeStartedEvent(Id));
     }
@@ -635,7 +641,13 @@ public class FloorballMatch : AggregateRoot
     public void RecordShootout()
     {
         WentToShootout = true;
-        
+
+        // Create a periodscore for non-regular period (Shootout)
+        if (_periodScores.All(ps => ps.PeriodNumber != 5))
+        {
+            _periodScores.Add(new FloorballPeriodScore(Id, 5, HomeTeamId, AwayTeamId));
+        }
+
         // Add domain event
         AddDomainEvent(new FloorballMatchShootoutStartedEvent(Id));
     }
