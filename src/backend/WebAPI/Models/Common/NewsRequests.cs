@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Models.Common
 {
@@ -172,19 +173,8 @@ namespace WebAPI.Models.Common
     /// <summary>
     /// Request model for getting paginated news articles
     /// </summary>
-    public record GetNewsArticlesRequest
+    public record GetNewsArticlesRequest : PagedRequestBase
     {
-        /// <summary>
-        /// Gets the page number (1-based)
-        /// </summary>
-        [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
-        public int Page { get; init; } = 1;
-
-        /// <summary>
-        /// Gets the number of items per page
-        /// </summary>
-        [Range(1, 100, ErrorMessage = "Page size must be between 1 and 100")]
-        public int PageSize { get; init; } = 10;
 
         /// <summary>
         /// Gets the optional category filter

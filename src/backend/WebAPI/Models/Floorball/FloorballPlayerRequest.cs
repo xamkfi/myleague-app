@@ -1,26 +1,15 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using Domain.Enums.Floorball;
+using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Models.Floorball
 {
     /// <summary>
     /// Request model for getting paginated floorball players
     /// </summary>
-    public record GetFloorballPlayersRequest
+    public record GetFloorballPlayersRequest : PagedRequestBase
     {
-        /// <summary>
-        /// Gets the page number (1-based)
-        /// </summary>
-        [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
-        public int Page { get; init; } = 1;
-
-        /// <summary>
-        /// Gets the number of items per page (0 means use default)
-        /// </summary>
-        [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
-        public int PageSize { get; init; } = 0;
-
         /// <summary>
         /// Gets the active status filter (null = all, true = active only, false = inactive only)
         /// </summary>
@@ -45,19 +34,8 @@ namespace WebAPI.Models.Floorball
     /// <summary>
     /// Request model for getting paginated active floorball players
     /// </summary>
-    public record GetActiveFloorballPlayersRequest
+    public record GetActiveFloorballPlayersRequest : PagedRequestBase
     {
-        /// <summary>
-        /// Gets the page number (1-based)
-        /// </summary>
-        [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
-        public int Page { get; init; } = 1;
-
-        /// <summary>
-        /// Gets the number of items per page (0 means use default)
-        /// </summary>
-        [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
-        public int PageSize { get; init; } = 0;
 
         /// <summary>
         /// Gets the position filter
