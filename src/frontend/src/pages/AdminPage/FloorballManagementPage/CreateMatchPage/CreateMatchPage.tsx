@@ -16,13 +16,11 @@ import '../MatchOverviewPage/MatchOverviewPage.scss';
 
 const CreateMatchPage = () => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleCreateMatch = async (matchData: CreateFloorballMatchRequest) => {
     try {
       setLoading(true);
-      setError(null);
 
       const response = await floorballMatchService.create(matchData);
       
@@ -32,8 +30,6 @@ const CreateMatchPage = () => {
 
     } catch (error) {
       console.error('Error creating match:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create match';
-      setError(errorMessage);
       throw error;
     } finally {
       setLoading(false);
@@ -63,15 +59,7 @@ const CreateMatchPage = () => {
           </div>
           <div className="header-right"></div>
         </div>
-
-        {error && (
-          <div className="error-alert page-error">
-            <span className="error-icon">⚠️</span>
-            <span className="error-text">{error}</span>
-            <button onClick={() => setError(null)} className="error-close">×</button>
-          </div>
-        )}
-
+        
         <div className="form-container">
           <MatchForm
             mode="create"

@@ -13,6 +13,7 @@ import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
 import BackButton from '../../../../../components/BackButton/BackButton';
 import './PersonForm.scss';
 import { SPORTS, type SportType } from '../../../../../constants/sports';
+import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
 interface PersonFormProps {
   mode?: 'standalone' | 'embedded';
@@ -130,9 +131,10 @@ const PersonForm = ({
           position: undefined,
           jerseyNumber: undefined
         });
-      } catch (error) {
-        console.error('Failed to fetch person:', error);
-        setError(t('admin.persons.errors.fetchFailed'));
+      } catch (err) {
+        console.error('Failed to fetch person:', err);
+        setError(String(err));
+        console.log(err)
       } finally {
         setLoading(false);
       }
@@ -434,7 +436,7 @@ const PersonForm = ({
       }
     } catch (error) {
       console.error('Failed to save person:', error);
-              setError(t('admin.persons.errors.saveFailed'));
+              setError(String(error));
     } finally {
       setLoading(false);
     }
@@ -851,7 +853,7 @@ const PersonForm = ({
         </div>
       )}
 
-      {error && <div className="form-error">{error}</div>}
+      <ErrorPopup message={error} />
 
       <div className="form-actions">
         <button

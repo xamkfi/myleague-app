@@ -7,6 +7,7 @@ import { personApi } from '../../../../../api/admin/personApi';
 import { floorballRefereeService } from '../../../../../api/floorball/floorballRefereeService';
 import type { Person } from '../../../../../types/admin/personTypes';
 import './CreateRefereePage.scss';
+import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
 const CreateRefereePage = () => {
   const { t } = useTranslation();
@@ -217,12 +218,7 @@ const CreateRefereePage = () => {
               />
             </div>
 
-            {/* Error Message */}
-            {error && (
-              <div className="error-message">
-                <p>{error}</p>
-              </div>
-            )}
+            <ErrorPopup message={error} />
 
             {/* Persons List */}
             <div className="persons-container">
@@ -266,12 +262,7 @@ const CreateRefereePage = () => {
           </>
         ) : (
           <form onSubmit={handleCreateReferee} className="create-referee-form">
-            {/* Error Message */}
-            {error && (
-              <div className="error-message">
-                <p>{error}</p>
-              </div>
-            )}
+            {/* Error moved to global ErrorPopup */}
 
             <div className="form-group">
               <label htmlFor="licenseIssueDate">

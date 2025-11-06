@@ -56,24 +56,28 @@ $color-red-primary: #F8403C;
 $color-red-muted: #D74440;
 $color-red-light: #F48280;
 $color-red-pale: #F9BAB8;
+$color-red-almost: #F9EDED;
 
 // Yellows
 $color-yellow-primary: #FFBB29;
 $color-yellow-muted: #DE921A;
 $color-yellow-light: #FBCF6F;
 $color-yellow-pale: #FFEFB8;
+$color-yellow-almost: #FFF9E3;
 
 // Greens
 $color-green-primary: #2FCC6F;
 $color-green-muted: #1E9850;
 $color-green-light: #6DD698;
 $color-green-pale: #A9E3C1;
+$color-green-almost: #E8F9F1;
 
 // Blues
 $color-blue-secondary: #447FEE;
 $color-blue-secondary-muted: #2F60BA;
 $color-blue-secondary-light: #85A8EA;
 $color-blue-secondary-pale: #BBCEF2;
+$color-blue-secondary-almost: #EAF1F9;
 
 // Typography
 $font-sizes: (
@@ -91,6 +95,7 @@ $font-weights: (
   'light': 400,
   'medium': 500,
   'bold': 600,
+  'bolder': 700,
   'extrabold': 800,
 );
 
@@ -116,6 +121,7 @@ $sidebar-width: 280px;
 $border-radius: (
   'sm': 4px,
   'lg': 8px,
+  'lg-plus': 16px,
   'xl': 24px,
   'full': 50%
 );

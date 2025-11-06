@@ -7,6 +7,7 @@ import { floorballTeamService } from '../../../../api/floorball/floorballTeamSer
 import type { FloorballTeam, PaginatedApiResponse } from '../../../../types/floorball/floorballTypes';
 import TeamsTable from './components/TeamsTable';
 import './FloorballTeamsPage.scss';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
 const FloorballTeamsPage = () => {
   const { t } = useTranslation();
@@ -203,11 +204,7 @@ const FloorballTeamsPage = () => {
         </div>
 
         {/* Error message */}
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
+        <ErrorPopup message={error} />
 
         {/* Teams table */}
         <TeamsTable
