@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using WebAPI.Models.Floorball;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using Domain.Enums.Floorball;
 
 namespace WebAPI.Controllers.Floorball
