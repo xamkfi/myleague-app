@@ -27,7 +27,7 @@ public class RecordGoalCommandValidator : AbstractValidator<RecordGoalCommand>
             .When(x => x.AssistingPlayerId.HasValue);
 
         RuleFor(x => x.PeriodNumber)
-            .InclusiveBetween(1, 3).WithMessage("Period number must be between 1 and 3");
+            .InclusiveBetween(1, 5).WithMessage("Period number must be between 1 and 5 (4 for overtime, 5 for shootout)");
 
         RuleFor(x => x.TimeInSeconds)
             .InclusiveBetween(0, 1200).WithMessage("Time must be between 0 and 1200 seconds (20 minutes)");
