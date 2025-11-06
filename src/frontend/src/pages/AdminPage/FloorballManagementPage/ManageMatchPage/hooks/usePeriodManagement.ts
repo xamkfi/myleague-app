@@ -115,9 +115,17 @@ export const usePeriodManagement = ({
       
       console.log(`Starting period ${nextPeriodToStart} for match ${currentMatch.id}`);
       
-      // Start the period via API
-      await floorballMatchEventService.startPeriod(currentMatch.id, nextPeriodToStart);
-      console.log(`Started period ${nextPeriodToStart} for match ${currentMatch.id}`);
+      // Start the period via API (server-managed for 1; record phase for 4/5)
+      if (nextPeriodToStart === 4) {
+        await floorballMatchEventService.recordOvertime(currentMatch.id);
+        console.log(`Recorded overtime for match ${currentMatch.id}`);
+      } else if (nextPeriodToStart === 5) {
+        await floorballMatchEventService.recordShootout(currentMatch.id);
+        console.log(`Recorded shootout for match ${currentMatch.id}`);
+      } else {
+        await floorballMatchEventService.startPeriod(currentMatch.id, nextPeriodToStart);
+        console.log(`Started period ${nextPeriodToStart} for match ${currentMatch.id}`);
+      }
       
       // Mark this period as started
       setStartedPeriods(prev => new Set([...prev, nextPeriodToStart]));
@@ -165,6 +173,8 @@ export const usePeriodManagement = ({
         isRunning: false 
       };
       setLocalClock(newClock);
+      // Ensure local state reflects that OT has started
+      setStartedPeriods(prev => new Set([...prev, 4]));
       if (onStateUpdate) {
         onStateUpdate({
           clock: newClock
@@ -197,6 +207,8 @@ export const usePeriodManagement = ({
         isRunning: false 
       };
       setLocalClock(newClock);
+      // Ensure local state reflects that shootout has started
+      setStartedPeriods(prev => new Set([...prev, 5]));
       if (onStateUpdate) {
         onStateUpdate({
           clock: newClock

@@ -88,11 +88,12 @@ function NewsPage() {
     : undefined;
 
   return (
-    <PageTemplate title={t('nav.news')} >
-      <div
-        className={`news-main-bg${mainNews ? ' has-main-image' : ''}`}
-        style={mainNewsBgStyle}
-      >
+    <div className="news-page">
+      <PageTemplate title={t('nav.news')} >
+        <div
+          className={`news-main-bg${mainNews ? ' has-main-image' : ''}`}
+          style={mainNewsBgStyle}
+        >
         <div className="news-main-section">
           {mainNews && (
             <div className="main-news-card">
@@ -116,34 +117,47 @@ function NewsPage() {
         </div>
       </div>
 
-      <div className="news-list-section container">
-      <h1 className="news-list-title">KAIKKI UUTISET</h1>
-        <NewsFilter onFilterChange={setFilters} />
+      <div className="news-list-section">
+        <h1 className="news-list-title">KAIKKI UUTISET</h1>
+        
+        {/* News Filter */}
+        <div className="news-filter-wrapper">
+          <NewsFilter onFilterChange={setFilters} />
+        </div>
+        
+        {/* News Grid */}
         <div className="news-grid">
           {isLoading ? (
             Array.from({ length: pageSize }, (_, index) => (
               <NewsCardSkeleton key={`skeleton-${index}`} />
             ))
           ) : otherNews.length === 0 ? (
-            <p>{t('newsPage.noNewsFound', 'Ei uutisia vastaaville hakuehdoille.')}</p>
+            <div className="no-news-message">
+              <p>{t('newsPage.noNewsFound', 'Ei uutisia vastaaville hakuehdoille.')}</p>
+            </div>
           ) : (
             otherNews.map((item) => (
               <NewsCard key={item.id} news={item} />
             ))
           )}
         </div>
+        
+        {/* Pagination */}
         {totalCount > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={totalCount}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={setPageSize}
-          />
+          <div className="news-pagination-wrapper">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
+          </div>
         )}
       </div>
-    </PageTemplate>
+      </PageTemplate>
+    </div>
   );
 }
 

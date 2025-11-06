@@ -2,18 +2,16 @@ import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes'
 
 export function formatDate(dateString: string) {
   const date = new Date(dateString);
-  const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
-  const day = date.toLocaleDateString('en-US', { day: 'numeric' });
-  const month = date.toLocaleDateString('en-US', { month: 'short' });
-  const time = date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
+  const weekday = date.toLocaleDateString('fi-FI', { weekday: 'long' });
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const time = `klo: ${hours}:${minutes}`;
   
   return {
     weekday,
-    date: `${day} ${month}`,
+    date: `${day}.${month}`,
     time
   };
 }

@@ -5,7 +5,7 @@ import './FloorballSeasonsPage.scss';
 import { useSeasonsManagement } from './hooks/useSeasonsManagement';
 import { SeasonsPageHeader } from './components/SeasonsPageHeader';
 import { SeasonsFilters } from './components/SeasonsFilters';
-import { ErrorMessage } from './components/ErrorMessage';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { LoadingState } from './components/LoadingState';
 import { SeasonsContent } from './components/SeasonsContent';
 import BackButton from '../../../../components/BackButton/BackButton';
@@ -64,7 +64,7 @@ const FloorballSeasonsPage = () => {
           onCreateSeason={() => navigate('/admin/floorball/seasons/create')}
         />
 
-        {error && <ErrorMessage message={error} />}
+        <ErrorPopup message={error} />
 
         <SeasonsFilters
           showActiveOnly={showActiveOnly}

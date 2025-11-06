@@ -1,0 +1,95 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../styles/common' as *;
+
+.results-section, .fixtures-section {
+  background: $color-white;
+  border-radius: map.get($border-radius, 'sm');
+  padding: map.get($spacing, 'lg');
+  box-shadow: 0 2px 4px $color-box-shadow;
+  .matches-grid {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xs');
+  }
+
+  .loading-state,
+  .error-state,
+  .no-matches {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #666;
+
+    .retry-button {
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      background: #1e40af;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: map.get($font-sizes, 'sm');
+    }
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+
+    .pagination-btn {
+      padding: 0.5rem 1rem;
+      background: #1e40af;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: map.get($font-sizes, 'sm');
+    }
+
+    .page-info {
+      color: #666;
+      font-weight: 500;
+    }
+  }
+
+  .results-header, .fixtures-header {
+    text-align: left;
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .results-season-header, .fixtures-season-header {
+    display: flex;
+    align-items: center;
+    background: $color-gradient-blue;
+    color: #f6fbff;
+    font-weight: 600;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: map.get($font-sizes, 'md');
+    margin: map.get($spacing, 'xs') 0;
+  }
+}
+
+// Mobile-first match card tweaks to align with provided design
+@media (max-width: 768px) {
+  .results-section, .fixtures-section {
+    padding: map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'lg');
+    .matches-grid {
+      gap: map.get($spacing, 'xs');
+    }
+
+    .pagination {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+}
+
+

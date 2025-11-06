@@ -31,6 +31,7 @@ export default function TeamNavbar({ currentTab, onTabChange }: TeamNavbarProps)
                key={tab.id}
                className={`team-navbar-btn ${activeTab === tab.id ? 'active' : ''}`}
                onClick={() => handleTabClick(tab.id)}
+               data-icon={tab.icon}
             >
                <span>{tab.icon} {tab.label}</span>
             </div>
