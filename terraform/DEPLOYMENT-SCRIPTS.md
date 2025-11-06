@@ -19,20 +19,20 @@ Wrapper script that runs both backend and frontend deployments sequentially.
 
 ```powershell
 # Deploy backend only
-.\terraform\deploy-backend.ps1 -AcrName myleagueacrom63tv -Tag latest
+.\scripts\deploy-backend.ps1 -AcrName myleagueacrom63tv -Tag latest
 
 # Deploy frontend only
-.\terraform\deploy-frontend.ps1 -AcrName myleagueacrom63tv -Tag latest -ApiUrl https://myleague-backend.xyz.azurecontainerapps.io
+.\scripts\deploy-frontend.ps1 -AcrName myleagueacrom63tv -Tag latest -ApiUrl https://myleague-backend.xyz.azurecontainerapps.io
 
 # Deploy both
-.\terraform\deploy-all.ps1 -AcrName myleagueacrom63tv -Tag latest -ApiUrl https://myleague-backend.xyz.azurecontainerapps.io
+.\scripts\deploy-all.ps1 -AcrName myleagueacrom63tv -Tag latest -ApiUrl https://myleague-backend.xyz.azurecontainerapps.io
 ```
 
 ### With Azure Container Apps Deployment
 
 ```powershell
 # Deploy backend and update Container App
-.\terraform\deploy-backend.ps1 `
+.\scripts\deploy-backend.ps1 `
     -AcrName myleagueacrom63tv `
     -Tag latest `
     -ResourceGroup myleague-rg `
@@ -40,7 +40,7 @@ Wrapper script that runs both backend and frontend deployments sequentially.
     -Deploy
 
 # Deploy frontend and update Container App
-.\terraform\deploy-frontend.ps1 `
+.\scripts\deploy-frontend.ps1 `
     -AcrName myleagueacrom63tv `
     -Tag latest `
     -ResourceGroup myleague-rg `
@@ -49,7 +49,7 @@ Wrapper script that runs both backend and frontend deployments sequentially.
     -Deploy
 
 # Deploy both with Container Apps update
-.\terraform\deploy-all.ps1 `
+.\scripts\deploy-all.ps1 `
     -AcrName myleagueacrom63tv `
     -Tag latest `
     -ResourceGroup myleague-rg `
@@ -64,7 +64,7 @@ Wrapper script that runs both backend and frontend deployments sequentially.
 For frontend, you can build directly in Azure Container Registry instead of locally:
 
 ```powershell
-.\terraform\deploy-frontend.ps1 `
+.\scripts\deploy-frontend.ps1 `
     -AcrName myleagueacrom63tv `
     -Tag latest `
     -ApiUrl https://myleague-backend.xyz.azurecontainerapps.io `

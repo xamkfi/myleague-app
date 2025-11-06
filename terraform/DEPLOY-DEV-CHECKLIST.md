@@ -140,10 +140,10 @@ $ACR_NAME = terraform output -raw container_registry_name
 
 # Deploy backend
 cd ..
-.\terraform\deploy-backend.ps1 -AcrName $ACR_NAME
+.\scripts\deploy-backend.ps1 -AcrName $ACR_NAME
 
 # Deploy frontend
-.\terraform\deploy-frontend.ps1 -AcrName $ACR_NAME
+.\scripts\deploy-frontend.ps1 -AcrName $ACR_NAME
 
 # Go back to terraform directory
 cd terraform

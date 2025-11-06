@@ -78,6 +78,7 @@ public static class ServiceCollectionExtensions
             };
 
             // Add configured origins from appsettings or environment variables
+            bool allowAllOrigins = false;
             if (configuration != null)
             {
                 string? corsOrigins = configuration["Cors:AllowedOrigins"];
@@ -85,14 +86,23 @@ public static class ServiceCollectionExtensions
 
                 if (!string.IsNullOrEmpty(corsOrigins))
                 {
-                    string[] origins = corsOrigins.Split(';', StringSplitOptions.RemoveEmptyEntries);
-                    foreach (string origin in origins)
+                    // Check if wildcard is specified
+                    if (corsOrigins.Trim() == "*")
                     {
-                        string trimmedOrigin = origin.Trim();
-                        if (!string.IsNullOrEmpty(trimmedOrigin) && !allowedOrigins.Contains(trimmedOrigin))
+                        allowAllOrigins = true;
+                        Console.WriteLine("[CORS] Wildcard (*) detected - allowing all origins");
+                    }
+                    else
+                    {
+                        string[] origins = corsOrigins.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                        foreach (string origin in origins)
                         {
-                            allowedOrigins.Add(trimmedOrigin);
-                            Console.WriteLine($"[CORS] Added origin: {trimmedOrigin}");
+                            string trimmedOrigin = origin.Trim();
+                            if (!string.IsNullOrEmpty(trimmedOrigin) && !allowedOrigins.Contains(trimmedOrigin))
+                            {
+                                allowedOrigins.Add(trimmedOrigin);
+                                Console.WriteLine($"[CORS] Added origin: {trimmedOrigin}");
+                            }
                         }
                     }
                 }
@@ -106,10 +116,22 @@ public static class ServiceCollectionExtensions
 
             options.AddPolicy("AllowAll", policy =>
             {
-                policy.WithOrigins(allowedOrigins.ToArray())
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials(); // Required for SignalR
+                if (allowAllOrigins)
+                {
+                    // Allow all origins (development mode)
+                    policy.SetIsOriginAllowed(_ => true)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials(); // Required for SignalR
+                }
+                else
+                {
+                    // Allow specific origins (production mode)
+                    policy.WithOrigins(allowedOrigins.ToArray())
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials(); // Required for SignalR
+                }
             });
 
             // You can add more specific policies here for production

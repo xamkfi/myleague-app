@@ -171,3 +171,33 @@ variable "jumpbox_ssh_public_key" {
   default     = ""
 }
 
+variable "jumpbox_allowed_source_ips" {
+  description = "List of IP addresses allowed to SSH to jump box (empty list allows all)"
+  type        = list(string)
+  default     = []
+}
+
+variable "cors_allowed_origins" {
+  description = "CORS allowed origins for backend (use * for dev, specific URLs for prod)"
+  type        = string
+  default     = "*"
+}
+
+variable "postgres_version" {
+  description = "PostgreSQL server version"
+  type        = string
+  default     = "16"
+}
+
+variable "postgres_backup_retention_days" {
+  description = "Number of days to retain PostgreSQL backups"
+  type        = number
+  default     = 7
+}
+
+variable "postgres_geo_redundant_backup" {
+  description = "Enable geo-redundant backups for PostgreSQL"
+  type        = bool
+  default     = false
+}
+

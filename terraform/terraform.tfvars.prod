@@ -38,6 +38,17 @@ enable_jumpbox         = true
 jumpbox_vm_size        = "Standard_B1s"  # Cheapest option is fine
 jumpbox_admin_username = "azureuser"
 jumpbox_ssh_public_key = ""  # Add your SSH public key here for better security
+jumpbox_allowed_source_ips = []  # Restrict SSH to specific IPs (e.g., ["1.2.3.4", "5.6.7.8"])
+
+# CORS Configuration - Strict for production
+# After first deployment, update with actual frontend URL:
+# cors_allowed_origins = "https://myleague-frontend.XXXX.azurecontainerapps.io"
+cors_allowed_origins = "*"  # Temporary; replace with actual frontend URL after first apply
+
+# PostgreSQL Configuration
+postgres_version                 = "16"
+postgres_backup_retention_days   = 30  # Longer retention for production
+postgres_geo_redundant_backup    = true  # Enable geo-redundancy for production
 
 tags = {
   Environment = "Production"

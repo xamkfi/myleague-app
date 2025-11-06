@@ -46,11 +46,18 @@ allowed_ip_addresses = ["123.45.67.89"]  # Replace with YOUR IP
 
 ```bash
 cd terraform
-terraform init  # First time only
+
+# Initialize Terraform (first time only)
+# Note: For dev, we use local state (no backend config needed)
+terraform init
+
+# Deploy infrastructure
 terraform apply -var-file="terraform.tfvars.dev"
 ```
 
 Type `yes` when prompted.
+
+**Note on remote state**: The `backend.tfvars` file is optional for development. It's only needed for team collaboration or production. See `backend.tfvars` for setup instructions.
 
 ## Connect to Database (DBeaver)
 

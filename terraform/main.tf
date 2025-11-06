@@ -10,15 +10,22 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.9"
+    }
   }
 
-  backend "azurerm" {
-    # Configure backend storage in terraform/backend.tfvars
-    # resource_group_name  = "terraform-state-rg"
-    # storage_account_name = "tfstateq8zi4k"
-    # container_name       = "tfstate"
-    # key                  = "myleague-app.terraform.tfstate"
-  }
+  # Backend for remote state (optional - only needed for team/production)
+  # For development: Use local state (default) - no backend configuration needed
+  # To enable remote state: Uncomment this block and run: terraform init -backend-config=backend.tfvars
+  # backend "azurerm" {
+  #   # Configure backend storage in terraform/backend.tfvars
+  #   # resource_group_name  = "terraform-state-rg"
+  #   # storage_account_name = "tfstateq8zi4k"
+  #   # container_name       = "tfstate"
+  #   # key                  = "myleague-app.terraform.tfstate"
+  # }
 }
 
 provider "azurerm" {
@@ -62,7 +69,7 @@ resource "azurerm_postgresql_flexible_server" "main" {
   name                   = "${var.postgres_server_name}-${random_string.suffix.result}"
   resource_group_name    = azurerm_resource_group.main.name
   location               = azurerm_resource_group.main.location
-  version                = "16"
+  version                = var.postgres_version
   
   # VNet integration only when public access is disabled (production mode)
   delegated_subnet_id    = var.enable_postgres_public_access ? null : azurerm_subnet.postgres.id
@@ -70,6 +77,10 @@ resource "azurerm_postgresql_flexible_server" "main" {
   
   administrator_login    = var.postgres_admin_user
   administrator_password = random_password.postgres_password.result
+  
+  # Backup configuration
+  backup_retention_days        = var.postgres_backup_retention_days
+  geo_redundant_backup_enabled = var.postgres_geo_redundant_backup
   
   # Zone must be set if it was set before - keep existing zone or remove via lifecycle
   # Using lifecycle ignore_changes to prevent zone modification issues
@@ -80,7 +91,12 @@ resource "azurerm_postgresql_flexible_server" "main" {
   storage_mb = var.postgres_storage_mb
   sku_name   = var.postgres_sku_name
 
-  # High availability is disabled by default - omit the block to disable it
+  # Explicitly disable high availability for cost savings
+  # Uncomment and configure for production high availability
+  # high_availability {
+  #   mode                      = "ZoneRedundant"
+  #   standby_availability_zone = "2"
+  # }
 
   # Public access control
   # Production: private VNet access only (more secure)
@@ -171,23 +187,15 @@ resource "azurerm_virtual_network" "main" {
 
 # Subnet for Container Apps
 # Container Apps environment requires /23 subnet (not /24) for proper scaling
-# Note: Delegation will be automatically added by Azure when the environment is created
-# with infrastructure_subnet_id - we don't set it in Terraform to avoid conflicts
 resource "azurerm_subnet" "container_apps" {
   name                 = "container-apps-subnet-v2"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.0.4.0/23"]  # Using different address range to avoid overlap
 
-  # Remove delegation from Terraform - Azure will handle it automatically
-  # when the Container Apps Environment is created with this subnet
-  # delegation {
-  #   name = "Microsoft.App/environments"
-  #   service_delegation {
-  #     name    = "Microsoft.App/environments"
-  #     actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
-  #   }
-  # }
+  # NOTE: Do not add explicit delegation block here
+  # Azure Container Apps automatically delegates the subnet when the Container App Environment is created
+  # Adding explicit delegation causes "SubnetIsDelegated" errors
 }
 
 # Subnet for PostgreSQL
@@ -325,11 +333,13 @@ resource "azurerm_container_app" "backend" {
         value = azurerm_user_assigned_identity.main.client_id
       }
 
-      # CORS allowed origins - includes frontend URL
+      # CORS allowed origins
       # Format: semicolon-separated list of origins
+      # Use variable to avoid circular dependency with frontend
+      # Set to "*" for development, or specific origin(s) for production
       env {
         name  = "Cors__AllowedOrigins"
-        value = "https://${azurerm_container_app.frontend.ingress[0].fqdn}"
+        value = var.cors_allowed_origins
       }
 
       # Connection strings will be loaded from Key Vault by the backend application
@@ -389,14 +399,9 @@ resource "azurerm_container_app" "frontend" {
       cpu    = var.frontend_cpu
       memory = var.frontend_memory
 
-      # Note: Vite environment variables (VITE_*) are embedded at build time
-      # For runtime configuration, use a config file or window object
-      # This env var is here for reference but won't work for Vite apps at runtime
-      # Use stable ingress FQDN instead of latest_revision_fqdn to avoid Terraform inconsistencies
-      env {
-        name  = "API_URL"
-        value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
-      }
+      # Note: Vite environment variables (VITE_*) are embedded at build time, not runtime
+      # The API URL must be provided as a build argument (VITE_API_URL) when building the image
+      # See scripts/deploy-frontend.ps1 for how to pass the API URL at build time
     }
   }
 
@@ -433,31 +438,9 @@ resource "azurerm_key_vault" "main" {
   sku_name                   = "standard"
   soft_delete_retention_days = 7
   purge_protection_enabled   = false
-
-  # Enable access policy for the managed identity
-  access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = azurerm_user_assigned_identity.main.principal_id
-
-    secret_permissions = [
-      "Get",
-      "List"
-    ]
-  }
-
-  # Enable access for current user (to write secrets via Terraform)
-  access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
-
-    secret_permissions = [
-      "Get",
-      "Set",
-      "Delete",
-      "List",
-      "Purge"
-    ]
-  }
+  
+  # Use RBAC for access control (modern approach, more scalable than access policies)
+  enable_rbac_authorization  = true
 
   tags = var.tags
 }
@@ -475,7 +458,8 @@ resource "azurerm_key_vault_secret" "postgres_connection_string" {
   depends_on = [
     azurerm_key_vault.main,
     azurerm_postgresql_flexible_server.main,
-    azurerm_postgresql_flexible_server_database.main
+    azurerm_postgresql_flexible_server_database.main,
+    time_sleep.wait_for_rbac
   ]
 }
 
@@ -491,16 +475,32 @@ resource "azurerm_key_vault_secret" "app_insights_connection_string" {
 
   depends_on = [
     azurerm_key_vault.main,
-    azurerm_application_insights.main
+    azurerm_application_insights.main,
+    time_sleep.wait_for_rbac
   ]
 }
 
 # Grant Container App managed identity access to Key Vault
-# Using role-based access (more secure than access policies)
+# Using role-based access (more secure and scalable than access policies)
 resource "azurerm_role_assignment" "key_vault_secrets_user" {
   scope                = azurerm_key_vault.main.id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_user_assigned_identity.main.principal_id
+}
+
+# Grant Terraform operator (current user) access to manage Key Vault secrets
+resource "azurerm_role_assignment" "key_vault_administrator" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Administrator"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# Wait for RBAC role assignment to propagate
+# Azure AD can take several minutes to propagate role assignments
+resource "time_sleep" "wait_for_rbac" {
+  depends_on = [azurerm_role_assignment.key_vault_administrator]
+  
+  create_duration = "60s"  # Wait 60 seconds for RBAC to propagate
 }
 
 # Random password for PostgreSQL
@@ -532,7 +532,7 @@ resource "azurerm_network_security_group" "jumpbox" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  # Allow SSH from anywhere (you can restrict this to your IP for better security)
+  # Allow SSH from specified IPs (or all if list is empty)
   security_rule {
     name                       = "AllowSSH"
     priority                   = 1001
@@ -541,7 +541,7 @@ resource "azurerm_network_security_group" "jumpbox" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefix      = "*"  # Change to your IP for better security
+    source_address_prefixes    = length(var.jumpbox_allowed_source_ips) > 0 ? var.jumpbox_allowed_source_ips : ["*"]
     destination_address_prefix = "*"
   }
 

@@ -93,9 +93,12 @@ terraform/
 ├── terraform.tfvars.dev       # Development configuration
 ├── terraform.tfvars.prod      # Production configuration
 ├── deploy-dev.ps1             # Automated dev deployment script
-├── deploy-backend.ps1         # Backend image build/deploy script
-├── deploy-frontend.ps1        # Frontend image build/deploy script
 └── DEPLOYMENT-GUIDE.md        # This file
+
+scripts/
+├── deploy-backend.ps1         # Backend image build/deploy script
+├── deploy-frontend.ps1       # Frontend image build/deploy script
+└── deploy-all.ps1            # Deploy both backend and frontend
 ```
 
 ---
@@ -169,7 +172,7 @@ Write-Host "ACR Name: $acrName"
 
 ```powershell
 cd ..
-.\terraform\deploy-backend.ps1 -AcrName $acrName
+.\scripts\deploy-backend.ps1 -AcrName $acrName
 ```
 
 #### 4c. Build and Push Frontend
@@ -180,7 +183,7 @@ $backendUrl = terraform output -raw backend_url
 $apiUrl = "$backendUrl/api"
 
 # Build frontend with API URL embedded
-.\terraform\deploy-frontend.ps1 -AcrName $acrName -ApiUrl $apiUrl
+.\scripts\deploy-frontend.ps1 -AcrName $acrName -ApiUrl $apiUrl
 ```
 
 ### Step 5: Deploy Container Apps
@@ -268,12 +271,12 @@ $acrName = terraform output -raw container_registry_name
 
 # Build backend
 cd ..
-.\terraform\deploy-backend.ps1 -AcrName $acrName
+.\scripts\deploy-backend.ps1 -AcrName $acrName
 
 # Build frontend with production backend URL
 $backendUrl = terraform output -raw backend_url
 $apiUrl = "$backendUrl/api"
-.\terraform\deploy-frontend.ps1 -AcrName $acrName -ApiUrl $apiUrl
+.\scripts\deploy-frontend.ps1 -AcrName $acrName -ApiUrl $apiUrl
 ```
 
 ### Step 5: Deploy Container Apps
@@ -310,7 +313,7 @@ When you make code changes:
 #### Backend Changes:
 ```powershell
 # Rebuild and redeploy backend
-.\terraform\deploy-backend.ps1 -AcrName <acr-name> -ResourceGroup <rg-name> -ContainerAppName <app-name> -Deploy
+.\scripts\deploy-backend.ps1 -AcrName <acr-name> -ResourceGroup <rg-name> -ContainerAppName <app-name> -Deploy
 ```
 
 #### Frontend Changes:
@@ -318,7 +321,7 @@ When you make code changes:
 # Rebuild and redeploy frontend
 $backendUrl = terraform output -raw backend_url
 $apiUrl = "$backendUrl/api"
-.\terraform\deploy-frontend.ps1 -AcrName <acr-name> -ApiUrl $apiUrl -ResourceGroup <rg-name> -ContainerAppName <app-name> -Deploy
+.\scripts\deploy-frontend.ps1 -AcrName <acr-name> -ApiUrl $apiUrl -ResourceGroup <rg-name> -ContainerAppName <app-name> -Deploy
 ```
 
 ### 2. View Logs
@@ -405,7 +408,7 @@ az containerapp logs show --name <app-name> --resource-group <rg-name> --tail 10
    ```powershell
    $backendUrl = terraform output -raw backend_url
    $apiUrl = "$backendUrl/api"
-   .\terraform\deploy-frontend.ps1 -AcrName <acr-name> -ApiUrl $apiUrl
+   .\scripts\deploy-frontend.ps1 -AcrName <acr-name> -ApiUrl $apiUrl
    ```
 
 3. Restart backend:
@@ -432,7 +435,7 @@ az containerapp logs show --name <app-name> --resource-group <rg-name> --tail 10
 **Solution:**
 ```powershell
 # Build and push the image first
-.\terraform\deploy-backend.ps1 -AcrName <acr-name>
+.\scripts\deploy-backend.ps1 -AcrName <acr-name>
 # Then deploy Container App
 terraform apply -var-file="terraform.tfvars.dev"
 ```
@@ -455,11 +458,11 @@ terraform apply -var-file="terraform.tfvars.dev"
 .\deploy-dev.ps1
 
 # Rebuild backend
-.\terraform\deploy-backend.ps1 -AcrName <acr-name> -ResourceGroup myleague-dev-rg -ContainerAppName myleague-dev-backend -Deploy
+.\scripts\deploy-backend.ps1 -AcrName <acr-name> -ResourceGroup myleague-dev-rg -ContainerAppName myleague-dev-backend -Deploy
 
 # Rebuild frontend
 $backendUrl = terraform output -raw backend_url
-.\terraform\deploy-frontend.ps1 -AcrName <acr-name> -ApiUrl "$backendUrl/api" -ResourceGroup myleague-dev-rg -ContainerAppName myleague-dev-frontend -Deploy
+.\scripts\deploy-frontend.ps1 -AcrName <acr-name> -ApiUrl "$backendUrl/api" -ResourceGroup myleague-dev-rg -ContainerAppName myleague-dev-frontend -Deploy
 
 # View logs
 az containerapp logs show --name myleague-dev-backend --resource-group myleague-dev-rg --follow --type console
@@ -472,8 +475,8 @@ az containerapp logs show --name myleague-dev-backend --resource-group myleague-
 terraform apply -var-file="terraform.tfvars.prod"
 
 # Rebuild and deploy
-.\terraform\deploy-backend.ps1 -AcrName <acr-name> -ResourceGroup myleague-rg -ContainerAppName myleague-backend -Deploy
-.\terraform\deploy-frontend.ps1 -AcrName <acr-name> -ApiUrl "<backend-url>/api" -ResourceGroup myleague-rg -ContainerAppName myleague-frontend -Deploy
+.\scripts\deploy-backend.ps1 -AcrName <acr-name> -ResourceGroup myleague-rg -ContainerAppName myleague-backend -Deploy
+.\scripts\deploy-frontend.ps1 -AcrName <acr-name> -ApiUrl "<backend-url>/api" -ResourceGroup myleague-rg -ContainerAppName myleague-frontend -Deploy
 ```
 
 ### Useful Terraform Commands

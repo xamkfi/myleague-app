@@ -134,8 +134,8 @@ Write-Host ""
 Write-Host "📚 Next Steps:" -ForegroundColor Cyan
 Write-Host "   1. Build and push Docker images:" -ForegroundColor White
 Write-Host "      cd .." -ForegroundColor Gray
-Write-Host "      .\terraform\deploy-backend.ps1 -AcrName (terraform output -raw container_registry_name)" -ForegroundColor Gray
-Write-Host "      .\terraform\deploy-frontend.ps1 -AcrName (terraform output -raw container_registry_name)" -ForegroundColor Gray
+Write-Host "      .\scripts\deploy-backend.ps1 -AcrName (terraform output -raw container_registry_name)" -ForegroundColor Gray
+Write-Host "      .\scripts\deploy-frontend.ps1 -AcrName (terraform output -raw container_registry_name)" -ForegroundColor Gray
 Write-Host ""
 Write-Host "   2. Open frontend URL in browser: $frontendUrl" -ForegroundColor White
 Write-Host ""

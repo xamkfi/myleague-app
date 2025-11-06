@@ -67,12 +67,12 @@ output "connection_string" {
 
 output "backend_url" {
   description = "URL of the backend Container App"
-  value       = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
+  value       = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
 }
 
 output "frontend_url" {
   description = "URL of the frontend Container App"
-  value       = "https://${azurerm_container_app.frontend.latest_revision_fqdn}"
+  value       = "https://${azurerm_container_app.frontend.ingress[0].fqdn}"
 }
 
 output "application_insights_instrumentation_key" {

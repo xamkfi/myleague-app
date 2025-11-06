@@ -1,16 +1,38 @@
 # .gitignore for Terraform
+
+# Local state files (never commit these!)
 *.tfstate
 *.tfstate.*
-*.tfvars
-!terraform.tfvars.example
-backend.tfvars
+*.tfstate.backup
+
+# Lock file (keep this to ensure consistent provider versions)
+# Comment this out if you want to ignore lock file
+# .terraform.lock.hcl
+
+# Terraform directory
 .terraform/
-.terraform.lock.hcl
+
+# Variable files with secrets (only ignore the main one, not templates)
+terraform.tfvars
+# Keep these template/example files in repo:
+!terraform.tfvars.dev
+!terraform.tfvars.prod
+!terraform.tfvars.example
+
+# Backend config is safe to commit (no secrets, just config)
+# backend.tfvars can be committed
+
+# Crash logs
 crash.log
+crash.*.log
+
+# Override files
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+
+# CLI config files
 .terraformrc
 terraform.rc
 

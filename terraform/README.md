@@ -192,16 +192,16 @@ For better flexibility and separation of concerns, use the PowerShell scripts:
 
 ```powershell
 # Deploy just the backend
-.\terraform\deploy-backend.ps1 -AcrName <acr-name> -Tag latest
+.\scripts\deploy-backend.ps1 -AcrName <acr-name> -Tag latest
 
 # Deploy just the frontend
-.\terraform\deploy-frontend.ps1 -AcrName <acr-name> -Tag latest -ApiUrl https://<backend-url>
+.\scripts\deploy-frontend.ps1 -AcrName <acr-name> -Tag latest -ApiUrl https://<backend-url>
 
 # Deploy both backend and frontend
-.\terraform\deploy-all.ps1 -AcrName <acr-name> -Tag latest -ApiUrl https://<backend-url>
+.\scripts\deploy-all.ps1 -AcrName <acr-name> -Tag latest -ApiUrl https://<backend-url>
 
 # With Azure Container Apps deployment
-.\terraform\deploy-all.ps1 `
+.\scripts\deploy-all.ps1 `
     -AcrName <acr-name> `
     -Tag latest `
     -ResourceGroup myleague-rg `
@@ -248,11 +248,11 @@ $BACKEND_URL = terraform output -raw backend_url
 
 # Use PowerShell scripts (recommended)
 cd ..
-.\terraform\deploy-all.ps1 -AcrName $ACR_NAME -Tag latest -ApiUrl $BACKEND_URL
+.\scripts\deploy-all.ps1 -AcrName $ACR_NAME -Tag latest -ApiUrl $BACKEND_URL
 
 # OR use individual scripts
-.\terraform\deploy-backend.ps1 -AcrName $ACR_NAME -Tag latest
-.\terraform\deploy-frontend.ps1 -AcrName $ACR_NAME -Tag latest -ApiUrl $BACKEND_URL
+.\scripts\deploy-backend.ps1 -AcrName $ACR_NAME -Tag latest
+.\scripts\deploy-frontend.ps1 -AcrName $ACR_NAME -Tag latest -ApiUrl $BACKEND_URL
 ```
 
 **Alternative: Manual Docker commands**

@@ -31,12 +31,21 @@ frontend_cpu    = 0.25
 frontend_memory = "0.5Gi"
 
 # Docker Images
-backend_image_tag  = "latest"
-frontend_image_tag = "latest"
+backend_image_tag  = "v1.0.2"
+frontend_image_tag = "v1.0.1"
 
 # Jump Box - DISABLED for development (we'll use public DB access instead)
 # If you want to test the production setup, enable this
 enable_jumpbox = false
+# jumpbox_allowed_source_ips = ["YOUR_IP_HERE"]  # Restrict SSH access to your IP
+
+# CORS Configuration - Permissive for development
+cors_allowed_origins = "*"  # Allow all origins in dev; use specific URLs in prod
+
+# PostgreSQL Configuration
+postgres_version                 = "16"
+postgres_backup_retention_days   = 7
+postgres_geo_redundant_backup    = false
 
 tags = {
   Environment = "Development"
