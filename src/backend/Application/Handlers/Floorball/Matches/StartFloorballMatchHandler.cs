@@ -10,6 +10,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
+using Application.Interfaces.Common;
+using Application.Constants;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -20,6 +22,7 @@ public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCom
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
+    private readonly INotificationSenderService _notificationSenderService;
     private readonly ILogger<StartFloorballMatchHandler> _logger;
 
     /// <summary>
@@ -31,10 +34,13 @@ public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCom
     public StartFloorballMatchHandler(
         IFloorballMatchRepository matchRepository,
         IFloorballUnitOfWork unitOfWork,
+        INotificationSenderService notificationSenderService,
         ILogger<StartFloorballMatchHandler> logger)
     {
         _matchRepository = matchRepository;
         _unitOfWork = unitOfWork;
+        _notificationSenderService = notificationSenderService;
+
         _logger = logger;
     }
 
@@ -61,6 +67,10 @@ public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCom
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _notificationSenderService.SendNotificationAsync(
+                FloorballNotificationEvents.MatchStarted,
+                 new { MatchId = match.Id });
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             _logger.LogInformation("Successfully started floorball match: {MatchId}", request.Id);

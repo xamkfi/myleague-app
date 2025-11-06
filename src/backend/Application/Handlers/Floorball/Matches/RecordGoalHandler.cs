@@ -10,6 +10,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
+using Application.Interfaces.Common;
+using Application.Constants;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -23,6 +25,7 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
     private readonly IFloorballPlayerRepository _playerRepository;
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
+    private readonly INotificationSenderService _notificationSenderService;
     private readonly ILogger<RecordGoalHandler> _logger;
 
     /// <summary>
@@ -40,6 +43,7 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
         IFloorballPlayerRepository playerRepository,
         IFloorballStatisticsRepository statisticsRepository,
         IFloorballUnitOfWork unitOfWork,
+        INotificationSenderService notificationSenderService,
         ILogger<RecordGoalHandler> logger)
     {
         _matchRepository = matchRepository;
@@ -47,6 +51,7 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
         _playerRepository = playerRepository;
         _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
+        _notificationSenderService = notificationSenderService;
         _logger = logger;
     }
 
@@ -158,6 +163,10 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
             // Save changes explicitly to persist score and period updates and trigger domain events
             _logger.LogInformation("[RecordGoal] Saving match changes (scores, events). MatchId={MatchId}", match.Id);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _notificationSenderService.SendNotificationAsync(
+                FloorballNotificationEvents.GoalScored,
+                new { MatchId = match.Id });
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             _logger.LogInformation("Successfully recorded goal in match {MatchId} by player {PlayerId}", request.MatchId, request.ScoringPlayerId);

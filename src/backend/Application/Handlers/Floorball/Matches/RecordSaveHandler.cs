@@ -10,6 +10,8 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Interfaces.Common;
+using Application.Constants;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -23,6 +25,7 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
     private readonly IFloorballPlayerRepository _playerRepository;
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
+    private readonly INotificationSenderService _notificationSenderService;
     private readonly ILogger<RecordSaveHandler> _logger;
 
     public RecordSaveHandler(
@@ -31,6 +34,7 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
         IFloorballPlayerRepository playerRepository,
         IFloorballStatisticsRepository statisticsRepository,
         IFloorballUnitOfWork unitOfWork,
+        INotificationSenderService notificationSenderService,
         ILogger<RecordSaveHandler> logger)
     {
         _matchRepository = matchRepository;
@@ -38,6 +42,7 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
         _playerRepository = playerRepository;
         _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
+        _notificationSenderService = notificationSenderService;
         _logger = logger;
     }
 
@@ -94,6 +99,10 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
             _matchRepository.MarkEventAsAdded(saveEvent);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _notificationSenderService.SendNotificationAsync(
+                FloorballNotificationEvents.SaveRecorded,
+                new { MatchId = match.Id });
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             return Result<FloorballMatchDto>.Success(matchDto);

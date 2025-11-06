@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyLeague.Infrastructure.SignalR;
 using System.Reflection;
 using Microsoft.AspNetCore.Routing;
+using Application.Interfaces.Common;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -24,8 +25,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<DomainEventNotifier>();
             
             // Register notification services
-            services.AddScoped<INotificationSender, SignalRNotificationSender>();
-            
+            services.AddScoped<INotificationSenderService, SignalRNotificationSender>();
 
             return services;
         }
