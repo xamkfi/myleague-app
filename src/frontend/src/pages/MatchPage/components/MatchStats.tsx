@@ -66,6 +66,7 @@ export default function MatchStats({ match }: MatchStatsProps) {
     teamId: match.homeTeamId,
     teamName: match.homeTeamName,
     shotsTotal: 0,
+    shotsOnGoal: 0,
     penaltyMinutes: 0
   };
   
@@ -73,8 +74,15 @@ export default function MatchStats({ match }: MatchStatsProps) {
     teamId: match.awayTeamId,
     teamName: match.awayTeamName,
     shotsTotal: 0,
+    shotsOnGoal: 0,
     penaltyMinutes: 0
   };
+
+  // Calculate saves: opposing team's shotsTotal - shotsOnGoal
+  // Home team saves = shots that away team took but didn't score
+  const homeSaves = awayStats.shotsTotal - awayStats.shotsOnGoal;
+  // Away team saves = shots that home team took but didn't score
+  const awaySaves = homeStats.shotsTotal - homeStats.shotsOnGoal;
 
   
 
@@ -97,20 +105,19 @@ export default function MatchStats({ match }: MatchStatsProps) {
         />
         <StatRow 
           label={t('matchPage.stats.goalieSaves')}
-          home={homeStats.shotsTotal - (match.awayScore || 0)}
-          away={awayStats.shotsTotal - (match.homeScore || 0)}
-          homeValue={homeStats.shotsTotal - (match.awayScore || 0)}
-          awayValue={awayStats.shotsTotal - (match.homeScore || 0)}
-          total={(homeStats.shotsTotal - (match.awayScore || 0)) + (awayStats.shotsTotal - (match.homeScore || 0))}
+          home={homeSaves}
+          away={awaySaves}
+          homeValue={homeSaves}
+          awayValue={awaySaves}
+          total={homeSaves + awaySaves}
         />
-        <StatRow 
-          label={t('matchPage.stats.savePercentage')}
-          home={`${(((homeStats.shotsTotal - (match.awayScore || 0)) / (homeStats.shotsTotal || 1)) * 100).toFixed(1)}%`}
-          away={`${(((awayStats.shotsTotal - (match.homeScore || 0)) / (awayStats.shotsTotal || 1)) * 100).toFixed(1)}%`}
-          homeValue={((homeStats.shotsTotal - (match.awayScore || 0)) / (homeStats.shotsTotal || 1)) * 100}
-          awayValue={((awayStats.shotsTotal - (match.homeScore || 0)) / (awayStats.shotsTotal || 1)) * 100}
-          total={200} // Using 200 as total for percentage comparison
-        />
+        <div className="stat-row stat-percentage-only">
+          <div className="stat-values">
+            <div className="home-value">{((homeSaves / (awayStats.shotsTotal || 1)) * 100).toFixed(1)}%</div>
+            <div className="stat-label">{t('matchPage.stats.savePercentage')}</div>
+            <div className="away-value">{((awaySaves / (homeStats.shotsTotal || 1)) * 100).toFixed(1)}%</div>
+          </div>
+        </div>
         <StatRow 
           label={t('matchPage.stats.penaltyMinutes')}
           home={homeStats.penaltyMinutes}

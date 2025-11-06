@@ -93,8 +93,10 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
 
             await UpdateGoalieSeasonStatistics(goalie.Id, request.TeamId, match.SeasonId, 1, 1, 0, cancellationToken);
 
-            // Update match team statistics for shots against
-            await UpdateMatchTeamStatistics(match.Id, request.TeamId, 1, cancellationToken);
+            // Update match team statistics for the attacking team (the team that took the shot that was saved)
+            // The save is for the defending team (request.TeamId), so we need to update the opposing team's stats
+            Guid attackingTeamId = request.TeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
+            await UpdateMatchTeamStatistics(match.Id, attackingTeamId, 1, cancellationToken);
 
             _matchRepository.MarkEventAsAdded(saveEvent);
 

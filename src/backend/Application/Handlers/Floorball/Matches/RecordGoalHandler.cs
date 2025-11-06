@@ -246,16 +246,8 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
         // Find the opposing team (the one that allowed the goal)
         Guid opposingTeamId = scoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
 
-        // Update match team statistics for the opposing team (shots against)
-        FloorballMatchTeamStatistics? opposingMatchStats = await _statisticsRepository.GetMatchTeamStatisticsAsync(match.Id, opposingTeamId, cancellationToken);
-        if (opposingMatchStats == null)
-        {
-            opposingMatchStats = new FloorballMatchTeamStatistics(match.Id, opposingTeamId);
-        }
-
-        // Goal counts as both a shot and a shot on goal for the opposing team
-        opposingMatchStats.UpdateShotStatistics(1, 1);
-        await _statisticsRepository.SaveMatchTeamStatisticsAsync(opposingMatchStats, cancellationToken);
+        // Note: When a goal is scored, only the scoring team gets a shot increment
+        // The opposing team's goalie stats are updated below, but not their team shot stats
 
         // Update the specific goalie's statistics if we know who was active
         Guid? activeGoalieId = match.GetActiveGoalieId(opposingTeamId);
