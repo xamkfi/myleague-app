@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using WebAPI.Models.Floorball;
+using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Controllers.Floorball
 {

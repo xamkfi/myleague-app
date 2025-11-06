@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using WebAPI.Models.Floorball;
 using WebAPI.Models.Common;
 using Domain.Enums.Floorball;
+using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Controllers.Floorball
 {
@@ -52,7 +53,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting all floorball teams with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-            var query = new GetAllFloorballTeamsQuery(
+            GetAllFloorballTeamsQuery query = new GetAllFloorballTeamsQuery(
                 request.Page,
                 request.PageSize,
                 request.ClubId,

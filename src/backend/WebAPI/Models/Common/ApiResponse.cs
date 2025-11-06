@@ -30,7 +30,10 @@ public record ApiResponse
     /// <returns>A successful API response</returns>
     public static ApiResponse SuccessResponse(string message = "Operation completed successfully")
     {
-        return new ApiResponse { Success = true, Message = message };
+        return new ApiResponse {
+            Success = true,
+            Message = message
+        };
     }
 
     /// <summary>
@@ -40,7 +43,13 @@ public record ApiResponse
     /// <returns>An error API response</returns>
     public static ApiResponse ErrorResponse(string message)
     {
-        return new ApiResponse { Success = false, Message = message, Errors = new List<string> { message } };
+        return new ApiResponse {
+            Success = false,
+            Message = message,
+            Errors = new List<string> {
+                message
+            }
+        };
     }
 
     /// <summary>
@@ -50,8 +59,7 @@ public record ApiResponse
     /// <returns>An error API response</returns>
     public static ApiResponse ErrorResponse(List<string> errors)
     {
-        return new ApiResponse
-        {
+        return new ApiResponse {
             Success = false,
             Message = "Operation failed with errors",
             Errors = errors
@@ -78,7 +86,11 @@ public record ApiResponse<T> : ApiResponse
     /// <returns>A successful API response with data</returns>
     public static ApiResponse<T> SuccessResponse(T data, string message = "Operation completed successfully")
     {
-        return new ApiResponse<T> { Success = true, Message = message, Data = data };
+        return new ApiResponse<T> {
+            Success = true,
+            Message = message,
+            Data = data
+        };
     }
 
     /// <summary>
@@ -88,17 +100,26 @@ public record ApiResponse<T> : ApiResponse
     /// <returns>An error API response</returns>
     public static new ApiResponse<T> ErrorResponse(string message)
     {
-        return new ApiResponse<T> { Success = false, Message = message, Errors = new List<string> { message } };
+        return new ApiResponse<T> {
+            Success = false,
+            Message = message,
+            Errors = []
+        };
     }
 
     /// <summary>
-    /// Creates an error response without data
+    /// Creates an error response with data
     /// </summary>
     /// <param name="message">The error message</param>
+    /// <param name="errors">List of occurring errors</param>
     /// <returns>An error API response</returns>
-    public static new ApiResponse<T> ErrorResponse(string message, List<string> errors)
+    public static ApiResponse<T> ErrorResponse(string message, List<string> errors)
     {
-        return new ApiResponse<T> { Success = false, Message = message, Errors = errors };
+        return new ApiResponse<T> {
+            Success = false,
+            Message = message,
+            Errors = errors
+        };
     }
 
     /// <summary>
@@ -108,8 +129,7 @@ public record ApiResponse<T> : ApiResponse
     /// <returns>An error API response</returns>
     public static new ApiResponse<T> ErrorResponse(List<string> errors)
     {
-        return new ApiResponse<T>
-        {
+        return new ApiResponse<T> {
             Success = false,
             Message = "Operation failed with errors",
             Errors = errors
@@ -117,117 +137,3 @@ public record ApiResponse<T> : ApiResponse
     }
 }
 
-/// <summary>
-/// Paginated API response wrapper that includes pagination metadata
-/// </summary>
-/// <typeparam name="T">The type of data being returned</typeparam>
-public record PaginatedApiResponse<T> : ApiResponse<IEnumerable<T>>
-{
-    /// <summary>
-    /// Gets the pagination metadata
-    /// </summary>
-    public PaginationMetadata Pagination { get; init; } = new();
-
-    /// <summary>
-    /// Creates a successful paginated response
-    /// </summary>
-    /// <param name="pagedResult">The paged result from the application layer</param>
-    /// <param name="message">The success message</param>
-    /// <returns>A successful paginated API response</returns>
-    public static PaginatedApiResponse<T> SuccessResponse(PagedResult<T> pagedResult, string message = "Data retrieved successfully")
-    {
-        return new PaginatedApiResponse<T>
-        {
-            Success = true,
-            Message = message,
-            Data = pagedResult.Items,
-            Pagination = new PaginationMetadata
-            {
-                CurrentPage = pagedResult.Page,
-                PageSize = pagedResult.PageSize,
-                TotalCount = pagedResult.TotalCount,
-                TotalPages = pagedResult.TotalPages,
-                HasNextPage = pagedResult.HasNextPage,
-                HasPreviousPage = pagedResult.HasPreviousPage,
-                StartItem = pagedResult.StartItem,
-                EndItem = pagedResult.EndItem
-            }
-        };
-    }
-
-    /// <summary>
-    /// Creates an error paginated response
-    /// </summary>
-    /// <param name="message">The error message</param>
-    /// <returns>An error paginated API response</returns>
-    public static new PaginatedApiResponse<T> ErrorResponse(string message)
-    {
-        return new PaginatedApiResponse<T>
-        {
-            Success = false,
-            Message = message,
-            Errors = new List<string> { message }
-        };
-    }
-
-    /// <summary>
-    /// Creates an error paginated response with multiple errors
-    /// </summary>
-    /// <param name="errors">The collection of error messages</param>
-    /// <returns>An error paginated API response</returns>
-    public static new PaginatedApiResponse<T> ErrorResponse(List<string> errors)
-    {
-        return new PaginatedApiResponse<T>
-        {
-            Success = false,
-            Message = "Operation failed with errors",
-            Errors = errors
-        };
-    }
-}
-
-/// <summary>
-/// Pagination metadata for API responses
-/// </summary>
-public record PaginationMetadata
-{
-    /// <summary>
-    /// Gets the current page number (1-based)
-    /// </summary>
-    public int CurrentPage { get; init; }
-
-    /// <summary>
-    /// Gets the number of items per page
-    /// </summary>
-    public int PageSize { get; init; }
-
-    /// <summary>
-    /// Gets the total number of items across all pages
-    /// </summary>
-    public int TotalCount { get; init; }
-
-    /// <summary>
-    /// Gets the total number of pages
-    /// </summary>
-    public int TotalPages { get; init; }
-
-    /// <summary>
-    /// Gets whether there is a next page
-    /// </summary>
-    public bool HasNextPage { get; init; }
-
-    /// <summary>
-    /// Gets whether there is a previous page
-    /// </summary>
-    public bool HasPreviousPage { get; init; }
-
-    /// <summary>
-    /// Gets the starting item number for the current page (1-based)
-    /// </summary>
-    public int StartItem { get; init; }
-
-    /// <summary>
-    /// Gets the ending item number for the current page (1-based)
-    /// </summary>
-    public int EndItem { get; init; }
-} 
