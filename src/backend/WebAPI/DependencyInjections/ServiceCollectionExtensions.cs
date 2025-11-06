@@ -64,17 +64,49 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Add CORS configuration
     /// </summary>
-    public static IServiceCollection AddCorsConfiguration(this IServiceCollection services)
+    public static IServiceCollection AddCorsConfiguration(this IServiceCollection services, IConfiguration? configuration = null)
     {
         services.AddCors(options =>
         {
+            // Build list of allowed origins
+            List<string> allowedOrigins = new List<string>
+            {
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:4200",
+                "http://127.0.0.1:5173"
+            };
+
+            // Add configured origins from appsettings or environment variables
+            if (configuration != null)
+            {
+                string? corsOrigins = configuration["Cors:AllowedOrigins"];
+                Console.WriteLine($"[CORS] Checking for Cors:AllowedOrigins. Found: {(string.IsNullOrEmpty(corsOrigins) ? "NOT FOUND" : corsOrigins)}");
+
+                if (!string.IsNullOrEmpty(corsOrigins))
+                {
+                    string[] origins = corsOrigins.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                    foreach (string origin in origins)
+                    {
+                        string trimmedOrigin = origin.Trim();
+                        if (!string.IsNullOrEmpty(trimmedOrigin) && !allowedOrigins.Contains(trimmedOrigin))
+                        {
+                            allowedOrigins.Add(trimmedOrigin);
+                            Console.WriteLine($"[CORS] Added origin: {trimmedOrigin}");
+                        }
+                    }
+                }
+            }
+
+            Console.WriteLine($"[CORS] Total allowed origins: {allowedOrigins.Count}");
+            foreach (string origin in allowedOrigins)
+            {
+                Console.WriteLine($"[CORS]   - {origin}");
+            }
+
             options.AddPolicy("AllowAll", policy =>
             {
-                policy.WithOrigins(
-                        "http://localhost:3000",
-                        "http://localhost:5173",
-                        "http://localhost:4200",
-                        "http://127.0.0.1:5173")
+                policy.WithOrigins(allowedOrigins.ToArray())
                       .AllowAnyMethod()
                       .AllowAnyHeader()
                       .AllowCredentials(); // Required for SignalR

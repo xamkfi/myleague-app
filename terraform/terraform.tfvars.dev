@@ -1,0 +1,48 @@
+# Development Environment Configuration
+# Usage: terraform apply -var-file="terraform.tfvars.dev"
+
+resource_group_name = "myleague-dev-rg"
+location            = "West Europe"
+app_name            = "myleague-dev"
+
+# PostgreSQL - Cheapest option for development with PUBLIC ACCESS
+postgres_sku_name   = "B_Standard_B1ms"  # Burstable Basic (cheapest)
+postgres_storage_mb = 32768              # 32 GB minimum
+
+# Enable public database access for easier development
+# No VNet complexity, no jump box needed - connect directly from DBeaver!
+enable_postgres_public_access = true
+
+# Add your IP address here to allow connections (get it from https://ifconfig.me)
+# Example: allowed_ip_addresses = ["123.45.67.89", "98.76.54.32"]
+# You can also add this via command line: terraform apply -var='allowed_ip_addresses=["YOUR_IP"]'
+allowed_ip_addresses = ["88.85.140.76"]  # Auto-detected IP address
+
+# Container App Scaling - Aggressive scale-to-zero for cost savings
+backend_min_replicas  = 0  # Scale to zero when idle
+backend_max_replicas  = 2  # Limited for dev
+frontend_min_replicas = 0  # Scale to zero when idle
+frontend_max_replicas = 2  # Limited for dev
+
+# Container Resources - Minimal for development
+backend_cpu     = 0.25
+backend_memory  = "0.5Gi"
+frontend_cpu    = 0.25
+frontend_memory = "0.5Gi"
+
+# Docker Images
+backend_image_tag  = "latest"
+frontend_image_tag = "latest"
+
+# Jump Box - DISABLED for development (we'll use public DB access instead)
+# If you want to test the production setup, enable this
+enable_jumpbox = false
+
+tags = {
+  Environment = "Development"
+  Project     = "MyLeague"
+  ManagedBy   = "Terraform"
+  Owner       = "YourTeam"
+  CostCenter  = "Development"
+}
+

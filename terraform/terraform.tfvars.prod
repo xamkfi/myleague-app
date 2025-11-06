@@ -1,0 +1,49 @@
+# Production Environment Configuration
+# Usage: terraform apply -var-file="terraform.tfvars.prod"
+
+resource_group_name = "myleague-rg"
+location            = "West Europe"
+app_name            = "myleague"
+
+# PostgreSQL - General Purpose tier for production workload (5000 users)
+# Upgrade from Burstable to General Purpose for better performance
+postgres_sku_name   = "GP_Standard_D2s_v3"  # 2 vCPU, 8 GB RAM
+postgres_storage_mb = 65536                  # 64 GB
+
+# Production: PRIVATE database access (secure, VNet-only)
+# Backend connects via VNet integration
+# Admins connect via jump box
+enable_postgres_public_access = false
+allowed_ip_addresses          = []  # Not used in private mode
+
+# Container App Scaling - Always-on with auto-scaling for production
+backend_min_replicas  = 2   # Always have 2 replicas for availability
+backend_max_replicas  = 10  # Scale up to 10 for traffic spikes
+frontend_min_replicas = 1   # Always have 1 replica for fast response
+frontend_max_replicas = 8   # Scale up to 8 for traffic spikes
+
+# Container Resources - Production sizing for 5000 users
+backend_cpu     = 1.0
+backend_memory  = "2.0Gi"
+frontend_cpu    = 0.5
+frontend_memory = "1.0Gi"
+
+# Docker Images
+backend_image_tag  = "latest"
+frontend_image_tag = "latest"
+
+# Jump Box - ENABLED for production (needed for private DB access)
+# Cost: ~€13-18/month always-on, or ~€4-13/month on-demand
+enable_jumpbox         = true
+jumpbox_vm_size        = "Standard_B1s"  # Cheapest option is fine
+jumpbox_admin_username = "azureuser"
+jumpbox_ssh_public_key = ""  # Add your SSH public key here for better security
+
+tags = {
+  Environment = "Production"
+  Project     = "MyLeague"
+  ManagedBy   = "Terraform"
+  Owner       = "YourTeam"
+  CostCenter  = "Production"
+}
+

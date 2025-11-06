@@ -9,9 +9,44 @@ using Scalar.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Identity;
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+// Add Azure Key Vault configuration if KeyVaultUri is provided (production)
+string? keyVaultUri = builder.Configuration["KeyVault:VaultUri"];
+Console.WriteLine($"[KeyVault] Checking for Key Vault URI. Found: {(string.IsNullOrEmpty(keyVaultUri) ? "NOT FOUND" : keyVaultUri)}");
+
+// Also check environment variable directly
+string? envKeyVaultUri = Environment.GetEnvironmentVariable("KeyVault__VaultUri");
+Console.WriteLine($"[KeyVault] Environment variable KeyVault__VaultUri: {(string.IsNullOrEmpty(envKeyVaultUri) ? "NOT FOUND" : envKeyVaultUri)}");
+
+if (!string.IsNullOrEmpty(keyVaultUri))
+{
+    try
+    {
+        builder.Configuration.AddAzureKeyVault(
+            new Uri(keyVaultUri),
+            new DefaultAzureCredential());
+        builder.Logging.AddConsole().AddFilter("Microsoft.Extensions.Azure", LogLevel.Warning);
+
+        // Log Key Vault connection status
+        Console.WriteLine($"[KeyVault] Successfully configured Key Vault: {keyVaultUri}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[KeyVault] ERROR configuring Key Vault: {ex.Message}");
+        throw;
+    }
+}
+else
+{
+    Console.WriteLine("[KeyVault] WARNING: Key Vault URI not found, skipping Key Vault configuration");
+}
+
+// Add Application Insights telemetry
+builder.Services.AddApplicationInsightsTelemetry();
 // Configure Serilog
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
@@ -32,7 +67,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiConfiguration();
 
 // Add CORS configuration using extension method
-builder.Services.AddCorsConfiguration();
+builder.Services.AddCorsConfiguration(builder.Configuration);
 
 // Configure pagination options
 builder.Services.Configure<PaginationConfiguration>(
@@ -50,28 +85,25 @@ builder.Services.AddHealthCheckUIConfiguration(builder.Configuration);
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    // Map OpenAPI endpoint at the traditional Swagger location for compatibility
-    app.MapOpenApi("/swagger/v1/swagger.json");
+// Map OpenAPI endpoint at the traditional Swagger location for compatibility
+app.MapOpenApi("/swagger/v1/swagger.json");
 
-    // Configure Scalar UI
-    app.MapScalarApiReference(options =>
-    {
-        options.WithTitle("MyLeague Club API Documentation")
-               .WithTheme(ScalarTheme.Purple)
-               .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-               .WithOpenApiRoutePattern("/swagger/v1/swagger.json");
-    });
-}
+// Configure Scalar UI - enabled in all environments for API documentation
+app.MapScalarApiReference(options =>
+{
+    options.WithTitle("MyLeague Club API Documentation")
+           .WithTheme(ScalarTheme.Purple)
+           .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+           .WithOpenApiRoutePattern("/swagger/v1/swagger.json");
+});
 
 // Use custom middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Use built-in middleware
 app.UseSerilogRequestLogging();
-app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthorization();
 
