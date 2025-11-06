@@ -2,17 +2,33 @@
 @use '@variables' as *;
 @use '../../../styles/common' as *;
 
+.roster-section{
+  width: 100%;
+}
+
 .roster-container{
    @include container;
    margin-bottom: map.get($spacing, "md");
    color: $color-neutral-black;
+   width: 100%;
 }
 
-.table{
+// Horizontal scroll wrapper similar to LeagueStanding
+.table-wrapper{
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.roster-section .table{
    display: grid;
    grid-template-columns: 40px minmax(200px, 400px) 60px repeat(3, 1fr);
    gap: 16px;
    grid-template-areas: "jersey playerName age gamesPlayed goals assists";
+   width: 100%;
+   box-sizing: border-box;
+   min-width: 600px;
    >*{
       display: flex;
       text-align: center;
@@ -98,6 +114,9 @@
    grid-area: playerName;
    justify-content: left;
    font-weight: map.get($font-weights, "bold");
+   min-width: 0;
+   overflow: hidden;
+   text-overflow: ellipsis;
    
 }
 
@@ -120,4 +139,139 @@
 .roster-assists{
    grid-area: assists;
    text-align: center;
+}
+
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+  .roster-container {
+    padding: map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .roster-section .table{
+    min-width: 480px;
+  }
+
+  .roster-position-header {
+    font-size: map.get($font-sizes, 'md');
+    text-align: center;
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .roster-section .table {
+    grid-template-columns: 30px minmax(75px, 150px) 40px repeat(3, 48px);
+    gap: map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .stats-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
+  }
+
+  .roster-player {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'xs');
+    // Avoid horizontal overflow from hover effects on mobile
+    &:hover{
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .roster-jersey.row {
+    width: 24px;
+    height: 24px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .roster-container {
+    padding: map.get($spacing, 'xs');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .roster-section .table{
+    min-width: 380px;
+  }
+
+  .roster-position-header {
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .roster-section .table {
+    grid-template-columns: 25px minmax(75px, 1fr) 36px repeat(3, 40px);
+    gap: map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .stats-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xxs');
+  }
+
+  .roster-player {
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'xs');
+    &:hover{
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .roster-jersey.row {
+    width: 20px;
+    height: 20px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-player-name {
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .roster-container {
+    padding: map.get($spacing, 'xxs');
+  }
+
+  .roster-position-header {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-section .table {
+    grid-template-columns: 20px minmax(100px, 1fr) 35px repeat(3, 45px);
+    gap: 2px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .stats-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: 2px 4px;
+  }
+
+  .roster-player {
+    padding: 2px 4px;
+    font-size: map.get($font-sizes, 'xs');
+    &:hover{
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .roster-jersey.row {
+    width: 18px;
+    height: 18px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-player-name {
+    font-size: map.get($font-sizes, 'xs');
+  }
 }

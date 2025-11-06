@@ -2,7 +2,6 @@ using Domain.Enums;
 using Domain.Enums.Floorball;
 using System.Collections.Generic;
 
-
 namespace Domain.Entities.Floorball;
 
 /// <summary>
@@ -330,7 +329,7 @@ public class FloorballMatch : BaseEntity
 
         FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Postponed;
-
+        
     }
 
     /// <summary>
@@ -449,6 +448,7 @@ public class FloorballMatch : BaseEntity
             }
         }
 
+
         return goalEvent;
     }
 
@@ -501,7 +501,6 @@ public class FloorballMatch : BaseEntity
         _events.Add(penaltyEvent);
         
 
-
         return penaltyEvent;
     }
 
@@ -551,7 +550,6 @@ public class FloorballMatch : BaseEntity
         _events.Add(saveEvent);
 
 
-
         return saveEvent;
     }
 
@@ -576,7 +574,6 @@ public class FloorballMatch : BaseEntity
 
 
 
-
     }
 
     /// <summary>
@@ -585,7 +582,12 @@ public class FloorballMatch : BaseEntity
     public void RecordOvertime()
     {
         WentToOvertime = true;
-        
+
+        // Create a periodscore for non-regular period (Overtime)
+        if (_periodScores.All(ps => ps.PeriodNumber != 4))
+        {
+            _periodScores.Add(new FloorballPeriodScore(Id, 4, HomeTeamId, AwayTeamId));
+        }
 
     }
 
@@ -595,7 +597,13 @@ public class FloorballMatch : BaseEntity
     public void RecordShootout()
     {
         WentToShootout = true;
-        
+
+        // Create a periodscore for non-regular period (Shootout)
+        if (_periodScores.All(ps => ps.PeriodNumber != 5))
+        {
+            _periodScores.Add(new FloorballPeriodScore(Id, 5, HomeTeamId, AwayTeamId));
+        }
+
     }
 
     /// <summary>
@@ -615,7 +623,6 @@ public class FloorballMatch : BaseEntity
         {
             referee.RecordMatchOfficiated();
         }
-
     }
 
     /// <summary>
@@ -629,7 +636,7 @@ public class FloorballMatch : BaseEntity
             
         FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Cancelled;
-
+        
     }
 
     /// <summary>
@@ -674,6 +681,7 @@ public class FloorballMatch : BaseEntity
             }
         }
 
+
         return goalEvent;
     }
 
@@ -696,7 +704,6 @@ public class FloorballMatch : BaseEntity
 
         // Remove the penalty event
         _events.Remove(penaltyEvent);
-
 
         return penaltyEvent;
     }

@@ -7,35 +7,39 @@
   .match-date-time {
     margin-bottom: 20px;
     text-align: center;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
 
-    .weekday {
-      font-size: 16px;
-      font-weight: 500;
-      opacity: 0.9;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
+    .date-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .date-time {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      font-size: 14px;
-      opacity: 0.8;
+    .weekday {
+      font-size: 18px;
+      font-weight: 600;
+      opacity: 0.95;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
-      .date {
-        font-weight: 500;
-      }
+    .date {
+      font-size: 18px;
+      font-weight: 600;
+      opacity: 0.95;
+    }
 
-      .time {
-        &::before {
-          content: "•";
-          margin-right: 12px;
-          opacity: 0.6;
-        }
-      }
+    .time-line {
+      margin-top: 6px;
+    }
+
+    .time {
+      font-size: 16px;
+      opacity: 0.9;
     }
   }
 
@@ -124,8 +128,30 @@
 // Responsive design
 @media (max-width: 768px) {
   .match-header {
+    display: flex;
+    flex-direction: column;
+
     .teams-container {
+      order: 1;
       gap: 20px;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      align-items: stretch;
+    }
+
+    .match-status {
+      order: 2;
+      margin-top: 8px;
+    }
+
+    .match-info {
+      order: 3;
+      margin-top: 8px;
     }
 
     .team-crest {
@@ -144,19 +170,16 @@
     }
 
     .match-date-time {
-      .weekday {
-        font-size: 14px;
+      max-width: 100%;
+      padding: 0 8px;
+
+      .weekday,
+      .date {
+        font-size: 16px;
       }
 
-      .date-time {
-        font-size: 12px;
-        gap: 8px;
-
-        .time {
-          &::before {
-            margin-right: 8px;
-          }
-        }
+      .time {
+        font-size: 14px;
       }
     }
   }

@@ -1,0 +1,113 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// Global mobile utility classes
+.mobile-responsive {
+  // Base responsive behavior
+  width: 100%;
+  max-width: 100%;
+  
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    padding: map.get($spacing, 'sm');
+  }
+  
+  @media (max-width: map.get($breakpoints, 'mobile')) {
+    padding: map.get($spacing, 'xs');
+  }
+}
+
+.mobile-card {
+  background: white;
+  border-radius: map.get($border-radius, 'lg');
+  box-shadow: $box-shadow-drop-1;
+  overflow: hidden;
+  
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    border-radius: map.get($border-radius, 'sm');
+    margin-bottom: map.get($spacing, 'sm');
+  }
+}
+
+.mobile-grid {
+  display: grid;
+  gap: map.get($spacing, 'md');
+  
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    grid-template-columns: 1fr;
+    gap: map.get($spacing, 'sm');
+  }
+  
+  @media (max-width: map.get($breakpoints, 'mobile')) {
+    gap: map.get($spacing, 'xs');
+  }
+}
+
+.mobile-flex-column {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    flex-direction: column !important;
+  }
+}
+
+.mobile-full-width {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+.mobile-text-center {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    text-align: center !important;
+  }
+}
+
+.mobile-padding {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    padding: map.get($spacing, 'sm') !important;
+  }
+  
+  @media (max-width: map.get($breakpoints, 'mobile')) {
+    padding: map.get($spacing, 'xs') !important;
+  }
+}
+
+.mobile-hide {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    display: none !important;
+  }
+}
+
+.mobile-show {
+  display: none;
+  
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    display: block !important;
+  }
+}
+
+// Mobile-specific mixins
+@mixin mobile-stack {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@mixin mobile-full-width {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@mixin mobile-padding {
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    padding: map.get($spacing, 'sm');
+  }
+  
+  @media (max-width: map.get($breakpoints, 'mobile')) {
+    padding: map.get($spacing, 'xs');
+  }
+}

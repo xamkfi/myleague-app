@@ -1,22 +1,27 @@
+@use 'sass:map';
+@use '@variables' as *;
+
 .footer {
-  width: 100vw;
+  width: 100%;
   background: #1a237e;
   color: #fff;
-  padding: 2.5rem 0 2rem 0;
+  padding: map.get($spacing, 'xl') 0 map.get($spacing, 'lg') 0;
   min-height: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
   font-size: 1rem;
+  margin-top: auto;
 }
 
 .footer-sections {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 3rem;
+  gap: map.get($spacing, 'xl');
   width: 100%;
   max-width: 1200px;
+  padding: 0 map.get($spacing, 'lg');
 }
 
 .footer-section {
@@ -27,36 +32,83 @@
 .footer-title {
   font-size: 1.1rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: map.get($spacing, 'base');
   letter-spacing: 1px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
-  padding-bottom: 0.5rem;
+  padding-bottom: map.get($spacing, 'xs');
 }
 
 .footer-links {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: map.get($spacing, 'xxs');
   font-size: 0.98rem;
 }
 
 .footer-contact {
-  margin-top: 0.5rem;
+  margin-top: map.get($spacing, 'xs');
   font-size: 0.95rem;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: map.get($spacing, 'sm');
 }
 
-@media (max-width: 900px) {
+// Mobile responsive styles
+@media (max-width: 768px) {
+  .footer {
+    padding: map.get($spacing, 'lg') 0 map.get($spacing, 'md') 0;
+    font-size: 0.9rem;
+  }
+  
   .footer-sections {
     flex-direction: column;
-    gap: 2rem;
+    gap: map.get($spacing, 'lg');
     align-items: center;
+    padding: 0 map.get($spacing, 'sm');
   }
+  
   .footer-section {
     min-width: unset;
     width: 100%;
     text-align: center;
+  }
+  
+  .footer-title {
+    font-size: 1rem;
+    margin-bottom: map.get($spacing, 'sm');
+  }
+  
+  .footer-links {
+    font-size: 0.9rem;
+    gap: map.get($spacing, 'xs');
+  }
+  
+  .footer-contact {
+    font-size: 0.85rem;
+    gap: map.get($spacing, 'xs');
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: map.get($spacing, 'md') 0;
+    font-size: 0.85rem;
+  }
+  
+  .footer-sections {
+    gap: map.get($spacing, 'md');
+    padding: 0 map.get($spacing, 'xs');
+  }
+  
+  .footer-title {
+    font-size: 0.95rem;
+  }
+  
+  .footer-links {
+    font-size: 0.85rem;
+  }
+  
+  .footer-contact {
+    font-size: 0.8rem;
   }
 }
