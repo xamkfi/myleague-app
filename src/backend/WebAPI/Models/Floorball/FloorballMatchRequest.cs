@@ -1,13 +1,24 @@
 using System.ComponentModel.DataAnnotations;
-using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Models.Floorball;
 
 /// <summary>
 /// Request model for getting paginated floorball matches
 /// </summary>
-public record GetFloorballMatchesRequest : PagedRequestBase
+public record GetFloorballMatchesRequest
 {
+    /// <summary>
+    /// Gets the page number (1-based)
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
+    public int Page { get; init; } = 1;
+
+    /// <summary>
+    /// Gets the number of items per page (0 means use default)
+    /// </summary>
+    [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
+    public int PageSize { get; init; } = 0;
+
     /// <summary>
     /// Gets the season ID filter
     /// </summary>
@@ -37,8 +48,20 @@ public record GetFloorballMatchesRequest : PagedRequestBase
 /// <summary>
 /// Request model for getting team matches with pagination and filtering (team ID comes from route)
 /// </summary>
-public record GetTeamMatchesRequest : PagedRequestBase
+public record GetTeamMatchesRequest
 {
+    /// <summary>
+    /// Gets the page number (1-based)
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
+    public int Page { get; init; } = 1;
+
+    /// <summary>
+    /// Gets the number of items per page (0 means use default)
+    /// </summary>
+    [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
+    public int PageSize { get; init; } = 0;
+
     /// <summary>
     /// Gets the start date filter (matches on or after this date)
     /// </summary>

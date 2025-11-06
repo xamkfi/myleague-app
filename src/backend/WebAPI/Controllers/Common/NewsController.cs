@@ -7,7 +7,6 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using Application.Commands.Common;
-using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Controllers.Common
 {

@@ -10,7 +10,6 @@ using Domain.ValueObjects.Common;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
-using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Controllers.Common
 {

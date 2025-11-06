@@ -1,12 +1,9 @@
-using Domain.EventSourcing;
-using Domain.DomainEvents.Common;
-
 namespace Domain.Entities.Common;
 
 /// <summary>
 /// Represents a division in sports leagues
 /// </summary>
-public class Division : AggregateRoot
+public class Division : BaseEntity
 {
 
     /// <summary>
@@ -80,8 +77,6 @@ public class Division : AggregateRoot
         SportType = sportType;
         IsActive = true;
         CreatedDate = DateTime.UtcNow;
-
-        AddDomainEvent(new DivisionCreatedEvent(Id, name, description, level, sportType));
     }
 
     /// <summary>
@@ -105,7 +100,6 @@ public class Division : AggregateRoot
         Description = description;
         Level = level;
 
-        AddDomainEvent(new DivisionUpdatedEvent(Id, name, description, level));
     }
 
     /// <summary>
@@ -116,7 +110,6 @@ public class Division : AggregateRoot
         if (!IsActive)
         {
             IsActive = true;
-            AddDomainEvent(new DivisionActivatedEvent(Id));
         }
     }
 
@@ -128,7 +121,6 @@ public class Division : AggregateRoot
         if (IsActive)
         {
             IsActive = false;
-            AddDomainEvent(new DivisionDeactivatedEvent(Id));
         }
     }
 } 
