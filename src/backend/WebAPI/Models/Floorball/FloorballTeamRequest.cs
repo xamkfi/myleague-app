@@ -2,26 +2,15 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using Domain.Enums.Floorball;
 using Domain.Enums.Common;
+using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Models.Floorball
 {
     /// <summary>
     /// Request model for getting paginated floorball teams
     /// </summary>
-    public record GetFloorballTeamsRequest
+    public record GetFloorballTeamsRequest : PagedRequestBase
     {
-        /// <summary>
-        /// Gets the page number (1-based)
-        /// </summary>
-        [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
-        public int Page { get; init; } = 1;
-
-        /// <summary>
-        /// Gets the number of items per page (0 means use default)
-        /// </summary>
-        [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
-        public int PageSize { get; init; } = 0;
-
         /// <summary>
         /// Gets the club ID filter
         /// </summary>
