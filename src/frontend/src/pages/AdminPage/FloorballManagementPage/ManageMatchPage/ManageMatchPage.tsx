@@ -43,7 +43,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   // State for selected goalies (lifted up), initialized from match prop
   const [homeGoalieId, setHomeGoalieId] = useState<string>(match.homeActiveGoalieId || '');
   const [awayGoalieId, setAwayGoalieId] = useState<string>(match.awayActiveGoalieId || '');
-  const [pendingGoalieChange, setPendingGoalieChange] = useState<{ team: 'home' | 'away'; goalieId: string; goalieName: string } | null>(null);
 
   // This effect ensures that if the match prop is updated from the server,
   // the local goalie state is synchronized. This is useful if the user
@@ -53,30 +52,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setAwayGoalieId(match.awayActiveGoalieId || '');
   }, [match.homeActiveGoalieId, match.awayActiveGoalieId]);
 
-  const handleConfirmGoalieChange = async () => {
-    if (!pendingGoalieChange || !match.id) return;
-
-    const { team, goalieId } = pendingGoalieChange;
-    const teamId = team === 'home' ? matchData.homeTeam?.id : matchData.awayTeam?.id;
-
-    if (!teamId) return;
-
-    try {
-      setError(null);
-      const response = await floorballMatchService.changeGoalie(match.id, teamId, goalieId);
-
-      if (response.success && response.data) {
-        setMatch(response.data); // This is the critical line that was missing
-      } else {
-        throw new Error(response.errors?.join(', ') || 'Failed to change goalie');
-      }
-    } catch (error) {
-      console.error(`Error setting ${team} goalie:`, error);
-      setError(error instanceof Error ? error.message : `Failed to set ${team} goalie`);
-    } finally {
-      setPendingGoalieChange(null);
-    }
-  };
 
   const handleStateUpdate = useCallback(() => {
     // This is a placeholder for now.
@@ -90,56 +65,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     onStateUpdate: handleStateUpdate,
   });
 
-  // Destructure properties from matchData to use as stable dependencies in effects
-  const { homeTeam, awayTeam, homePlayers, awayPlayers, setError } = matchData;
-
-  useEffect(() => {
-    const changeGoalie = async () => {
-      if (homeGoalieId && match.id && homeTeam?.id) {
-        if (match.status === 'InProgress' && match.homeActiveGoalieId !== homeGoalieId) {
-          const newGoalie = homePlayers.find(p => p.id === homeGoalieId);
-          setPendingGoalieChange({ 
-            team: 'home', 
-            goalieId: homeGoalieId, 
-            goalieName: newGoalie ? `${newGoalie.person.firstName} ${newGoalie.person.lastName}` : 'Unknown Player'
-          });
-        } else {
-          try {
-            setError(null);
-            await floorballMatchService.changeGoalie(match.id, homeTeam.id, homeGoalieId);
-          } catch (error) {
-            console.error('Error setting home goalie:', error);
-            setError(error instanceof Error ? error.message : 'Failed to set home goalie');
-          }
-        }
-      }
-    };
-    changeGoalie();
-  }, [homeGoalieId, match.id, homeTeam, homePlayers, match.status, match.homeActiveGoalieId, setError]);
-
-  useEffect(() => {
-    const changeGoalie = async () => {
-      if (awayGoalieId && match.id && awayTeam?.id) {
-        if (match.status === 'InProgress' && match.awayActiveGoalieId !== awayGoalieId) {
-          const newGoalie = awayPlayers.find(p => p.id === awayGoalieId);
-          setPendingGoalieChange({ 
-            team: 'away', 
-            goalieId: awayGoalieId,
-            goalieName: newGoalie ? `${newGoalie.person.firstName} ${newGoalie.person.lastName}` : 'Unknown Player'
-          });
-        } else {
-          try {
-            setError(null);
-            await floorballMatchService.changeGoalie(match.id, awayTeam.id, awayGoalieId);
-          } catch (error) {
-            console.error('Error setting away goalie:', error);
-            setError(error instanceof Error ? error.message : 'Failed to set away goalie');
-          }
-        }
-      }
-    };
-    changeGoalie();
-  }, [awayGoalieId, match.id, awayTeam, awayPlayers, match.status, match.awayActiveGoalieId, setError]);
 
   const timer = useLocalTimer({
     isOpen: true,
@@ -450,24 +375,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
       <ErrorPopup message={matchData.error} />
 
       {/* Confirmation Dialogs */}
-      <ConfirmationDialog
-        isOpen={!!pendingGoalieChange}
-        icon="🔄"
-        title="Confirm Goalie Change"
-        message={`Are you sure you want to change the ${pendingGoalieChange?.team === 'home' ? matchData.homeTeam?.name : matchData.awayTeam?.name} goalkeeper to ${pendingGoalieChange?.goalieName}?`}
-        confirmText="Confirm Change"
-        isLoading={matchData.loading}
-        onConfirm={handleConfirmGoalieChange}
-        onCancel={() => {
-          // Revert the selection in the dropdown
-          if (pendingGoalieChange?.team === 'home') {
-            setHomeGoalieId(match.homeActiveGoalieId || '');
-          } else {
-            setAwayGoalieId(match.awayActiveGoalieId || '');
-          }
-          setPendingGoalieChange(null);
-        }}
-      />
+      {/* Goalie change confirmation moved to GoalieSelectorSection */}
 
       <ConfirmationDialog
         isOpen={periodManagement.showEndPeriodConfirmation}
@@ -558,6 +466,9 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             awayGoalieId={awayGoalieId}
             setHomeGoalieId={setHomeGoalieId}
             setAwayGoalieId={setAwayGoalieId}
+            currentMatch={matchData.currentMatch}
+            onMatchUpdated={setMatch}
+            setError={matchData.setError}
           />
 
           {/* Forms */}

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import './ActivePlayersSelector.scss';
 import type { ChangeEvent } from 'react';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
+import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 import GoalieSelectorSection from './GoalieSelectorSection';
 
 interface ActivePlayersSelectorProps {
@@ -14,6 +15,9 @@ interface ActivePlayersSelectorProps {
   awayGoalieId: string;
   setHomeGoalieId: (id: string) => void;
   setAwayGoalieId: (id: string) => void;
+  currentMatch: FloorballMatchDto;
+  onMatchUpdated: (match: FloorballMatchDto) => void;
+  setError: (error: string | null) => void;
 }
 
 const renderPlayerOptions = (players: FloorballPlayerDto[]) => (
@@ -27,7 +31,7 @@ const renderPlayerOptions = (players: FloorballPlayerDto[]) => (
   </>
 );
 
-const ActivePlayersSelector = ({ homePlayers, awayPlayers, homeTeamName, awayTeamName, homeGoalieId, awayGoalieId, setHomeGoalieId, setAwayGoalieId }: ActivePlayersSelectorProps) => {
+const ActivePlayersSelector = ({ homePlayers, awayPlayers, homeTeamName, awayTeamName, homeGoalieId, awayGoalieId, setHomeGoalieId, setAwayGoalieId, currentMatch, onMatchUpdated, setError }: ActivePlayersSelectorProps) => {
   const activeHomePlayers = useMemo(() => homePlayers.filter((p) => p.isActive), [homePlayers]);
   const activeAwayPlayers = useMemo(() => awayPlayers.filter((p) => p.isActive), [awayPlayers]);
 
@@ -88,6 +92,9 @@ const ActivePlayersSelector = ({ homePlayers, awayPlayers, homeTeamName, awayTea
           awayGoalieId={awayGoalieId}
           setHomeGoalieId={setHomeGoalieId}
           setAwayGoalieId={setAwayGoalieId}
+          currentMatch={currentMatch}
+          onMatchUpdated={onMatchUpdated}
+          setError={setError}
         />
       </div>
     </div>
