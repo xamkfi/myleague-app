@@ -7,41 +7,37 @@
    overflow: hidden;
    width: 100%;
    justify-content: space-between;
-
-   
+   gap: map.get($spacing, 'xxs');
+   padding: map.get($spacing, 'xs');
+   background: rgba(255, 255, 255, 0.05);
+   border-radius: map.get($border-radius, 'lg');
+   backdrop-filter: blur(8px);
 }
 
 .team-navbar-btn {
    flex: 1 1 1;
-   padding: 8px 16px;//0.8rem;
+   padding: map.get($spacing, 'sm') map.get($spacing, 'xs');
    text-align: center;
    cursor: pointer;
    color: $color-neutral-white;
    transition: all 0.2s ease;
    position: relative;
    overflow: hidden;
-
-   // &::after {
-   //    content: '';
-   //    position: absolute;
-   //    bottom: 0;
-   //    left: 0;
-   //    right: 0;
-   //    height: 3px;
-   //    background: $color-blue-light;
-   //    transform: scaleX(0);
-   //    transition: transform 0.2s ease;
-   // }
+   border-radius: map.get($border-radius, 'md');
+   min-height: 44px; // Touch target size
+   display: flex;
+   align-items: center;
+   justify-content: center;
 
    &:hover {
-      background: $color-neutral-white-alpha;
-
+      background: rgba(255, 255, 255, 0.1);
       color: $color-neutral-white;
    }
 
    &.active {
-      border-radius: 20px;
+      border-radius: map.get($border-radius, 'md');
       background: $color-neutral-white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       
       span {
          color: $color-neutral-black;
@@ -54,9 +50,78 @@
 
    span {
       font-weight: map.get($font-weights, "bold");
-
       font-size: map.get($font-sizes, "sm");
-
       transition: all 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
    }
+}
+
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+  .team-navbar {
+    gap: map.get($spacing, 'xxs');
+    padding: map.get($spacing, 'xs');
+    
+    .team-navbar-btn {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'xxs');
+      min-height: 48px;
+      
+      span {
+        font-size: map.get($font-sizes, 'xs');
+      }
+    }
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .team-navbar {
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xxs');
+    padding: map.get($spacing, 'xs');
+    
+    .team-navbar-btn {
+      flex: 1 1 calc(50% - #{map.get($spacing, 'xxs')});
+      padding: map.get($spacing, 'sm') map.get($spacing, 'xxs');
+      min-height: 44px;
+      
+      span {
+        font-size: map.get($font-sizes, 'xs');
+        
+        // Hide text on very small screens, show only icons
+        @media (max-width: 360px) {
+          font-size: 0;
+          
+          &::before {
+            content: attr(data-icon);
+            font-size: map.get($font-sizes, 'sm');
+          }
+        }
+      }
+    }
+  }
+}
+
+// Very small screens (360px and below) - Icon only mode
+@media (max-width: 360px) {
+  .team-navbar {
+    .team-navbar-btn {
+      flex: 1 1 calc(33.333% - #{map.get($spacing, 'xxs')});
+      padding: map.get($spacing, 'sm') map.get($spacing, 'xxs');
+      min-height: 40px;
+      
+      span {
+        font-size: 0;
+        
+        &::before {
+          content: attr(data-icon);
+          font-size: map.get($font-sizes, 'sm');
+        }
+      }
+    }
+  }
 }

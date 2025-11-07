@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import ResultsSection from './components/ResultsSection';
 import FixturesSection from './components/FixturesSection';
 import SummarySection from './components/SummarySection';
-import NewsSection from './components/NewsSection';
 import { floorballStatisticsService, type FloorballSeasonStatisticsSummaryDto } from '../../api/floorball/floorballStatistics';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
@@ -14,6 +14,7 @@ import './LeaguePage.scss';
 type TabType = 'summary' | 'news' | 'results' | 'fixtures' | 'standings';
 
 export default function LeaguePage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState<TabType>('summary');
   
@@ -46,7 +47,7 @@ export default function LeaguePage() {
         setSeasonSummary(data);
       } catch (err) {
         console.error('Failed to fetch season statistics:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load league data');
+        setError(err instanceof Error ? err.message : t('leaguePage.errors.loadLeagueData'));
       } finally {
         setLoading(false);
       }
@@ -77,7 +78,7 @@ export default function LeaguePage() {
         setTotalPages(response.pagination.totalPages || 1);
       } catch (err) {
         console.error('Failed to fetch matches:', err);
-        setMatchesError(err instanceof Error ? err.message : 'Failed to load matches');
+        setMatchesError(err instanceof Error ? err.message : t('leaguePage.errors.loadMatches'));
       } finally {
         setMatchesLoading(false);
       }
@@ -91,19 +92,22 @@ export default function LeaguePage() {
   };
 
   const tabs: { key: TabType; label: string }[] = [
-    { key: 'standings', label: 'Standings' },
-    { key: 'summary', label: 'Summary' },
-    { key: 'news', label: 'News' },
-    { key: 'results', label: 'Results' },
-    { key: 'fixtures', label: 'Fixtures' }
+    { key: 'summary', label: t('leaguePage.tabs.summary') },
+    { key: 'standings', label: t('leaguePage.tabs.standings') },
+    { key: 'results', label: t('leaguePage.tabs.results') },
+    { key: 'fixtures', label: t('leaguePage.tabs.fixtures') }
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'summary':
-        return <SummarySection />;
-      case 'news':
-        return <NewsSection />;
+        return (
+          <SummarySection 
+            seasonSummary={seasonSummary}
+            loading={loading}
+            error={error}
+          />
+        );
       case 'results':
         return (
           <ResultsSection 
@@ -140,7 +144,7 @@ export default function LeaguePage() {
   };
 
   return (
-    <PageTemplate title={`League ${id}`}>
+    <PageTemplate title={id ? `${t('leaguePage.title')} ${id}` : t('leaguePage.defaultTitle')}>
       <div className="league-page">
         {/* Hero Image Background */}
         <div className="hero-image-container">
@@ -156,17 +160,7 @@ export default function LeaguePage() {
               </div>
 
               <div className="league-info">
-                <h1 className="league-title">LEAGUE</h1>
-                <div className="league-details">
-                  <div className="detail-item">
-                    <span className="detail-icon">🕐</span>
-                    <span>2025/2026</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-icon">📍</span>
-                    <span>Location</span>
-                  </div>
-                </div>
+                <h1 className="league-title">{seasonSummary?.seasonName || t('leaguePage.defaultTitle')}</h1>
                 <div className="league-tabs">
                   {tabs.map((tab) => (
                     <button

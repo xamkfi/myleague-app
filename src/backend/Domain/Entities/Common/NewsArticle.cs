@@ -6,10 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Domain.DomainEvents;
-using Domain.DomainEvents.Common;
 using Domain.Enums.Common;
-using Domain.EventSourcing;
 using Domain.ValueObjects.Common;
 using static System.Net.WebRequestMethods;
 
@@ -19,7 +16,7 @@ namespace Domain.Entities.Common
     /// Represents a news article entity that supports domain events for tracking changes.
     /// This class manages news content, metadata, categorization, and archiving functionality.
     /// </summary>
-    public class NewsArticle : AggregateRoot
+    public class NewsArticle : BaseEntity
     {
         /// <summary>
         /// Gets the title of the news article. Limited to 200 characters.
@@ -92,7 +89,6 @@ namespace Domain.Entities.Common
             Author = author;
             CreatedAt = DateTime.UtcNow;
             IsArchived = false;
-            AddDomainEvent(new NewsArticleCreatedEvent(Id, Title, Author, CreatedAt));
         }
 
         /// <summary>
@@ -111,7 +107,6 @@ namespace Domain.Entities.Common
             ContentHtml = ValidateContent(contentHtml);
             Summary = summary;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsArticleContentUpdatedEvent(Id, oldTitle, Title, oldContent, ContentHtml, oldSummary, Summary, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -123,7 +118,6 @@ namespace Domain.Entities.Common
             string? oldAuthor = Author;
             Author = author;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsArticleAuthorUpdatedEvent(Id, oldAuthor, Author, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -138,7 +132,6 @@ namespace Domain.Entities.Common
 
             _imageUrls.Add(imageUrl);
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsArticleImageUpdatedEvent(Id ,imageUrl, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -150,7 +143,6 @@ namespace Domain.Entities.Common
             Uri? oldMainImage = MainImage;
             MainImage = mainImage;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsArticleMainImageUpdatedEvent(Id, oldMainImage, MainImage, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -162,7 +154,6 @@ namespace Domain.Entities.Common
             NewsCategory? oldCategory = Category;
             Category = category;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsArticleCategoryChangedEvent(Id, oldCategory, Category, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -174,7 +165,6 @@ namespace Domain.Entities.Common
             SportsCategory? oldCategory = SportCategory;
             SportCategory = category;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsArticleSportCategoryChangedEvent(Id, oldCategory, SportCategory, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -190,7 +180,6 @@ namespace Domain.Entities.Common
                 return;
             _tags.Add(tag);
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsArticleTagAddedEvent(Id, tag, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -202,7 +191,6 @@ namespace Domain.Entities.Common
             if (_tags.RemoveAll(t => string.Equals(t, tag, StringComparison.OrdinalIgnoreCase)) > 0)
             {
                 UpdatedAt = DateTime.UtcNow;
-                AddDomainEvent(new NewsArticleTagRemovedEvent(Id, tag, UpdatedAt.Value));
             }
         }
 
@@ -215,7 +203,6 @@ namespace Domain.Entities.Common
                 return;
             IsArchived = true;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsArticleArchivedEvent(Id, UpdatedAt.Value));
         }
 
         /// <summary>
@@ -227,7 +214,6 @@ namespace Domain.Entities.Common
                 return;
             IsArchived = false;
             UpdatedAt = DateTime.UtcNow;
-            AddDomainEvent(new NewsArticleRestoredEvent(Id, UpdatedAt.Value));
         }
 
         /// <summary>

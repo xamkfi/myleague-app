@@ -89,7 +89,7 @@ public interface IFloorballStatisticsRepository
     /// <param name="playerId">The player ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Player statistics across all seasons</returns>
-    Task<IEnumerable<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default);
+    Task<List<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds or updates player season statistics
@@ -137,7 +137,7 @@ public interface IFloorballStatisticsRepository
     /// <param name="playerId">The player ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Goalie statistics across all seasons</returns>
-    Task<IEnumerable<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default);
+    Task<List<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds or updates goalie season statistics

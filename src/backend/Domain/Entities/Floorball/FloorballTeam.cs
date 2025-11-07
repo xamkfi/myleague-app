@@ -1,8 +1,6 @@
 using Domain.ValueObjects.Floorball;
 using Domain.Entities;
-using Domain.EventSourcing;
 using Domain.Entities.Common;
-using Domain.DomainEvents.Floorball;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 
@@ -11,7 +9,7 @@ namespace Domain.Entities.Floorball;
 /// <summary>
 /// Represents a floorball team within a club
 /// </summary>
-public class FloorballTeam : AggregateRoot
+public class FloorballTeam : BaseEntity
 {
     /// <summary>
     /// Gets the name of the team
@@ -156,14 +154,6 @@ public class FloorballTeam : AggregateRoot
         TeamCategory = teamCategory;
         LogoUrl = logoUrl;
         
-        AddDomainEvent(new FloorballTeamRegisteredEvent(
-            Id, 
-            name, 
-            divisionId, 
-            club.Id, 
-            homeArena, 
-            primaryJerseyColor, 
-            secondaryJerseyColor));
     }
 
     /// <summary>
@@ -261,12 +251,6 @@ public class FloorballTeam : AggregateRoot
         var teamPlayer = new FloorballTeamPlayer(Id, player.Id, position, jerseyNumber);
         _roster.Add(teamPlayer);
         
-        // Create and add a domain event for player addition
-        AddDomainEvent(new FloorballPlayerAddedToTeamEvent(
-            Id,
-            player.Id,
-            position,
-            jerseyNumber));
     }
 
     /// <summary>
@@ -282,10 +266,6 @@ public class FloorballTeam : AggregateRoot
 
         _roster.Remove(teamPlayer);
         
-        // Create and add a domain event for player removal
-        AddDomainEvent(new FloorballPlayerRemovedFromTeamEvent(
-            Id,
-            playerId));
     }
 
     /// <summary>
@@ -344,12 +324,5 @@ public class FloorballTeam : AggregateRoot
         teamPlayer.UpdateJerseyNumber(jerseyNumber);
         teamPlayer.SetActiveStatus(isActive);
         
-        // Create and add a domain event for player update
-        AddDomainEvent(new FloorballPlayerUpdatedInTeamEvent(
-            Id,
-            playerId,
-            position,
-            jerseyNumber,
-            isActive));
     }
 } 

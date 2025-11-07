@@ -12,6 +12,7 @@ import { floorballMatchService } from '../../../../api/floorball/floorballMatchS
 import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
 import MatchForm from '../MatchOverviewPage/Components/MatchForm/MatchForm';
 import BackButton from '../../../../components/BackButton/BackButton';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import './EditMatchPage.scss';
 import '../MatchOverviewPage/MatchOverviewPage.scss';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
@@ -137,13 +138,7 @@ const EditMatchPage = () => {
           <div className="header-right"></div>
         </div>
 
-        {error && (
-          <div className="error-alert page-error">
-            <span className="error-icon">⚠️</span>
-            <span className="error-text">{error}</span>
-            <button onClick={() => setError(null)} className="error-close">×</button>
-          </div>
-        )}
+        <ErrorPopup message={error} />
 
         <div className="form-container">
           {matchData ? (

@@ -1,6 +1,5 @@
 using Domain.Entities;
 using Domain.Entities.Common;
-using Domain.EventSourcing;
 using Domain.ValueObjects.Common;
 
 namespace Domain.Entities.Floorball;
@@ -8,7 +7,7 @@ namespace Domain.Entities.Floorball;
 /// <summary>
 /// Represents a floorball referee in the system
 /// </summary>
-public class FloorballReferee : AggregateRoot
+public class FloorballReferee : BaseEntity
 {
     /// <summary>
     /// Gets the ID of the person this referee profile belongs to (FK)

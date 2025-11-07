@@ -1,11 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Floorball;
-using Domain.DomainEvents;
-using MyLeague.Infrastructure.DomainEvents;
 using MyLeague.Infrastructure.Persistence.Extensions;
 using MyLeague.Infrastructure.Persistence.Configurations.Floorball;
 using System.Reflection;
-using MyLeague.Infrastructure.Persistence.EventStores;
 
 namespace MyLeague.Infrastructure.Persistence.Contexts
 {
@@ -14,7 +11,6 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
     /// </summary>
     public class FloorballDbContext : DbContext
     {
-        private readonly IDomainEventDispatcher? _dispatcher;
         private bool _isDispatchingEvents = false;
         
         /// <summary>
@@ -23,12 +19,8 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// <param name="options">The options to be used by the DbContext.</param>
         /// <param name="dispatcher">The domain event dispatcher to use.</param>
         public FloorballDbContext(
-            DbContextOptions<FloorballDbContext> options,
-            IDomainEventDispatcher? dispatcher = null)
-            : base(options)
-        {
-            _dispatcher = dispatcher;
-        }
+            DbContextOptions<FloorballDbContext> options) : base(options)
+        {}
 
         /// <summary>
         /// Gets or sets the FloorballPlayers DbSet.
@@ -49,11 +41,6 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// Gets or sets the FloorballMatches DbSet.
         /// </summary>
         public DbSet<FloorballMatch> FloorballMatches { get; set; }
-
-        /// <summary>
-        /// Gets or sets the EventSourcedFloorballMatches DbSet.
-        /// </summary>
-        public DbSet<EventSourcedFloorballMatch> EventSourcedFloorballMatches { get; set; }
 
         /// <summary>
         /// Gets or sets the FloorballSeasons DbSet.
@@ -95,10 +82,6 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// </summary>
         public DbSet<FloorballTeamManager> FloorballTeamManagers { get; set; }
 
-        /// <summary>
-        /// Gets or sets the FloorballStoredEvents DbSet.
-        /// </summary>
-        public DbSet<FloorballStoredEvent> FloorballStoredEvents { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the FloorballTeamSeasonStatistics DbSet.
@@ -142,12 +125,12 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             // Prevent infinite recursion when called from SaveChangesWithEventsAsync
-            if (_isDispatchingEvents || _dispatcher == null)
+            if (_isDispatchingEvents)
             {
                 return await base.SaveChangesAsync(cancellationToken);
             }
 
-            return await this.SaveChangesWithEventsAsync(_dispatcher, cancellationToken);
+            return await this.SaveChangesWithEventsAsync(cancellationToken);
         }
 
         /// <summary>
@@ -184,13 +167,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballTeamConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchConfiguration());
-            modelBuilder.ApplyConfiguration(new EventSourcedFloorballMatchConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballSeasonConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballRefereeConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchEventConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamManagerConfiguration());
-            modelBuilder.ApplyConfiguration(new FloorballStoredEventConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballGoalConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPenaltyConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballSaveConfiguration());

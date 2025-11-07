@@ -9,6 +9,7 @@ import { divisionService } from '../../../../api/common/divisionService';
 import { TeamCategory, type FloorballTeamRequest } from '../../../../types/floorball/floorballTypes';
 import type { DivisionType } from '../../../../types/common/divisionType';
 import './CreateTeamPage.scss';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
 const CreateTeamPage = () => {
   const { t } = useTranslation();
@@ -111,11 +112,7 @@ const CreateTeamPage = () => {
           <h1>{t('floorball.teams.createNew', 'Create New Team')}</h1>
         </div>
 
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
+        <ErrorPopup message={error} />
 
         <form onSubmit={handleSubmit} className="create-team-form">
           <div className="form-group">

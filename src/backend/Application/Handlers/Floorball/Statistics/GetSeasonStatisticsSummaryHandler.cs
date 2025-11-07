@@ -150,25 +150,26 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             FloorballSeasonStatisticsSummaryDto summaryDto = new FloorballSeasonStatisticsSummaryDto
             {
                 SeasonId = request.SeasonId,
+                SeasonName = seasonName,
                 TeamStandings = teamStats.Select(ts => FloorballStatisticsMapper.ToDto(ts)).ToList(),
-                TopScorers = topScorers.Select(ps => 
+                TopScorers = topScorers.Select(ps =>
                 {
-                    string playerName = playerPersonLookup.TryGetValue(ps.PlayerId, out Person? person) 
-                        ? person.FullName 
+                    string playerName = playerPersonLookup.TryGetValue(ps.PlayerId, out Person? person)
+                        ? person.FullName
                         : string.Empty;
                     string teamName = teamNameLookup.TryGetValue(ps.TeamId, out string? team) ? team : string.Empty;
                     return FloorballStatisticsMapper.ToDto(ps, playerName);
                 }).ToList(),
-                TopAssists = topAssists.Select(ps => 
+                TopAssists = topAssists.Select(ps =>
                 {
-                    string playerName = playerPersonLookup.TryGetValue(ps.PlayerId, out Person? person) 
+                    string playerName = playerPersonLookup.TryGetValue(ps.PlayerId, out Person? person)
                         ? person.FullName
-                        : string.Empty;                  
+                        : string.Empty;
                     return FloorballStatisticsMapper.ToDto(ps, playerName);
                 }).ToList(),
-                TopGoalies = topGoalies.Select(gs => 
+                TopGoalies = topGoalies.Select(gs =>
                 {
-                    string playerName = playerPersonLookup.TryGetValue(gs.PlayerId, out Person? person) 
+                    string playerName = playerPersonLookup.TryGetValue(gs.PlayerId, out Person? person)
                         ? person.FullName
                         : string.Empty;
                     string teamName = teamNameLookup.TryGetValue(gs.TeamId, out string? team) ? team : string.Empty;

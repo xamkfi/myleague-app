@@ -1,12 +1,11 @@
 using Domain.Entities.Common;
-using Domain.EventSourcing;
 
 namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a floorball team manager in the system
 /// </summary>
-public class FloorballTeamManager : AggregateRoot
+public class FloorballTeamManager : BaseEntity
 {
     /// <summary>
     /// Gets the ID of the person this team manager profile belongs to (FK)
