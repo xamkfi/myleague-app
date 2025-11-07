@@ -671,7 +671,6 @@ const ManageMatchPage = () => {
   if (error) {
     return (
       <div className="manage-match-page">
-        <Navbar />
         <div className="back-button-container">
           <BackButton to="/admin/floorball/matches" text="Back to Overview" />
         </div>
