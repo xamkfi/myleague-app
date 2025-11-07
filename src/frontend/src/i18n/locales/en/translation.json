@@ -98,10 +98,17 @@
   },
   "admin": {
     "title": "Admin Dashboard",
+    "database": "Database",
+    "sportsTitle": "Sports",
+    "view": "Admin view",
     "actions": {
-      "managePerson": "Edit/Add Person",
-      "news": "Create News",
-      "floorball": "Floorball Management"
+      "home": "Home",
+      "persons": "Persons",
+      "managePerson": "Manage persons",
+      "news": "News",
+      "manageNews": "Manage news",
+      "floorball": "Floorball",
+      "manageFloorball": "Manage floorball"
     },
     "persons":{
       "title": "Person Management",
@@ -346,7 +353,8 @@
       },
       "comingSoonAlert": "🚧 {{featureName}} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯",
       "actions": {
-        "teams": "Manage Teams",
+        "teams": "Teams",
+        "manageTeams": "Manage teams",
         "players": "Manage Players",
         "coaches": "Manage Coaches",
         "teamManagers": "Manage Team Managers",
@@ -493,7 +501,7 @@
       "women": "Women"
     },
     "referees": {
-      "title": "Manage Floorball Referees",
+      "title": "Manage Referees",
       "totalCount": "{{count}} referees",
       "createNew": "Create New Referee",
       "createFromPerson": "Create Referee from Available Persons",

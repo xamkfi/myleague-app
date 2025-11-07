@@ -98,10 +98,17 @@
   },
   "admin": {
     "title": "Hallintapaneeli",
+    "database": "Tietokanta",
+    "sportsTitle": "Urheilulajit",
+    "view": "Admin näkymä",
     "actions": {
-      "managePerson": "Muokkaa/Lisää Henkilö",
-      "news": "Luo Uutinen",
-      "floorball": "Salibandyn Hallinta"
+      "home": "Koti",
+      "persons": "Henkilöt",
+      "managePerson": "Hallitse henkilöitä",
+      "news": "Uutiset",
+      "manageNews": "Hallitse uutisia",
+      "floorball": "Salibandy",
+      "manageFloorball": "Hallitse salibandya"
     },
     "persons":{
       "title": "Henkilöiden hallinta",
@@ -346,7 +353,8 @@
       },
       "comingSoonAlert": "🚧 {{featureName}} tulossa pian! 🚧\n\nKehitystiimimme työskentelee kovasti tuodakseen sinulle tämän ominaisuuden. Pysy kuulolla päivityksistä! 🎯",
       "actions": {
-        "teams": "Hallitse Joukkueita",
+        "teams": "Joukkueet",
+        "manageTeams": "Hallitse joukkueita",
         "players": "Hallitse Pelaajia",
         "coaches": "Hallitse Valmentajia",
         "teamManagers": "Hallitse Joukkueenjohtajia",

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import PageTemplate from "../../../components/PageTemplate/PageTemplate";
+import PageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
 import QuillEditor from "./components/QuillEditor";
 import { useTranslation } from "react-i18next";
 import NewsInputs, { type NewsInputsData } from "./components/NewsInputs";
@@ -10,6 +10,7 @@ import { UpdateNewsService } from "../../../api/admin/News/UpdateNewsService";
 import { useNavigate, useParams } from "react-router-dom";
 import { singleNewsService } from "../../../api/news/singleNewsService";
 import "./NewsCreateEditPage.scss";
+import BackButton from '../../../components/BackButton/BackButton';
 
 declare global {
   interface Window {
@@ -220,6 +221,10 @@ export default function NewsCreateEditPage() {
   if (preview) {
     return (
       <PageTemplate title={isEditMode ? t('admin.news.edit', 'Edit News Article') : t('admin.news.create', 'Create News Article')}>
+        <BackButton 
+            to="/admin/news" 
+            text={t('common.back', 'Back to Floorball Management')} 
+          />
       <div className="min-h-screen">
         <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-6xl mx-auto px-4 py-3">
@@ -259,7 +264,10 @@ export default function NewsCreateEditPage() {
 
   return (
     <PageTemplate title={isEditMode ? t('admin.news.edit', 'Edit News Article') : t('admin.news.create', 'Create News Article')}>
-      
+      <BackButton 
+            to="/admin/news" 
+            text={t('common.back', 'Back to Floorball Management')} 
+          />
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-6xl mx-auto px-4 py-3">
