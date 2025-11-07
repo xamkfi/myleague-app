@@ -19,6 +19,10 @@
   position: relative;
   overflow: hidden;
   height: 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
 
   &:not(:first-child) {
     cursor: pointer;
