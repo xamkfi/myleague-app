@@ -12,6 +12,7 @@ import { floorballTeamService } from '../../../../../api/floorball/floorballTeam
 import { type FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 import { useDivisions } from '../../../../../hooks/useDivisions';
 import './EditSeasonPage.scss';
+import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
 const EditSeasonPage = () => {
   const { t } = useTranslation();
@@ -400,13 +401,13 @@ const EditSeasonPage = () => {
   if (!season) {
     return (
       <PageTemplate title={t('floorball.seasons.edit.title', 'Edit Season')}>
-        <div className="edit-season-error">
-          <p>{t('floorball.seasons.errors.notFound', 'Season not found')}</p>
-          <BackButton 
-            to="/admin/floorball/seasons" 
-            text={t('common.back', 'Back to Seasons')} 
-          />
-        </div>
+        <ErrorPopup 
+          message={t('floorball.seasons.errors.notFound', 'Season not found')}
+        />
+        <BackButton 
+          to="/admin/floorball/seasons" 
+          text={t('common.back', 'Back to Seasons')} 
+        />
       </PageTemplate>
     );
   }
@@ -463,12 +464,7 @@ const EditSeasonPage = () => {
           {/* Season Details Tab */}
           {activeTab === 'details' && (
             <form onSubmit={handleSubmit} className="edit-season-form">
-              {error && (
-                <div className="error-message">
-                  <i className="fas fa-exclamation-circle"></i>
-                  {error}
-                </div>
-              )}
+              <ErrorPopup message={error} />
 
               <div className="form-group">
                 <label htmlFor="edit-name">
@@ -570,12 +566,7 @@ const EditSeasonPage = () => {
           {/* Teams Management Tab */}
           {activeTab === 'teams' && (
             <div className="teams-management">
-              {error && (
-                <div className="error-message">
-                  <i className="fas fa-exclamation-circle"></i>
-                  {error}
-                </div>
-              )}
+              <ErrorPopup message={error} />
 
               <div className="teams-sections-container">
                 {/* Current Teams */}

@@ -1,7 +1,6 @@
 ﻿using Domain.Enums.Hockey;
 using Domain.ValueObjects.Hockey;
 using Domain.Entities;
-using Domain.EventSourcing;
 using Domain.Entities.Common;
 
 namespace Domain.Entities.Hockey;
@@ -9,7 +8,7 @@ namespace Domain.Entities.Hockey;
 /// <summary>
 /// Represents a Hockey team within a club
 /// </summary>
-public class HockeyTeam : AggregateRoot
+public class HockeyTeam : BaseEntity
 {
     /// <summary>
     /// Gets the name of the team

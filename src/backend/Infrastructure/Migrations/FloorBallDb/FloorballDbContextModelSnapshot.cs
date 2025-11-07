@@ -23,62 +23,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Domain.Entities.Floorball.EventSourcedFloorballMatch", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("AwayScore")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("AwayTeamId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("HomeScore")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("HomeTeamId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("OfficialIdsJson")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ScheduledDateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("SeasonId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Venue")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<int>("Version")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("WentToOvertime")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("WentToShootout")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AwayTeamId");
-
-                    b.HasIndex("HomeTeamId");
-
-                    b.HasIndex("SeasonId");
-
-                    b.ToTable("EventSourcedFloorballMatches", "floorball");
-                });
-
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballGoalieSeasonStatistics", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1319,37 +1263,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.ToTable("FloorballSeasonTeam", "floorball");
                 });
 
-            modelBuilder.Entity("MyLeague.Infrastructure.Persistence.EventStores.FloorballStoredEvent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AggregateId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("OccurredOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Version")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AggregateId", "Version")
-                        .IsUnique();
-
-                    b.ToTable("FloorballEventStore", "floorball");
-                });
-
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballGoal", b =>
                 {
                     b.HasBaseType("Domain.Entities.Floorball.FloorballMatchEvent");
@@ -1450,27 +1363,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         });
 
                     b.HasDiscriminator().HasValue("Save");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Floorball.EventSourcedFloorballMatch", b =>
-                {
-                    b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
-                        .WithMany()
-                        .HasForeignKey("AwayTeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
-                        .WithMany()
-                        .HasForeignKey("HomeTeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Floorball.FloorballSeason", null)
-                        .WithMany()
-                        .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballGoalieSeasonStatistics", b =>

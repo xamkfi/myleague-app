@@ -113,21 +113,132 @@
    }
 }
 
-// Responsive adjustments
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
 @media (max-width: 768px) {
    .results-section {
+      .results-container {
+         padding: map.get($spacing, 'sm');
+      }
+
+      .results-header {
+         font-size: map.get($font-sizes, 'md');
+         text-align: center;
+         margin-bottom: map.get($spacing, 'sm');
+      }
+
+      .results-season-header {
+         font-size: map.get($font-sizes, 'sm');
+         padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+         text-align: center;
+      }
+
+      .matches-grid {
+         margin-bottom: map.get($spacing, 'sm');
+      }
 
       .pagination {
          flex-direction: column;
-         gap: 0.5rem;
+         gap: map.get($spacing, 'sm');
+         margin-top: map.get($spacing, 'md');
+         padding: map.get($spacing, 'sm');
 
          .pagination-btn {
-            padding: 0.6rem 1.2rem;
-            font-size: 0.8rem;
+            padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+            font-size: map.get($font-sizes, 'sm');
          }
 
          .page-info {
             margin: 0;
+            font-size: map.get($font-sizes, 'sm');
+         }
+      }
+
+      .loading-state,
+      .error-state,
+      .no-matches {
+         padding: map.get($spacing, 'lg') map.get($spacing, 'sm');
+         font-size: map.get($font-sizes, 'sm');
+
+         .retry-button {
+            padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+            font-size: map.get($font-sizes, 'sm');
+         }
+      }
+   }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+   .results-section {
+      .results-container {
+         padding: map.get($spacing, 'xs');
+      }
+
+      .results-header {
+         font-size: map.get($font-sizes, 'sm');
+         margin-bottom: map.get($spacing, 'xs');
+      }
+
+      .results-season-header {
+         font-size: map.get($font-sizes, 'xs');
+         padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+      }
+
+      .matches-grid {
+         margin-bottom: map.get($spacing, 'xs');
+      }
+
+      .pagination {
+         gap: map.get($spacing, 'xs');
+         margin-top: map.get($spacing, 'sm');
+         padding: map.get($spacing, 'xs');
+
+         .pagination-btn {
+            padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+            font-size: map.get($font-sizes, 'xs');
+         }
+
+         .page-info {
+            font-size: map.get($font-sizes, 'xs');
+         }
+      }
+
+      .loading-state,
+      .error-state,
+      .no-matches {
+         padding: map.get($spacing, 'md') map.get($spacing, 'xs');
+         font-size: map.get($font-sizes, 'xs');
+
+         .retry-button {
+            padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+            font-size: map.get($font-sizes, 'xs');
+         }
+      }
+   }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+   .results-section {
+      .results-container {
+         padding: map.get($spacing, 'xxs');
+      }
+
+      .results-header {
+         font-size: map.get($font-sizes, 'xs');
+      }
+
+      .results-season-header {
+         font-size: map.get($font-sizes, 'xs');
+         padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+      }
+
+      .pagination {
+         .pagination-btn {
+            padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+            font-size: map.get($font-sizes, 'xs');
          }
       }
    }

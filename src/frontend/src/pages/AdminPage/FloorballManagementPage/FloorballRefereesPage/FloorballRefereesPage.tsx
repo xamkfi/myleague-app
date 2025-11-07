@@ -9,6 +9,7 @@ import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
 import './FloorballRefereesPage.scss';
 import BackButton from '../../../../components/BackButton/BackButton';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
 const FloorballRefereesPage = () => {
   const { t } = useTranslation();
@@ -152,16 +153,7 @@ const FloorballRefereesPage = () => {
         </div>
         
         {/* Error message */}
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
-
-        {/* Referees count */}
-        <div className="referees-count">
-          <span>{t('floorball.referees.totalCount', `${filteredReferees.length} referees`, { count: filteredReferees.length })}</span>
-        </div>
+        <ErrorPopup message={error} />
         
         {/* Referees table */}
         <div className="referees-table-wrapper">

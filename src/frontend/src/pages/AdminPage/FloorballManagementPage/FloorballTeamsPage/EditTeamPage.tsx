@@ -17,6 +17,7 @@ import {
 } from '../../../../types/floorball/floorballTypes';
 import type { DivisionType } from '../../../../types/common/divisionType';
 import './EditTeamPage.scss';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
 const EditTeamPage = () => {
   const { t } = useTranslation();
@@ -406,9 +407,7 @@ const EditTeamPage = () => {
   if (!teamId) {
     return (
       <PageTemplate title={t('floorball.teams.editTeam', 'Edit Team')}>
-        <div className="edit-team-error">
-          <p>Team ID is required</p>
-        </div>
+        <ErrorPopup message={'Team ID is required'} />
       </PageTemplate>
     );
   }
@@ -425,11 +424,7 @@ const EditTeamPage = () => {
           <h1>{t('floorball.teams.editTeam', 'Edit Team')}: {currentTeam?.name}</h1>
         </div>
 
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
+        <ErrorPopup message={error} />
 
         {/* Tab Navigation */}
         <div className="tab-navigation">

@@ -39,6 +39,21 @@ namespace Application.Mappings.Common
             );
         }
 
+        public static PersonPublicDto ToPublicDto(Person person)
+        {
+            if (person == null)
+                throw new ArgumentNullException(nameof(person));
+
+            return new PersonPublicDto(
+                person.Id,
+                person.FirstName,
+                person.LastName,
+                person.BirthDate,
+                person.FullName,
+                person.IsRegistered
+            );
+        }
+
         /// <summary>
         /// Maps a collection of Person entities to a collection of PersonDtos
         /// </summary>

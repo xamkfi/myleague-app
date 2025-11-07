@@ -1,6 +1,4 @@
-using Domain.EventSourcing;
 using Domain.ValueObjects.Common;
-using Domain.DomainEvents.Common;
 using Domain.Enums.Common;
 
 namespace Domain.Entities.Common;
@@ -8,7 +6,7 @@ namespace Domain.Entities.Common;
 /// <summary>
 /// Represents a person in the system
 /// </summary>
-public class Person : AggregateRoot
+public class Person : BaseEntity
 {
     /// <summary>
     /// Gets the first name of the person
@@ -87,8 +85,6 @@ public class Person : AggregateRoot
         this.role = role;
         Address = address;
         ContactInfo = contactInfo;
-
-        AddDomainEvent(new PersonRegisteredEvent(Id, firstName, lastName, birthDate, address, contactInfo));
     }
 
     /// <summary>
@@ -109,7 +105,6 @@ public class Person : AggregateRoot
         FirstName = firstName;
         LastName = lastName;
 
-        AddDomainEvent(new PersonInfoUpdatedEvent(Id, firstName, lastName));
     }
 
     /// <summary>

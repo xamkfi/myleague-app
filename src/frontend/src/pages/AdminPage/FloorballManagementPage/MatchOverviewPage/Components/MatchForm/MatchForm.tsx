@@ -10,6 +10,7 @@ import { floorballSeasonSearchService } from '../../../../../../api/floorball/fl
 import { floorballTeamNameSearchService } from '../../../../../../api/floorball/floorballTeamNameSearchService';
 import { floorballRefereeSearchService } from '../../../../../../api/floorball/floorballRefereeSearchService';
 import './MatchForm.scss';
+import ErrorPopup from '../../../../../../components/ErrorPopup/ErrorPopup';
 
 type MatchFormMode = 'create' | 'edit';
 
@@ -466,11 +467,13 @@ const MatchForm = ({
   return (
     <>
       {error && (
-        <div className="error-alert">
-          <span className="error-icon">⚠️</span>
-          <span className="error-text">{error}</span>
-          <button onClick={() => setError(null)} className="error-close">×</button>
-        </div>
+        <ErrorPopup message={error} />
+
+        // <div className="error-alert">
+        //   <span className="error-icon">⚠️</span>
+        //   <span className="error-text">{error}</span>
+        //   <button onClick={() => setError(null)} className="error-close">×</button>
+        // </div>
       )}
       
       <form onSubmit={handleSubmit} className="modal-form">

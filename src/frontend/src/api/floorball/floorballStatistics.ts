@@ -123,6 +123,8 @@ export interface FloorballGoalieSeasonStatisticsDto {
 export interface FloorballSeasonStatisticsSummaryDto {
   seasonId: string;
   seasonName: string;
+  startDate: string;
+  endDate: string;
   teamStandings: FloorballTeamSeasonStatisticsDto[];
   topScorers: FloorballPlayerSeasonStatisticsDto[];
   topAssists: FloorballPlayerSeasonStatisticsDto[];

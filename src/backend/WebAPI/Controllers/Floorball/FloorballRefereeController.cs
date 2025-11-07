@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Floorball;
 
 namespace WebAPI.Controllers.Floorball

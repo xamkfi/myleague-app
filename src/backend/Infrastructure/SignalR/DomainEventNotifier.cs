@@ -1,4 +1,3 @@
-using Domain.DomainEvents;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -26,29 +25,6 @@ namespace MyLeague.Infrastructure.SignalR
             _logger = logger;
         }
 
-        /// <summary>
-        /// Notifies clients of a domain event
-        /// </summary>
-        /// <param name="domainEvent">The domain event</param>
-        /// <returns>A task representing the asynchronous operation</returns>
-        public async Task NotifyAsync(IDomainEvent domainEvent)
-        {
-            try
-            {
-                string eventType = domainEvent.GetType().Name;
-                string eventJson = JsonSerializer.Serialize(domainEvent);
-                
-                // Notify all clients of the event
-                await _hubContext.Clients.All.SendAsync("DomainEvent", eventType, eventJson);
-                
-                // Notify clients in the group for this specific event type
-                await _hubContext.Clients.Group(eventType).SendAsync("DomainEvent", eventType, eventJson);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error notifying clients of domain event {EventType}", domainEvent.GetType().Name);
-            }
-        }
 
         /// <summary>
         /// Notifies clients of a custom event with the specified payload

@@ -6,6 +6,7 @@ using Application.Queries.NewsArticles;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using Application.Commands.Common;
 
 namespace WebAPI.Controllers.Common

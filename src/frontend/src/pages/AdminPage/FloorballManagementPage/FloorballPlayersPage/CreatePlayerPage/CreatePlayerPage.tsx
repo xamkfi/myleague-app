@@ -13,6 +13,7 @@ import CheckIcon from '../../../../../assets/basicIcons/check.svg';
 import CloseIcon from '../../../../../assets/basicIcons/close.svg';
 import Button from '../../../../../components/Button/Button';
 import AddIcon from '../../../../../assets/basicIcons/add.svg';
+import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
 type SortField = 'birthDate' | 'registration' | 'name';
 type SortDirection = 'asc' | 'desc';
@@ -374,11 +375,7 @@ const CreatePlayerPage = () => {
         </div>
 
         {/* Error Message */}
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
+        <ErrorPopup message={error} />
 
         {/* Persons List */}
         <div className="persons-container">

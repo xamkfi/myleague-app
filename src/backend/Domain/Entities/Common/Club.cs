@@ -1,17 +1,14 @@
-using Domain.DomainEvents.Common;
-using Domain.DomainEvents.Floorball;
 using Domain.Entities.Floorball;
 using Domain.Entities.Hockey;
 using Domain.Enums.Common;
 using Domain.Enums.Hockey;
-using Domain.EventSourcing;
 
 namespace Domain.Entities.Common
 {
     /// <summary>
     /// Represents a sports club that can have both floorball and hockey teams.
     /// </summary>
-    public class Club : AggregateRoot
+    public class Club : BaseEntity
     {
         /// <summary>
         /// Gets the name of the club.
@@ -108,7 +105,6 @@ namespace Domain.Entities.Common
             LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
             ContactEmail = contactEmail ?? "contact@example.com";
 
-            AddDomainEvent(new ClubRegisteredEvent(Id, Name, City, Country, FoundingDate));
         }
 
         /// <summary>
@@ -129,7 +125,6 @@ namespace Domain.Entities.Common
             City = city;
             Country = country;
 
-            AddDomainEvent(new ClubInfoUpdatedEvent(Id, Name, City, Country));
         }
 
         /// <summary>
@@ -192,7 +187,6 @@ namespace Domain.Entities.Common
                 throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
 
             _floorballTeams.Remove(team);
-            AddDomainEvent(new FloorballTeamRemovedEvent(Id, teamId));
             return true;
         }
 

@@ -7,6 +7,7 @@ import { personApi } from '../../../../../api/admin/personApi';
 import { floorballRefereeService } from '../../../../../api/floorball/floorballRefereeService';
 import type { Person } from '../../../../../types/admin/personTypes';
 import './CreateRefereePage.scss';
+import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
 const CreateRefereePage = () => {
   const { t } = useTranslation();
@@ -246,12 +247,7 @@ const CreateRefereePage = () => {
               </button>
             </div>
 
-            {/* Error Message */}
-            {error && (
-              <div className="error-message">
-                <p>{error}</p>
-              </div>
-            )}
+            <ErrorPopup message={error} />
 
             {/* Selection Controls */}
             {selectedPersonIds.size > 0 && (
@@ -351,12 +347,7 @@ const CreateRefereePage = () => {
           </>
         ) : (
           <form onSubmit={handleCreateReferee} className="create-referee-form">
-            {/* Error Message */}
-            {error && (
-              <div className="error-message">
-                <p>{error}</p>
-              </div>
-            )}
+            {/* Error moved to global ErrorPopup */}
 
             {/* Show selected persons */}
             <div className="selected-persons-list">
