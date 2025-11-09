@@ -75,7 +75,7 @@ const EditTeamPage = () => {
       console.log('Team loaded:', team);
     } catch (err) {
       console.error('Error loading team data:', err);
-      setError('Failed to load team data');
+      setError(String(err));
     } finally {
       setLoadingTeam(false);
     }
@@ -243,6 +243,7 @@ const EditTeamPage = () => {
   const saveRosterChanges = async () => {
     if (!teamId) return;
     
+    setError(null);
     setSavingRoster(true);
     try {
       // 1. Handle removals
@@ -289,10 +290,12 @@ const EditTeamPage = () => {
       
       // Refresh team data to show updated roster
       await loadTeamData();
+
+      setError(null);
       
     } catch (error) {
       console.error('Error saving roster changes:', error);
-      setError('Failed to save roster changes');
+      setError(error instanceof Error ? error.message : String(error));
     } finally {
       setSavingRoster(false);
     }
@@ -738,9 +741,9 @@ const EditTeamPage = () => {
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    <option value="Puolustaja">Puolustaja</option>
-                                    <option value="Forward">Forward</option>
-                                    <option value="Maalivahti">Maalivahti</option>
+                                    <option value={FloorballPosition.Defender}>Puolustaja</option>
+                                    <option value={FloorballPosition.Forward}>Forward</option>
+                                    <option value={FloorballPosition.Goalkeeper}>Maalivahti</option>
                                     <option value={FloorballPosition.None}>None</option>
                                   </select>
                                 </div>

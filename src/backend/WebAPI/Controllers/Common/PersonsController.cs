@@ -221,7 +221,9 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -256,14 +258,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -290,14 +294,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -331,14 +337,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<AddressDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<AddressDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<AddressDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -370,14 +378,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -404,14 +414,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -436,14 +448,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage));
             }
             
-            return StatusCode(500, ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage));
+            return StatusCode(500, ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -470,14 +484,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -502,6 +518,8 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
 
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))

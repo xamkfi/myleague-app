@@ -75,6 +75,13 @@ public class UpdateTeamPlayerHandler : IRequestHandler<UpdateTeamPlayerCommand, 
                 return Result<FloorballTeamPlayerDto>.Failure($"Player with ID {request.PlayerId} is not in the team roster.");
             }
 
+            // Check if player with given jersey number exists
+            if (team.Roster.Any(p => p.JerseyNumber == request.JerseyNumber && p.PlayerId != request.PlayerId))
+            {
+                _logger.LogWarning("Jersey number {number} is already in use", teamPlayer.JerseyNumber);
+                return Result<FloorballTeamPlayerDto>.Failure($"This team already uses jersey number '{request.JerseyNumber}'");
+            }    
+
             _logger.LogInformation("Updating player {PlayerId} in team {TeamId}", request.PlayerId, request.TeamId);
             
             // Update the team player information

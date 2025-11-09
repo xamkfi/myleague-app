@@ -219,9 +219,9 @@ export interface FloorballMatchDto {
 }
 
 export interface CreateFloorballMatchRequest {
-  seasonId: string;
-  homeTeamId: string;
-  awayTeamId: string;
+  seasonId?: string;
+  homeTeamId?: string;
+  awayTeamId?: string;
   refereeId?: string;
   scheduledDateTime: string;
   venue?: string;

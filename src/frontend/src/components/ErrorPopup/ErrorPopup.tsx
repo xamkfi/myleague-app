@@ -7,6 +7,8 @@ interface ErrorPopupProps {
    message: string | null,
 }
 
+
+
 function ErrorPopup({message}: ErrorPopupProps) {
    const [errors, setErrors] = useState<object | string>("")
    const [errorTitle, setErrorTitle] = useState<string>("")
@@ -18,34 +20,58 @@ function ErrorPopup({message}: ErrorPopupProps) {
    }
 
    useEffect(() => {
-      if (message && message?.length > 1){
+      if (message && Object.keys(message).length > 1){
          parseErrorMessage(message)
          setIsShown(true)
       }
    }, [message])
 
-   useEffect(() => {
-      if (errors){
-         console.log(errors)
-      }
-   }, [errors])
+   // useEffect(() => {
+   //    if (errors){
+   //       console.log(errors)
+   //    }
+   // }, [errors])
 
-   const parseErrorMessage = (msg: string | null) => {
-      if (typeof msg == "string"){
-         if (!msg.startsWith("{")){
-            setErrors(msg)
+   const parseErrorMessage = (msg: string) => {
+      if (msg == null)
+         return
+      
+      const raw = msg.replace(/^Error:\s*/, "")
+      let tempMsg: any
+      try {
+         tempMsg = JSON.parse(raw)
+      } catch {
+         const start = raw.indexOf("{")
+         const end = raw.lastIndexOf("}")
+         if (start !== -1 && end !== -1 && end > start) {
+            const jsonPart = raw.slice(start, end + 1)
+            try {
+               tempMsg = JSON.parse(jsonPart)
+            } catch {
+               setErrorTitle(raw)
+               setErrors("")
+               return
+            }
+         } else {
+            setErrorTitle(raw)
+            setErrors("")
             return
          }
-         const tempMsg = JSON.parse(msg)
-         if ("title" in tempMsg){
-            setErrorTitle(tempMsg.title)
-         }else if ("message" in tempMsg){
-            setErrorTitle(tempMsg.message)
-         }
-         console.log(tempMsg.errors)
-         setErrors(tempMsg.errors)
       }
-      // return msg?.split(" ").slice(1).join(" ")
+
+      if ("title" in tempMsg)
+         setErrorTitle(tempMsg.title as string)
+      else if ("message" in tempMsg)
+         setErrorTitle(tempMsg.message as string)
+
+      if ("errors" in tempMsg){
+         const errField = tempMsg.errors
+         if (Array.isArray(errField)) {
+            setErrors(errField)
+         } else if (errField && typeof errField === "object") {
+            setErrors(Object.values(errField).flat())
+         }
+      }
    }
 
    return (
@@ -58,7 +84,7 @@ function ErrorPopup({message}: ErrorPopupProps) {
                   <div className='error-content'>
                      <div id='error-title'>Error{errorTitle ? ": " + errorTitle: ""}</div>
                      {typeof errors == "object" ? Object.entries(errors).map(([key, error]) => (
-                        <div className='error-msg'>• {key}: {error}</div>
+                        <div key={key} className='error-msg'>• {error}</div>
                      )) : 
                      <div className='error-msg'>{errors}</div>
                      }
