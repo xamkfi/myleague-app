@@ -2,12 +2,11 @@ import { useEffect, useState, useRef } from 'react'
 import './ErrorPopup.scss'
 import CancelSVG from '../../assets/basicIcons/cancel.svg'
 import CloseSVG from '../../assets/basicIcons/close.svg'
+import type { ParsedError } from '../../types/common/errorTypes'
 
 interface ErrorPopupProps {
    message: string | null,
 }
-
-
 
 function ErrorPopup({message}: ErrorPopupProps) {
    const [errors, setErrors] = useState<object | string>("")
@@ -37,7 +36,7 @@ function ErrorPopup({message}: ErrorPopupProps) {
          return
       
       const raw = msg.replace(/^Error:\s*/, "")
-      let tempMsg: any
+      let tempMsg: ParsedError
       try {
          tempMsg = JSON.parse(raw)
       } catch {
