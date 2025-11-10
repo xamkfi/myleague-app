@@ -7,6 +7,7 @@ This directory contains PowerShell scripts for building and deploying Docker ima
 - **`deploy-backend.ps1`** - Builds, tags, and pushes the backend Docker image
 - **`deploy-frontend.ps1`** - Builds, tags, and pushes the frontend Docker image
 - **`deploy-all.ps1`** - Wrapper script that deploys both backend and frontend
+- **`seed-data.ps1`** - Populates the database with initial test data
 - **`test-scripts.ps1`** - Test script to validate all scripts work correctly
 
 ## Quick Start
@@ -35,6 +36,7 @@ cd ..
 ## Documentation
 
 - **[VERSIONING-GUIDE.md](./VERSIONING-GUIDE.md)** - Complete guide on versioning and deploying new versions
+- **[SEEDING-GUIDE.md](./SEEDING-GUIDE.md)** - Complete guide on database seeding
 - **[../terraform/DEPLOYMENT-SCRIPTS.md](../terraform/DEPLOYMENT-SCRIPTS.md)** - Detailed script documentation
 - **[../terraform/DEPLOYMENT-GUIDE.md](../terraform/DEPLOYMENT-GUIDE.md)** - Full deployment guide
 
@@ -56,6 +58,27 @@ See [VERSIONING-GUIDE.md](./VERSIONING-GUIDE.md) for detailed instructions.
 $VERSION = "1.2.3"
 .\scripts\deploy-all.ps1 -AcrName $ACR_NAME -Tag $VERSION -ApiUrl $API_URL ... -Deploy
 ```
+
+### Seed Database with Test Data
+
+After deploying the backend, populate the database with initial test data:
+
+```powershell
+# Get backend URL from Terraform
+cd terraform
+$backendUrl = terraform output -raw backend_url
+cd ..
+
+# Run the seeder
+.\scripts\seed-data.ps1 -BackendUrl $backendUrl
+```
+
+Or in one line:
+```powershell
+.\scripts\seed-data.ps1 -BackendUrl "https://your-backend-url.azurecontainerapps.io"
+```
+
+**Note**: Make sure your infrastructure is deployed and the backend is running before seeding.
 
 ### Rollback to Previous Version
 
