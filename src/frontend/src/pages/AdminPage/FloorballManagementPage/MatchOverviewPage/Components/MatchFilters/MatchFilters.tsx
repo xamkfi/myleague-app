@@ -7,30 +7,49 @@ interface MatchFiltersProps {
   seasons: FloorballSeasonDto[];
   selectedSeasonId: string;
   onSeasonChange: (seasonId: string) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 const MatchFilters = ({
   seasons,
   selectedSeasonId,
-  onSeasonChange
+  onSeasonChange,
+  searchQuery,
+  onSearchChange
 }: MatchFiltersProps) => {
   const { t } = useTranslation();
   return (
     <div className="filter-section">
-      <label htmlFor="season-filter">{t('floorball.matches.filters.filterBySeason', 'Filter by Season:')}</label>
-      <select
-        id="season-filter"
-        value={selectedSeasonId}
-        onChange={(e) => onSeasonChange(e.target.value)}
-        className="season-filter"
-      >
-        <option value="">{t('floorball.matches.filters.allSeasons', 'All Seasons')}</option>
-        {seasons.map(season => (
-          <option key={season.id} value={season.id}>
-            {formatSeasonDisplayName(season)}
-          </option>
-        ))}
-      </select>
+      <div className="filter-row">
+        <div className="filter-item">
+          <label htmlFor="season-filter">{t('floorball.matches.filters.filterBySeason', 'Filter by Season:')}</label>
+          <select
+            id="season-filter"
+            value={selectedSeasonId}
+            onChange={(e) => onSeasonChange(e.target.value)}
+            className="season-filter"
+          >
+            <option value="">{t('floorball.matches.filters.allSeasons', 'All Seasons')}</option>
+            {seasons.map(season => (
+              <option key={season.id} value={season.id}>
+                {formatSeasonDisplayName(season)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="filter-item">
+          <label htmlFor="search-filter">{t('floorball.matches.filters.searchByTeam', 'Search by Team:')}</label>
+          <input
+            id="search-filter"
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder={t('floorball.matches.filters.searchPlaceholder', 'Search for team names...')}
+            className="search-filter"
+          />
+        </div>
+      </div>
     </div>
   );
 };

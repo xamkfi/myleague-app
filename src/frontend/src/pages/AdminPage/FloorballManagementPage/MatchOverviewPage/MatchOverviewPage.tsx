@@ -24,6 +24,7 @@ const MatchOverviewPage = () => {
   const [error, setError] = useState<string | null>(null);
   
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Collapsible sections state
   const [collapsedSections, setCollapsedSections] = useState({
@@ -69,9 +70,18 @@ const MatchOverviewPage = () => {
     const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     
     // First filter by season if selected
-    const filtered = selectedSeasonId 
+    let filtered = selectedSeasonId 
       ? matches.filter(match => match.seasonId === selectedSeasonId)
       : matches;
+    
+    // Then filter by search query (team names)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(match => 
+        match.homeTeamName.toLowerCase().includes(query) ||
+        match.awayTeamName.toLowerCase().includes(query)
+      );
+    }
     
     // Separate by status
     const ongoingMatches = filtered.filter(match => match.status === 'InProgress');
@@ -109,7 +119,7 @@ const MatchOverviewPage = () => {
       completed: completedMatches,
       cancelled: cancelledMatches
     };
-  }, [matches, selectedSeasonId]);
+  }, [matches, selectedSeasonId, searchQuery]);
 
   useEffect(() => {
     fetchData();
@@ -288,6 +298,8 @@ const MatchOverviewPage = () => {
           seasons={seasons}
           selectedSeasonId={selectedSeasonId}
           onSeasonChange={setSelectedSeasonId}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
 
         {/* Matches Sections */}
