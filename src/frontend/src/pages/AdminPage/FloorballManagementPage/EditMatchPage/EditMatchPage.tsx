@@ -76,11 +76,15 @@ const EditMatchPage = () => {
 
       const changes: Promise<unknown>[] = [];
 
-      if (updatedData.seasonId !== matchData.seasonId) {
+      if (updatedData.seasonId && updatedData.seasonId !== matchData.seasonId) {
         changes.push(floorballMatchService.changeSeason(matchData.id, updatedData.seasonId));
       }
       
-      if (updatedData.homeTeamId !== matchData.homeTeamId || updatedData.awayTeamId !== matchData.awayTeamId) {
+      if (
+        updatedData.homeTeamId &&
+        updatedData.awayTeamId &&
+        (updatedData.homeTeamId !== matchData.homeTeamId || updatedData.awayTeamId !== matchData.awayTeamId)
+      ) {
         changes.push(floorballMatchService.changeTeams(matchData.id, updatedData.homeTeamId, updatedData.awayTeamId));
       }
       

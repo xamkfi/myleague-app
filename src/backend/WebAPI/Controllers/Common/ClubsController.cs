@@ -114,7 +114,9 @@ public class ClubsController : ControllerBase
         }
 
         string errorMessage = result.Error ?? result.GetErrorsString();
-        return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
+        List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+        return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage, errorList));
     }
 
     /// <summary>

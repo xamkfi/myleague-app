@@ -19,9 +19,9 @@ namespace Application.Commands.Floorball.Match
     /// <param name="ScheduledDateTime"></param>
     /// <param name="Venue"></param>
     public record CreateFloorballMatchCommand(
-        Guid SeasonId,
-        Guid HomeTeamId,
-        Guid AwayTeamId,
+        Guid? SeasonId,
+        Guid? HomeTeamId,
+        Guid? AwayTeamId,
         Guid? RefereeId,
         DateTime ScheduledDateTime,
         string? Venue) : IRequest<Result<FloorballMatchDto>>;

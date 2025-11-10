@@ -60,12 +60,19 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
     {
         try
         {
+            if (!request.SeasonId.HasValue)
+                return Result<FloorballMatchDto>.Failure("Season is required");
+            if (!request.HomeTeamId.HasValue)
+                return Result<FloorballMatchDto>.Failure("Home team is required");
+            if (!request.AwayTeamId.HasValue)
+                return Result<FloorballMatchDto>.Failure("Away team is required");
+
             // Fetch season object
             FloorballSeason? season = await _seasonRepository.GetByIdAsync(request.SeasonId);
             if (season==null)
             {
                 _logger.LogWarning("Attempt to create match for non-existent season with ID: {SeasonId}", request.SeasonId);
-                return Result<FloorballMatchDto>.NotFound("FloorballSeason", request.SeasonId);
+                return Result<FloorballMatchDto>.NotFound("FloorballSeason", request.SeasonId ?? Guid.Empty);
             }
 
             // Fetch team objects

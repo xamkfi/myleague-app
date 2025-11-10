@@ -189,7 +189,9 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            return BadRequest(ApiResponse<UserDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<UserDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>

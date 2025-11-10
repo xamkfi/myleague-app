@@ -30,10 +30,10 @@ const MatchForm = ({
   loading = false
 }: MatchFormProps) => {
   const [formData, setFormData] = useState<CreateFloorballMatchRequest>({
-    seasonId: '',
-    homeTeamId: '',
-    awayTeamId: '',
-    refereeId: '',
+    seasonId: undefined,
+    homeTeamId: undefined,
+    awayTeamId: undefined,
+    refereeId: undefined,
     scheduledDateTime: '',
     venue: ''
   });
@@ -119,7 +119,7 @@ const MatchForm = ({
         seasonId: initialData.seasonId,
         homeTeamId: initialData.homeTeamId,
         awayTeamId: initialData.awayTeamId,
-        refereeId: '', // We don't have referee info in the DTO
+        refereeId: undefined, // We don't have referee info in the DTO
         scheduledDateTime: initialData.scheduledDateTime,
         venue: initialData.venue || ''
       });
@@ -135,10 +135,10 @@ const MatchForm = ({
     } else {
       // Reset form for create mode
       setFormData({
-        seasonId: '',
-        homeTeamId: '',
-        awayTeamId: '',
-        refereeId: '',
+        seasonId: undefined,
+        homeTeamId: undefined,
+        awayTeamId: undefined,
+        refereeId: undefined,
         scheduledDateTime: '',
         venue: ''
       });
@@ -285,40 +285,38 @@ const MatchForm = ({
     try {
       setError(null);
 
-      if (mode === 'create') {
-        if (!formData.seasonId || !formData.homeTeamId || !formData.awayTeamId || !formData.scheduledDateTime) {
-          setError('Please fill in all required fields');
-          return;
-        }
+      // if (mode === 'create') {
+      //   if (!formData.seasonId || !formData.homeTeamId || !formData.awayTeamId || !formData.scheduledDateTime) {
+      //     setError('Please fill in all required fields');
+      //     return;
+      //   }
   
-        if (formData.homeTeamId === formData.awayTeamId) {
-          setError('Home team and away team cannot be the same');
-          return;
-        }
+      //   if (formData.homeTeamId === formData.awayTeamId) {
+      //     setError('Home team and away team cannot be the same');
+      //     return;
+      //   }
   
-        // Validate time inputs
-        if (!selectedDate || !hoursInput || !minutesInput) {
-          setError('Please enter a valid date and time');
-          return;
-        }
-      }
+      //   // Validate time inputs
+      //   if (!selectedDate || !hoursInput || !minutesInput) {
+      //     setError('Please enter a valid date and time');
+      //     return;
+      //   }
+      // }
 
       await onSubmit(formData);
-      
       if (mode === 'create') {
         // Reset form on success
         setFormData({
-          seasonId: '',
-          homeTeamId: '',
-          awayTeamId: '',
-          refereeId: '',
+          seasonId: undefined,
+          homeTeamId: undefined,
+          awayTeamId: undefined,
+          refereeId: undefined,
           scheduledDateTime: '',
           venue: ''
         });
         setSelectedDate(null);
         setHoursInput('');
         setMinutesInput('');
-        
         // Clear initial options
         createInitialOptions();
       }
@@ -333,7 +331,7 @@ const MatchForm = ({
       seasonId: '',
       homeTeamId: '',
       awayTeamId: '',
-      refereeId: '',
+      refereeId: undefined,
       scheduledDateTime: '',
       venue: ''
     });

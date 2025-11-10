@@ -70,7 +70,9 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to create floorball team manager";
-            return BadRequest(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -110,12 +112,14 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update floorball team manager";
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(errorMessage));
             }
 
-            return BadRequest(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>

@@ -232,7 +232,9 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to create floorball match";
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(err => err.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>

@@ -59,19 +59,19 @@ public record CreateFloorballMatchRequest
     /// Gets the season ID
     /// </summary>
     [Required(ErrorMessage = "Season ID is required")]
-    public Guid SeasonId { get; init; }
+    public Guid? SeasonId { get; init; }
 
     /// <summary>
     /// Gets the home team ID
     /// </summary>
     [Required(ErrorMessage = "Home team ID is required")]
-    public Guid HomeTeamId { get; init; }
+    public Guid? HomeTeamId { get; init; }
 
     /// <summary>
     /// Gets the away team ID
     /// </summary>
     [Required(ErrorMessage = "Away team ID is required")]
-    public Guid AwayTeamId { get; init; }
+    public Guid? AwayTeamId { get; init; }
 
     /// <summary>
     /// Gets the referee ID (optional)
