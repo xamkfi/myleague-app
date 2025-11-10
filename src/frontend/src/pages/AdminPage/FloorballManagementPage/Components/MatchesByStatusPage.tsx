@@ -31,6 +31,7 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
@@ -77,9 +78,18 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
 
   // Filter by status and optionally season
   const filtered = useMemo(() => {
-    const base = selectedSeasonId
+    let base = selectedSeasonId
       ? matches.filter(m => m.seasonId === selectedSeasonId)
       : matches;
+
+    // Filter by search query (team names)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      base = base.filter(m => 
+        m.homeTeamName.toLowerCase().includes(query) ||
+        m.awayTeamName.toLowerCase().includes(query)
+      );
+    }
 
     const result = base.filter(m => m.status === status);
 
@@ -90,7 +100,7 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
     }
 
     return result;
-  }, [matches, selectedSeasonId, status]);
+  }, [matches, selectedSeasonId, searchQuery, status]);
 
   const totalPages = Math.ceil(filtered.length / pageSize) || 1;
   const paginated = useMemo(
@@ -113,6 +123,8 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
           seasons={seasons}
           selectedSeasonId={selectedSeasonId}
           onSeasonChange={setSelectedSeasonId}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
         {!filtered.length ? (
           <p>{t('matches.noMatches', 'No matches found.')}</p>
