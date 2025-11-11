@@ -26,6 +26,7 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFiltering, setIsFiltering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,21 +36,31 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (isInitialLoad: boolean) => {
       try {
-        setLoading(true);
+        // Only show full loading on initial load
+        if (isInitialLoad) {
+          setLoading(true);
+        } else {
+          setIsFiltering(true);
+        }
         // Load seasons
         const seasonsResp = await floorballSeasonService.getAll();
         if (seasonsResp.success && seasonsResp.data) {
           setSeasons(seasonsResp.data);
         }
-        // Batch-fetch all matches (backend limits pageSize <= 100)
+        // Fetch all matches with filters (backend will handle season + search)
         const batchSize = 100;
         let page = 1;
         let allMatches: FloorballMatchDto[] = [];
         let hasNext = true;
         while (hasNext) {
-          const resp = await floorballMatchService.getAll({ page, pageSize: batchSize });
+          const resp = await floorballMatchService.getAll({ 
+            page, 
+            pageSize: batchSize,
+            seasonId: selectedSeasonId || undefined,
+            searchQuery: searchQuery.trim() || undefined
+          });
           if (resp.success && resp.data) {
             allMatches = allMatches.concat(resp.data);
             hasNext = resp.pagination?.hasNextPage ?? false;
@@ -63,10 +74,22 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
         setError(err instanceof Error ? err.message : 'Failed to fetch data');
       } finally {
         setLoading(false);
+        setIsFiltering(false);
       }
     };
-    fetchData();
-  }, []);
+
+    // Initial load or filter change
+    if (loading) {
+      // Initial load - no debounce
+      fetchData(true);
+    } else {
+      // Filter change - debounce 500ms
+      const timer = setTimeout(() => {
+        fetchData(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedSeasonId, searchQuery, loading]);
 
   const handleEditMatch = (match: FloorballMatchDto) => {
     navigate(`/admin/floorball/matches/${match.id}/edit`);
@@ -76,22 +99,10 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
     navigate(`/admin/floorball/matches/manage/${match.id}`);
   };
 
-  // Filter by status and optionally season
+  // Filter by status (backend already filtered by season and search)
   const filtered = useMemo(() => {
-    let base = selectedSeasonId
-      ? matches.filter(m => m.seasonId === selectedSeasonId)
-      : matches;
-
-    // Filter by search query (team names)
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      base = base.filter(m => 
-        m.homeTeamName.toLowerCase().includes(query) ||
-        m.awayTeamName.toLowerCase().includes(query)
-      );
-    }
-
-    const result = base.filter(m => m.status === status);
+    // Backend already filtered by season and search query
+    const result = matches.filter(m => m.status === status);
 
     if (status === 'Scheduled') {
       result.sort((a, b) => new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime());
@@ -100,7 +111,7 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
     }
 
     return result;
-  }, [matches, selectedSeasonId, searchQuery, status]);
+  }, [matches, status]);
 
   const totalPages = Math.ceil(filtered.length / pageSize) || 1;
   const paginated = useMemo(
@@ -126,6 +137,24 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
         />
+        
+        {/* Filtering indicator */}
+        {isFiltering && (
+          <div style={{ 
+            padding: '12px', 
+            textAlign: 'center', 
+            background: '#f3f4f6', 
+            borderRadius: '8px',
+            marginBottom: '16px',
+            color: '#6b7280',
+            fontSize: '0.875rem'
+          }}>
+            <span style={{ marginRight: '8px' }}>🔍</span>
+            Searching...
+          </div>
+        )}
+        
+        <div style={{ opacity: isFiltering ? 0.6 : 1, transition: 'opacity 0.2s' }}>
         {!filtered.length ? (
           <p>{t('matches.noMatches', 'No matches found.')}</p>
         ) : (
@@ -149,6 +178,7 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
             />
           </>
         )}
+        </div>
       </div>
     </div>
   );

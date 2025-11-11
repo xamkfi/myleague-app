@@ -259,4 +259,5 @@ export interface GetFloorballMatchesRequest {
   startDate?: string;
   endDate?: string;
   sortOrder?: string;
+  searchQuery?: string;
 } 

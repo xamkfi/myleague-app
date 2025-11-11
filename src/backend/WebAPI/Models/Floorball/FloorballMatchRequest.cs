@@ -32,6 +32,11 @@ public record GetFloorballMatchesRequest : PagedRequestBase
     /// Gets the sort order ("asc" or "desc")
     /// </summary>
     public string SortOrder { get; init; } = "desc";
+
+    /// <summary>
+    /// Gets the search query to filter matches by team names (case-insensitive, partial match)
+    /// </summary>
+    public string? SearchQuery { get; init; }
 }
 
 /// <summary>
