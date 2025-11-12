@@ -432,7 +432,7 @@ const CreatePlayerPage = () => {
               </div>
               
               {/* Persons List */}
-              <div className="persons-list">
+              <div className="create-player-persons-list">
                 {filteredAndSortedPersons.map((person) => (
                   <div 
                     key={person.id} 
