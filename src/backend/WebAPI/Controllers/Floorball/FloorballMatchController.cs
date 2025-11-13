@@ -56,6 +56,7 @@ namespace WebAPI.Controllers.Floorball
                 request.TeamId,
                 request.StartDate,
                 request.EndDate,
+                request.Status,
                 request.SortOrder
             );
 

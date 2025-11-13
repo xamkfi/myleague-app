@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getMatchesService, type FloorballMatch } from '../../../../api/admin/News/GetMatchesService';
+import Pagination from '../../../../components/Pagination';
 import '../styles/MatchBrowser.scss';
 
 interface MatchBrowserProps {
@@ -18,27 +19,53 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<MatchCategory>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  // Fetch matches when browser is opened
-  useEffect(() => {
-    if (showBrowser && matches.length === 0) {
-      fetchMatches();
+  // Map category to backend status enum
+  // FloorballMatchStatus: 1=Scheduled, 3=InProgress, 4=Completed, 5=Cancelled
+  const getStatusFromCategory = (category: MatchCategory): number | undefined => {
+    switch (category) {
+      case 'scheduled':
+        return 1; // Scheduled
+      case 'results':
+        return 4; // Completed
+      case 'cancelled':
+        return 5; // Cancelled
+      default:
+        return undefined; // 'all' - no status filter
     }
-  }, [showBrowser, matches.length]);
+  };
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const fetchedMatches = await getMatchesService.getAll();
-      setMatches(fetchedMatches);
+      const status = getStatusFromCategory(selectedCategory);
+      const response = await getMatchesService.getAll({
+        page: currentPage,
+        pageSize: pageSize,
+        status: status
+      });
+      setMatches(response.data);
+      setTotalCount(response.pagination.totalCount);
+      setTotalPages(response.pagination.totalPages);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch matches');
       console.error('Error fetching matches:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, pageSize, selectedCategory]);
+
+  // Fetch matches when browser is opened, pagination changes, or category changes
+  useEffect(() => {
+    if (showBrowser) {
+      fetchMatches();
+    }
+  }, [showBrowser, fetchMatches]);
 
   const handleMatchSelect = (match: FloorballMatch) => {
     setSelectedMatches(prev => {
@@ -62,23 +89,29 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
     setSelectedMatches([]);
   };
 
-  // Filter matches by search term and category
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
+
+  const handleCategoryChange = (category: MatchCategory) => {
+    setSelectedCategory(category);
+    setCurrentPage(1); // Reset to first page when category changes
+  };
+
+  // Filter matches by search term only (category filtering is done on backend)
   const getFilteredMatches = () => {
-    const filtered = matches.filter(match => 
+    if (!searchTerm) {
+      return matches;
+    }
+    return matches.filter(match => 
       match.homeTeamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       match.awayTeamName.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    switch (selectedCategory) {
-      case 'scheduled':
-        return filtered.filter(match => match.status.toLowerCase() === 'scheduled');
-      case 'results':
-        return filtered.filter(match => match.status.toLowerCase() === 'completed');
-      case 'cancelled':
-        return filtered.filter(match => match.status.toLowerCase() === 'cancelled');
-      default:
-        return filtered;
-    }
   };
 
   const filteredMatches = getFilteredMatches();
@@ -104,7 +137,12 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
     <>
       <button 
         className="match-browser__trigger-btn"
-        onClick={() => setShowBrowser(true)}
+        onClick={() => {
+          setShowBrowser(true);
+          setCurrentPage(1);
+          setSearchTerm('');
+          setSelectedCategory('all');
+        }}
       >
         {t('admin.news.matches.add_matches_selected')}
       </button>
@@ -136,25 +174,25 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
               <div className="match-browser__categories">
                 <button 
                   className={getCategoryButtonClass('all')}
-                  onClick={() => setSelectedCategory('all')}
+                  onClick={() => handleCategoryChange('all')}
                 >
                   {t('admin.news.matches.all_matches', 'All')}
                 </button>
                 <button 
                   className={getCategoryButtonClass('scheduled')}
-                  onClick={() => setSelectedCategory('scheduled')}
+                  onClick={() => handleCategoryChange('scheduled')}
                 >
                   {t('admin.news.matches.upcoming_matches', 'Upcoming')}
                 </button>
                 <button 
                   className={getCategoryButtonClass('results')}
-                  onClick={() => setSelectedCategory('results')}
+                  onClick={() => handleCategoryChange('results')}
                 >
                   {t('admin.news.matches.results', 'Results')}
                 </button>
                 <button 
                   className={getCategoryButtonClass('cancelled')}
-                  onClick={() => setSelectedCategory('cancelled')}
+                  onClick={() => handleCategoryChange('cancelled')}
                 >
                   {t('admin.news.matches.cancelled', 'Cancelled')}
                 </button>
@@ -210,6 +248,21 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                       ))
                     )}
                   </div>
+                  
+                  {/* Pagination */}
+                  {totalCount > 0 && (
+                    <div className="match-browser__pagination">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalCount={totalCount}
+                        pageSize={pageSize}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
+                        pageSizeOptions={[5, 10, 25, 50]}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
