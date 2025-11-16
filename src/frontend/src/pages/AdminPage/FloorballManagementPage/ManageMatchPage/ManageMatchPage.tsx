@@ -19,6 +19,7 @@ import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ConfirmationDialog from './components/ConfirmationDialog';
 import ActivePlayersSelector from './components/ActivePlayersSelector';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import type { ProcessedEvent } from './components/types';
 
 // Import custom hooks
 import {
@@ -84,6 +85,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
       if (updatedMatch) setMatch(updatedMatch);
     },
   });
+  const { handleStartMatch } = matchControls;
 
   const matchEvents = useMatchEvents({
     match,
@@ -113,6 +115,11 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   });
   // Loading state for save events and destructured dependencies
   const [saveLoading, setSaveLoading] = useState<boolean>(false);
+  // Delete confirmation state
+  const [eventToDelete, setEventToDelete] = useState<ProcessedEvent | null>(null);
+  const [deleteEventLoading, setDeleteEventLoading] = useState<boolean>(false);
+  // Start timer right after starting match
+  const [shouldStartTimer, setShouldStartTimer] = useState<boolean>(false);
   const homeTeamId = matchData.homeTeam?.id ?? '';
   const awayTeamId = matchData.awayTeam?.id ?? '';
   const matchWentToOvertime = matchData.currentMatch.wentToOvertime;
@@ -174,6 +181,18 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   } = timer;
   const { setShowGoalForm, setShowPenaltyForm } = forms;
   const { setShowOvertimeConfirmation, setShowShootoutConfirmation } = periodManagement;
+
+  // Local refs to timer controls (start/reset)
+  const [startTimerFn, setStartTimerFn] = useState<(() => Promise<void>) | null>(null);
+  const [resetTimerFn, setResetTimerFn] = useState<(() => void) | null>(null);
+
+  const handleGetStartFunction = useCallback((fn: () => Promise<void>) => {
+    setStartTimerFn(() => fn);
+  }, []);
+
+  const handleGetResetFunction = useCallback((fn: () => void) => {
+    setResetTimerFn(() => fn);
+  }, []);
 
   // Calculate current score
   const currentScore = useMemo(() => {
@@ -253,8 +272,11 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     };
   }, [loadTeamData, loadMatchEvents, loadCurrentMatchStatus, setupSignalR, cleanupSignalR]);
 
-  // Keybinds enabled when match live, and no forms are open
+  // Keybinds enabled only when match live, no forms open, and current period is active
+  const isPeriodActive = periodManagement.startedPeriods.has(timer.localClock.period) &&
+    !periodManagement.endedPeriods.has(timer.localClock.period);
   const keybindsEnabled = matchData.currentMatch.status === 'InProgress' &&
+    isPeriodActive &&
     !forms.showGoalForm &&
     !forms.showPenaltyForm;
 
@@ -303,19 +325,33 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
       } else {
         totalSeconds = elapsedTime;
       }
-      const isUnder20Minutes = totalSeconds < 1200;
+      // 15-minute confirmation threshold
+      const isUnder15Minutes = totalSeconds < 900;
       setCurrentTimerElapsedTime(totalSeconds);
 
-      if (isUnder20Minutes) {
+      if (isUnder15Minutes) {
         periodManagement.setShowEndPeriodConfirmation(true);
-        periodManagement.setPendingEndPeriodAction(() => periodManagement.endPeriod);
       } else {
-        periodManagement.endPeriod();
+        // End immediately, then reset timer
+        (async () => {
+          await periodManagement.endPeriod();
+          if (resetTimerFn) {
+            resetTimerFn();
+          }
+        })();
       }
     } else {
-      periodManagement.startPeriod();
+      // Start the next period and immediately start the timer
+      (async () => {
+        await periodManagement.startPeriod();
+        if (startTimerFn) {
+          await startTimerFn();
+        } else if (getToggleFromTimer) {
+          await getToggleFromTimer();
+        }
+      })();
     }
-  }, [periodManagement, getCurrentTimeFromTimer, elapsedTime, setCurrentTimerElapsedTime]);
+  }, [periodManagement, getCurrentTimeFromTimer, elapsedTime, setCurrentTimerElapsedTime, resetTimerFn, startTimerFn, getToggleFromTimer]);
 
   // MEMOIZED: Timer update handler
   const handleTimerUpdate = useCallback((update: TimerUpdate) => {
@@ -335,13 +371,30 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
   // MEMOIZED: Get current time handler
   const handleGetCurrentTime = useCallback((getTime: () => string) => {
-    setGetCurrentTimeFromTimer(() => getTime);
+    setGetCurrentTimeFromTimer(prev => (prev !== getTime ? getTime : prev));
   }, [setGetCurrentTimeFromTimer]);
 
   // MEMOIZED: Get toggle function handler
   const handleGetToggleFunction = useCallback((toggleFunction: () => Promise<void>) => {
-    setGetToggleFromTimer(() => toggleFunction);
+    setGetToggleFromTimer(prev => (prev !== toggleFunction ? toggleFunction : prev));
   }, [setGetToggleFromTimer]);
+
+
+  // MEMOIZED: Start match and then start timer once timer is mounted
+  const handleStartMatchAndTimer = useCallback(async () => {
+    await handleStartMatch();
+    // When match status flips to InProgress, Timer mounts and provides toggle
+    setShouldStartTimer(true);
+  }, [handleStartMatch]);
+
+  // EFFECT: Trigger timer start exactly once after match starts, when toggle is ready
+  useEffect(() => {
+    if (!shouldStartTimer) return;
+    if (getToggleFromTimer) {
+      getToggleFromTimer();
+      setShouldStartTimer(false);
+    }
+  }, [shouldStartTimer, getToggleFromTimer]);
 
   // MEMOIZED: Goal form close handler
   const handleCloseGoalForm = useCallback(() => {
@@ -352,13 +405,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   const handleClosePenaltyForm = useCallback(() => {
     setShowPenaltyForm(false);
   }, [setShowPenaltyForm]);
-
-  // Is this still needed?
-  // MEMOIZED: Error close handler
-  // const handleCloseError = useCallback(() => {
-  //   matchData.setError(null);
-  // }, [matchData]);
-
 
   return (
     <>
@@ -385,7 +431,13 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         warningMessage="This action cannot be undone."
         confirmText="End Period"
         isLoading={periodManagement.periodLoading[timer.localClock.period]}
-        onConfirm={periodManagement.confirmEndPeriod}
+        onConfirm={async () => {
+          await periodManagement.endPeriod();
+          if (resetTimerFn) {
+            resetTimerFn();
+          }
+          periodManagement.setShowEndPeriodConfirmation(false);
+        }}
         onCancel={periodManagement.cancelEndPeriod}
       />
 
@@ -397,7 +449,15 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         warningMessage="This will begin the overtime period. The clock will be reset to 0:00."
         confirmText="Start Overtime"
         isLoading={matchData.loading}
-        onConfirm={periodManagement.recordOvertime}
+        onConfirm={async () => {
+          await periodManagement.recordOvertime();
+          // Start timer for overtime
+          if (startTimerFn) {
+            await startTimerFn();
+          } else if (getToggleFromTimer) {
+            await getToggleFromTimer();
+          }
+        }}
         onCancel={() => setShowOvertimeConfirmation(false)}
       />
 
@@ -409,8 +469,61 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         warningMessage="Shootout does not use time keeping. Goals will be recorded without time."
         confirmText="Start Shootout"
         isLoading={matchData.loading}
-        onConfirm={periodManagement.recordShootout}
+        onConfirm={async () => {
+          await periodManagement.recordShootout();
+          if (startTimerFn) {
+            await startTimerFn();
+          } else if (getToggleFromTimer) {
+            await getToggleFromTimer();
+          }
+        }}
         onCancel={() => setShowShootoutConfirmation(false)}
+      />
+
+      {/* Delete Event Confirmation */}
+      <ConfirmationDialog
+        isOpen={!!eventToDelete}
+        icon="🗑️"
+        title="Delete Event"
+        message={
+          eventToDelete
+            ? `Delete ${eventToDelete.type} for ${eventToDelete.teamName} at P${eventToDelete.periodNumber} ${timer.formatEventTime(eventToDelete.timeInSeconds)}?`
+            : ''
+        }
+        warningMessage="This action cannot be undone."
+        confirmText="Delete"
+        isLoading={deleteEventLoading}
+        onConfirm={async () => {
+          if (!eventToDelete) return;
+          if (!eventToDelete.eventId) {
+            matchData.setError('Cannot delete: missing event id');
+            setEventToDelete(null);
+            return;
+          }
+          try {
+            setDeleteEventLoading(true);
+            matchData.setError(null);
+            // Ensure match state is up-to-date before deletion
+            await matchData.loadCurrentMatchStatus();
+            if (eventToDelete.type === 'goal') {
+              await floorballMatchService.deleteGoal(match.id, eventToDelete.eventId);
+            } else if (eventToDelete.type === 'penalty') {
+              await floorballMatchService.deletePenalty(match.id, eventToDelete.eventId);
+            } else if (eventToDelete.type === 'save') {
+              await floorballMatchService.deleteSave(match.id, eventToDelete.eventId);
+            }
+            await matchData.loadCurrentMatchStatus();
+            await matchEvents.loadMatchEvents();
+            setEventToDelete(null);
+          } catch (err) {
+            console.error('Failed to delete event', err);
+            matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
+            setEventToDelete(null);
+          } finally {
+            setDeleteEventLoading(false);
+          }
+        }}
+        onCancel={() => setEventToDelete(null)}
       />
 
       <div className="modal-content">
@@ -426,11 +539,13 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             nextPeriodToStart={periodManagement.nextPeriodToStart}
             periodLoading={periodManagement.periodLoading}
             currentTimerElapsedTime={timer.currentTimerElapsedTime}
-            onStartMatch={matchControls.handleStartMatch}
+            onStartMatch={handleStartMatchAndTimer}
             onPeriodControlClick={handlePeriodControlClick}
             onTimerUpdate={handleTimerUpdate}
             onGetCurrentTime={handleGetCurrentTime}
             onGetToggleFunction={handleGetToggleFunction}
+            onGetResetFunction={handleGetResetFunction}
+            onGetStartFunction={handleGetStartFunction}
             canEndPeriod={periodManagement.canEndPeriod}
             getPeriodStatus={periodManagement.getPeriodStatus}
             getPeriodControlButtonText={periodManagement.getPeriodControlButtonText}
@@ -516,31 +631,12 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           <LiveMatchEventsHistory
             allEvents={matchEvents.allEvents}
             formatEventTime={timer.formatEventTime}
-            onDeleteEvent={async (event) => {
+            onDeleteEvent={(event) => {
               if (!event.eventId) {
                 matchData.setError('Cannot delete: missing event id');
                 return;
               }
-              try {
-                matchData.setError(null);
-                console.log('Deleting event', { type: event.type, eventId: event.eventId, matchId: match.id });
-                // Refresh match before delete to ensure scores/periods are up to date
-                await matchData.loadCurrentMatchStatus();
-                if (event.type === 'goal') {
-                  await floorballMatchService.deleteGoal(match.id, event.eventId);
-                } else if (event.type === 'penalty') {
-                  await floorballMatchService.deletePenalty(match.id, event.eventId);
-                } else if (event.type === 'save') {
-                  await floorballMatchService.deleteSave(match.id, event.eventId);
-                } else {
-                  return;
-                }
-                await matchData.loadCurrentMatchStatus();
-                await matchEvents.loadMatchEvents();
-              } catch (err) {
-                console.error('Failed to delete event', err);
-                matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
-              }
+              setEventToDelete(event);
             }}
           />
         </div>

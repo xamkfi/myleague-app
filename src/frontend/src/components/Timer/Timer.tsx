@@ -11,6 +11,11 @@ interface TimerProps {
   onTimerUpdate?: (update: TimerUpdate) => void;
   onGetCurrentTime?: (getTime: () => string) => void;
   onGetToggleFunction?: (toggleFunction: () => Promise<void>) => void;
+  onGetResetFunction?: (resetFunction: () => void) => void;
+  onGetStartFunction?: (startFunction: () => Promise<void>) => void;
+  onGetStopFunction?: (stopFunction: () => void) => void;
+  //disable timer controls when period is not active
+  controlsEnabled?: boolean;
   isActive?: boolean; // New prop to control when timer should be active
   keybindsEnabled?: boolean; // New prop to show keybind indicator
   // Optional period control wiring (used by pages like ManageMatch)
@@ -21,7 +26,7 @@ interface TimerProps {
   nextPeriodToStart?: number;
 }
 
-export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetToggleFunction, isActive = true, keybindsEnabled = false, onPeriodControlClick, canEndPeriod, getPeriodControlButtonText, periodLoading, nextPeriodToStart }: TimerProps) => {
+export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetToggleFunction, onGetResetFunction, onGetStartFunction, onGetStopFunction, controlsEnabled = true, isActive = true, keybindsEnabled = false, onPeriodControlClick, canEndPeriod, getPeriodControlButtonText, periodLoading, nextPeriodToStart }: TimerProps) => {
   // State for time input modal
   const [showTimeInputModal, setShowTimeInputModal] = useState(false);
 
@@ -91,13 +96,13 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     console.log('=== TIMER STOP COMPLETED ===');
   }, [matchId, isActive, stopTimer]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     console.log('=== TIMER RESET BUTTON CLICKED ===');
     console.log('Match ID:', matchId);
     console.log('Timer Active:', isActive);
     resetTimer();
     console.log('=== TIMER RESET COMPLETED ===');
-  };
+  }, [resetTimer, matchId, isActive]);
 
   const handleToggle = useCallback(async () => {
     if (timerState.isRunning) {
@@ -155,12 +160,21 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     }
   }, [onGetToggleFunction, handleToggle, isActive]);
 
+  // Expose start/stop/reset handlers to parent when active
+  useEffect(() => {
+    if (!isActive) return;
+    if (onGetStartFunction) onGetStartFunction(handleStart);
+    if (onGetStopFunction) onGetStopFunction(handleStop);
+    if (onGetResetFunction) onGetResetFunction(handleReset);
+  }, [isActive, onGetStartFunction, onGetStopFunction, onGetResetFunction, handleStart, handleStop, handleReset]);
+
   // Memoize button disabled states to prevent blinking during SignalR updates
   const buttonStates = useMemo(() => {
-    const toggleDisabled = loading;
-    const resetDisabled = loading;
-    const setTimeDisabled = loading;
-    const adjustDisabled = loading;
+    const controlsBlocked = !controlsEnabled;
+    const toggleDisabled = loading || controlsBlocked;
+    const resetDisabled = loading || controlsBlocked;
+    const setTimeDisabled = loading || controlsBlocked;
+    const adjustDisabled = loading || controlsBlocked;
     
     return {
       toggleDisabled,
@@ -168,7 +182,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
       setTimeDisabled,
       adjustDisabled
     };
-  }, [loading]);
+  }, [loading, controlsEnabled]);
 
   // Derive end/start period control state if the parent provided handlers
   const endPeriod = useMemo(() => {

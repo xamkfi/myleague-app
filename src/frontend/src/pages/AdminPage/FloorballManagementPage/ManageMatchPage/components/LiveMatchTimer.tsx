@@ -23,6 +23,9 @@ interface LiveMatchTimerProps {
   onTimerUpdate: (update: TimerUpdate) => void;
   onGetCurrentTime: (getTime: () => string) => void;
   onGetToggleFunction: (toggleFunction: () => Promise<void>) => void;
+  onGetResetFunction?: (resetFunction: () => void) => void;
+  onGetStartFunction?: (startFunction: () => Promise<void>) => void;
+  onGetStopFunction?: (stopFunction: () => void) => void;
   canEndPeriod: () => boolean;
   getPeriodStatus: () => string;
   getPeriodControlButtonText: () => string;
@@ -38,6 +41,7 @@ const LiveMatchTimer = ({
   clock,
   isOpen,
   loading,
+  currentTimerElapsedTime,
   nextPeriodToStart,
   periodLoading,
   onStartMatch,
@@ -45,10 +49,14 @@ const LiveMatchTimer = ({
   onTimerUpdate,
   onGetCurrentTime,
   onGetToggleFunction,
+  onGetResetFunction,
+  onGetStartFunction,
+  onGetStopFunction,
   canEndPeriod,
   getPeriodControlButtonText,
   startedPeriods,
   endedPeriods,
+  isInShootout,
   keybindsEnabled,
   isStartMatchDisabled
 }: LiveMatchTimerProps) => {
@@ -57,6 +65,11 @@ const LiveMatchTimer = ({
     if (startedPeriods.has(p)) return 'started';
     return 'upcoming';
   };
+
+  // Turn digits red at 15:00 (900s) and after, except during shootout
+  const shouldPeriodEnd = currentTimerElapsedTime >= 900 && !isInShootout();
+  // Timer controls enabled only if current period has started and not ended
+  const controlsEnabled = startedPeriods.has(clock.period) && !endedPeriods.has(clock.period);
 
   return (
     <>
@@ -82,7 +95,7 @@ const LiveMatchTimer = ({
               </div>
             ) : (
               <>
-                <div className="clock-digits">
+                <div className={`clock-digits${shouldPeriodEnd ? ' timer-digits--critical' : ''}`}>
                   <MemoizedTimer
                     key={`timer-${currentMatch.id}`}
                     matchId={currentMatch.id}
@@ -91,6 +104,10 @@ const LiveMatchTimer = ({
                     onTimerUpdate={onTimerUpdate}
                     onGetCurrentTime={onGetCurrentTime}
                     onGetToggleFunction={onGetToggleFunction}
+                    onGetResetFunction={onGetResetFunction}
+                    onGetStartFunction={onGetStartFunction}
+                    onGetStopFunction={onGetStopFunction}
+                    controlsEnabled={controlsEnabled}
                     keybindsEnabled={keybindsEnabled}
                     onPeriodControlClick={onPeriodControlClick}
                     canEndPeriod={canEndPeriod}

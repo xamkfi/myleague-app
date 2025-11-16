@@ -96,3 +96,10 @@
 }
 
 
+/* Turn timer digits red at or beyond 15:00 (900s) */
+.clock-digits.timer-digits--critical {
+  .timer-component .timer-display .timer-time {
+    color: $color-red-primary;
+  }
+}
+
