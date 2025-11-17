@@ -543,7 +543,6 @@ const FloorballPlayersPage = () => {
         <ErrorPopup message={error} />
 
         {/* Selection Controls */}
-        {selectedPlayers.size > 0 && (
           <div className="selection-controls">
             <div className="selection-info">
               <span className="selected-count">
@@ -582,7 +581,8 @@ const FloorballPlayersPage = () => {
                   {t('floorball.players.actions.bulkDeactivate', 'Deactivate Selected ({{count}})', { count: selectedActiveCount })}
                 </button>
               )}
-              <button
+              {selectedPlayers.size > 0 && (
+                <button
                 type="button"
                 className="bulk-delete-btn"
                 onClick={handleBulkDelete}
@@ -590,12 +590,18 @@ const FloorballPlayersPage = () => {
               >
                 {t('floorball.players.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPlayers.size })}
               </button>
+              )}
+              {selectedPlayers.size == 0 && (
+                <button
+                type="button"
+                className="dead-deletebtn"
+                disabled={isBulkDeleting}
+              >
+                {t('floorball.players.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPlayers.size })}
+              </button>
+              )}              
             </div>
           </div>
-        )}
-        <div className="players-count">
-          <span>{t('floorball.players.totalCount', `${totalCount} players`, { count: totalCount })}</span>
-        </div>
         {/* Players table */}
         <div className={`players-table-wrapper ${paginationLoading ? 'pagination-loading' : ''}`}>
           <PlayersTable 
