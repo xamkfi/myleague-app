@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../../components/BackButton/BackButton';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import type { FloorballTeam, PaginatedApiResponse } from '../../../../types/floorball/floorballTypes';
 import TeamsTable from './components/TeamsTable';
@@ -171,11 +170,6 @@ const FloorballTeamsPage = () => {
   return (
     <PageTemplate title={t('floorball.teams.title', 'Manage Teams')}>
       <div className="floorball-teams-container">
-
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball" 
-        />
         <h2 className="floorball-teams-title">{t('floorball.teams.title', 'MANAGE TEAMS')}</h2>
         
         {/* Header with actions */}

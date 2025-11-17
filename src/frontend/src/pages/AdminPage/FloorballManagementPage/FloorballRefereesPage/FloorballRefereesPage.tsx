@@ -8,7 +8,7 @@ import SearchField from '../../../../components/SearchField';
 import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
 import './FloorballRefereesPage.scss';
-import BackButton from '../../../../components/BackButton/BackButton';
+
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
 const FloorballRefereesPage = () => {
@@ -125,11 +125,6 @@ const FloorballRefereesPage = () => {
   return (
     <PageTemplate title={t('floorball.referees.title', 'MANAGE REFEREES')}>      
       <div className="floorball-referees-container">
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball" 
-          text={t('common.back', 'Back to Floorball Management')} 
-        />
         <h2 className="floorball-referees-title">{t('floorball.referees.title', 'MANAGE REFEREES')}</h2>
 
         {/* Header with search and create button */}

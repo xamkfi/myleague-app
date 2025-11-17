@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../../../components/BackButton/BackButton';
 import { personApi } from '../../../../../api/admin/personApi';
 import { floorballRefereeService } from '../../../../../api/floorball/floorballRefereeService';
 import type { Person } from '../../../../../types/admin/personTypes';
@@ -222,11 +221,6 @@ const CreateRefereePage = () => {
       )}
       
       <div className="create-referee-container">
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball/referees" 
-          text={t('common.back', 'Back to Referees')} 
-        />
 
         {!showCreateForm ? (
           <>

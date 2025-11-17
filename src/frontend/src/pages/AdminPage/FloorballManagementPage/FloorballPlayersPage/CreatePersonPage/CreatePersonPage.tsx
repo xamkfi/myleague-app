@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../../../components/BackButton/BackButton';
 import PersonForm from '../../../PersonsPage/components/PersonForm/PersonForm';
 import type { Person } from '../../../../../types/admin/personTypes';
 import './CreatePersonPage.scss';
@@ -29,11 +28,6 @@ const CreatePersonPage = () => {
   return (
     <PageTemplate title={t('floorball.players.createNewPerson', 'Create New Person')}>
       <div className="create-person-container">
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball/players/create" 
-          text={t('floorball.players.backToPlayerCreation', 'Back to Player Creation')} 
-        />
         
         {/* Embedded PersonForm */}
         <div className="person-form-container">

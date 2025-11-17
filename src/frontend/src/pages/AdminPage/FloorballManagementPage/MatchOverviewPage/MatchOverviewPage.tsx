@@ -7,7 +7,6 @@ import MatchFilters from './Components/MatchFilters/MatchFilters';
 import CollapsibleMatchSection from './Components/CollapsibleMatchSection/CollapsibleMatchSection';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import './MatchOverviewPage.scss';
-import BackButton from '../../../../components/BackButton/BackButton';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
@@ -251,10 +250,6 @@ const MatchOverviewPage = () => {
         {/* Header Section */}
         <div className="page-header">
           <div className="page-header__top">
-            <BackButton 
-              to="/admin/floorball" 
-              text={t('common.back', 'Back to Floorball Management')} 
-            />
             {/* Real-time Status Indicator */}
             <div className={`realtime-status ${signalRConnected ? 'connected' : 'disconnected'}`}>
               <span className="status-dot"></span>

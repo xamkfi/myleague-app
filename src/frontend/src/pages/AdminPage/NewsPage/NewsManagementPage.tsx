@@ -4,7 +4,6 @@ import NewsList from './components/NewsList';
 import './NewsManagementPage.scss';
 import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
 import NewsFilter from './components/NewsFilter';
-import BackButton from '../../../components/BackButton/BackButton';
 
 const NewsManagementPage = () => {
   const { t } = useTranslation();
@@ -17,10 +16,6 @@ const NewsManagementPage = () => {
   return (
     <PageTemplate title={t('admin.news.pageTitle', 'News Management')}>
     <div className="news-management-page">
-      <BackButton 
-            to="/admin/" 
-            text={t('common.back', 'Back to Floorball Management')} 
-          />
       <div className="page-header">
         <h1>{t('admin.news.pageTitle', 'News Management')}</h1>
         <button 
