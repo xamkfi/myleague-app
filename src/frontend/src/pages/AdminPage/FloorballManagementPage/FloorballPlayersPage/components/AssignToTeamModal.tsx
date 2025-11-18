@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
@@ -28,19 +28,7 @@ const AssignToTeamModal = ({ isOpen, player, onConfirm, onCancel, isAssigning, b
   const [loadingTeams, setLoadingTeams] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch teams when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      fetchTeams();
-      // Reset form
-      setSelectedTeamId('');
-      setPosition(FloorballPosition.None);
-      setJerseyNumber('');
-      setError(null);
-    }
-  }, [isOpen]);
-
-  const fetchTeams = async () => {
+  const fetchTeams = useCallback (async () => {
     try {
       setLoadingTeams(true);
       const response = await floorballTeamNameSearchService.getTeamNames('');
@@ -53,7 +41,19 @@ const AssignToTeamModal = ({ isOpen, player, onConfirm, onCancel, isAssigning, b
     } finally {
       setLoadingTeams(false);
     }
-  };
+  },[t]);
+
+  // Fetch teams when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchTeams();
+      // Reset form
+      setSelectedTeamId('');
+      setPosition(FloorballPosition.None);
+      setJerseyNumber('');
+      setError(null);
+    }
+  }, [isOpen, fetchTeams]);
 
   const handleConfirm = async () => {
     if (!selectedTeamId) {
