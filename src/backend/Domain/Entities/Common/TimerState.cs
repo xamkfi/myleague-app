@@ -48,29 +48,29 @@ namespace Domain.Entities.Common
 
                 DateTime now = DateTime.UtcNow;
 
-                TimeSpan computed;
+                TimeSpan rawElapsedTime;
 
                 if (IsRunning)
                 {
-                    computed = (now - StartedAt.Value) - TotalPausedDuration;
+                    rawElapsedTime = (now - StartedAt.Value) - TotalPausedDuration;
                 }
                 else if (PausedAt.HasValue)
                 {
-                    computed = (PausedAt.Value - StartedAt.Value) - TotalPausedDuration;
+                    rawElapsedTime = (PausedAt.Value - StartedAt.Value) - TotalPausedDuration;
                 }
                 else
                 {
-                    computed = TimeSpan.Zero;
+                    rawElapsedTime = TimeSpan.Zero;
                 }
 
                 // Ensure monotonic non-decreasing elapsed time within this process
-                if (computed < _lastElapsed)
+                if (rawElapsedTime < _lastElapsed)
                 {
                     return _lastElapsed;
                 }
 
-                _lastElapsed = computed;
-                return computed;
+                _lastElapsed = rawElapsedTime;
+                return rawElapsedTime;
             }
         }
 
