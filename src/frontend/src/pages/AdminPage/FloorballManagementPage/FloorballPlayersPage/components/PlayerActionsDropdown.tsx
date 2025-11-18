@@ -6,9 +6,10 @@ interface PlayerActionsDropdownProps {
   player: FloorballPlayerDto;
   onDelete: (playerId: string) => void;
   onStatusChange: (playerId: string, isActive: boolean) => void;
+  onAssignToTeam: (playerId: string) => void;
 }
 
-const PlayerActionsDropdown = ({ player, onDelete, onStatusChange }: PlayerActionsDropdownProps) => {
+const PlayerActionsDropdown = ({ player, onDelete, onStatusChange, onAssignToTeam }: PlayerActionsDropdownProps) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<'left' | 'right' | 'center'>('left');
@@ -71,6 +72,12 @@ const PlayerActionsDropdown = ({ player, onDelete, onStatusChange }: PlayerActio
     setIsOpen(false);
   };
 
+  const handleAssignToTeam = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAssignToTeam(player.id);
+    setIsOpen(false);
+  };
+
   return (
     <div className="player-actions-dropdown" ref={dropdownRef}>
       <button
@@ -84,6 +91,12 @@ const PlayerActionsDropdown = ({ player, onDelete, onStatusChange }: PlayerActio
       
       {isOpen && (
         <div className={`dropdown-menu dropdown-position-${dropdownPosition}`}>
+          <button
+            className="dropdown-item assign-team-item"
+            onClick={handleAssignToTeam}
+          >
+            {t('floorball.teams.assignPlayerToTeam', 'Assign to Team')}
+          </button>
           <button
             className="dropdown-item status-item"
             onClick={handleStatusChange}
