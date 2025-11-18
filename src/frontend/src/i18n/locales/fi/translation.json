@@ -395,6 +395,15 @@
         "homeArena": "Kotihalli",
         "activeMembers": "Aktiivisia Jäseniä",
         "actions": "Muut"
+      },
+      "assignPlayerToTeam": "Määritä Joukkueeseen",
+      "selectTeam": "Valitse Joukkue",
+      "chooseTeam": "Valitse joukkue...",
+      "addToRoster": "Lisää Kokoonpanoon",
+      "errors": {
+        "loadFailed": "Joukkueiden lataus epäonnistui",
+        "selectTeam": "Valitse joukkue",
+        "invalidJerseyNumber": "Pelinumeron täytyy olla välillä 1-99"
       }
     },
     "divisions": {
@@ -448,6 +457,7 @@
       }
     },
     "positions": {
+      "none": "Ei määritelty",
       "center": "Keskushyökkääjä",
       "winger": "Laitahyökkääjä",
       "defender": "Puolustaja",

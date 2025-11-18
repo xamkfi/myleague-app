@@ -3,9 +3,12 @@ import { useTranslation } from 'react-i18next';
 // import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../api/floorball/floorballPlayerService';
+import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
+import { FloorballPosition } from '../../../../types/floorball/floorballTypes';
 import PlayersTable from './components/PlayersTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import BulkStatusUpdateModal from './components/BulkStatusUpdateModal';
+import AssignToTeamModal from './components/AssignToTeamModal';
 import Pagination from '../../../../components/Pagination';
 import SearchField from '../../../../components/SearchField';
 import './FloorballPlayersPage.scss';
@@ -40,6 +43,11 @@ const FloorballPlayersPage = () => {
   const [isBulkStatusUpdateModalOpen, setIsBulkStatusUpdateModalOpen] = useState(false);
   const [bulkStatusUpdateAction, setBulkStatusUpdateAction] = useState<'activate' | 'deactivate'>('activate');
   const [isBulkStatusUpdating, setIsBulkStatusUpdating] = useState(false);
+
+  // Assign to team state
+  const [isAssignToTeamModalOpen, setIsAssignToTeamModalOpen] = useState(false);
+  const [playerToAssign, setPlayerToAssign] = useState<FloorballPlayerDto | null>(null);
+  const [isAssigning, setIsAssigning] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -475,6 +483,47 @@ const FloorballPlayersPage = () => {
     }
   };
 
+  // Assign to team handlers
+  const handleAssignToTeam = (playerId: string) => {
+    const player = players.find(p => p.id === playerId);
+    if (!player) return;
+
+    setPlayerToAssign(player);
+    setIsAssignToTeamModalOpen(true);
+  };
+
+  const handleConfirmAssignToTeam = async (teamId: string, position: FloorballPosition, jerseyNumber?: number) => {
+    if (!playerToAssign) return;
+
+    try {
+      setIsAssigning(true);
+      setError(null);
+
+      await floorballTeamService.addPlayerToTeam(teamId, playerToAssign.id, position, jerseyNumber);
+
+      // Refresh the players list to show updated team assignment
+      await fetchPlayers();
+
+      // Close modal and clear state
+      setIsAssignToTeamModalOpen(false);
+      setPlayerToAssign(null);
+
+      console.log(`Successfully assigned player ${playerToAssign.id} to team ${teamId}`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to assign player to team';
+      setError(errorMessage);
+      console.error(err);
+      throw err; // Re-throw to let modal handle it
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleCancelAssignToTeam = () => {
+    setIsAssignToTeamModalOpen(false);
+    setPlayerToAssign(null);
+  };
+
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -608,6 +657,7 @@ const FloorballPlayersPage = () => {
             players={players} 
             onDelete={handleDelete}
             onStatusChange={handleStatusChange}
+            onAssignToTeam={handleAssignToTeam}
             selectedPlayers={selectedPlayers}
             onToggleSelection={togglePlayerSelection}
             onSelectAll={selectAllPlayers}
@@ -669,6 +719,15 @@ const FloorballPlayersPage = () => {
           onConfirm={handleConfirmBulkStatusUpdate}
           onCancel={handleCancelBulkStatusUpdate}
           isUpdating={isBulkStatusUpdating}
+        />
+
+        {/* Assign to Team Modal */}
+        <AssignToTeamModal
+          isOpen={isAssignToTeamModalOpen}
+          player={playerToAssign}
+          onConfirm={handleConfirmAssignToTeam}
+          onCancel={handleCancelAssignToTeam}
+          isAssigning={isAssigning}
         />
       </div>
     </PageTemplate>

@@ -395,6 +395,15 @@
         "homeArena": "Home Arena",
         "activeMembers": "Active Members",
         "actions": "Actions"
+      },
+      "assignPlayerToTeam": "Assign to Team",
+      "selectTeam": "Select Team",
+      "chooseTeam": "Choose a team...",
+      "addToRoster": "Add to Roster",
+      "errors": {
+        "loadFailed": "Failed to load teams",
+        "selectTeam": "Please select a team",
+        "invalidJerseyNumber": "Jersey number must be between 1 and 99"
       }
     },
     "divisions": {
@@ -448,6 +457,7 @@
       }
     },
     "positions": {
+      "none": "None",
       "center": "Center",
       "winger": "Winger",
       "defender": "Defender",
