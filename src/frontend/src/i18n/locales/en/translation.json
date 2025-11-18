@@ -397,6 +397,7 @@
         "actions": "Actions"
       },
       "assignPlayerToTeam": "Assign to Team",
+      "assignPlayersToTeam": "Assign Players to Team",
       "selectTeam": "Select Team",
       "chooseTeam": "Choose a team...",
       "addToRoster": "Add to Roster",
@@ -422,6 +423,7 @@
       "searchPersons": "Search available persons...",
       "searchPlayers": "Search players...",
       "selected": "{{count}} selected",
+      "selectedPlayers": "{{count}} players selected",
       "selectAll": "Select All",
       "selectAllVisible": "Select all visible persons",
       "createPlayer": "Create Player",
@@ -451,6 +453,15 @@
       },
       "noPlayersInTeam": "This team has no players assigned yet.",
       "addPlayersHelp": "Use the edit button to manage team roster and add players.",
+      "actions": {
+        "menu": "Player actions menu",
+        "activate": "Activate Player",
+        "deactivate": "Deactivate Player",
+        "bulkActivate": "Activate Selected ({{count}})",
+        "bulkDeactivate": "Deactivate Selected ({{count}})",
+        "bulkDelete": "Delete Selected ({{count}})",
+        "bulkAssignToTeam": "Assign to Team ({{count}})"
+      },
       "errors": {
         "loadPlayers": "Failed to load players. Please try again.",
         "deleteFailed": "Failed to delete player. Please try again."

@@ -397,6 +397,7 @@
         "actions": "Muut"
       },
       "assignPlayerToTeam": "Määritä Joukkueeseen",
+      "assignPlayersToTeam": "Määritä Pelaajat Joukkueeseen",
       "selectTeam": "Valitse Joukkue",
       "chooseTeam": "Valitse joukkue...",
       "addToRoster": "Lisää Kokoonpanoon",
@@ -422,6 +423,7 @@
       "searchPersons": "Hae saatavilla olevia henkilöitä...",
       "searchPlayers": "Hae pelaajia...",
       "selected": "{{count}} valittu",
+      "selectedPlayers": "{{count}} pelaajaa valittu",
       "selectAll": "Valitse kaikki",
       "selectAllVisible": "Valitse kaikki näkyvät henkilöt",
       "createPlayer": "Luo Pelaaja",
@@ -451,6 +453,15 @@
       },
       "noPlayersInTeam": "Tällä joukkueella ei ole vielä pelaajia määritelty.",
       "addPlayersHelp": "Käytä muokkaa-painiketta hallitaksesi joukkueen kokoonpanoa ja lisätäksesi pelaajia.",
+      "actions": {
+        "menu": "Pelaajan toimintovalikko",
+        "activate": "Aktivoi Pelaaja",
+        "deactivate": "Deaktivoi Pelaaja",
+        "bulkActivate": "Aktivoi Valitut ({{count}})",
+        "bulkDeactivate": "Deaktivoi Valitut ({{count}})",
+        "bulkDelete": "Poista Valitut ({{count}})",
+        "bulkAssignToTeam": "Määritä Joukkueeseen ({{count}})"
+      },
       "errors": {
         "loadPlayers": "Pelaajien lataus epäonnistui. Yritä uudelleen.",
         "deleteFailed": "Pelaajan poisto epäonnistui. Yritä uudelleen."

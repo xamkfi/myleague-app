@@ -11,6 +11,7 @@ interface AssignToTeamModalProps {
   onConfirm: (teamId: string, position: FloorballPosition, jerseyNumber?: number) => Promise<void>;
   onCancel: () => void;
   isAssigning: boolean;
+  bulkCount?: number;
 }
 
 interface TeamOption {
@@ -18,7 +19,7 @@ interface TeamOption {
   name: string;
 }
 
-const AssignToTeamModal = ({ isOpen, player, onConfirm, onCancel, isAssigning }: AssignToTeamModalProps) => {
+const AssignToTeamModal = ({ isOpen, player, onConfirm, onCancel, isAssigning, bulkCount }: AssignToTeamModalProps) => {
   const { t } = useTranslation();
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [position, setPosition] = useState<FloorballPosition>(FloorballPosition.None);
@@ -77,18 +78,28 @@ const AssignToTeamModal = ({ isOpen, player, onConfirm, onCancel, isAssigning }:
 
   if (!isOpen) return null;
 
+  const isBulkMode = bulkCount !== undefined && bulkCount > 0;
+
   return (
     <div className="modal-overlay">
       <div className="modal-content assign-team-modal">
         <h3 className="modal-title">
-          {t('floorball.teams.assignPlayerToTeam', 'Assign Player to Team')}
+          {isBulkMode 
+            ? t('floorball.teams.assignPlayersToTeam', 'Assign Players to Team')
+            : t('floorball.teams.assignPlayerToTeam', 'Assign Player to Team')
+          }
         </h3>
 
-        {player && (
-          <div className="modal-body">
+        <div className="modal-body">
+          {isBulkMode ? (
+            <p className="player-info">
+              <strong>{t('floorball.players.selectedPlayers', '{{count}} players selected', { count: bulkCount })}</strong>
+            </p>
+          ) : player && (
             <p className="player-info">
               <strong>{player.person.fullName || `${player.person.firstName} ${player.person.lastName}`}</strong>
             </p>
+          )}
 
             {error && <div className="error-message">{error}</div>}
 
@@ -135,24 +146,25 @@ const AssignToTeamModal = ({ isOpen, player, onConfirm, onCancel, isAssigning }:
               </select>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="jersey-number">
-                {t('floorball.players.jerseyNumber', 'Jersey Number')}
-              </label>
-              <input
-                id="jersey-number"
-                type="number"
-                min="1"
-                max="99"
-                value={jerseyNumber}
-                onChange={(e) => setJerseyNumber(e.target.value)}
-                disabled={isAssigning}
-                className="form-input"
-                placeholder="1-99"
-              />
-            </div>
-          </div>
-        )}
+            {!isBulkMode && (
+              <div className="form-group">
+                <label htmlFor="jersey-number">
+                  {t('floorball.players.jerseyNumber', 'Jersey Number')}
+                </label>
+                <input
+                  id="jersey-number"
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={jerseyNumber}
+                  onChange={(e) => setJerseyNumber(e.target.value)}
+                  disabled={isAssigning}
+                  className="form-input"
+                  placeholder="1-99"
+                />
+              </div>
+            )}
+        </div>
 
         <div className="modal-actions">
           <button
