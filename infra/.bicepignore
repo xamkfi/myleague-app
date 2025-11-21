@@ -1,0 +1,23 @@
+# Bicep ignore file
+# This file specifies patterns to ignore during Bicep builds
+
+# Common files to ignore
+*.md
+.git/
+.gitignore
+.vscode/
+.vs/
+
+# Test files
+*.test.bicep
+test/
+
+# Documentation
+docs/
+*.pdf
+
+# Temporary files
+*.tmp
+*.temp
+~*
+
