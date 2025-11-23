@@ -30,13 +30,38 @@ export interface ClubRequest {
 
 export const clubService = {
   getAll: async (): Promise<Club[]> => {
-    const response = await fetch(`${VITE_API_URL}/Clubs`);
+    const response = await fetch(`${VITE_API_URL}/Clubs?page=1&pageSize=1000`);
     const data = await response.json();
     if (!response.ok || !data?.success) {
       const errorMessage = await parseErrorResponse(data, 'Failed to fetch clubs');
       throw new Error(errorMessage || 'Failed to fetch clubs');
     }
     return data.data;
+  },
+
+  getPaged: async (page: number, pageSize: number = 50): Promise<{
+    data: Club[],
+    pagination: {
+      currentPage: number;
+      pageSize: number;
+      totalCount: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+      startItem: number;
+      endItem: number;
+    }
+  }> => {
+    const params = new URLSearchParams();
+    params.append('page', String(page));
+    params.append('pageSize', String(pageSize));
+    const response = await fetch(`${VITE_API_URL}/Clubs?${params.toString()}`);
+    const data = await response.json();
+    if (!response.ok || !data?.success) {
+      const errorMessage = await parseErrorResponse(data, 'Failed to fetch clubs');
+      throw new Error(errorMessage || 'Failed to fetch clubs');
+    }
+    return { data: data.data, pagination: data.pagination };
   },
 
   getById: async (id: string): Promise<Club> => {

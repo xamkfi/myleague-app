@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import type { ClubRequest } from '../../../api/common/clubService';
 import './ClubForm.scss';
+import ConfirmationDialog from '../FloorballManagementPage/ManageMatchPage/components/ConfirmationDialog';
 
 function toIsoFromDmy(dmy: string): string {
   const match = /^([0-9]{2})-([0-9]{2})-([0-9]{4})$/.exec(dmy);
@@ -30,10 +31,13 @@ interface ClubFormProps {
   initialValues?: ClubFormValues;
   submitting?: boolean;
   onSubmit: (payload: ClubRequest) => Promise<void> | void;
+  onDelete?: (() => Promise<void> | void) | undefined;
 }
 
-function ClubForm({ initialValues, submitting = false, onSubmit }: ClubFormProps) {
+function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: ClubFormProps) {
   const { t } = useTranslation();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [values, setValues] = useState<ClubFormValues>({
     name: '',
     city: '',
@@ -173,10 +177,41 @@ function ClubForm({ initialValues, submitting = false, onSubmit }: ClubFormProps
         </div>
       </div>
       <div className="form-actions">
-        <button type="submit" className="btn btn-primary" disabled={!isValid || submitting}>
-          {submitting ? t('common.saving', 'Saving...') : t('common.save', 'Save')}
-        </button>
+        <div className="left-actions">
+          {onDelete && (
+            <button type="button" className="btn btn-danger" onClick={() => setConfirmOpen(true)}> Delete Club
+            </button>
+          )}
+        </div>
+        <div className="right-actions">
+          <button type="submit" className="btn btn-primary" disabled={!isValid || submitting}>
+            {submitting ? t('common.saving', 'Saving...') : t('common.save', 'Save')}
+          </button>
+        </div>
       </div>
+
+      {onDelete && (
+        <ConfirmationDialog
+          isOpen={confirmOpen}
+          icon="⚠️"
+          title={t('clubs.confirmDeleteTitle', 'Delete club?')}
+          message={t('clubs.confirmDelete', 'Are you sure you want to delete this club?')}
+          warningMessage={t('clubs.confirmDeleteWarning','This action cannot be undone.')}
+          confirmText={t('common.delete', 'Delete')}
+          cancelText={t('common.cancel', 'Cancel')}
+          isLoading={deleting}
+          onConfirm={async () => {
+            try {
+              setDeleting(true);
+              await onDelete();
+              setConfirmOpen(false);
+            } finally {
+              setDeleting(false);
+            }
+          }}
+          onCancel={() => setConfirmOpen(false)}
+        />
+      )}
     </form>
   );
 }

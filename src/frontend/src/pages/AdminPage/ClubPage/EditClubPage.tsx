@@ -89,14 +89,12 @@ function EditClubPage() {
         <ErrorPopup message={error} />
         {loading && <p>{t('common.loading', 'Loading...')}</p>}
         {!loading && initialValues && (
-          <>
-            <div style={{ marginBottom: '0.75rem' }}>
-              <button className="btn btn-danger" onClick={handleDelete}>
-                {t('common.delete', 'Delete')}
-              </button>
-            </div>
-            <ClubForm initialValues={initialValues} submitting={submitting} onSubmit={handleSubmit} />
-          </>
+          <ClubForm
+            initialValues={initialValues}
+            submitting={submitting}
+            onSubmit={handleSubmit}
+            onDelete={handleDelete}
+          />
         )}
       </div>
     </AdminPageTemplate>

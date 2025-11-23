@@ -1,3 +1,5 @@
+@use '../../../styles/variables' as *;
+
 .clubs-page {
   padding: 1rem 1.25rem;
 }
@@ -10,7 +12,7 @@
 }
 
 .clubs-header .count {
-  color: #6b7280;
+  color: $color-text-muted;
   margin-top: 0.25rem;
 }
 
@@ -22,13 +24,13 @@
   width: 100%;
   max-width: 420px;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid $color-border;
   border-radius: 8px;
 }
 
 .clubs-table-wrapper {
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid $color-border;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -39,19 +41,34 @@
 }
 
 .clubs-table thead {
-  background: #2563eb;
-  color: #fff;
+  background: $color-blue-secondary;
+  color: $color-white;
+}
+
+.table-sort {
+  background: transparent;
+  border: none;
+  color: $color-white;
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.table-sort .arrow {
+  font-size: 0.85em;
 }
 
 .clubs-table th,
 .clubs-table td {
   padding: 0.875rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid $color-border;
   text-align: left;
 }
 
 .clubs-table .actions-col {
-  width: 220px;
+  width: 140px;
 }
 
 .clickable-row {
@@ -59,7 +76,7 @@
 }
 
 .clickable-row:hover {
-  background: #f9fafb;
+  background: $color-neutral-light-grey;
 }
 
 .actions {
@@ -75,24 +92,24 @@
 }
 
 .btn-primary {
-  background: #10b981;
-  color: #fff;
+  background: $color-green-primary;
+  color: $color-white;
 }
 
 .btn-secondary {
-  background: #e5e7eb;
-  color: #111827;
+  background: $color-neutral-light-grey;
+  color: $color-text-primary;
 }
 
 .btn-danger {
-  background: #ef4444;
-  color: #fff;
+  background: $color-red-primary;
+  color: $color-white;
 }
 
 .empty-row,
 .loading-row {
   text-align: center;
-  color: #6b7280;
+  color: $color-text-muted;
 }
 
 

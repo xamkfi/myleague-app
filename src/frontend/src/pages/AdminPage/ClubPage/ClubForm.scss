@@ -1,6 +1,8 @@
+@use '../../../styles/variables' as *;
+
 .club-form {
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid $color-border;
   border-radius: 12px;
   padding: 1rem;
 }
@@ -25,14 +27,20 @@
 
 .form-group input {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid $color-border;
   border-radius: 8px;
 }
 
 .form-actions {
   margin-top: 1rem;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.left-actions,
+.right-actions {
+  display: flex;
   gap: 0.5rem;
 }
 
@@ -44,8 +52,13 @@
 }
 
 .btn-primary {
-  background: #2563eb;
-  color: #fff;
+  background: $color-blue-secondary;
+  color: $color-white;
+}
+
+.btn-danger {
+  background: $color-red-primary;
+  color: $color-white;
 }
 
 

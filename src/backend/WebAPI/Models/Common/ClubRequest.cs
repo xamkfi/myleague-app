@@ -3,6 +3,24 @@ using System.ComponentModel.DataAnnotations;
 namespace WebAPI.Models.Common;
 
 /// <summary>
+/// Request model for retrieving clubs with pagination
+/// </summary>
+public record GetClubsRequest
+{
+    /// <summary>
+    /// Gets the page number (1-based)
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
+    public int Page { get; init; } = 1;
+
+    /// <summary>
+    /// Gets the number of items per page (0 means use default)
+    /// </summary>
+    [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
+    public int PageSize { get; init; } = 25;
+}
+
+/// <summary>
 /// Request model for creating a new club
 /// </summary>
 public record CreateClubRequest
