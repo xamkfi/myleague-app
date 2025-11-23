@@ -1,0 +1,98 @@
+.clubs-page {
+  padding: 1rem 1.25rem;
+}
+
+.clubs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.clubs-header .count {
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.clubs-toolbar {
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 420px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.clubs-table-wrapper {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.clubs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.clubs-table thead {
+  background: #2563eb;
+  color: #fff;
+}
+
+.clubs-table th,
+.clubs-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.clubs-table .actions-col {
+  width: 220px;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background: #f9fafb;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #10b981;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.empty-row,
+.loading-row {
+  text-align: center;
+  color: #6b7280;
+}
+
+
