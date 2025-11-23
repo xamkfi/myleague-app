@@ -69,10 +69,6 @@ function EditClubPage() {
 
   const handleDelete = async () => {
     if (!id) return;
-    const confirmed = window.confirm(
-      t('clubs.confirmDelete', 'Are you sure you want to delete this club? This action cannot be undone.')
-    );
-    if (!confirmed) return;
     try {
       await clubService.remove(id);
       navigate('/admin/clubs');

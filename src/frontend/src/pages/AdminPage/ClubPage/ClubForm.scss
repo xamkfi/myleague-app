@@ -44,19 +44,19 @@
   gap: 0.5rem;
 }
 
-.btn {
+.club-form .btn {
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   border: none;
   cursor: pointer;
 }
 
-.btn-primary {
+.club-form .btn-primary {
   background: $color-blue-secondary;
   color: $color-white;
 }
 
-.btn-danger {
+.club-form .btn-danger {
   background: $color-red-primary;
   color: $color-white;
 }

@@ -79,29 +79,29 @@
   background: $color-neutral-light-grey;
 }
 
-.actions {
+.clubs-page .actions {
   display: flex;
   gap: 0.5rem;
 }
 
-.btn {
+.clubs-page .btn {
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   border: none;
   cursor: pointer;
 }
 
-.btn-primary {
+.clubs-page .btn-primary {
   background: $color-green-primary;
   color: $color-white;
 }
 
-.btn-secondary {
+.clubs-page .btn-secondary {
   background: $color-neutral-light-grey;
   color: $color-text-primary;
 }
 
-.btn-danger {
+.clubs-page .btn-danger {
   background: $color-red-primary;
   color: $color-white;
 }
