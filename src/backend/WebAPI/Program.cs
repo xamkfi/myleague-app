@@ -12,6 +12,20 @@ using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+// Log configuration sources for debugging
+string configSources = builder.Configuration.GetDebugView();
+Console.WriteLine("=== Configuration Sources ===");
+Console.WriteLine(configSources);
+
+// Log connection string attempt (for debugging - remove in production)
+string? connectionStringTest = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionStringTest))
+{
+    // Try environment variable directly
+    connectionStringTest = Environment.GetEnvironmentVariable("POSTGRESQLCONNSTR_DefaultConnection");
+    Console.WriteLine($"Connection string from POSTGRESQLCONNSTR_DefaultConnection: {(string.IsNullOrEmpty(connectionStringTest) ? "NOT FOUND" : "FOUND")}");
+}
+
 // Configure Serilog
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
@@ -32,7 +46,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiConfiguration();
 
 // Add CORS configuration using extension method
-builder.Services.AddCorsConfiguration();
+builder.Services.AddCorsConfiguration(builder.Configuration);
 
 // Configure pagination options
 builder.Services.Configure<PaginationConfiguration>(
@@ -50,6 +64,11 @@ builder.Services.AddHealthCheckUIConfiguration(builder.Configuration);
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline
+
+// CORS must be placed FIRST, before any other middleware that might handle requests
+// This ensures OPTIONS preflight requests are handled correctly
+app.UseCors("AllowAll");
+
 if (app.Environment.IsDevelopment())
 {
     // Map OpenAPI endpoint at the traditional Swagger location for compatibility
@@ -70,8 +89,10 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Use built-in middleware
 app.UseSerilogRequestLogging();
+
+// Note: UseHttpsRedirection can interfere with CORS preflight, but we need it for security
+// CORS is already applied above, so it should work
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
 app.UseStaticFiles();
 app.UseAuthorization();
 

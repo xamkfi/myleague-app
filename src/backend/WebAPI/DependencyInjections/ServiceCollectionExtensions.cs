@@ -1,6 +1,7 @@
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using System.Linq;
 
 namespace WebAPI.DependencyInjections;
 
@@ -64,29 +65,95 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Add CORS configuration
     /// </summary>
-    public static IServiceCollection AddCorsConfiguration(this IServiceCollection services)
+    public static IServiceCollection AddCorsConfiguration(this IServiceCollection services, IConfiguration? configuration = null)
     {
         services.AddCors(options =>
         {
             options.AddPolicy("AllowAll", policy =>
             {
-                policy.WithOrigins(
-                        "http://localhost:3000",
-                        "http://localhost:5173",
-                        "http://localhost:4200",
-                        "http://127.0.0.1:5173")
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials(); // Required for SignalR
+                // Local development origins
+                string[] localOrigins = [
+                    "http://localhost:3000",
+                    "http://localhost:5173",
+                    "http://localhost:4200",
+                    "http://127.0.0.1:5173"
+                ];
+
+                // Get additional origins from configuration
+                string[]? configOrigins = null;
+                if (configuration != null)
+                {
+                    configOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+                }
+
+                // Build list of explicit origins
+                List<string> explicitOrigins = new List<string>(localOrigins);
+                if (configOrigins != null)
+                {
+                    explicitOrigins.AddRange(configOrigins);
+                }
+
+                // Use SetIsOriginAllowed to allow pattern matching for Azure domains
+                // This allows all azurestaticapps.net and azurewebsites.net domains
+                policy.SetIsOriginAllowed(origin =>
+                {
+                    // Handle null origin
+                    if (string.IsNullOrWhiteSpace(origin))
+                    {
+                        return false;
+                    }
+
+                    // Allow explicit origins (localhost and from config)
+                    if (explicitOrigins.Contains(origin))
+                    {
+                        return true;
+                    }
+
+                    // Allow Azure Static Web Apps domains (pattern matching)
+                    if (origin.Contains("azurestaticapps.net", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
+                    // Allow Azure Websites domains (for testing)
+                    if (origin.Contains("azurewebsites.net", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                })
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials(); // Required for SignalR
             });
 
-            // You can add more specific policies here for production
+            // Production policy for specific domains
             options.AddPolicy("Production", policy =>
             {
-                policy.WithOrigins("https://yourdomain.com")
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials();
+                policy.SetIsOriginAllowed(origin =>
+                {
+                    // Allow Azure Static Web Apps domains
+                    if (origin.Contains("azurestaticapps.net", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
+                    // Allow specific production domains from configuration
+                    if (configuration != null)
+                    {
+                        string[]? allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+                        if (allowedOrigins != null && allowedOrigins.Contains(origin))
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                })
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
             });
         });
 

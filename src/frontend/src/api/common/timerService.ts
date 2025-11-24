@@ -1,6 +1,7 @@
 import type { ApiResponse } from '../../types/common/apiResponseType';
+import { VITE_API_URL } from '../../constants/config';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = VITE_API_URL;
 
 export interface TimeSpan {
   days: number;

@@ -5,7 +5,9 @@ interface ApiResponse<T> {
   message: string;
   errors: string[];
 }
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { VITE_API_URL } from '../../../constants/config';
+
+const API_URL = VITE_API_URL;
 
 export async function handleImageDeleteService(imageUrl: string) {
 

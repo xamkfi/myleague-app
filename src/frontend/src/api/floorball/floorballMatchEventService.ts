@@ -31,7 +31,9 @@ export interface FloorballDomainEventDto {
   data: Record<string, unknown>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { VITE_API_URL } from '../../constants/config';
+
+const API_URL = VITE_API_URL;
 
 // Request interfaces matching backend models
 export interface RecordGoalEventRequest {

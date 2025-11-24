@@ -4,6 +4,7 @@ using Domain.Services.Floorball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 using MyLeague.Infrastructure.Persistence;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
@@ -32,7 +33,38 @@ namespace MyLeague.Infrastructure.DependencyInjections
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? "";
+            // Try multiple ways to get the connection string
+            // Priority order:
+            // 1. Azure App Service connection strings (POSTGRESQLCONNSTR_ prefix for PostgreSQL type)
+            // 2. Standard connection string environment variables
+            // 3. Configuration API (GetConnectionString)
+            // 4. Configuration API (direct key access)
+            string connectionString = Environment.GetEnvironmentVariable("POSTGRESQLCONNSTR_DefaultConnection")
+                ?? Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DefaultConnection")
+                ?? Environment.GetEnvironmentVariable("SQLCONNSTR_DefaultConnection")
+                ?? configuration.GetConnectionString("DefaultConnection")
+                ?? configuration["ConnectionStrings:DefaultConnection"]
+                ?? "";
+            
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                // Log all attempted sources for debugging
+                (string, string?)[] attemptedSources = new[]
+                {
+                    ("POSTGRESQLCONNSTR_DefaultConnection", Environment.GetEnvironmentVariable("POSTGRESQLCONNSTR_DefaultConnection")),
+                    ("CUSTOMCONNSTR_DefaultConnection", Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DefaultConnection")),
+                    ("SQLCONNSTR_DefaultConnection", Environment.GetEnvironmentVariable("SQLCONNSTR_DefaultConnection")),
+                    ("GetConnectionString", configuration.GetConnectionString("DefaultConnection")),
+                    ("ConnectionStrings:DefaultConnection", configuration["ConnectionStrings:DefaultConnection"])
+                };
+                
+                string sourceInfo = string.Join(", ", attemptedSources.Select(s => $"{s.Item1}: {(string.IsNullOrEmpty(s.Item2) ? "NOT FOUND" : "FOUND")}"));
+                
+                throw new InvalidOperationException(
+                    $"Connection string 'DefaultConnection' is not configured. " +
+                    $"Please set it in App Service connection strings with type 'PostgreSQL'. " +
+                    $"Checked sources: {sourceInfo}");
+            }
 
             services.AddDbContext<CommonDbContext>(options =>
                 options.UseNpgsql(

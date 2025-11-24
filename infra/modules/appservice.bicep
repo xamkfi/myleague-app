@@ -78,13 +78,8 @@ resource appService 'Microsoft.Web/sites@2023-01-01' = {
       minTlsVersion: '1.2'
       http20Enabled: true
       healthCheckPath: '/health'
-      cors: {
-        allowedOrigins: [
-          frontendUrl
-          'https://*.azurestaticapps.net' // Allow all Static Web App URLs
-        ]
-        supportCredentials: true
-      }
+      // CORS is handled at the application level in ASP.NET Core
+      // Platform-level CORS can interfere with application CORS middleware
       appSettings: [
         {
           name: 'ASPNETCORE_ENVIRONMENT'

@@ -1,5 +1,6 @@
 import type { Person, PersonFormData, PersonRole } from '../../types/admin/personTypes';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
+import { VITE_API_URL } from '../../constants/config';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -8,7 +9,7 @@ interface ApiResponse<T> {
   errors: string[];
 }
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = VITE_API_URL;
 
 export const personApi = {
   getAll: async (): Promise<Person[]> => {
