@@ -42,7 +42,7 @@ public class ClubsController : ControllerBase
     {
         _logger.LogInformation("Getting clubs page {Page} size {PageSize}", request.Page, request.PageSize);
         
-        GetClubsPagedQuery query = new GetClubsPagedQuery(request.Page, request.PageSize);
+        GetAllClubsQuery query = new GetAllClubsQuery(request.Page, request.PageSize);
         Result<Domain.Common.PagedResult<ClubDto>> result = await _mediator.Send(query);
 
         if (result.IsSuccess && result.Data != null)
