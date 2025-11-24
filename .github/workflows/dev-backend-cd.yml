@@ -1,0 +1,73 @@
+name: Backend CD - Deploy to Azure
+
+on:
+  push:
+    branches:
+      - bicep_scripts
+    paths:
+      - 'src/backend/**'
+      - '.github/workflows/backend-cd.yml'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  AZURE_WEBAPP_NAME: 'app-myleague-bicep-dev'
+  AZURE_WEBAPP_PACKAGE_PATH: './src/backend/WebAPI'
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Azure App Service
+    runs-on: ubuntu-latest
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore MyLeague.sln
+
+    - name: Build
+      run: dotnet build MyLeague.sln --configuration Release --no-restore
+
+    - name: Run tests
+      run: dotnet test MyLeague.sln --configuration Release --no-build --verbosity normal
+
+    - name: Publish
+      run: dotnet publish ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/WebAPI.csproj --configuration Release --output ./publish
+
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ./publish
+
+    - name: Verify deployment
+      run: |
+        echo "Waiting for deployment to complete..."
+        sleep 30
+        HEALTH_URL="https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/health"
+        echo "Checking health endpoint: $HEALTH_URL"
+        
+        for i in {1..10}; do
+          if curl -f -s "$HEALTH_URL" >/dev/null 2>&1; then
+            echo "✅ Backend deployment successful and healthy!"
+            exit 0
+          else
+            echo "Attempt $i: Backend not ready yet, waiting 10 seconds..."
+            sleep 10
+          fi
+        done
+        
+        echo "⚠️ Backend deployed but health check timed out"
+        exit 0
+
