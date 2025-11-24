@@ -97,17 +97,19 @@ function ClubsManagementPage() {
 
         <div className="clubs-header">
           <div className="left">
-            <h2>{t('clubs.manage.title', 'Manage Clubs')}</h2>
+            <h2 className="page-title-compact font-title">
+              {t('clubs.manage.title', 'Manage Clubs')}
+            </h2>
             <p className="count">
               {t('clubs.total', 'Total')}: {totalCount}
             </p>
           </div>
           <div className="right">
             <button
-              className="btn btn-primary"
+              className="btn create-club-button"
               onClick={() => navigate('/admin/clubs/create')}
             >
-              {t('clubs.createNew', 'Create New Club')}
+              + {t('clubs.createNew', 'Create New Club')}
             </button>
           </div>
         </div>

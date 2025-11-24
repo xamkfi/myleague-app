@@ -1,4 +1,5 @@
 @use '../../../styles/variables' as *;
+@use '../../../styles/common' as *;
 
 .clubs-page {
   padding: 1rem 1.25rem;
@@ -14,6 +15,15 @@
 .clubs-header .count {
   color: $color-text-muted;
   margin-top: 0.25rem;
+}
+
+.clubs-page .page-title-compact {
+  margin: 0;
+  padding: 0;
+}
+
+.clubs-header h2 {
+  text-transform: uppercase;
 }
 
 .clubs-toolbar {
@@ -38,6 +48,13 @@
 .clubs-table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.clubs-table tbody tr:nth-child(odd):not(:hover) {
+  background: $color-neutral-light-grey;
+}
+.clubs-table tbody tr:nth-child(odd):not(:hover) td {
+  background: $color-neutral-light-grey;
 }
 
 .clubs-table thead {
@@ -76,7 +93,10 @@
 }
 
 .clickable-row:hover {
-  background: $color-neutral-light-grey;
+  background: $color-neutral-dark-grey-alpha;
+}
+.clickable-row:hover td {
+  background: $color-neutral-dark-grey-alpha;
 }
 
 .clubs-page .actions {
@@ -92,18 +112,37 @@
 }
 
 .clubs-page .btn-primary {
-  background: $color-green-primary;
+  background: $color-blue-light;
   color: $color-white;
 }
 
 .clubs-page .btn-secondary {
-  background: $color-neutral-light-grey;
-  color: $color-text-primary;
+  background: $color-blue-light;
+  color: $color-white;
 }
 
 .clubs-page .btn-danger {
   background: $color-red-primary;
   color: $color-white;
+}
+
+.clubs-page .create-club-button {
+  width: 174px;
+  height: 40px;
+  padding: 8px 16px;
+  border-radius: 24px;
+  background-color: $color-blue-light;
+  color: $color-white;
+  border: none;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-row,
@@ -112,4 +151,16 @@
   color: $color-text-muted;
 }
 
+.clubs-table td {
+  vertical-align: middle;
+}
+
+.clubs-page td.actions {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.clubs-page td.actions .btn + .btn {
+  margin-left: 0.5rem;
+}
 
