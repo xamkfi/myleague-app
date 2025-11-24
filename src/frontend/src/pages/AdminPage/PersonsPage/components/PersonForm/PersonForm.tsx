@@ -678,7 +678,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
                           <label htmlFor="contactInfo.email">
-                {t('admin.persons.form.email')}
+                {t('admin.persons.form.email')} <span className="required">*required field</span>
               </label>
             <input
               type="email"
