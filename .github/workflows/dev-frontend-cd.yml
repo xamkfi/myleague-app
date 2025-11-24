@@ -6,11 +6,11 @@ on:
       - bicep_scripts 
     paths:
       - 'src/frontend/**'
-      - '.github/workflows/frontend-cd.yml'
+      - '.github/workflows/dev-frontend-cd.yml'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
-      - development
+      - bicep_scripts
   workflow_dispatch:
 
 env:

@@ -6,7 +6,7 @@ on:
       - bicep_scripts
     paths:
       - 'src/backend/**'
-      - '.github/workflows/backend-cd.yml'
+      - '.github/workflows/dev-backend-cd.yml'
   workflow_dispatch:
 
 env:
