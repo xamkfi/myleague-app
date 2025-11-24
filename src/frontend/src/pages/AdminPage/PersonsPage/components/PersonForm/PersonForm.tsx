@@ -9,7 +9,7 @@ import { floorballTeamService } from '../../../../../api/floorball/floorballTeam
 import { floorballTeamSearchService } from '../../../../../api/floorball/floorballTeamSearchService';
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
-import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import BackButton from '../../../../../components/BackButton/BackButton';
 import './PersonForm.scss';
 import { SPORTS, type SportType } from '../../../../../constants/sports';
@@ -525,7 +525,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="firstName">
-              {t('admin.persons.form.firstName')} <span className="required">*</span>
+              {t('admin.persons.form.firstName')} <span className="required">*required field</span>
             </label>
             <input
               type="text"
@@ -543,7 +543,7 @@ const PersonForm = ({
           </div>
           <div className="form-group">
             <label htmlFor="lastName">
-              {t('admin.persons.form.lastName')} <span className="required">*</span>
+              {t('admin.persons.form.lastName')} <span className="required">*required field</span>
             </label>
             <input
               type="text"
@@ -563,7 +563,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="birthDate">
-              {t('admin.persons.form.birthDate')} <span className="required">*</span>
+              {t('admin.persons.form.birthDate')} <span className="required">*required field</span>
             </label>
             <input
               type="date"
@@ -602,8 +602,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
                           <label htmlFor="address.street1">
-                {t('admin.persons.form.street1')}
-                {(formData.address.city || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
+                {t('admin.persons.form.street1')} <span className="required">*required field</span>
               </label>
             <input
               type="text"
@@ -622,8 +621,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
                           <label htmlFor="address.city">
-                {t('admin.persons.form.city')}
-                {(formData.address.street1 || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
+                {t('admin.persons.form.city')} <span className="required">*required field</span>
               </label>
             <input
               type="text"
@@ -640,8 +638,7 @@ const PersonForm = ({
           </div>
           <div className="form-group">
                           <label htmlFor="address.postalCode">
-                {t('admin.persons.form.postalCode')}
-                {(formData.address.street1 || formData.address.city || formData.address.country).trim() !== '' && <span className="required">*</span>}
+                {t('admin.persons.form.postalCode')} <span className="required">*required field</span>
               </label>
             <input
               type="text"
@@ -658,8 +655,7 @@ const PersonForm = ({
           </div>
           <div className="form-group">
                           <label htmlFor="address.country">
-                {t('admin.persons.form.country')}
-                {(formData.address.street1 || formData.address.city || formData.address.postalCode).trim() !== '' && <span className="required">*</span>}
+                {t('admin.persons.form.country')} <span className="required">*required field</span>
               </label>
             <input
               type="text"
@@ -760,7 +756,7 @@ const PersonForm = ({
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="position">
-                  {t('admin.persons.form.position')} <span className="required">*</span>
+                  {t('admin.persons.form.position')} <span className="required">*required field</span>
                 </label>
                 <select
                   id="position"
