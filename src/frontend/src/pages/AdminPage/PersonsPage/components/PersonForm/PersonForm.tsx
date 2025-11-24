@@ -67,7 +67,7 @@ const PersonForm = ({
       role: PersonRole.User,
       address: {
         street1: '',
-        street2: '',
+        street2: null,
         city: '',
         postalCode: '',
         country: ''
@@ -75,7 +75,7 @@ const PersonForm = ({
       contactInfo: {
         email: '',
         phone: '',
-        alternativePhone: ''
+        alternativePhone: null
       },
       teamId: undefined,
       position: undefined,
@@ -117,7 +117,7 @@ const PersonForm = ({
           role: person.role,
           address: person.address || {
             street1: '',
-            street2: '',
+            street2: null,
             city: '',
             postalCode: '',
             country: ''
@@ -125,7 +125,7 @@ const PersonForm = ({
           contactInfo: person.contactInfo || {
             email: '',
             phone: '',
-            alternativePhone: ''
+            alternativePhone: null
           },
           teamId: undefined,
           position: undefined,
@@ -291,7 +291,6 @@ const PersonForm = ({
     // Address validation (all fields required if any field is filled)
     const addressValues = [
       formData.address.street1,
-      formData.address.street2,
       formData.address.city,
       formData.address.postalCode,
       formData.address.country
@@ -303,10 +302,6 @@ const PersonForm = ({
         errors['address.street1'] = t('admin.persons.validation.street1Required');
       } else if (formData.address.street1.length > MAX_LENGTHS.street1) {
         errors['address.street1'] = t('admin.persons.validation.street1TooLong', { max: MAX_LENGTHS.street1 });
-      }
-
-      if (formData.address.street2 && formData.address.street2.length > MAX_LENGTHS.street2) {
-        errors['address.street2'] = t('admin.persons.validation.street2TooLong', { max: MAX_LENGTHS.street2 });
       }
 
       if (!formData.address.city.trim()) {
@@ -336,10 +331,6 @@ const PersonForm = ({
 
     if (formData.contactInfo.phone && formData.contactInfo.phone.length > MAX_LENGTHS.phone) {
       errors['contactInfo.phone'] = t('admin.persons.validation.phoneTooLong', { max: MAX_LENGTHS.phone });
-    }
-
-    if (formData.contactInfo.alternativePhone && formData.contactInfo.alternativePhone.length > MAX_LENGTHS.alternativePhone) {
-      errors['contactInfo.alternativePhone'] = t('admin.persons.validation.alternativePhoneTooLong', { max: MAX_LENGTHS.alternativePhone });
     }
 
     // Team assignment validation (only for new persons, not edits)
@@ -612,7 +603,7 @@ const PersonForm = ({
           <div className="form-group">
                           <label htmlFor="address.street1">
                 {t('admin.persons.form.street1')}
-                {(formData.address.street2 || formData.address.city || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
+                {(formData.address.city || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
               </label>
             <input
               type="text"
@@ -627,29 +618,12 @@ const PersonForm = ({
               <div className="field-error">{fieldErrors['address.street1']}</div>
             )}
           </div>
-          <div className="form-group">
-                          <label htmlFor="address.street2">
-                {t('admin.persons.form.street2')}
-              </label>
-            <input
-              type="text"
-              id="address.street2"
-              name="address.street2"
-              value={formData.address.street2}
-              onChange={handleInputChange}
-              maxLength={MAX_LENGTHS.street2}
-              className={fieldErrors['address.street2'] ? 'person-error' : ''}
-            />
-            {fieldErrors['address.street2'] && (
-              <div className="field-error">{fieldErrors['address.street2']}</div>
-            )}
-          </div>
         </div>
         <div className="form-row">
           <div className="form-group">
                           <label htmlFor="address.city">
                 {t('admin.persons.form.city')}
-                {(formData.address.street1 || formData.address.street2 || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
+                {(formData.address.street1 || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
               </label>
             <input
               type="text"
@@ -667,7 +641,7 @@ const PersonForm = ({
           <div className="form-group">
                           <label htmlFor="address.postalCode">
                 {t('admin.persons.form.postalCode')}
-                {(formData.address.street1 || formData.address.street2 || formData.address.city || formData.address.country).trim() !== '' && <span className="required">*</span>}
+                {(formData.address.street1 || formData.address.city || formData.address.country).trim() !== '' && <span className="required">*</span>}
               </label>
             <input
               type="text"
@@ -685,7 +659,7 @@ const PersonForm = ({
           <div className="form-group">
                           <label htmlFor="address.country">
                 {t('admin.persons.form.country')}
-                {(formData.address.street1 || formData.address.street2 || formData.address.city || formData.address.postalCode).trim() !== '' && <span className="required">*</span>}
+                {(formData.address.street1 || formData.address.city || formData.address.postalCode).trim() !== '' && <span className="required">*</span>}
               </label>
             <input
               type="text"
@@ -723,8 +697,6 @@ const PersonForm = ({
               <div className="field-error">{fieldErrors['contactInfo.email']}</div>
             )}
           </div>
-        </div>
-        <div className="form-row">
           <div className="form-group">
                           <label htmlFor="contactInfo.phone">
                 {t('admin.persons.form.phone')}
@@ -740,23 +712,6 @@ const PersonForm = ({
             />
             {fieldErrors['contactInfo.phone'] && (
               <div className="field-error">{fieldErrors['contactInfo.phone']}</div>
-            )}
-          </div>
-          <div className="form-group">
-                          <label htmlFor="contactInfo.alternativePhone">
-                {t('admin.persons.form.alternativePhone')}
-              </label>
-            <input
-              type="tel"
-              id="contactInfo.alternativePhone"
-              name="contactInfo.alternativePhone"
-              value={formData.contactInfo.alternativePhone}
-              onChange={handleInputChange}
-              maxLength={MAX_LENGTHS.alternativePhone}
-              className={fieldErrors['contactInfo.alternativePhone'] ? 'person-error' : ''}
-            />
-            {fieldErrors['contactInfo.alternativePhone'] && (
-              <div className="field-error">{fieldErrors['contactInfo.alternativePhone']}</div>
             )}
           </div>
         </div>
