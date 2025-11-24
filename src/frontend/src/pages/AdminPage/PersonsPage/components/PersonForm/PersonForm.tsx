@@ -586,7 +586,7 @@ const PersonForm = ({
             <label htmlFor="isRegistered" className="checkbox-label">
               {t('admin.persons.form.isRegistered')}
             </label>
-            <input
+            <input className="registered-box"
               type="checkbox"
               id="isRegistered"
               name="isRegistered"
