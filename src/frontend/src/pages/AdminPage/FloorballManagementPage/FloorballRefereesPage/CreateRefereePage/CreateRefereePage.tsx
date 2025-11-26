@@ -312,10 +312,10 @@ const CreateRefereePage = () => {
                         </td>
                         <td className="name-cell">
                           <div className="person-name">{person.fullName}</div>
-                          <div className="person-birthdate-mobile">{new Date(person.birthDate).toLocaleDateString()}</div>
+                          <div className="person-birthdate-mobile">{person.birthDate ? new Date(person.birthDate).toLocaleDateString() : '-'}</div>
                         </td>
                         <td className="birthdate-cell">
-                          {new Date(person.birthDate).toLocaleDateString()}
+                          {person.birthDate ? new Date(person.birthDate).toLocaleDateString() : '-'}
                         </td>
                         <td className="registration-cell">
                           <span className={`registration-badge ${person.isRegistered ? 'registered' : 'not-registered'}`}>
