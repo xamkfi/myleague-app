@@ -44,13 +44,13 @@ public class HockeyPlayer : Person
     /// </summary>
     /// <param name="firstName">The player's first name</param>
     /// <param name="lastName">The player's last name</param>
-    /// <param name="birthDate">The player's birth date</param>
+    /// <param name="birthDate">The player's birth date (optional)</param>
     /// <param name="preferredPosition">The player's preferred position</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public HockeyPlayer(
         string firstName,
         string lastName,
-        DateTime birthDate,
+        DateTime? birthDate = null,
         HockeyPosition preferredPosition = HockeyPosition.Forward)
         : base(firstName, lastName, birthDate)
     {
@@ -60,7 +60,7 @@ public class HockeyPlayer : Person
             throw new ArgumentException("First name cannot be null or empty.", nameof(firstName));
         if (string.IsNullOrWhiteSpace(lastName))
             throw new ArgumentException("Last name cannot be null or empty.", nameof(lastName));
-        if (birthDate > DateTime.UtcNow)
+        if (birthDate.HasValue && birthDate.Value > DateTime.UtcNow)
             throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
         IsActive = true;
         PreferredPosition = preferredPosition;

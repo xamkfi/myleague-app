@@ -42,16 +42,16 @@ public class HockeyReferee : Person
     /// </summary>
     /// <param name="firstName">The referee's first name</param>
     /// <param name="lastName">The referee's last name</param>
-    /// <param name="birthDate">The referee's birth date</param>
+    /// <param name="birthDate">The referee's birth date (optional)</param>
     /// <param name="licenseIssueDate">The date when the license was issued</param>
     /// <param name="licenseExpiryDate">The date when the license expires</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public HockeyReferee(
         string firstName,
         string lastName,
-        DateTime birthDate,
         DateTime licenseIssueDate,
-        DateTime licenseExpiryDate)
+        DateTime licenseExpiryDate,
+        DateTime? birthDate = null)
         : base(firstName, lastName, birthDate)
     {
         ArgumentNullException.ThrowIfNull(firstName);
@@ -60,7 +60,7 @@ public class HockeyReferee : Person
             throw new ArgumentException("First name cannot be null or empty.", nameof(firstName));
         if (string.IsNullOrWhiteSpace(lastName))
             throw new ArgumentException("Last name cannot be null or empty.", nameof(lastName));
-        if (birthDate > DateTime.UtcNow)
+        if (birthDate.HasValue && birthDate.Value > DateTime.UtcNow)
             throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
         if (licenseIssueDate > DateTime.UtcNow)
             throw new ArgumentException("License issue date cannot be in the future.", nameof(licenseIssueDate));
