@@ -26,7 +26,7 @@ public class Person : BaseEntity
     /// <summary>
     /// Gets the birth date of the person
     /// </summary>
-    public DateTime BirthDate { get; private set; }
+    public DateTime? BirthDate { get; private set; }
     
     /// <summary>
     /// Gets the address of the person
@@ -60,13 +60,13 @@ public class Person : BaseEntity
     /// </summary>
     /// <param name="firstName">The first name of the person.</param>
     /// <param name="lastName">The last name of the person.</param>
-    /// <param name="birthDate">The birth date of the person.</param>
+    /// <param name="birthDate">The birth date of the person (optional).</param>
     /// <param name="role">The role of the person (defaults to User).</param>
     /// <param name="address">The address of the person (optional).</param>
     /// <param name="contactInfo">The contact information of the person (optional).</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="firstName"/> or <paramref name="lastName"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown if <paramref name="firstName"/> or <paramref name="lastName"/> is empty or whitespace, or if <paramref name="birthDate"/> is in the future.</exception>
-    public Person(string firstName, string lastName, DateTime birthDate,
+    public Person(string firstName, string lastName, DateTime? birthDate = null,
         PersonRole role = PersonRole.User, Address? address = null, ContactInfo? contactInfo = null)
     {
         ArgumentNullException.ThrowIfNull(firstName);
@@ -76,7 +76,7 @@ public class Person : BaseEntity
             throw new ArgumentException("First name cannot be null or empty.", nameof(firstName));
         if (string.IsNullOrWhiteSpace(lastName))
             throw new ArgumentException("Last name cannot be null or empty.", nameof(lastName));
-        if (birthDate > DateTime.UtcNow)
+        if (birthDate.HasValue && birthDate.Value > DateTime.UtcNow)
             throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
 
         FirstName = firstName;
@@ -110,9 +110,9 @@ public class Person : BaseEntity
     /// <summary>
     /// Updates the person's birthdate
     /// </summary>
-    public void UpdateBirthDate(DateTime birthDate)
+    public void UpdateBirthDate(DateTime? birthDate)
     {
-        if (birthDate > DateTime.UtcNow)
+        if (birthDate.HasValue && birthDate.Value > DateTime.UtcNow)
             throw new ArgumentException("Birth date cannot be in the future.", nameof(birthDate));
 
         BirthDate = birthDate;

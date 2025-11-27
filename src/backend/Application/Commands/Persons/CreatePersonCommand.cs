@@ -11,7 +11,7 @@ namespace Application.Commands.Persons;
 public record CreatePersonCommand(
     string FirstName,
     string LastName,
-    DateTime BirthDate,
+    DateTime? BirthDate = null,
     bool IsRegistered = false,
     AddressDto? Address = null,
     ContactInfoDto? ContactInfo = null) : IRequest<Result<PersonDto>>;

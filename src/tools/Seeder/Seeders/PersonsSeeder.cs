@@ -45,9 +45,22 @@ public static class PersonsSeeder
                     {
                         foreach (PersonDto p in searchApi.Data)
                         {
+                            bool birthDateMatches = false;
+                            if (p.BirthDate.HasValue && !string.IsNullOrWhiteSpace(person.BirthDate))
+                            {
+                                // Both have birth dates, compare them
+                                birthDateMatches = p.BirthDate.Value.Date == DateTime.Parse(person.BirthDate).Date;
+                            }
+                            else if (!p.BirthDate.HasValue && string.IsNullOrWhiteSpace(person.BirthDate))
+                            {
+                                // Both are null/empty, consider them matching
+                                birthDateMatches = true;
+                            }
+                            // If one has birthdate and the other doesn't, they don't match (birthDateMatches remains false)
+
                             if (string.Equals(p.FirstName, person.FirstName, StringComparison.OrdinalIgnoreCase)
                                 && string.Equals(p.LastName, person.LastName, StringComparison.OrdinalIgnoreCase)
-                                && p.BirthDate.Date == DateTime.Parse(person.BirthDate).Date)
+                                && birthDateMatches)
                             {
                                 existing = p;
                                 break;
