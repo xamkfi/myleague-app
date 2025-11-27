@@ -60,6 +60,7 @@
       .required {
         color: #dc3545;
         margin-left: 0.25rem;
+        font-size: 0.65rem;
       }
     }
 
@@ -166,9 +167,16 @@
   cursor: pointer;
 }
 
-input[type="checkbox"] {
-  width: auto;
-  height: auto;
+// input[type="checkbox"] {
+//   width: auto;
+//   height: auto;
+//   margin-left: 0.5rem;
+//   cursor: pointer;
+// } 
+
+.registered-box[type="checkbox"] {
+  width: 100px;
+  height: 50px;
   margin-left: 0.5rem;
   cursor: pointer;
-} 
+}

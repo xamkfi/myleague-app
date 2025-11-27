@@ -250,7 +250,6 @@ const CreateRefereePage = () => {
             <ErrorPopup message={error} />
 
             {/* Selection Controls */}
-            {selectedPersonIds.size > 0 && (
               <div className="selection-controls">
                 <div className="selection-info">
                   <span className="selected-count">
@@ -264,8 +263,27 @@ const CreateRefereePage = () => {
                     {t('common.clear', 'Clear')}
                   </button>
                 </div>
+                <div className="proceed-action">
+                {selectedPersonIds.size > 0 && (
+                <button
+                  onClick={handleProceedToForm}
+                  className="proceed-button"
+                  disabled={creating}
+                >
+                  {t('floorball.referees.createReferees', 'Create referee(s) ({{count}})', { count: selectedPersonIds.size })}
+                </button>
+                )}
+                {selectedPersonIds.size == 0 && (
+                  <button
+                  onClick={handleProceedToForm}
+                  className="dead-proceed-button"
+                  disabled={creating}
+                >
+                  {t('floorball.referees.createReferees', 'Create referee(s) ({{count}})', { count: selectedPersonIds.size })}
+                </button>
+                )}
               </div>
-            )}
+              </div>
 
             {/* Persons Table */}
             <div className="persons-table-wrapper">
@@ -331,19 +349,6 @@ const CreateRefereePage = () => {
                 </table>
               )}
             </div>
-
-            {/* Proceed Button - Only show when persons are selected */}
-            {selectedPersonIds.size > 0 && (
-              <div className="proceed-action">
-                <button
-                  onClick={handleProceedToForm}
-                  className="proceed-button"
-                  disabled={creating}
-                >
-                  {t('floorball.referees.createReferees', 'Create referee(s) ({{count}})', { count: selectedPersonIds.size })}
-                </button>
-              </div>
-            )}
           </>
         ) : (
           <form onSubmit={handleCreateReferee} className="create-referee-form">
