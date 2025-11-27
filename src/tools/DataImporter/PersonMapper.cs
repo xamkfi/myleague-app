@@ -8,8 +8,8 @@ public static class PersonMapper
 {
     public static CreatePersonRequest MapToCreatePersonRequest(XmlPersonData xmlPerson)
     {
-        // Parse birthdate - handle "0000-00-00" as DateTime.MinValue
-        string birthDateStr = ParseBirthDate(xmlPerson.Birthday);
+        // Parse birthdate - return null if missing or invalid
+        string? birthDateStr = ParseBirthDate(xmlPerson.Birthday);
 
         // Determine IsRegistered based on country code "AFG"
         bool isRegistered = xmlPerson.Country == "AFG";
@@ -58,11 +58,11 @@ public static class PersonMapper
         };
     }
 
-    private static string ParseBirthDate(string birthday)
+    private static string? ParseBirthDate(string birthday)
     {
         if (string.IsNullOrWhiteSpace(birthday) || birthday == "0000-00-00")
         {
-            return DateTime.MinValue.ToString("yyyy-MM-dd");
+            return null;
         }
 
         // Try to parse the date
@@ -71,8 +71,8 @@ public static class PersonMapper
             return parsedDate.ToString("yyyy-MM-dd");
         }
 
-        // If parsing fails, return MinValue
-        return DateTime.MinValue.ToString("yyyy-MM-dd");
+        // If parsing fails, return null
+        return null;
     }
 
     private static string? GetNonEmptyPhone(string? phone, string? mobile)

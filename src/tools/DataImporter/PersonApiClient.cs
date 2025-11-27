@@ -45,11 +45,19 @@ public class PersonApiClient
                     if (string.Equals(p.FirstName, request.FirstName, StringComparison.OrdinalIgnoreCase) &&
                         string.Equals(p.LastName, request.LastName, StringComparison.OrdinalIgnoreCase))
                     {
-                        // If birthdate matches (or both are MinValue), consider it a duplicate
-                        if (DateTime.TryParse(request.BirthDate, out DateTime requestBirthDate))
+                        // If birthdate matches (or both are null), consider it a duplicate
+                        if (string.IsNullOrWhiteSpace(request.BirthDate))
                         {
-                            if (p.BirthDate.Date == requestBirthDate.Date || 
-                                (p.BirthDate == DateTime.MinValue && requestBirthDate == DateTime.MinValue))
+                            // If request has no birthdate, match if person also has no birthdate (null or MinValue)
+                            if (p.BirthDate == DateTime.MinValue || p.BirthDate == default(DateTime))
+                            {
+                                return p;
+                            }
+                        }
+                        else if (DateTime.TryParse(request.BirthDate, out DateTime requestBirthDate))
+                        {
+                            // If request has birthdate, match if dates are the same
+                            if (p.BirthDate.Date == requestBirthDate.Date)
                             {
                                 return p;
                             }
