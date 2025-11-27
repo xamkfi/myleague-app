@@ -1,9 +1,12 @@
 /**
  * Formats a date string to a localized format in UTC (D.M.YYYY)
- * @param dateString Date string to format
- * @returns Formatted date string
+ * @param dateString Date string to format (can be null)
+ * @returns Formatted date string or '-' if null
  */
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string | null): string {
+  if (!dateString) {
+    return '-';
+  }
   try {
     const date = new Date(dateString);
     const day = date.getUTCDate();

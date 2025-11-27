@@ -22,7 +22,7 @@ export interface Person {
   id: string;
   firstName: string;
   lastName: string;
-  birthDate: string;
+  birthDate: string | null;
   fullName: string;
   isRegistered: boolean;
   role: PersonRole;

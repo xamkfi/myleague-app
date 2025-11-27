@@ -347,7 +347,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
                 {person.fullName}
               </td>
               <td onClick={() => togglePersonSelection(person.id)} className="clickable-cell">
-                {new Date(person.birthDate).toLocaleDateString()}
+                {person.birthDate ? new Date(person.birthDate).toLocaleDateString() : '-'}
               </td>
               <td onClick={() => togglePersonSelection(person.id)} className="clickable-cell">
                 {person.contactInfo?.email || '-'}

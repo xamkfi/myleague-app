@@ -105,9 +105,12 @@ const PersonForm = ({
         setLoading(true);
         const person = await personApi.getById(id!);
         
-        // Convert ISO date to dd-mm-yyyy
-        const date = new Date(person.birthDate);
-        const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+        // Convert ISO date to dd-mm-yyyy, handle null birthDate
+        let formattedDate = '';
+        if (person.birthDate) {
+          const date = new Date(person.birthDate);
+          formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+        }
         
         setFormData({
           firstName: person.firstName,
@@ -144,8 +147,9 @@ const PersonForm = ({
   }, [id, isEditMode, t]);
 
   const validateBirthDate = (date: string): string | null => {
-    if (!date) {
-      return t('admin.persons.validation.birthDateRequired');
+    // Birth date is optional, so empty string is valid
+    if (!date || date.trim() === '') {
+      return null;
     }
 
     // Parse dd-mm-yyyy format
@@ -283,9 +287,12 @@ const PersonForm = ({
       errors.lastName = t('admin.persons.validation.lastNameTooLong', { max: MAX_LENGTHS.lastName });
     }
 
-    const birthDateError = validateBirthDate(formData.birthDate);
-    if (birthDateError) {
-      errors.birthDate = birthDateError;
+    // Birth date is optional, but if provided, validate it
+    if (formData.birthDate && formData.birthDate.trim() !== '') {
+      const birthDateError = validateBirthDate(formData.birthDate);
+      if (birthDateError) {
+        errors.birthDate = birthDateError;
+      }
     }
 
     // Address validation (all fields required if any field is filled)
@@ -572,7 +579,6 @@ const PersonForm = ({
               value={formData.birthDate}
               onChange={handleInputChange}
               placeholder="dd-mm-yyyy"
-              required
               className={fieldErrors.birthDate ? 'person-error' : ''}
             />
             {fieldErrors.birthDate && (
