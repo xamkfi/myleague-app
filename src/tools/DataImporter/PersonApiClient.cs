@@ -48,8 +48,8 @@ public class PersonApiClient
                         // If birthdate matches (or both are null), consider it a duplicate
                         if (string.IsNullOrWhiteSpace(request.BirthDate))
                         {
-                            // If request has no birthdate, match if person also has no birthdate (null or MinValue)
-                            if (p.BirthDate == DateTime.MinValue || p.BirthDate == default(DateTime))
+                            // If request has no birthdate, match if person also has no birthdate
+                            if (!p.BirthDate.HasValue)
                             {
                                 return p;
                             }
@@ -57,7 +57,7 @@ public class PersonApiClient
                         else if (DateTime.TryParse(request.BirthDate, out DateTime requestBirthDate))
                         {
                             // If request has birthdate, match if dates are the same
-                            if (p.BirthDate.Date == requestBirthDate.Date)
+                            if (p.BirthDate.HasValue && p.BirthDate.Value.Date == requestBirthDate.Date)
                             {
                                 return p;
                             }
