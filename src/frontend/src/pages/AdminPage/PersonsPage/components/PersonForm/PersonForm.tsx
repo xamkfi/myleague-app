@@ -563,7 +563,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="birthDate">
-              {t('admin.persons.form.birthDate')} <span className="required">*required field</span>
+              {t('admin.persons.form.birthDate')}
             </label>
             <input
               type="date"
