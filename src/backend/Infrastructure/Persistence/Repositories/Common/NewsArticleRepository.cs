@@ -523,5 +523,22 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
 
             return news;
         }
+
+        /// <summary>
+        /// Deletes news by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<bool> DeleteNews(Guid id)
+        {
+            NewsArticle? news = await _entities.FindAsync(id);
+            if(news == null)
+            {
+                _logger.LogWarning("No news articles found when trying to fetch the newest news.");
+                return false;
+            }
+            _entities.Remove(news);
+            return true;
+        }
     }
 } 

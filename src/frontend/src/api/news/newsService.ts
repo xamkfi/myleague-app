@@ -122,6 +122,31 @@ export async function restoreNewsService(id: string) {
   }
 }
 
+export async function deleteNewsService(id: string) {
+  try {
+    const response = await fetch(`${API_URL}/News/${id}`, {
+      method: "DELETE",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Delete error response:", errorText);
+      throw new Error("Failed to delete news article.");
+    }
+
+    // The backend returns a boolean wrapped in ApiResponse
+    const apiResponse = await response.json();
+    return apiResponse.data ?? true;
+
+  } catch (error) {
+    console.error("Delete error:", error);
+    throw error;
+  }
+}
+
 export async function getMainNewsArticle() {
   try {
     const response = await fetch(`${API_URL}/News/main-news`, { method: 'GET' });
