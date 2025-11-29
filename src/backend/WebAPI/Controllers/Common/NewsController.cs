@@ -640,5 +640,34 @@ namespace WebAPI.Controllers.Common
 
             return Ok(ApiResponse<NewsArticleDto>.SuccessResponse(response.Data, "Main news retrieved successfully"));
         }
+
+        /// <summary>
+        /// Deletes news by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<bool>>> DeleteNews(Guid id)
+        {
+            _logger.LogInformation("Deleting news article with ID: {NewsId}", id);
+
+            var command = new DeleteNewsArticleCommand(id);
+            Result<bool> result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+            {
+                return Ok(ApiResponse<bool>.SuccessResponse(result.Data, "News article deleted successfully"));
+            }
+
+            if (result.Error?.Contains("not found") == true)
+            {
+                return NotFound(ApiResponse<bool>.ErrorResponse($"News article with ID '{id}' not found."));
+            }
+
+            string errorMessage = result.Error ?? result.GetErrorsString();
+            return StatusCode(500, ApiResponse<bool>.ErrorResponse(errorMessage));
+        }
     }
 }
