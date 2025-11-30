@@ -197,9 +197,14 @@ namespace WebAPI.Controllers.Common
         {
             _logger.LogInformation("Creating new person: {FirstName} {LastName}", request.FirstName, request.LastName);
 
-            // Validate BirthDate format
-            if (!DateTime.TryParse(request.BirthDate, out DateTime birthDateUtc))
-                return BadRequest(ApiResponse<PersonDto>.ErrorResponse("Birth date must be a valid date-time in ISO 8601 format (e.g., 2017-07-21T17:32:28Z, 2020.10.25, 2020-10-25)"));
+            // Parse BirthDate if provided
+            DateTime? birthDateUtc = null;
+            if (!string.IsNullOrWhiteSpace(request.BirthDate))
+            {
+                if (!DateTime.TryParse(request.BirthDate, out DateTime parsedDate))
+                    return BadRequest(ApiResponse<PersonDto>.ErrorResponse("Birth date must be a valid date-time in ISO 8601 format (e.g., 2017-07-21T17:32:28Z, 2020.10.25, 2020-10-25)"));
+                birthDateUtc = parsedDate;
+            }
 
             CreatePersonCommand command = new CreatePersonCommand(
                 request.FirstName,

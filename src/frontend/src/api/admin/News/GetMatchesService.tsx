@@ -25,19 +25,62 @@ interface ApiResponse<T> {
   errors: string[];
 }
 
+interface PaginatedApiResponse<T> {
+  success: boolean;
+  data: T[];
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    startItem: number;
+    endItem: number;
+  };
+  message: string;
+  errors: string[];
+}
+
+interface GetMatchesRequest {
+  page?: number;
+  pageSize?: number;
+  seasonId?: string;
+  teamId?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: number; // FloorballMatchStatus enum: 1=Scheduled, 3=InProgress, 4=Completed, 5=Cancelled
+  sortOrder?: string;
+}
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 export const getMatchesService = {
-  getAll: async (): Promise<FloorballMatch[]> => {
-    const response = await fetch(`${API_URL}/FloorballMatch`);
+  getAll: async (params?: GetMatchesRequest): Promise<PaginatedApiResponse<FloorballMatch>> => {
+    const searchParams = new URLSearchParams();
+    
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
+    if (params?.seasonId) searchParams.append('seasonId', params.seasonId);
+    if (params?.teamId) searchParams.append('teamId', params.teamId);
+    if (params?.startDate) searchParams.append('startDate', params.startDate);
+    if (params?.endDate) searchParams.append('endDate', params.endDate);
+    if (params?.status !== undefined) searchParams.append('status', params.status.toString());
+    if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+
+    const url = `${API_URL}/FloorballMatch${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const response = await fetch(url);
+    
     if (!response.ok) {
       throw new Error('Failed to fetch matches');
     }
-    const apiResponse: ApiResponse<FloorballMatch[]> = await response.json();
+    
+    const apiResponse: PaginatedApiResponse<FloorballMatch> = await response.json();
     if (!apiResponse.success) {
       throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch matches');
     }
-    return apiResponse.data;
+    
+    return apiResponse;
   },
 
   getById: async (id: string): Promise<FloorballMatch> => {
