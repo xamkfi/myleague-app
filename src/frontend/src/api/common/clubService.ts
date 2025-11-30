@@ -115,6 +115,22 @@ export const clubService = {
       const errorMessage = await parseErrorResponse(data, 'Failed to delete club');
       throw new Error(errorMessage || 'Failed to delete club');
     }
+  },
+
+  searchByName: async (name: string): Promise<Club[]> => {
+    const params = new URLSearchParams();
+    params.append('name', name);
+    const response = await fetch(`${VITE_API_URL}/Clubs/search?${params.toString()}`);
+    const data = await response.json();
+    if (!response.ok || !data?.success) {
+      // Handle 404 as empty results, not an error
+      if (response.status === 404) {
+        return [];
+      }
+      const errorMessage = await parseErrorResponse(data, 'Failed to search clubs');
+      throw new Error(errorMessage || 'Failed to search clubs');
+    }
+    return data.data || [];
   }
 };
 

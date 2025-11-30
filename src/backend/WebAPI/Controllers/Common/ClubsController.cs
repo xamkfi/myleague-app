@@ -6,6 +6,7 @@ using Application.DTOs.Common;
 using Application.Common;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
+using System.Linq;
 
 namespace WebAPI.Controllers.Club;
 
@@ -228,5 +229,44 @@ public class ClubsController : ControllerBase
         }
 
         return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
+    }
+
+    /// <summary>
+    /// Search clubs by name
+    /// </summary>
+    /// <param name="name">The name to search for</param>
+    /// <returns>List of clubs matching the search term</returns>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(ApiResponse<List<ClubDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<List<ClubDto>>>> GetClubsByName([FromQuery] string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return BadRequest(ApiResponse<List<ClubDto>>.ErrorResponse("Name parameter is required"));
+        }
+
+        _logger.LogInformation("Searching clubs by name: {Name}", name);
+
+        GetClubsByNameQuery query = new GetClubsByNameQuery(name);
+        Result<IEnumerable<ClubDto>> result = await _mediator.Send(query);
+
+        if (result.IsSuccess && result.Data != null)
+        {
+            List<ClubDto> clubList = result.Data.ToList();
+            return Ok(ApiResponse<List<ClubDto>>.SuccessResponse(clubList, "Clubs found successfully"));
+        }
+
+        string errorMessage = result.Error ?? result.GetErrorsString();
+        
+        // Check if it's a not found error
+        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+        {
+            return NotFound(ApiResponse<List<ClubDto>>.ErrorResponse(errorMessage));
+        }
+
+        return BadRequest(ApiResponse<List<ClubDto>>.ErrorResponse(errorMessage));
     }
 } 

@@ -24,6 +24,7 @@ function ClubsManagementPage() {
   const [pageSize, setPageSize] = useState<number>(50);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalCount, setTotalCount] = useState<number>(0);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   const fetchClubs = useCallback(async (page: number, size: number) => {
     setLoading(true);
@@ -42,18 +43,54 @@ function ClubsManagementPage() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchClubs(1, pageSize);
-  }, [fetchClubs, pageSize]);
+  const searchClubs = useCallback(async (searchTerm: string) => {
+    if (!searchTerm.trim() || searchTerm.trim().length < 2) {
+      return;
+    }
 
-  const filteredClubs = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    const base = term
-      ? clubs.filter((c) =>
-      [c.name, c.city, c.country].some((v) => (v || '').toLowerCase().includes(term))
-    )
-      : clubs.slice();
-    // Sort
+    setLoading(true);
+    setError(null);
+    setIsSearching(true);
+    try {
+      const results = await clubService.searchByName(searchTerm.trim());
+      setClubs(results);
+      setTotalCount(results.length);
+      setCurrentPage(1);
+      setTotalPages(1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setClubs([]);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Debounced search effect
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (search.trim().length >= 2) {
+        searchClubs(search);
+      } else if (search.trim().length === 0) {
+        // Reset to paginated view when search is cleared
+        setIsSearching(false);
+        fetchClubs(1, pageSize);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [search, searchClubs, pageSize, fetchClubs]);
+
+  // Initial load on mount and when pageSize changes (only if not searching)
+  useEffect(() => {
+    if (!isSearching) {
+      fetchClubs(1, pageSize);
+    }
+  }, [pageSize, isSearching, fetchClubs]);
+
+  const sortedClubs = useMemo(() => {
     const compare = (a: Club, b: Club) => {
       const dir = sortDir === 'asc' ? 1 : -1;
       switch (sortKey) {
@@ -70,8 +107,8 @@ function ClubsManagementPage() {
         }
       }
     };
-    return base.sort(compare);
-  }, [clubs, search, sortKey, sortDir]);
+    return [...clubs].sort(compare);
+  }, [clubs, sortKey, sortDir]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -101,7 +138,8 @@ function ClubsManagementPage() {
               {t('clubs.manage.title', 'Manage Clubs')}
             </h2>
             <p className="count">
-              {t('clubs.total', 'Total')}: {totalCount}
+              {isSearching 
+                ? t('clubs.searchResults', 'Search Results'): t('clubs.total', 'Total')}: {totalCount}
             </p>
           </div>
           <div className="right">
@@ -120,7 +158,7 @@ function ClubsManagementPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('clubs.searchPlaceholder', 'Search clubs by name or city...')}
+            placeholder={t('clubs.searchPlaceholder', 'Search clubs by name...')}
             aria-label={t('clubs.searchAria', 'Search clubs')}
           />
         </div>
@@ -159,24 +197,26 @@ function ClubsManagementPage() {
               </tr>
             </thead>
             <tbody>
-              {!loading && filteredClubs.length === 0 && (
+              {!loading && sortedClubs.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="empty-row">
-                    {t('clubs.empty', 'No clubs found')}
+                  <td colSpan={5} className="empty-row">
+                    {isSearching 
+                      ? t('clubs.noSearchResults', 'No clubs found matching your search')
+                      : t('clubs.empty', 'No clubs found')}
                   </td>
                 </tr>
               )}
 
               {loading && (
                 <tr>
-                  <td colSpan={4} className="loading-row">
+                  <td colSpan={5} className="loading-row">
                     {t('common.loading', 'Loading...')}
                   </td>
                 </tr>
               )}
 
               {!loading &&
-                filteredClubs.map((club) => (
+                sortedClubs.map((club) => (
                   <tr
                     key={club.id}
                     className="clickable-row"
@@ -204,19 +244,21 @@ function ClubsManagementPage() {
           </table>
         </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalCount={totalCount}
-          pageSize={pageSize}
-          onPageChange={(page) => fetchClubs(page, pageSize)}
-          onPageSizeChange={(size) => {
-            setCurrentPage(1);
-            fetchClubs(1, size);
-          }}
-          pageSizeOptions={[25, 50, 100]}
-          className=""
-        />
+        {!isSearching && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            onPageChange={(page) => fetchClubs(page, pageSize)}
+            onPageSizeChange={(size) => {
+              setCurrentPage(1);
+              fetchClubs(1, size);
+            }}
+            pageSizeOptions={[25, 50, 100]}
+            className=""
+          />
+        )}
       </div>
     </AdminPageTemplate>
   );
