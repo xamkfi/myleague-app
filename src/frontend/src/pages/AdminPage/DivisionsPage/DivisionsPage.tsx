@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
@@ -29,7 +29,7 @@ const DivisionsPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const loadDivisions = async () => {
+  const loadDivisions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -46,11 +46,11 @@ const DivisionsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     loadDivisions();
-  }, []);
+  }, [loadDivisions]);
 
   const filteredDivisions = useMemo(() => {
     return divisions.filter((division) => {
