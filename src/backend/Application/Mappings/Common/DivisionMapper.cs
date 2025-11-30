@@ -28,7 +28,7 @@ public static class DivisionMapper
             division.Name,
             division.Description,
             division.Level,
-            division.SportType,
+            division.SportType.ToString(),
             division.IsActive,
             division.CreatedDate
         );

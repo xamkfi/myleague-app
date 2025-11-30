@@ -1,3 +1,5 @@
+import { SportsCategory } from '../../../../types/common/sports';
+
 export const NewsCategory = {
     None: 'None',
     General: 'General',
@@ -11,10 +13,5 @@ export const NewsCategory = {
     Injuries: 'Injuries',
     Awards: 'Awards',
   };
-  
-  export const SportsCategory = {
-    None: 'None',
-    Floorball: 'Floorball',
-    Icehockey: 'Icehockey',
-    Football: 'Football',
-  };
+
+export { SportsCategory };

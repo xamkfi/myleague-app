@@ -15,6 +15,8 @@ import PersonForm from '../pages/AdminPage/PersonsPage/components/PersonForm/Per
 import PersonUserPage from '../pages/PersonUserPage/PersonUserPage';
 import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
 import NewsCreateEditPage from '../pages/AdminPage/NewsPage/NewsCreateEditPage';
+import DivisionsPage from '../pages/AdminPage/DivisionsPage/DivisionsPage';
+import DivisionFormPage from '../pages/AdminPage/DivisionsPage/DivisionFormPage';
 import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/FloorballManagementPage';
 import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
 import CreateTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/CreateTeamPage';
@@ -110,6 +112,23 @@ export const routes: RouteObject[] = [
         element: <PersonForm />
       }
     ]
+  },
+  {
+    path: '/admin/divisions',
+    children: [
+      {
+        index: true,
+        element: <DivisionsPage />,
+      },
+      {
+        path: 'create',
+        element: <DivisionFormPage />,
+      },
+      {
+        path: ':divisionId/edit',
+        element: <DivisionFormPage />,
+      },
+    ],
   },
   {
     path: '/admin/floorball',

@@ -10,6 +10,7 @@ import PlayersIcon from '../../assets/adminIcons/Persons.svg';
 import SeasonsIcon from '../../assets/adminIcons/Seasons.svg';
 import MatchesIcon from '../../assets/adminIcons/Matches.svg';
 import RefereesIcon from '../../assets/adminIcons/Referees.svg';
+import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
 
 function AdminNavBar() {
   const { t } = useTranslation();
@@ -54,6 +55,12 @@ function AdminNavBar() {
               <Link to="/admin/news">
                 <img src={NewsIcon} alt="News" className="icon" />
                 <span>{t('admin.actions.news', 'News')}</span>
+              </Link>
+            </li>
+            <li className={`admin-navbar-item ${isActive('/admin/divisions') ? 'active' : ''}`}>
+              <Link to="/admin/divisions">
+                <img src={LeaguesIcon} alt="Divisions" className="icon" />
+                <span>{t('admin.actions.divisions', 'Divisions')}</span>
               </Link>
             </li>
           </ul>

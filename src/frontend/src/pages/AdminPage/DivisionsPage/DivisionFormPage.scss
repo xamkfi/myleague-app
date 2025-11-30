@@ -1,0 +1,143 @@
+.division-form__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  font-size: 1.1rem;
+  color: #6b7280;
+}
+
+.division-form-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+}
+
+.division-form-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    margin: 0;
+    font-size: 2rem;
+    color: #111827;
+  }
+
+  p {
+    margin-top: 0.5rem;
+    color: #6b7280;
+  }
+}
+
+.division-form-page__status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #f3f4f6;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+
+  span:first-child {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+}
+
+.division-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  label {
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .helper {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #9ca3af;
+  }
+
+  input,
+  textarea {
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    &:disabled {
+      background-color: #f3f4f6;
+      color: #6b7280;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+}
+
+.field-hint {
+  margin-top: 0.25rem;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.submit-button {
+  min-width: 150px;
+}
+
+@media (max-width: 768px) {
+  .division-form-page__header {
+    flex-direction: column;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .submit-button {
+    width: 100%;
+  }
+}
+

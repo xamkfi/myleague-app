@@ -2,6 +2,7 @@ using MediatR;
 using Application.DTOs.Common;
 using Application.Common;
 using System.Collections.Generic;
+using Domain.Enums.Common;
 
 namespace Application.Queries.Common;
 
@@ -9,5 +10,5 @@ namespace Application.Queries.Common;
 /// Query for retrieving divisions by sport type
 /// </summary>
 public record GetDivisionsBySportTypeQuery(
-    string SportType, 
-    bool ActiveOnly = false) : IRequest<Result<IEnumerable<DivisionDto>>>; 
+    SportsCategory SportType, 
+    bool ActiveOnly = false) : IRequest<Result<IEnumerable<DivisionDto>>>;
