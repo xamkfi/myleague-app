@@ -133,19 +133,20 @@ public class DivisionsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<DivisionDto>>> CreateDivision([FromBody] CreateDivisionRequest request)
     {
-        if (!TryParseSportType(request.SportType, out SportsCategory parsedSportType, out string? parseError))
+        if (request.SportType == SportsCategory.None)
         {
-            List<string> errors = new() { parseError ?? "Invalid sport type." };
-            return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(parseError ?? "Invalid sport type.", errors));
+            const string message = "Sport type cannot be None.";
+            List<string> errors = new() { message };
+            return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(message, errors));
         }
 
-        _logger.LogInformation("Creating new division: {DivisionName} for {SportType}", request.Name, parsedSportType);
+        _logger.LogInformation("Creating new division: {DivisionName} for {SportType}", request.Name, request.SportType);
 
         CreateDivisionCommand command = new CreateDivisionCommand(
             request.Name,
             request.Description,
             request.Level,
-            parsedSportType
+            request.SportType
         );
 
         Result<DivisionDto> result = await _mediator.Send(command);
