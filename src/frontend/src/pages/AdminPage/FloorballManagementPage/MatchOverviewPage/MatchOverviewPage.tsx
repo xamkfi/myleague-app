@@ -21,9 +21,11 @@ const MatchOverviewPage = () => {
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFiltering, setIsFiltering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Collapsible sections state
   const [collapsedSections, setCollapsedSections] = useState({
@@ -35,14 +37,23 @@ const MatchOverviewPage = () => {
 
 
   // Fetch all required data
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (isInitialLoad = false) => {
     try {
-      setLoading(true);
+      // Only show full loading on initial load
+      if (isInitialLoad) {
+        setLoading(true);
+      } else {
+        setIsFiltering(true);
+      }
       setError(null);
 
       const [seasonsResponse, matchesResponse] = await Promise.all([
         floorballSeasonService.getAll(),
-        floorballMatchService.getAll({ pageSize: 100 })
+        floorballMatchService.getAll({ 
+          pageSize: 100,
+          seasonId: selectedSeasonId || undefined,
+          searchQuery: searchQuery.trim() || undefined
+        })
       ]);
 
       if (seasonsResponse.success && seasonsResponse.data) {
@@ -58,18 +69,17 @@ const MatchOverviewPage = () => {
       setError(error instanceof Error ? error.message : 'Failed to fetch data');
     } finally {
       setLoading(false);
+      setIsFiltering(false);
     }
-  }, []);
+  }, [selectedSeasonId, searchQuery]);
 
   // Filter and sort matches by status: ongoing, scheduled (next 7 days), completed (latest 10)
   const filteredMatches = useMemo(() => {
     const now = new Date();
     const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     
-    // First filter by season if selected
-    const filtered = selectedSeasonId 
-      ? matches.filter(match => match.seasonId === selectedSeasonId)
-      : matches;
+    // Backend already filtered by season and search query
+    const filtered = matches;
     
     // Separate by status
     const ongoingMatches = filtered.filter(match => match.status === 'InProgress');
@@ -107,11 +117,24 @@ const MatchOverviewPage = () => {
       completed: completedMatches,
       cancelled: cancelledMatches
     };
-  }, [matches, selectedSeasonId]);
+  }, [matches]);
 
+  // Initial load
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounced fetch for filters - wait 500ms after user stops typing
+  useEffect(() => {
+    // Skip initial load
+    if (loading) return;
+
+    const timer = setTimeout(() => {
+      fetchData(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [selectedSeasonId, searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // SignalR subscription management
   useEffect(() => {
@@ -249,11 +272,29 @@ const MatchOverviewPage = () => {
           seasons={seasons}
           selectedSeasonId={selectedSeasonId}
           onSeasonChange={setSelectedSeasonId}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
           onCreateNew={() => navigate('/admin/floorball/matches/create')}
         />
 
+        {/* Filtering indicator */}
+        {isFiltering && (
+          <div style={{ 
+            padding: '12px', 
+            textAlign: 'center', 
+            background: '#f3f4f6', 
+            borderRadius: '8px',
+            marginBottom: '16px',
+            color: '#6b7280',
+            fontSize: '0.875rem'
+          }}>
+            <span style={{ marginRight: '8px' }}>🔍</span>
+            Searching...
+          </div>
+        )}
+
         {/* Matches Sections */}
-        <div className="matches-section">
+        <div className="matches-section" style={{ opacity: isFiltering ? 0.6 : 1, transition: 'opacity 0.2s' }}>
           {/* Ongoing Matches Section */}
           <CollapsibleMatchSection
             title={`Ongoing Matches (${filteredMatches.ongoing.length})`}
