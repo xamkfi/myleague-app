@@ -26,7 +26,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// </summary>
         /// <param name="id">The team ID</param>
         /// <returns>The team if found, null otherwise</returns>
-        public override async Task<FloorballTeam?> GetByIdAsync(Guid id)
+        public async Task<FloorballTeam?> GetByIdAsync(Guid? id)
         {
             // Note: Club relationship is managed at the application level since
             // Club is in a different DbContext (CommonDbContext)

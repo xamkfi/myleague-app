@@ -1,3 +1,6 @@
+@use 'sass:map';
+@use '../../../../../../styles/variables' as *;
+
 .collapsible-match-section {
   margin-bottom: 1rem;
   border: 1px solid #e0e0e0;
@@ -15,10 +18,6 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
 
-    &:hover {
-      background: #e9ecef;
-    }
-
     .section-title {
       display: flex;
       align-items: center;
@@ -34,13 +33,6 @@
       }
     }
 
-    .section-count {
-      font-size: 0.8rem;
-      color: #666;
-      background: #e9ecef;
-      padding: 0.2rem 0.6rem;
-      border-radius: 10px;
-    }
   }
 
   .section-content {
@@ -52,12 +44,17 @@
               .matches-table {
           width: 100%;
           border-collapse: collapse;
+          table-layout: fixed;
           font-size: 0.85rem;
+
+          td.clickable-cell {
+            cursor: pointer;
+          }
 
           th {
             background: #f8f9fa;
             padding: 0.5rem 0.75rem;
-            text-align: center;
+            text-align: left;
             font-weight: 600;
             color: #333;
             border-bottom: 2px solid #dee2e6;
@@ -70,10 +67,48 @@
             vertical-align: middle;
           }
 
+          // Ensure consistent column widths across all sections
+          th:nth-child(1), td:nth-child(1) { width: 30%; }
+          th:nth-child(2), td:nth-child(2) { width: 18%; }
+          th:nth-child(3), td:nth-child(3) { width: 15%; }
+          th:nth-child(4), td:nth-child(4) { width: 12%; text-align: center; }
+          th:nth-child(5), td:nth-child(5) { width: 12%; }
+          th:nth-child(6), td:nth-child(6) { width: 13%; text-align: right; }
+
         .match-cell {
           .match-teams {
+            position: relative;
+            color: #333;
+          }
+
+          .team-names {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+          }
+
+          .team-name {
             font-weight: 500;
             color: #333;
+            line-height: 1.2;
+            font-size: map.get($font-sizes, 'sm');
+            word-break: break-word;
+          }
+
+          .vs-badge {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1px;
+            font-weight: 700;
+            color: #0C1D3E;
+            font-family: 'REM', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+            letter-spacing: 0.05em;
+            white-space: nowrap; // prevent wrapping
           }
         }
 
@@ -196,24 +231,20 @@
   // Special styling for ongoing matches section (yellow)
   &.ongoing-section {
     .section-header {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: white;
+      background: $color-yellow-pale;
+      color: $color-text-primary;
       
       .section-title {
-        color: white;
+        color: $color-text-primary;
         
         .collapse-icon {
-          color: rgba(255, 255, 255, 0.8);
+          color: $color-text-primary;
         }
       }
       
       .section-count {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-      }
-      
-      &:hover {
-        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        background: $color-neutral-light-grey;
+        color: $color-text-primary;
       }
     }
   }
@@ -221,24 +252,20 @@
   // Special styling for scheduled matches section (blue)
   &.scheduled-section {
     .section-header {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      color: white;
+      background: $color-blue-secondary-pale;
+      color: $color-text-primary;
       
       .section-title {
-        color: white;
+        color: $color-text-primary;
         
         .collapse-icon {
-          color: rgba(255, 255, 255, 0.8);
+          color: $color-text-primary;
         }
       }
       
       .section-count {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-      }
-      
-      &:hover {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        background: $color-neutral-light-grey;
+        color: $color-text-primary;
       }
     }
   }
@@ -246,48 +273,40 @@
   // Special styling for completed matches section (light green)
   &.completed-section {
     .section-header {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white;
+      background: $color-green-pale;
+      color: $color-text-primary;
       
       .section-title {
-        color: white;
+        color: $color-text-primary;
         
         .collapse-icon {
-          color: rgba(255, 255, 255, 0.8);
+          color: $color-text-primary;
         }
       }
       
       .section-count {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-      }
-      
-      &:hover {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        background: $color-neutral-light-grey;
+        color: $color-text-primary;
       }
     }
   }
   // Special styling for cancelled matches section (red)
   &.cancelled-section {
     .section-header {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: white;
+      background: $color-red-pale;
+      color: $color-text-primary;
 
       .section-title {
-        color: white;
+        color: $color-text-primary;
 
         .collapse-icon {
-          color: rgba(255, 255, 255, 0.8);
+          color: $color-text-primary;
         }
       }
 
       .section-count {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-      }
-
-      &:hover {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        background: $color-neutral-light-grey;
+        color: $color-text-primary;
       }
     }
   }

@@ -1,4 +1,5 @@
 import type { FloorballTeam } from '../../../../../types/floorball/floorballTypes';
+import './LiveMatchScoreboard.scss';
 
 interface LiveMatchScoreboardProps {
   homeTeam: FloorballTeam | null;

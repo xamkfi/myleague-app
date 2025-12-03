@@ -197,9 +197,14 @@ namespace WebAPI.Controllers.Common
         {
             _logger.LogInformation("Creating new person: {FirstName} {LastName}", request.FirstName, request.LastName);
 
-            // Validate BirthDate format
-            if (!DateTime.TryParse(request.BirthDate, out DateTime birthDateUtc))
-                return BadRequest(ApiResponse<PersonDto>.ErrorResponse("Birth date must be a valid date-time in ISO 8601 format (e.g., 2017-07-21T17:32:28Z, 2020.10.25, 2020-10-25)"));
+            // Parse BirthDate if provided
+            DateTime? birthDateUtc = null;
+            if (!string.IsNullOrWhiteSpace(request.BirthDate))
+            {
+                if (!DateTime.TryParse(request.BirthDate, out DateTime parsedDate))
+                    return BadRequest(ApiResponse<PersonDto>.ErrorResponse("Birth date must be a valid date-time in ISO 8601 format (e.g., 2017-07-21T17:32:28Z, 2020.10.25, 2020-10-25)"));
+                birthDateUtc = parsedDate;
+            }
 
             CreatePersonCommand command = new CreatePersonCommand(
                 request.FirstName,
@@ -221,7 +226,9 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -256,14 +263,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -290,14 +299,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -331,14 +342,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<AddressDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<AddressDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<AddressDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -370,14 +383,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -404,14 +419,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -436,14 +453,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage));
             }
             
-            return StatusCode(500, ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage));
+            return StatusCode(500, ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -470,14 +489,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -502,6 +523,8 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
 
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))

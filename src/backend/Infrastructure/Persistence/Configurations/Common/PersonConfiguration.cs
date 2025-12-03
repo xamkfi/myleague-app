@@ -25,7 +25,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
                 .HasMaxLength(100);
 
             builder.Property(p => p.BirthDate)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(p => p.role)
                 .IsRequired()

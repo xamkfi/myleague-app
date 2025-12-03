@@ -1,13 +1,14 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using Application.Interfaces.Common;
 
 namespace MyLeague.Infrastructure.SignalR
 {
     /// <summary>
     /// SignalR implementation of the notification sender interface
     /// </summary>
-    public class SignalRNotificationSender : INotificationSender
+    public class SignalRNotificationSender : INotificationSenderService
     {
         private readonly DomainEventNotifier _notifier;
         private readonly ILogger<SignalRNotificationSender> _logger;

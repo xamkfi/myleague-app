@@ -125,9 +125,18 @@ const CreatePlayerPage = () => {
       
       switch (sortField) {
         case 'birthDate': {
-          const dateA = new Date(a.birthDate);
-          const dateB = new Date(b.birthDate);
-          comparison = dateA.getTime() - dateB.getTime();
+          // Handle null birthDate - null values go to the end
+          if (!a.birthDate && !b.birthDate) {
+            comparison = 0;
+          } else if (!a.birthDate) {
+            comparison = 1; // a goes after b
+          } else if (!b.birthDate) {
+            comparison = -1; // a goes before b
+          } else {
+            const dateA = new Date(a.birthDate);
+            const dateB = new Date(b.birthDate);
+            comparison = dateA.getTime() - dateB.getTime();
+          }
           break;
         }
         case 'registration':
@@ -432,7 +441,7 @@ const CreatePlayerPage = () => {
               </div>
               
               {/* Persons List */}
-              <div className="persons-list">
+              <div className="create-player-persons-list">
                 {filteredAndSortedPersons.map((person) => (
                   <div 
                     key={person.id} 

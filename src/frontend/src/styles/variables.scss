@@ -80,6 +80,9 @@ $color-blue-secondary-pale: #BBCEF2;
 $color-blue-secondary-almost: #EAF1F9;
 
 // Typography
+$font-family-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+$font-family-display: 'REM', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+$font-family-link: $font-family-display;
 $font-sizes: (
   'xs': 0.6rem,
   'sm-xs': 0.75rem,
@@ -92,10 +95,10 @@ $font-sizes: (
 );
 
 $font-weights: (
-  'light': 400,
+  'regular': 400,
   'medium': 500,
-  'bold': 600,
-  'bolder': 700,
+  'semibold': 600,
+  'bold': 700,
   'extrabold': 800,
 );
 

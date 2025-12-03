@@ -88,13 +88,6 @@
 
 }
 
-.players-count {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #495057;
-  text-align: left;
-}
-
 .players-actions {
   display: flex;
   gap: 1rem;
@@ -368,6 +361,59 @@
       box-shadow: none;
     }
   }
+  .dead-deletebtn {
+    padding: 0.625rem 1.5rem;
+    border: none;
+    border-radius: 24px;
+    background-color: #7a7a7a;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(39, 39, 39, 0.2);
+
+    &:hover:not(:disabled) {
+      background-color: #535353;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(39, 39, 39, 0.2);;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .bulk-team-assign-btn {
+    padding: 0.625rem 1.5rem;
+    border: none;
+    border-radius: 24px;
+    background-color: #6366f1;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px #4947c2;
+
+    &:hover:not(:disabled) {
+      background-color: #5855eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px #4947c2;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  }
 }
 
 // Table wrapper
@@ -439,7 +485,6 @@
 
 .players-table {
   width: 100%;
-  min-height: 400px;
 
 
   thead {   

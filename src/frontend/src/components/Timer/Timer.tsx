@@ -3,6 +3,7 @@ import { useTimer } from '../../hooks/useTimer';
 import { TimeInputModal } from './TimeInputModal';
 import './Timer.scss';
 import type { TimerUpdate } from '../../api/common/timerService';
+import EditIcon from '../../assets/basicIcons/edit.svg';
 
 interface TimerProps {
   matchId: string;
@@ -10,11 +11,22 @@ interface TimerProps {
   onTimerUpdate?: (update: TimerUpdate) => void;
   onGetCurrentTime?: (getTime: () => string) => void;
   onGetToggleFunction?: (toggleFunction: () => Promise<void>) => void;
+  onGetResetFunction?: (resetFunction: () => void) => void;
+  onGetStartFunction?: (startFunction: () => Promise<void>) => void;
+  onGetStopFunction?: (stopFunction: () => void) => void;
+  //disable timer controls when period is not active
+  controlsEnabled?: boolean;
   isActive?: boolean; // New prop to control when timer should be active
   keybindsEnabled?: boolean; // New prop to show keybind indicator
+  // Optional period control wiring (used by pages like ManageMatch)
+  onPeriodControlClick?: () => void;
+  canEndPeriod?: () => boolean;
+  getPeriodControlButtonText?: () => string;
+  periodLoading?: Record<number, boolean>;
+  nextPeriodToStart?: number;
 }
 
-export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetToggleFunction, isActive = true, keybindsEnabled = false }: TimerProps) => {
+export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetToggleFunction, onGetResetFunction, onGetStartFunction, onGetStopFunction, controlsEnabled = true, isActive = true, keybindsEnabled = false, onPeriodControlClick, canEndPeriod, getPeriodControlButtonText, periodLoading, nextPeriodToStart }: TimerProps) => {
   // State for time input modal
   const [showTimeInputModal, setShowTimeInputModal] = useState(false);
 
@@ -84,13 +96,13 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     console.log('=== TIMER STOP COMPLETED ===');
   }, [matchId, isActive, stopTimer]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     console.log('=== TIMER RESET BUTTON CLICKED ===');
     console.log('Match ID:', matchId);
     console.log('Timer Active:', isActive);
     resetTimer();
     console.log('=== TIMER RESET COMPLETED ===');
-  };
+  }, [resetTimer, matchId, isActive]);
 
   const handleToggle = useCallback(async () => {
     if (timerState.isRunning) {
@@ -148,12 +160,21 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
     }
   }, [onGetToggleFunction, handleToggle, isActive]);
 
+  // Expose start/stop/reset handlers to parent when active
+  useEffect(() => {
+    if (!isActive) return;
+    if (onGetStartFunction) onGetStartFunction(handleStart);
+    if (onGetStopFunction) onGetStopFunction(handleStop);
+    if (onGetResetFunction) onGetResetFunction(handleReset);
+  }, [isActive, onGetStartFunction, onGetStopFunction, onGetResetFunction, handleStart, handleStop, handleReset]);
+
   // Memoize button disabled states to prevent blinking during SignalR updates
   const buttonStates = useMemo(() => {
-    const toggleDisabled = loading || !isActive;
-    const resetDisabled = loading || !isActive;
-    const setTimeDisabled = loading || !isActive;
-    const adjustDisabled = loading || !isActive;
+    const controlsBlocked = !controlsEnabled;
+    const toggleDisabled = loading || controlsBlocked;
+    const resetDisabled = loading || controlsBlocked;
+    const setTimeDisabled = loading || controlsBlocked;
+    const adjustDisabled = loading || controlsBlocked;
     
     return {
       toggleDisabled,
@@ -161,26 +182,27 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
       setTimeDisabled,
       adjustDisabled
     };
-  }, [loading, isActive]);
+  }, [loading, controlsEnabled]);
 
-  // Don't render timer controls if not active
-  if (!isActive) {
-    return (
-      <div className="timer-component">
-        <div className="timer-display">
-          <div className="timer-time">
-            {timerState.elapsedTime}
-          </div>
-        </div>
-        <div className="timer-inactive">
-          Timer inactive
-        </div>
-      </div>
-    );
-  }
+  // Derive end/start period control state if the parent provided handlers
+  const endPeriod = useMemo(() => {
+    if (!getPeriodControlButtonText) {
+      return { disabled: false, title: '', label: '' };
+    }
+    const canEnd = canEndPeriod ? canEndPeriod() : false;
+    const targetPeriod = canEnd ? periodNumber : nextPeriodToStart;
+    const disabled = (targetPeriod !== undefined && periodLoading)
+      ? Boolean(periodLoading[targetPeriod])
+      : false;
+    const title = canEnd ? 'End the current period' : 'Start the next period';
+    const label = getPeriodControlButtonText();
+    return { disabled, title, label };
+  }, [canEndPeriod, periodNumber, nextPeriodToStart, periodLoading, getPeriodControlButtonText]);
+
+
 
   return (
-    <div className="timer-component">
+    <div className="timer-component" data-keybinds-enabled={keybindsEnabled ? 'true' : undefined}>
       <div className="timer-display">
         <div className="timer-time">
           {timerState.elapsedTime}
@@ -189,71 +211,79 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
 
       <div className="timer-controls">
         <button
-          onClick={handleToggle}
-          disabled={buttonStates.toggleDisabled}
-          className={`timer-button ${timerState.isRunning ? 'pause' : 'start'}`}
+          onClick={handleOpenTimeInput}
+          disabled={buttonStates.setTimeDisabled}
+          className="timer-button set-time"
+          title="Edit time"
         >
-          <span className={`key-label ${keybindsEnabled ? '' : 'disabled'}`}>(Space) </span>
-          {timerState.isRunning ? 'Pause' : 'Start'}
+          <img src={EditIcon} alt="" aria-hidden="true" />
         </button>
-        
+
+        <div className="timer-adjustments">
+          <div className="adjustment-group">
+            <div className="adjustment-buttons">
+              <button
+                onClick={() => handleAdjustTime(-60)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time decrease minute-back"
+                title="Go back 1 minute"
+              >
+                1 min
+              </button>
+              <button
+                onClick={() => handleAdjustTime(-10)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time decrease seconds-back"
+                title="Go back 10 seconds"
+              >
+                10s
+              </button>
+              <button
+                onClick={handleToggle}
+                disabled={buttonStates.toggleDisabled}
+                className={`timer-button ${timerState.isRunning ? 'pause' : 'start'}`}
+              >
+                {timerState.isRunning ? 'Pause' : 'Play'}
+              </button>
+              <button
+                onClick={() => handleAdjustTime(10)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time increase seconds-forward"
+                title="Advance 10 seconds"
+              >
+                10s
+              </button>
+              <button
+                onClick={() => handleAdjustTime(60)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time increase minute-forward"
+                title="Advance 1 minute"
+              >
+                1 min
+              </button>
+            </div>
+          </div>
+        </div>
+
         <button
           onClick={handleReset}
           disabled={buttonStates.resetDisabled}
           className="timer-button reset"
+          title="Reset clock"
         >
-          Reset
+          R
         </button>
 
-        <button
-          onClick={handleOpenTimeInput}
-          disabled={buttonStates.setTimeDisabled}
-          className="timer-button set-time"
-          title="Set specific time"
-        >
-          Set Time
-        </button>
-      </div>
-
-      {/* Time Adjustment Controls */}
-      <div className="timer-adjustments">
-        <div className="adjustment-group">
-          <span className="adjustment-label">Quick Adjust</span>
-          <div className="adjustment-buttons">
-            <button
-              onClick={() => handleAdjustTime(-60)}
-              disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time decrease minute-back"
-              title="Go back 1 minute"
-            >
-              ⏪ 1min
-            </button>
-            <button
-              onClick={() => handleAdjustTime(-10)}
-              disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time decrease seconds-back"
-              title="Go back 10 seconds"
-            >
-              ◀ 10s
-            </button>
-            <button
-              onClick={() => handleAdjustTime(10)}
-              disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time increase seconds-forward"
-              title="Advance 10 seconds"
-            >
-              ▶ 10s
-            </button>
-            <button
-              onClick={() => handleAdjustTime(60)}
-              disabled={buttonStates.adjustDisabled}
-              className="timer-button adjust-time increase minute-forward"
-              title="Advance 1 minute"
-            >
-              ⏩ 1min
-            </button>
-          </div>
-        </div>
+        {onPeriodControlClick && getPeriodControlButtonText && (
+          <button
+            onClick={onPeriodControlClick}
+            className="timer-button end-period-inline"
+            title={endPeriod.title}
+            disabled={endPeriod.disabled}
+          >
+            {endPeriod.label}
+          </button>
+        )}
       </div>
 
       {error && <div className="timer-error">Error: {error}</div>}

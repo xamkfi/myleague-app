@@ -1,5 +1,15 @@
 .filter-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 24px;
+}
+
+.filter-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 
   .filter-row {
     display: flex;
@@ -70,6 +80,7 @@
     }
   }
 }
+
 
 // Responsive design
 @media (max-width: 768px) {

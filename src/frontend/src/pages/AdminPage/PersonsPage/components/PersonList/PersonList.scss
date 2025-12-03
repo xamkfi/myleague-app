@@ -2,7 +2,7 @@
 
 .persons-list {
   width: 100%;
-  overflow-x: auto;
+  overflow: visible;
 
   // Add spacing between elements
   .pagination-container + table {
