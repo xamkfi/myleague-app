@@ -17,7 +17,7 @@ function MatchFilters(props: MatchFiltersProps) {
   const { t } = useTranslation();
   return (
     <div className="filter-section">
-      <div className="filter-row">
+      <div className="filter-left">
         <div className="filter-item">
           <label htmlFor="season-filter">{t('floorball.matches.filters.filterBySeason', 'Filter by Season:')}</label>
           <select
