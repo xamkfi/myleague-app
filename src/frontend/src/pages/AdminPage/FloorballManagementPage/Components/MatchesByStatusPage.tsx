@@ -1,21 +1,24 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
-import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
-import PaginationControls from '../FloorballTeamsPage/components/PaginationControls';
-import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
-import BackButton from '../../../../components/BackButton/BackButton';
-import MatchFilters from '../MatchOverviewPage/Components/MatchFilters/MatchFilters';
-import CollapsibleMatchSection from '../MatchOverviewPage/Components/CollapsibleMatchSection/CollapsibleMatchSection';
+import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { floorballMatchService } from "../../../../api/floorball/floorballMatchService";
+import {
+    floorballSeasonService,
+    type FloorballSeasonDto,
+} from "../../../../api/floorball/floorballSeasonService";
+import PaginationControls from "../FloorballTeamsPage/components/PaginationControls";
+import type { FloorballMatchDto } from "../../../../types/floorball/floorballTypes";
+import BackButton from "../../../../components/BackButton/BackButton";
+import MatchFilters from "../MatchOverviewPage/Components/MatchFilters/MatchFilters";
+import CollapsibleMatchSection from "../MatchOverviewPage/Components/CollapsibleMatchSection/CollapsibleMatchSection";
 
-import './MatchesByStatusPage.scss';
-import '../MatchOverviewPage/MatchOverviewPage.scss';
+import "./MatchesByStatusPage.scss";
+import "../MatchOverviewPage/MatchOverviewPage.scss";
 
 interface MatchesByStatusPageProps {
-  status: FloorballMatchDto['status'];
-  title: string;
-  sectionType: 'ongoing' | 'scheduled' | 'completed' | 'cancelled';
+    status: FloorballMatchDto["status"];
+    title: string;
+    sectionType: "ongoing" | "scheduled" | "completed" | "cancelled";
 }
 
 const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPageProps) => {

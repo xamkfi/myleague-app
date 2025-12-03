@@ -71,6 +71,26 @@
   }
 }
 
+// Typography utilities
+.font-body {
+  font-family: $font-family-body; //Inter font family
+}
+
+.font-title {
+  font-family: $font-family-display; //REM font family
+  font-weight: map.get($font-weights, 'medium');
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.font-link {
+  font-family: $font-family-display; //REM font family
+  font-weight: map.get($font-weights, 'medium');
+  letter-spacing: 0;
+  // NOTE: Prefer all-caps for links when it matches the design system
+}
+
+
 // Buttons
 .button {
   border: none;

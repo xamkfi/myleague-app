@@ -25,7 +25,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// </summary>
         /// <param name="id">The season ID</param>
         /// <returns>The season if found, null otherwise</returns>
-        public override async Task<FloorballSeason?> GetByIdAsync(Guid id)
+        public async Task<FloorballSeason?> GetByIdAsync(Guid? id)
         {
             return await _entities
                 .Include(s => s.Teams)

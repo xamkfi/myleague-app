@@ -9,6 +9,7 @@ interface MatchFiltersProps {
   onSeasonChange: (seasonId: string) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onCreateNew?: () => void;
 }
 
 function MatchFilters(props: MatchFiltersProps) {
@@ -45,6 +46,9 @@ function MatchFilters(props: MatchFiltersProps) {
           />
         </div>
       </div>
+      <button type="button" className="create-match-button" onClick={onCreateNew}>
+        + {t('floorball.matches.createNewMatch', 'Create new match')}
+      </button>
     </div>
   );
 };

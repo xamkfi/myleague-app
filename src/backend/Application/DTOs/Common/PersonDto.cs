@@ -15,7 +15,7 @@ namespace Application.DTOs.Common;
         Guid Id,
         string FirstName,
         string LastName,
-        DateTime BirthDate, 
+        DateTime? BirthDate, 
         string FullName,
         PersonRole Role,
         bool IsRegistered,

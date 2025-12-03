@@ -219,7 +219,9 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to create floorball team";
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -365,7 +367,9 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to remove player from team";
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -402,7 +406,9 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update team player";
-            return BadRequest(ApiResponse<FloorballTeamPlayerDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<FloorballTeamPlayerDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -429,7 +435,9 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update teams division";
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -456,11 +464,13 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update team logo";
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
             }
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage, errorList));
         }
     }
 } 

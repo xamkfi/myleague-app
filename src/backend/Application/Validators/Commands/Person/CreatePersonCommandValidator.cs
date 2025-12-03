@@ -24,7 +24,8 @@ namespace Application.Validators.Commands.Person
                 .MaximumLength(100).WithMessage("Lastname cannot exceed 100 characters");
 
             RuleFor(x => x.BirthDate)
-                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Birth date cannot be in the future");
+                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Birth date cannot be in the future")
+                .When(x => x.BirthDate.HasValue);
 
 
             // Address validation (optional)

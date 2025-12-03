@@ -1,4 +1,5 @@
 import type { Person, PersonFormData, PersonRole } from '../../types/admin/personTypes';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -17,7 +18,8 @@ export const personApi = {
     }
     const apiResponse: ApiResponse<Person[]> = await response.json();
     if (!apiResponse.success) {
-      throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch persons');
+      const errorMessage = await parseErrorResponse(apiResponse, "Failed to fetch persons")
+      throw new Error(errorMessage || 'Failed to fetch persons');
     }
     return apiResponse.data;
   },
@@ -30,7 +32,9 @@ export const personApi = {
 
     const apiResponse: ApiResponse<Person> = await response.json();
     if (!apiResponse.success) {
-      throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch person');
+      const errorMessage = await parseErrorResponse(apiResponse, "Failed to fetch person")
+
+      throw new Error(errorMessage || 'Failed to fetch person');
     }
     
     return apiResponse.data;
@@ -47,7 +51,8 @@ export const personApi = {
 
     const apiResponse: ApiResponse<Person> = await response.json();
     if (!response.ok || !apiResponse.success) {
-      throw new Error(apiResponse.message + ": " + apiResponse.errors.join(","));
+      const errorMessage = await parseErrorResponse(apiResponse, "Failed to create person")
+      throw new Error(errorMessage || "Failed to create person");
     }
 
     return apiResponse.data;
@@ -64,7 +69,9 @@ export const personApi = {
     
     const apiResponse: ApiResponse<Person> = await response.json();
     if (!response.ok || !apiResponse.success) {
-      throw new Error(apiResponse.message + ": " + apiResponse.errors.join(","));
+      const errorMessage = await parseErrorResponse(apiResponse, "Failed to update person")
+
+      throw new Error(errorMessage || "Failed to update person");
     }
 
     return apiResponse.data;
@@ -77,7 +84,9 @@ export const personApi = {
 
     const apiResponse: ApiResponse<Person> = await response.json();
     if (!response.ok || !apiResponse.success) {
-      throw new Error(apiResponse.message + ": " + apiResponse.errors.join(","));
+      const errorMessage = await parseErrorResponse(apiResponse, "Failed to update person")
+
+      throw new Error(errorMessage || "Failed to delete person");
     }
   },
 
@@ -92,7 +101,9 @@ export const personApi = {
 
     const apiResponse: ApiResponse<Person> = await response.json();
     if (!response.ok || !apiResponse.success) {
-      throw new Error(apiResponse.message + ": " + apiResponse.errors.join(","));
+      const errorMessage = await parseErrorResponse(apiResponse, "Failed to update registration")
+
+      throw new Error(errorMessage || "Failed to update registration");
     }
     
     return apiResponse.data;
@@ -110,7 +121,9 @@ export const personApi = {
 
     const apiResponse: ApiResponse<Person> = await response.json();
     if (!response.ok || !apiResponse.success) {
-      throw new Error(apiResponse.message + ": " + apiResponse.errors.join(","));
+      const errorMessage = await parseErrorResponse(apiResponse, "Failed to update person")
+
+      throw new Error(errorMessage || "Failed to update role");
     }
 
     return apiResponse.data;

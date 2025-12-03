@@ -13,7 +13,7 @@ public interface IFloorballSeasonRepository
     /// </summary>
     /// <param name="id">The season ID</param>
     /// <returns>The season if found, null otherwise</returns>
-    Task<FloorballSeason?> GetByIdAsync(Guid id);
+    Task<FloorballSeason?> GetByIdAsync(Guid? id);
     
     /// <summary>
     /// Gets a floorball season by name

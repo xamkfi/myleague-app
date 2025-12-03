@@ -14,7 +14,7 @@ public interface IFloorballTeamRepository
     /// </summary>
     /// <param name="id">The team ID</param>
     /// <returns>The team if found, null otherwise</returns>
-    Task<FloorballTeam?> GetByIdAsync(Guid id);
+    Task<FloorballTeam?> GetByIdAsync(Guid? id);
     
     /// <summary>
     /// Gets a floorball team by name

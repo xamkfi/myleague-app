@@ -53,7 +53,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting all floorball players with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-            var query = new GetAllFloorballPlayersQuery(
+            GetAllFloorballPlayersQuery query = new GetAllFloorballPlayersQuery(
                 request.Page,
                 request.PageSize,
                 request.IsActive,
@@ -86,7 +86,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting active floorball players with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-            var query = new GetActiveFloorballPlayersQuery(
+            GetActiveFloorballPlayersQuery query = new GetActiveFloorballPlayersQuery(
                 request.Page,
                 request.PageSize,
                 request.Position,
@@ -157,7 +157,8 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to create floorball player";
-            return BadRequest(ApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+            return BadRequest(ApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -187,12 +188,14 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update floorball player";
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage));
             }
 
-            return BadRequest(ApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>

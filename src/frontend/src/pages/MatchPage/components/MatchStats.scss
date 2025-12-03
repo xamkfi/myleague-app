@@ -70,8 +70,19 @@
       }
     }
 
+    &.stat-percentage-only {
+      .stat-values {
+        .home-value,
+        .away-value {
+          font-size: 1.2rem;
+          font-weight: 600;
+        }
+      }
+    }
+
     .stat-bars {
       display: flex;
+      width: 100%;
       flex-direction: column;
       gap: 0.25rem;
 

@@ -3,9 +3,12 @@ import { useTranslation } from 'react-i18next';
 // import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../api/floorball/floorballPlayerService';
+import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
+import { FloorballPosition } from '../../../../types/floorball/floorballTypes';
 import PlayersTable from './components/PlayersTable';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import BulkStatusUpdateModal from './components/BulkStatusUpdateModal';
+import AssignToTeamModal from './components/AssignToTeamModal';
 import Pagination from '../../../../components/Pagination';
 import SearchField from '../../../../components/SearchField';
 import './FloorballPlayersPage.scss';
@@ -40,6 +43,15 @@ const FloorballPlayersPage = () => {
   const [isBulkStatusUpdateModalOpen, setIsBulkStatusUpdateModalOpen] = useState(false);
   const [bulkStatusUpdateAction, setBulkStatusUpdateAction] = useState<'activate' | 'deactivate'>('activate');
   const [isBulkStatusUpdating, setIsBulkStatusUpdating] = useState(false);
+
+  // Assign to team state
+  const [isAssignToTeamModalOpen, setIsAssignToTeamModalOpen] = useState(false);
+  const [playerToAssign, setPlayerToAssign] = useState<FloorballPlayerDto | null>(null);
+  const [isAssigning, setIsAssigning] = useState(false);
+
+  // Bulk assign to team state
+  const [isBulkAssignToTeamModalOpen, setIsBulkAssignToTeamModalOpen] = useState(false);
+  const [isBulkAssigning, setIsBulkAssigning] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -475,6 +487,92 @@ const FloorballPlayersPage = () => {
     }
   };
 
+  // Assign to team handlers
+  const handleAssignToTeam = (playerId: string) => {
+    const player = players.find(p => p.id === playerId);
+    if (!player) return;
+
+    setPlayerToAssign(player);
+    setIsAssignToTeamModalOpen(true);
+  };
+
+  const handleConfirmAssignToTeam = async (teamId: string, position: FloorballPosition, jerseyNumber?: number) => {
+    if (!playerToAssign) return;
+
+    try {
+      setIsAssigning(true);
+      setError(null);
+
+      await floorballTeamService.addPlayerToTeam(teamId, playerToAssign.id, position, jerseyNumber);
+
+      // Refresh the players list to show updated team assignment
+      await fetchPlayers();
+
+      // Close modal and clear state
+      setIsAssignToTeamModalOpen(false);
+      setPlayerToAssign(null);
+
+      console.log(`Successfully assigned player ${playerToAssign.id} to team ${teamId}`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to assign player to team';
+      setError(errorMessage);
+      console.error(err);
+      throw err; // Re-throw to let modal handle it
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleCancelAssignToTeam = () => {
+    setIsAssignToTeamModalOpen(false);
+    setPlayerToAssign(null);
+  };
+
+  // Bulk assign to team handlers
+  const handleBulkAssignToTeam = () => {
+    if (selectedPlayers.size === 0) return;
+    setIsBulkAssignToTeamModalOpen(true);
+  };
+
+  const handleConfirmBulkAssignToTeam = async (teamId: string, position: FloorballPosition, jerseyNumber?: number) => {
+    if (selectedPlayers.size === 0) return;
+
+    try {
+      setIsBulkAssigning(true);
+      setError(null);
+
+      // Assign each selected player to the team
+      for (const playerId of selectedPlayers) {
+        try {
+          await floorballTeamService.addPlayerToTeam(teamId, playerId, position, jerseyNumber);
+        } catch (err) {
+          console.error(`Failed to assign player ${playerId} to team:`, err);
+          // Continue with other players even if one fails
+        }
+      }
+
+      // Refresh the players list to show updated team assignments
+      await fetchPlayers();
+
+      // Clear selection and close modal
+      setSelectedPlayers(new Set());
+      setIsBulkAssignToTeamModalOpen(false);
+
+      console.log(`Successfully assigned ${selectedPlayers.size} players to team ${teamId}`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to assign players to team';
+      setError(errorMessage);
+      console.error(err);
+      throw err; // Re-throw to let modal handle it
+    } finally {
+      setIsBulkAssigning(false);
+    }
+  };
+
+  const handleCancelBulkAssignToTeam = () => {
+    setIsBulkAssignToTeamModalOpen(false);
+  };
+
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -543,7 +641,6 @@ const FloorballPlayersPage = () => {
         <ErrorPopup message={error} />
 
         {/* Selection Controls */}
-        {selectedPlayers.size > 0 && (
           <div className="selection-controls">
             <div className="selection-info">
               <span className="selected-count">
@@ -562,6 +659,16 @@ const FloorballPlayersPage = () => {
             
             {/* Bulk Actions */}
             <div className="bulk-actions">
+              {selectedPlayers.size > 0 && (
+                <button
+                  type="button"
+                  className="bulk-team-assign-btn"
+                  onClick={handleBulkAssignToTeam}
+                  disabled={isBulkAssigning}
+                >
+                  {t('floorball.players.actions.bulkAssignToTeam', 'Assign to Team ({{count}})', { count: selectedPlayers.size })}
+                </button>
+              )}
               {selectedInactiveCount > 0 && (
                 <button
                   type="button"
@@ -582,7 +689,8 @@ const FloorballPlayersPage = () => {
                   {t('floorball.players.actions.bulkDeactivate', 'Deactivate Selected ({{count}})', { count: selectedActiveCount })}
                 </button>
               )}
-              <button
+              {selectedPlayers.size > 0 && (
+                <button
                 type="button"
                 className="bulk-delete-btn"
                 onClick={handleBulkDelete}
@@ -590,18 +698,25 @@ const FloorballPlayersPage = () => {
               >
                 {t('floorball.players.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPlayers.size })}
               </button>
+              )}
+              {selectedPlayers.size == 0 && (
+                <button
+                type="button"
+                className="dead-deletebtn"
+                disabled={isBulkDeleting}
+              >
+                {t('floorball.players.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPlayers.size })}
+              </button>
+              )}              
             </div>
           </div>
-        )}
-        <div className="players-count">
-          <span>{t('floorball.players.totalCount', `${totalCount} players`, { count: totalCount })}</span>
-        </div>
         {/* Players table */}
         <div className={`players-table-wrapper ${paginationLoading ? 'pagination-loading' : ''}`}>
           <PlayersTable 
             players={players} 
             onDelete={handleDelete}
             onStatusChange={handleStatusChange}
+            onAssignToTeam={handleAssignToTeam}
             selectedPlayers={selectedPlayers}
             onToggleSelection={togglePlayerSelection}
             onSelectAll={selectAllPlayers}
@@ -663,6 +778,25 @@ const FloorballPlayersPage = () => {
           onConfirm={handleConfirmBulkStatusUpdate}
           onCancel={handleCancelBulkStatusUpdate}
           isUpdating={isBulkStatusUpdating}
+        />
+
+        {/* Assign to Team Modal */}
+        <AssignToTeamModal
+          isOpen={isAssignToTeamModalOpen}
+          player={playerToAssign}
+          onConfirm={handleConfirmAssignToTeam}
+          onCancel={handleCancelAssignToTeam}
+          isAssigning={isAssigning}
+        />
+
+        {/* Bulk Assign to Team Modal */}
+        <AssignToTeamModal
+          isOpen={isBulkAssignToTeamModalOpen}
+          player={null}
+          onConfirm={handleConfirmBulkAssignToTeam}
+          onCancel={handleCancelBulkAssignToTeam}
+          isAssigning={isBulkAssigning}
+          bulkCount={selectedPlayers.size}
         />
       </div>
     </PageTemplate>

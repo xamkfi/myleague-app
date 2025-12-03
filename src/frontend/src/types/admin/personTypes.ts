@@ -1,6 +1,6 @@
 export interface Address {
   street1: string;
-  street2: string;
+  street2: string | null;
   city: string;
   postalCode: string;
   country: string;
@@ -9,7 +9,7 @@ export interface Address {
 export interface ContactInfo {
   email: string;
   phone: string;
-  alternativePhone: string;
+  alternativePhone: string | null;
 }
 
 export enum PersonRole {
@@ -22,7 +22,7 @@ export interface Person {
   id: string;
   firstName: string;
   lastName: string;
-  birthDate: string;
+  birthDate: string | null;
   fullName: string;
   isRegistered: boolean;
   role: PersonRole;

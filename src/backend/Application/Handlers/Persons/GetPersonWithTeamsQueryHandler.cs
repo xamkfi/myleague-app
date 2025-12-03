@@ -56,7 +56,7 @@ public class GetPersonWithTeamsQueryHandler : IRequestHandler<GetPersonWithTeams
                 return Result<PersonWithTeamsDto>.Success(new PersonWithTeamsDto(
                     GetPersonIdAsInt(person.Id),
                     person.FullName,
-                    CalculateAge(person.BirthDate),
+                    CalculateAge(person.BirthDate) ?? 0,
                     new List<PersonTeamDto>(),
                     0
                 ));
@@ -101,7 +101,7 @@ public class GetPersonWithTeamsQueryHandler : IRequestHandler<GetPersonWithTeams
             PersonWithTeamsDto result = new PersonWithTeamsDto(
                 GetPersonIdAsInt(person.Id),
                 person.FullName,
-                CalculateAge(person.BirthDate),
+                CalculateAge(person.BirthDate) ?? 0,
                 personTeams,
                 totalMatchesPlayed
             );
@@ -115,11 +115,14 @@ public class GetPersonWithTeamsQueryHandler : IRequestHandler<GetPersonWithTeams
         }
     }
 
-    private static int CalculateAge(DateTime birthDate)
+    private static int? CalculateAge(DateTime? birthDate)
     {
+        if (!birthDate.HasValue)
+            return null;
+            
         DateTime today = DateTime.UtcNow;
-        int age = today.Year - birthDate.Year;
-        if (birthDate.Date > today.AddYears(-age)) age--;
+        int age = today.Year - birthDate.Value.Year;
+        if (birthDate.Value.Date > today.AddYears(-age)) age--;
         return age;
     }
 

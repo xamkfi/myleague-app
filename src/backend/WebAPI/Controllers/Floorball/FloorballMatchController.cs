@@ -56,8 +56,9 @@ namespace WebAPI.Controllers.Floorball
                 request.TeamId,
                 request.StartDate,
                 request.EndDate,
-                request.SortOrder,
                 request.SearchQuery
+                request.Status,
+                request.SortOrder
             );
 
             Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query);
@@ -233,7 +234,9 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to create floorball match";
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(err => err.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>

@@ -64,8 +64,7 @@ public record CreatePersonRequest
     /// <summary>
     /// Gets the birth date of the person
     /// </summary>
-    [Required(ErrorMessage = "Birth date is required")]
-    public string BirthDate { get; init; } = string.Empty;
+    public string? BirthDate { get; init; } = null;
 
     /// <summary>
     /// Gets whether the person is registered
@@ -188,8 +187,7 @@ public record UpdatePersonRequest
     /// <summary>
     /// Gets the birth date of the person
     /// </summary>
-    [Required(ErrorMessage = "Birth date is required")]
-    public DateTime BirthDate { get; init; }
+    public DateTime? BirthDate { get; init; }
 
     /// <summary>
     /// Gets whether the person is registered

@@ -147,7 +147,9 @@ public class DivisionsController : ControllerBase
         }
 
         string errorMessage = result.Error ?? result.GetErrorsString();
-        return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(errorMessage));
+        List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+        return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(errorMessage, errorList));
     }
 
     /// <summary>

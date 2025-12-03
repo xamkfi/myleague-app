@@ -54,7 +54,7 @@ export default function LeaguePage() {
     };
 
     fetchSeasonData();
-  }, [id]);
+  }, [id, t]);
 
   // Fetch matches data
   useEffect(() => {
@@ -85,7 +85,7 @@ export default function LeaguePage() {
     };
 
     fetchMatchesData();
-  }, [id, currentPage]);
+  }, [id, currentPage, t]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
