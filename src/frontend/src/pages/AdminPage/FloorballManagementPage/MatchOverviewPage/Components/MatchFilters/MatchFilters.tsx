@@ -13,7 +13,7 @@ interface MatchFiltersProps {
 }
 
 function MatchFilters(props: MatchFiltersProps) {
-  const { seasons, selectedSeasonId, onSeasonChange, searchQuery, onSearchChange } = props;
+  const { seasons, selectedSeasonId, onSeasonChange, searchQuery, onSearchChange, onCreateNew } = props;
   const { t } = useTranslation();
   return (
     <div className="filter-section">
