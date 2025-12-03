@@ -51,6 +51,6 @@ function MatchFilters(props: MatchFiltersProps) {
       </button>
     </div>
   );
-};
+}
 
 export default MatchFilters; 
