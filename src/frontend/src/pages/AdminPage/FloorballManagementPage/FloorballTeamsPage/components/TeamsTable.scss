@@ -260,173 +260,173 @@
 }
 
 // Team players expanded section
-.team-players-row {
-  grid-column: 1 / -1;
-  background-color: #fcfdff;
-  border-top: 1px solid $color-border;
-  padding: map.get($spacing, 'base');
-  box-shadow: inset 0 4px 8px -4px rgba(0, 0, 0, 0.1);
-  animation: slideDownFadeIn 0.35s ease-out;
+// .team-players-row {
+//   grid-column: 1 / -1;
+//   background-color: #fcfdff;
+//   border-top: 1px solid $color-border;
+//   padding: map.get($spacing, 'base');
+//   box-shadow: inset 0 4px 8px -4px rgba(0, 0, 0, 0.1);
+//   animation: slideDownFadeIn 0.35s ease-out;
 
-  &.is-closing {
-    animation: slideUpFadeOut 0.35s ease-out forwards;
-  }
+//   &.is-closing {
+//     animation: slideUpFadeOut 0.35s ease-out forwards;
+//   }
 
-  .team-players-container {
-    max-width: 100%;
+//   .team-players-container {
+//     max-width: 100%;
 
-    .players-title {
-      font-size: map.get($font-sizes, 'md');
-      font-weight: map.get($font-weights, 'semi-bold');
-      color: $color-text-muted;
-      margin-bottom: map.get($spacing, 'base');
-      padding-bottom: map.get($spacing, 'sm');
-      border-bottom: 1px solid $color-border;
-    }
+//     .players-title {
+//       font-size: map.get($font-sizes, 'md');
+//       font-weight: map.get($font-weights, 'semi-bold');
+//       color: $color-text-muted;
+//       margin-bottom: map.get($spacing, 'base');
+//       padding-bottom: map.get($spacing, 'sm');
+//       border-bottom: 1px solid $color-border;
+//     }
 
-    .players-loading,
-    .players-error,
-    .no-players {
-      text-align: center;
-      padding: map.get($spacing, 'xl');
-      color: $color-text-muted;
-      background-color: $color-background-light;
-      border-radius: map.get($border-radius, 'md');
+//     .players-loading,
+//     .players-error,
+//     .no-players {
+//       text-align: center;
+//       padding: map.get($spacing, 'xl');
+//       color: $color-text-muted;
+//       background-color: $color-background-light;
+//       border-radius: map.get($border-radius, 'md');
 
-      .retry-button {
-        margin-top: map.get($spacing, 'base');
-        padding: map.get($spacing, 'xs') map.get($spacing, 'base');
-        background-color: $color-primary;
-        color: $color-white;
-        border: none;
-        border-radius: map.get($border-radius, 'md');
-        cursor: pointer;
-        transition: background-color 0.2s ease;
+//       .retry-button {
+//         margin-top: map.get($spacing, 'base');
+//         padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+//         background-color: $color-primary;
+//         color: $color-white;
+//         border: none;
+//         border-radius: map.get($border-radius, 'md');
+//         cursor: pointer;
+//         transition: background-color 0.2s ease;
 
-        &:hover {
-          background-color: $color-primary-dark;
-        }
-      }
+//         &:hover {
+//           background-color: $color-primary-dark;
+//         }
+//       }
 
-      .help-text {
-        font-size: map.get($font-sizes, 'sm');
-        margin-top: map.get($spacing, 'sm');
-      }
-    }
+//       .help-text {
+//         font-size: map.get($font-sizes, 'sm');
+//         margin-top: map.get($spacing, 'sm');
+//       }
+//     }
 
-    .players-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: map.get($spacing, 'base');
+//     .players-grid {
+//       display: grid;
+//       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+//       gap: map.get($spacing, 'base');
 
-      .player-card {
-        background-color: $color-white;
-        border: 1px solid transparent;
-        border-radius: map.get($border-radius, 'lg');
-        padding: map.get($spacing, 'sm');
-        transition: all 0.25s ease-in-out;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+//       .player-card {
+//         background-color: $color-white;
+//         border: 1px solid transparent;
+//         border-radius: map.get($border-radius, 'lg');
+//         padding: map.get($spacing, 'sm');
+//         transition: all 0.25s ease-in-out;
+//         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
-        &:hover {
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          transform: translateY(-3px);
-          border-color: rgba($color-primary, 0.5);
-        }
+//         &:hover {
+//           box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+//           transform: translateY(-3px);
+//           border-color: rgba($color-primary, 0.5);
+//         }
 
-        &.inactive {
-          opacity: 0.65;
-          background-color: $color-background-light;
-          box-shadow: none;
-        }
+//         &.inactive {
+//           opacity: 0.65;
+//           background-color: $color-background-light;
+//           box-shadow: none;
+//         }
 
-        .player-header {
-          display: flex;
-          align-items: flex-start;
-          gap: map.get($spacing, 'sm');
-          margin-bottom: map.get($spacing, 'sm');
+//         .player-header {
+//           display: flex;
+//           align-items: flex-start;
+//           gap: map.get($spacing, 'sm');
+//           margin-bottom: map.get($spacing, 'sm');
 
-          .jersey-number-large {
-            font-size: 0.9rem;
-            font-weight: map.get($font-weights, 'bold');
-            background-color: $color-primary;
-            color: $color-white;
-            border-radius: map.get($border-radius, 'md');
-            height: 36px;
-            width: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba($color-primary, 0.3);
-          }
+//           .jersey-number-large {
+//             font-size: 0.9rem;
+//             font-weight: map.get($font-weights, 'bold');
+//             background-color: $color-primary;
+//             color: $color-white;
+//             border-radius: map.get($border-radius, 'md');
+//             height: 36px;
+//             width: 36px;
+//             display: flex;
+//             align-items: center;
+//             justify-content: center;
+//             flex-shrink: 0;
+//             box-shadow: 0 2px 4px rgba($color-primary, 0.3);
+//           }
 
-          .player-info {
-            flex: 1;
-            min-width: 0;
-            padding-top: 2px;
+//           .player-info {
+//             flex: 1;
+//             min-width: 0;
+//             padding-top: 2px;
 
-            .player-name .name {
-              font-size: map.get($font-sizes, 'sm');
-              font-weight: map.get($font-weights, 'semi-bold');
-              color: $color-text-primary;
-              line-height: 1.2;
-            }
+//             .player-name .name {
+//               font-size: map.get($font-sizes, 'sm');
+//               font-weight: map.get($font-weights, 'semi-bold');
+//               color: $color-text-primary;
+//               line-height: 1.2;
+//             }
 
-            .player-status {
-              margin-top: map.get($spacing, 'xxs');
-            }
-          }
-        }
+//             .player-status {
+//               margin-top: map.get($spacing, 'xxs');
+//             }
+//           }
+//         }
 
-        .player-details {
-          .player-position {
-            display: flex;
-            align-items: center;
-            gap: map.get($spacing, 'xs');
-            font-size: map.get($font-sizes, 'sm');
-            padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
-            background-color: $color-background-light;
-            border-radius: map.get($border-radius, 'sm');
-            margin-bottom: map.get($spacing, 'sm');
+//         .player-details {
+//           .player-position {
+//             display: flex;
+//             align-items: center;
+//             gap: map.get($spacing, 'xs');
+//             font-size: map.get($font-sizes, 'sm');
+//             padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+//             background-color: $color-background-light;
+//             border-radius: map.get($border-radius, 'sm');
+//             margin-bottom: map.get($spacing, 'sm');
             
-            .label {
-              font-weight: map.get($font-weights, 'medium');
-              color: $color-text-muted;
-            }
+//             .label {
+//               font-weight: map.get($font-weights, 'medium');
+//               color: $color-text-muted;
+//             }
 
-            .value {
-              color: $color-text-primary;
-              font-weight: map.get($font-weights, 'medium');
-            }
-          }
+//             .value {
+//               color: $color-text-primary;
+//               font-weight: map.get($font-weights, 'medium');
+//             }
+//           }
 
-          .player-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: map.get($spacing, 'xs');
+//           .player-stats {
+//             display: grid;
+//             grid-template-columns: repeat(2, 1fr);
+//             gap: map.get($spacing, 'xs');
 
-            .stat {
-              display: flex;
-              flex-direction: column;
+//             .stat {
+//               display: flex;
+//               flex-direction: column;
               
-              .label {
-                font-size: map.get($font-sizes, 'xs');
-                color: $color-text-muted;
-                margin-bottom: 2px;
-              }
+//               .label {
+//                 font-size: map.get($font-sizes, 'xs');
+//                 color: $color-text-muted;
+//                 margin-bottom: 2px;
+//               }
 
-              .value {
-                font-size: map.get($font-sizes, 'base');
-                font-weight: map.get($font-weights, 'bold');
-                color: $color-text-primary;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
+//               .value {
+//                 font-size: map.get($font-sizes, 'base');
+//                 font-weight: map.get($font-weights, 'bold');
+//                 color: $color-text-primary;
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
 
 @keyframes slideDownFadeIn {
   from {

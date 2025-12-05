@@ -102,30 +102,30 @@ const TeamPlayersRow = ({ teamId, isExpanded, isClosing, team }: TeamPlayersRowP
         )}
 
         {!loading && playerCount > 0 && (
-          <div className="roster-section">
+          <div className="admin-roster-section">
             {/* Playing positions */}
             {playerPositions.map((pos, key) => (
-              <div key={key} className="roster-container">
-                <div className="roster-position-header">
+              <div key={key} className="admin-roster-container">
+                <div className="admin-roster-position-header">
                   {t(`floorball.positions.${pos.toLowerCase()}`, pos)}
                 </div>
 
-                <div className="roster-position-container">
-                  <div className="table stats-header">
-                    <div className="roster-jersey" title={t('roster.tooltips.jerseyNumber', 'Jersey Number')}>
+                <div className="admin-roster-position-container">
+                  <div className="admin-roster-table admin-roster-stats-header">
+                    <div className="admin-roster-jersey" title={t('roster.tooltips.jerseyNumber', 'Jersey Number')}>
                       {t('roster.jerseyNumber', '#')}
                     </div>
-                    <div className="roster-player-name">{t('roster.name', 'Name')}</div>
-                    <div className="roster-age" title={t('roster.tooltips.age', 'Age')}>
+                    <div className="admin-roster-player-name">{t('roster.name', 'Name')}</div>
+                    <div className="admin-roster-age" title={t('roster.tooltips.age', 'Age')}>
                       {t('roster.age', 'Age')}
                     </div>
-                    <div className="roster-games-played" title={t('roster.tooltips.matchesPlayed', 'Matches Played')}>
+                    <div className="admin-roster-games-played" title={t('roster.tooltips.matchesPlayed', 'Matches Played')}>
                       {t('roster.matchesPlayed', 'Games')}
                     </div>
-                    <div className="roster-goals" title={t('roster.tooltips.goals', 'Goals')}>
+                    <div className="admin-roster-goals" title={t('roster.tooltips.goals', 'Goals')}>
                       {t('roster.goals', 'Goals')}
                     </div>
-                    <div className="roster-assists" title={t('roster.tooltips.assists', 'Assists')}>
+                    <div className="admin-roster-assists" title={t('roster.tooltips.assists', 'Assists')}>
                       {t('roster.assists', 'Assists')}
                     </div>
                   </div>
@@ -166,29 +166,29 @@ const TeamPlayersRow = ({ teamId, isExpanded, isClosing, team }: TeamPlayersRowP
                       return (
                         <div
                           key={playerId}
-                          className={`table roster-player ${!isActive ? 'inactive' : ''}`}
+                          className={`admin-roster-table admin-roster-player ${!isActive ? 'inactive' : ''}`}
                         >
-                          <div className="roster-jersey row">
+                          <div className="admin-roster-jersey row">
                             {jerseyNumber || '?'}
                           </div>
 
-                          <div className="roster-player-name">
+                          <div className="admin-roster-player-name">
                             {playerName}
                           </div>
 
-                          <div className="roster-age">
+                          <div className="admin-roster-age">
                             {age ?? '-'}
                           </div>
 
-                          <div className="roster-games-played">
+                          <div className="admin-roster-games-played">
                             {games || 0}
                           </div>
 
-                          <div className="roster-goals">
+                          <div className="admin-roster-goals">
                             {goals || '-'}
                           </div>
 
-                          <div className="roster-assists">
+                          <div className="admin-roster-assists">
                             {assists || '-'}
                           </div>
                         </div>
