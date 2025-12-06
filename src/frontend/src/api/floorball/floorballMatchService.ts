@@ -25,6 +25,7 @@ export const floorballMatchService = {
       if (params?.startDate) searchParams.append('startDate', params.startDate);
       if (params?.endDate) searchParams.append('endDate', params.endDate);
       if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+      if (params?.searchQuery) searchParams.append('searchQuery', params.searchQuery);
 
       const url = `${API_URL}/FloorballMatch?${searchParams.toString()}`;
       console.log('Fetching matches from URL:', url);
