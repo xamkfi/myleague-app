@@ -22,6 +22,7 @@ namespace Application.Handlers.Floorball.Seasons;
 public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballSeasonCommand, Result<FloorballSeasonDto>>
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFloorballUnitOfWork _floorballUnitOfWork;
@@ -32,10 +33,15 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
     /// Initializes a new instance of the ActivateFloorballSeasonHandler class
     /// </summary>
     /// <param name="seasonRepository">The floorball season repository</param>
+    /// <param name="seasonDivisionRepository">The floorball season division repository</param>
+    /// <param name="clubRepository">The club repository</param>
     /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="floorballUnitOfWork">The floorball unit of work</param>
+    /// <param name="statisticsRepository">The statistics repository</param>
     /// <param name="logger">The logger</param>
     public ActivateFloorballSeasonHandler(
         IFloorballSeasonRepository seasonRepository,
+        IFloorballSeasonDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         IUnitOfWork unitOfWork,
         IFloorballUnitOfWork floorballUnitOfWork,
@@ -43,6 +49,7 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
         ILogger<ActivateFloorballSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
+        _seasonDivisionRepository = seasonDivisionRepository;
         _clubRepository = clubRepository;
         _unitOfWork = unitOfWork;
         _floorballUnitOfWork = floorballUnitOfWork;
@@ -98,7 +105,7 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
                 }
             }
 
-            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, clubsDict);
+            FloorballSeasonDto seasonDto = await FloorballSeasonMapper.ToDtoAsync(season, _seasonDivisionRepository, clubsDict);
             _logger.LogInformation("Successfully activated floorball season: {SeasonId}", request.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);

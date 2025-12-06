@@ -72,7 +72,7 @@ public class GetFloorballSeasonByIdHandler : IRequestHandler<GetFloorballSeasonB
                 }
             }
 
-            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, clubsDict);
+            FloorballSeasonDto seasonDto = await FloorballSeasonMapper.ToDtoAsync(season, _seasonDivisionRepository, clubsDict);
             _logger.LogInformation("Successfully retrieved floorball season: {SeasonId}", season.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);

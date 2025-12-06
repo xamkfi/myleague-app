@@ -13,13 +13,13 @@ namespace Application.Commands.Floorball.Season
     /// <summary>
     /// Command for creating a floorball season
     /// </summary>
-    /// <param name="Name"></param>
-    /// <param name="Division"></param>
-    /// <param name="StartDate"></param>
-    /// <param name="EndDate"></param>
+    /// <param name="Name">The name of the season</param>
+    /// <param name="DivisionIds">The list of division IDs to associate with this season</param>
+    /// <param name="StartDate">The start date of the season</param>
+    /// <param name="EndDate">The end date of the season</param>
     public record CreateFloorballSeasonCommand(
         string Name,
-        Guid DivisionId,
+        IEnumerable<Guid> DivisionIds,
         DateTime StartDate,
         DateTime EndDate) : IRequest<Result<FloorballSeasonDto>>;
 }

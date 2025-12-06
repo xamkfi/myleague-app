@@ -1,4 +1,6 @@
-using Domain.Entities.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Domain.Entities.Floorball;
 
@@ -11,16 +13,6 @@ public class FloorballSeason : BaseEntity
     /// Gets the name of the season (e.g., "2023-2024")
     /// </summary>
     public string Name { get; private set; }
-
-    /// <summary>
-    /// Gets the division this season belongs to
-    /// </summary>
-    public Division Division { get; private set; }
-
-    /// <summary>
-    /// Gets the ID of the division this season belongs to
-    /// </summary>
-    public Guid DivisionId { get; private set; }
 
     /// <summary>
     /// Gets the start date of the season
@@ -61,8 +53,6 @@ public class FloorballSeason : BaseEntity
     {
         Id = Guid.NewGuid();
         Name = string.Empty; // Initialize to avoid CS8618
-        Division = default!; // Initialize to avoid CS8618
-        DivisionId = Guid.Empty; // Initialize to avoid CS8618
         StartDate = default; // Initialize to avoid CS8618
         EndDate = default; // Initialize to avoid CS8618
         IsActive = false;
@@ -75,11 +65,10 @@ public class FloorballSeason : BaseEntity
     /// Initializes a new instance of the FloorballSeason class
     /// </summary>
     /// <param name="name">The name of the season</param>
-    /// <param name="division">The division this season belongs to</param>
     /// <param name="startDate">The start date of the season</param>
     /// <param name="endDate">The end date of the season</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
-    public FloorballSeason(string name, Guid divisionId, DateTime startDate, DateTime endDate)
+    public FloorballSeason(string name, DateTime startDate, DateTime endDate)
     {
         ArgumentNullException.ThrowIfNull(name);
         if (string.IsNullOrWhiteSpace(name))
@@ -89,8 +78,6 @@ public class FloorballSeason : BaseEntity
         
         Id = Guid.NewGuid();
         Name = name;
-        Division = default!;
-        DivisionId = divisionId;
         StartDate = startDate;
         EndDate = endDate;
         IsActive = false;
@@ -142,24 +129,6 @@ public class FloorballSeason : BaseEntity
         
     }
 
-    /// <summary>
-    /// Updates the division of the season
-    /// </summary>
-    /// <param name="division">The new division</param>
-    /// <exception cref="InvalidOperationException">Thrown when the season is completed or has teams in a different division</exception>
-    public void UpdateDivision(Division division)
-    {
-        ArgumentNullException.ThrowIfNull(division);
-        
-        if (IsCompleted)
-            throw new InvalidOperationException("Cannot update a completed season.");
-        if (_teams.Count > 0 && _teams.Any(t => t.DivisionId != division.Id))
-            throw new InvalidOperationException("Cannot change division because some teams in this season belong to a different division.");
-        
-        Division = division;
-        DivisionId = division.Id;
-        
-    }
 
     /// <summary>
     /// Activates the season
@@ -201,8 +170,6 @@ public class FloorballSeason : BaseEntity
         ArgumentNullException.ThrowIfNull(team);
         if (IsCompleted)
             throw new InvalidOperationException("Cannot add a team to a completed season.");
-        if (team.DivisionId != DivisionId)
-            throw new InvalidOperationException($"Team division does not match season division.");
         if (_teams.Contains(team))
             return;
         _teams.Add(team);

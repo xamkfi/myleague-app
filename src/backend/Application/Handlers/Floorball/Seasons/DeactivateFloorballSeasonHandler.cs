@@ -22,6 +22,7 @@ namespace Application.Handlers.Floorball.Seasons;
 public class DeactivateFloorballSeasonHandler : IRequestHandler<DeactivateFloorballSeasonCommand, Result<FloorballSeasonDto>>
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFloorballUnitOfWork _floorballUnitOfWork;
@@ -31,18 +32,21 @@ public class DeactivateFloorballSeasonHandler : IRequestHandler<DeactivateFloorb
     /// Initializes a new instance of the DeactivateFloorballSeasonHandler class
     /// </summary>
     /// <param name="seasonRepository">The floorball season repository</param>
+    /// <param name="seasonDivisionRepository">The floorball season division repository</param>
     /// <param name="clubRepository">The club repository</param>
     /// <param name="unitOfWork">The unit of work</param>
     /// <param name="floorballUnitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public DeactivateFloorballSeasonHandler(
         IFloorballSeasonRepository seasonRepository,
+        IFloorballSeasonDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         IUnitOfWork unitOfWork,
         IFloorballUnitOfWork floorballUnitOfWork,
         ILogger<DeactivateFloorballSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
+        _seasonDivisionRepository = seasonDivisionRepository;
         _clubRepository = clubRepository;
         _unitOfWork = unitOfWork;
         _floorballUnitOfWork = floorballUnitOfWork;
@@ -90,7 +94,7 @@ public class DeactivateFloorballSeasonHandler : IRequestHandler<DeactivateFloorb
                 }
             }
 
-            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, clubsDict);
+            FloorballSeasonDto seasonDto = await FloorballSeasonMapper.ToDtoAsync(season, _seasonDivisionRepository, clubsDict);
             _logger.LogInformation("Successfully deactivated floorball season: {SeasonId}", request.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);

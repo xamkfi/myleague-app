@@ -1,6 +1,8 @@
 using Application.Commands.Floorball.Season;
 using Domain.Enums.Floorball;
 using FluentValidation;
+using System;
+using System.Linq;
 
 namespace Application.Validators.Commands.Floorball.Season;
 
@@ -15,8 +17,10 @@ public class CreateFloorballSeasonCommandValidator : AbstractValidator<CreateFlo
             .NotEmpty().WithMessage("Season name is required")
             .MaximumLength(100).WithMessage("Season name cannot exceed 100 characters");
 
-        RuleFor(x => x.DivisionId)
-          .NotNull().WithMessage("Division is required");
+        RuleFor(x => x.DivisionIds)
+            .NotNull().WithMessage("At least one division is required")
+            .Must(divisionIds => divisionIds != null && divisionIds.Any()).WithMessage("At least one division must be specified")
+            .Must(divisionIds => divisionIds != null && divisionIds.All(id => id != Guid.Empty)).WithMessage("All division IDs must be valid");
 
         RuleFor(x => x.StartDate)
             .NotEmpty().WithMessage("Start date is required")

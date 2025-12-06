@@ -28,7 +28,8 @@ public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorball
     /// <summary>
     /// Initializes a new instance of the GetFloorballSeasonsByDivisionHandler class
     /// </summary>
-    /// <param name="seasonRepository">The floorball season repository</param>
+    /// <param name="seasonDivisionRepository">The floorball season division repository</param>
+    /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
     public GetFloorballSeasonsByDivisionHandler(
         IFloorballSeasonDivisionRepository seasonDivisionRepository,
@@ -71,7 +72,7 @@ public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorball
                 }
             }
 
-            IEnumerable<FloorballSeasonDto> seasonDtos = FloorballSeasonMapper.ToDtos(seasons, clubsDict);
+            IEnumerable<FloorballSeasonDto> seasonDtos = await FloorballSeasonMapper.ToDtosAsync(seasons, _seasonDivisionRepository, clubsDict);
             
             _logger.LogInformation("Successfully retrieved {SeasonCount} floorball seasons for division: {DivisionId}", seasonDtos.Count(), request.DivisionId);
             

@@ -74,7 +74,7 @@ public class GetActiveFloorballSeasonsHandler : IRequestHandler<GetActiveFloorba
                 }
             }
 
-            IEnumerable<FloorballSeasonDto> seasonDtos = FloorballSeasonMapper.ToDtos(seasons, clubsDict);
+            IEnumerable<FloorballSeasonDto> seasonDtos = await FloorballSeasonMapper.ToDtosAsync(seasons, _seasonDivisionRepository, clubsDict);
             
             _logger.LogInformation("Successfully retrieved {SeasonCount} active floorball seasons", seasonDtos.Count());
             

@@ -23,6 +23,7 @@ namespace Application.Handlers.Floorball.Seasons;
 public class GetAllFloorballSeasonsHandler : IRequestHandler<GetAllFloorballSeasonsQuery, Result<IEnumerable<FloorballSeasonDto>>>
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetAllFloorballSeasonsHandler> _logger;
 
@@ -30,14 +31,17 @@ public class GetAllFloorballSeasonsHandler : IRequestHandler<GetAllFloorballSeas
     /// Initializes a new instance of the GetAllFloorballSeasonsHandler class
     /// </summary>
     /// <param name="seasonRepository">The floorball season repository</param>
+    /// <param name="seasonDivisionRepository">The floorball season division repository</param>
     /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
     public GetAllFloorballSeasonsHandler(
         IFloorballSeasonRepository seasonRepository,
+        IFloorballSeasonDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         ILogger<GetAllFloorballSeasonsHandler> logger)
     {
         _seasonRepository = seasonRepository;
+        _seasonDivisionRepository = seasonDivisionRepository;
         _clubRepository = clubRepository;
         _logger = logger;
     }
@@ -73,7 +77,7 @@ public class GetAllFloorballSeasonsHandler : IRequestHandler<GetAllFloorballSeas
                 }
             }
             
-            IEnumerable<FloorballSeasonDto> seasonDtos = FloorballSeasonMapper.ToDtos(seasons, clubsDict);
+            IEnumerable<FloorballSeasonDto> seasonDtos = await FloorballSeasonMapper.ToDtosAsync(seasons, _seasonDivisionRepository, clubsDict);
             
             _logger.LogInformation("Successfully retrieved {SeasonCount} floorball seasons", seasonDtos.Count());
             

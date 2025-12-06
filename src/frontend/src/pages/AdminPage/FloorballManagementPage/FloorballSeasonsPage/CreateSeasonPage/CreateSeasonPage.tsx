@@ -19,7 +19,7 @@ export const CreateSeasonPage = () => {
     name: '',
     startDate: '',
     endDate: '',
-    divisionId: ''
+    divisionIds: []
   });
   const [isActive, setIsActive] = useState(false);
   
@@ -43,6 +43,25 @@ export const CreateSeasonPage = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleDivisionToggle = (divisionId: string) => {
+    setFormData(prev => {
+      const currentIds = prev.divisionIds || [];
+      const isSelected = currentIds.includes(divisionId);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          divisionIds: currentIds.filter(id => id !== divisionId)
+        };
+      } else {
+        return {
+          ...prev,
+          divisionIds: [...currentIds, divisionId]
+        };
+      }
+    });
   };
 
 
@@ -117,8 +136,8 @@ export const CreateSeasonPage = () => {
         throw new Error(t('floorball.seasons.validation.nameTooLong', 'Season name cannot exceed 100 characters'));
       }
 
-      if (!formData.divisionId) {
-        throw new Error(t('floorball.seasons.validation.divisionRequired', 'Division is required'));
+      if (!formData.divisionIds || formData.divisionIds.length === 0) {
+        throw new Error(t('floorball.seasons.validation.divisionRequired', 'At least one division is required'));
       }
 
       if (!formData.startDate) {
@@ -173,7 +192,7 @@ export const CreateSeasonPage = () => {
         name: '',
         startDate: '',
         endDate: '',
-        divisionId: ''
+        divisionIds: []
       });
     } catch (err) {
       setError(parseApiError(err));
@@ -233,22 +252,31 @@ export const CreateSeasonPage = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="create-division">
-                {t('floorball.seasons.fields.division', 'Division')} *
+              <label>
+                {t('floorball.seasons.fields.divisions', 'Divisions')} *
               </label>
-              <select
-                id="create-division"
-                name="divisionId"
-                value={formData.divisionId}
-                onChange={handleInputChange}
-                required
-                disabled={loading}
-              >
-                <option value="">{t('floorball.seasons.placeholders.selectDivision', 'Select division')}</option>
-                {divisions.map(division => (
-                  <option key={division.id} value={division.id}>{division.name}</option>
-                ))}
-              </select>
+              <div className="divisions-checkbox-list">
+                {divisions.length === 0 ? (
+                  <p className="no-divisions">{t('floorball.seasons.noDivisionsAvailable', 'No divisions available')}</p>
+                ) : (
+                  divisions.map(division => (
+                    <label key={division.id} className="division-checkbox-item">
+                      <input
+                        type="checkbox"
+                        checked={formData.divisionIds?.includes(division.id) || false}
+                        onChange={() => handleDivisionToggle(division.id)}
+                        disabled={loading}
+                      />
+                      <span className="checkbox-label">{division.name}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+              {formData.divisionIds && formData.divisionIds.length > 0 && (
+                <p className="selected-count">
+                  {t('floorball.seasons.selectedDivisions', '{{count}} division(s) selected', { count: formData.divisionIds.length })}
+                </p>
+              )}
             </div>
 
             <div className="form-row">

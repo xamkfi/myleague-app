@@ -49,7 +49,17 @@ export const ConfirmDeleteModal = ({
           <div className="season-details">
             <strong>{season.name}</strong>
             <div className="season-meta">
-              <span className="division">{getDivisionName(season.divisionId)}</span>
+              <div className="divisions">
+                {season.seasonDivisions && season.seasonDivisions.length > 0 ? (
+                  season.seasonDivisions.map((seasonDivision) => (
+                    <span key={seasonDivision.divisionId} className="division">
+                      {getDivisionName(seasonDivision.divisionId)}
+                    </span>
+                  ))
+                ) : (
+                  <span className="division">{t('floorball.seasons.noDivisions', 'No divisions')}</span>
+                )}
+              </div>
               {season.teams && season.teams.length > 0 && (
                 <span className="teams-warning">
                   {t('floorball.seasons.deleteConfirm.teamsWarning', 'This season has {{count}} teams', { count: season.teams.length })}

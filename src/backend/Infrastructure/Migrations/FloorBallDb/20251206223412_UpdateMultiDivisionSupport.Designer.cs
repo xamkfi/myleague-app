@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MyLeague.Infrastructure.Migrations.FloorBallDb
+namespace MyLeague.Infrastructure.Migrations.FloorballDb
 {
     [DbContext(typeof(FloorballDbContext))]
-    partial class FloorballDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251206223412_UpdateMultiDivisionSupport")]
+    partial class UpdateMultiDivisionSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

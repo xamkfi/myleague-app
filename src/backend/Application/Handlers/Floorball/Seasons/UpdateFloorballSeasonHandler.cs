@@ -20,6 +20,7 @@ namespace Application.Handlers.Floorball.Seasons;
 public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeasonCommand, Result<FloorballSeasonDto>>
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateFloorballSeasonHandler> _logger;
 
@@ -27,14 +28,17 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
     /// Initializes a new instance of the UpdateFloorballSeasonHandler class
     /// </summary>
     /// <param name="seasonRepository">The floorball season repository</param>
+    /// <param name="seasonDivisionRepository">The floorball season division repository</param>
     /// <param name="unitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public UpdateFloorballSeasonHandler(
         IFloorballSeasonRepository seasonRepository,
+        IFloorballSeasonDivisionRepository seasonDivisionRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<UpdateFloorballSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
+        _seasonDivisionRepository = seasonDivisionRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -66,7 +70,7 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(existingSeason);
+            FloorballSeasonDto seasonDto = await FloorballSeasonMapper.ToDtoAsync(existingSeason, _seasonDivisionRepository);
             _logger.LogInformation("Successfully updated floorball season with ID: {SeasonId}", existingSeason.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);

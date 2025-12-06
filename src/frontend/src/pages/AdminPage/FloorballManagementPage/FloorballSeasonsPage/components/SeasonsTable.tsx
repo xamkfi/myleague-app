@@ -61,9 +61,23 @@ export const SeasonsTable = ({
                 </div>
               </td>
               <td>
-                <span className={`division-badge division-${season.divisionId.toLowerCase()}`}>
-                  {divisions.find(d => d.id == season.divisionId)?.name || ''}
-                </span>
+                <div className="divisions-list">
+                  {season.seasonDivisions && season.seasonDivisions.length > 0 ? (
+                    season.seasonDivisions.map((seasonDivision) => {
+                      const division = divisions.find(d => d.id === seasonDivision.divisionId);
+                      return (
+                        <span 
+                          key={seasonDivision.divisionId} 
+                          className={`division-badge division-${seasonDivision.divisionId.toLowerCase()}`}
+                        >
+                          {division?.name || seasonDivision.divisionId}
+                        </span>
+                      );
+                    })
+                  ) : (
+                    <span className="no-divisions">{t('floorball.seasons.noDivisions', 'No divisions')}</span>
+                  )}
+                </div>
               </td>
               <td>{formatDate(season.startDate)}</td>
               <td>{formatDate(season.endDate)}</td>
