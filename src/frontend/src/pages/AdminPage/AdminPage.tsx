@@ -5,6 +5,7 @@ import './AdminPage.scss';
 import PersonIcon from '../../assets/adminIcons/Persons.svg';
 import NewsIcon from '../../assets/adminIcons/News.svg';
 import SportsIcon from '../../assets/adminIcons/Sports.svg';
+import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -34,6 +35,16 @@ const AdminPage = () => {
               <span className="button-subtitle">{t('admin.actions.manageNews', 'Manage news')}</span>
             </div>
             <img src={NewsIcon} alt="News" className="button-icon" />
+          </button>
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/clubs')}
+          >
+            <div className="button-text">
+              <span className="button-title">{t('admin.actions.clubs', 'Clubs')}</span>
+              <span className="button-subtitle">{t('admin.actions.manageClubs', 'Manage clubs')}</span>
+            </div>
+            <img src={ClubsIcon} alt="Clubs" className="button-icon" />
           </button>
           
         </div>
