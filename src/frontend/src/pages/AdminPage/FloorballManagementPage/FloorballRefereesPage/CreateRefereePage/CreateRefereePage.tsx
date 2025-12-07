@@ -16,12 +16,22 @@ const CreateRefereePage = () => {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(new Set());
   const [licenseIssueDate, setLicenseIssueDate] = useState('');
   const [licenseExpiryDate, setLicenseExpiryDate] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Fetch persons and filter out those who are already referees
   useEffect(() => {
@@ -30,8 +40,16 @@ const CreateRefereePage = () => {
         setLoading(true);
         setError(null);
         
-        // Fetch all persons
-        const personsData = await personApi.getAll();
+        let personsData: Person[];
+        
+        // Conditionally fetch based on search term
+        if (debouncedSearchTerm.trim()) {
+          // Use search API when there's a search term
+          personsData = await personApi.search(debouncedSearchTerm.trim());
+        } else {
+          // Use getAll when there's no search term
+          personsData = await personApi.getAll();
+        }
         
         // Fetch existing referees using the same parameters that work in the main page
         const refereesResponse = await floorballRefereeService.getAll({ 
@@ -58,7 +76,7 @@ const CreateRefereePage = () => {
     };
 
     fetchData();
-  }, []);
+  }, [debouncedSearchTerm]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -69,12 +87,8 @@ const CreateRefereePage = () => {
     };
   }, [successTimeoutId]);
 
-  // Filter available persons based on search term
-  const filteredPersons = availablePersons.filter(person =>
-    person.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    person.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    person.lastName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Use availablePersons directly (filtering is handled by backend when searching)
+  const filteredPersons = availablePersons;
 
   // Set default dates (issue today, expire in 2 years)
   useEffect(() => {
@@ -231,7 +245,14 @@ const CreateRefereePage = () => {
                   type="text"
                   placeholder={t('floorball.referees.searchPersons', 'Search available persons...')}
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchTerm(value);
+                    // If clearing search, immediately update debounced term to trigger fetch
+                    if (!value.trim()) {
+                      setDebouncedSearchTerm('');
+                    }
+                  }}
                   className="search-input"
                 />
               </div>

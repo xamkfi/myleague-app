@@ -25,15 +25,34 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
   // Selection state for multiselect
   const [selectedPersons, setSelectedPersons] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const fetchPersons = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await personApi.getAll();
+      let data: Person[];
+      
+      if (debouncedSearchTerm.trim()) {
+        // Use search API when there's a search term
+        data = await personApi.search(debouncedSearchTerm.trim());
+      } else {
+        // Use getAll when there's no search term
+        data = await personApi.getAll();
+      }
+      
       setPersons(data);
       setError(null);
     } catch (error) {
@@ -42,7 +61,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [debouncedSearchTerm, t]);
 
   useEffect(() => {
     fetchPersons();
@@ -142,7 +161,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   };
 
   const selectAllFilteredPersons = () => {
-    setSelectedPersons(new Set(filteredPersons.map(p => p.id)));
+    setSelectedPersons(new Set(persons.map(p => p.id)));
   };
 
   const clearSelection = () => {
@@ -184,17 +203,12 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     }
   };
 
-  // Search filtering
-  const filteredPersons = persons.filter(person =>
-    person.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Pagination calculations (applied to filtered results)
-  const totalCount = filteredPersons.length;
+  // Pagination calculations (applied to persons directly since backend handles filtering)
+  const totalCount = persons.length;
   const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedPersons = filteredPersons.slice(startIndex, endIndex);
+  const paginatedPersons = persons.slice(startIndex, endIndex);
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -209,9 +223,23 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    const value = e.target.value;
+    setSearchTerm(value);
     setCurrentPage(1); // Reset to first page when searching
     setSelectedPersons(new Set()); // Clear selection when searching
+    
+    // If clearing search, immediately update debounced term to trigger fetch
+    if (!value.trim()) {
+      setDebouncedSearchTerm('');
+    }
+  };
+
+  // Handle clear search button
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    setCurrentPage(1);
+    setSelectedPersons(new Set());
   };
 
   if (loading) {
@@ -236,7 +264,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         {searchTerm && (
           <button
             className="search-clear-button"
-            onClick={() => setSearchTerm('')}
+            onClick={handleClearSearch}
             title={t('admin.persons.clearSearch', 'Clear search')}
           >
             ✕
@@ -250,15 +278,15 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
           <span className="selected-count">
             {t('admin.persons.selected', '{{count}} selected', { count: selectedPersons.size })}
           </span>
-          {filteredPersons.length > 0 && (
+          {persons.length > 0 && (
             <div className="selection-buttons">
               <button
                 type="button"
                 className="control-btn"
                 onClick={selectAllFilteredPersons}
-                disabled={selectedPersons.size === filteredPersons.length}
+                disabled={selectedPersons.size === persons.length}
               >
-                {t('common.selectAll', 'Select All')} ({filteredPersons.length})
+                {t('common.selectAll', 'Select All')} ({persons.length})
               </button>
               <button
                 type="button"
@@ -434,9 +462,9 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         </div>
       )}
 
-      {persons.length > 0 && filteredPersons.length === 0 && (
+      {debouncedSearchTerm && persons.length === 0 && (
         <div className="no-search-results">
-          {t('admin.persons.noSearchResults', 'No persons found matching "{{searchTerm}}"', { searchTerm })}
+          {t('admin.persons.noSearchResults', 'No persons found matching "{{searchTerm}}"', { searchTerm: debouncedSearchTerm })}
         </div>
       )}
     </div>

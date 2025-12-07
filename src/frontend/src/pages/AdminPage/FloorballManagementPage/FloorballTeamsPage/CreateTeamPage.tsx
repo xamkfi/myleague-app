@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
-import { getClubs, type Club } from '../../../../api/common/clubService';
+import { clubService } from '../../../../api/common/clubService';
 import { divisionService } from '../../../../api/common/divisionService';
 import { TeamCategory, type FloorballTeamRequest } from '../../../../types/floorball/floorballTypes';
 import type { DivisionType } from '../../../../types/common/divisionType';
+import SearchableInfiniteDropdown from '../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import './CreateTeamPage.scss';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
@@ -16,7 +17,6 @@ const CreateTeamPage = () => {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [clubs, setClubs] = useState<Club[]>([]);
   const [divisions, setDivisions] = useState<DivisionType[]>([]);
   
   const [formData, setFormData] = useState<FloorballTeamRequest>({
@@ -29,18 +29,40 @@ const CreateTeamPage = () => {
     secondaryJerseyColor: ''
   });
 
-  // Load clubs and divisions on component mount
+  // Load divisions on component mount
   useEffect(() => {
-    loadClubs();
     loadDivisions();
   }, []);
 
-  const loadClubs = async () => {
+  // Search function for clubs using paginated endpoint
+  const searchClubs = async (query: string, page: number) => {
+    const pageSize = 50;
+    
     try {
-      const clubsData = await getClubs();
-      setClubs(clubsData);
+      // Use paginated endpoint
+      const response = await clubService.getPaged(page, pageSize);
+      
+      let filteredClubs = response.data;
+      
+      // If there's a search query, filter client-side
+      // Note: For better performance with large datasets, backend should support search pagination
+      if (query.trim()) {
+        const queryLower = query.toLowerCase();
+        filteredClubs = response.data.filter(club => 
+          club.name.toLowerCase().includes(queryLower)
+        );
+      }
+      
+      return {
+        data: filteredClubs.map(club => ({ id: club.id, name: club.name })),
+        pagination: {
+          hasNextPage: response.pagination.hasNextPage && (!query.trim() || filteredClubs.length === pageSize),
+          totalCount: query.trim() ? filteredClubs.length : response.pagination.totalCount
+        }
+      };
     } catch (err) {
-      console.error('Error loading clubs:', err);
+      console.error('Error searching clubs:', err);
+      throw err;
     }
   };
 
@@ -124,17 +146,15 @@ const CreateTeamPage = () => {
 
           <div className="form-group">
             <label htmlFor="clubId">{t('floorball.teams.club', 'Club')} *</label>
-            <select
-              id="clubId"
+            <SearchableInfiniteDropdown
+              placeholder={t('floorball.teams.selectClub', 'Select a club')}
               value={formData.clubId}
-              onChange={(e) => handleInputChange('clubId', e.target.value)}
+              onChange={(value) => handleInputChange('clubId', value)}
+              onSearch={searchClubs}
+              emptyMessage={t('floorball.teams.noClubsFound', 'No clubs found')}
+              searchPlaceholder={t('floorball.teams.searchClubs', 'Search clubs...')}
               required
-            >
-              <option value="">{t('floorball.teams.selectClub', 'Select a club')}</option>
-              {clubs.map(club => (
-                <option key={club.id} value={club.id}>{club.name}</option>
-              ))}
-            </select>
+            />
           </div>
 
           <div className="form-row">
