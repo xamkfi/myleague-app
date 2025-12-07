@@ -36,19 +36,27 @@ namespace Application.Handlers.NewsArticles
 
         public async Task<Result<bool>> Handle(DeleteNewsArticleCommand request, CancellationToken cancellationToken)
         {
-            bool exists = await _newsRepository.ExistsAsync(request.id);
-
-            if (!exists)
+            try
             {
-                _logger.LogWarning("Attempt to delete non-existent news article with ID: {NewsId}", request.id);
-                return Result<bool>.Failure($"News article with ID '{request.id}' not found.");
+                bool exists = await _newsRepository.ExistsAsync(request.id);
+
+                if (!exists)
+                {
+                    _logger.LogWarning("Attempt to delete non-existent news article with ID: {NewsId}", request.id);
+                    return Result<bool>.Failure($"News article with ID '{request.id}' not found.");
+                }
+
+                await _newsRepository.DeleteNews(request.id);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                return Result<bool>.Success(true);
             }
-
-            await _newsRepository.DeleteNews(request.id);
-
-            await _unitOfWork.SaveChangesAsync();
-
-            return Result<bool>.Success(true);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while deleting news article with ID: {NewsId}", request.id);
+                return Result<bool>.Failure("An error occurred while deleting the news article.");
+            }
         }
     }
 }
