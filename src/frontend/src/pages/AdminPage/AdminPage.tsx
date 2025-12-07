@@ -51,7 +51,7 @@ const AdminPage = () => {
 
           <button 
             className="admin-action-button"
-            onClick={() => navigate('/admin/divisions')}
+            onClick={() => navigate('/admin/clubs')}
           >
             <div className="button-text">
               <span className="button-title">{t('admin.actions.clubs', 'Clubs')}</span>
