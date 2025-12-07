@@ -45,13 +45,26 @@ namespace MyLeague.Infrastructure.Services.Common
         {
             _logger.LogInformation("Timer background service started");
 
+            // Use a stopwatch-anchored schedule to avoid drift from Task.Delay processing time
+            System.Diagnostics.Stopwatch scheduler = System.Diagnostics.Stopwatch.StartNew();
+            long tick = 0; // number of full intervals elapsed
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
                     await SendPeriodicTimerUpdatesAsync();
-                    // Timers are disposed explicitly when matches finish, so no periodic cleanup
-                    await Task.Delay(_updateInterval, stoppingToken);
+
+                    tick++;
+                    // Compute the exact next due time based on the anchor
+                    TimeSpan target = TimeSpan.FromTicks(_updateInterval.Ticks * tick);
+                    TimeSpan delay = target - scheduler.Elapsed;
+                    if (delay < TimeSpan.Zero)
+                    {
+                        // We are behind schedule; catch up without additional delay
+                        delay = TimeSpan.Zero;
+                    }
+                    await Task.Delay(delay, stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {

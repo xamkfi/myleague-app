@@ -1,23 +1,60 @@
-import type { ApiResponse } from "../../types/floorball/floorballTypes";
-import type { PaginatedApiResponse } from "../../types/floorball/floorballTypes";
-
 /**
  * Helper function to parse error responses properly
  */
-export async function parseErrorResponse<T>(
-   response: ApiResponse<T> | PaginatedApiResponse<T>, 
-   defaultMessage: string
+export async function parseErrorResponse(
+  response: unknown,
+  defaultMessage: string
 ): Promise<string> {
-   try {
-      const responseText = JSON.stringify(response);
-      console.error('API Error Response (raw):', responseText);
-      console.error('API Error Response (parsed):', response);
+  try {
+    // If we already have a string, just return it
+    if (typeof response === 'string') {
+      return response;
+    }
 
-      return responseText
+    const obj = response as Record<string, unknown> | null | undefined;
 
-   } catch (readError) {
-      console.error('Error reading response:', readError);
-   }
+    if (obj && typeof obj === 'object') {
+      const getString = (o: Record<string, unknown>, key: string): string | undefined => {
+        const v = o[key];
+        return typeof v === 'string' ? v : undefined;
+      };
 
-   return `${defaultMessage}`;
-} 
+      // ASP.NET Core ProblemDetails/ValidationProblemDetails
+      if ('errors' in obj && obj.errors && typeof obj.errors === 'object') {
+        // errors can be: Record<string, string[]> or string[]
+        const rawErrors = obj.errors as unknown;
+        let aggregated: unknown[] = [];
+
+        if (Array.isArray(rawErrors)) {
+          aggregated = rawErrors as unknown[];
+        } else {
+          // Flatten Record<string, string[]>
+          aggregated = Object.values(rawErrors as Record<string, unknown[]>)
+            .reduce<unknown[]>((acc, val) => acc.concat(val || []), []);
+        }
+
+        const payload = {
+          title: getString(obj, 'title') || getString(obj, 'detail') || getString(obj, 'message') || defaultMessage,
+          errors: aggregated
+        };
+        return JSON.stringify(payload);
+      }
+
+      // Our ApiResponse shape
+      if ('success' in obj && obj.success === false) {
+        const payload = {
+          title: getString(obj, 'message') || defaultMessage,
+          errors: (obj.errors as unknown) || []
+        };
+        return JSON.stringify(payload);
+      }
+
+      // Fallback to raw object
+      return JSON.stringify(obj);
+    }
+  } catch (readError) {
+    console.error('Error parsing error response:', readError);
+  }
+
+  return `${defaultMessage}`;
+}

@@ -1,4 +1,5 @@
 using Application.Queries.Common;
+using Domain.Enums.Common;
 using FluentValidation;
 
 namespace Application.Validators.Queries.Common;
@@ -11,7 +12,7 @@ public class GetDivisionsBySportTypeQueryValidator : AbstractValidator<GetDivisi
     public GetDivisionsBySportTypeQueryValidator()
     {
         RuleFor(x => x.SportType)
-            .NotEmpty().WithMessage("Sport type is required")
-            .MaximumLength(50).WithMessage("Sport type cannot exceed 50 characters");
+            .IsInEnum().WithMessage("Sport type is invalid")
+            .Must(st => st != SportsCategory.None).WithMessage("Sport type is required");
     }
 } 

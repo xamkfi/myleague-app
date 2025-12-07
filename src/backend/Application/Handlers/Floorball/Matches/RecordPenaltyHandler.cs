@@ -7,6 +7,8 @@ using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
+using Application.Interfaces.Common;
+using Application.Constants;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -20,6 +22,7 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
     private readonly IFloorballPlayerRepository _playerRepository;
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
+    private readonly INotificationSenderService _notificationSenderService;
     private readonly ILogger<RecordPenaltyHandler> _logger;
 
     public RecordPenaltyHandler(
@@ -27,7 +30,9 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
         IFloorballTeamRepository teamRepository,
         IFloorballPlayerRepository playerRepository,
         IFloorballStatisticsRepository statisticsRepository,
+        INotificationSenderService notificationSenderService,
         IFloorballUnitOfWork unitOfWork,
+
         ILogger<RecordPenaltyHandler> logger)
     {
         _matchRepository = matchRepository;
@@ -35,6 +40,7 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
         _playerRepository = playerRepository;
         _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
+        _notificationSenderService = notificationSenderService;
         _logger = logger;
     }
 
@@ -90,6 +96,10 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
             _matchRepository.MarkEventAsAdded(penaltyEvent);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _notificationSenderService.SendNotificationAsync(
+                FloorballNotificationEvents.PenaltyAssigned,
+                 new { MatchId = match.Id });
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             return Result<FloorballMatchDto>.Success(matchDto);

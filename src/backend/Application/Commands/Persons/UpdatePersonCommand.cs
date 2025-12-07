@@ -12,7 +12,7 @@ public record UpdatePersonCommand(
     Guid Id,
     string FirstName,
     string LastName,
-    DateTime BirthDate,
+    DateTime? BirthDate,
     bool IsRegistered,
     AddressDto? Address,
     ContactInfoDto? ContactInfo) : IRequest<Result<PersonDto>>;

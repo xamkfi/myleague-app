@@ -11,6 +11,7 @@ interface NewsListProps {
     category: string;
     sportCategory: string;
     searchTerm: string;
+    includeArchived: boolean;
   };
 }
 
@@ -32,7 +33,10 @@ const NewsList = ({ filters }: NewsListProps) => {
     try {
       setLoading(true);
       const response = await newsService({
-        ...(filters || { category: '', sportCategory: '', searchTerm: '' }),
+        category: filters?.category ?? '',
+        sportCategory: filters?.sportCategory ?? '',
+        searchTerm: filters?.searchTerm ?? '',
+        includeArchived: filters?.includeArchived ?? true,
         page,
         pageSize: size
       });

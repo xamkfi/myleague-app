@@ -14,11 +14,12 @@ export interface NewsArticleDto {
 }
 
 export interface NewsParameters{
-  category: string,
-  sportCategory: string,
-  searchTerm: string,
-  page?: number,
-  pageSize?: number,
+  category: string;
+  sportCategory: string;
+  searchTerm: string;
+  includeArchived?: boolean;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface PaginationInfo {
@@ -46,6 +47,7 @@ export async function newsService(params?: Partial<NewsParameters>): Promise<Pag
     if (params?.category) queryParams.append("category", params.category);
     if (params?.sportCategory) queryParams.append("sportCategory", params.sportCategory);
     if (params?.searchTerm) queryParams.append("search", params.searchTerm);
+    if (params?.includeArchived !== undefined) queryParams.append("includeArchived", params.includeArchived.toString());
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.pageSize) queryParams.append("pageSize", params.pageSize.toString());
 

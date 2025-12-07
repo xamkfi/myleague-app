@@ -9,9 +9,9 @@ import { floorballTeamService } from '../../../../../api/floorball/floorballTeam
 import { floorballTeamSearchService } from '../../../../../api/floorball/floorballTeamSearchService';
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
-import PageTemplate from '../../../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import './PersonForm.scss';
-import { SPORTS, type SportType } from '../../../../../constants/sports';
+import { ACTIVE_SPORTS, type SportType } from '../../../../../types/common/sports';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
 interface PersonFormProps {
@@ -66,7 +66,7 @@ const PersonForm = ({
       role: PersonRole.User,
       address: {
         street1: '',
-        street2: '',
+        street2: null,
         city: '',
         postalCode: '',
         country: ''
@@ -74,7 +74,7 @@ const PersonForm = ({
       contactInfo: {
         email: '',
         phone: '',
-        alternativePhone: ''
+        alternativePhone: null
       },
       teamId: undefined,
       position: undefined,
@@ -104,9 +104,12 @@ const PersonForm = ({
         setLoading(true);
         const person = await personApi.getById(id!);
         
-        // Convert ISO date to dd-mm-yyyy
-        const date = new Date(person.birthDate);
-        const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+        // Convert ISO date to dd-mm-yyyy, handle null birthDate
+        let formattedDate = '';
+        if (person.birthDate) {
+          const date = new Date(person.birthDate);
+          formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+        }
         
         setFormData({
           firstName: person.firstName,
@@ -116,7 +119,7 @@ const PersonForm = ({
           role: person.role,
           address: person.address || {
             street1: '',
-            street2: '',
+            street2: null,
             city: '',
             postalCode: '',
             country: ''
@@ -124,7 +127,7 @@ const PersonForm = ({
           contactInfo: person.contactInfo || {
             email: '',
             phone: '',
-            alternativePhone: ''
+            alternativePhone: null
           },
           teamId: undefined,
           position: undefined,
@@ -143,8 +146,9 @@ const PersonForm = ({
   }, [id, isEditMode, t]);
 
   const validateBirthDate = (date: string): string | null => {
-    if (!date) {
-      return t('admin.persons.validation.birthDateRequired');
+    // Birth date is optional, so empty string is valid
+    if (!date || date.trim() === '') {
+      return null;
     }
 
     // Parse dd-mm-yyyy format
@@ -282,15 +286,17 @@ const PersonForm = ({
       errors.lastName = t('admin.persons.validation.lastNameTooLong', { max: MAX_LENGTHS.lastName });
     }
 
-    const birthDateError = validateBirthDate(formData.birthDate);
-    if (birthDateError) {
-      errors.birthDate = birthDateError;
+    // Birth date is optional, but if provided, validate it
+    if (formData.birthDate && formData.birthDate.trim() !== '') {
+      const birthDateError = validateBirthDate(formData.birthDate);
+      if (birthDateError) {
+        errors.birthDate = birthDateError;
+      }
     }
 
     // Address validation (all fields required if any field is filled)
     const addressValues = [
       formData.address.street1,
-      formData.address.street2,
       formData.address.city,
       formData.address.postalCode,
       formData.address.country
@@ -302,10 +308,6 @@ const PersonForm = ({
         errors['address.street1'] = t('admin.persons.validation.street1Required');
       } else if (formData.address.street1.length > MAX_LENGTHS.street1) {
         errors['address.street1'] = t('admin.persons.validation.street1TooLong', { max: MAX_LENGTHS.street1 });
-      }
-
-      if (formData.address.street2 && formData.address.street2.length > MAX_LENGTHS.street2) {
-        errors['address.street2'] = t('admin.persons.validation.street2TooLong', { max: MAX_LENGTHS.street2 });
       }
 
       if (!formData.address.city.trim()) {
@@ -335,10 +337,6 @@ const PersonForm = ({
 
     if (formData.contactInfo.phone && formData.contactInfo.phone.length > MAX_LENGTHS.phone) {
       errors['contactInfo.phone'] = t('admin.persons.validation.phoneTooLong', { max: MAX_LENGTHS.phone });
-    }
-
-    if (formData.contactInfo.alternativePhone && formData.contactInfo.alternativePhone.length > MAX_LENGTHS.alternativePhone) {
-      errors['contactInfo.alternativePhone'] = t('admin.persons.validation.alternativePhoneTooLong', { max: MAX_LENGTHS.alternativePhone });
     }
 
     // Team assignment validation (only for new persons, not edits)
@@ -451,7 +449,7 @@ const PersonForm = ({
 
   // Search helpers for sport and teams by sport
   const searchSports = async (query: string) => {
-    const sports = SPORTS as unknown as string[];
+    const sports = ACTIVE_SPORTS as unknown as string[];
     const filtered = query?.trim()
       ? sports.filter((s) => s.toLowerCase().includes(query.toLowerCase()))
       : sports;
@@ -529,7 +527,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="firstName">
-              {t('admin.persons.form.firstName')} <span className="required">*</span>
+              {t('admin.persons.form.firstName')} <span className="required">*required field</span>
             </label>
             <input
               type="text"
@@ -547,7 +545,7 @@ const PersonForm = ({
           </div>
           <div className="form-group">
             <label htmlFor="lastName">
-              {t('admin.persons.form.lastName')} <span className="required">*</span>
+              {t('admin.persons.form.lastName')} <span className="required">*required field</span>
             </label>
             <input
               type="text"
@@ -567,7 +565,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="birthDate">
-              {t('admin.persons.form.birthDate')} <span className="required">*</span>
+              {t('admin.persons.form.birthDate')}
             </label>
             <input
               type="date"
@@ -576,7 +574,6 @@ const PersonForm = ({
               value={formData.birthDate}
               onChange={handleInputChange}
               placeholder="dd-mm-yyyy"
-              required
               className={fieldErrors.birthDate ? 'person-error' : ''}
             />
             {fieldErrors.birthDate && (
@@ -590,7 +587,7 @@ const PersonForm = ({
             <label htmlFor="isRegistered" className="checkbox-label">
               {t('admin.persons.form.isRegistered')}
             </label>
-            <input
+            <input className="registered-box"
               type="checkbox"
               id="isRegistered"
               name="isRegistered"
@@ -606,8 +603,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
                           <label htmlFor="address.street1">
-                {t('admin.persons.form.street1')}
-                {(formData.address.street2 || formData.address.city || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
+                {t('admin.persons.form.street1')} <span className="required">*required field</span>
               </label>
             <input
               type="text"
@@ -622,29 +618,11 @@ const PersonForm = ({
               <div className="field-error">{fieldErrors['address.street1']}</div>
             )}
           </div>
-          <div className="form-group">
-                          <label htmlFor="address.street2">
-                {t('admin.persons.form.street2')}
-              </label>
-            <input
-              type="text"
-              id="address.street2"
-              name="address.street2"
-              value={formData.address.street2}
-              onChange={handleInputChange}
-              maxLength={MAX_LENGTHS.street2}
-              className={fieldErrors['address.street2'] ? 'person-error' : ''}
-            />
-            {fieldErrors['address.street2'] && (
-              <div className="field-error">{fieldErrors['address.street2']}</div>
-            )}
-          </div>
         </div>
         <div className="form-row">
           <div className="form-group">
                           <label htmlFor="address.city">
-                {t('admin.persons.form.city')}
-                {(formData.address.street1 || formData.address.street2 || formData.address.postalCode || formData.address.country).trim() !== '' && <span className="required">*</span>}
+                {t('admin.persons.form.city')} <span className="required">*required field</span>
               </label>
             <input
               type="text"
@@ -661,8 +639,7 @@ const PersonForm = ({
           </div>
           <div className="form-group">
                           <label htmlFor="address.postalCode">
-                {t('admin.persons.form.postalCode')}
-                {(formData.address.street1 || formData.address.street2 || formData.address.city || formData.address.country).trim() !== '' && <span className="required">*</span>}
+                {t('admin.persons.form.postalCode')} <span className="required">*required field</span>
               </label>
             <input
               type="text"
@@ -679,8 +656,7 @@ const PersonForm = ({
           </div>
           <div className="form-group">
                           <label htmlFor="address.country">
-                {t('admin.persons.form.country')}
-                {(formData.address.street1 || formData.address.street2 || formData.address.city || formData.address.postalCode).trim() !== '' && <span className="required">*</span>}
+                {t('admin.persons.form.country')} <span className="required">*required field</span>
               </label>
             <input
               type="text"
@@ -703,7 +679,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
                           <label htmlFor="contactInfo.email">
-                {t('admin.persons.form.email')}
+                {t('admin.persons.form.email')} <span className="required">*required field</span>
               </label>
             <input
               type="email"
@@ -718,8 +694,6 @@ const PersonForm = ({
               <div className="field-error">{fieldErrors['contactInfo.email']}</div>
             )}
           </div>
-        </div>
-        <div className="form-row">
           <div className="form-group">
                           <label htmlFor="contactInfo.phone">
                 {t('admin.persons.form.phone')}
@@ -735,23 +709,6 @@ const PersonForm = ({
             />
             {fieldErrors['contactInfo.phone'] && (
               <div className="field-error">{fieldErrors['contactInfo.phone']}</div>
-            )}
-          </div>
-          <div className="form-group">
-                          <label htmlFor="contactInfo.alternativePhone">
-                {t('admin.persons.form.alternativePhone')}
-              </label>
-            <input
-              type="tel"
-              id="contactInfo.alternativePhone"
-              name="contactInfo.alternativePhone"
-              value={formData.contactInfo.alternativePhone}
-              onChange={handleInputChange}
-              maxLength={MAX_LENGTHS.alternativePhone}
-              className={fieldErrors['contactInfo.alternativePhone'] ? 'person-error' : ''}
-            />
-            {fieldErrors['contactInfo.alternativePhone'] && (
-              <div className="field-error">{fieldErrors['contactInfo.alternativePhone']}</div>
             )}
           </div>
         </div>
@@ -800,7 +757,7 @@ const PersonForm = ({
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="position">
-                  {t('admin.persons.form.position')} <span className="required">*</span>
+                  {t('admin.persons.form.position')} <span className="required">*required field</span>
                 </label>
                 <select
                   id="position"

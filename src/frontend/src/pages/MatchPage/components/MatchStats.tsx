@@ -1,20 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { floorballStatisticsService, type FloorballMatchTeamStatisticsDto } from '../../../api/floorball/floorballStatistics';
 import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes';
-import { signalRService, type MatchEvent } from '../../../services/signalRService';
 import { useTranslation } from 'react-i18next';
 import './MatchStats.scss';
 import StatRow from './StatRow';
-
-// SignalR event names that should trigger stats refresh
-const STATS_UPDATE_EVENTS = [
-  'FloorballGoalScored',
-  'FloorballPenaltyAssigned',
-  'FloorballSaveRecorded',
-  'FloorballMatchStarted',
-  'FloorballMatchCompleted',
-  'FloorballMatchStatsUpdated'  // In case there's a direct stats update event
-];
 
 interface MatchStatsProps {
   match: FloorballMatchDto;
@@ -24,9 +13,13 @@ export default function MatchStats({ match }: MatchStatsProps) {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<FloorballMatchTeamStatisticsDto[]>([]);
+  const isInitialLoadRef = useRef(true);
 
   // Helper function to load stats
-  const loadStats = useCallback(async () => {
+  const loadStats = useCallback(async (showLoading = false) => {
+    if (showLoading) {
+      setIsLoading(true);
+    }
     try {
       const data = await floorballStatisticsService.getMatchStatistics(match.id);
       setStats(data);
@@ -37,28 +30,26 @@ export default function MatchStats({ match }: MatchStatsProps) {
       setStats([]);
     } finally {
       setIsLoading(false);
+      isInitialLoadRef.current = false;
     }
   }, [match.id]);
 
-  // Initial stats load
+  // Reset initial load flag when match ID changes
   useEffect(() => {
-    setIsLoading(true);
-    loadStats();
-  }, [loadStats]);
+    isInitialLoadRef.current = true;
+  }, [match.id]);
 
-  // Setup SignalR subscription for stats updates
+  // Initial stats load and reload when match events change (saves, goals, penalties)
   useEffect(() => {
-    const unsubscribe = signalRService.onMatchEvent((evt: MatchEvent) => {
-      if (STATS_UPDATE_EVENTS.includes(evt.eventType)) {
-        console.log(`Updating stats due to ${evt.eventType} event`);
-        loadStats();
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [loadStats]);
+    const isInitialLoad = isInitialLoadRef.current;
+    loadStats(isInitialLoad);
+  }, [
+    loadStats, 
+    match.id,
+    match.saveEvents?.length,
+    match.goalEvents?.length,
+    match.penaltyEvents?.length
+  ]);
 
   if (isLoading) {
     return (
@@ -75,6 +66,7 @@ export default function MatchStats({ match }: MatchStatsProps) {
     teamId: match.homeTeamId,
     teamName: match.homeTeamName,
     shotsTotal: 0,
+    shotsOnGoal: 0,
     penaltyMinutes: 0
   };
   
@@ -82,8 +74,15 @@ export default function MatchStats({ match }: MatchStatsProps) {
     teamId: match.awayTeamId,
     teamName: match.awayTeamName,
     shotsTotal: 0,
+    shotsOnGoal: 0,
     penaltyMinutes: 0
   };
+
+  // Calculate saves: opposing team's shotsTotal - shotsOnGoal
+  // Home team saves = shots that away team took but didn't score
+  const homeSaves = awayStats.shotsTotal - awayStats.shotsOnGoal;
+  // Away team saves = shots that home team took but didn't score
+  const awaySaves = homeStats.shotsTotal - homeStats.shotsOnGoal;
 
   
 
@@ -106,20 +105,19 @@ export default function MatchStats({ match }: MatchStatsProps) {
         />
         <StatRow 
           label={t('matchPage.stats.goalieSaves')}
-          home={homeStats.shotsTotal - (match.awayScore || 0)}
-          away={awayStats.shotsTotal - (match.homeScore || 0)}
-          homeValue={homeStats.shotsTotal - (match.awayScore || 0)}
-          awayValue={awayStats.shotsTotal - (match.homeScore || 0)}
-          total={(homeStats.shotsTotal - (match.awayScore || 0)) + (awayStats.shotsTotal - (match.homeScore || 0))}
+          home={homeSaves}
+          away={awaySaves}
+          homeValue={homeSaves}
+          awayValue={awaySaves}
+          total={homeSaves + awaySaves}
         />
-        <StatRow 
-          label={t('matchPage.stats.savePercentage')}
-          home={`${(((homeStats.shotsTotal - (match.awayScore || 0)) / (homeStats.shotsTotal || 1)) * 100).toFixed(1)}%`}
-          away={`${(((awayStats.shotsTotal - (match.homeScore || 0)) / (awayStats.shotsTotal || 1)) * 100).toFixed(1)}%`}
-          homeValue={((homeStats.shotsTotal - (match.awayScore || 0)) / (homeStats.shotsTotal || 1)) * 100}
-          awayValue={((awayStats.shotsTotal - (match.homeScore || 0)) / (awayStats.shotsTotal || 1)) * 100}
-          total={200} // Using 200 as total for percentage comparison
-        />
+        <div className="stat-row stat-percentage-only">
+          <div className="stat-values">
+            <div className="home-value">{((homeSaves / (awayStats.shotsTotal || 1)) * 100).toFixed(1)}%</div>
+            <div className="stat-label">{t('matchPage.stats.savePercentage')}</div>
+            <div className="away-value">{((awaySaves / (homeStats.shotsTotal || 1)) * 100).toFixed(1)}%</div>
+          </div>
+        </div>
         <StatRow 
           label={t('matchPage.stats.penaltyMinutes')}
           home={homeStats.penaltyMinutes}

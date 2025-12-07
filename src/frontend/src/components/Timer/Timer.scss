@@ -1,191 +1,134 @@
+@use 'sass:map';
+@use '../../styles/variables' as *;
+
 .timer-component {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #f9f9f9;
-  min-width: 200px;
+  display: block; /* neutralize base card for embedded usage */
+  padding: 0;
+  border: none;
+  background: transparent;
+  min-width: 0;
 
   .timer-display {
     text-align: center;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 10px;
     
     .timer-time {
-      font-size: 2.5rem;
-      font-weight: bold;
-      font-family: 'Courier New', monospace;
-      color: #333;
-      background: #fff;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      border: 2px solid #ddd;
-      min-width: 120px;
+      
+      font-family: $font-family-display;
+      font-weight: map.get($font-weights, 'medium');
+      font-size: 96px;
+      line-height: 80px;
+      letter-spacing: 0.05em;
+      color: $color-neutral-black;
+      /* Prevent digit width jitter: use tabular numerals */
+      font-variant-numeric: tabular-nums;
+      -webkit-font-feature-settings: 'tnum' 1, 'lnum' 1;
+      font-feature-settings: 'tnum' 1, 'lnum' 1;
+
+      /* Remove inner card look so parent layout can style the box */
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      border: none;
+      min-width: auto;
       display: inline-block;
     }
   }
 
-  .timer-inactive {
-    font-size: 0.9rem;
-    color: #666;
-    font-style: italic;
-    text-align: center;
-    padding: 0.5rem;
-    background: #f0f0f0;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-  }
-
   .timer-controls {
     display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    gap: 4px;
+    flex-wrap: nowrap; /* keep controls on one row */
     justify-content: center;
+    align-items: center;
 
     .timer-button {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 4px;
+      height: 32px;
+      padding: 8px 16px;
+      border-radius: 16px;
+      border: 1px solid $color-neutral-medium-grey;
+      background: $color-neutral-light-grey;
+      color: $color-neutral-dark-grey;
+      font-family: $font-family-body;
+      font-weight: map.get($font-weights, 'semibold');
+      font-size: 12px;
+      line-height: 16px;
+      letter-spacing: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
       cursor: pointer;
-      font-weight: 500;
+      box-shadow: none;
       transition: all 0.2s ease;
-      min-width: 60px;
 
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
       }
-
-      &.start {
-        background: #4caf50;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background: #45a049;
-        }
-      }
-
-      &.pause {
-        background: #f44336;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background: #da190b;
-        }
-      }
-
-      &.reset {
-        background: #ff9800;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background: #e68900;
-        }
-      }
-
-      &.set-time {
-        background: #2196f3;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background: #1976d2;
-        }
-      }
     }
-
-
   }
 
-  // Adjustment button styles - use high specificity to override base timer-button styles
+  // Adjustment buttons inherit neutral style
   .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease,
   .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase {
-    font-size: 0.85rem;
-    font-weight: 600;
-    min-width: 65px;
-    padding: 0.6rem 1rem;
-    border: 2px solid;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
-  }
-    
-  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease {
-    background: #ff6b35;
-    color: white;
-    border-color: #e55a2b;
-
-    &:hover:not(:disabled) {
-      background: #e55a2b;
-      border-color: #cc4922;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-      transform: translateY(-1px);
-    }
-
-    &:active:not(:disabled) {
-      background: #cc4922;
-      transform: translateY(1px);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: #cccccc;
-      border-color: #aaaaaa;
-      color: #666666;
-      box-shadow: none;
-      transform: none;
-    }
+    border-color: $color-neutral-medium-grey;
+    background: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
   }
 
-  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase {
-    background: #4caf50;
-    color: white;
-    border-color: #388e3c;
-
-    &:hover:not(:disabled) {
-      background: #45a049;
-      border-color: #2e7d32;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-      transform: translateY(-1px);
-    }
-
-    &:active:not(:disabled) {
-      background: #3d8b40;
-      transform: translateY(1px);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: #cccccc;
-      border-color: #aaaaaa;
-      color: #666666;
-      box-shadow: none;
-      transform: none;
-    }
+  // End/Start period button styles (increase specificity to beat .timer-controls .timer-button)
+  .timer-controls .timer-button.end-period-inline {
+    min-width: 95px;
+    width: 95px;
+    height: 32px;
+    padding: 8px 16px;
+    border-radius: 16px;
+    border: 1px solid $color-red-muted;
+    background: $color-red-muted;
+    color: $color-neutral-white;
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: 12px;
+    line-height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    list-style: none;
   }
 
-  // Specific styles for each button type - explicit inheritance to ensure proper styling
-  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease.minute-back,
-  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease.seconds-back {
-    // Explicitly inherit decrease styles - no additional styles needed
-  }
+  // Ensure no pseudo-element glyph renders inside the end period button
+  .timer-controls .timer-button.end-period-inline::before,
+  .timer-controls .timer-button.end-period-inline::after { content: none; }
 
-  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase.seconds-forward,
-  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase.minute-forward {
-    // Explicitly inherit increase styles - no additional styles needed
-  }
+  
+  .timer-button.set-time { min-width: 48px; width: 48px; padding: 8px; }
+  .timer-button.minute-back { min-width: 88px; width: 88px; }
+  .timer-button.seconds-back { min-width: 69px; width: 69px; }
+  .timer-button.start,
+  .timer-button.pause { min-width: 44px; width: 44px; padding: 8px; }
+  .timer-button.seconds-forward { min-width: 69px; width: 69px; }
+  .timer-button.minute-forward { min-width: 88px; width: 88px; }
+  .timer-button.reset { min-width: 46px; width: 46px; background: #FFEFB8; border-color: $color-neutral-medium-grey; color: $color-neutral-dark-grey; }
+
+  /* Placeholder icons using text glyphs */
+  .timer-button.minute-back::before { content: '«'; font-size: 12px; line-height: 16px; }
+  .timer-button.seconds-back::before { content: '‹'; font-size: 12px; line-height: 16px; }
+  .timer-button.seconds-forward::before { content: '›'; font-size: 12px; line-height: 16px; }
+  .timer-button.minute-forward::before { content: '»'; font-size: 12px; line-height: 16px; }
+
+  /* placeholder icons for start/pause */
+  .timer-button.start, .timer-button.pause { font-size: 0; }
+  .timer-button.start::before { content: '▶'; font-size: 12px; line-height: 16px; }
+  .timer-button.pause::before { content: '⏸'; font-size: 12px; line-height: 16px; }
+
+  /* Edit icon sizing */
+  .timer-button.set-time img { width: 16px; height: 16px; }
 
   .timer-adjustments {
-    margin-top: 1rem;
-    width: 100%;
-    padding: 0.75rem;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
 
     .adjustment-group {
       display: flex;
@@ -193,19 +136,12 @@
       align-items: center;
       gap: 0.75rem;
 
-      .adjustment-label {
-        font-size: 0.9rem;
-        color: #495057;
-        font-weight: 600;
-        text-align: center;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
+      .adjustment-label { display: none; }
 
       .adjustment-buttons {
         display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
+        gap: 8px;
+        flex-wrap: nowrap;
         justify-content: center;
         align-items: center;
       }

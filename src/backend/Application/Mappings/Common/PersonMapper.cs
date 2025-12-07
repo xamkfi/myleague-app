@@ -82,14 +82,18 @@ namespace Application.Mappings.Common
             if (command == null)
                 throw new ArgumentNullException(nameof(command));
 
-            // Ensure DateTime is in UTC
-            DateTime birthDateUtc = command.BirthDate.Kind switch
+            // Ensure DateTime is in UTC if BirthDate is provided
+            DateTime? birthDateUtc = null;
+            if (command.BirthDate.HasValue)
             {
-                DateTimeKind.Utc => command.BirthDate,
-                DateTimeKind.Local => command.BirthDate.ToUniversalTime(),
-                DateTimeKind.Unspecified => DateTime.SpecifyKind(command.BirthDate, DateTimeKind.Utc),
-                _ => DateTime.SpecifyKind(command.BirthDate, DateTimeKind.Utc)
-            };
+                birthDateUtc = command.BirthDate.Value.Kind switch
+                {
+                    DateTimeKind.Utc => command.BirthDate.Value,
+                    DateTimeKind.Local => command.BirthDate.Value.ToUniversalTime(),
+                    DateTimeKind.Unspecified => DateTime.SpecifyKind(command.BirthDate.Value, DateTimeKind.Utc),
+                    _ => DateTime.SpecifyKind(command.BirthDate.Value, DateTimeKind.Utc)
+                };
+            }
 
             person.UpdateBasicInfo(command.FirstName, command.LastName);
             person.UpdateAddress(ToAddress(command.Address));
@@ -168,14 +172,18 @@ namespace Application.Mappings.Common
                 throw new ArgumentNullException(nameof(command));
             }
 
-            // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
-            DateTime birthDateUtc = command.BirthDate.Kind switch
+            // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone if BirthDate is provided
+            DateTime? birthDateUtc = null;
+            if (command.BirthDate.HasValue)
             {
-                DateTimeKind.Utc => command.BirthDate,
-                DateTimeKind.Local => command.BirthDate.ToUniversalTime(),
-                DateTimeKind.Unspecified => DateTime.SpecifyKind(command.BirthDate, DateTimeKind.Utc),
-                _ => DateTime.SpecifyKind(command.BirthDate, DateTimeKind.Utc)
-            };
+                birthDateUtc = command.BirthDate.Value.Kind switch
+                {
+                    DateTimeKind.Utc => command.BirthDate.Value,
+                    DateTimeKind.Local => command.BirthDate.Value.ToUniversalTime(),
+                    DateTimeKind.Unspecified => DateTime.SpecifyKind(command.BirthDate.Value, DateTimeKind.Utc),
+                    _ => DateTime.SpecifyKind(command.BirthDate.Value, DateTimeKind.Utc)
+                };
+            }
 
             Person person = new Person(
                 command.FirstName,

@@ -2,6 +2,7 @@ using System;
 using MediatR;
 using Application.DTOs.Common;
 using Application.Common;
+using Domain.Enums.Common;
 
 namespace Application.Commands.Common;
 
@@ -12,4 +13,4 @@ public record CreateDivisionCommand(
     string Name,
     string Description,
     int Level,
-    string SportType) : IRequest<Result<DivisionDto>>; 
+    SportsCategory SportType) : IRequest<Result<DivisionDto>>;

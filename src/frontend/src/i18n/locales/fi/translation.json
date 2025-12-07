@@ -107,8 +107,60 @@
       "managePerson": "Hallitse henkilöitä",
       "news": "Uutiset",
       "manageNews": "Hallitse uutisia",
+      "divisions": "Sarjat",
+      "manageDivisions": "Hallitse sarjoja",
       "floorball": "Salibandy",
-      "manageFloorball": "Hallitse salibandya"
+      "manageFloorball": "Hallitse salibandya",
+      "clubs": "Seurat",
+      "manageClubs": "Hallitse seuroja"
+    },
+    "divisions": {
+      "title": "Sarjojen hallinta",
+      "manageTitle": "Hallinnoi sarjoja",
+      "subtitle": "Luo, muokkaa, aktivoi tai poista eri lajien sarjoja.",
+      "search": "Hae nimellä tai kuvauksella...",
+      "emptyFiltered": "Yhtään sarjaa ei löytynyt valituilla suodattimilla.",
+      "emptyDefault": "Sarjoja ei ole vielä luotu.",
+      "table": {
+        "sport": "Laji",
+        "level": "Taso",
+        "status": "Tila",
+        "created": "Luotu"
+      },
+      "filters": {
+        "sport": "Laji",
+        "status": "Tila"
+      },
+      "actions": {
+        "create": "Luo sarja",
+        "activate": "Aktivoi",
+        "deactivate": "Deaktivoi",
+        "menu": "Sarjan toiminnot -valikko"
+      },
+      "confirmDelete": {
+        "title": "Poista sarja",
+        "message": "Haluatko varmasti poistaa sarjan \"{{divisionName}}\"? Tätä toimintoa ei voi perua."
+      },
+      "errors": {
+        "load": "Sarjojen lataus epäonnistui. Yritä uudelleen.",
+        "loadSingle": "Sarjan tietojen lataus epäonnistui.",
+        "updateStatus": "Tilaa ei voitu päivittää. Yritä uudelleen.",
+        "delete": "Sarjan poistaminen epäonnistui. Yritä uudelleen.",
+        "save": "Sarjan tallennus epäonnistui. Yritä uudelleen.",
+        "levelRequired": "Taso tulee antaa numerona."
+      },
+      "form": {
+        "loading": "Ladataan sarjaa...",
+        "createTitle": "Luo sarja",
+        "editTitle": "Muokkaa sarjaa",
+        "createSubtitle": "Täytä uuden sarjan perustiedot.",
+        "editSubtitle": "Päivitä tämän sarjan keskeiset tiedot.",
+        "namePlaceholder": "Sarjan nimi",
+        "levelHelper": "1 = korkein",
+        "descriptionPlaceholder": "Lyhyt kuvaus sarjasta",
+        "sportPlaceholder": "esim. Floorball",
+        "sportHint": "Sarjan lajia ei voi muuttaa jälkikäteen."
+      }
     },
     "persons":{
       "title": "Henkilöiden hallinta",
@@ -340,6 +392,49 @@
       }
     }
   },
+  "clubs": {
+    "manage": {
+      "title": "Seurojen Hallinta"
+    },
+    "total": "Yhteensä",
+    "createNew": "Luo Uusi Seura",
+    "searchPlaceholder": "Hae seuroja nimellä tai kaupungilla...",
+    "searchAria": "Hae seuroja",
+    "empty": "Seuroja ei löytynyt",
+    "create": {
+      "title": "Luo Seura"
+    },
+    "table": {
+      "name": "Seuran Nimi",
+      "city": "Kaupunki",
+      "country": "Maa",
+      "foundingDate": "Perustettu",
+      "actions": "Toiminnot"
+    },
+    "form": {
+      "name": "Seuran Nimi",
+      "city": "Kaupunki",
+      "country": "Maa",
+      "foundingDate": "Perustettu",
+      "foundingDatePlaceholder": "pp-kk-vvvv",
+      "namePlaceholder": "Anna seuran nimi",
+      "cityPlaceholder": "Anna kaupunki",
+      "countryPlaceholder": "Anna maa",
+      "websiteUrl": "Verkkosivun URL",
+      "logoUrl": "Logon URL",
+      "contactEmail": "Yhteyssähköposti"
+    },
+    "details": {
+      "title": "Seuran Tiedot",
+      "foundingDate": "Perustettu",
+      "teams": "Joukkueet",
+      "noTeams": "Ei joukkueita vielä",
+      "members": "Jäseniä"
+    },
+    "confirmDeleteTitle": "Poista seura?",
+    "confirmDelete": "Haluatko varmasti poistaa tämän seuran?",
+    "confirmDeleteWarning": "Tätä toimintoa ei voi perua."
+  },
   "floorball": {
     "management": {
       "title": "Salibandyn Hallinta",
@@ -395,6 +490,16 @@
         "homeArena": "Kotihalli",
         "activeMembers": "Aktiivisia Jäseniä",
         "actions": "Muut"
+      },
+      "assignPlayerToTeam": "Määritä Joukkueeseen",
+      "assignPlayersToTeam": "Määritä Pelaajat Joukkueeseen",
+      "selectTeam": "Valitse Joukkue",
+      "chooseTeam": "Valitse joukkue...",
+      "addToRoster": "Lisää Kokoonpanoon",
+      "errors": {
+        "loadFailed": "Joukkueiden lataus epäonnistui",
+        "selectTeam": "Valitse joukkue",
+        "invalidJerseyNumber": "Pelinumeron täytyy olla välillä 1-99"
       }
     },
     "divisions": {
@@ -413,6 +518,7 @@
       "searchPersons": "Hae saatavilla olevia henkilöitä...",
       "searchPlayers": "Hae pelaajia...",
       "selected": "{{count}} valittu",
+      "selectedPlayers": "{{count}} pelaajaa valittu",
       "selectAll": "Valitse kaikki",
       "selectAllVisible": "Valitse kaikki näkyvät henkilöt",
       "createPlayer": "Luo Pelaaja",
@@ -442,12 +548,22 @@
       },
       "noPlayersInTeam": "Tällä joukkueella ei ole vielä pelaajia määritelty.",
       "addPlayersHelp": "Käytä muokkaa-painiketta hallitaksesi joukkueen kokoonpanoa ja lisätäksesi pelaajia.",
+      "actions": {
+        "menu": "Pelaajan toimintovalikko",
+        "activate": "Aktivoi Pelaaja",
+        "deactivate": "Deaktivoi Pelaaja",
+        "bulkActivate": "Aktivoi Valitut ({{count}})",
+        "bulkDeactivate": "Deaktivoi Valitut ({{count}})",
+        "bulkDelete": "Poista Valitut ({{count}})",
+        "bulkAssignToTeam": "Määritä Joukkueeseen ({{count}})"
+      },
       "errors": {
         "loadPlayers": "Pelaajien lataus epäonnistui. Yritä uudelleen.",
         "deleteFailed": "Pelaajan poisto epäonnistui. Yritä uudelleen."
       }
     },
     "positions": {
+      "none": "Ei määritelty",
       "center": "Keskushyökkääjä",
       "winger": "Laitahyökkääjä",
       "defender": "Puolustaja",
@@ -611,33 +727,13 @@
       }
     }
   },
-  "roster": {
-    "positions": {
-      "Goalkeeper": "Maalivahdit",
-      "Defender": "Puolustajat", 
-      "Center": "Keskushyökkääjät",
-      "Forward": "Hyökkääjät"
-    },
-    "jerseyNumber": "#",
-    "name": "Nimi",
-    "age": "Ikä",
-    "matchesPlayed": "Pelit",
-    "goals": "Maalit",
-    "assists": "Syötöt",
-    "tooltips": {
-      "jerseyNumber": "Pelinumero",
-      "age": "Ikä",
-      "matchesPlayed": "Pelatut ottelut",
-      "goals": "Maalit",
-      "assists": "Syötöt"
-    }
-  },
   "common": {
     "back": "Takaisin",
     "backTo": "Takaisin",
     "loading": "Ladataan...",
     "edit": "Muokkaa",
     "delete": "Poista",
+    "save": "Tallenna",
     "deleting": "Poistetaan...",
     "cancel": "Peruuta",
     "active": "Aktiivinen",

@@ -4,17 +4,12 @@ import { floorballMatchService } from '../../api/floorball/floorballMatchService
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import './MatchPage.scss';
 import { signalRService, type MatchEvent } from '../../services/signalRService';
+import { MATCH_NOTIFICATION_EVENTS } from '../../constants/MatchNotifications';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import MatchBreadcrumb from './components/MatchBreadcrumb';
 import MatchHeader from './components/MatchHeader';
 import MatchNavigation, { type TabType } from './components/MatchNavigation';
 import MatchTabContent from './components/MatchTabContent';
-
-// SignalR event names used by the backend. Consider centralising these to a constants file if reused elsewhere.
-const GOAL_SCORED_EVENT = 'FloorballGoalScored';
-const PENALTY_ASSIGNED_EVENT = 'FloorballPenaltyAssigned';
-const MATCH_STARTED_EVENT = 'FloorballMatchStarted';
-const MATCH_COMPLETED_EVENT = 'FloorballMatchCompleted';
 
 
 
@@ -65,19 +60,23 @@ export default function MatchPage() {
         unsubscribeCallback = signalRService.onMatchEvent((evt: MatchEvent) => {
           // These are events specific to our match, no need to filter by matchId
           switch (evt.eventType) {
-            case GOAL_SCORED_EVENT:
+            case MATCH_NOTIFICATION_EVENTS.GOAL_SCORED:
               console.log(`Goal scored in match ${id}:`, evt);
               loadMatch();
               break;
-            case PENALTY_ASSIGNED_EVENT:
+            case MATCH_NOTIFICATION_EVENTS.PENALTY_ASSIGNED:
               console.log(`Penalty assigned in match ${id}:`, evt);
               loadMatch();
               break;
-            case MATCH_STARTED_EVENT:
+            case MATCH_NOTIFICATION_EVENTS.SAVE_RECORDED:
+              console.log(`Save recorded in match ${id}:`, evt);
+              loadMatch();
+              break;
+            case MATCH_NOTIFICATION_EVENTS.MATCH_STARTED:
               console.log(`Match ${id} has started:`, evt);
               loadMatch();
               break;
-            case MATCH_COMPLETED_EVENT:
+            case MATCH_NOTIFICATION_EVENTS.MATCH_COMPLETED:
               console.log(`Match ${id} has completed:`, evt);
               loadMatch();
               break;

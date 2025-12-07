@@ -8,13 +8,14 @@ interface PlayersTableProps {
   players: FloorballPlayerDto[];
   onDelete: (playerId: string) => void;
   onStatusChange: (playerId: string, isActive: boolean) => void;
+  onAssignToTeam: (playerId: string) => void;
   selectedPlayers: Set<string>;
   onToggleSelection: (playerId: string) => void;
   onSelectAll: () => void;
   onClearSelection: () => void;
 }
 
-const PlayersTable = ({ players, onDelete, onStatusChange, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
+const PlayersTable = ({ players, onDelete, onStatusChange, onAssignToTeam, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
   const { t } = useTranslation();
 
   if (players.length === 0) {
@@ -88,6 +89,7 @@ const PlayersTable = ({ players, onDelete, onStatusChange, selectedPlayers, onTo
                   player={player}
                   onDelete={onDelete}
                   onStatusChange={onStatusChange}
+                  onAssignToTeam={onAssignToTeam}
                 />
             </td>
           </tr>

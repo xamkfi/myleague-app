@@ -1,4 +1,5 @@
 using Application.Commands.Common;
+using Domain.Enums.Common;
 using FluentValidation;
 
 namespace Application.Validators.Commands.Common;
@@ -23,7 +24,7 @@ public class CreateDivisionCommandValidator : AbstractValidator<CreateDivisionCo
             .LessThanOrEqualTo(10).WithMessage("Division level cannot exceed 10");
 
         RuleFor(x => x.SportType)
-            .NotEmpty().WithMessage("Sport type is required")
-            .MaximumLength(50).WithMessage("Sport type cannot exceed 50 characters");
+            .IsInEnum().WithMessage("Sport type is invalid")
+            .Must(st => st != SportsCategory.None).WithMessage("Sport type is required");
     }
 } 

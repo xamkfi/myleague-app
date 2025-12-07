@@ -108,7 +108,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             {
                 if (DateTime.TryParse(birthDate, out DateTime date))
                 {
-                    query = query.Where(p => p.BirthDate.Date == date.Date);
+                    query = query.Where(p => p.BirthDate.HasValue && p.BirthDate.Value.Date == date.Date);
                 }
                 else
                 {
@@ -167,7 +167,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             DateTime minBirthDate = DateTime.UtcNow.AddYears(-maxAge - 1);
             
             return await _entities
-                .Where(p => p.BirthDate >= minBirthDate && p.BirthDate <= maxBirthDate)
+                .Where(p => p.BirthDate.HasValue && p.BirthDate.Value >= minBirthDate && p.BirthDate.Value <= maxBirthDate)
                 .ToListAsync();
         }
 

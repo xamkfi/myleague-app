@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using WebAPI.Models.Common.Pagination;
+using Domain.Enums.Floorball;
 
 namespace WebAPI.Models.Floorball;
 
@@ -29,9 +30,19 @@ public record GetFloorballMatchesRequest : PagedRequestBase
     public DateTime? EndDate { get; init; }
 
     /// <summary>
+    /// Gets the match status filter
+    /// </summary>
+    public FloorballMatchStatus? Status { get; init; }
+
+    /// <summary>
     /// Gets the sort order ("asc" or "desc")
     /// </summary>
     public string SortOrder { get; init; } = "desc";
+
+    /// <summary>
+    /// Gets the search query to filter matches by team names (case-insensitive, partial match)
+    /// </summary>
+    public string? SearchQuery { get; init; }
 }
 
 /// <summary>

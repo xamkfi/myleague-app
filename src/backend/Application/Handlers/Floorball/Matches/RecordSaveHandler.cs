@@ -10,6 +10,8 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Interfaces.Common;
+using Application.Constants;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -23,6 +25,7 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
     private readonly IFloorballPlayerRepository _playerRepository;
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
+    private readonly INotificationSenderService _notificationSenderService;
     private readonly ILogger<RecordSaveHandler> _logger;
 
     public RecordSaveHandler(
@@ -31,6 +34,7 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
         IFloorballPlayerRepository playerRepository,
         IFloorballStatisticsRepository statisticsRepository,
         IFloorballUnitOfWork unitOfWork,
+        INotificationSenderService notificationSenderService,
         ILogger<RecordSaveHandler> logger)
     {
         _matchRepository = matchRepository;
@@ -38,6 +42,7 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
         _playerRepository = playerRepository;
         _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
+        _notificationSenderService = notificationSenderService;
         _logger = logger;
     }
 
@@ -88,12 +93,18 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
 
             await UpdateGoalieSeasonStatistics(goalie.Id, request.TeamId, match.SeasonId, 1, 1, 0, cancellationToken);
 
-            // Update match team statistics for shots against
-            await UpdateMatchTeamStatistics(match.Id, request.TeamId, 1, cancellationToken);
+            // Update match team statistics for the attacking team (the team that took the shot that was saved)
+            // The save is for the defending team (request.TeamId), so we need to update the opposing team's stats
+            Guid attackingTeamId = request.TeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
+            await UpdateMatchTeamStatistics(match.Id, attackingTeamId, 1, cancellationToken);
 
             _matchRepository.MarkEventAsAdded(saveEvent);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _notificationSenderService.SendNotificationAsync(
+                FloorballNotificationEvents.SaveRecorded,
+                new { MatchId = match.Id });
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             return Result<FloorballMatchDto>.Success(matchDto);
