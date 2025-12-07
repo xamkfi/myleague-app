@@ -1,16 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import { floorballMatchService } from "../../../../api/floorball/floorballMatchService";
-import {
-    floorballSeasonService,
-    type FloorballSeasonDto,
-} from "../../../../api/floorball/floorballSeasonService";
-import PaginationControls from "../FloorballTeamsPage/components/PaginationControls";
-import type { FloorballMatchDto } from "../../../../types/floorball/floorballTypes";
-import BackButton from "../../../../components/BackButton/BackButton";
-import MatchFilters from "../MatchOverviewPage/Components/MatchFilters/MatchFilters";
-import CollapsibleMatchSection from "../MatchOverviewPage/Components/CollapsibleMatchSection/CollapsibleMatchSection";
+import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
+import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
+import PaginationControls from '../FloorballTeamsPage/components/PaginationControls';
+import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
+import MatchFilters from '../MatchOverviewPage/Components/MatchFilters/MatchFilters';
+import CollapsibleMatchSection from '../MatchOverviewPage/Components/CollapsibleMatchSection/CollapsibleMatchSection';
 
 import "./MatchesByStatusPage.scss";
 import "../MatchOverviewPage/MatchOverviewPage.scss";
@@ -131,7 +127,6 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
   return (
     <div className="match-management">
       <div className="match-management__content matches-by-status-page">
-        <BackButton to="/admin/floorball/matches" text={t('common.back', 'Back to Match Management')} />
         <h1>{title}</h1>
         <MatchFilters
           seasons={seasons}

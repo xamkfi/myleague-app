@@ -1,4 +1,5 @@
 using System;
+using Domain.Enums.Common;
 
 namespace MyLeague.Infrastructure.DTOs.Notifications
 {
@@ -20,7 +21,7 @@ namespace MyLeague.Infrastructure.DTOs.Notifications
         /// <summary>
         /// Gets the sport type of the division
         /// </summary>
-        public string SportType { get; init; } = string.Empty;
+        public SportsCategory SportType { get; init; } = SportsCategory.None;
 
         /// <summary>
         /// Gets the date and time when the division was activated

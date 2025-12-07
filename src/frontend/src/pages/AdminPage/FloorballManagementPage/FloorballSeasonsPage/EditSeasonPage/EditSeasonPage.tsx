@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../../../components/BackButton/BackButton';
 import type { 
   FloorballSeasonDto, 
   UpdateFloorballSeasonRequest
@@ -463,10 +462,6 @@ const EditSeasonPage = () => {
         <ErrorPopup 
           message={t('floorball.seasons.errors.notFound', 'Season not found')}
         />
-        <BackButton 
-          to="/admin/floorball/seasons" 
-          text={t('common.back', 'Back to Seasons')} 
-        />
       </PageTemplate>
     );
   }
@@ -501,11 +496,6 @@ const EditSeasonPage = () => {
       )}
 
       <div className="edit-season-container">
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball/seasons" 
-          text={t('common.back', 'Back to Seasons')} 
-        />
 
         {/* Tab Navigation */}
         <div className="tab-navigation">

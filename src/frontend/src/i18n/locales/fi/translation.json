@@ -107,10 +107,60 @@
       "managePerson": "Hallitse henkilöitä",
       "news": "Uutiset",
       "manageNews": "Hallitse uutisia",
+      "divisions": "Sarjat",
+      "manageDivisions": "Hallitse sarjoja",
       "floorball": "Salibandy",
       "manageFloorball": "Hallitse salibandya",
       "clubs": "Seurat",
       "manageClubs": "Hallitse seuroja"
+    },
+    "divisions": {
+      "title": "Sarjojen hallinta",
+      "manageTitle": "Hallinnoi sarjoja",
+      "subtitle": "Luo, muokkaa, aktivoi tai poista eri lajien sarjoja.",
+      "search": "Hae nimellä tai kuvauksella...",
+      "emptyFiltered": "Yhtään sarjaa ei löytynyt valituilla suodattimilla.",
+      "emptyDefault": "Sarjoja ei ole vielä luotu.",
+      "table": {
+        "sport": "Laji",
+        "level": "Taso",
+        "status": "Tila",
+        "created": "Luotu"
+      },
+      "filters": {
+        "sport": "Laji",
+        "status": "Tila"
+      },
+      "actions": {
+        "create": "Luo sarja",
+        "activate": "Aktivoi",
+        "deactivate": "Deaktivoi",
+        "menu": "Sarjan toiminnot -valikko"
+      },
+      "confirmDelete": {
+        "title": "Poista sarja",
+        "message": "Haluatko varmasti poistaa sarjan \"{{divisionName}}\"? Tätä toimintoa ei voi perua."
+      },
+      "errors": {
+        "load": "Sarjojen lataus epäonnistui. Yritä uudelleen.",
+        "loadSingle": "Sarjan tietojen lataus epäonnistui.",
+        "updateStatus": "Tilaa ei voitu päivittää. Yritä uudelleen.",
+        "delete": "Sarjan poistaminen epäonnistui. Yritä uudelleen.",
+        "save": "Sarjan tallennus epäonnistui. Yritä uudelleen.",
+        "levelRequired": "Taso tulee antaa numerona."
+      },
+      "form": {
+        "loading": "Ladataan sarjaa...",
+        "createTitle": "Luo sarja",
+        "editTitle": "Muokkaa sarjaa",
+        "createSubtitle": "Täytä uuden sarjan perustiedot.",
+        "editSubtitle": "Päivitä tämän sarjan keskeiset tiedot.",
+        "namePlaceholder": "Sarjan nimi",
+        "levelHelper": "1 = korkein",
+        "descriptionPlaceholder": "Lyhyt kuvaus sarjasta",
+        "sportPlaceholder": "esim. Floorball",
+        "sportHint": "Sarjan lajia ei voi muuttaa jälkikäteen."
+      }
     },
     "persons":{
       "title": "Henkilöiden hallinta",

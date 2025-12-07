@@ -1,4 +1,5 @@
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 using Domain.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -48,7 +49,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// </summary>
         /// <param name="sportType">The sport type to filter by</param>
         /// <returns>A collection of divisions for the specified sport type</returns>
-        public async Task<IEnumerable<Division>> GetBySportTypeAsync(string sportType)
+        public async Task<IEnumerable<Division>> GetBySportTypeAsync(SportsCategory sportType)
         {
             return await _entities
                 .Where(d => d.SportType == sportType)
@@ -62,7 +63,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// </summary>
         /// <param name="sportType">The sport type to filter by</param>
         /// <returns>A collection of active divisions for the specified sport type</returns>
-        public async Task<IEnumerable<Division>> GetActiveBySportTypeAsync(string sportType)
+        public async Task<IEnumerable<Division>> GetActiveBySportTypeAsync(SportsCategory sportType)
         {
             return await _entities
                 .Where(d => d.SportType == sportType && d.IsActive)
@@ -77,7 +78,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="name">The name of the division</param>
         /// <param name="sportType">The sport type</param>
         /// <returns>The division if found, null otherwise</returns>
-        public async Task<Division?> GetByNameAndSportTypeAsync(string name, string sportType)
+        public async Task<Division?> GetByNameAndSportTypeAsync(string name, SportsCategory sportType)
         {
             return await _entities
                 .FirstOrDefaultAsync(d => d.Name == name && d.SportType == sportType);
@@ -118,7 +119,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="name">The name of the division</param>
         /// <param name="sportType">The sport type</param>
         /// <returns>True if the division exists, false otherwise</returns>
-        public async Task<bool> ExistsAsync(string name, string sportType)
+        public async Task<bool> ExistsAsync(string name, SportsCategory sportType)
         {
             return await _entities
                 .AnyAsync(d => d.Name == name && d.SportType == sportType);
