@@ -51,7 +51,7 @@ function FloorballTeamPage() {
       
       // Find the active season for this division
       const seasonForDivision = activeSeasons.find(season => 
-        season.divisionId === divisionId && season.isActive
+        season.seasonDivisions?.some(sd => sd.divisionId === divisionId) && season.isActive
       );
       
       return seasonForDivision || null;
