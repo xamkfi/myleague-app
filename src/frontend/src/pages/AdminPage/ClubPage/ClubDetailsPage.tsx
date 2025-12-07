@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AdminPageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../components/BackButton/BackButton';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import { clubService, type Club } from '../../../api/common/clubService';
 import { floorballTeamService } from '../../../api/floorball/floorballTeamService';
@@ -93,7 +92,6 @@ function ClubDetailsPage() {
   return (
     <AdminPageTemplate title={t('clubs.details.title', 'Club Details')}>
       <div className="club-details-page">
-        <BackButton to="/admin/clubs" text={t('common.back', 'Back')} />
         <ErrorPopup message={error} />
         {loading && <p>{t('common.loading', 'Loading...')}</p>}
         {!loading && club && (

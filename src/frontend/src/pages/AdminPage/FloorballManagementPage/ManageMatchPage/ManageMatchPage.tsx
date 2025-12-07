@@ -5,7 +5,6 @@ import { floorballMatchService } from '../../../../api/floorball/floorballMatchS
 import { timerService } from '../../../../api/common/timerService';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import type { TimerUpdate } from '../../../../api/common/timerService';
-import BackButton from '../../../../components/BackButton/BackButton';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 
 // Import extracted components
@@ -684,9 +683,6 @@ const ManageMatchPage = () => {
   if (error) {
     return (
       <div className="manage-match-page">
-        <div className="back-button-container">
-          <BackButton to="/admin/floorball/matches" text="Back to Overview" />
-        </div>
         <ErrorPopup message={error} />
       </div>
     );
@@ -701,7 +697,6 @@ const ManageMatchPage = () => {
     <div className="manage-match-page">
         <div className="page-header">
           <div className="page-header__top">
-            <BackButton to="/admin/floorball/matches" />
             <h1 className="page-title-compact font-title">MATCH MANAGEMENT</h1>
           </div>
         </div>

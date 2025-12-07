@@ -10,7 +10,6 @@ import { floorballTeamSearchService } from '../../../../../api/floorball/floorba
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../../../components/BackButton/BackButton';
 import './PersonForm.scss';
 import { ACTIVE_SPORTS, type SportType } from '../../../../../types/common/sports';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
@@ -502,10 +501,6 @@ const PersonForm = ({
     return (
       <PageTemplate title={pageTitle}>
         <div className="person-form-page">
-          <BackButton 
-            to="/admin/persons" 
-            text={t('common.back', 'Back to Person Management')} 
-          />
           <div className="person-form-header">
             <h1>{pageTitle}</h1>
           </div>

@@ -12,7 +12,6 @@ import AssignToTeamModal from './components/AssignToTeamModal';
 import Pagination from '../../../../components/Pagination';
 import SearchField from '../../../../components/SearchField';
 import './FloorballPlayersPage.scss';
-import BackButton from '../../../../components/BackButton/BackButton';
 import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
@@ -609,11 +608,6 @@ const FloorballPlayersPage = () => {
     <PageTemplate title={t('floorball.players.title', 'MANAGE PLAYERS')}>
       <div className="floorball-players-container">
 
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball" 
-          text={t('common.back', 'Back to Floorball Management')} 
-        />
         <h2 className="floorball-players-title">{t('floorball.players.title', 'MANAGE PLAYERS')}</h2>
         {/* Header with actions */}
 

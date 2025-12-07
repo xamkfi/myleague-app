@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AdminPageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../components/BackButton/BackButton';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import ClubForm, { type ClubFormValues } from './ClubForm';
 
@@ -80,7 +79,6 @@ function EditClubPage() {
   return (
     <AdminPageTemplate title={t('clubs.edit.title', 'Edit Club')}>
       <div className="clubs-page">
-        <BackButton to="/admin/clubs" text={t('common.back', 'Back')} />
         <h2>{t('clubs.edit.title', 'Edit Club')}</h2>
         <ErrorPopup message={error} />
         {loading && <p>{t('common.loading', 'Loading...')}</p>}

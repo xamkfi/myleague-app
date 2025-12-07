@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../../../components/BackButton/BackButton';
 import type { CreateFloorballSeasonRequest } from '../../../../../api/floorball/floorballSeasonService';
 import { floorballSeasonService } from '../../../../../api/floorball/floorballSeasonService';
 import { useDivisions } from '../../../../../hooks/useDivisions';
@@ -206,11 +205,6 @@ export const CreateSeasonPage = () => {
       )}
 
       <div className="create-season-container">
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball/seasons" 
-          text={t('common.back', 'Back to Seasons')} 
-        />
 
         <div className="create-season-form-container">
           <form onSubmit={handleSubmit} className="create-season-form">

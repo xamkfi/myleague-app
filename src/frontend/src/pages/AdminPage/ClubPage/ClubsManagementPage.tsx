@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AdminPageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../components/BackButton/BackButton';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import { clubService, type Club } from '../../../api/common/clubService';
 import './ClubsManagementPage.scss';
@@ -130,7 +129,6 @@ function ClubsManagementPage() {
   return (
     <AdminPageTemplate title={t('clubs.manage.title', 'Manage Clubs')}>
       <div className="clubs-page">
-        <BackButton to="/admin" text={t('common.back', 'Back')} />
 
         <div className="clubs-header">
           <div className="left">
