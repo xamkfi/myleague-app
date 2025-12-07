@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Application.DTOs.Common;
+using Domain.Enums.Common;
 using WebAPI.Models.Common;
 
 namespace Seeder;
@@ -13,6 +14,12 @@ public static class DivisionsSeeder
 
 		foreach (DivisionSeed division in config.Divisions)
 		{
+            if (!Enum.TryParse<SportsCategory>(division.SportType, true, out SportsCategory seedSportType) ||
+                seedSportType == SportsCategory.None)
+            {
+                throw new InvalidOperationException($"Invalid sport type '{division.SportType}' for division seed '{division.Name}'.");
+            }
+
             // Idempotent check by name + sport type
             HttpResponseMessage listResp = await http.GetAsync("api/divisions");
             if (listResp.IsSuccessStatusCode)
@@ -20,8 +27,9 @@ public static class DivisionsSeeder
                 ApiResponse<List<DivisionDto>>? listApi = await listResp.Content.ReadFromJsonAsync<ApiResponse<List<DivisionDto>>>(jsonOptions);
                 if (listApi != null && listApi.Success && listApi.Data != null)
                 {
-                    DivisionDto? existingDiv = listApi.Data.FirstOrDefault(d => string.Equals(d.Name, division.Name, StringComparison.OrdinalIgnoreCase)
-                        && string.Equals(d.SportType, division.SportType, StringComparison.OrdinalIgnoreCase));
+                    DivisionDto? existingDiv = listApi.Data.FirstOrDefault(d =>
+                        string.Equals(d.Name, division.Name, StringComparison.OrdinalIgnoreCase) &&
+                        d.SportType == seedSportType);
                     if (existingDiv != null)
                     {
                         created.Add(existingDiv);
@@ -36,7 +44,7 @@ public static class DivisionsSeeder
 				Name = division.Name,
 				Description = division.Description,
 				Level = division.Level,
-				SportType = division.SportType
+				SportType = seedSportType
 			};
 
 			HttpResponseMessage response = await http.PostAsJsonAsync("api/divisions", request);

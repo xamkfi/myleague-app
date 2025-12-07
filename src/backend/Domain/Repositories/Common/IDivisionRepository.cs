@@ -1,4 +1,5 @@
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 
 namespace Domain.Repositories.Common;
 
@@ -25,14 +26,14 @@ public interface IDivisionRepository
     /// </summary>
     /// <param name="sportType">The sport type to filter by</param>
     /// <returns>A collection of divisions for the specified sport type</returns>
-    Task<IEnumerable<Division>> GetBySportTypeAsync(string sportType);
+    Task<IEnumerable<Division>> GetBySportTypeAsync(SportsCategory sportType);
 
     /// <summary>
     /// Gets active divisions by sport type
     /// </summary>
     /// <param name="sportType">The sport type to filter by</param>
     /// <returns>A collection of active divisions for the specified sport type</returns>
-    Task<IEnumerable<Division>> GetActiveBySportTypeAsync(string sportType);
+    Task<IEnumerable<Division>> GetActiveBySportTypeAsync(SportsCategory sportType);
 
 
     /// <summary>
@@ -41,7 +42,7 @@ public interface IDivisionRepository
     /// <param name="name">The name of the division</param>
     /// <param name="sportType">The sport type</param>
     /// <returns>The division if found, null otherwise</returns>
-    Task<Division?> GetByNameAndSportTypeAsync(string name, string sportType);
+    Task<Division?> GetByNameAndSportTypeAsync(string name, SportsCategory sportType);
 
     /// <summary>
     /// Adds a new division
@@ -70,5 +71,5 @@ public interface IDivisionRepository
     /// <param name="name">The name of the division</param>
     /// <param name="sportType">The sport type</param>
     /// <returns>True if the division exists, false otherwise</returns>
-    Task<bool> ExistsAsync(string name, string sportType);
+    Task<bool> ExistsAsync(string name, SportsCategory sportType);
 } 

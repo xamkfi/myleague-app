@@ -1,9 +1,11 @@
+using System;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Application.Commands.Common;
 using Application.Queries.Common;
 using Application.DTOs.Common;
 using Application.Common;
+using Domain.Enums.Common;
 using WebAPI.Models.Common;
 
 namespace WebAPI.Controllers.Common;
@@ -93,9 +95,14 @@ public class DivisionsController : ControllerBase
         string sportType, 
         [FromQuery] bool activeOnly = false)
     {
-        _logger.LogInformation("Getting divisions for sport type: {SportType}, ActiveOnly: {ActiveOnly}", sportType, activeOnly);
+        if (!TryParseSportType(sportType, out SportsCategory parsedSportType, out string? parseError))
+        {
+            return BadRequest(ApiResponse<List<DivisionDto>>.ErrorResponse(parseError ?? "Invalid sport type."));
+        }
+
+        _logger.LogInformation("Getting divisions for sport type: {SportType}, ActiveOnly: {ActiveOnly}", parsedSportType, activeOnly);
         
-        GetDivisionsBySportTypeQuery query = new GetDivisionsBySportTypeQuery(sportType, activeOnly);
+        GetDivisionsBySportTypeQuery query = new GetDivisionsBySportTypeQuery(parsedSportType, activeOnly);
         Result<IEnumerable<DivisionDto>> result = await _mediator.Send(query);
 
         if (result.IsSuccess && result.Data != null)
@@ -126,6 +133,13 @@ public class DivisionsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<DivisionDto>>> CreateDivision([FromBody] CreateDivisionRequest request)
     {
+        if (request.SportType == SportsCategory.None)
+        {
+            const string message = "Sport type cannot be None.";
+            List<string> errors = new() { message };
+            return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(message, errors));
+        }
+
         _logger.LogInformation("Creating new division: {DivisionName} for {SportType}", request.Name, request.SportType);
 
         CreateDivisionCommand command = new CreateDivisionCommand(
@@ -286,5 +300,26 @@ public class DivisionsController : ControllerBase
         }
 
         return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
+    }
+
+    private static bool TryParseSportType(string? value, out SportsCategory sportType, out string? errorMessage)
+    {
+        sportType = SportsCategory.None;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            errorMessage = "Sport type is required.";
+            return false;
+        }
+
+        if (!Enum.TryParse(value, true, out sportType) || sportType == SportsCategory.None)
+        {
+            errorMessage = $"Invalid sport type '{value}'.";
+            sportType = SportsCategory.None;
+            return false;
+        }
+
+        errorMessage = null;
+        return true;
     }
 } 

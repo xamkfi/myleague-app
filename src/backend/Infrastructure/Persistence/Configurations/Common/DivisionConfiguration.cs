@@ -1,4 +1,5 @@
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -30,6 +31,9 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
 
             builder.Property(d => d.SportType)
                 .IsRequired()
+                .HasConversion(
+                    v => v.ToString(),
+                    v => Enum.Parse<SportsCategory>(v, true))
                 .HasMaxLength(50);
 
             builder.Property(d => d.IsActive)
