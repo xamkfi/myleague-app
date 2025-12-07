@@ -110,7 +110,9 @@
       "divisions": "Sarjat",
       "manageDivisions": "Hallitse sarjoja",
       "floorball": "Salibandy",
-      "manageFloorball": "Hallitse salibandya"
+      "manageFloorball": "Hallitse salibandya",
+      "clubs": "Seurat",
+      "manageClubs": "Hallitse seuroja"
     },
     "divisions": {
       "title": "Sarjojen hallinta",
@@ -389,6 +391,49 @@
         "error": "Virhe"
       }
     }
+  },
+  "clubs": {
+    "manage": {
+      "title": "Seurojen Hallinta"
+    },
+    "total": "Yhteensä",
+    "createNew": "Luo Uusi Seura",
+    "searchPlaceholder": "Hae seuroja nimellä tai kaupungilla...",
+    "searchAria": "Hae seuroja",
+    "empty": "Seuroja ei löytynyt",
+    "create": {
+      "title": "Luo Seura"
+    },
+    "table": {
+      "name": "Seuran Nimi",
+      "city": "Kaupunki",
+      "country": "Maa",
+      "foundingDate": "Perustettu",
+      "actions": "Toiminnot"
+    },
+    "form": {
+      "name": "Seuran Nimi",
+      "city": "Kaupunki",
+      "country": "Maa",
+      "foundingDate": "Perustettu",
+      "foundingDatePlaceholder": "pp-kk-vvvv",
+      "namePlaceholder": "Anna seuran nimi",
+      "cityPlaceholder": "Anna kaupunki",
+      "countryPlaceholder": "Anna maa",
+      "websiteUrl": "Verkkosivun URL",
+      "logoUrl": "Logon URL",
+      "contactEmail": "Yhteyssähköposti"
+    },
+    "details": {
+      "title": "Seuran Tiedot",
+      "foundingDate": "Perustettu",
+      "teams": "Joukkueet",
+      "noTeams": "Ei joukkueita vielä",
+      "members": "Jäseniä"
+    },
+    "confirmDeleteTitle": "Poista seura?",
+    "confirmDelete": "Haluatko varmasti poistaa tämän seuran?",
+    "confirmDeleteWarning": "Tätä toimintoa ei voi perua."
   },
   "floorball": {
     "management": {
@@ -682,33 +727,13 @@
       }
     }
   },
-  "roster": {
-    "positions": {
-      "Goalkeeper": "Maalivahdit",
-      "Defender": "Puolustajat", 
-      "Center": "Keskushyökkääjät",
-      "Forward": "Hyökkääjät"
-    },
-    "jerseyNumber": "#",
-    "name": "Nimi",
-    "age": "Ikä",
-    "matchesPlayed": "Pelit",
-    "goals": "Maalit",
-    "assists": "Syötöt",
-    "tooltips": {
-      "jerseyNumber": "Pelinumero",
-      "age": "Ikä",
-      "matchesPlayed": "Pelatut ottelut",
-      "goals": "Maalit",
-      "assists": "Syötöt"
-    }
-  },
   "common": {
     "back": "Takaisin",
     "backTo": "Takaisin",
     "loading": "Ladataan...",
     "edit": "Muokkaa",
     "delete": "Poista",
+    "save": "Tallenna",
     "deleting": "Poistetaan...",
     "cancel": "Peruuta",
     "active": "Aktiivinen",

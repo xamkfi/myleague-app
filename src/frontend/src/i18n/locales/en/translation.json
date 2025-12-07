@@ -110,7 +110,9 @@
       "divisions": "Divisions",
       "manageDivisions": "Manage sport divisions",
       "floorball": "Floorball",
-      "manageFloorball": "Manage floorball"
+      "manageFloorball": "Manage floorball",
+      "clubs": "Clubs",
+      "manageClubs": "Manage clubs"
     },
     "divisions": {
       "title": "Manage Divisions",
@@ -389,6 +391,49 @@
         "error": "Error"
       }
     }
+  },
+  "clubs": {
+    "manage": {
+      "title": "Manage Clubs"
+    },
+    "total": "Total",
+    "createNew": "Create New Club",
+    "searchPlaceholder": "Search clubs by name or city...",
+    "searchAria": "Search clubs",
+    "empty": "No clubs found",
+    "create": {
+      "title": "Create Club"
+    },
+    "table": {
+      "name": "Club Name",
+      "city": "City",
+      "country": "Country",
+      "foundingDate": "Founding Date",
+      "actions": "Actions"
+    },
+    "form": {
+      "name": "Club Name",
+      "city": "City",
+      "country": "Country",
+      "foundingDate": "Founding Date",
+      "foundingDatePlaceholder": "dd-mm-yyyy",
+      "namePlaceholder": "Enter club name",
+      "cityPlaceholder": "Enter city",
+      "countryPlaceholder": "Enter country",
+      "websiteUrl": "Website URL",
+      "logoUrl": "Logo URL",
+      "contactEmail": "Contact Email"
+    },
+    "details": {
+      "title": "Club Details",
+      "foundingDate": "Founding Date",
+      "teams": "Teams",
+      "noTeams": "No teams yet",
+      "members": "Members"
+    },
+    "confirmDeleteTitle": "Delete club?",
+    "confirmDelete": "Are you sure you want to delete this club?",
+    "confirmDeleteWarning": "This action cannot be undone."
   },
   "floorball": {
     "management": {
@@ -709,6 +754,7 @@
     "loading": "Loading…",
     "edit": "Edit",
     "delete": "Delete",
+    "save": "Save",
     "deleting": "Deleting...",
     "cancel": "Cancel",
     "active": "Active",
