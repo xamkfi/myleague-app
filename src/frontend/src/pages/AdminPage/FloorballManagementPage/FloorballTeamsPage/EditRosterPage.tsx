@@ -25,6 +25,7 @@ const EditRosterPage = () => {
   const [currentTeam, setCurrentTeam] = useState<FloorballTeam | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const [updatingPlayer, setUpdatingPlayer] = useState<string | null>(null);
 
   const loadTeamData = useCallback(async () => {
     if (!teamId) return;
@@ -89,6 +90,67 @@ const EditRosterPage = () => {
     setDropdownOpen(null);
   };
 
+  // Handle updating player position
+  const handleUpdatePosition = async (player: FloorballTeamPlayer, newPosition: FloorballPosition) => {
+    if (!teamId || player.position === newPosition) return;
+
+    try {
+      setUpdatingPlayer(player.playerId);
+      setError(null);
+      const updateData: UpdateFloorballTeamPlayerRequest = {
+        position: newPosition,
+        jerseyNumber: player.jerseyNumber,
+        isActive: player.isActive
+      };
+      await floorballTeamService.updateTeamPlayer(teamId, player.playerId, updateData);
+      await loadTeamData();
+    } catch (err) {
+      console.error('Error updating player position:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update player position');
+    } finally {
+      setUpdatingPlayer(null);
+    }
+  };
+
+  // Handle updating player jersey number
+  const handleUpdateJerseyNumber = async (player: FloorballTeamPlayer, newJerseyNumber: number | undefined) => {
+    if (!teamId || player.jerseyNumber === newJerseyNumber) return;
+
+    try {
+      setUpdatingPlayer(player.playerId);
+      setError(null);
+      const updateData: UpdateFloorballTeamPlayerRequest = {
+        position: player.position,
+        jerseyNumber: newJerseyNumber,
+        isActive: player.isActive
+      };
+      await floorballTeamService.updateTeamPlayer(teamId, player.playerId, updateData);
+      await loadTeamData();
+    } catch (err) {
+      console.error('Error updating jersey number:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update jersey number');
+    } finally {
+      setUpdatingPlayer(null);
+    }
+  };
+
+  // Generate jersey number options (1-99 plus "None" option)
+  const jerseyNumberOptions = [
+    { value: '', label: '-' },
+    ...Array.from({ length: 99 }, (_, i) => ({ 
+      value: String(i + 1), 
+      label: `#${i + 1}` 
+    }))
+  ];
+
+  // Position options for dropdown
+  const positionOptions = [
+    { value: FloorballPosition.None, label: t('floorball.positions.none', 'None') },
+    { value: FloorballPosition.Goalkeeper, label: t('floorball.positions.goalkeeper', 'Goalkeeper') },
+    { value: FloorballPosition.Defender, label: t('floorball.positions.defender', 'Defender') },
+    { value: FloorballPosition.Forward, label: t('floorball.positions.forward', 'Forward') },
+  ];
+
   // Handle adding new player (navigate to add player page)
   const handleAddPlayer = () => {
     navigate(`/admin/floorball/teams/${teamId}/roster/add`);
@@ -110,17 +172,6 @@ const EditRosterPage = () => {
       return () => document.removeEventListener('click', handleClickOutside);
     }
   }, [dropdownOpen]);
-
-  // Get position display name
-  const getPositionDisplay = (position: FloorballPosition | string): string => {
-    const positionMap: Record<string, string> = {
-      [FloorballPosition.Goalkeeper]: t('floorball.positions.goalkeeper', 'Goalkeeper'),
-      [FloorballPosition.Defender]: t('floorball.positions.defender', 'Defender'),
-      [FloorballPosition.Forward]: t('floorball.positions.forward', 'Forward'),
-      [FloorballPosition.None]: t('floorball.positions.none', 'None'),
-    };
-    return positionMap[position] || position || t('floorball.positions.none', 'None');
-  };
 
   if (loading) {
     return (
@@ -203,14 +254,40 @@ const EditRosterPage = () => {
                       <span className="player-name">{player.playerName}</span>
                     </td>
                     <td className="jersey-column">
-                      <span className="jersey-number">
-                        {player.jerseyNumber !== undefined && player.jerseyNumber !== null 
-                          ? `#${player.jerseyNumber}` 
-                          : '-'}
-                      </span>
+                      <select
+                        className="jersey-select"
+                        value={player.jerseyNumber !== undefined && player.jerseyNumber !== null 
+                          ? String(player.jerseyNumber) 
+                          : ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const jerseyNum = value === '' ? undefined : parseInt(value, 10);
+                          handleUpdateJerseyNumber(player, jerseyNum);
+                        }}
+                        disabled={updatingPlayer === player.playerId}
+                      >
+                        {jerseyNumberOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td className="position-column">
-                      <span className="position">{getPositionDisplay(player.position)}</span>
+                      <select
+                        className="position-select"
+                        value={player.position || FloorballPosition.None}
+                        onChange={(e) => {
+                          handleUpdatePosition(player, e.target.value as FloorballPosition);
+                        }}
+                        disabled={updatingPlayer === player.playerId}
+                      >
+                        {positionOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td className="status-column">
                       <span className={`status-badge ${player.isActive ? 'active' : 'inactive'}`}>
