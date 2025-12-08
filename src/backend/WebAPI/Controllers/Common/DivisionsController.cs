@@ -38,7 +38,7 @@ public class DivisionsController : ControllerBase
     /// <returns>List of all divisions</returns>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<DivisionDto>>>> GetAllDivisions()
     {
         _logger.LogInformation("Getting all divisions");
@@ -63,8 +63,8 @@ public class DivisionsController : ControllerBase
     /// <returns>Division details</returns>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<DivisionDto>>> GetDivisionById(Guid id)
     {
         _logger.LogInformation("Getting division with ID: {DivisionId}", id);
@@ -89,8 +89,8 @@ public class DivisionsController : ControllerBase
     /// <returns>List of divisions for the specified sport type</returns>
     [HttpGet("sport/{sportType}")]
     [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<DivisionDto>>>> GetDivisionsBySportType(
         string sportType, 
         [FromQuery] bool activeOnly = false)
@@ -129,8 +129,8 @@ public class DivisionsController : ControllerBase
     /// <returns>Created division details</returns>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<DivisionDto>>> CreateDivision([FromBody] CreateDivisionRequest request)
     {
         if (request.SportType == SportsCategory.None)
@@ -174,9 +174,9 @@ public class DivisionsController : ControllerBase
     /// <returns>Updated division details</returns>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<DivisionDto>>> UpdateDivision(Guid id, [FromBody] UpdateDivisionRequest request)
     {
         _logger.LogInformation("Updating division with ID: {DivisionId}", id);

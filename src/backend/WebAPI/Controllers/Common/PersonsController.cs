@@ -41,9 +41,9 @@ namespace WebAPI.Controllers.Common
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<List<PersonDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<PersonDto>>>> GetAllPersons([FromQuery] GetPersonsRequest request)
+        [ProducesResponseType(typeof(PaginatedApiResponse<PersonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PaginatedApiResponse<PersonDto>>> GetAllPersons([FromQuery] GetPersonsRequest request)
         {
             _logger.LogInformation("Getting all persons");
 
@@ -78,7 +78,7 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<PersonDto>>.ErrorResponse(errorMessage));
+            return StatusCode(500, PaginatedApiResponse<PersonDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>
@@ -88,8 +88,8 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> GetPersonById(Guid id)
         {
             _logger.LogInformation("Getting person by Id: {Id}", id);
@@ -121,9 +121,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpGet("by-email")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> GetPersonByEmail([FromQuery] string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -160,8 +160,8 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpGet("search")]
         [ProducesResponseType(typeof(ApiResponse<List<PersonDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<List<PersonDto>>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<List<PersonDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<PersonDto>>>> SearchPersonsByName([FromQuery] string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -191,8 +191,8 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> CreatePerson([FromBody] CreatePersonRequest request)
         {
             _logger.LogInformation("Creating new person: {FirstName} {LastName}", request.FirstName, request.LastName);
@@ -239,9 +239,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePerson(Guid id, [FromBody] UpdatePersonRequest request)
         {
             _logger.LogInformation("Updating person with Id: {Id}", id);
@@ -283,9 +283,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPatch("{id:guid}/basic-info")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePersonBasicInfo(Guid id, [FromBody] UpdatePersonBasicInfoRequest request)
         {
             _logger.LogInformation("Updating person basic info with Id: {Id}", id);
@@ -319,9 +319,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPatch("{id:guid}/address")]
         [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<AddressDto>>> UpdatePersonAddress(Guid id, [FromBody] UpdatePersonAddressRequest request)
         {
             _logger.LogInformation("Updating person address with Id: {Id}", id);
@@ -362,9 +362,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPatch("{id:guid}/contact-info")]
         [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<ContactInfoDto>>> UpdatePersonContactInfo(Guid id, [FromBody] UpdatePersonContactInfoRequest request)
         {
             _logger.LogInformation("Updating person contact info with Id: {Id}", id);
@@ -403,9 +403,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPatch("{id:guid}/registration")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePersonRegistration(Guid id, [FromBody] bool isRegistered)
         {
             _logger.LogInformation("Updating person registration status with Id: {Id} to {IsRegistered}", id, isRegistered);
@@ -438,8 +438,8 @@ namespace WebAPI.Controllers.Common
         /// <returns>Person with teams information</returns>
         [HttpGet("{id:guid}/teams")]
         [ProducesResponseType(typeof(ApiResponse<PersonWithTeamsDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonWithTeamsDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonWithTeamsDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonWithTeamsDto>>> GetPersonWithTeams(Guid id)
         {
             _logger.LogInformation("Getting person with teams for Id: {Id}", id);
@@ -473,9 +473,9 @@ namespace WebAPI.Controllers.Common
         /// <returns>The updated person</returns>
         [HttpPatch("{id:guid}/role")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePersonRole(Guid id, [FromBody] Domain.Enums.Common.PersonRole role)
         {
             _logger.LogInformation("Updating person role with Id: {Id} to {Role}", id, role);
