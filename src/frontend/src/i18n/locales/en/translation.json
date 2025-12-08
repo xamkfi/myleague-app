@@ -107,8 +107,60 @@
       "managePerson": "Manage persons",
       "news": "News",
       "manageNews": "Manage news",
+      "divisions": "Divisions",
+      "manageDivisions": "Manage sport divisions",
       "floorball": "Floorball",
-      "manageFloorball": "Manage floorball"
+      "manageFloorball": "Manage floorball",
+      "clubs": "Clubs",
+      "manageClubs": "Manage clubs"
+    },
+    "divisions": {
+      "title": "Manage Divisions",
+      "manageTitle": "Manage divisions",
+      "subtitle": "Create, edit, activate or remove sport divisions across the league.",
+      "search": "Search by name or description...",
+      "emptyFiltered": "No divisions match your filters.",
+      "emptyDefault": "No divisions found yet.",
+      "table": {
+        "sport": "Sport",
+        "level": "Level",
+        "status": "Status",
+        "created": "Created"
+      },
+      "filters": {
+        "sport": "Sport",
+        "status": "Status"
+      },
+      "actions": {
+        "create": "Create division",
+        "activate": "Activate division",
+        "deactivate": "Deactivate division",
+        "menu": "Division actions menu"
+      },
+      "confirmDelete": {
+        "title": "Delete division",
+        "message": "Are you sure you want to delete division \"{{divisionName}}\"? This action cannot be undone."
+      },
+      "errors": {
+        "load": "Failed to load divisions. Please try again.",
+        "loadSingle": "Failed to load division data.",
+        "updateStatus": "Failed to update status. Please try again.",
+        "delete": "Failed to delete division. Please try again.",
+        "save": "Failed to save division. Please try again.",
+        "levelRequired": "Level must be a number."
+      },
+      "form": {
+        "loading": "Loading division...",
+        "createTitle": "Create division",
+        "editTitle": "Edit division",
+        "createSubtitle": "Provide the information for the new division.",
+        "editSubtitle": "Update the key details of this division.",
+        "namePlaceholder": "Division name",
+        "levelHelper": "1 = highest",
+        "descriptionPlaceholder": "Short summary of this division",
+        "sportPlaceholder": "e.g. Floorball",
+        "sportHint": "Sport type cannot be changed for existing divisions."
+      }
     },
     "persons":{
       "title": "Person Management",
@@ -339,6 +391,49 @@
         "error": "Error"
       }
     }
+  },
+  "clubs": {
+    "manage": {
+      "title": "Manage Clubs"
+    },
+    "total": "Total",
+    "createNew": "Create New Club",
+    "searchPlaceholder": "Search clubs by name or city...",
+    "searchAria": "Search clubs",
+    "empty": "No clubs found",
+    "create": {
+      "title": "Create Club"
+    },
+    "table": {
+      "name": "Club Name",
+      "city": "City",
+      "country": "Country",
+      "foundingDate": "Founding Date",
+      "actions": "Actions"
+    },
+    "form": {
+      "name": "Club Name",
+      "city": "City",
+      "country": "Country",
+      "foundingDate": "Founding Date",
+      "foundingDatePlaceholder": "dd-mm-yyyy",
+      "namePlaceholder": "Enter club name",
+      "cityPlaceholder": "Enter city",
+      "countryPlaceholder": "Enter country",
+      "websiteUrl": "Website URL",
+      "logoUrl": "Logo URL",
+      "contactEmail": "Contact Email"
+    },
+    "details": {
+      "title": "Club Details",
+      "foundingDate": "Founding Date",
+      "teams": "Teams",
+      "noTeams": "No teams yet",
+      "members": "Members"
+    },
+    "confirmDeleteTitle": "Delete club?",
+    "confirmDelete": "Are you sure you want to delete this club?",
+    "confirmDeleteWarning": "This action cannot be undone."
   },
   "floorball": {
     "management": {
@@ -659,6 +754,7 @@
     "loading": "Loading…",
     "edit": "Edit",
     "delete": "Delete",
+    "save": "Save",
     "deleting": "Deleting...",
     "cancel": "Cancel",
     "active": "Active",

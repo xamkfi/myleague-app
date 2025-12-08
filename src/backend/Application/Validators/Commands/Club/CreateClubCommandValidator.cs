@@ -38,8 +38,9 @@ public class CreateClubCommandValidator : AbstractValidator<CreateClubCommand>
             .WithMessage("Invalid logo URL format");
     }
 
-    private static bool BeValidUrl(string url)
+    private static bool BeValidUrl(string? url)
     {
+        if (string.IsNullOrWhiteSpace(url)) return false;
         return Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult) 
                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
     }

@@ -15,11 +15,6 @@ const FloorballManagementPage = () => {
   return (
     <PageTemplate title={t('floorball.management.title', 'Floorball Management')}>
       <div className="floorball-management-container">
-        {/* Back button */}
-        {/* <BackButton 
-          to="/admin" 
-          text={t('common.back', 'Back to Admin')} 
-        /> */}
 
         <h2>{t('floorball.management.title', 'Floorball management')}</h2>
 

@@ -8,7 +8,6 @@ import { SeasonsFilters } from './components/SeasonsFilters';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { LoadingState } from './components/LoadingState';
 import { SeasonsContent } from './components/SeasonsContent';
-import BackButton from '../../../../components/BackButton/BackButton';
 import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
 
 const FloorballSeasonsPage = () => {
@@ -53,11 +52,6 @@ const FloorballSeasonsPage = () => {
     <PageTemplate title={t('floorball.seasons.title', 'Manage Seasons')}>
       <div className="floorball-seasons-container">
 
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball" 
-          text={t('common.back', 'Back to Floorball Management')} 
-        />
         <h2 className="floorball-seasons-title">{t('floorball.seasons.title', 'MANAGE SEASONS')}</h2>
         <SeasonsPageHeader
           seasonsCount={seasons.length}

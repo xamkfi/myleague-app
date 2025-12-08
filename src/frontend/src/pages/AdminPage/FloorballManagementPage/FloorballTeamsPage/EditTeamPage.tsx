@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../../components/BackButton/BackButton';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import { floorballPlayerService, type FloorballPlayerDto } from '../../../../api/floorball/floorballPlayerService';
 import { getClubs, type Club } from '../../../../api/common/clubService';
@@ -418,10 +417,6 @@ const EditTeamPage = () => {
   return (
     <PageTemplate title={t('floorball.teams.editTeam', 'Edit Team')}>
       <div className="edit-team-page">
-        <BackButton 
-          to="/admin/floorball/teams" 
-          text={t('common.back', 'Back to Teams')} 
-        />
         
         <div className="edit-team-header">
           <h1>{t('floorball.teams.editTeam', 'Edit Team')}: {currentTeam?.name}</h1>

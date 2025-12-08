@@ -11,7 +11,6 @@ import type {
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
 import MatchForm from '../MatchOverviewPage/Components/MatchForm/MatchForm';
-import BackButton from '../../../../components/BackButton/BackButton';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import './EditMatchPage.scss';
 import '../MatchOverviewPage/MatchOverviewPage.scss';
@@ -134,7 +133,6 @@ const EditMatchPage = () => {
       <div className="match-management__content edit-match-page">
         <div className="page-header">
           <div className="header-left">
-            <BackButton to="/admin/floorball/matches" text="Back" />
           </div>
           <div className="header-center">
             <h1>Edit Match</h1>

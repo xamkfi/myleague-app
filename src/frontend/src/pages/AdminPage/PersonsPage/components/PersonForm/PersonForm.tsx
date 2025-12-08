@@ -10,9 +10,8 @@ import { floorballTeamSearchService } from '../../../../../api/floorball/floorba
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
-import BackButton from '../../../../../components/BackButton/BackButton';
 import './PersonForm.scss';
-import { SPORTS, type SportType } from '../../../../../constants/sports';
+import { ACTIVE_SPORTS, type SportType } from '../../../../../types/common/sports';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
 interface PersonFormProps {
@@ -450,7 +449,7 @@ const PersonForm = ({
 
   // Search helpers for sport and teams by sport
   const searchSports = async (query: string) => {
-    const sports = SPORTS as unknown as string[];
+    const sports = ACTIVE_SPORTS as unknown as string[];
     const filtered = query?.trim()
       ? sports.filter((s) => s.toLowerCase().includes(query.toLowerCase()))
       : sports;
@@ -502,10 +501,6 @@ const PersonForm = ({
     return (
       <PageTemplate title={pageTitle}>
         <div className="person-form-page">
-          <BackButton 
-            to="/admin/persons" 
-            text={t('common.back', 'Back to Person Management')} 
-          />
           <div className="person-form-header">
             <h1>{pageTitle}</h1>
           </div>

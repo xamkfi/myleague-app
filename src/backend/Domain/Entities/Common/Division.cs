@@ -1,3 +1,5 @@
+using Domain.Enums.Common;
+
 namespace Domain.Entities.Common;
 
 /// <summary>
@@ -24,7 +26,7 @@ public class Division : BaseEntity
     /// <summary>
     /// Gets the sport type this division belongs to
     /// </summary>
-    public string SportType { get; private set; }
+    public SportsCategory SportType { get; private set; }
 
     /// <summary>
     /// Gets whether this division is currently active
@@ -44,7 +46,7 @@ public class Division : BaseEntity
         Id = Guid.NewGuid();
         Name = string.Empty;
         Description = string.Empty;
-        SportType = string.Empty;
+        SportType = SportsCategory.None;
         IsActive = true;
         CreatedDate = DateTime.UtcNow;
     }
@@ -57,18 +59,19 @@ public class Division : BaseEntity
     /// <param name="level">The level of the division (lower numbers = higher level)</param>
     /// <param name="sportType">The sport type this division belongs to</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
-    public Division(string name, string description, int level, string sportType)
+    public Division(string name, string description, int level, SportsCategory sportType)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(description);
-        ArgumentNullException.ThrowIfNull(sportType);
-        
+
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Division name cannot be null or empty.", nameof(name));
-        if (string.IsNullOrWhiteSpace(sportType))
-            throw new ArgumentException("Sport type cannot be null or empty.", nameof(sportType));
-        if (level < 0)
-            throw new ArgumentException("Division level cannot be negative.", nameof(level));
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Division description cannot be null or empty.", nameof(description));
+        if (sportType == SportsCategory.None)
+            throw new ArgumentException("Sport type cannot be None.", nameof(sportType));
+        if (level < 1)
+            throw new ArgumentException("Division level must be greater than 0.", nameof(level));
 
         Id = Guid.NewGuid();
         Name = name;
@@ -93,8 +96,10 @@ public class Division : BaseEntity
         
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Division name cannot be null or empty.", nameof(name));
-        if (level < 0)
-            throw new ArgumentException("Division level cannot be negative.", nameof(level));
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Division description cannot be null or empty.", nameof(description));
+        if (level < 1)
+            throw new ArgumentException("Division level must be greater than 0.", nameof(level));
 
         Name = name;
         Description = description;

@@ -1,8 +1,10 @@
+using Domain.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories;
+using System.Linq;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Common
 {
@@ -151,6 +153,29 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         public async Task<bool> ExistsByNameAsync(string name)
         {
             return await _entities.AnyAsync(c => c.Name == name);
+        }
+
+        /// <summary>
+        /// Gets a paginated list of clubs ordered by name.
+        /// </summary>
+        /// <param name="page">The page number (1-based)</param>
+        /// <param name="pageSize">The number of items per page</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Paginated collection of clubs</returns>
+        public async Task<PagedResult<Club>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+        {
+            IQueryable<Club> query = _entities
+                .AsNoTracking()
+                .OrderBy(c => c.Name);
+
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            List<Club> items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return PagedResult.Create(items, totalCount, page, pageSize);
         }
     }
 } 

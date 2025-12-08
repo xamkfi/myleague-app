@@ -9,7 +9,6 @@ import type {
 } from '../../../../types/floorball/floorballTypes';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import MatchForm from '../MatchOverviewPage/Components/MatchForm/MatchForm';
-import BackButton from '../../../../components/BackButton/BackButton';
 import './CreateMatchPage.scss';
 import '../MatchOverviewPage/MatchOverviewPage.scss';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
@@ -52,7 +51,6 @@ const CreateMatchPage = () => {
       <div className="match-management__content create-match-page">
         <div className="page-header">
           <div className="header-left">
-            <BackButton to="/admin/floorball/matches" text="Back" />
           </div>
           <div className="header-center">
             <h1>Create New Match</h1>
