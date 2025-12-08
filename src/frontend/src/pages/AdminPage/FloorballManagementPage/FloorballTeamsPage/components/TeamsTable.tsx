@@ -12,6 +12,7 @@ interface TeamsTableProps {
   teams: FloorballTeam[];
   loading: boolean;
   onEdit: (teamId: string) => void;
+  onEditRoster: (teamId: string) => void;
   onDelete: (teamId: string, teamName: string) => void;
   pagination?: {
     currentPage: number;
@@ -23,7 +24,7 @@ interface TeamsTableProps {
   onPageSizeChange?: (pageSize: number) => void;
 }
 
-const TeamsTable = ({ teams, loading, onEdit, onDelete, pagination, onPageChange, onPageSizeChange }: TeamsTableProps) => {
+const TeamsTable = ({ teams, loading, onEdit, onEditRoster, onDelete, pagination, onPageChange, onPageSizeChange }: TeamsTableProps) => {
   const { t } = useTranslation();
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [closingTeams, setClosingTeams] = useState<Set<string>>(new Set());
@@ -226,7 +227,17 @@ const TeamsTable = ({ teams, loading, onEdit, onDelete, pagination, onPageChange
                               setDropdownOpen(null);
                             }}
                           >
-                            ✏️ {t('common.edit', 'Edit')}
+                            ✏️ {t('floorball.teams.editTeamInfo', 'Edit Team Information')}
+                          </button>
+                          <button
+                            className="dropdown-item edit-item"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditRoster(team.id);
+                              setDropdownOpen(null);
+                            }}
+                          >
+                            👥 {t('floorball.teams.editRoster', 'Edit Roster')}
                           </button>
                           <button
                             className="dropdown-item delete-item"

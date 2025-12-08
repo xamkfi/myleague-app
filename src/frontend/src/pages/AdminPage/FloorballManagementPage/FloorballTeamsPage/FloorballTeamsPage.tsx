@@ -131,6 +131,11 @@ const FloorballTeamsPage = () => {
     navigate(`/admin/floorball/teams/${teamId}/edit`);
   };
 
+  // Handle edit roster
+  const handleEditRoster = (teamId: string) => {
+    navigate(`/admin/floorball/teams/${teamId}/roster`);
+  };
+
   // Handle delete team
   const handleDelete = async (teamId: string, teamName: string) => {
     if (!window.confirm(t('floorball.teams.confirmDelete', { name: teamName }))) {
@@ -205,6 +210,7 @@ const FloorballTeamsPage = () => {
         <TeamsTable
           teams={filteredTeams}
           onEdit={handleEdit}
+          onEditRoster={handleEditRoster}
           onDelete={handleDelete}
           loading={loading}
           pagination={{

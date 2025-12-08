@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
-import PaginationControls from '../FloorballTeamsPage/components/PaginationControls';
+import PaginationControls from '../FloorballPlayersPage/components/PaginationControls';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import MatchFilters from '../MatchOverviewPage/Components/MatchFilters/MatchFilters';
 import CollapsibleMatchSection from '../MatchOverviewPage/Components/CollapsibleMatchSection/CollapsibleMatchSection';
