@@ -11,7 +11,6 @@ import {
   type FloorballTeamRequest
 } from '../../../../types/floorball/floorballTypes';
 import type { DivisionType } from '../../../../types/common/divisionType';
-import SearchableInfiniteDropdown from '../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import './EditTeamPage.scss';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
@@ -24,6 +23,7 @@ const EditTeamPage = () => {
   const [loadingTeam, setLoadingTeam] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [divisions, setDivisions] = useState<DivisionType[]>([]);
+  const [clubs, setClubs] = useState<Club[]>([]);
   const [currentTeam, setCurrentTeam] = useState<FloorballTeam | null>(null);
   
   const [formData, setFormData] = useState<FloorballTeamRequest>({
@@ -68,38 +68,17 @@ const EditTeamPage = () => {
     if (teamId) {
       loadTeamData();
       loadDivisions();
+      loadClubs();
     }
   }, [teamId, loadTeamData]);
 
-  // Search function for clubs using paginated endpoint
-  const searchClubs = async (query: string, page: number) => {
-    const pageSize = 50;
-    
+  const loadClubs = async () => {
     try {
-      // Use paginated endpoint
-      const response = await clubService.getPaged(page, pageSize);
-      
-      let filteredClubs = response.data;
-      
-      // If there's a search query, filter client-side
-      // Note: For better performance with large datasets, backend should support search pagination
-      if (query.trim()) {
-        const queryLower = query.toLowerCase();
-        filteredClubs = response.data.filter(club => 
-          club.name.toLowerCase().includes(queryLower)
-        );
-      }
-      
-      return {
-        data: filteredClubs.map(club => ({ id: club.id, name: club.name })),
-        pagination: {
-          hasNextPage: response.pagination.hasNextPage && (!query.trim() || filteredClubs.length === pageSize),
-          totalCount: query.trim() ? filteredClubs.length : response.pagination.totalCount
-        }
-      };
+      const response = await getClubs();
+      setClubs(response);
     } catch (err) {
-      console.error('Error searching clubs:', err);
-      throw err;
+      console.error('Error loading clubs:', err);
+      setClubs([]);
     }
   };
 
