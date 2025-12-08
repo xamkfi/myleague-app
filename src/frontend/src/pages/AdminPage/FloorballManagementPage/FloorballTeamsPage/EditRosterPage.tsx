@@ -255,15 +255,6 @@ const EditRosterPage = () => {
             </tbody>
           </table>
         </div>
-
-        <div className="roster-footer">
-          <Button
-            variant="secondary"
-            onClick={() => navigate('/admin/floorball/teams')}
-          >
-            {t('common.backToList', 'Back to Teams')}
-          </Button>
-        </div>
       </div>
     </PageTemplate>
   );

@@ -22,6 +22,7 @@ import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/Floor
 import CreateTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/CreateTeamPage';
 import EditTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditTeamPage';
 import EditRosterPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditRosterPage';
+import AddPlayerToRosterPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/AddPlayerToRosterPage';
 import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage';
 import CreatePlayerPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePlayerPage/CreatePlayerPage';
 import CreatePersonPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePersonPage/CreatePersonPage';
@@ -181,6 +182,10 @@ export const routes: RouteObject[] = [
           {
             path: ':id/roster',
             element: <EditRosterPage/>
+          },
+          {
+            path: ':id/roster/add',
+            element: <AddPlayerToRosterPage/>
           }
         ]
       },

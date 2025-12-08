@@ -1,0 +1,319 @@
+@use '@variables' as *;
+@use "sass:map";
+
+.add-player-roster-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: $color-neutral-white;
+
+  .add-player-roster-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #111827;
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+
+  .team-info-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid $color-neutral-medium-grey;
+
+    .team-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: $color-blue-deep;
+    }
+  }
+
+  .add-player-roster-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    
+    p {
+      font-size: 1.1rem;
+      color: $color-neutral-medium-grey;
+    }
+  }
+
+  .add-player-roster-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    .search-section {
+      flex: 1;
+      max-width: 400px;
+    }
+  }
+
+  // Player Selection Form
+  .player-selection-form {
+    background-color: #f9fafb;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: $border-radius-default;
+    padding: 2rem;
+    margin-bottom: 2rem;
+
+    .selection-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 1.5rem;
+    }
+
+    .selected-player-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background-color: white;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: $border-radius-default;
+
+      .player-name-label {
+        font-weight: 600;
+        color: $color-neutral-dark-grey;
+      }
+
+      .player-name-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: $color-blue-deep;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+
+      label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+      }
+
+      select,
+      input[type="text"] {
+        width: 100%;
+        max-width: 300px;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        border: 1px solid $color-neutral-medium-grey;
+        border-radius: $border-radius-default;
+        background-color: white;
+        color: #111827;
+        transition: border-color 0.2s ease-in-out;
+
+        &:focus {
+          outline: none;
+          border-color: $color-blue-light;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+      }
+
+      select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1rem;
+        padding-right: 2.5rem;
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid $color-neutral-medium-grey;
+    }
+  }
+
+  // Table wrapper
+  .players-table-wrapper {
+    position: relative;
+    margin-bottom: 2rem;
+    padding: map.get($spacing, "base") map.get($spacing, "md");
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: $border-radius-default;
+
+    .loading-players {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+      
+      p {
+        font-size: 1rem;
+        color: $color-neutral-medium-grey;
+      }
+    }
+
+    table.players-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+
+      thead {
+        tr {
+          border-bottom: 2px solid $color-neutral-medium-grey;
+        }
+
+        th {
+          padding: 1rem 1.5rem;
+          font-weight: 600;
+          color: $color-neutral-black;
+          font-size: 0.85rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          text-align: left;
+          
+          &.actions-column {
+            text-align: center;
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          transition: background-color 0.2s ease-in-out;
+          border-bottom: 1px solid $color-neutral-medium-grey;
+
+          &:hover {
+            background-color: rgba(13, 110, 253, 0.05);
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            font-size: 0.875rem;
+
+            &.name-column {
+              min-width: 200px;
+
+              span.player-name {
+                font-size: 0.875rem;
+                font-weight: 600;
+                color: #111827;
+              }
+            }
+
+            &.position-column {
+              min-width: 120px;
+
+              span.position {
+                font-size: 0.875rem;
+                color: $color-neutral-dark-grey;
+              }
+            }
+
+            &.team-column {
+              min-width: 150px;
+
+              span.team-name {
+                font-size: 0.875rem;
+                color: $color-neutral-dark-grey;
+              }
+            }
+
+            &.actions-column {
+              text-align: center;
+              width: 120px;
+            }
+
+            &.no-players {
+              text-align: center;
+              padding: 3rem 2rem;
+              color: $color-neutral-dark-grey;
+              font-size: 1rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Pagination
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    .page-info {
+      font-size: 0.875rem;
+      color: $color-neutral-dark-grey;
+    }
+  }
+
+  // Footer
+  .page-footer {
+    display: flex;
+    justify-content: flex-start;
+    padding-top: 1rem;
+    border-top: 1px solid $color-neutral-medium-grey;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .add-player-roster-container {
+    padding: 1rem;
+
+    .add-player-roster-header {
+      flex-direction: column;
+      gap: 1rem;
+
+      .search-section {
+        max-width: 100%;
+      }
+    }
+
+    .player-selection-form {
+      padding: 1rem;
+
+      .form-group {
+        select,
+        input[type="text"] {
+          max-width: 100%;
+        }
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+    }
+
+    .players-table-wrapper {
+      table.players-table {
+        font-size: 0.875rem;
+        
+        th, td {
+          padding: 0.75rem 0.5rem;
+        }
+      }
+    }
+
+    .pagination {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+}
