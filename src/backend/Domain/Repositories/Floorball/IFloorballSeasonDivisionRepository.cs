@@ -11,6 +11,7 @@ public interface IFloorballSeasonDivisionRepository
     Task<FloorballSeasonDivision?> GetSeasonDivisionAsync(Guid seasonId, Guid divisionId);
     Task<IEnumerable<FloorballSeason>> GetSeasonsByDivisionAsync(Guid divisionId);
     Task<IEnumerable<FloorballSeason>> GetSeasonsByTeamAsync(Guid teamId);
+    Task<IEnumerable<FloorballSeasonDivisionTeam>> GetSeasonDivisionTeamsAsync(Guid seasonId);
 
     Task AddSeasonDivisionAsync(Guid seasonId, Guid divisionId);
     Task RemoveSeasonDivisionAsync(Guid seasonId, Guid divisionId);

@@ -70,7 +70,9 @@ public class CreateFloorballSeasonHandler : IRequestHandler<CreateFloorballSeaso
             }
 
             // Load season divisions for DTO mapping
-            FloorballSeasonDto seasonDto = await FloorballSeasonMapper.ToDtoAsync(season, _seasonDivisionRepository);
+            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+            IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
+            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, seasonDivisionDtos);
             _logger.LogInformation("Successfully created floorball season with ID: {SeasonId}", season.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);

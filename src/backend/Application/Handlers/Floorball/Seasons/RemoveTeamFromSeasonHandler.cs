@@ -77,7 +77,10 @@ public class RemoveTeamFromSeasonHandler : IRequestHandler<RemoveTeamFromSeasonC
                 }
             }
 
-            FloorballSeasonDto seasonDto = await FloorballSeasonMapper.ToDtoAsync(season, _seasonDivisionRepository, clubs);
+            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+            IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
+
+            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, seasonDivisionDtos, clubs);
             return Result<FloorballSeasonDto>.Success(seasonDto);
         }
         catch (Exception ex)

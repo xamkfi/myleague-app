@@ -70,7 +70,10 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballSeasonDto seasonDto = await FloorballSeasonMapper.ToDtoAsync(existingSeason, _seasonDivisionRepository);
+            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(existingSeason.Id);
+            IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
+
+            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(existingSeason, seasonDivisionDtos);
             _logger.LogInformation("Successfully updated floorball season with ID: {SeasonId}", existingSeason.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);

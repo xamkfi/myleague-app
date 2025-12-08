@@ -105,7 +105,9 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
                 }
             }
 
-            FloorballSeasonDto seasonDto = await FloorballSeasonMapper.ToDtoAsync(season, _seasonDivisionRepository, clubsDict);
+            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+            IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
+            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, seasonDivisionDtos, clubsDict);
             _logger.LogInformation("Successfully activated floorball season: {SeasonId}", request.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);
