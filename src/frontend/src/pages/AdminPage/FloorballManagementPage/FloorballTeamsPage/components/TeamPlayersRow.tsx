@@ -71,7 +71,6 @@ const TeamPlayersRow = ({ teamId, isExpanded, isClosing, team }: TeamPlayersRowP
     <div className={`team-players-row ${isClosing ? 'is-closing' : ''}`}>
       <div className="team-players-container">
         <h4 className="players-title">
-          {t('floorball.teams.players', 'Team Players')} ({playerCount})
         </h4>
         
         {loading && (
@@ -102,48 +101,34 @@ const TeamPlayersRow = ({ teamId, isExpanded, isClosing, team }: TeamPlayersRowP
         )}
 
         {!loading && playerCount > 0 && (
-          <div className="roster-section">
+          <div className="admin-roster-section">
             {/* Playing positions */}
             {playerPositions.map((pos, key) => (
-              <div key={key} className="roster-container">
-                <div className="roster-position-header">
+              <div key={key} className="admin-roster-group">
+                <div className="admin-roster-position-header">
                   {t(`floorball.positions.${pos.toLowerCase()}`, pos)}
                 </div>
-
-                <div className="roster-position-container">
-                  <div className="table stats-header">
-                    <div className="roster-jersey" title={t('roster.tooltips.jerseyNumber', 'Jersey Number')}>
-                      {t('roster.jerseyNumber', '#')}
-                    </div>
-                    <div className="roster-player-name">{t('roster.name', 'Name')}</div>
-                    <div className="roster-age" title={t('roster.tooltips.age', 'Age')}>
-                      {t('roster.age', 'Age')}
-                    </div>
-                    <div className="roster-games-played" title={t('roster.tooltips.matchesPlayed', 'Matches Played')}>
-                      {t('roster.matchesPlayed', 'Games')}
-                    </div>
-                    <div className="roster-goals" title={t('roster.tooltips.goals', 'Goals')}>
-                      {t('roster.goals', 'Goals')}
-                    </div>
-                    <div className="roster-assists" title={t('roster.tooltips.assists', 'Assists')}>
-                      {t('roster.assists', 'Assists')}
-                    </div>
-                  </div>
+                <div className="admin-roster-table-header">
+                  <span className="col-jersey">#</span>
+                  <span className="col-name">{t('roster.name', 'Name')}</span>
+                  <span className="col-stat">{t('roster.age', 'Age')}</span>
+                  <span className="col-stat">{t('roster.matchesPlayedShort', 'GP')}</span>
+                  <span className="col-stat">{t('roster.goalsShort', 'G')}</span>
+                  <span className="col-stat">{t('roster.assistsShort', 'A')}</span>
+                </div>
+                <div className="admin-roster-players">
                   {displayPlayers
                     .filter(player => player.position === pos)
                     .map((player, index) => {
-                      // Handle both API player data and roster data
                       const playerId = 'id' in player ? player.id : `${teamId}-${index}`;
                       const playerName = 'person' in player ? player.person.fullName : player.playerName;
                       const isActive = 'isActive' in player ? player.isActive : true;
                       
-                      // Handle jersey number - roster data has it directly, API data doesn't
                       let jerseyNumber: number | undefined = undefined;
                       if ('jerseyNumber' in player) {
                         jerseyNumber = player.jerseyNumber !== null && player.jerseyNumber !== undefined ? player.jerseyNumber : undefined;
                       }
                       
-                      // Handle stats with proper type checking
                       let games = 0, goals = 0, assists = 0;
                       if ('gamesPlayed' in player) {
                         games = player.gamesPlayed || 0;
@@ -151,7 +136,6 @@ const TeamPlayersRow = ({ teamId, isExpanded, isClosing, team }: TeamPlayersRowP
                         assists = player.assists || 0;
                       }
 
-                      // Calculate age if birth date is available
                       let age: number | undefined = undefined;
                       if ('person' in player && player.person.birthDate) {
                         const birthDate = new Date(player.person.birthDate);
@@ -166,31 +150,14 @@ const TeamPlayersRow = ({ teamId, isExpanded, isClosing, team }: TeamPlayersRowP
                       return (
                         <div
                           key={playerId}
-                          className={`table roster-player ${!isActive ? 'inactive' : ''}`}
+                          className={`admin-roster-player ${!isActive ? 'inactive' : ''}`}
                         >
-                          <div className="roster-jersey row">
-                            {jerseyNumber || '?'}
-                          </div>
-
-                          <div className="roster-player-name">
-                            {playerName}
-                          </div>
-
-                          <div className="roster-age">
-                            {age ?? '-'}
-                          </div>
-
-                          <div className="roster-games-played">
-                            {games || 0}
-                          </div>
-
-                          <div className="roster-goals">
-                            {goals || '-'}
-                          </div>
-
-                          <div className="roster-assists">
-                            {assists || '-'}
-                          </div>
+                          <span className="col-jersey">{jerseyNumber ?? '?'}</span>
+                          <span className="col-name">{playerName}</span>
+                          <span className="col-stat">{age ?? '-'}</span>
+                          <span className="col-stat">{games}</span>
+                          <span className="col-stat">{goals || '-'}</span>
+                          <span className="col-stat">{assists || '-'}</span>
                         </div>
                       );
                     })}

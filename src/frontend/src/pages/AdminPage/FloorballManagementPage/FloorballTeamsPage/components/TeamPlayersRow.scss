@@ -2,174 +2,136 @@
 @use '@variables' as *;
 @use '../../../../../styles/common' as *;
 
-.team-players-row {
-  &.is-closing {
-    animation: slideUp 0.3s ease-out forwards;
-  }
+// Admin roster section - compact styles for admin team players list
+.admin-roster-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map.get($spacing, "lg");
+  width: 100%;
 }
 
-.team-players-container {
-  padding: map.get($spacing, "md");
+.admin-roster-group {
+  flex: 1;
+  min-width: 280px;
+  max-width: 400px;
 }
 
-.players-title {
-  font-size: map.get($font-sizes, "lg");
+.admin-roster-position-header {
+  font-size: map.get($font-sizes, "base");
   font-weight: map.get($font-weights, "bold");
   color: $color-text-primary;
-  margin-bottom: map.get($spacing, "md");
+  margin-bottom: map.get($spacing, "xs");
 }
 
-.players-loading,
-.players-error,
-.no-players {
-  text-align: center;
-  padding: map.get($spacing, "lg");
+.admin-roster-table-header {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, "xs");
+  padding: map.get($spacing, "xxs") 0;
+  font-size: map.get($font-sizes, "xs");
+  font-weight: map.get($font-weights, "semi-bold");
   color: $color-text-muted;
+  border-bottom: 1px solid $color-border;
+  margin-bottom: map.get($spacing, "xxs");
 }
 
-.retry-button {
-  @include card-style;
-  border: none;
-  cursor: pointer;
-  padding: map.get($spacing, "xs") map.get($spacing, "md");
+.admin-roster-players {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-roster-player {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, "xs");
+  padding: map.get($spacing, "xxs") 0;
   font-size: map.get($font-sizes, "sm");
-  color: $color-white;
-  background-color: $color-primary;
-  border-radius: map.get($border-radius, "sm");
-  @include transition(background-color);
-  margin-top: map.get($spacing, "sm");
+  color: $color-text-primary;
+  border-bottom: 1px solid rgba($color-border, 0.5);
+
+  &:last-child {
+    border-bottom: none;
+  }
 
   &:hover {
-    background-color: $color-primary-dark;
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  &.inactive {
+    opacity: 0.5;
+    text-decoration: line-through;
   }
 }
 
-.help-text {
-  font-size: map.get($font-sizes, "sm");
+// Column widths
+.col-jersey {
+  width: 28px;
+  text-align: center;
+  font-weight: map.get($font-weights, "medium");
   color: $color-text-muted;
-  margin-top: map.get($spacing, "xs");
+  flex-shrink: 0;
 }
 
-.roster-section {
-  .roster-container {
-    margin-bottom: map.get($spacing, "md");
-    box-shadow: $box-shadow-drop-1;
-    color: $color-text-primary;
+.col-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.col-stat {
+  width: 32px;
+  text-align: center;
+  flex-shrink: 0;
+  font-size: map.get($font-sizes, "xs");
+  color: $color-text-muted;
+}
+
+.admin-roster-player .col-stat {
+  color: $color-text-primary;
+}
+
+// ===== RESPONSIVE STYLES =====
+
+@media (max-width: 768px) {
+  .admin-roster-section {
+    gap: map.get($spacing, "md");
   }
 
-  .table {
-    display: grid;
-    grid-template-columns: 40px minmax(200px, 400px) 60px repeat(3, 1fr);
-    gap: 16px;
-    grid-template-areas: "jersey playerName age gamesPlayed goals assists";
-    
-    > * {
-      display: flex;
-      text-align: center;
-      justify-content: center;
-      align-items: center;
-    }
+  .admin-roster-group {
+    min-width: 240px;
+    max-width: 100%;
   }
 
-  .stats-header {
-    border-radius: map.get($border-radius, "sm");
-    background: $color-gradient-blue;
+  .admin-roster-position-header {
     font-size: map.get($font-sizes, "sm");
-    font-weight: map.get($font-weights, "bold");
-    padding: map.get($spacing, "xs") map.get($spacing, "sm");   
-    color: $color-white;
   }
 
-  .roster-position-container {
-    margin-bottom: map.get($spacing, "base");
-    border-radius: 6px;
-  } 
-
-  .roster-position-header {
-    text-align: left;
-    border-radius: map.get($border-radius, "sm");
-    margin-bottom: map.get($spacing, "sm");
-    color: $color-blue-deep;
-    font-size: map.get($font-sizes, "lg");
-    font-weight: map.get($font-weights, "bold");
+  .admin-roster-player {
+    font-size: map.get($font-sizes, "xs");
   }
 
-  .roster-player {
-    padding: map.get($spacing, "xs") map.get($spacing, "sm");   
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 0 0px rgba(0, 0, 0, 0);
-    border-bottom: 1px solid $color-neutral-medium-grey;   
-    transform: scale(1);
-    transition:
-      background-color 0.25s ease,
-      box-shadow 0.25s ease,
-      transform 0.25s ease;
-
-    &:hover {
-      background-color: #b5b5b5;
-      box-shadow: 0 0 32px rgba(0, 0, 0, 0.194);
-      transform: scale(1.005);
-      color: $color-neutral-light-grey !important;
-      cursor: pointer;
-      z-index: 10;
-      position: relative;
-    }
-
-    &.inactive {
-      opacity: 0.6;
-      background-color: $color-background-light;
-    }
-  }
-
-  .roster-jersey {
-    grid-area: jersey;
-    font-weight: map.get($font-weights, "bold");
-
-    &.row {
-      width: 32px;
-      height: 32px;
-      color: $color-neutral-dark-grey;
-      border-radius: map.get($border-radius, "lg");
-      border: 1px solid $color-neutral-medium-grey;
-    }
-  }
-
-  .roster-player-name {
-    grid-area: playerName;
-    justify-content: left;
-    font-weight: map.get($font-weights, "bold");
-  }
-
-  .roster-age {
-    grid-area: age;
-    text-align: center;
-  }
-
-  .roster-games-played {
-    grid-area: gamesPlayed;
-    text-align: center;
-  }
-
-  .roster-goals {
-    grid-area: goals;
-    text-align: center;
-  }
-
-  .roster-assists {
-    grid-area: assists;
-    text-align: center;
+  .col-stat {
+    width: 28px;
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 1;
-    max-height: 1000px;
+@media (max-width: 480px) {
+  .admin-roster-section {
+    flex-direction: column;
+    gap: map.get($spacing, "sm");
   }
-  to {
-    opacity: 0;
-    max-height: 0;
-    overflow: hidden;
+
+  .admin-roster-group {
+    min-width: 100%;
+  }
+
+  .col-jersey {
+    width: 24px;
+  }
+
+  .col-stat {
+    width: 24px;
   }
 }
