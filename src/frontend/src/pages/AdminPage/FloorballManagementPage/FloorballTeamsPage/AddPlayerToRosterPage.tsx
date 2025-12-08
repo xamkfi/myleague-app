@@ -13,12 +13,6 @@ import Button from '../../../../components/Button/Button';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import './AddPlayerToRosterPage.scss';
 
-interface SelectedPlayer {
-  player: FloorballPlayerDto;
-  position: FloorballPosition;
-  jerseyNumber: string;
-}
-
 const AddPlayerToRosterPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -29,10 +23,10 @@ const AddPlayerToRosterPage = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentTeam, setCurrentTeam] = useState<FloorballTeam | null>(null);
-  const [allPlayers, setAllPlayers] = useState<FloorballPlayerDto[]>([]); // Cache for all players
+  const [allPlayers, setAllPlayers] = useState<FloorballPlayerDto[]>([]);
   const [displayedPlayers, setDisplayedPlayers] = useState<FloorballPlayerDto[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPlayer, setSelectedPlayer] = useState<SelectedPlayer | null>(null);
+  const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 10;
@@ -162,7 +156,6 @@ const AddPlayerToRosterPage = () => {
     if (allPlayers.length > 0) {
       updateDisplayedPlayers(allPlayers, searchTerm, currentPage);
     } else if (!loadingPlayers && currentTeam) {
-      // No players available
       setDisplayedPlayers([]);
       setTotalPages(1);
     }
@@ -173,68 +166,64 @@ const AddPlayerToRosterPage = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  // Handle player selection
-  const handleSelectPlayer = (player: FloorballPlayerDto) => {
-    setSelectedPlayer({
-      player,
-      position: player.position || FloorballPosition.None,
-      jerseyNumber: ''
+  // Selection management functions
+  const togglePlayerSelection = (playerId: string) => {
+    setSelectedPlayers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(playerId)) {
+        newSet.delete(playerId);
+      } else {
+        newSet.add(playerId);
+      }
+      return newSet;
     });
   };
 
-  // Handle position change
-  const handlePositionChange = (position: FloorballPosition) => {
-    if (selectedPlayer) {
-      setSelectedPlayer({
-        ...selectedPlayer,
-        position
-      });
-    }
+  const selectAllOnPage = () => {
+    setSelectedPlayers(prev => {
+      const newSet = new Set(prev);
+      displayedPlayers.forEach(player => newSet.add(player.id));
+      return newSet;
+    });
   };
 
-  // Handle jersey number change
-  const handleJerseyNumberChange = (value: string) => {
-    if (selectedPlayer) {
-      // Only allow numbers
-      const numericValue = value.replace(/\D/g, '');
-      setSelectedPlayer({
-        ...selectedPlayer,
-        jerseyNumber: numericValue
-      });
-    }
+  const clearSelection = () => {
+    setSelectedPlayers(new Set());
   };
 
-  // Handle add player to team
-  const handleAddPlayer = async () => {
-    if (!teamId || !selectedPlayer) return;
+  const isAllOnPageSelected = displayedPlayers.length > 0 && 
+    displayedPlayers.every(player => selectedPlayers.has(player.id));
+
+  // Handle add selected players to team
+  const handleAddSelectedPlayers = async () => {
+    if (!teamId || selectedPlayers.size === 0) return;
     
     try {
       setSaving(true);
       setError(null);
       
-      const jerseyNumber = selectedPlayer.jerseyNumber 
-        ? parseInt(selectedPlayer.jerseyNumber, 10) 
-        : undefined;
-      
-      await floorballTeamService.addPlayerToTeam(
-        teamId,
-        selectedPlayer.player.id,
-        selectedPlayer.position,
-        jerseyNumber
-      );
+      // Add each selected player with position None and no jersey number
+      for (const playerId of selectedPlayers) {
+        try {
+          await floorballTeamService.addPlayerToTeam(
+            teamId,
+            playerId,
+            FloorballPosition.None,
+            undefined
+          );
+        } catch (err) {
+          console.error(`Failed to add player ${playerId}:`, err);
+          // Continue with other players even if one fails
+        }
+      }
       
       // Navigate back to roster page after successful add
       navigate(`/admin/floorball/teams/${teamId}/roster`);
     } catch (err) {
-      console.error('Error adding player to team:', err);
-      setError(err instanceof Error ? err.message : 'Failed to add player to team');
+      console.error('Error adding players to team:', err);
+      setError(err instanceof Error ? err.message : 'Failed to add players to team');
       setSaving(false);
     }
-  };
-
-  // Handle cancel selection
-  const handleCancelSelection = () => {
-    setSelectedPlayer(null);
   };
 
   // Handle page change
@@ -284,163 +273,152 @@ const AddPlayerToRosterPage = () => {
 
         <ErrorPopup message={error} />
 
-        {selectedPlayer ? (
-          // Player selection form
-          <div className="player-selection-form">
-            <h3 className="selection-title">
-              {t('floorball.teams.configurePlayer', 'Configure Player')}
-            </h3>
-            
-            <div className="selected-player-info">
-              <span className="player-name-label">{t('floorball.players.name', 'Name')}:</span>
-              <span className="player-name-value">{selectedPlayer.player.person.fullName}</span>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="position">{t('floorball.players.position', 'Position')}</label>
-              <select
-                id="position"
-                value={selectedPlayer.position}
-                onChange={(e) => handlePositionChange(e.target.value as FloorballPosition)}
-              >
-                <option value={FloorballPosition.None}>{getPositionDisplay(FloorballPosition.None)}</option>
-                <option value={FloorballPosition.Goalkeeper}>{getPositionDisplay(FloorballPosition.Goalkeeper)}</option>
-                <option value={FloorballPosition.Defender}>{getPositionDisplay(FloorballPosition.Defender)}</option>
-                <option value={FloorballPosition.Forward}>{getPositionDisplay(FloorballPosition.Forward)}</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="jerseyNumber">{t('floorball.players.jerseyNumber', 'Jersey Number')}</label>
-              <input
-                type="text"
-                id="jerseyNumber"
-                value={selectedPlayer.jerseyNumber}
-                onChange={(e) => handleJerseyNumberChange(e.target.value)}
-                placeholder={t('floorball.players.jerseyNumberPlaceholder', 'Enter jersey number (optional)')}
-                maxLength={3}
-              />
-            </div>
-
-            <div className="form-actions">
-              <Button
-                variant="secondary"
-                onClick={handleCancelSelection}
-                disabled={saving}
-              >
-                {t('common.cancel', 'Cancel')}
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleAddPlayer}
-                disabled={saving}
-              >
-                {saving 
-                  ? t('common.saving', 'Saving...') 
-                  : t('floorball.teams.addToTeam', 'Add to Team')
-                }
-              </Button>
-            </div>
+        <div className="add-player-roster-header">
+          <div className="search-section">
+            <SearchField
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder={t('floorball.teams.searchAvailablePlayers', 'Search available players...')}
+              fullWidth
+              rounded="pill"
+            />
           </div>
-        ) : (
-          // Player list
-          <>
-            <div className="add-player-roster-header">
-              <div className="search-section">
-                <SearchField
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  placeholder={t('floorball.teams.searchAvailablePlayers', 'Search available players...')}
-                  fullWidth
-                  rounded="pill"
-                />
-              </div>
-            </div>
+        </div>
 
-            <div className="players-table-wrapper">
-              {loadingPlayers ? (
-                <div className="loading-players">
-                  <p>{t('common.loading', 'Loading...')}</p>
-                </div>
-              ) : (
-                <table className="players-table">
-                  <thead>
-                    <tr>
-                      <th className="name-column">{t('floorball.players.name', 'NAME')}</th>
-                      <th className="position-column">{t('floorball.players.position', 'POSITION')}</th>
-                      <th className="team-column">{t('floorball.players.currentTeam', 'CURRENT TEAM')}</th>
-                      <th className="actions-column">{t('common.actions', 'ACTIONS')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayedPlayers.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="no-players">
-                          {searchTerm 
-                            ? t('floorball.teams.noPlayersFoundSearch', 'No players found matching your search')
-                            : t('floorball.teams.noAvailablePlayers', 'No available players found')
-                          }
-                        </td>
-                      </tr>
-                    ) : (
-                      displayedPlayers.map((player) => (
-                        <tr key={player.id}>
-                          <td className="name-column">
-                            <span className="player-name">{player.person.fullName}</span>
-                          </td>
-                          <td className="position-column">
-                            <span className="position">{getPositionDisplay(player.position)}</span>
-                          </td>
-                          <td className="team-column">
-                            <span className="team-name">
-                              {player.team?.name || t('floorball.players.noTeam', 'No team')}
-                            </span>
-                          </td>
-                          <td className="actions-column">
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => handleSelectPlayer(player)}
-                            >
-                              {t('common.select', 'Select')}
-                            </Button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="pagination">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  {t('common.previous', 'Previous')}
-                </Button>
-                <span className="page-info">
-                  {t('common.pageOf', 'Page {{current}} of {{total}}', { 
-                    current: currentPage, 
-                    total: totalPages 
-                  })}
-                </span>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  {t('common.next', 'Next')}
-                </Button>
-              </div>
+        {/* Selection Controls */}
+        <div className="selection-controls">
+          <div className="selection-info">
+            <span className="selected-count">
+              {t('floorball.teams.selectedPlayers', '{{count}} selected', { count: selectedPlayers.size })}
+            </span>
+            {selectedPlayers.size > 0 && (
+              <button
+                type="button"
+                className="clear-selection-btn"
+                onClick={clearSelection}
+              >
+                {t('common.clearSelection', 'Clear Selection')}
+              </button>
             )}
-          </>
+          </div>
+          
+          <div className="selection-actions">
+            <Button
+              variant="primary"
+              onClick={handleAddSelectedPlayers}
+              disabled={selectedPlayers.size === 0 || saving}
+            >
+              {saving 
+                ? t('common.saving', 'Saving...') 
+                : t('floorball.teams.addSelectedToTeam', 'Add Selected to Team ({{count}})', { count: selectedPlayers.size })
+              }
+            </Button>
+          </div>
+        </div>
+
+        <div className="players-table-wrapper">
+          {loadingPlayers ? (
+            <div className="loading-players">
+              <p>{t('common.loading', 'Loading...')}</p>
+            </div>
+          ) : (
+            <table className="players-table">
+              <thead>
+                <tr>
+                  <th className="select-column">
+                    <input
+                      type="checkbox"
+                      checked={isAllOnPageSelected}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          selectAllOnPage();
+                        } else {
+                          // Deselect only players on current page
+                          setSelectedPlayers(prev => {
+                            const newSet = new Set(prev);
+                            displayedPlayers.forEach(player => newSet.delete(player.id));
+                            return newSet;
+                          });
+                        }
+                      }}
+                      title={t('floorball.teams.selectAllOnPage', 'Select all on this page')}
+                    />
+                  </th>
+                  <th className="name-column">{t('floorball.players.name', 'NAME')}</th>
+                  <th className="position-column">{t('floorball.players.position', 'POSITION')}</th>
+                  <th className="team-column">{t('floorball.players.currentTeam', 'CURRENT TEAM')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayedPlayers.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="no-players">
+                      {searchTerm 
+                        ? t('floorball.teams.noPlayersFoundSearch', 'No players found matching your search')
+                        : t('floorball.teams.noAvailablePlayers', 'No available players found')
+                      }
+                    </td>
+                  </tr>
+                ) : (
+                  displayedPlayers.map((player) => (
+                    <tr 
+                      key={player.id}
+                      className={`clickable-row${selectedPlayers.has(player.id) ? ' selected' : ''}`}
+                      onClick={() => togglePlayerSelection(player.id)}
+                    >
+                      <td className="select-column">
+                        <input
+                          type="checkbox"
+                          checked={selectedPlayers.has(player.id)}
+                          onChange={() => togglePlayerSelection(player.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </td>
+                      <td className="name-column">
+                        <span className="player-name">{player.person.fullName}</span>
+                      </td>
+                      <td className="position-column">
+                        <span className="position">{getPositionDisplay(player.position)}</span>
+                      </td>
+                      <td className="team-column">
+                        <span className="team-name">
+                          {player.team?.name || t('floorball.players.noTeam', 'No team')}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="pagination">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              {t('common.previous', 'Previous')}
+            </Button>
+            <span className="page-info">
+              {t('common.pageOf', 'Page {{current}} of {{total}}', { 
+                current: currentPage, 
+                total: totalPages 
+              })}
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              {t('common.next', 'Next')}
+            </Button>
+          </div>
         )}
       </div>
     </PageTemplate>
