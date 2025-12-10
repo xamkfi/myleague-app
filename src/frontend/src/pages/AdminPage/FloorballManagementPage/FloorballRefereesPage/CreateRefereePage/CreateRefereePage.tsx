@@ -235,7 +235,7 @@ const CreateRefereePage = () => {
                   className="search-input"
                 />
               </div>
-              <button className="create-person-link" onClick={() => navigate('/admin/persons/create')}>
+              <button className="create-person-link" onClick={() => navigate('/admin/persons/new')}>
                 <span className="plus-icon">+</span>
                 {t('floorball.referees.createNewPerson', 'Create new person')}
               </button>

@@ -273,7 +273,7 @@ const PersonForm = ({
   const validateForm = (): boolean => {
     const errors: { [key: string]: string } = {};
 
-    // Required fields validation
+    // s validation
     if (!formData.firstName.trim()) {
       errors.firstName = t('admin.persons.validation.firstNameRequired');
     } else if (formData.firstName.length > MAX_LENGTHS.firstName) {
@@ -294,40 +294,20 @@ const PersonForm = ({
       }
     }
 
-    // Address validation (all fields required if any field is filled)
-    const addressValues = [
-      formData.address.street1,
-      formData.address.city,
-      formData.address.postalCode,
-      formData.address.country
-    ];
-    const hasAnyAddressField = addressValues.some(value => value.trim() !== '');
-
-    if (hasAnyAddressField) {
-      if (!formData.address.street1.trim()) {
-        errors['address.street1'] = t('admin.persons.validation.street1Required');
-      } else if (formData.address.street1.length > MAX_LENGTHS.street1) {
-        errors['address.street1'] = t('admin.persons.validation.street1TooLong', { max: MAX_LENGTHS.street1 });
-      }
-
-      if (!formData.address.city.trim()) {
-        errors['address.city'] = t('admin.persons.validation.cityRequired');
-      } else if (formData.address.city.length > MAX_LENGTHS.city) {
-        errors['address.city'] = t('admin.persons.validation.cityTooLong', { max: MAX_LENGTHS.city });
-      }
-
-      if (!formData.address.postalCode.trim()) {
-        errors['address.postalCode'] = t('admin.persons.validation.postalCodeRequired');
-      } else if (formData.address.postalCode.length > MAX_LENGTHS.postalCode) {
-        errors['address.postalCode'] = t('admin.persons.validation.postalCodeTooLong', { max: MAX_LENGTHS.postalCode });
-      }
-
-      if (!formData.address.country.trim()) {
-        errors['address.country'] = t('admin.persons.validation.countryRequired');
-      } else if (formData.address.country.length > MAX_LENGTHS.country) {
-        errors['address.country'] = t('admin.persons.validation.countryTooLong', { max: MAX_LENGTHS.country });
-      }
+    // Address validation: country is required; other address fields are optional but length-limited if provided
+    if (formData.address.street1 && formData.address.street1.length > MAX_LENGTHS.street1) {
+      errors['address.street1'] = t('admin.persons.validation.street1TooLong', { max: MAX_LENGTHS.street1 });
     }
+
+    if (formData.address.city && formData.address.city.length > MAX_LENGTHS.city) {
+      errors['address.city'] = t('admin.persons.validation.cityTooLong', { max: MAX_LENGTHS.city });
+    }
+
+    if (formData.address.postalCode && formData.address.postalCode.length > MAX_LENGTHS.postalCode) {
+      errors['address.postalCode'] = t('admin.persons.validation.postalCodeTooLong', { max: MAX_LENGTHS.postalCode });
+    }
+
+
 
     // Contact info validation
     const emailError = validateEmail(formData.contactInfo.email);
@@ -527,7 +507,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="firstName">
-              {t('admin.persons.form.firstName')} <span className="required">*required field</span>
+              {t('admin.persons.form.firstName')} <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -545,7 +525,7 @@ const PersonForm = ({
           </div>
           <div className="form-group">
             <label htmlFor="lastName">
-              {t('admin.persons.form.lastName')} <span className="required">*required field</span>
+              {t('admin.persons.form.lastName')} <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -579,9 +559,7 @@ const PersonForm = ({
             {fieldErrors.birthDate && (
               <div className="field-error">{fieldErrors.birthDate}</div>
             )}
-            <div className="field-hint">
-              {t('admin.persons.form.dateFormat')}
-            </div>
+
           </div>
           <div className="form-group">
             <label htmlFor="isRegistered" className="checkbox-label">
@@ -603,7 +581,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
                           <label htmlFor="address.street1">
-                {t('admin.persons.form.street1')} <span className="required">*required field</span>
+                {t('admin.persons.form.street1')}
               </label>
             <input
               type="text"
@@ -622,7 +600,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
                           <label htmlFor="address.city">
-                {t('admin.persons.form.city')} <span className="required">*required field</span>
+                {t('admin.persons.form.city')} 
               </label>
             <input
               type="text"
@@ -639,7 +617,7 @@ const PersonForm = ({
           </div>
           <div className="form-group">
                           <label htmlFor="address.postalCode">
-                {t('admin.persons.form.postalCode')} <span className="required">*required field</span>
+                {t('admin.persons.form.postalCode')} 
               </label>
             <input
               type="text"
@@ -656,7 +634,7 @@ const PersonForm = ({
           </div>
           <div className="form-group">
                           <label htmlFor="address.country">
-                {t('admin.persons.form.country')} <span className="required">*required field</span>
+                {t('admin.persons.form.country')} <span className="required">*</span>
               </label>
             <input
               type="text"
@@ -679,7 +657,7 @@ const PersonForm = ({
         <div className="form-row">
           <div className="form-group">
                           <label htmlFor="contactInfo.email">
-                {t('admin.persons.form.email')} <span className="required">*required field</span>
+                {t('admin.persons.form.email')} <span className="required">*</span>
               </label>
             <input
               type="email"
@@ -757,7 +735,7 @@ const PersonForm = ({
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="position">
-                  {t('admin.persons.form.position')} <span className="required">*required field</span>
+                  {t('admin.persons.form.position')} <span className="required">*</span>
                 </label>
                 <select
                   id="position"

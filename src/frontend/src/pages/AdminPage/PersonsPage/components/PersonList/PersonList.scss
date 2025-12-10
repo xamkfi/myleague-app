@@ -1,4 +1,5 @@
 @use '@variables' as *;
+@use 'sass:map';
 
 .persons-list {
   width: 100%;
@@ -327,7 +328,7 @@
     padding: 0.75rem 1rem;
     padding-right: 2.5rem; // Space for clear button
     border: 1px solid #ced4da;
-    border-radius: 0.5rem;
+    border-radius: map.get($border-radius, "xl");
     font-size: 1rem;
     font-weight: 400;
     background-color: white;

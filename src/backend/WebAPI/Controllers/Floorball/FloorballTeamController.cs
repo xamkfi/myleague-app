@@ -47,8 +47,8 @@ namespace WebAPI.Controllers.Floorball
         /// <returns>Paginated list of floorball teams</returns>
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballTeamDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballTeamDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<FloorballTeamDto>>> GetAllTeams([FromQuery] GetFloorballTeamsRequest request)
         {
             _logger.LogInformation("Getting all floorball teams with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);

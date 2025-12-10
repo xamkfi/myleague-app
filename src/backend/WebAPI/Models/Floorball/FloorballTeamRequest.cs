@@ -37,8 +37,7 @@ namespace WebAPI.Models.Floorball
         /// <summary>
         /// The division the team plays in
         /// </summary>
-        [Required(ErrorMessage = "Division is required")]
-        public Guid DivisionId { get; set; }
+        public Guid? DivisionId { get; set; }
 
         /// <summary>
         /// The ID of the club the team belongs to

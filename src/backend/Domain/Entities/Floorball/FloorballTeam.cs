@@ -24,12 +24,12 @@ public class FloorballTeam : BaseEntity
     /// <summary>
     /// Gets the division level of the team
     /// </summary>
-    public Division Division { get; private set; }
+    public Division? Division { get; private set; }
 
     /// <summary>
     /// Gets the ID of the division this team belongs to
     /// </summary>
-    public Guid DivisionId { get; private set; }
+    public Guid? DivisionId { get; private set; }
 
     /// <summary>
     /// Gets the club this team belongs to
@@ -109,7 +109,7 @@ public class FloorballTeam : BaseEntity
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballTeam(
         string name, 
-        Guid divisionId, 
+        Guid? divisionId, 
         Club club,
         string homeArena,
         string primaryJerseyColor,
@@ -173,7 +173,7 @@ public class FloorballTeam : BaseEntity
     /// Updates the team's division
     /// </summary>
     /// <param name="division">The new division</param>
-    public void UpdateDivision(Guid divisionId)
+    public void UpdateDivision(Guid? divisionId)
     {
         DivisionId = divisionId;
     }

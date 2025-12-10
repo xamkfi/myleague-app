@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AdminPageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
-import ClubForm, { type ClubFormValues } from './ClubForm';
+import ClubForm from './ClubForm';
+import { clubService, type Club, type ClubRequest } from '../../../api/common/clubService';
 
 function toDmyFromIso(iso: string): string {
   const dt = new Date(iso);
@@ -13,7 +14,6 @@ function toDmyFromIso(iso: string): string {
   const yyyy = dt.getUTCFullYear();
   return `${dd}-${mm}-${yyyy}`;
 }
-import { clubService, type Club, type ClubRequest } from '../../../api/common/clubService';
 
 function EditClubPage() {
   const { t } = useTranslation();
@@ -40,7 +40,7 @@ function EditClubPage() {
     load();
   }, [id]);
 
-  const initialValues: ClubFormValues | undefined = club
+  const initialValues: ClubRequest | undefined = club
     ? {
         name: club.name,
         city: club.city,
