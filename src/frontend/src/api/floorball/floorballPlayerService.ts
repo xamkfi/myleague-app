@@ -26,6 +26,7 @@ export interface FloorballPlayerDto {
   position: FloorballPosition;
   careerGoals: number;
   careerAssists: number;
+  jerseyNumber?: number;
   team?: {
     id: string;
     name: string;

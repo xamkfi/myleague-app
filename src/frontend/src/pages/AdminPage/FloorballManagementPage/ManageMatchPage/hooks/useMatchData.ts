@@ -41,11 +41,16 @@ export const useMatchData = ({
       setAwayTeam(awayTeamData);
       
       // Load players for both teams
-      const [homePlayersData, awayPlayersData] = await Promise.all([
+      const [homePlayersDataRaw, awayPlayersDataRaw] = await Promise.all([
         floorballPlayerService.getByTeamId(match.homeTeamId),
         floorballPlayerService.getByTeamId(match.awayTeamId)
       ]);
-      
+
+      const homeRosterMap = new Map(homeTeamData?.roster?.map(tp => [tp.playerId, tp.jerseyNumber]) || []);
+      const awayRosterMap = new Map(awayTeamData?.roster?.map(tp => [tp.playerId, tp.jerseyNumber]) || []);
+      const homePlayersData = homePlayersDataRaw.map(p => ({ ...p, jerseyNumber: homeRosterMap.get(p.id) }));
+      const awayPlayersData = awayPlayersDataRaw.map(p => ({ ...p, jerseyNumber: awayRosterMap.get(p.id) }));
+
       setHomePlayers(homePlayersData);
       setAwayPlayers(awayPlayersData);
       

@@ -104,8 +104,8 @@ export const useFormState = ({
         assisterId: goalForm.assisterId || undefined,
         periodNumber: clock.period,
         timeInSeconds: currentTimerElapsedTime,
-        wasInOvertime: currentMatch.wentToOvertime || clock.period > 3,
-        wasInShootout: currentMatch.wentToShootout || clock.period > 4,
+        wasInOvertime: currentMatch.wentToOvertime || clock.period > 2,
+        wasInShootout: currentMatch.wentToShootout || clock.period > 3,
       };
       
       await floorballMatchEventService.recordGoal(goalData);

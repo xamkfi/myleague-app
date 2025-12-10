@@ -185,7 +185,7 @@ public class FloorballMatch : BaseEntity
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
-        for (int i = 1; i <= 3; i++)
+        for (int i = 1; i <= 2; i++)
         {
             _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
         }
@@ -621,9 +621,9 @@ public class FloorballMatch : BaseEntity
         WentToOvertime = true;
 
         // Create a periodscore for non-regular period (Overtime)
-        if (_periodScores.All(ps => ps.PeriodNumber != 4))
+        if (_periodScores.All(ps => ps.PeriodNumber != 3))
         {
-            _periodScores.Add(new FloorballPeriodScore(Id, 4, HomeTeamId, AwayTeamId));
+            _periodScores.Add(new FloorballPeriodScore(Id, 3, HomeTeamId, AwayTeamId));
         }
 
     }
@@ -636,9 +636,9 @@ public class FloorballMatch : BaseEntity
         WentToShootout = true;
 
         // Create a periodscore for non-regular period (Shootout)
-        if (_periodScores.All(ps => ps.PeriodNumber != 5))
+        if (_periodScores.All(ps => ps.PeriodNumber != 4))
         {
-            _periodScores.Add(new FloorballPeriodScore(Id, 5, HomeTeamId, AwayTeamId));
+            _periodScores.Add(new FloorballPeriodScore(Id, 4, HomeTeamId, AwayTeamId));
         }
 
     }

@@ -187,8 +187,8 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         playerId: goalieId,
         periodNumber: timer.localClock.period,
         timeInSeconds: timer.currentTimerElapsedTime,
-        wasInOvertime: matchWentToOvertime || timer.localClock.period > 3,
-        wasInShootout: matchWentToShootout || timer.localClock.period > 4
+        wasInOvertime: matchWentToOvertime || timer.localClock.period > 2,
+        wasInShootout: matchWentToShootout || timer.localClock.period > 3
       };
       await floorballMatchEventService.recordSave(payload);
       await loadMatchEvents();
@@ -282,7 +282,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           
           periodManagement.setStartedPeriods(startedPeriods);
           periodManagement.setEndedPeriods(endedPeriods);
-          periodManagement.setNextPeriodToStart(nextPeriod <= 5 ? nextPeriod : 0);
+          periodManagement.setNextPeriodToStart(nextPeriod <= 4 ? nextPeriod : 0);
 
         } else {
           periodManagement.setStartedPeriods(new Set());

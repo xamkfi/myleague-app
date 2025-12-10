@@ -29,7 +29,7 @@ namespace WebAPI.Models.Floorball
         /// Period number when the event occurred
         /// </summary>
         [Required(ErrorMessage = "Period number is required")]
-        [Range(1, 5, ErrorMessage = "Period number must be between 1 and 5")]
+        [Range(1, 4, ErrorMessage = "Period number must be between 1 and 4")]
         public int PeriodNumber { get; set; }
 
         /// <summary>
