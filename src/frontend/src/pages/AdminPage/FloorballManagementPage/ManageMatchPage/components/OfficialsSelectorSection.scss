@@ -1,0 +1,59 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
+.officials-selector-section {
+  margin-top: 8px;
+  width: 622px;
+  padding: 24px;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .officials-title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 14px;
+    line-height: 24px;
+    letter-spacing: 0;
+    color: $color-neutral-black;
+  }
+
+  .officials-dropdown {
+    display: flex;
+    flex-direction: column;
+
+    .officials-header {
+      margin: 0 0 4px 0;
+      font-family: $font-family-body;
+      font-weight: map.get($font-weights, 'semibold');
+      font-size: 12px;
+      line-height: 16px;
+      letter-spacing: 0;
+      color: $color-neutral-dark-grey;
+      display: flex;
+      align-items: center;
+    }
+
+    select {
+      justify-self: start;
+      width: 279px;
+      height: 40px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: $color-neutral-light-grey;
+      font-family: $font-family-body;
+      font-weight: map.get($font-weights, 'regular');
+      font-size: 14px;
+      line-height: 24px;
+      letter-spacing: 0;
+      color: $color-neutral-black;
+      appearance: auto;
+    }
+  }
+}
+

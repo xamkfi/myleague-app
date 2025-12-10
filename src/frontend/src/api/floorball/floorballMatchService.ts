@@ -519,5 +519,64 @@ export const floorballMatchService = {
       console.error('Error in floorballMatchService.changeGoalie:', error);
       throw error;
     }
+  },
+
+  /**
+   * Change match referee
+   */
+  changeReferee: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/referee/${refereeId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const raw = await response.text();
+      const apiResponse: ApiResponse<FloorballMatchDto> = raw ? JSON.parse(raw) : { success: response.ok, data: undefined as unknown as FloorballMatchDto, message: '', errors: [] };
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to change match referee');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match referee');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.changeReferee:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update match officials list
+   */
+  updateOfficials: async (matchId: string, officials: string[]): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ officials }),
+      });
+
+      const raw = await response.text();
+      const apiResponse: ApiResponse<FloorballMatchDto> = raw ? JSON.parse(raw) : { success: response.ok, data: undefined as unknown as FloorballMatchDto, message: '', errors: [] };
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to update match officials');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to update match officials');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.updateOfficials:', error);
+      throw error;
+    }
   }
 }; 

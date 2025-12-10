@@ -18,7 +18,7 @@ const LiveMatchModalHeader = ({
 }: LiveMatchModalHeaderProps) => {
   return (
     <div className="modal-header">
-      <div className="match-info">
+      <div className="live-match-info">
         <h2>{homeTeam?.name || 'Home'} vs {awayTeam?.name || 'Away'}</h2>
         <div className="status-controls">
           {currentMatch.status === 'Completed' ? (

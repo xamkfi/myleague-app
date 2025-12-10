@@ -211,6 +211,7 @@ export interface FloorballMatchDto {
   wentToShootout: boolean;
   homeActiveGoalieId?: string;
   awayActiveGoalieId?: string;
+  refereeId?: string;
   periodScores: Record<number, { homeScore: number; awayScore: number }>;
   officials: string[];
   goalEvents: FloorballGoalEventDto[];
@@ -231,6 +232,7 @@ export interface UpdateFloorballMatchRequest {
   id: string;
   scheduledDateTime: string;
   venue?: string;
+  refereeId?: string;
 }
 
 // New types for edit match functionality

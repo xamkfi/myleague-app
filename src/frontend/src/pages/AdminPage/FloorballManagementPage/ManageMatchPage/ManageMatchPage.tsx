@@ -17,8 +17,10 @@ import PenaltyRecordingForm from './components/PenaltyRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ConfirmationDialog from './components/ConfirmationDialog';
 import ActivePlayersSelector from './components/ActivePlayersSelector';
+import OfficialsSelectorSection from './components/OfficialsSelectorSection';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import type { ProcessedEvent } from './components/types';
+import { floorballRefereeService } from '../../../../api/floorball/floorballRefereeService';
 
 // Import custom hooks
 import {
@@ -43,6 +45,9 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   // State for selected goalies (lifted up), initialized from match prop
   const [homeGoalieId, setHomeGoalieId] = useState<string>(match.homeActiveGoalieId || '');
   const [awayGoalieId, setAwayGoalieId] = useState<string>(match.awayActiveGoalieId || '');
+  const [selectedOfficials, setSelectedOfficials] = useState<string[]>(match.officials || []);
+  const [officialOptions, setOfficialOptions] = useState<Array<{ id: string; name: string }>>([]);
+  const [officialsSaving, setOfficialsSaving] = useState<boolean>(false);
 
   // This effect ensures that if the match prop is updated from the server,
   // the local goalie state is synchronized. This is useful if the user
@@ -50,12 +55,23 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   useEffect(() => {
     setHomeGoalieId(match.homeActiveGoalieId || '');
     setAwayGoalieId(match.awayActiveGoalieId || '');
-  }, [match.homeActiveGoalieId, match.awayActiveGoalieId]);
+    setSelectedOfficials(match.officials || []);
+  }, [match.homeActiveGoalieId, match.awayActiveGoalieId, match.officials]);
 
 
   const handleStateUpdate = useCallback(() => {
     // This is a placeholder for now.
     // If we need to manage more complex state between hooks, we can implement a reducer here.
+  }, []);
+
+  const promoteGuestOfficial = useCallback((options: Array<{ id: string; name: string }>) => {
+    const guestIndex = options.findIndex(option => option.name.toUpperCase() === 'GUEST REFEREE');
+    if (guestIndex <= 0) {
+      return options;
+    }
+    const guest = options[guestIndex];
+    const remaining = options.filter((_, index) => index !== guestIndex);
+    return [guest, ...remaining];
   }, []);
 
   // Use custom hooks for business logic
@@ -64,6 +80,31 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     onMatchUpdated: setMatch,
     onStateUpdate: handleStateUpdate,
   });
+  const { setError: setMatchError } = matchData;
+
+  useEffect(() => {
+    let isCancelled = false;
+    const loadOfficials = async () => {
+      if (!match.id) return;
+      try {
+        const response = await floorballRefereeService.getAll({ pageSize: 50 });
+        if (!isCancelled && response.success && response.data) {
+          const mapped = response.data.map(ref => ({ id: ref.id, name: ref.person.fullName }));
+          setOfficialOptions(promoteGuestOfficial(mapped));
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          console.error('Error loading officials:', error);
+          setMatchError(error instanceof Error ? error.message : 'Failed to load officials');
+        }
+      }
+    };
+
+    loadOfficials();
+    return () => {
+      isCancelled = true;
+    };
+  }, [promoteGuestOfficial, match.id, setMatchError]);
 
 
   const timer = useLocalTimer({
@@ -201,6 +242,25 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
   // Destructure currentMatch and setter to satisfy update effect dependencies
   const { currentMatch: trackedMatch, setCurrentMatch } = matchData;
+
+  const handleOfficialsChange = useCallback(async (ids: string[]) => {
+    if (!match.id) return;
+    setSelectedOfficials(ids);
+    try {
+      setOfficialsSaving(true);
+      matchData.setError(null);
+      const response = await floorballMatchService.updateOfficials(match.id, ids);
+      if (response.success && response.data) {
+        setCurrentMatch(response.data);
+        setMatch(response.data);
+      }
+    } catch (error) {
+      console.error('Error updating officials:', error);
+      matchData.setError(error instanceof Error ? error.message : 'Failed to update officials');
+    } finally {
+      setOfficialsSaving(false);
+    }
+  }, [match.id, matchData, setCurrentMatch, setMatch]);
 
   // Update internal currentMatch state when match prop changes
   useEffect(() => {
@@ -583,6 +643,13 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             currentMatch={matchData.currentMatch}
             onMatchUpdated={setMatch}
             setError={matchData.setError}
+          />
+
+          <OfficialsSelectorSection
+            selectedOfficials={selectedOfficials}
+            options={officialOptions}
+            saving={officialsSaving}
+            onChange={handleOfficialsChange}
           />
 
           {/* Forms */}

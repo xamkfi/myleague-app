@@ -691,7 +691,7 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Adds an official (referee) to a floorball match
+        /// Adds an official (referee) to a floorball match (delegates to update-officials).
         /// </summary>
         [HttpPost("add-official")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
@@ -702,7 +702,23 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Adding official {refereeId} to match ID: {matchId}", request.RefereeId, request.MatchId);
 
-            AddOfficialToMatchCommand command = new AddOfficialToMatchCommand(request.MatchId, request.RefereeId);
+            // Re-use the update handler by appending this referee to existing officials.
+            Result<FloorballMatchDto> match = await _mediator.Send(new GetFloorballMatchByIdQuery(request.MatchId));
+            if (!match.IsSuccess || match.Data == null)
+            {
+                string err = match.Error ?? "Match not found";
+                if (err.Contains("not found", StringComparison.OrdinalIgnoreCase))
+                    return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(err));
+                return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(err));
+            }
+
+            List<Guid> currentOfficials = match.Data.Officials?.ToList() ?? new List<Guid>();
+            if (!currentOfficials.Contains(request.RefereeId))
+            {
+                currentOfficials.Add(request.RefereeId);
+            }
+
+            UpdateMatchOfficialsCommand command = new UpdateMatchOfficialsCommand(request.MatchId, currentOfficials);
             Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
@@ -719,6 +735,90 @@ namespace WebAPI.Controllers.Floorball
             return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
         }
 
+
+        /// <summary>
+        /// Replaces officials for a match (requires at least one).
+        /// </summary>
+        [HttpPut("{matchId:guid}/officials")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> UpdateOfficials(Guid matchId, [FromBody] FloorballMatchOfficialsRequest request)
+        {
+            _logger.LogInformation("Updating officials for match ID: {matchId}", matchId);
+
+            UpdateMatchOfficialsCommand command = new UpdateMatchOfficialsCommand(matchId, request.Officials ?? Array.Empty<Guid>());
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Officials updated successfully"));
+            }
+
+            string? errorMessage = result.Error ?? "Failed to update officials";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Removes an official from a match (must leave at least one official).
+        /// </summary>
+        [HttpDelete("{matchId:guid}/officials/{refereeId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RemoveOfficial(Guid matchId, Guid refereeId)
+        {
+            _logger.LogInformation("Removing official {refereeId} from match ID: {matchId}", refereeId, matchId);
+
+            RemoveOfficialFromMatchCommand command = new RemoveOfficialFromMatchCommand(matchId, refereeId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Official removed successfully"));
+            }
+
+            string? errorMessage = result.Error ?? "Failed to remove official";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Sets a single referee for the match (PUT semantic).
+        /// </summary>
+        [HttpPut("{matchId:guid}/referee/{refereeId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> SetReferee(Guid matchId, Guid refereeId)
+        {
+            _logger.LogInformation("Setting referee {refereeId} for match ID: {matchId}", refereeId, matchId);
+
+            UpdateMatchOfficialsCommand command = new UpdateMatchOfficialsCommand(matchId, new[] { refereeId });
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Referee set successfully"));
+            }
+
+            string? errorMessage = result.Error ?? "Failed to set referee";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
 
         /// <summary>
         /// Changes the active goalie for a team in a match
