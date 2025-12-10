@@ -24,7 +24,9 @@
   }
 
   &__main {
-    text-align: center;
+    width: 100%;
+    text-align: left;
+    align-self: flex-start;
   }
 }
 
