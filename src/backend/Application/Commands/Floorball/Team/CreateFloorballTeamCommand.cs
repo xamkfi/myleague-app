@@ -23,7 +23,7 @@ namespace Application.Commands.Floorball.Team
     /// <param name="SecondaryJerseyColor"></param>
     public record CreateFloorballTeamCommand(
         string Name,
-        Guid DivisionId,
+        Guid? DivisionId,
         Guid ClubId,
         string HomeArena,
         string PrimaryJerseyColor,

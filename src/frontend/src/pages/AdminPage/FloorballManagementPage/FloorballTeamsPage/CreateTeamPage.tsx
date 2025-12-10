@@ -4,9 +4,7 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import { getClubs, type Club } from '../../../../api/common/clubService';
-import { divisionService } from '../../../../api/common/divisionService';
 import { TeamCategory, type FloorballTeamRequest } from '../../../../types/floorball/floorballTypes';
-import type { DivisionType } from '../../../../types/common/divisionType';
 import './CreateTeamPage.scss';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
@@ -17,7 +15,6 @@ const CreateTeamPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [clubs, setClubs] = useState<Club[]>([]);
-  const [divisions, setDivisions] = useState<DivisionType[]>([]);
   
   const [formData, setFormData] = useState<FloorballTeamRequest>({
     name: '',
@@ -32,7 +29,6 @@ const CreateTeamPage = () => {
   // Load clubs and divisions on component mount
   useEffect(() => {
     loadClubs();
-    loadDivisions();
   }, []);
 
   const loadClubs = async () => {
@@ -41,16 +37,6 @@ const CreateTeamPage = () => {
       setClubs(clubsData);
     } catch (err) {
       console.error('Error loading clubs:', err);
-    }
-  };
-
-  const loadDivisions = async () => {
-    try {
-      const response = await divisionService.getAll();
-      setDivisions(response.data);
-    } catch (err) {
-      console.error('Error loading divisions:', err);
-      setDivisions([]);
     }
   };
 
@@ -137,46 +123,30 @@ const CreateTeamPage = () => {
             </select>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="division">{t('floorball.teams.division', 'Division')} *</label>
-              <select
-                id="division"
-                value={formData.divisionId}
-                onChange={(e) => handleInputChange('divisionId', e.target.value)}
-                required
-              >
-                <option value="">{t('floorball.teams.selectDivision', 'Select division...')}</option>
-                {divisions.map(division => (
-                  <option key={division.id} value={division.id}>{division.name}</option>
-                ))}
-              </select>
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="category">{t('floorball.teams.category', 'Category')} *</label>
-              <select
-                id="category"
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value as TeamCategory)}
-                required
-              >
-                <option value="Adult">{t('floorball.categories.adult', 'Adult')}</option>
-                <option value="Youth">{t('floorball.categories.youth', 'Youth')}</option>
-                <option value="Women">{t('floorball.categories.women', 'Women')}</option>
-              </select>
-            </div>
+          <div className="form-group">
+            <label htmlFor="category">{t('floorball.teams.category', 'Category')} *</label>
+            <select
+              id="category"
+              value={formData.category}
+              onChange={(e) => handleInputChange('category', e.target.value as TeamCategory)}
+              required
+            >
+              <option value="Adult">{t('floorball.categories.adult', 'Adult')}</option>
+              <option value="Youth">{t('floorball.categories.youth', 'Youth')}</option>
+              <option value="Women">{t('floorball.categories.women', 'Women')}</option>
+            </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="homeArena">{t('floorball.teams.homeArena', 'Home Arena')} *</label>
+            <label htmlFor="homeArena">{t('floorball.teams.homeArena', 'Home Arena')} </label>
             <input
               id="homeArena"
               type="text"
               value={formData.homeArena}
               onChange={(e) => handleInputChange('homeArena', e.target.value)}
-              required
               placeholder={t('floorball.teams.homeArenaPlaceholder', 'Enter home arena')}
+              
             />
           </div>
 

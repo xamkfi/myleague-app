@@ -27,7 +27,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Ignore(t => t.Division);
 
             builder.Property(t => t.DivisionId)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(t => t.HomeArena)
                 .IsRequired()

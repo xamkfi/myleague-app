@@ -16,7 +16,7 @@ export interface ClubRequest {
   name: string;
   city: string;
   country: string;
-  foundingDate: string;
+  foundingDate: string | null;
   websiteUrl?: string | null;
   logoUrl?: string | null;
   contactEmail?: string | null;

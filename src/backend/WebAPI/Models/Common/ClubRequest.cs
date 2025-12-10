@@ -50,7 +50,7 @@ public record CreateClubRequest
     /// Gets the founding date of the club
     /// </summary>
     [Required(ErrorMessage = "Founding date is required")]
-    public DateTime FoundingDate { get; init; }
+    public DateTime? FoundingDate { get; init; }
 
     /// <summary>
     /// Gets the website URL of the club
