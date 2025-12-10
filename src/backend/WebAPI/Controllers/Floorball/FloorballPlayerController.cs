@@ -47,8 +47,8 @@ namespace WebAPI.Controllers.Floorball
         /// <returns>Paginated list of floorball players</returns>
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<FloorballPlayerDto>>> GetAllPlayers([FromQuery] GetFloorballPlayersRequest request)
         {
             _logger.LogInformation("Getting all floorball players with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
@@ -80,8 +80,8 @@ namespace WebAPI.Controllers.Floorball
         /// <returns>Paginated list of active floorball players</returns>
         [HttpGet("active")]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<FloorballPlayerDto>>> GetActivePlayers([FromQuery] GetActiveFloorballPlayersRequest request)
         {
             _logger.LogInformation("Getting active floorball players with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
