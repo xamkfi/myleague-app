@@ -10,44 +10,57 @@ interface OfficialsSelectorSectionProps {
   selectedOfficials: string[];
   options: OfficialOption[];
   saving: boolean;
-  onChange: (ids: string[]) => void;
+  onAddRow: () => void;
+  onSelect: (index: number, refereeId: string) => void;
+  onRemove: (index: number, refereeId: string) => void;
 }
 
 const OfficialsSelectorSection = ({
   selectedOfficials,
   options,
   saving,
-  onChange
+  onAddRow,
+  onSelect,
+  onRemove
 }: OfficialsSelectorSectionProps) => {
-  const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    if (!value) {
-      onChange([]);
-      return;
-    }
-    onChange([value]);
+  const handleChange = (index: number, event: ChangeEvent<HTMLSelectElement>) => {
+    onSelect(index, event.target.value);
   };
-
-  const selectedValue = selectedOfficials[0] ?? '';
 
   return (
     <div className="officials-selector-section">
-      <div className="officials-title">MATCH OFFICIALS</div>
-      <div className="officials-dropdown">
-        <div className="officials-header">REFEREE</div>
-        <select
-          id="officials-select"
-          value={selectedValue}
-          onChange={handleChange}
-          disabled={saving}
-        >
-          <option value="">{saving ? 'Saving...' : 'SELECT REFEREE'}</option>
-          {options.map(option => (
-            <option key={option.id} value={option.id}>
-              {option.name}
-            </option>
-          ))}
-        </select>
+      <div className="officials-title-row">
+        <div className="officials-title">MATCH OFFICIALS</div>
+        <button type="button" className="officials-add-btn" onClick={onAddRow} disabled={saving}>
+          + Add referee
+        </button>
+      </div>
+      <div className="officials-rows">
+        {selectedOfficials.map((refId, idx) => (
+          <div className="officials-row" key={`${idx}-${refId || 'empty'}`}>
+            <select
+              value={refId}
+              onChange={(e) => handleChange(idx, e)}
+              disabled={saving}
+            >
+              <option value="">{saving ? 'Saving...' : 'SELECT REFEREE'}</option>
+              {options.map(option => (
+                <option key={option.id} value={option.id} disabled={selectedOfficials.includes(option.id) && option.id !== refId}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="officials-remove-btn"
+              onClick={() => onRemove(idx, refId)}
+              disabled={saving || !refId}
+              aria-label="Remove referee"
+            >
+              ×
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );

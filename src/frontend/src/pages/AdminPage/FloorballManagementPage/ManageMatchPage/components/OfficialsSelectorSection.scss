@@ -12,34 +12,50 @@
   flex-direction: column;
   gap: 12px;
 
-  .officials-title {
-    margin: 0;
-    font-family: $font-family-display;
-    font-weight: map.get($font-weights, 'medium');
-    font-size: 14px;
-    line-height: 24px;
-    letter-spacing: 0;
-    color: $color-neutral-black;
-  }
-
-  .officials-dropdown {
+  .officials-title-row {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
 
-    .officials-header {
-      margin: 0 0 4px 0;
-      font-family: $font-family-body;
-      font-weight: map.get($font-weights, 'semibold');
-      font-size: 12px;
-      line-height: 16px;
+    .officials-title {
+      margin: 0;
+      font-family: $font-family-display;
+      font-weight: map.get($font-weights, 'medium');
+      font-size: 14px;
+      line-height: 24px;
       letter-spacing: 0;
-      color: $color-neutral-dark-grey;
-      display: flex;
-      align-items: center;
+      color: $color-neutral-black;
     }
 
+    .officials-add-btn {
+      background: $color-neutral-light-grey;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-family: $font-family-body;
+      font-size: 12px;
+      cursor: pointer;
+      color: $color-neutral-black;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .officials-rows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .officials-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
     select {
-      justify-self: start;
       width: 279px;
       height: 40px;
       padding: 8px 16px;
@@ -53,6 +69,25 @@
       letter-spacing: 0;
       color: $color-neutral-black;
       appearance: auto;
+    }
+
+    .officials-remove-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: 4px;
+      background: #fff;
+      color: $color-neutral-black;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
     }
   }
 }

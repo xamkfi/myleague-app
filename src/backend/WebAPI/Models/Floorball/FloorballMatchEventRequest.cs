@@ -129,21 +129,4 @@ namespace WebAPI.Models.Floorball
         public Guid MatchId { get; set; }
     }
 
-    /// <summary>
-    /// Request model for adding an official to a match
-    /// </summary>
-    public class AddOfficialToMatchRequest
-    {
-        /// <summary>
-        /// ID of the match
-        /// </summary>
-        [Required(ErrorMessage = "Match ID is required")]
-        public Guid MatchId { get; set; }
-
-        /// <summary>
-        /// ID of the referee
-        /// </summary>
-        [Required(ErrorMessage = "Referee ID is required")]
-        public Guid RefereeId { get; set; }
-    }
 } 

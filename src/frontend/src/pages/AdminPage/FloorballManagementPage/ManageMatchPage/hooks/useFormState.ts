@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { 
   floorballMatchEventService, 
   type RecordGoalEventRequest, 
@@ -48,6 +48,9 @@ export const useFormState = ({
   
   // Loading state
   const [loading, setLoading] = useState(false);
+  const goalThrottleRef = useRef<Record<string, number>>({});
+  const penaltyThrottleRef = useRef<Record<string, number>>({});
+  const throttleMs = 1000;
 
   /**
    * Opens the goal form for a specific team
@@ -82,9 +85,17 @@ export const useFormState = ({
       setError('Please select team and player');
       return;
     }
+
+    const key = `${currentMatch.id}:${goalForm.teamId}:${goalForm.playerId}`;
+    const now = Date.now();
+    if (goalThrottleRef.current[key] && now - goalThrottleRef.current[key] < throttleMs) {
+      setError('Please wait a moment before recording another goal.');
+      return;
+    }
     
     try {
       setLoading(true);
+      goalThrottleRef.current[key] = now;
       
       const goalData: RecordGoalEventRequest = {
         matchId: currentMatch.id,
@@ -125,9 +136,17 @@ export const useFormState = ({
       setError('Please select team and penalty type');
       return;
     }
+
+    const key = `${currentMatch.id}:${penaltyForm.teamId}:${penaltyForm.playerId || 'team'}`;
+    const now = Date.now();
+    if (penaltyThrottleRef.current[key] && now - penaltyThrottleRef.current[key] < throttleMs) {
+      setError('Please wait a moment before recording another penalty.');
+      return;
+    }
     
     try {
       setLoading(true);
+      penaltyThrottleRef.current[key] = now;
       
       const penaltyData: RecordPenaltyEventRequest = {
         matchId: currentMatch.id,

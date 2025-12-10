@@ -578,5 +578,64 @@ export const floorballMatchService = {
       console.error('Error in floorballMatchService.updateOfficials:', error);
       throw error;
     }
+  },
+
+  /**
+   * Add a single official (append).
+   */
+  addOfficial: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refereeId }),
+      });
+
+      const raw = await response.text();
+      const apiResponse: ApiResponse<FloorballMatchDto> = raw ? JSON.parse(raw) : { success: response.ok, data: undefined as unknown as FloorballMatchDto, message: '', errors: [] };
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to add official');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to add official');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.addOfficial:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delete an official from a match.
+   */
+  deleteOfficial: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials/${refereeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const raw = await response.text();
+      const apiResponse: ApiResponse<FloorballMatchDto> = raw ? JSON.parse(raw) : { success: response.ok, data: undefined as unknown as FloorballMatchDto, message: '', errors: [] };
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete official');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete official');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.deleteOfficial:', error);
+      throw error;
+    }
   }
 }; 

@@ -14,3 +14,14 @@ public class FloorballMatchOfficialsRequest
     public IReadOnlyCollection<Guid>? Officials { get; set; }
 }
 
+/// <summary>
+/// Request payload for adding a single official to a match (append semantics).
+/// </summary>
+public class AddOfficialToMatchRequest
+{
+    /// <summary>
+    /// ID of the referee to add.
+    /// </summary>
+    [Required(ErrorMessage = "Referee ID is required")]
+    public Guid RefereeId { get; set; }
+}

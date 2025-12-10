@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback, useState } from 'react';
+import { useEffect, useMemo, useCallback, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { floorballMatchEventService, type RecordSaveEventRequest } from '../../../../api/floorball/floorballMatchEventService';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
@@ -48,6 +48,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   const [selectedOfficials, setSelectedOfficials] = useState<string[]>(match.officials || []);
   const [officialOptions, setOfficialOptions] = useState<Array<{ id: string; name: string }>>([]);
   const [officialsSaving, setOfficialsSaving] = useState<boolean>(false);
+  const lastSaveRef = useRef<Record<string, number>>({});
 
   // This effect ensures that if the match prop is updated from the server,
   // the local goalie state is synchronized. This is useful if the user
@@ -65,12 +66,13 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   }, []);
 
   const promoteGuestOfficial = useCallback((options: Array<{ id: string; name: string }>) => {
-    const guestIndex = options.findIndex(option => option.name.toUpperCase() === 'GUEST REFEREE');
+    const sorted = [...options].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    const guestIndex = sorted.findIndex(option => option.name.toUpperCase() === 'GUEST REFEREE');
     if (guestIndex <= 0) {
-      return options;
+      return sorted;
     }
-    const guest = options[guestIndex];
-    const remaining = options.filter((_, index) => index !== guestIndex);
+    const guest = sorted[guestIndex];
+    const remaining = sorted.filter((_, index) => index !== guestIndex);
     return [guest, ...remaining];
   }, []);
 
@@ -168,6 +170,14 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
   const handleRecordSave = useCallback(async (team: 'home' | 'away', goalieId: string) => {
     if (!match.id) return;
+
+    const key = `${match.id}:${team}:${goalieId}`;
+    const now = Date.now();
+    if (lastSaveRef.current[key] && now - lastSaveRef.current[key] < 1000) {
+      return;
+    }
+    lastSaveRef.current[key] = now;
+
     try {
       setSaveLoading(true);
       const payload: RecordSaveEventRequest = {
@@ -242,25 +252,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
   // Destructure currentMatch and setter to satisfy update effect dependencies
   const { currentMatch: trackedMatch, setCurrentMatch } = matchData;
-
-  const handleOfficialsChange = useCallback(async (ids: string[]) => {
-    if (!match.id) return;
-    setSelectedOfficials(ids);
-    try {
-      setOfficialsSaving(true);
-      matchData.setError(null);
-      const response = await floorballMatchService.updateOfficials(match.id, ids);
-      if (response.success && response.data) {
-        setCurrentMatch(response.data);
-        setMatch(response.data);
-      }
-    } catch (error) {
-      console.error('Error updating officials:', error);
-      matchData.setError(error instanceof Error ? error.message : 'Failed to update officials');
-    } finally {
-      setOfficialsSaving(false);
-    }
-  }, [match.id, matchData, setCurrentMatch, setMatch]);
 
   // Update internal currentMatch state when match prop changes
   useEffect(() => {
@@ -649,7 +640,70 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             selectedOfficials={selectedOfficials}
             options={officialOptions}
             saving={officialsSaving}
-            onChange={handleOfficialsChange}
+            onAddRow={() => setSelectedOfficials(prev => [...prev, ''])}
+            onSelect={async (index, refereeId) => {
+              if (!match.id) return;
+              if (!refereeId) return;
+
+              const isDuplicate = selectedOfficials.some((id, idx) => id === refereeId && idx !== index);
+              if (isDuplicate) {
+                matchData.setError('Referee already selected in another slot');
+                return;
+              }
+
+              const next = [...selectedOfficials];
+              const wasEmpty = next[index] === '';
+              next[index] = refereeId;
+
+              try {
+                setOfficialsSaving(true);
+                matchData.setError(null);
+                if (wasEmpty) {
+                  const resp = await floorballMatchService.addOfficial(match.id, refereeId);
+                  if (resp.success && resp.data) {
+                    setSelectedOfficials(resp.data.officials);
+                    setCurrentMatch(resp.data);
+                    setMatch(resp.data);
+                  }
+                } else {
+                  const resp = await floorballMatchService.updateOfficials(match.id, next);
+                  if (resp.success && resp.data) {
+                    setSelectedOfficials(resp.data.officials);
+                    setCurrentMatch(resp.data);
+                    setMatch(resp.data);
+                  }
+                }
+              } catch (error) {
+                console.error('Error selecting official:', error);
+                matchData.setError(error instanceof Error ? error.message : 'Failed to set official');
+              } finally {
+                setOfficialsSaving(false);
+              }
+            }}
+            onRemove={async (index, refereeId) => {
+              if (!match.id) {
+                return;
+              }
+              if (!refereeId) {
+                setSelectedOfficials(prev => prev.filter((_, idx) => idx !== index));
+                return;
+              }
+              try {
+                setOfficialsSaving(true);
+                matchData.setError(null);
+                const resp = await floorballMatchService.deleteOfficial(match.id, refereeId);
+                if (resp.success && resp.data) {
+                  setSelectedOfficials(resp.data.officials);
+                  setCurrentMatch(resp.data);
+                  setMatch(resp.data);
+                }
+              } catch (error) {
+                console.error('Error removing official:', error);
+                matchData.setError(error instanceof Error ? error.message : 'Failed to remove official');
+              } finally {
+                setOfficialsSaving(false);
+              }
+            }}
           />
 
           {/* Forms */}
