@@ -126,5 +126,12 @@ namespace Domain.Repositories.Common
         /// </summary>
         /// <returns></returns>
         Task<NewsArticle?> GetMainNews();
+
+        /// <summary>
+        /// Deletes the news by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<bool> DeleteNews(Guid id);
     }
 }

@@ -5,11 +5,11 @@ interface UpdateNewsData {
   contentHtml: string;
   mainImage?: string | null;
   summary?: string | null;
-  imageUrls: (string | null)[];
+  imageUrls: string[] | null;
   author?: string | null;
   category?: string | null;
   sportCategory?: string | null;
-  tags: (string | null)[];
+  tags: string[] | null;
 }
 
 interface ApiResponse<T> {
