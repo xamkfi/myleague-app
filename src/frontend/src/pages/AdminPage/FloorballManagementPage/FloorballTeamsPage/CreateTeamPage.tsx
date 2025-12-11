@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import { clubService } from '../../../../api/common/clubService';
-import { divisionService } from '../../../../api/common/divisionService';
 import { TeamCategory, type FloorballTeamRequest } from '../../../../types/floorball/floorballTypes';
-import type { DivisionType } from '../../../../types/common/divisionType';
 import SearchableInfiniteDropdown from '../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import './CreateTeamPage.scss';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
@@ -17,22 +15,14 @@ const CreateTeamPage = () => {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [divisions, setDivisions] = useState<DivisionType[]>([]);
-  
   const [formData, setFormData] = useState<FloorballTeamRequest>({
     name: '',
-    divisionId: '',
     clubId: '',
     homeArena: '',
     primaryJerseyColor: '#000000',
     category: 'Adult' as TeamCategory,
     secondaryJerseyColor: ''
   });
-
-  // Load divisions on component mount
-  useEffect(() => {
-    loadDivisions();
-  }, []);
 
   // Search function for clubs using paginated endpoint
   const searchClubs = async (query: string, page: number) => {
@@ -66,16 +56,6 @@ const CreateTeamPage = () => {
     }
   };
 
-  const loadDivisions = async () => {
-    try {
-      const response = await divisionService.getAll();
-      setDivisions(response.data);
-    } catch (err) {
-      console.error('Error loading divisions:', err);
-      setDivisions([]);
-    }
-  };
-
   const handleInputChange = (field: keyof FloorballTeamRequest, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -92,11 +72,10 @@ const CreateTeamPage = () => {
       // Prepare create data with proper validation
       const createData: FloorballTeamRequest = {
         name: formData.name,
-        divisionId: formData.divisionId,
         clubId: formData.clubId,
-        homeArena: formData.homeArena,
         primaryJerseyColor: formData.primaryJerseyColor,
         category: formData.category,
+        homeArena: formData.homeArena,
         // Only include secondaryJerseyColor if it's valid (2-50 characters) or omit it entirely
         ...(formData.secondaryJerseyColor && formData.secondaryJerseyColor.length >= 2 && formData.secondaryJerseyColor.length <= 50
           ? { secondaryJerseyColor: formData.secondaryJerseyColor }
@@ -157,7 +136,6 @@ const CreateTeamPage = () => {
             />
           </div>
 
-
           <div className="form-group">
             <label htmlFor="category">{t('floorball.teams.category', 'Category')} *</label>
             <select
@@ -173,14 +151,14 @@ const CreateTeamPage = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="homeArena">{t('floorball.teams.homeArena', 'Home Arena')} </label>
+            <label htmlFor="homeArena">{t('floorball.teams.homeArena', 'Home Arena')} *</label>
             <input
               id="homeArena"
               type="text"
               value={formData.homeArena}
               onChange={(e) => handleInputChange('homeArena', e.target.value)}
+              required
               placeholder={t('floorball.teams.homeArenaPlaceholder', 'Enter home arena')}
-              
             />
           </div>
 
