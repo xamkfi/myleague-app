@@ -1,4 +1,4 @@
-import type { Person, PersonFormData, PersonRole } from '../../types/admin/personTypes';
+import type { Person, PersonFormData, PersonRole, PaginatedApiResponse } from '../../types/admin/personTypes';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 
 interface ApiResponse<T> {
@@ -129,22 +129,27 @@ export const personApi = {
     return apiResponse.data;
   },
 
-  search: async (name: string): Promise<Person[]> => {
+  search: async (name: string, page: number = 1, pageSize: number = 25): Promise<PaginatedApiResponse<Person>> => {
     if (!name || !name.trim()) {
       throw new Error('Name parameter is required for search');
     }
 
-    const response = await fetch(`${API_URL}/persons/search?name=${encodeURIComponent(name.trim())}`);
+    const searchParams = new URLSearchParams();
+    searchParams.append('name', name.trim());
+    searchParams.append('page', page.toString());
+    searchParams.append('pageSize', pageSize.toString());
+
+    const response = await fetch(`${API_URL}/persons/search?${searchParams.toString()}`);
     if (!response.ok) {
       throw new Error('Failed to search persons');
     }
 
-    const apiResponse: ApiResponse<Person[]> = await response.json();
+    const apiResponse: PaginatedApiResponse<Person> = await response.json();
     if (!apiResponse.success) {
       const errorMessage = await parseErrorResponse(apiResponse, "Failed to search persons");
       throw new Error(errorMessage || 'Failed to search persons');
     }
 
-    return apiResponse.data;
+    return apiResponse;
   },
 }; 

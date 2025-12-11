@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Common;
 
 namespace Domain.Repositories.Common;
@@ -87,10 +88,11 @@ public interface IPersonRepository
     /// Searches for persons by name.
     /// </summary>
     /// <param name="searchTerm">The search term.</param>
-    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="page">The page number (1-based).</param>
+    /// <param name="pageSize">The number of items per page.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A collection of persons matching the search term.</returns>
-    Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default);
+    /// <returns>A paged result containing persons matching the search term.</returns>
+    Task<PagedResult<Person>> SearchByNameAsync(string searchTerm, int page, int pageSize, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Checks if a person exists

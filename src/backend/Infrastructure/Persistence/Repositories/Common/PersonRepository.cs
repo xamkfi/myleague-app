@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
@@ -207,19 +208,32 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// Searches for persons by name
         /// </summary>
         /// <param name="searchTerm">The search term.</param>
-        /// <param name="count">The maximum number of results to return.</param>
+        /// <param name="page">The page number (1-based).</param>
+        /// <param name="pageSize">The number of items per page.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>A collection of persons matching the search term.</returns>
-        public async Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default)
+        /// <returns>A paged result containing persons matching the search term.</returns>
+        public async Task<PagedResult<Person>> SearchByNameAsync(string searchTerm, int page, int pageSize, CancellationToken cancellationToken = default)
         {
             string lowercasedTerm = searchTerm.ToLower();
-            return await _entities
+            
+            // Build the base query
+            IQueryable<Person> query = _entities
                 .Where(p => (p.FirstName.ToLower() + " " + p.LastName.ToLower()).Contains(lowercasedTerm) ||
-                            (p.LastName.ToLower() + " " + p.FirstName.ToLower()).Contains(lowercasedTerm))
+                            (p.LastName.ToLower() + " " + p.FirstName.ToLower()).Contains(lowercasedTerm));
+
+            // Get total count before pagination
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            // Apply ordering and pagination
+            List<Person> items = await query
                 .OrderBy(p => p.LastName)
                 .ThenBy(p => p.FirstName)
-                .Take(count)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellationToken);
+
+            // Create and return paged result
+            return PagedResult.Create(items, totalCount, page, pageSize);
         }
 
         /// <summary>

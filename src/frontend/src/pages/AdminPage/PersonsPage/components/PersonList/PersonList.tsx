@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Person } from '../../../../../types/admin/personTypes';
+import type { Person, PaginatedApiResponse } from '../../../../../types/admin/personTypes';
 import { PersonRole } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
 import PaginationControls from '../PaginationControls/PaginationControls';
@@ -22,6 +22,8 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,29 +45,51 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   const fetchPersons = useCallback(async () => {
     try {
       setLoading(true);
-      let data: Person[];
       
       if (debouncedSearchTerm.trim()) {
-        // Use search API when there's a search term
-        data = await personApi.search(debouncedSearchTerm.trim());
+        // Use search API when there's a search term (server-side pagination)
+        const response: PaginatedApiResponse<Person> = await personApi.search(
+          debouncedSearchTerm.trim(),
+          currentPage,
+          pageSize
+        );
+        
+        setPersons(response.data);
+        setTotalCount(response.pagination.totalCount);
+        setTotalPages(response.pagination.totalPages);
       } else {
-        // Use getAll when there's no search term
-        data = await personApi.getAll();
+        // Use getAll when there's no search term (client-side pagination)
+        const data = await personApi.getAll();
+        setPersons(data);
+        setTotalCount(data.length);
+        setTotalPages(Math.ceil(data.length / pageSize));
       }
       
-      setPersons(data);
       setError(null);
     } catch (error) {
       console.error('Failed to fetch persons:', error);
       setError(t('admin.persons.errors.fetchFailed', 'Failed to fetch persons'));
+      setPersons([]);
+      setTotalCount(0);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, t]);
+  }, [debouncedSearchTerm, currentPage, pageSize, t]);
 
   useEffect(() => {
     fetchPersons();
   }, [fetchPersons, refreshTrigger]);
+
+  const formatBirthDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return '-';
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) return '-';
+    const day = parsed.getDate().toString().padStart(2, '0');
+    const month = (parsed.getMonth() + 1).toString().padStart(2, '0');
+    const year = parsed.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
 
   const handleEdit = (id: string) => {
     if (onEditPerson) {
@@ -203,12 +227,12 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     }
   };
 
-  // Pagination calculations (applied to persons directly since backend handles filtering)
-  const totalCount = persons.length;
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedPersons = persons.slice(startIndex, endIndex);
+  // Pagination calculations
+  // When searching, backend handles pagination, so use persons directly
+  // When not searching, apply client-side pagination
+  const paginatedPersons = debouncedSearchTerm.trim() 
+    ? persons // Server-side pagination - use data directly
+    : persons.slice((currentPage - 1) * pageSize, currentPage * pageSize); // Client-side pagination
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -375,7 +399,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
                 {person.fullName}
               </td>
               <td onClick={() => togglePersonSelection(person.id)} className="clickable-cell">
-                {person.birthDate ? new Date(person.birthDate).toLocaleDateString() : '-'}
+                {formatBirthDate(person.birthDate)}
               </td>
               <td onClick={() => togglePersonSelection(person.id)} className="clickable-cell">
                 {person.contactInfo?.email || '-'}
