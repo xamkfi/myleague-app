@@ -7,6 +7,31 @@
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
+
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+    align-items: center;
+
+    .cancel-btn {
+      color: #dc3545;
+      background: transparent;
+      border: 1px solid #d1d5db;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 8px 12px;
+    }
+
+    .submit-btn {
+      margin-left: auto;
+      font-weight: 700;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      padding: 8px 12px;
+    }
+  }
 }
 
 
