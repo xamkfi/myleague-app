@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, memo, useImperativeHandle, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Person, PaginatedApiResponse } from '../../../../../types/admin/personTypes';
 import { PersonRole } from '../../../../../types/admin/personTypes';
@@ -10,6 +10,71 @@ interface PersonListProps {
   onEditPerson?: (personId: string) => void;
   refreshTrigger?: number; // Used to trigger refresh from parent
 }
+
+interface SearchBarProps {
+  onSearchChange: (value: string) => void;
+  placeholder: string;
+}
+
+export interface SearchBarRef {
+  clear: () => void;
+  focus: () => void;
+  getValue: () => string;
+}
+
+// Memoized search bar component with internal state - only re-renders when callbacks change
+const SearchBar = memo(forwardRef<SearchBarRef, SearchBarProps>(({ onSearchChange, placeholder }, ref) => {
+  const [internalValue, setInternalValue] = useState('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    clear: () => {
+      setInternalValue('');
+      inputRef.current?.focus();
+    },
+    focus: () => {
+      inputRef.current?.focus();
+    },
+    getValue: () => internalValue,
+  }));
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInternalValue(value);
+    onSearchChange(value);
+  };
+
+  const handleClear = () => {
+    setInternalValue('');
+    onSearchChange('');
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div className="persons-search-bar">
+      <input
+        ref={inputRef}
+        type="text"
+        value={internalValue}
+        onChange={handleChange}
+        placeholder={placeholder}
+        className="persons-search-input"
+      />
+      {internalValue && (
+        <button
+          className="search-clear-button"
+          onClick={handleClear}
+          title="Clear search"
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}));
+
+SearchBar.displayName = 'SearchBar';
 
 const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   const { t } = useTranslation();
@@ -28,21 +93,49 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const debounceTimerRef = useRef<number | null>(null);
+  const previousSearchTermRef = useRef('');
+  const searchBarRef = useRef<SearchBarRef>(null);
+  const shouldRestoreFocusRef = useRef(false);
 
   // Selection state for multiselect
   const [selectedPersons, setSelectedPersons] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  // Debounce search term
+  // Debounce search term - only update if it actually changed
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 300); // 300ms delay
+    // Clear any existing timer
+    if (debounceTimerRef.current !== null) {
+      clearTimeout(debounceTimerRef.current);
+    }
 
-    return () => clearTimeout(timer);
+    // Only update if search term actually changed (skip if same as previous)
+    if (searchTerm !== previousSearchTermRef.current) {
+      debounceTimerRef.current = window.setTimeout(() => {
+        // Only search if there are at least 2 characters, otherwise clear search
+        if (searchTerm.trim().length >= 2) {
+          setDebouncedSearchTerm(searchTerm);
+        } else {
+          setDebouncedSearchTerm('');
+        }
+        previousSearchTermRef.current = searchTerm;
+      }, 300); // 300ms delay
+    }
+
+    return () => {
+      if (debounceTimerRef.current !== null) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, [searchTerm]);
 
   const fetchPersons = useCallback(async () => {
+    // Check if search input has focus before fetching
+    // We check if the active element is an input and if searchBarRef exists
+    const activeElement = document.activeElement;
+    const hadFocus = activeElement?.tagName === 'INPUT' && searchBarRef.current !== null;
+    shouldRestoreFocusRef.current = hadFocus;
+    
     try {
       setLoading(true);
       
@@ -76,6 +169,14 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
       setLoading(false);
     }
   }, [debouncedSearchTerm, currentPage, pageSize, t]);
+
+  // Restore focus after loading completes if search input had focus
+  useLayoutEffect(() => {
+    if (!loading && shouldRestoreFocusRef.current && searchBarRef.current) {
+      searchBarRef.current.focus();
+      shouldRestoreFocusRef.current = false;
+    }
+  }, [loading]);
 
   useEffect(() => {
     fetchPersons();
@@ -245,58 +346,39 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     setCurrentPage(1); // Reset to first page when changing page size
   };
 
-  // Handle search input change
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  // Handle search input change - receives value directly, not event
+  const handleSearchChange = useCallback((value: string) => {
     setSearchTerm(value);
     setCurrentPage(1); // Reset to first page when searching
     setSelectedPersons(new Set()); // Clear selection when searching
     
-    // If clearing search, immediately update debounced term to trigger fetch
-    if (!value.trim()) {
+    // If clearing search or less than 2 characters, immediately clear debounced term
+    if (!value.trim() || value.trim().length < 2) {
       setDebouncedSearchTerm('');
+      previousSearchTermRef.current = value;
     }
-  };
-
-  // Handle clear search button
-  const handleClearSearch = () => {
-    setSearchTerm('');
-    setDebouncedSearchTerm('');
-    setCurrentPage(1);
-    setSelectedPersons(new Set());
-  };
-
-  if (loading) {
-    return <div className="persons-loading">{t('admin.persons.loading', 'Loading persons...')}</div>;
-  }
-
-  if (error) {
-    return <div className="persons-error">{error}</div>;
-  }
+  }, []);
 
   return (
     <div className="persons-list">
-      {/* Search Bar */}
-      <div className="persons-search-bar">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          placeholder={t('admin.persons.searchPlaceholder', 'Search persons by name...') as string}
-          className="persons-search-input"
-        />
-        {searchTerm && (
-          <button
-            className="search-clear-button"
-            onClick={handleClearSearch}
-            title={t('admin.persons.clearSearch', 'Clear search')}
-          >
-            ✕
-          </button>
-        )}
-      </div>
+      {/* Search Bar - Always rendered to preserve state */}
+      <SearchBar
+        ref={searchBarRef}
+        onSearchChange={handleSearchChange}
+        placeholder={t('admin.persons.searchPlaceholder', 'Search persons by name...') as string}
+      />
 
-      {/* Selection Controls */}
+      {loading && (
+        <div className="persons-loading">{t('admin.persons.loading', 'Loading persons...')}</div>
+      )}
+
+      {error && (
+        <div className="persons-error">{error}</div>
+      )}
+
+      {!loading && !error && (
+        <>
+          {/* Selection Controls */}
       <div className="selection-controls">
         <div className="selection-info">
           <span className="selected-count">
@@ -340,20 +422,20 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
             </button>
           </div>
         )}
-      </div>
+          </div>
 
-      {/* Pagination Controls - Top */}
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalCount={totalCount}
-        pageSize={pageSize}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-      />
+          {/* Pagination Controls - Top */}
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
 
-      <table>
-        <thead>
+          <table>
+            <thead>
           <tr>
             <th className="select-column">
               <input
@@ -380,9 +462,9 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
             <th>{t('admin.persons.table.role', 'Role')}</th>
             <th>{t('admin.persons.table.actions', 'Actions')}</th>
           </tr>
-        </thead>
-        <tbody>
-          {paginatedPersons.map(person => (
+            </thead>
+            <tbody>
+              {paginatedPersons.map(person => (
             <tr 
               key={person.id}
               className={selectedPersons.has(person.id) ? 'selected' : ''}
@@ -465,31 +547,33 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
                   </button>
                 </div>
               </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {/* Pagination Controls - Bottom */}
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalCount={totalCount}
-        pageSize={pageSize}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-      />
+          {/* Pagination Controls - Bottom */}
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
 
-      {persons.length === 0 && (
+          {persons.length === 0 && (
         <div className="no-data">
           {t('admin.persons.noData', 'No persons found')}
         </div>
       )}
 
-      {debouncedSearchTerm && persons.length === 0 && (
-        <div className="no-search-results">
-          {t('admin.persons.noSearchResults', 'No persons found matching "{{searchTerm}}"', { searchTerm: debouncedSearchTerm })}
-        </div>
+          {debouncedSearchTerm && persons.length === 0 && (
+            <div className="no-search-results">
+              {t('admin.persons.noSearchResults', 'No persons found matching "{{searchTerm}}"', { searchTerm: debouncedSearchTerm })}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
