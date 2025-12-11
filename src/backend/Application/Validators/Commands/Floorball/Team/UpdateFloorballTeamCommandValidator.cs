@@ -20,8 +20,9 @@ public class UpdateFloorballTeamCommandValidator : AbstractValidator<UpdateFloor
             .NotEmpty().WithMessage("Team name is required")
             .MaximumLength(100).WithMessage("Team name cannot exceed 100 characters");
 
-        RuleFor(x => x.DivisionId)
-           .NotNull().WithMessage("Division is required");
+        /// Division is not required when updating or creating a team
+        ///RuleFor(x => x.DivisionId)
+           ///.NotNull().WithMessage("Division is required");
 
         RuleFor(x => x.HomeArena)
             .NotEmpty().WithMessage("Home arena is required")
