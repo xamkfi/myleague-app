@@ -28,6 +28,7 @@ const EditTeamPage = () => {
   
   const [formData, setFormData] = useState<FloorballTeamRequest>({
     name: '',
+    shortName: '',
     divisionId: '',
     clubId: '',
     homeArena: '',
@@ -46,6 +47,7 @@ const EditTeamPage = () => {
       setCurrentTeam(team);
       setFormData({
         name: team.name,
+        shortName: team.shortName,
         divisionId: team.divisionId,
         clubId: team.club.id,
         homeArena: team.homeArena,
@@ -108,6 +110,7 @@ const EditTeamPage = () => {
       // Prepare update data with proper validation
       const updateData: FloorballTeamRequest = {
         name: formData.name,
+        shortName: formData.shortName?.trim() || undefined,
         divisionId: formData.divisionId,
         clubId: formData.clubId,
         homeArena: formData.homeArena,
@@ -164,16 +167,35 @@ const EditTeamPage = () => {
         <ErrorPopup message={error} />
 
         <form onSubmit={handleSubmit} className="edit-team-form">
-          <div className="form-group">
-            <label htmlFor="teamName">{t('floorball.teams.name', 'Team Name')} *</label>
-            <input
-              id="teamName"
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              required
-              placeholder={t('floorball.teams.namePlaceholder', 'Enter team name')}
-            />
+          <div className="form-row name-row">
+            <div className="form-group">
+              <label htmlFor="teamName">{t('floorball.teams.name', 'Team Name')} *</label>
+              <input
+                id="teamName"
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                required
+                placeholder={t('floorball.teams.namePlaceholder', 'Enter team name')}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="teamShortName">{t('floorball.teams.shortName', 'Short Name / Acronym')}</label>
+              <input
+                id="teamShortName"
+                type="text"
+                value={formData.shortName || ''}
+                onChange={(e) => handleInputChange('shortName', e.target.value.toUpperCase())}
+                placeholder={t('floorball.teams.shortNamePlaceholder', 'e.g., NYR')}
+                maxLength={4}
+              />
+              {formData.shortName && formData.shortName.length > 4 && (
+                <div className="validation-error">
+                  {t('floorball.teams.shortNameTooLong', 'Short name cannot exceed 4 characters')}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">

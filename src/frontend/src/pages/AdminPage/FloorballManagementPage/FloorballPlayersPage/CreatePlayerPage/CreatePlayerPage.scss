@@ -8,6 +8,10 @@
   background-color: $color-neutral-white;
 }
 
+.persons-container-wrapper {
+  position: relative;
+}
+
 .create-player-loading {
   padding: 2rem;
   text-align: center;

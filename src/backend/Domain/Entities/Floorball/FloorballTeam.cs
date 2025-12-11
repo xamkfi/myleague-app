@@ -131,18 +131,8 @@ public class FloorballTeam : BaseEntity
         Id = Guid.NewGuid();
 
         Name = name;
-        if(!string.IsNullOrWhiteSpace(shortName))
-        {
-            if(shortName.Length > 3)
-                throw new ArgumentException("Short name cannot exceed 3 characters.", nameof(shortName));
-
-            ShortName = shortName;
-        }
-        else
-        {
-            // Default to the first 3 characters of the name if no short name is provided
-            ShortName = name.Length > 3 ? name.Substring(0, 3).ToUpperInvariant() : name.ToUpperInvariant();
-        }
+        ShortName = string.Empty;
+        ApplyShortName(shortName, name);
 
         DivisionId = divisionId;
         Division = default!;
@@ -154,6 +144,31 @@ public class FloorballTeam : BaseEntity
         TeamCategory = teamCategory;
         LogoUrl = logoUrl;
         
+    }
+
+    /// <summary>
+    /// Updates the team's short name (max 4 characters). If null/empty, defaults to first 3 chars of Name.
+    /// </summary>
+    /// <param name="shortName">New short name</param>
+    public void UpdateShortName(string? shortName)
+    {
+        ApplyShortName(shortName, Name);
+    }
+
+    private void ApplyShortName(string? shortName, string baseName)
+    {
+        if (!string.IsNullOrWhiteSpace(shortName))
+        {
+            if (shortName.Length > 4)
+                throw new ArgumentException("Short name cannot exceed 4 characters.", nameof(shortName));
+
+            ShortName = shortName.ToUpperInvariant();
+        }
+        else
+        {
+            // Default to 3 characters when not provided
+            ShortName = baseName.Length > 3 ? baseName[..3].ToUpperInvariant() : baseName.ToUpperInvariant();
+        }
     }
 
     /// <summary>
