@@ -8,7 +8,7 @@ import type {
 } from '../../../../../api/floorball/floorballSeasonService';
 import { floorballSeasonService } from '../../../../../api/floorball/floorballSeasonService';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
-import { type FloorballTeam } from '../../../../../types/floorball/floorballTypes';
+import { type FloorballTeam, TeamCategory } from '../../../../../types/floorball/floorballTypes';
 import { useDivisions } from '../../../../../hooks/useDivisions';
 import './EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
@@ -43,6 +43,11 @@ const EditSeasonPage = () => {
   const [savingTeams, setSavingTeams] = useState(false);
   const [addedTeams, setAddedTeams] = useState<Map<string, string>>(new Map()); // Map<teamId, divisionId>
   const [removedTeams, setRemovedTeams] = useState<Set<string>>(new Set());
+  
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [teamCategory, setTeamCategory] = useState<TeamCategory | ''>('');
 
   const loadSeason = useCallback(async () => {
     if (!seasonId) return;
@@ -71,13 +76,27 @@ const EditSeasonPage = () => {
     }
   }, [seasonId, loadSeason]);
 
-  // Load teams when modal opens
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Load teams when season changes or filters change
   useEffect(() => {
     const loadAllTeams = async () => {
+      if (!season) return;
+      
       try {
         setLoadingTeams(true);
-        const response = await floorballTeamService.getAll({
-          pageSize: 50 // Get all teams
+        const response = await floorballTeamService.getAllWithoutRoster({
+          page: 1,
+          pageSize: 100, // Get more teams
+          searchTerm: debouncedSearchTerm || undefined,
+          teamCategory: teamCategory || undefined
         });
         
         if (response && response.data && Array.isArray(response.data)) {
@@ -94,7 +113,7 @@ const EditSeasonPage = () => {
     };
 
     loadAllTeams();
-  }, [season]);
+  }, [season, debouncedSearchTerm, teamCategory]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -767,6 +786,30 @@ const EditSeasonPage = () => {
                   <h4>
                     {t('floorball.seasons.availableTeams', 'Available Teams')} ({availableTeams.length})
                   </h4>
+                  
+                  {/* Search and Filter Controls */}
+                  <div className="teams-search-filters">
+                    <div className="search-input-wrapper">
+                      <input
+                        type="text"
+                        placeholder={t('floorball.seasons.searchTeams', 'Search teams...')}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="teams-search-input"
+                      />
+                    </div>
+                    <select
+                      value={teamCategory}
+                      onChange={(e) => setTeamCategory(e.target.value as TeamCategory | '')}
+                      className="team-category-select"
+                    >
+                      <option value="">{t('floorball.seasons.allCategories', 'All Categories')}</option>
+                      <option value={TeamCategory.Adult}>{t('floorball.teams.category.adult', 'Adult')}</option>
+                      <option value={TeamCategory.Youth}>{t('floorball.teams.category.youth', 'Youth')}</option>
+                      <option value={TeamCategory.Women}>{t('floorball.teams.category.women', 'Women')}</option>
+                    </select>
+                  </div>
+
                   {loadingTeams ? (
                     <p>{t('common.loading', 'Loading...')}</p>
                   ) : availableTeams.length === 0 ? (

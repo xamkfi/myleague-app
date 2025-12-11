@@ -34,8 +34,9 @@ public interface IFloorballTeamRepository
     /// </summary>
     /// <param name="page">Page number (1-based)</param>
     /// <param name="pageSize">Number of items per page</param>
+    /// <param name="searchTerm">Optional search term to filter by team name</param>
     /// <param name="clubId">Optional club ID filter</param>
-    /// <param name="division">Optional division filter</param>
+    /// <param name="divisionId">Optional division ID filter</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated collection of floorball teams</returns>
     Task<PagedResult<FloorballTeam>> GetPagedAsync(
@@ -149,4 +150,20 @@ public interface IFloorballTeamRepository
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<IEnumerable<FloorballTeam>> GetByNameFilterAsync(string?  nameFilter, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets paginated floorball teams without roster with filtering support
+    /// </summary>
+    /// <param name="page">Page number (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="searchTerm">Optional search term to filter by team name</param>
+    /// <param name="teamCategory">Optional team category filter (Adult, Youth, Women)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated collection of floorball teams without roster</returns>
+    Task<PagedResult<FloorballTeam>> GetAllTeamsWithoutRosterAsync(
+        int page,
+        int pageSize,
+        string? searchTerm = null,
+        Domain.Enums.Common.TeamCategory? teamCategory = null,
+        CancellationToken cancellationToken = default);
 } 

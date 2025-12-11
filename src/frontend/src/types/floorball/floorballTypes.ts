@@ -76,6 +76,7 @@ export interface FloorballTeam {
   logoUrl?: string;
   hasActiveMembers: boolean;
   roster: FloorballTeamPlayer[];
+  teamCategory?: TeamCategory;
 }
 
 export interface FloorballTeamNameResult {
