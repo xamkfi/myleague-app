@@ -63,18 +63,19 @@ public static class ClubMapper
         Uri? websiteUri = !string.IsNullOrEmpty(command.WebsiteUrl) ? new Uri(command.WebsiteUrl) : null;
         Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;
 
-        if (command.FoundingDate?.Date == null)
-            throw new ArgumentNullException(nameof(command));
-        DateTime foundingDate = command.FoundingDate.Value;
-
-        // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
-        DateTime foundingDateUtc = foundingDate.Kind switch
+        DateTime? foundingDateUtc = null;
+        if (command.FoundingDate.HasValue)
         {
-            DateTimeKind.Utc => foundingDate,
-            DateTimeKind.Local => foundingDate.ToUniversalTime(),
-            DateTimeKind.Unspecified => DateTime.SpecifyKind(foundingDate, DateTimeKind.Utc),
-            _ => DateTime.SpecifyKind(foundingDate, DateTimeKind.Utc)
-        };
+            DateTime foundingDate = command.FoundingDate.Value;
+            // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
+            foundingDateUtc = foundingDate.Kind switch
+            {
+                DateTimeKind.Utc => foundingDate,
+                DateTimeKind.Local => foundingDate.ToUniversalTime(),
+                DateTimeKind.Unspecified => DateTime.SpecifyKind(foundingDate, DateTimeKind.Utc),
+                _ => DateTime.SpecifyKind(foundingDate, DateTimeKind.Utc)
+            };
+        }
 
         return new Club(
             command.Name,
@@ -103,15 +104,18 @@ public static class ClubMapper
         // Update basic info
         club.UpdateBasicInfo(command.Name, command.City, command.Country);
 
-        // Update founding date with UTC conversion
-        DateTime foundingDateUtc = command.FoundingDate.Kind switch
+        // Update founding date with UTC conversion (only if provided)
+        if (command.FoundingDate.HasValue)
         {
-            DateTimeKind.Utc => command.FoundingDate,
-            DateTimeKind.Local => command.FoundingDate.ToUniversalTime(),
-            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.FoundingDate, DateTimeKind.Utc),
-            _ => DateTime.SpecifyKind(command.FoundingDate, DateTimeKind.Utc)
-        };
-        club.UpdateFoundingDate(foundingDateUtc);
+            DateTime foundingDateUtc = command.FoundingDate.Value.Kind switch
+            {
+                DateTimeKind.Utc => command.FoundingDate.Value,
+                DateTimeKind.Local => command.FoundingDate.Value.ToUniversalTime(),
+                DateTimeKind.Unspecified => DateTime.SpecifyKind(command.FoundingDate.Value, DateTimeKind.Utc),
+                _ => DateTime.SpecifyKind(command.FoundingDate.Value, DateTimeKind.Utc)
+            };
+            club.UpdateFoundingDate(foundingDateUtc);
+        }
 
         // Update online presence
         Uri? websiteUri = !string.IsNullOrEmpty(command.WebsiteUrl) ? new Uri(command.WebsiteUrl) : null;

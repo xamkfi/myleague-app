@@ -133,6 +133,57 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
+        /// Gets the total count of persons matching the filters
+        /// </summary>
+        /// <param name="firstName">Optional first name filter</param>
+        /// <param name="lastName">Optional last name filter</param>
+        /// <param name="birthDate">Optional birth date filter</param>
+        /// <param name="isRegistered">Optional registration status filter</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Total count of persons matching the filters</returns>
+        public async Task<int> GetCountAsync(
+            string? firstName,
+            string? lastName,
+            string? birthDate,
+            bool? isRegistered,
+            CancellationToken cancellationToken = default)
+        {
+            // Build query with same filters as GetAllAsync
+            IQueryable<Person> query = _entities.AsQueryable();
+
+            // Apply filters
+            if (!string.IsNullOrWhiteSpace(firstName))
+            {
+                query = query.Where(p => p.FirstName.Contains(firstName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(lastName))
+            {
+                query = query.Where(p => p.LastName.Contains(lastName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(birthDate))
+            {
+                if (DateTime.TryParse(birthDate, out DateTime date))
+                {
+                    query = query.Where(p => p.BirthDate.HasValue && p.BirthDate.Value.Date == date.Date);
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid birth date format provided: {BirthDate}", birthDate);
+                }
+            }
+
+            // Only apply isRegistered filter if it has a value
+            if (isRegistered.HasValue)
+            {
+                query = query.Where(p => p.IsRegistered == isRegistered.Value);
+            }
+
+            return await query.CountAsync(cancellationToken);
+        }
+
+        /// <summary>
         /// Gets persons by first name
         /// </summary>
         /// <param name="firstName">The first name to filter by</param>

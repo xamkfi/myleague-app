@@ -11,9 +11,9 @@ namespace Application.Commands.Clubs;
 public record UpdateClubCommand(
     Guid ClubId,
     string Name,
-    string City,
-    string Country,
-    DateTime FoundingDate,
+    string? City,
+    string? Country,
+    DateTime? FoundingDate,
     string? WebsiteUrl = "",
     string? LogoUrl = "",
     string? ContactEmail = "") : IRequest<Result<ClubDto>>; 

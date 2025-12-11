@@ -80,6 +80,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   const { t } = useTranslation();
   const [persons, setPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
+  const [paginationLoading, setPaginationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingRegistration, setUpdatingRegistration] = useState<string | null>(null);
   const [updatingRole, setUpdatingRole] = useState<string | null>(null);
@@ -129,7 +130,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     };
   }, [searchTerm]);
 
-  const fetchPersons = useCallback(async () => {
+  const fetchPersons = useCallback(async (isInitialLoad = false) => {
     // Check if search input has focus before fetching
     // We check if the active element is an input and if searchBarRef exists
     const activeElement = document.activeElement;
@@ -137,7 +138,11 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     shouldRestoreFocusRef.current = hadFocus;
     
     try {
-      setLoading(true);
+      if (isInitialLoad) {
+        setLoading(true);
+      } else {
+        setPaginationLoading(true);
+      }
       
       if (debouncedSearchTerm.trim()) {
         // Use search API when there's a search term (server-side pagination)
@@ -151,11 +156,11 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         setTotalCount(response.pagination.totalCount);
         setTotalPages(response.pagination.totalPages);
       } else {
-        // Use getAll when there's no search term (client-side pagination)
-        const data = await personApi.getAll();
-        setPersons(data);
-        setTotalCount(data.length);
-        setTotalPages(Math.ceil(data.length / pageSize));
+        // Use getAll when there's no search term (server-side pagination)
+        const response: PaginatedApiResponse<Person> = await personApi.getAll(currentPage, pageSize);
+        setPersons(response.data);
+        setTotalCount(response.pagination.totalCount);
+        setTotalPages(response.pagination.totalPages);
       }
       
       setError(null);
@@ -166,7 +171,10 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
       setTotalCount(0);
       setTotalPages(1);
     } finally {
-      setLoading(false);
+      if (isInitialLoad) {
+        setLoading(false);
+      }
+      setPaginationLoading(false);
     }
   }, [debouncedSearchTerm, currentPage, pageSize, t]);
 
@@ -178,9 +186,18 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     }
   }, [loading]);
 
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
   useEffect(() => {
-    fetchPersons();
-  }, [fetchPersons, refreshTrigger]);
+    const run = async () => {
+      await fetchPersons(isInitialLoad);
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
+      }
+    };
+
+    run();
+  }, [fetchPersons, refreshTrigger, isInitialLoad]);
 
   const formatBirthDate = (dateString: string | null | undefined): string => {
     if (!dateString) return '-';
@@ -203,7 +220,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
       try {
         await personApi.delete(id);
         // Refresh the list to get updated data
-        await fetchPersons();
+        await fetchPersons(false);
         // Clear selection if the deleted person was selected
         setSelectedPersons(prev => {
           const newSet = new Set(prev);
@@ -310,7 +327,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         }
         
         // Refresh the list and clear selection
-        await fetchPersons();
+        await fetchPersons(false);
         setSelectedPersons(new Set());
         
         // Show success message
@@ -328,23 +345,19 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     }
   };
 
-  // Pagination calculations
-  // When searching, backend handles pagination, so use persons directly
-  // When not searching, apply client-side pagination
-  const paginatedPersons = debouncedSearchTerm.trim() 
-    ? persons // Server-side pagination - use data directly
-    : persons.slice((currentPage - 1) * pageSize, currentPage * pageSize); // Client-side pagination
+  // Backend already paginates both search and non-search responses
+  const paginatedPersons = persons;
 
   // Handle page change
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-  };
+  }, []);
 
   // Handle page size change
-  const handlePageSizeChange = (newPageSize: number) => {
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
     setPageSize(newPageSize);
     setCurrentPage(1); // Reset to first page when changing page size
-  };
+  }, []);
 
   // Handle search input change - receives value directly, not event
   const handleSearchChange = useCallback((value: string) => {
@@ -434,8 +447,9 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
             onPageSizeChange={handlePageSizeChange}
           />
 
-          <table>
-            <thead>
+          <div className="persons-table-wrapper">
+            <table>
+              <thead>
           <tr>
             <th className="select-column">
               <input
@@ -462,8 +476,8 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
             <th>{t('admin.persons.table.role', 'Role')}</th>
             <th>{t('admin.persons.table.actions', 'Actions')}</th>
           </tr>
-            </thead>
-            <tbody>
+              </thead>
+              <tbody>
               {paginatedPersons.map(person => (
             <tr 
               key={person.id}
@@ -549,8 +563,14 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
               </td>
               </tr>
               ))}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+            {paginationLoading && (
+              <div className="pagination-loading-overlay">
+                <div className="loading-spinner-small" />
+              </div>
+            )}
+          </div>
 
           {/* Pagination Controls - Bottom */}
           <PaginationControls

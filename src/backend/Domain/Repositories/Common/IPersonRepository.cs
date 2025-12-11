@@ -44,6 +44,17 @@ public interface IPersonRepository
     Task<IEnumerable<Person>> GetAllAsync(int page, int pageSize, string? firstName, string? lastName, string? birthDate, bool? isRegistered, CancellationToken cancellationToken = default);
     
     /// <summary>
+    /// Gets the total count of persons matching the filters
+    /// </summary>
+    /// <param name="firstName">Optional first name filter</param>
+    /// <param name="lastName">Optional last name filter</param>
+    /// <param name="birthDate">Optional birth date filter</param>
+    /// <param name="isRegistered">Optional registration status filter</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Total count of persons matching the filters</returns>
+    Task<int> GetCountAsync(string? firstName, string? lastName, string? birthDate, bool? isRegistered, CancellationToken cancellationToken = default);
+    
+    /// <summary>
     /// Gets persons by first name
     /// </summary>
     /// <param name="firstName">The first name to filter by</param>
