@@ -29,7 +29,7 @@ namespace WebAPI.Models.Floorball
         /// Period number when the event occurred
         /// </summary>
         [Required(ErrorMessage = "Period number is required")]
-        [Range(1, 5, ErrorMessage = "Period number must be between 1 and 5")]
+        [Range(1, 4, ErrorMessage = "Period number must be between 1 and 4")]
         public int PeriodNumber { get; set; }
 
         /// <summary>
@@ -129,21 +129,4 @@ namespace WebAPI.Models.Floorball
         public Guid MatchId { get; set; }
     }
 
-    /// <summary>
-    /// Request model for adding an official to a match
-    /// </summary>
-    public class AddOfficialToMatchRequest
-    {
-        /// <summary>
-        /// ID of the match
-        /// </summary>
-        [Required(ErrorMessage = "Match ID is required")]
-        public Guid MatchId { get; set; }
-
-        /// <summary>
-        /// ID of the referee
-        /// </summary>
-        [Required(ErrorMessage = "Referee ID is required")]
-        public Guid RefereeId { get; set; }
-    }
 } 

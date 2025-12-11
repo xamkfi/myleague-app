@@ -63,13 +63,17 @@ public static class ClubMapper
         Uri? websiteUri = !string.IsNullOrEmpty(command.WebsiteUrl) ? new Uri(command.WebsiteUrl) : null;
         Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;
 
+        if (command.FoundingDate?.Date == null)
+            throw new ArgumentNullException(nameof(command));
+        DateTime foundingDate = command.FoundingDate.Value;
+
         // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
-        DateTime foundingDateUtc = command.FoundingDate.Kind switch
+        DateTime foundingDateUtc = foundingDate.Kind switch
         {
-            DateTimeKind.Utc => command.FoundingDate,
-            DateTimeKind.Local => command.FoundingDate.ToUniversalTime(),
-            DateTimeKind.Unspecified => DateTime.SpecifyKind(command.FoundingDate, DateTimeKind.Utc),
-            _ => DateTime.SpecifyKind(command.FoundingDate, DateTimeKind.Utc)
+            DateTimeKind.Utc => foundingDate,
+            DateTimeKind.Local => foundingDate.ToUniversalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(foundingDate, DateTimeKind.Utc),
+            _ => DateTime.SpecifyKind(foundingDate, DateTimeKind.Utc)
         };
 
         return new Club(

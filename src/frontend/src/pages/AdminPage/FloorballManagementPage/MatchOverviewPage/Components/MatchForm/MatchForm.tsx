@@ -12,6 +12,8 @@ import { floorballRefereeSearchService } from '../../../../../../api/floorball/f
 import './MatchForm.scss';
 import ErrorPopup from '../../../../../../components/ErrorPopup/ErrorPopup';
 
+const GUEST_REFEREE_NAME = 'GUEST REFEREE';
+
 type MatchFormMode = 'create' | 'edit';
 
 interface MatchFormProps {
@@ -51,6 +53,24 @@ const MatchForm = ({
   const [initialSeasonOptions, setInitialSeasonOptions] = useState<Array<{id: string, name: string}>>([]);
   const [initialHomeTeamOptions, setInitialHomeTeamOptions] = useState<Array<{id: string, name: string}>>([]);
   const [initialAwayTeamOptions, setInitialAwayTeamOptions] = useState<Array<{id: string, name: string}>>([]);
+
+  const promoteGuestReferee = useCallback((options: Array<{ id: string; name: string }>) => {
+    const guestIndex = options.findIndex(option => option.name.toUpperCase() === GUEST_REFEREE_NAME);
+    if (guestIndex <= 0) {
+      return options;
+    }
+    const guest = options[guestIndex];
+    const remaining = options.filter((_, index) => index !== guestIndex);
+    return [guest, ...remaining];
+  }, []);
+
+  const searchRefereesWithGuest = useCallback(async (query: string, page: number) => {
+    const result = await floorballRefereeSearchService.searchReferees(query, page);
+    return {
+      data: promoteGuestReferee(result.data),
+      pagination: result.pagination
+    };
+  }, [promoteGuestReferee]);
 
   // Create initial options from initialData for immediate display
   const createInitialOptions = useCallback(() => {
@@ -123,7 +143,7 @@ const MatchForm = ({
         seasonId: initialData.seasonId,
         homeTeamId: initialData.homeTeamId,
         awayTeamId: initialData.awayTeamId,
-        refereeId: undefined, // We don't have referee info in the DTO
+        refereeId: initialData.refereeId,
         scheduledDateTime: initialData.scheduledDateTime,
         venue: initialData.venue || ''
       });
@@ -154,6 +174,27 @@ const MatchForm = ({
       createInitialOptions();
     }
   }, [mode, initialData, createInitialOptions, preloadInitialOptions]);
+
+  // Ensure referee dropdown defaults to guest when available
+  useEffect(() => {
+    const ensureGuestReferee = async () => {
+      try {
+        const result = await floorballRefereeSearchService.searchReferees('', 1);
+        const promoted = promoteGuestReferee(result.data);
+        const guest = promoted.find(option => option.name.toUpperCase() === GUEST_REFEREE_NAME);
+        if (guest) {
+          setFormData(prev => ({
+            ...prev,
+            refereeId: prev.refereeId ?? guest.id
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to load referees for default selection', err);
+      }
+    };
+
+    ensureGuestReferee();
+  }, [promoteGuestReferee]);
 
   // Custom search functions that include initial options
   const searchSeasonsWithInitial = useCallback(async (query: string, page: number) => {
@@ -382,6 +423,11 @@ const MatchForm = ({
     try {
       setError(null);
 
+      if (!formData.refereeId) {
+        setError('Please select a referee');
+        return;
+      }
+
       // if (mode === 'create') {
       //   if (!formData.seasonId || !formData.homeTeamId || !formData.awayTeamId || !formData.scheduledDateTime) {
       //     setError('Please fill in all required fields');
@@ -520,21 +566,21 @@ const MatchForm = ({
             />
           </div>
         </div>
-        {mode === 'create' && (
-          <div className="form-group create-match-form-row">
-            <label htmlFor="referee">Referee</label>
-            <div className="input-wrapper">
-              <SearchableInfiniteDropdown
-                placeholder="Select Referee"
-                value={formData.refereeId}
-                onChange={(value) => setFormData(prev => ({ ...prev, refereeId: value }))}
-                onSearch={floorballRefereeSearchService.searchReferees}
-                searchPlaceholder="Search referees..."
-                emptyMessage="No referees found"
-              />
-            </div>
+        <div className="form-group create-match-form-row">
+          <label htmlFor="referee">Referee *</label>
+          <div className="input-wrapper">
+            <SearchableInfiniteDropdown
+              placeholder="Select Referee"
+              value={formData.refereeId}
+              onChange={(value) => setFormData(prev => ({ ...prev, refereeId: value }))}
+              onSearch={searchRefereesWithGuest}
+              searchPlaceholder="Search referees..."
+              emptyMessage="No referees found"
+              required
+              loadInitialDataOnMount
+            />
           </div>
-        )}
+        </div>
         <div className="form-group create-match-form-row">
           <label>Date & Time *</label>
           <div className="input-wrapper">

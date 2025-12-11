@@ -157,46 +157,30 @@ const CreateTeamPage = () => {
             />
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="division">{t('floorball.teams.division', 'Division')} *</label>
-              <select
-                id="division"
-                value={formData.divisionId}
-                onChange={(e) => handleInputChange('divisionId', e.target.value)}
-                required
-              >
-                <option value="">{t('floorball.teams.selectDivision', 'Select division...')}</option>
-                {divisions.map(division => (
-                  <option key={division.id} value={division.id}>{division.name}</option>
-                ))}
-              </select>
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="category">{t('floorball.teams.category', 'Category')} *</label>
-              <select
-                id="category"
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value as TeamCategory)}
-                required
-              >
-                <option value="Adult">{t('floorball.categories.adult', 'Adult')}</option>
-                <option value="Youth">{t('floorball.categories.youth', 'Youth')}</option>
-                <option value="Women">{t('floorball.categories.women', 'Women')}</option>
-              </select>
-            </div>
+          <div className="form-group">
+            <label htmlFor="category">{t('floorball.teams.category', 'Category')} *</label>
+            <select
+              id="category"
+              value={formData.category}
+              onChange={(e) => handleInputChange('category', e.target.value as TeamCategory)}
+              required
+            >
+              <option value="Adult">{t('floorball.categories.adult', 'Adult')}</option>
+              <option value="Youth">{t('floorball.categories.youth', 'Youth')}</option>
+              <option value="Women">{t('floorball.categories.women', 'Women')}</option>
+            </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="homeArena">{t('floorball.teams.homeArena', 'Home Arena')} *</label>
+            <label htmlFor="homeArena">{t('floorball.teams.homeArena', 'Home Arena')} </label>
             <input
               id="homeArena"
               type="text"
               value={formData.homeArena}
               onChange={(e) => handleInputChange('homeArena', e.target.value)}
-              required
               placeholder={t('floorball.teams.homeArenaPlaceholder', 'Enter home arena')}
+              
             />
           </div>
 

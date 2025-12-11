@@ -12,7 +12,7 @@ public record CreateClubCommand(
     string Name,
     string City,
     string Country,
-    DateTime FoundingDate,
+    DateTime? FoundingDate,
     string? WebsiteUrl = "",
     string? LogoUrl = "",
     string? ContactEmail = "") : IRequest<Result<ClubDto>>; 

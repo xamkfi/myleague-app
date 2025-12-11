@@ -186,8 +186,8 @@ namespace WebAPI.Controllers.Floorball
         /// <returns>Paginated list of floorball referees</returns>
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballRefereeDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballRefereeDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballRefereeDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<FloorballRefereeDto>>> GetAllReferees(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 0,

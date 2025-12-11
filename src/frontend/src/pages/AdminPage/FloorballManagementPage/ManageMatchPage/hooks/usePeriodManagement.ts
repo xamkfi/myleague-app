@@ -67,13 +67,13 @@ export const usePeriodManagement = ({
       let nextPeriod = clock.period + 1;
       
       // Allow progression to overtime and shootout regardless of score
-      if (clock.period === 3) {
-        nextPeriod = 4; // Overtime
-        console.log('Regular periods ended, transitioning to overtime');
-      } else if (clock.period === 4) {
-        nextPeriod = 5; // Shootout
+      if (clock.period === 2) {
+        nextPeriod = 3; // Overtime
+        console.log('Regulation periods ended, transitioning to overtime');
+      } else if (clock.period === 3) {
+        nextPeriod = 4; // Shootout
         console.log('Overtime ended, transitioning to shootout');
-      } else if (clock.period === 5) {
+      } else if (clock.period === 4) {
         // After shootout, no more periods
         nextPeriod = 0;
         console.log('Shootout ended, match is complete');
@@ -115,11 +115,11 @@ export const usePeriodManagement = ({
       
       console.log(`Starting period ${nextPeriodToStart} for match ${currentMatch.id}`);
       
-      // Start the period via API (server-managed for 1; record phase for 4/5)
-      if (nextPeriodToStart === 4) {
+      // Start the period via API (server-managed for 1; record phase for 3/4)
+      if (nextPeriodToStart === 3) {
         await floorballMatchEventService.recordOvertime(currentMatch.id);
         console.log(`Recorded overtime for match ${currentMatch.id}`);
-      } else if (nextPeriodToStart === 5) {
+      } else if (nextPeriodToStart === 4) {
         await floorballMatchEventService.recordShootout(currentMatch.id);
         console.log(`Recorded shootout for match ${currentMatch.id}`);
       } else {
@@ -144,8 +144,9 @@ export const usePeriodManagement = ({
         });
       }
       
-      // Update next period to start
-      setNextPeriodToStart(nextPeriodToStart + 1);
+      // Update next period to start, cap after shootout
+      const upcoming = nextPeriodToStart + 1;
+      setNextPeriodToStart(upcoming <= 4 ? upcoming : 0);
       
     } catch (error) {
       console.error('Error starting period:', error);
@@ -162,19 +163,19 @@ export const usePeriodManagement = ({
     try {
       await floorballMatchEventService.recordOvertime(currentMatch.id);
       
-      // Start the overtime period (period 4)
-      await floorballMatchEventService.startPeriod(currentMatch.id, 4);
+      // Start the overtime period (period 3)
+      await floorballMatchEventService.startPeriod(currentMatch.id, 3);
       
-      // Update the clock to period 4
+      // Update the clock to period 3
       const newClock = { 
-        period: 4, 
+        period: 3, 
         minutes: 0, 
         seconds: 0, 
         isRunning: false 
       };
       setLocalClock(newClock);
       // Ensure local state reflects that OT has started
-      setStartedPeriods(prev => new Set([...prev, 4]));
+      setStartedPeriods(prev => new Set([...prev, 3]));
       if (onStateUpdate) {
         onStateUpdate({
           clock: newClock
@@ -196,19 +197,19 @@ export const usePeriodManagement = ({
     try {
       await floorballMatchEventService.recordShootout(currentMatch.id);
       
-      // Start the shootout period (period 5)
-      await floorballMatchEventService.startPeriod(currentMatch.id, 5);
+      // Start the shootout period (period 4)
+      await floorballMatchEventService.startPeriod(currentMatch.id, 4);
       
-      // Update the clock to period 5
+      // Update the clock to period 4
       const newClock = { 
-        period: 5, 
+        period: 4, 
         minutes: 0, 
         seconds: 0, 
         isRunning: false 
       };
       setLocalClock(newClock);
       // Ensure local state reflects that shootout has started
-      setStartedPeriods(prev => new Set([...prev, 5]));
+      setStartedPeriods(prev => new Set([...prev, 4]));
       if (onStateUpdate) {
         onStateUpdate({
           clock: newClock
@@ -258,25 +259,25 @@ export const usePeriodManagement = ({
     
     if (currentMatch.status === 'InProgress') {
       if (endedPeriods.has(clock.period)) {
-        if (clock.period === 4) {
+      if (clock.period === 3) {
           return '🔴 Overtime Ended';
-        } else if (clock.period === 5) {
+      } else if (clock.period === 4) {
           return '🔴 Shootout Ended';
         } else {
           return '🔴 Ended';
         }
       } else if (startedPeriods.has(clock.period)) {
-        if (clock.period === 4) {
+      if (clock.period === 3) {
           return '🟢 Overtime Started';
-        } else if (clock.period === 5) {
+      } else if (clock.period === 4) {
           return '🟢 Shootout Started';
         } else {
           return '🟢 Started';
         }
       } else {
-        if (clock.period === 4) {
+      if (clock.period === 3) {
           return '⏸️ Overtime Not Started';
-        } else if (clock.period === 5) {
+      } else if (clock.period === 4) {
           return '⏸️ Shootout Not Started';
         } else {
           return '⏸️ Not Started';
@@ -312,11 +313,11 @@ export const usePeriodManagement = ({
         return 'Starting...';
       }
       
-      if (nextPeriodToStart === 4) {
+      if (nextPeriodToStart === 3) {
         return '⏰ Start Overtime';
       }
       
-      if (nextPeriodToStart === 5) {
+      if (nextPeriodToStart === 4) {
         return '🎯 Start Shootout';
       }
       
@@ -327,12 +328,12 @@ export const usePeriodManagement = ({
   /**
    * Determines if we're currently in overtime
    */
-  const isInOvertime = useCallback(() => clock.period === 4, [clock.period]);
+  const isInOvertime = useCallback(() => clock.period === 3, [clock.period]);
 
   /**
    * Determines if we're currently in shootout
    */
-  const isInShootout = useCallback(() => clock.period === 5, [clock.period]);
+  const isInShootout = useCallback(() => clock.period === 4, [clock.period]);
 
   /**
    * Confirms the end period action
