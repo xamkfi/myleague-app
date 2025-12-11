@@ -72,7 +72,33 @@ public class GetFloorballSeasonByIdHandler : IRequestHandler<GetFloorballSeasonB
                 }
             }
 
-            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, clubsDict);
+            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+            IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
+
+            IEnumerable<FloorballSeasonDivisionTeam> seasonDivisionTeams = await _seasonDivisionRepository.GetSeasonDivisionTeamsAsync(season.Id);
+            List<FloorballTeam> seasonTeams = seasonDivisionTeams
+                .Select(sdt => sdt.Team)
+                .Where(team => team != null)
+                .ToList();
+
+            // Ensure clubs dictionary includes clubs for teams loaded via season divisions
+            foreach (FloorballTeam team in seasonTeams)
+            {
+                if (team.Club != null && !clubsDict.ContainsKey(team.ClubId))
+                {
+                    clubsDict[team.ClubId] = team.Club;
+                }
+                else if (!clubsDict.ContainsKey(team.ClubId))
+                {
+                    Club? club = await _clubRepository.GetByIdAsync(team.ClubId);
+                    if (club != null)
+                    {
+                        clubsDict[team.ClubId] = club;
+                    }
+                }
+            }
+
+            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, seasonDivisionDtos, clubsDict, seasonTeams);
             _logger.LogInformation("Successfully retrieved floorball season: {SeasonId}", season.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);

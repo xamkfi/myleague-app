@@ -118,14 +118,14 @@ export interface GetFloorballTeamsRequest {
 
 export interface FloorballTeamRequest {
   name: string;
-  divisionId: string;
+  divisionId?: string;
   clubId: string;
   homeArena: string;
   primaryJerseyColor: string;
   category?: TeamCategory;
   secondaryJerseyColor?: string;
   logoUrl?: string;
-} 
+}
 
 // Team Player Management types
 export interface FloorballTeamPlayerDto {

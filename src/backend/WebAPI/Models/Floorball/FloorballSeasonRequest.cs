@@ -29,10 +29,11 @@ namespace WebAPI.Models.Floorball
         public string EndDate { get; set; } = string.Empty;
 
         /// <summary>
-        /// Division for the season
+        /// List of division IDs to associate with this season. At least one division must be provided.
         /// </summary>
         [Required]
-        public Guid DivisionId { get; set; }
+        [MinLength(1, ErrorMessage = "At least one division must be specified.")]
+        public List<Guid> DivisionIds { get; set; } = new();
     }
 
     /// <summary>
@@ -59,10 +60,5 @@ namespace WebAPI.Models.Floorball
         [Required]
         public string EndDate { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Division for the season
-        /// </summary>
-        [Required]
-        public Guid DivisionId { get; set; }
     }
 } 

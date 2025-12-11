@@ -22,8 +22,8 @@ const EditTeamPage = () => {
   const [loading, setLoading] = useState(false);
   const [loadingTeam, setLoadingTeam] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [clubs, setClubs] = useState<Club[]>([]);
   const [divisions, setDivisions] = useState<DivisionType[]>([]);
+  const [clubs, setClubs] = useState<Club[]>([]);
   const [currentTeam, setCurrentTeam] = useState<FloorballTeam | null>(null);
   
   const [formData, setFormData] = useState<FloorballTeamRequest>({
@@ -67,17 +67,18 @@ const EditTeamPage = () => {
   useEffect(() => {
     if (teamId) {
       loadTeamData();
-      loadClubs();
       loadDivisions();
+      loadClubs();
     }
   }, [teamId, loadTeamData]);
 
   const loadClubs = async () => {
     try {
-      const clubsData = await getClubs();
-      setClubs(clubsData);
+      const response = await getClubs();
+      setClubs(response);
     } catch (err) {
       console.error('Error loading clubs:', err);
+      setClubs([]);
     }
   };
 

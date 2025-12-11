@@ -26,6 +26,7 @@ const CreatePlayerPage = () => {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
   
@@ -38,6 +39,15 @@ const CreatePlayerPage = () => {
   const [bulkCreating, setBulkCreating] = useState(false);
   const [showBulkConfirmation, setShowBulkConfirmation] = useState(false);
 
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   // Fetch persons and filter out those who are already players
   useEffect(() => {
     const fetchData = async () => {
@@ -45,8 +55,16 @@ const CreatePlayerPage = () => {
         setLoading(true);
         setError(null);
         
-        // Fetch all persons
-        const personsData = await personApi.getAll();
+        let personsData: Person[];
+        
+        // Conditionally fetch based on search term
+        if (debouncedSearchTerm.trim()) {
+          // Use search API when there's a search term
+          personsData = await personApi.search(debouncedSearchTerm.trim());
+        } else {
+          // Use getAll when there's no search term
+          personsData = await personApi.getAll();
+        }
         
         // Fetch existing players using the same parameters that work in the main page
         const playersResponse = await floorballPlayerService.getAll({ 
@@ -65,20 +83,22 @@ const CreatePlayerPage = () => {
         
         setAvailablePersons(availablePersonsData);
         
-        // Check if we have a newly created person from navigation state
-        const state = location.state as { newPersonCreated?: Person; successMessage?: string } | null;
-        if (state?.newPersonCreated && state?.successMessage) {
-          setSuccessMessage(state.successMessage);
-          
-          // Auto-hide success message after 3 seconds
-          const timeoutId = setTimeout(() => {
-            setSuccessMessage(null);
-            setSuccessTimeoutId(null);
-          }, 3000);
-          setSuccessTimeoutId(timeoutId);
-          
-          // Clear navigation state
-          navigate(location.pathname, { replace: true, state: null });
+        // Check if we have a newly created person from navigation state (only on initial load)
+        if (!debouncedSearchTerm && location.state) {
+          const state = location.state as { newPersonCreated?: Person; successMessage?: string } | null;
+          if (state?.newPersonCreated && state?.successMessage) {
+            setSuccessMessage(state.successMessage);
+            
+            // Auto-hide success message after 3 seconds
+            const timeoutId = setTimeout(() => {
+              setSuccessMessage(null);
+              setSuccessTimeoutId(null);
+            }, 3000);
+            setSuccessTimeoutId(timeoutId);
+            
+            // Clear navigation state
+            navigate(location.pathname, { replace: true, state: null });
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -89,7 +109,7 @@ const CreatePlayerPage = () => {
     };
 
     fetchData();
-  }, [location.state, location.pathname, navigate]);
+  }, [debouncedSearchTerm, location.state, location.pathname, navigate]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -112,13 +132,8 @@ const CreatePlayerPage = () => {
     }
   };
 
-  // Filter and sort available persons
+  // Sort available persons (filtering is handled by backend when searching)
   const filteredAndSortedPersons = availablePersons
-    .filter(person =>
-      person.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.lastName.toLowerCase().includes(searchTerm.toLowerCase())
-    )
     .sort((a, b) => {
       let comparison = 0;
       
@@ -318,6 +333,10 @@ const CreatePlayerPage = () => {
             onChange={(val) => {
               setSearchTerm(val);
               setSelectedPersons(new Set());
+              // If clearing search, immediately update debounced term to trigger fetch
+              if (!val.trim()) {
+                setDebouncedSearchTerm('');
+              }
             }}
             placeholder={t('floorball.players.searchPersons', 'Search available persons...')}
             fullWidth

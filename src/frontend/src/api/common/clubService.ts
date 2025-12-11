@@ -30,13 +30,49 @@ export interface ClubRequest {
 
 export const clubService = {
   getAll: async (): Promise<Club[]> => {
-    const response = await fetch(`${VITE_API_URL}/Clubs?page=1&pageSize=1000`);
-    const data = await response.json();
-    if (!response.ok || !data?.success) {
-      const errorMessage = await parseErrorResponse(data, 'Failed to fetch clubs');
-      throw new Error(errorMessage || 'Failed to fetch clubs');
+    const allClubs: Club[] = [];
+    let currentPage = 1;
+    const pageSize = 50; // Maximum allowed page size
+    let hasMorePages = true;
+
+    while (hasMorePages) {
+      const response = await fetch(`${VITE_API_URL}/Clubs?page=${currentPage}&pageSize=${pageSize}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(data, 'Failed to fetch clubs');
+        throw new Error(errorMessage || 'Failed to fetch clubs');
+      }
+      
+      if (!data?.success) {
+        const errorMessage = await parseErrorResponse(data, 'Failed to fetch clubs');
+        throw new Error(errorMessage || 'Failed to fetch clubs');
+      }
+      
+      // Handle paginated response structure
+      if (data.data && Array.isArray(data.data)) {
+        allClubs.push(...data.data);
+        
+        // Check if there are more pages
+        if (data.pagination) {
+          hasMorePages = data.pagination.hasNextPage || false;
+          currentPage++;
+        } else {
+          // If no pagination info, assume no more pages if we got less than pageSize
+          hasMorePages = data.data.length === pageSize;
+          currentPage++;
+        }
+      } else if (Array.isArray(data)) {
+        // Fallback: if data is directly an array
+        allClubs.push(...data);
+        hasMorePages = false;
+      } else {
+        console.error('Unexpected response structure from clubs API:', data);
+        throw new Error('Unexpected response structure from clubs API');
+      }
     }
-    return data.data;
+
+    return allClubs;
   },
 
   getPaged: async (page: number, pageSize: number = 50): Promise<{

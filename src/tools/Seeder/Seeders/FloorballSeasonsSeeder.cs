@@ -16,7 +16,7 @@ public static class FloorballSeasonsSeeder
 		foreach (FloorballSeasonSeed season in seasons)
 		{
 			Guid divisionId = ResolveDivisionId(season.DivisionName, divisions);
-			// Idempotent: check if season with same name exists
+			// Idempotent: check if season with same name exists and contains the division
 			HttpResponseMessage listResp = await http.GetAsync("api/floorballseason");
 			if (listResp.IsSuccessStatusCode)
 			{
@@ -24,7 +24,7 @@ public static class FloorballSeasonsSeeder
 				if (listApi != null && listApi.Success && listApi.Data != null)
 				{
 					FloorballSeasonDto? existing = listApi.Data.FirstOrDefault(s => string.Equals(s.Name, season.Name, StringComparison.OrdinalIgnoreCase)
-						&& s.DivisionId == divisionId);
+						&& s.SeasonDivisions != null && s.SeasonDivisions.Any(sd => sd.DivisionId == divisionId));
 					if (existing != null)
 					{
 						created.Add(existing);
@@ -33,12 +33,27 @@ public static class FloorballSeasonsSeeder
 					}
 				}
 			}
+			
+			// Build list of division IDs (primary division + additional divisions)
+			List<Guid> divisionIds = new List<Guid> { divisionId };
+			if (season.AdditionalDivisionNames != null && season.AdditionalDivisionNames.Count > 0)
+			{
+				foreach (string divName in season.AdditionalDivisionNames)
+				{
+					Guid extraDivisionId = ResolveDivisionId(divName, divisions);
+					if (!divisionIds.Contains(extraDivisionId))
+					{
+						divisionIds.Add(extraDivisionId);
+					}
+				}
+			}
+			
 			CreateFloorballSeasonRequest request = new CreateFloorballSeasonRequest
 			{
 				Name = season.Name,
 				StartDate = season.StartDate,
 				EndDate = season.EndDate,
-				DivisionId = divisionId
+				DivisionIds = divisionIds
 			};
 
 			HttpResponseMessage response = await http.PostAsJsonAsync("api/floorballseason", request);
@@ -51,22 +66,7 @@ public static class FloorballSeasonsSeeder
 			}
 
 			created.Add(api.Data);
-			Console.WriteLine("Created floorball season " + api.Data.Name + " (" + api.Data.Id + ")");
-
-            // Add additional divisions to this season if defined
-            if (season.AdditionalDivisionNames != null && season.AdditionalDivisionNames.Count > 0)
-            {
-                foreach (string divName in season.AdditionalDivisionNames)
-                {
-                    Guid extraDivisionId = ResolveDivisionId(divName, divisions);
-                    if (extraDivisionId != divisionId)
-                    {
-                        HttpResponseMessage addDivResp = await http.PostAsync("api/floorballseason/" + api.Data.Id + "/divisions/" + extraDivisionId, null);
-                        await SeederHttp.EnsureSuccess(addDivResp, "Add Division to Season");
-                        Console.WriteLine("  Added division to season: " + divName + " (" + extraDivisionId + ")");
-                    }
-                }
-            }
+			Console.WriteLine("Created floorball season " + api.Data.Name + " (" + api.Data.Id + ") with " + divisionIds.Count + " division(s)");
 		}
 
 		return created;

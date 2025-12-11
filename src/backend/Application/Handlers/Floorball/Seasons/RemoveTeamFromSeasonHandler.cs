@@ -15,6 +15,7 @@ public class RemoveTeamFromSeasonHandler : IRequestHandler<RemoveTeamFromSeasonC
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<RemoveTeamFromSeasonHandler> _logger;
@@ -22,12 +23,14 @@ public class RemoveTeamFromSeasonHandler : IRequestHandler<RemoveTeamFromSeasonC
     public RemoveTeamFromSeasonHandler(
         IFloorballSeasonRepository seasonRepository,
         IFloorballTeamRepository teamRepository,
+        IFloorballSeasonDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<RemoveTeamFromSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
         _teamRepository = teamRepository;
+        _seasonDivisionRepository = seasonDivisionRepository;
         _clubRepository = clubRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
@@ -74,7 +77,10 @@ public class RemoveTeamFromSeasonHandler : IRequestHandler<RemoveTeamFromSeasonC
                 }
             }
 
-            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, clubs);
+            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+            IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
+
+            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, seasonDivisionDtos, clubs);
             return Result<FloorballSeasonDto>.Success(seasonDto);
         }
         catch (Exception ex)

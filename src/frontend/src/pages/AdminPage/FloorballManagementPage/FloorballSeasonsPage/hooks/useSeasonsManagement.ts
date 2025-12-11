@@ -216,9 +216,13 @@ export const useSeasonsManagement = () => {
     
     // Filter by division
     if (divisionFilter !== 'all') {
-      const division = divisions.find(d => d.id === season.divisionId);
-      const divisionName = division?.name || season.divisionId;
-      if (divisionName !== divisionFilter) {
+      // Check if any of the season's divisions match the filter
+      const hasMatchingDivision = season.seasonDivisions?.some(seasonDivision => {
+        const division = divisions.find(d => d.id === seasonDivision.divisionId);
+        const divisionName = division?.name || seasonDivision.divisionId;
+        return divisionName === divisionFilter;
+      });
+      if (!hasMatchingDivision) {
         return false;
       }
     }
@@ -228,10 +232,12 @@ export const useSeasonsManagement = () => {
 
   // Get unique division names from the seasons' division IDs
   const uniqueDivisions = [...new Set(
-    seasons.map(season => {
-      const division = divisions.find(d => d.id === season.divisionId);
-      return division?.name || season.divisionId; // Fallback to ID if division not found
-    })
+    seasons.flatMap(season => 
+      (season.seasonDivisions || []).map(seasonDivision => {
+        const division = divisions.find(d => d.id === seasonDivision.divisionId);
+        return division?.name || seasonDivision.divisionId; // Fallback to ID if division not found
+      })
+    )
   )].sort();
 
   useEffect(() => {

@@ -157,7 +157,7 @@ namespace WebAPI.Controllers.Floorball
 
             CreateFloorballSeasonCommand command = new CreateFloorballSeasonCommand(
                 request.Name,
-                request.DivisionId,
+                request.DivisionIds,
                 startDate,
                 endDate
             );

@@ -90,13 +90,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <summary>
         /// Gets floorball seasons by division
         /// </summary>
-        /// <param name="division">The division to filter by</param>
+        /// <param name="divisionId">The division to filter by</param>
         /// <returns>A collection of floorball seasons for the specified division</returns>
         public async Task<IEnumerable<FloorballSeason>> GetByDivisionAsync(Guid divisionId)
         {
+            // Query through FloorballSeasonDivision table to find seasons with this division
+            HashSet<Guid> seasonIds = await _dbContext.Set<FloorballSeasonDivision>()
+                .Where(sd => sd.DivisionId == divisionId)
+                .Select(sd => sd.SeasonId)
+                .ToHashSetAsync();
+
             return await _entities
                 .Include(s => s.Teams)
-                .Where(s => s.DivisionId == divisionId)
+                .Where(s => seasonIds.Contains(s.Id))
                 .ToListAsync();
         }
 
@@ -122,10 +128,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             DateTime now = DateTime.UtcNow;
             
+            // Get season IDs that have this division
+            HashSet<Guid> seasonIds = await _dbContext.Set<FloorballSeasonDivision>()
+                .Where(sd => sd.DivisionId == divisionId)
+                .Select(sd => sd.SeasonId)
+                .ToHashSetAsync();
+            
             // First try to find an active season
             FloorballSeason? activeSeason = await _entities
                 .Include(s => s.Teams)
-                .Where(s => s.DivisionId == divisionId && s.IsActive)
+                .Where(s => seasonIds.Contains(s.Id) && s.IsActive)
                 .FirstOrDefaultAsync();
                 
             if (activeSeason != null)
@@ -134,7 +146,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             // If no active season, try to find a future season
             FloorballSeason? futureSeason = await _entities
                 .Include(s => s.Teams)
-                .Where(s => s.DivisionId == divisionId && s.StartDate > now && !s.IsCompleted)
+                .Where(s => seasonIds.Contains(s.Id) && s.StartDate > now && !s.IsCompleted)
                 .OrderBy(s => s.StartDate)
                 .FirstOrDefaultAsync();
                 

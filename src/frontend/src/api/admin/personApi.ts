@@ -128,4 +128,23 @@ export const personApi = {
 
     return apiResponse.data;
   },
+
+  search: async (name: string): Promise<Person[]> => {
+    if (!name || !name.trim()) {
+      throw new Error('Name parameter is required for search');
+    }
+
+    const response = await fetch(`${API_URL}/persons/search?name=${encodeURIComponent(name.trim())}`);
+    if (!response.ok) {
+      throw new Error('Failed to search persons');
+    }
+
+    const apiResponse: ApiResponse<Person[]> = await response.json();
+    if (!apiResponse.success) {
+      const errorMessage = await parseErrorResponse(apiResponse, "Failed to search persons");
+      throw new Error(errorMessage || 'Failed to search persons');
+    }
+
+    return apiResponse.data;
+  },
 }; 

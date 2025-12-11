@@ -106,6 +106,19 @@
     }
   }
 
+  .divisions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    align-items: center;
+
+    .no-divisions {
+      color: #6c757d;
+      font-size: 0.75rem;
+      font-style: italic;
+    }
+  }
+
   .division-badge {
     padding: 0.25rem 0.5rem;
     border-radius: 0.75rem;
@@ -370,9 +383,16 @@
 
         .season-meta {
           display: flex;
-          gap: 1rem;
+          flex-wrap: wrap;
+          gap: 0.5rem;
           font-size: 0.9rem;
           color: #6c757d;
+
+          .divisions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+          }
 
           .division {
             background: #007bff;
