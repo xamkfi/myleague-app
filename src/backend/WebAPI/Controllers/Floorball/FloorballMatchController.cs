@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
+using System.Collections.Concurrent;
 using WebAPI.Models.Floorball;
 
 namespace WebAPI.Controllers.Floorball
@@ -24,6 +25,8 @@ namespace WebAPI.Controllers.Floorball
     {
         private readonly IMediator _mediator;
         private readonly ILogger<FloorballMatchController> _logger;
+        private static readonly ConcurrentDictionary<string, DateTime> _eventRateLimits = new();
+        private static readonly TimeSpan _rateLimitTtl = TimeSpan.FromHours(24);
 
         /// <summary>
         /// Initializes new instance of FloorballMatchController class
@@ -34,6 +37,39 @@ namespace WebAPI.Controllers.Floorball
         {
             _mediator = mediator;
             _logger = logger;
+        }
+
+
+        /// <summary>
+        /// Checks if the rate limit of 1 second has been exceeded for a given key
+        /// </summary>
+        /// <param name="key">The key to check</param>
+        /// <param name="window">The window of time to check</param>
+        private bool IsRateLimited(string key, TimeSpan window)
+        {
+            DateTime now = DateTime.UtcNow;
+            if (_eventRateLimits.TryGetValue(key, out DateTime last) && now - last < window)
+            {
+                return true;
+            }
+            _eventRateLimits[key] = now;
+            CleanupRateLimitCache(now);
+            return false;
+        }
+
+        /// <summary>
+        /// Cleans up the rate limit cache by removing entries that are older than 24 hours
+        /// </summary>
+        /// <param name="now">The current time</param>
+        private void CleanupRateLimitCache(DateTime now)
+        {
+            foreach (KeyValuePair<string, DateTime> entry in _eventRateLimits)
+            {
+                if (now - entry.Value > _rateLimitTtl)
+                {
+                    _eventRateLimits.TryRemove(entry.Key, out _);
+                }
+            }
         }
 
         /// <summary>
@@ -350,7 +386,7 @@ namespace WebAPI.Controllers.Floorball
 
 
         /// <summary>
-        /// Records a goal in a floorball match
+        /// Records a goal in a floorball match, with 1 second rate limit
         /// </summary>
         /// <param name="request">Goal recording request</param>
         /// <returns>Updated match details</returns>
@@ -362,6 +398,13 @@ namespace WebAPI.Controllers.Floorball
         public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordGoal([FromBody] RecordGoalRequest request)
         {
             _logger.LogInformation("Recording goal for match ID: {matchId}", request.MatchId);
+
+            string rateKey = $"{request.MatchId}:goal:{request.ScoringTeamId}:{request.ScoringPlayerId}";
+            if (IsRateLimited(rateKey, TimeSpan.FromSeconds(1)))
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests,
+                    ApiResponse<FloorballMatchDto>.ErrorResponse("Too many goal events; please wait a moment."));
+            }
 
             RecordGoalCommand command = new RecordGoalCommand(
                 request.MatchId,
@@ -392,7 +435,7 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Records a penalty in a floorball match
+        /// Records a penalty in a floorball match, with 1 second rate limit
         /// </summary>
         [HttpPost("record-penalty")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
@@ -402,6 +445,13 @@ namespace WebAPI.Controllers.Floorball
         public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordPenalty([FromBody] RecordPenaltyEventRequest request)
         {
             _logger.LogInformation("Recording penalty for match ID: {matchId}", request.MatchId);
+
+            string rateKey = $"{request.MatchId}:penalty:{request.TeamId}:{request.PlayerId}";
+            if (IsRateLimited(rateKey, TimeSpan.FromSeconds(1)))
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests,
+                    ApiResponse<FloorballMatchDto>.ErrorResponse("Too many penalty events; please wait a moment."));
+            }
 
             RecordPenaltyCommand command = new RecordPenaltyCommand(
                 request.MatchId,
@@ -430,7 +480,7 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Records a save in a floorball match
+        /// Records a save in a floorball match, with 1 second rate limit
         /// </summary>
         [HttpPost("record-save")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
@@ -440,6 +490,13 @@ namespace WebAPI.Controllers.Floorball
         public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordSave([FromBody] RecordSaveEventRequest request)
         {
             _logger.LogInformation("Recording save for match ID: {matchId}", request.MatchId);
+
+            string rateKey = $"{request.MatchId}:save:{request.TeamId}:{request.PlayerId}";
+            if (IsRateLimited(rateKey, TimeSpan.FromSeconds(1)))
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests,
+                    ApiResponse<FloorballMatchDto>.ErrorResponse("Too many save events; please wait a moment."));
+            }
 
             RecordSaveCommand command = new RecordSaveCommand(
                 request.MatchId,
@@ -691,18 +748,33 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Adds an official (referee) to a floorball match
+        /// Adds an official (referee) to a floorball match (append semantics).
         /// </summary>
-        [HttpPost("add-official")]
+        [HttpPost("{matchId:guid}/officials")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> AddOfficial([FromBody] AddOfficialToMatchRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> AddOfficial(Guid matchId, [FromBody] AddOfficialToMatchRequest request)
         {
-            _logger.LogInformation("Adding official {refereeId} to match ID: {matchId}", request.RefereeId, request.MatchId);
+            _logger.LogInformation("Adding official {refereeId} to match ID: {matchId}", request.RefereeId, matchId);
 
-            AddOfficialToMatchCommand command = new AddOfficialToMatchCommand(request.MatchId, request.RefereeId);
+            // Fetch current match to append
+            Result<FloorballMatchDto> match = await _mediator.Send(new GetFloorballMatchByIdQuery(matchId));
+            if (!match.IsSuccess || match.Data == null)
+            {
+                string err = match.Error ?? "Match not found";
+                if (err.Contains("not found", StringComparison.OrdinalIgnoreCase))
+                    return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(err));
+                return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(err));
+            }
+
+            List<Guid> currentOfficials = match.Data.Officials?.ToList() ?? new List<Guid>();
+            if (!currentOfficials.Contains(request.RefereeId))
+            {
+                currentOfficials.Add(request.RefereeId);
+            }
+
+            UpdateMatchOfficialsCommand command = new UpdateMatchOfficialsCommand(matchId, currentOfficials);
             Result<FloorballMatchDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
@@ -719,6 +791,89 @@ namespace WebAPI.Controllers.Floorball
             return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
         }
 
+        /// <summary>
+        /// Replaces officials for a match (requires at least one).
+        /// </summary>
+        [HttpPut("{matchId:guid}/officials")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> UpdateOfficials(Guid matchId, [FromBody] FloorballMatchOfficialsRequest request)
+        {
+            _logger.LogInformation("Updating officials for match ID: {matchId}", matchId);
+
+            UpdateMatchOfficialsCommand command = new UpdateMatchOfficialsCommand(matchId, request.Officials ?? Array.Empty<Guid>());
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Officials updated successfully"));
+            }
+
+            string? errorMessage = result.Error ?? "Failed to update officials";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Removes an official from a match (must leave at least one official).
+        /// </summary>
+        [HttpDelete("{matchId:guid}/officials/{refereeId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RemoveOfficial(Guid matchId, Guid refereeId)
+        {
+            _logger.LogInformation("Removing official {refereeId} from match ID: {matchId}", refereeId, matchId);
+
+            RemoveOfficialFromMatchCommand command = new RemoveOfficialFromMatchCommand(matchId, refereeId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Official removed successfully"));
+            }
+
+            string? errorMessage = result.Error ?? "Failed to remove official";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Sets a single referee for the match (PUT semantic).
+        /// </summary>
+        [HttpPut("{matchId:guid}/referee/{refereeId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> SetReferee(Guid matchId, Guid refereeId)
+        {
+            _logger.LogInformation("Setting referee {refereeId} for match ID: {matchId}", refereeId, matchId);
+
+            UpdateMatchOfficialsCommand command = new UpdateMatchOfficialsCommand(matchId, new[] { refereeId });
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Referee set successfully"));
+            }
+
+            string? errorMessage = result.Error ?? "Failed to set referee";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
 
         /// <summary>
         /// Changes the active goalie for a team in a match

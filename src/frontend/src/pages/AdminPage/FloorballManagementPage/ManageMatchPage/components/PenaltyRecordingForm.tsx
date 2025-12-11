@@ -35,9 +35,21 @@ const PenaltyRecordingForm = ({
 }: PenaltyRecordingFormProps) => {
   if (!showPenaltyForm) return null;
 
-  const selectedTeamName = penaltyForm.teamId === currentMatch.homeTeamId 
-    ? homeTeam?.name 
+  const selectedTeamName = penaltyForm.teamId === currentMatch.homeTeamId
+    ? homeTeam?.name
     : awayTeam?.name;
+  const sortedPlayers = [...getPlayersForTeam(penaltyForm.teamId)].sort((a, b) => {
+    const aNumber = a.jerseyNumber ?? Number.POSITIVE_INFINITY;
+    const bNumber = b.jerseyNumber ?? Number.POSITIVE_INFINITY;
+    if (aNumber !== bNumber) {
+      return aNumber - bNumber;
+    }
+    const aName = `${a.person.firstName} ${a.person.lastName}`.toLowerCase();
+    const bName = `${b.person.firstName} ${b.person.lastName}`.toLowerCase();
+    return aName.localeCompare(bName);
+  });
+  const selectedPlayer = sortedPlayers.find(p => p.id === penaltyForm.playerId);
+  const missingJersey = !!(penaltyForm.playerId && !selectedPlayer?.jerseyNumber);
 
   return (
     <div className="penalty-record-modal-overlay" onClick={onClose}>
@@ -56,12 +68,15 @@ const PenaltyRecordingForm = ({
                 value={penaltyForm.playerId}
                 onChange={(e) => setPenaltyForm(prev => ({ ...prev, playerId: e.target.value }))}
               >
-                <option value="">Player name</option>
-                {getPlayersForTeam(penaltyForm.teamId).map(player => (
-                  <option key={player.id} value={player.id}>
-                    {player.person.firstName} {player.person.lastName}
-                  </option>
-                ))}
+                <option value="">Player</option>
+                {sortedPlayers.map(player => {
+                  const label = `${player.jerseyNumber ?? '??'} - ${player.person.firstName} ${player.person.lastName}`;
+                  return (
+                    <option key={player.id} value={player.id}>
+                      {label}
+                    </option>
+                  );
+                })}
               </select>
 
               <label htmlFor="penalty-type">Penalty type</label>
@@ -110,8 +125,13 @@ const PenaltyRecordingForm = ({
             />
 
             <div className="form-actions">
-              <button onClick={onRecordPenalty} disabled={loading} className="submit-btn">
-                {loading ? 'Recording...' : 'Record Penalty'}
+              {missingJersey && (
+                <div className="field-error" role="alert">
+                  Selected player has no jersey number.
+                </div>
+              )}
+              <button onClick={onRecordPenalty} disabled={loading || missingJersey} className="submit-btn">
+                {loading ? 'Recording...' : missingJersey ? 'Missing jersey' : 'Record Penalty'}
               </button>
               <button onClick={onClose} className="cancel-btn">Cancel</button>
             </div>

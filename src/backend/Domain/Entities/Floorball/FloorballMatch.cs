@@ -185,7 +185,7 @@ public class FloorballMatch : BaseEntity
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
-        for (int i = 1; i <= 3; i++)
+        for (int i = 1; i <= 2; i++)
         {
             _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
         }
@@ -564,7 +564,7 @@ public class FloorballMatch : BaseEntity
     {
         ArgumentNullException.ThrowIfNull(referee);
 
-        if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
+        if (Status == FloorballMatchStatus.Completed || Status == FloorballMatchStatus.Cancelled)
             throw new InvalidOperationException($"Cannot add officials to a match with status {Status}.");
 
         if (_officials.Contains(referee))
@@ -577,6 +577,43 @@ public class FloorballMatch : BaseEntity
     }
 
     /// <summary>
+    /// Removes an official (referee) from the match. Ensures at least one official remains.
+    /// </summary>
+    /// <param name="refereeId">The referee ID to remove</param>
+    /// <exception cref="InvalidOperationException">Thrown when removal would leave zero officials or match status disallows change</exception>
+    public void RemoveOfficial(Guid refereeId)
+    {
+        if (Status == FloorballMatchStatus.Completed || Status == FloorballMatchStatus.Cancelled)
+            throw new InvalidOperationException($"Cannot remove officials from a match with status {Status}.");
+
+        FloorballReferee? existing = _officials.FirstOrDefault(o => o.Id == refereeId);
+        if (existing == null)
+            return;
+
+        if (_officials.Count <= 1)
+            throw new InvalidOperationException("Cannot remove the last official from the match.");
+
+        _officials.Remove(existing);
+    }
+
+    /// <summary>
+    /// Replaces the officials collection with the provided set. Requires at least one official.
+    /// </summary>
+    public void SetOfficials(IEnumerable<FloorballReferee> officials)
+    {
+        ArgumentNullException.ThrowIfNull(officials);
+        if (Status == FloorballMatchStatus.Completed || Status == FloorballMatchStatus.Cancelled)
+            throw new InvalidOperationException($"Cannot update officials when match status is {Status}.");
+
+        List<FloorballReferee> refs = officials.Distinct().ToList();
+        if (refs.Count == 0)
+            throw new InvalidOperationException("Match must have at least one official.");
+
+        _officials.Clear();
+        _officials.AddRange(refs);
+    }
+
+    /// <summary>
     /// Records that the match went to overtime
     /// </summary>
     public void RecordOvertime()
@@ -584,9 +621,9 @@ public class FloorballMatch : BaseEntity
         WentToOvertime = true;
 
         // Create a periodscore for non-regular period (Overtime)
-        if (_periodScores.All(ps => ps.PeriodNumber != 4))
+        if (_periodScores.All(ps => ps.PeriodNumber != 3))
         {
-            _periodScores.Add(new FloorballPeriodScore(Id, 4, HomeTeamId, AwayTeamId));
+            _periodScores.Add(new FloorballPeriodScore(Id, 3, HomeTeamId, AwayTeamId));
         }
 
     }
@@ -599,9 +636,9 @@ public class FloorballMatch : BaseEntity
         WentToShootout = true;
 
         // Create a periodscore for non-regular period (Shootout)
-        if (_periodScores.All(ps => ps.PeriodNumber != 5))
+        if (_periodScores.All(ps => ps.PeriodNumber != 4))
         {
-            _periodScores.Add(new FloorballPeriodScore(Id, 5, HomeTeamId, AwayTeamId));
+            _periodScores.Add(new FloorballPeriodScore(Id, 4, HomeTeamId, AwayTeamId));
         }
 
     }

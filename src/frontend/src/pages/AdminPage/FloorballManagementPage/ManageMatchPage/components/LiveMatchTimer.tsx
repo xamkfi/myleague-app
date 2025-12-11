@@ -66,6 +66,11 @@ const LiveMatchTimer = ({
     return 'upcoming';
   };
 
+  const periodLabels: Record<number, string> = {
+    1: 'Period 1',
+    2: 'Period 2'
+  };
+
   // Turn digits red at 15:00 (900s) and after, except during shootout
   const shouldPeriodEnd = currentTimerElapsedTime >= 900 && !isInShootout();
   // Timer controls enabled only if current period has started and not ended
@@ -76,9 +81,9 @@ const LiveMatchTimer = ({
       <div className="clock-card">
         <div className="clock-inner">
           <div className="period-row">
-            {[1, 2, 3].map((p) => (
+            {[1, 2].map((p) => (
               <div key={p} className={`period-chip ${getChipStatus(p)}`}>
-                {`Period ${p}: ${getChipStatus(p)}`}
+                {`${periodLabels[p]}: ${getChipStatus(p)}`}
               </div>
             ))}
           </div>

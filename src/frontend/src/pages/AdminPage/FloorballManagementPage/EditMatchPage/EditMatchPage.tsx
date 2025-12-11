@@ -95,6 +95,10 @@ const EditMatchPage = () => {
         changes.push(floorballMatchService.changeDateTime(matchData.id, updatedData.scheduledDateTime));
       }
 
+      if (updatedData.refereeId && updatedData.refereeId !== matchData.refereeId) {
+        changes.push(floorballMatchService.changeReferee(matchData.id, updatedData.refereeId));
+      }
+
       if (changes.length === 0) {
         setError('No changes were detected.');
         return;
