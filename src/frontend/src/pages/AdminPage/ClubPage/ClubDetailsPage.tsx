@@ -11,7 +11,7 @@ import './ClubDetailsPage.scss';
 interface TeamCardData {
   id: string;
   name: string;
-  divisionId: string;
+  divisionId?: string | null;
   homeArena: string;
   rosterCount: number;
 }
@@ -46,7 +46,7 @@ function ClubDetailsPage() {
           ...firstList.map((t) => ({
             id: t.id,
             name: t.name,
-            divisionId: t.divisionId,
+            divisionId: t.divisionId ?? null,
             homeArena: t.homeArena,
             rosterCount: Array.isArray(t.roster) ? t.roster.length : 0
           }))
@@ -60,7 +60,7 @@ function ClubDetailsPage() {
             ...list.map((t) => ({
               id: t.id,
               name: t.name,
-              divisionId: t.divisionId,
+              divisionId: t.divisionId ?? null,
               homeArena: t.homeArena,
               rosterCount: Array.isArray(t.roster) ? t.roster.length : 0
             }))
@@ -76,8 +76,8 @@ function ClubDetailsPage() {
     load();
   }, [id]);
 
-  const getDivisionName = (divisionId: string) =>
-    divisions.find((d) => d.id === divisionId)?.name || '';
+  const getDivisionName = (divisionId?: string | null) =>
+    divisionId ? divisions.find((d) => d.id === divisionId)?.name || '' : '';
 
   const formatDmy = (iso?: string) => {
     if (!iso) return '-';
