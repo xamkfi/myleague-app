@@ -26,7 +26,7 @@ const EditTeamPage = () => {
   const [formData, setFormData] = useState<FloorballTeamRequest>({
     name: '',
     shortName: '',
-    divisionId: '',
+    divisionId: undefined,
     clubId: '',
     homeArena: '',
     primaryJerseyColor: '#000000',
@@ -50,7 +50,7 @@ const EditTeamPage = () => {
       setFormData({
         name: team.name,
         shortName: team.shortName,
-        divisionId: team.divisionId,
+        divisionId: team.divisionId ?? undefined,
         clubId: team.club.id,
         homeArena: team.homeArena,
         primaryJerseyColor: team.primaryJerseyColor,
@@ -99,16 +99,15 @@ const EditTeamPage = () => {
     
     try {
       // Prepare update data with proper validation
+      const resolvedDivisionId = formData.divisionId ?? existingDivisionId ?? undefined;
       const updateData: FloorballTeamRequest = {
         name: formData.name,
         shortName: formData.shortName?.trim() || undefined,
-        divisionId: formData.divisionId,
         clubId: formData.clubId,
         homeArena: formData.homeArena,
         primaryJerseyColor: formData.primaryJerseyColor,
         category: formData.category,
-        // Preserve the existing divisionId if it exists
-        ...(existingDivisionId ? { divisionId: existingDivisionId } : {}),
+        ...(resolvedDivisionId !== undefined ? { divisionId: resolvedDivisionId } : {}),
         // Only include secondaryJerseyColor if it's valid (2-50 characters) or omit it entirely
         ...(formData.secondaryJerseyColor && formData.secondaryJerseyColor.length >= 2 && formData.secondaryJerseyColor.length <= 50
           ? { secondaryJerseyColor: formData.secondaryJerseyColor }
