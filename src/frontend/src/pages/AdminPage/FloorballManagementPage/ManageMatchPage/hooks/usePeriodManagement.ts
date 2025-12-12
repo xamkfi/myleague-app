@@ -145,12 +145,12 @@ export const usePeriodManagement = ({
       // Mark this period as started
       setStartedPeriods(prev => new Set([...prev, nextPeriodToStart]));
       
-      // Update clock display (backend auto-starts timer with isRunning: true)
+      // Update clock display (backend auto-starts timer for periods 1-3, not shootout)
       const newClock = { 
         period: nextPeriodToStart, 
         minutes: 0, 
         seconds: 0, 
-        isRunning: true  // Backend auto-starts the timer
+        isRunning: nextPeriodToStart !== 4  // Shootout has no timer
       };
       setLocalClock(newClock);
       if (onStateUpdate) {
@@ -230,7 +230,7 @@ export const usePeriodManagement = ({
         period: 4, 
         minutes: 0, 
         seconds: 0, 
-        isRunning: true  // Backend auto-starts the timer
+        isRunning: false  // Shootout has no timer
       };
       setLocalClock(newClock);
       // Ensure local state reflects that shootout has started
@@ -258,14 +258,15 @@ export const usePeriodManagement = ({
       notLoading: !periodLoading[clock.period],
       periodStarted: startedPeriods.has(clock.period),
       periodNotEnded: !endedPeriods.has(clock.period),
-      hasNextPeriod: nextPeriodToStart > 0
+      hasNextPeriod: nextPeriodToStart > 0,
+      isShootout: clock.period === 4  // Shootout is always endable even if nextPeriod is 0
     };
     
     const canEnd = conditions.matchInProgress && 
                    conditions.notLoading &&
                    conditions.periodStarted &&
                    conditions.periodNotEnded &&
-                   conditions.hasNextPeriod;
+                   (conditions.hasNextPeriod || conditions.isShootout);  // Allow ending shootout
         
     return canEnd;
   }, [currentMatch.status, periodLoading, clock.period, startedPeriods, endedPeriods, nextPeriodToStart]);
@@ -323,12 +324,12 @@ export const usePeriodManagement = ({
         return 'Ending...';
       }
       
-      if (clock.period === 4) {
+      if (clock.period === 3) {
         return '🔴 End Overtime';
       }
       
-      if (clock.period === 5) {
-        return '🔴 End Shootout';
+      if (clock.period === 4) {
+        return '🏁 End Shootout';
       }
       
       return 'End period';

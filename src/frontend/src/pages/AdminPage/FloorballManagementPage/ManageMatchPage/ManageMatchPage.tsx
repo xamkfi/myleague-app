@@ -48,6 +48,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   const [selectedOfficials, setSelectedOfficials] = useState<string[]>(match.officials || []);
   const [officialOptions, setOfficialOptions] = useState<Array<{ id: string; name: string }>>([]);
   const [officialsSaving, setOfficialsSaving] = useState<boolean>(false);
+  const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState(false);
   const lastSaveRef = useRef<Record<string, number>>({});
 
   // This effect ensures that if the match prop is updated from the server,
@@ -231,7 +232,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setGetToggleFromTimer
   } = timer;
   const { setShowGoalForm, setShowPenaltyForm } = forms;
-  const { setShowOvertimeConfirmation, setShowShootoutConfirmation } = periodManagement;
+  const { setShowOvertimeConfirmation } = periodManagement;
 
   // Local refs to timer controls (start/reset)
   const [startTimerFn, setStartTimerFn] = useState<(() => Promise<void>) | null>(null);
@@ -392,6 +393,13 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   // MEMOIZED: Handles the period control button click
   const handlePeriodControlClick = useCallback(() => {
     if (periodManagement.canEndPeriod()) {
+      // Special handling for shootout (period 4) - show confirmation before ending match
+      if (timer.localClock.period === 4) {
+        // Show confirmation dialog for ending the match
+        setShowEndMatchConfirmation(true);
+        return;
+      }
+      
       // Determine elapsed time (get from timer if available, else use last known)
       let totalSeconds = 0;
       if (getCurrentTimeFromTimer) {
@@ -422,17 +430,20 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         })();
       }
     } else {
-      // Start the next period and immediately start the timer
+      // Start the next period and immediately start the timer (unless it's shootout)
       (async () => {
         await periodManagement.startPeriod();
-        if (startTimerFn) {
-          await startTimerFn();
-        } else if (getToggleFromTimer) {
-          await getToggleFromTimer();
+        // Don't start timer for shootout (period 4)
+        if (periodManagement.nextPeriodToStart !== 4) {
+          if (startTimerFn) {
+            await startTimerFn();
+          } else if (getToggleFromTimer) {
+            await getToggleFromTimer();
+          }
         }
       })();
     }
-  }, [periodManagement, getCurrentTimeFromTimer, elapsedTime, setCurrentTimerElapsedTime, resetTimerFn, startTimerFn, getToggleFromTimer]);
+  }, [periodManagement, getCurrentTimeFromTimer, elapsedTime, setCurrentTimerElapsedTime, resetTimerFn, startTimerFn, getToggleFromTimer, timer.localClock.period, matchControls]);
 
   // MEMOIZED: Timer update handler
   const handleTimerUpdate = useCallback((update: TimerUpdate) => {
@@ -487,6 +498,11 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setShowPenaltyForm(false);
   }, [setShowPenaltyForm]);
 
+  // MEMOIZED: Show confirmation when user wants to complete the match
+  const handleCompleteMatchRequest = useCallback(() => {
+    setShowEndMatchConfirmation(true);
+  }, []);
+
   return (
     <>
       {/* Header */}
@@ -495,7 +511,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         awayTeam={matchData.awayTeam}
         currentMatch={matchData.currentMatch}
         onClose={() => navigate('/admin/floorball/matches')}
-        onCompleteLive={matchControls.handleCompleteLive}
+        onCompleteLive={handleCompleteMatchRequest}
       />
 
       {/* Error Display */}
@@ -558,7 +574,22 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             await getToggleFromTimer();
           }
         }}
-        onCancel={() => setShowShootoutConfirmation(false)}
+        onCancel={() => periodManagement.setShowShootoutConfirmation(false)}
+      />
+
+      <ConfirmationDialog
+        isOpen={showEndMatchConfirmation}
+        icon="🏁"
+        title="Confirm End Match"
+        message={`Are you sure you want to complete this match?${timer.localClock.period === 4 ? ' This will end the shootout.' : ''}`}
+        warningMessage="This will finalize the match results. This action cannot be undone."
+        confirmText="Complete Match"
+        isLoading={matchData.loading}
+        onConfirm={async () => {
+          await matchControls.handleCompleteLive();
+          setShowEndMatchConfirmation(false);
+        }}
+        onCancel={() => setShowEndMatchConfirmation(false)}
       />
 
       {/* Delete Event Confirmation */}

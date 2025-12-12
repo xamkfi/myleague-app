@@ -114,6 +114,14 @@
   }
 }
 
+.match-completed-message {
+  font-family: $font-family-body;
+  font-weight: map.get($font-weights, 'semibold');
+  font-size: 1.25rem;
+  color: $color-neutral-dark-grey;
+  padding: 12px 24px;
+}
+
 
 /* Turn timer digits red at or beyond 15:00 (900s) */
 .clock-digits.timer-digits--critical {

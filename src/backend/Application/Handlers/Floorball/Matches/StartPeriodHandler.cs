@@ -79,9 +79,16 @@ namespace Application.Handlers.Floorball.Matches
 
                 _logger.LogInformation("Starting period {PeriodNumber} for match {MatchId}", request.PeriodNumber, request.MatchId);
 
-                // Reset and start timer for new period
+                // Reset and start timer for new period (except shootout - period 4 has no timer)
                 // The timer service will automatically reset if the period changed
-                await _timerService.StartTimerAsync(match.Id, request.PeriodNumber);
+                if (request.PeriodNumber != 4)
+                {
+                    await _timerService.StartTimerAsync(match.Id, request.PeriodNumber);
+                }
+                else
+                {
+                    _logger.LogInformation("Skipping timer start for shootout (period 4) in match {MatchId}", request.MatchId);
+                }
                 
                 _logger.LogInformation("Successfully started period {PeriodNumber} for match {MatchId}", request.PeriodNumber, request.MatchId);
 

@@ -75,8 +75,8 @@ const LiveMatchTimer = ({
 
   // Turn digits red at 15:00 (900s) and after, except during shootout
   const shouldPeriodEnd = currentTimerElapsedTime >= 900 && !isInShootout();
-  // Timer controls enabled only if current period has started and not ended
-  const controlsEnabled = startedPeriods.has(clock.period) && !endedPeriods.has(clock.period);
+  // Timer controls enabled only if current period has started and not ended, and not in shootout
+  const controlsEnabled = startedPeriods.has(clock.period) && !endedPeriods.has(clock.period) && clock.period !== 4;
 
   // Determine which periods to show
   const periodsToShow = [1, 2];
@@ -108,6 +108,12 @@ const LiveMatchTimer = ({
                 >
                   {isStartMatchDisabled ? 'Select goalies to start' : 'Start Match'}
                 </button>
+              </div>
+            ) : currentMatch.status === 'Completed' ? (
+              <div className="start-match-container">
+                <div className="match-completed-message">
+                  🏁 Match Completed
+                </div>
               </div>
             ) : (
               <>
