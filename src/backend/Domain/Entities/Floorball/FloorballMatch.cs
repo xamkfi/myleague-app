@@ -349,9 +349,7 @@ public class FloorballMatch : BaseEntity
             throw new InvalidOperationException("A match cannot start without goalies assigned for both teams.");
         }
 
-        FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.InProgress;
-
     }
 
     /// <summary>
@@ -783,7 +781,6 @@ public class FloorballMatch : BaseEntity
             throw new InvalidOperationException($"Period {periodNumber} has not been started.");
 
         periodScore.Complete();
-
     }
 
     /// <summary>
