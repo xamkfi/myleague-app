@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import { personApi } from '../../../../../api/admin/personApi';
 import { floorballRefereeService } from '../../../../../api/floorball/floorballRefereeService';
-import type { Person } from '../../../../../types/admin/personTypes';
+import type { Person, PaginatedApiResponse } from '../../../../../types/admin/personTypes';
 import './CreateRefereePage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
@@ -45,10 +45,19 @@ const CreateRefereePage = () => {
         // Conditionally fetch based on search term
         if (debouncedSearchTerm.trim()) {
           // Use search API when there's a search term
-          personsData = await personApi.search(debouncedSearchTerm.trim());
+          // Note: Backend has a maximum pageSize of 50
+          const searchResponse: PaginatedApiResponse<Person> = await personApi.search(
+            debouncedSearchTerm.trim(),
+            1, // page
+            50 // pageSize - maximum allowed by backend
+          );
+          personsData = searchResponse.data;
         } else {
           // Use getAll when there's no search term
-          personsData = await personApi.getAll();
+          // Note: Backend has a maximum pageSize of 50
+          // Using pageSize 50 to get maximum results per page
+          const getAllResponse: PaginatedApiResponse<Person> = await personApi.getAll(1, 50);
+          personsData = getAllResponse.data;
         }
         
         // Fetch existing referees using the same parameters that work in the main page

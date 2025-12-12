@@ -14,9 +14,9 @@ export interface Club {
 
 export interface ClubRequest {
   name: string;
-  city: string;
-  country: string;
-  foundingDate: string | null;
+  city?: string | null;
+  country?: string | null;
+  foundingDate?: string | null;
   websiteUrl?: string | null;
   logoUrl?: string | null;
   contactEmail?: string | null;

@@ -68,6 +68,7 @@ export interface FloorballReferee {
 export interface FloorballTeam {
   id: string;
   name: string;
+  shortName: string;
   divisionId: string;
   club: Club;
   homeArena: string;
@@ -126,6 +127,7 @@ export interface FloorballTeamRequest {
   category?: TeamCategory;
   secondaryJerseyColor?: string;
   logoUrl?: string;
+  shortName?: string;
 }
 
 // Team Player Management types

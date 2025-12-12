@@ -77,6 +77,14 @@
       }
     }
 
+    .name-row {
+      grid-template-columns: 2fr 1fr;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .color-input-group {
       display: flex;
       gap: 0.5rem;

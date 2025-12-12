@@ -41,6 +41,7 @@ public static class FloorballTeamMapper
         return new FloorballTeamDto(
             team.Id,
             team.Name,
+            team.ShortName,
             team.DivisionId,
             ClubMapper.ToDto(club),
             team.HomeArena,
@@ -117,7 +118,8 @@ public static class FloorballTeamMapper
             command.HomeArena,
             command.PrimaryJerseyColor,
             command.TeamCategory,
-            command.SecondaryJerseyColor
+            command.SecondaryJerseyColor,
+            command.ShortName
         );
     }
 
@@ -139,6 +141,7 @@ public static class FloorballTeamMapper
         team.UpdateDivision(command.DivisionId);
         team.UpdateHomeArena(command.HomeArena);
         team.UpdateJerseyColors(command.PrimaryJerseyColor, command.SecondaryJerseyColor!);
+        team.UpdateShortName(command.ShortName);
         
         // Update logo URL
         Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;

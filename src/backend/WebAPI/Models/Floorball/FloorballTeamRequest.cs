@@ -93,6 +93,12 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Team category is required")]
         public TeamCategory Category { get; set; }
+
+        /// <summary>
+        /// The short name / acronym of the team (max 4 characters)
+        /// </summary>
+        [StringLength(4, MinimumLength = 1, ErrorMessage = "Short name must be 1 to 4 characters")]
+        public string? ShortName { get; set; }
     }
     
     /// <summary>

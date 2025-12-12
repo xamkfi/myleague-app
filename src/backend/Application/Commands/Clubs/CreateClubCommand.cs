@@ -10,8 +10,8 @@ namespace Application.Commands.Clubs;
 /// </summary>
 public record CreateClubCommand(
     string Name,
-    string City,
-    string Country,
+    string? City,
+    string? Country,
     DateTime? FoundingDate,
     string? WebsiteUrl = "",
     string? LogoUrl = "",

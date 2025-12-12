@@ -191,6 +191,7 @@ export const useMatchEvents = ({
             eventId: goalData.eventId ?? '',
             teamId: teamId,
             teamName: teamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+            teamShortName: teamId === currentMatch.homeTeamId ? homeTeam?.shortName : awayTeam?.shortName,
             playerId: playerId,
             playerName: getPlayerNameById(playerId),
             assisterId: assisterId,
@@ -264,6 +265,7 @@ export const useMatchEvents = ({
             eventId: penaltyData.eventId ?? '',
             teamId: penaltyTeamId,
             teamName: penaltyTeamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+            teamShortName: penaltyTeamId === currentMatch.homeTeamId ? homeTeam?.shortName : awayTeam?.shortName,
             playerId: penaltyPlayerId,
             playerName: penaltyPlayerId ? getPlayerNameById(penaltyPlayerId) : 'Team Penalty',
             periodNumber: penaltyPeriodNumber,
@@ -304,6 +306,7 @@ export const useMatchEvents = ({
             eventId: d.eventId ?? '',
             teamId: TeamId,
             teamName: TeamId === currentMatch.homeTeamId ? homeTeam?.name || 'Home' : awayTeam?.name || 'Away',
+            teamShortName: TeamId === currentMatch.homeTeamId ? homeTeam?.shortName : awayTeam?.shortName,
             playerId: GoalieId,
             playerName: getPlayerNameById(GoalieId),
             periodNumber: PeriodNumber,
@@ -330,7 +333,15 @@ export const useMatchEvents = ({
 
     console.log('Final sorted events:', sortedEvents);
     return sortedEvents;
-  }, [matchEvents, currentMatch.homeTeamId, homeTeam?.name, awayTeam?.name, getPlayerNameById]);
+  }, [
+    matchEvents,
+    currentMatch.homeTeamId,
+    homeTeam?.name,
+    homeTeam?.shortName,
+    awayTeam?.name,
+    awayTeam?.shortName,
+    getPlayerNameById
+  ]);
 
   return {
     matchEvents,
