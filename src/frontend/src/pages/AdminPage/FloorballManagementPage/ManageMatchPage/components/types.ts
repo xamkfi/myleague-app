@@ -68,6 +68,7 @@ export interface ProcessedEvent {
   eventId?: string;
   teamId: string;
   teamName: string;
+  teamShortName?: string;
   playerId?: string;
   playerName: string;
   assisterId?: string;

@@ -15,15 +15,16 @@ public class CreateClubCommandValidator : AbstractValidator<CreateClubCommand>
             .MaximumLength(100).WithMessage("Club name cannot exceed 100 characters");
 
         RuleFor(x => x.City)
-            .NotEmpty().WithMessage("City is required")
-            .MaximumLength(50).WithMessage("City cannot exceed 50 characters");
+            .MaximumLength(50).When(x => !string.IsNullOrEmpty(x.City))
+            .WithMessage("City cannot exceed 50 characters");
 
         RuleFor(x => x.Country)
-            .NotEmpty().WithMessage("Country is required")
-            .MaximumLength(50).WithMessage("Country cannot exceed 50 characters");
+            .MaximumLength(50).When(x => !string.IsNullOrEmpty(x.Country))
+            .WithMessage("Country cannot exceed 50 characters");
 
         RuleFor(x => x.FoundingDate)
-            .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Founding date cannot be in the future");
+            .LessThanOrEqualTo(DateTime.UtcNow).When(x => x.FoundingDate.HasValue)
+            .WithMessage("Founding date cannot be in the future");
 
         RuleFor(x => x.WebsiteUrl)
             .Must(BeValidUrl).When(x => !string.IsNullOrEmpty(x.WebsiteUrl))

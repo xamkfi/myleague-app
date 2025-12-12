@@ -38,5 +38,9 @@ public class UpdateFloorballTeamCommandValidator : AbstractValidator<UpdateFloor
         RuleFor(x => x.SecondaryJerseyColor)
             .MaximumLength(50).WithMessage("Secondary jersey color cannot exceed 50 characters")
             .When(x => !string.IsNullOrEmpty(x.SecondaryJerseyColor));
+
+        RuleFor(x => x.ShortName)
+            .MaximumLength(4).WithMessage("Short name cannot exceed 4 characters")
+            .When(x => !string.IsNullOrWhiteSpace(x.ShortName));
     }
 } 

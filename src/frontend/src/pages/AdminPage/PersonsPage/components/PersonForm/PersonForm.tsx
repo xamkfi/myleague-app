@@ -96,6 +96,16 @@ const PersonForm = ({
   const [formData, setFormData] = useState<EnhancedPersonFormData>(getInitialFormData());
   const [selectedSport, setSelectedSport] = useState<SportType | ''>('');
 
+  const formatBirthDateForDisplay = (dateString: string | null | undefined): string => {
+    if (!dateString) return '';
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) return '';
+    const day = parsed.getDate().toString().padStart(2, '0');
+    const month = (parsed.getMonth() + 1).toString().padStart(2, '0');
+    const year = parsed.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   useEffect(() => {
     const fetchPerson = async () => {
       if (!isEditMode) return;
@@ -104,12 +114,8 @@ const PersonForm = ({
         setLoading(true);
         const person = await personApi.getById(id!);
         
-        // Convert ISO date to dd-mm-yyyy, handle null birthDate
-        let formattedDate = '';
-        if (person.birthDate) {
-          const date = new Date(person.birthDate);
-          formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
-        }
+        // Convert stored date to dd-mm-yyyy for the text input; allow empty
+        const formattedDate = formatBirthDateForDisplay(person.birthDate);
         
         setFormData({
           firstName: person.firstName,
@@ -145,20 +151,44 @@ const PersonForm = ({
     fetchPerson();
   }, [id, isEditMode, t]);
 
-  const validateBirthDate = (date: string): string | null => {
+  const parseBirthDate = (value: string | null): Date | null => {
+    const trimmed = value?.trim();
+    if (!trimmed) return null;
+    const parts = trimmed.split('-').map(Number);
+    if (parts.length !== 3 || parts.some(Number.isNaN)) {
+      return null;
+    }
+
+    // Prefer dd-mm-yyyy; fallback to yyyy-mm-dd if user types ISO
+    const isIsoFirst = parts[0] > 999;
+    const [year, month, day] = isIsoFirst ? parts : [parts[2], parts[1], parts[0]];
+    const parsed = new Date(year, month - 1, day);
+
+    if (
+      parsed.getFullYear() !== year ||
+      parsed.getMonth() !== month - 1 ||
+      parsed.getDate() !== day
+    ) {
+      return null;
+    }
+
+    parsed.setHours(0, 0, 0, 0);
+    return parsed;
+  };
+
+  const validateBirthDate = (date: string | null): string | null => {
     // Birth date is optional, so empty string is valid
     if (!date || date.trim() === '') {
       return null;
     }
 
-    // Parse dd-mm-yyyy format
-    const [day, month, year] = date.split('-').map(Number);
-    const birthDate = new Date(year, month - 1, day);
-    const today = new Date();
-    
-    if (isNaN(birthDate.getTime())) {
+    const birthDate = parseBirthDate(date);
+    if (!birthDate) {
       return t('admin.persons.validation.invalidDate');
     }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     
     if (birthDate > today) {
       return t('admin.persons.validation.birthDateFuture');
@@ -166,6 +196,7 @@ const PersonForm = ({
 
     const minDate = new Date();
     minDate.setFullYear(minDate.getFullYear() - 120); // Reasonable maximum age
+    minDate.setHours(0, 0, 0, 0);
     if (birthDate < minDate) {
       return t('admin.persons.validation.birthDateTooOld');
     }
@@ -203,8 +234,6 @@ const PersonForm = ({
     }
 
     if (name === 'birthDate') {
-      console.log('date', new Date(value).toISOString());
-
       setFormData(prev => ({
         ...prev,
         birthDate: value
@@ -362,10 +391,14 @@ const PersonForm = ({
       }
 
       // Prepare person data (excluding team assignment fields)
+      const normalizedBirthDate = formData.birthDate && formData.birthDate.trim() !== ''
+        ? parseBirthDate(formData.birthDate)?.toISOString().slice(0, 10) || null
+        : null;
+
       const personData: PersonFormData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        birthDate: formData.birthDate,
+        birthDate: normalizedBirthDate,
         isRegistered: formData.isRegistered,
         role: formData.role,
         address: formData.address,
@@ -548,12 +581,14 @@ const PersonForm = ({
               {t('admin.persons.form.birthDate')}
             </label>
             <input
-              type="date"
+              type="text"
               id="birthDate"
               name="birthDate"
-              value={formData.birthDate}
+              value={formData.birthDate || ''}
               onChange={handleInputChange}
               placeholder="dd-mm-yyyy"
+              inputMode="numeric"
+              pattern="\d{2}-\d{2}-\d{4}"
               className={fieldErrors.birthDate ? 'person-error' : ''}
             />
             {fieldErrors.birthDate && (

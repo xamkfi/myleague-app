@@ -42,9 +42,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "City",
-            "Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            null,
+            null,
+            null
         );
 
         // Act
@@ -62,9 +62,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             name,
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            null,
+            null,
+            null
         );
 
         // Act
@@ -82,9 +82,9 @@ public class CreateClubCommandValidatorTests
         string longName = new string('A', 101); // 101 characters
         CreateClubCommand command = new CreateClubCommand(
             longName,
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            null,
+            null,
+            null
         );
 
         // Act
@@ -102,9 +102,9 @@ public class CreateClubCommandValidatorTests
         string maxLengthName = new string('A', 100); // Exactly 100 characters
         CreateClubCommand command = new CreateClubCommand(
             maxLengthName,
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            null,
+            null,
+            null
         );
 
         // Act
@@ -112,27 +112,6 @@ public class CreateClubCommandValidatorTests
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.Name);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    public void Validate_EmptyOrNullCity_ShouldHaveValidationError(string city)
-    {
-        // Arrange
-        CreateClubCommand command = new CreateClubCommand(
-            "Valid Club",
-            city,
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-        );
-
-        // Act
-        TestValidationResult<CreateClubCommand> result = _validator.TestValidate(command);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.City)
-            .WithErrorMessage("City is required");
     }
 
     [Fact]
@@ -143,8 +122,8 @@ public class CreateClubCommandValidatorTests
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
             longCity,
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            null,
+            null
         );
 
         // Act
@@ -155,27 +134,6 @@ public class CreateClubCommandValidatorTests
             .WithErrorMessage("City cannot exceed 50 characters");
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    public void Validate_EmptyOrNullCountry_ShouldHaveValidationError(string country)
-    {
-        // Arrange
-        CreateClubCommand command = new CreateClubCommand(
-            "Valid Club",
-            "Valid City",
-            country,
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-        );
-
-        // Act
-        TestValidationResult<CreateClubCommand> result = _validator.TestValidate(command);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Country)
-            .WithErrorMessage("Country is required");
-    }
-
     [Fact]
     public void Validate_CountryTooLong_ShouldHaveValidationError()
     {
@@ -183,9 +141,9 @@ public class CreateClubCommandValidatorTests
         string longCountry = new string('C', 51); // 51 characters
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
+            null,
             longCountry,
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            null
         );
 
         // Act
@@ -203,8 +161,8 @@ public class CreateClubCommandValidatorTests
         DateTime futureDate = DateTime.UtcNow.AddDays(1);
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
+            null,
+            null,
             futureDate
         );
 
@@ -223,8 +181,8 @@ public class CreateClubCommandValidatorTests
         DateTime pastDate = DateTime.UtcNow.AddDays(-1); // Use past date to avoid timing issues
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
+            null,
+            null,
             pastDate
         );
 
@@ -245,9 +203,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
+            null,
             websiteUrl
         );
 
@@ -268,9 +226,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
+            null,
             websiteUrl
         );
 
@@ -288,9 +246,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
+            null,
             ""
         );
 
@@ -310,9 +268,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
+            null,
             "https://validclub.com",
             logoUrl
         );
@@ -333,9 +291,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
+            null,
             "https://validclub.com",
             logoUrl
         );
@@ -354,9 +312,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
+            null,
             "https://validclub.com",
             ""
         );
@@ -378,9 +336,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
+            null,
             "https://validclub.com",
             "https://validclub.com/logo.png",
             contactEmail
@@ -403,9 +361,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
+            null,
             "https://validclub.com",
             "https://validclub.com/logo.png",
             contactEmail
@@ -425,9 +383,9 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "Valid Club",
-            "Valid City",
-            "Valid Country",
-            new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
+            null,
             "https://validclub.com",
             "https://validclub.com/logo.png",
             ""
@@ -446,8 +404,8 @@ public class CreateClubCommandValidatorTests
         // Arrange
         CreateClubCommand command = new CreateClubCommand(
             "", // Invalid name
-            "", // Invalid city
-            "", // Invalid country
+            new string('B', 51), // City too long
+            new string('C', 51), // Country too long
             DateTime.UtcNow.AddDays(1), // Future date
             "invalid-url", // Invalid website URL
             "invalid-logo-url", // Invalid logo URL

@@ -35,21 +35,18 @@ public record CreateClubRequest
     /// <summary>
     /// Gets the city where the club is located
     /// </summary>
-    [Required(ErrorMessage = "City is required")]
     [StringLength(50, ErrorMessage = "City name cannot exceed 50 characters")]
-    public string City { get; init; } = string.Empty;
+    public string? City { get; init; }
 
     /// <summary>
     /// Gets the country where the club is located
     /// </summary>
-    [Required(ErrorMessage = "Country is required")]
     [StringLength(50, ErrorMessage = "Country name cannot exceed 50 characters")]
-    public string Country { get; init; } = string.Empty;
+    public string? Country { get; init; }
 
     /// <summary>
     /// Gets the founding date of the club
     /// </summary>
-    [Required(ErrorMessage = "Founding date is required")]
     public DateTime? FoundingDate { get; init; }
 
     /// <summary>
@@ -89,22 +86,19 @@ public record UpdateClubRequest
     /// <summary>
     /// Gets the city where the club is located
     /// </summary>
-    [Required(ErrorMessage = "City is required")]
     [StringLength(50, ErrorMessage = "City name cannot exceed 50 characters")]
-    public string City { get; init; } = string.Empty;
+    public string? City { get; init; }
 
     /// <summary>
     /// Gets the country where the club is located
     /// </summary>
-    [Required(ErrorMessage = "Country is required")]
     [StringLength(50, ErrorMessage = "Country name cannot exceed 50 characters")]
-    public string Country { get; init; } = string.Empty;
+    public string? Country { get; init; }
 
     /// <summary>
     /// Gets the founding date of the club
     /// </summary>
-    [Required(ErrorMessage = "Founding date is required")]
-    public DateTime FoundingDate { get; init; }
+    public DateTime? FoundingDate { get; init; }
 
     /// <summary>
     /// Gets the website URL of the club
