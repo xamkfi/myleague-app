@@ -104,7 +104,10 @@ function ClubPage() {
     navigate(`/team/${teamSlug}`);
   };
 
-  const getDivisionDisplayName = (divisionId: string) => {
+  const getDivisionDisplayName = (divisionId?: string | null) => {
+    if (!divisionId) {
+      return 'No division';
+    }
     const division = divisions.find(d => d.id === divisionId);
     return division?.name || 'Unknown Division';
   };
