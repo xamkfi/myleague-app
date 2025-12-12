@@ -11,7 +11,6 @@ interface PenaltyRecordingFormProps {
   homeTeam: FloorballTeam | null;
   awayTeam: FloorballTeam | null;
   clock: LocalClock;
-  currentTimerElapsedTime: number;
   loading: boolean;
   getPlayersForTeam: (teamId: string) => FloorballPlayerDto[];
   onRecordPenalty: () => Promise<void>;
@@ -26,7 +25,6 @@ const PenaltyRecordingForm = ({
   currentMatch,
   homeTeam,
   awayTeam,
-  currentTimerElapsedTime,
   loading,
   getPlayersForTeam,
   onRecordPenalty,
@@ -112,8 +110,17 @@ const PenaltyRecordingForm = ({
                 id="penalty-time"
                 type="text"
                 className="time-input"
-                defaultValue={formatTime(Math.floor(currentTimerElapsedTime / 60), currentTimerElapsedTime % 60)}
-                placeholder="(current time)"
+                value={formatTime(penaltyForm.timeMinutes, penaltyForm.timeSeconds)}
+                onChange={(e) => {
+                  const timeStr = e.target.value;
+                  const parts = timeStr.split(':');
+                  if (parts.length === 2) {
+                    const mins = parseInt(parts[0]) || 0;
+                    const secs = parseInt(parts[1]) || 0;
+                    setPenaltyForm(prev => ({ ...prev, timeMinutes: mins, timeSeconds: secs }));
+                  }
+                }}
+                placeholder="MM:SS"
               />
             </div>
 

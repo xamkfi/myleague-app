@@ -12,7 +12,6 @@ interface GoalRecordingFormProps {
   homeTeam: FloorballTeam | null;
   awayTeam: FloorballTeam | null;
   clock: LocalClock;
-  currentTimerElapsedTime: number;
   loading: boolean;
   getPlayersForTeam: (teamId: string) => FloorballPlayerDto[];
   onRecordGoal: () => Promise<void>;
@@ -27,7 +26,6 @@ const GoalRecordingForm = ({
   currentMatch,
   homeTeam,
   awayTeam,
-  currentTimerElapsedTime,
   loading,
   getPlayersForTeam,
   onRecordGoal,
@@ -119,8 +117,17 @@ const GoalRecordingForm = ({
                 id="goal-time"
                 type="text"
                 className="time-input"
-                defaultValue={formatTime(Math.floor(currentTimerElapsedTime / 60), currentTimerElapsedTime % 60)}
-                placeholder="00:00:00"
+                value={formatTime(goalForm.timeMinutes, goalForm.timeSeconds)}
+                onChange={(e) => {
+                  const timeStr = e.target.value;
+                  const parts = timeStr.split(':');
+                  if (parts.length === 2) {
+                    const mins = parseInt(parts[0]) || 0;
+                    const secs = parseInt(parts[1]) || 0;
+                    setGoalForm(prev => ({ ...prev, timeMinutes: mins, timeSeconds: secs }));
+                  }
+                }}
+                placeholder="MM:SS"
               />
             </div>
             

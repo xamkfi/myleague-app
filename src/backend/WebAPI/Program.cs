@@ -38,6 +38,10 @@ builder.Services.AddCorsConfiguration();
 builder.Services.Configure<PaginationConfiguration>(
     builder.Configuration.GetSection(PaginationConfiguration.SectionName));
 
+// Configure period durations
+builder.Services.Configure<PeriodDurationConfiguration>(
+    builder.Configuration.GetSection(PeriodDurationConfiguration.SectionName));
+
 // Register application services
 builder.Services.AddApplication();
 

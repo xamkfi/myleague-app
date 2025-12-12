@@ -115,14 +115,19 @@ export const usePeriodManagement = ({
       
       console.log(`Starting period ${nextPeriodToStart} for match ${currentMatch.id}`);
       
-      // Start the period via API (server-managed for 1; record phase for 3/4)
+      // Backend will auto-start timer when period starts
       if (nextPeriodToStart === 3) {
+        // Record overtime first, then start the period
         await floorballMatchEventService.recordOvertime(currentMatch.id);
-        console.log(`Recorded overtime for match ${currentMatch.id}`);
+        await floorballMatchEventService.startPeriod(currentMatch.id, 3);
+        console.log(`Started overtime for match ${currentMatch.id}`);
       } else if (nextPeriodToStart === 4) {
+        // Record shootout first, then start the period
         await floorballMatchEventService.recordShootout(currentMatch.id);
-        console.log(`Recorded shootout for match ${currentMatch.id}`);
+        await floorballMatchEventService.startPeriod(currentMatch.id, 4);
+        console.log(`Started shootout for match ${currentMatch.id}`);
       } else {
+        // Regular period 2 (period 1 is started by match start)
         await floorballMatchEventService.startPeriod(currentMatch.id, nextPeriodToStart);
         console.log(`Started period ${nextPeriodToStart} for match ${currentMatch.id}`);
       }
@@ -130,12 +135,12 @@ export const usePeriodManagement = ({
       // Mark this period as started
       setStartedPeriods(prev => new Set([...prev, nextPeriodToStart]));
       
-      // Update the clock to the new period
+      // Update clock display (backend auto-starts timer with isRunning: true)
       const newClock = { 
         period: nextPeriodToStart, 
         minutes: 0, 
         seconds: 0, 
-        isRunning: false 
+        isRunning: true  // Backend auto-starts the timer
       };
       setLocalClock(newClock);
       if (onStateUpdate) {
@@ -163,7 +168,7 @@ export const usePeriodManagement = ({
     try {
       await floorballMatchEventService.recordOvertime(currentMatch.id);
       
-      // Start the overtime period (period 3)
+      // Start the overtime period (period 3) - backend will auto-start timer
       await floorballMatchEventService.startPeriod(currentMatch.id, 3);
       
       // Update the clock to period 3
@@ -171,7 +176,7 @@ export const usePeriodManagement = ({
         period: 3, 
         minutes: 0, 
         seconds: 0, 
-        isRunning: false 
+        isRunning: true  // Backend auto-starts the timer
       };
       setLocalClock(newClock);
       // Ensure local state reflects that OT has started
@@ -197,7 +202,7 @@ export const usePeriodManagement = ({
     try {
       await floorballMatchEventService.recordShootout(currentMatch.id);
       
-      // Start the shootout period (period 4)
+      // Start the shootout period (period 4) - backend will auto-start timer
       await floorballMatchEventService.startPeriod(currentMatch.id, 4);
       
       // Update the clock to period 4
@@ -205,7 +210,7 @@ export const usePeriodManagement = ({
         period: 4, 
         minutes: 0, 
         seconds: 0, 
-        isRunning: false 
+        isRunning: true  // Backend auto-starts the timer
       };
       setLocalClock(newClock);
       // Ensure local state reflects that shootout has started

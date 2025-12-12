@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Domain.Repositories.Common;
 using Application.Interfaces.Common;
 using Application.Constants;
+using Application.Services.Common;
 
 namespace Application.Handlers.Floorball.Matches;
 
@@ -23,6 +24,7 @@ public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCom
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly INotificationSenderService _notificationSenderService;
+    private readonly IMatchTimerService _timerService;
     private readonly ILogger<StartFloorballMatchHandler> _logger;
 
     /// <summary>
@@ -30,17 +32,20 @@ public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCom
     /// </summary>
     /// <param name="matchRepository">The floorball match repository</param>
     /// <param name="unitOfWork">The unit of work</param>
+    /// <param name="notificationSenderService">The notification sender service</param>
+    /// <param name="timerService">The match timer service</param>
     /// <param name="logger">The logger</param>
     public StartFloorballMatchHandler(
         IFloorballMatchRepository matchRepository,
         IFloorballUnitOfWork unitOfWork,
         INotificationSenderService notificationSenderService,
+        IMatchTimerService timerService,
         ILogger<StartFloorballMatchHandler> logger)
     {
         _matchRepository = matchRepository;
         _unitOfWork = unitOfWork;
         _notificationSenderService = notificationSenderService;
-
+        _timerService = timerService;
         _logger = logger;
     }
 
@@ -67,6 +72,17 @@ public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCom
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Auto-create and start timer for period 1
+            if (!await _timerService.ExistsAsync(match.Id))
+            {
+                _logger.LogInformation("Creating timer for match {MatchId}", match.Id);
+                await _timerService.CreateTimerAsync(match.Id);
+            }
+            
+            _logger.LogInformation("Starting timer for match {MatchId} period 1", match.Id);
+            await _timerService.StartTimerAsync(match.Id, periodNumber: 1);
+            _logger.LogInformation("Timer auto-started for match {MatchId}", match.Id);
 
             await _notificationSenderService.SendNotificationAsync(
                 FloorballNotificationEvents.MatchStarted,

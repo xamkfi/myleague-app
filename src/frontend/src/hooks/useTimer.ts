@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { signalRService, type MatchEvent } from '../services/signalRService';
 import { timerService, type TimerUpdate } from '../api/common/timerService';
 
@@ -29,6 +29,15 @@ export function useTimer(options: UseTimerOptions) {
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const handleTimerUpdateRef = useRef<((event: MatchEvent) => void) | null>(null);
   const lastSeqRef = useRef<number>(-1);
+  
+  // Local interpolated time for smooth display
+  const [localElapsedMs, setLocalElapsedMs] = useState(0);
+  const lastSyncTimeRef = useRef<number>(Date.now());
+  const lastServerElapsedMsRef = useRef(0);
+  const isRunningRef = useRef(false);
+  
+  // Track optimistic updates to prevent stale SignalR updates from overwriting
+  const lastOptimisticUpdateRef = useRef<{ timeMs: number; timestamp: number } | null>(null);
 
   // Load initial timer status
   const loadTimerStatus = useCallback(async () => {
@@ -37,6 +46,9 @@ export function useTimer(options: UseTimerOptions) {
       setError(null);
       
       const status = await timerService.getTimerStatus(matchId);
+      
+      // Calculate milliseconds from the status for interpolation
+      let elapsedMs = 0;
       
       // Format the elapsed time to only show hours when needed
       let formattedTime = status.elapsedTime;
@@ -48,6 +60,9 @@ export function useTimer(options: UseTimerOptions) {
           const minutesNum = parseInt(minutes) || 0;
           const secondsNum = parseInt(seconds) || 0;
           
+          // Calculate total milliseconds
+          elapsedMs = (hoursNum * 3600 + minutesNum * 60 + secondsNum) * 1000;
+          
           // If hours is 0, only show mm:ss
           if (hoursNum === 0) {
             formattedTime = `${minutesNum.toString().padStart(2, '0')}:${secondsNum.toString().padStart(2, '0')}`;
@@ -55,12 +70,25 @@ export function useTimer(options: UseTimerOptions) {
             // If hours > 0, show hh:mm:ss
             formattedTime = `${hoursNum.toString().padStart(2, '0')}:${minutesNum.toString().padStart(2, '0')}:${secondsNum.toString().padStart(2, '0')}`;
           }
+        } else if (parts.length === 2) {
+          const [minutes, seconds] = parts;
+          const minutesNum = parseInt(minutes) || 0;
+          const secondsNum = parseInt(seconds) || 0;
+          
+          // Calculate total milliseconds
+          elapsedMs = (minutesNum * 60 + secondsNum) * 1000;
         }
       }
+      
+      // Initialize local interpolation state with current server time
+      lastServerElapsedMsRef.current = elapsedMs;
+      lastSyncTimeRef.current = Date.now();
+      setLocalElapsedMs(elapsedMs);
       
       setTimerState({
         isRunning: status.isRunning,
         elapsedTime: formattedTime,
+        periodNumber: status.periodNumber,
         lastUpdated: new Date().toISOString(),
       });
     } catch (err) {
@@ -71,6 +99,28 @@ export function useTimer(options: UseTimerOptions) {
       setLoading(false);
     }
   }, [matchId]);
+
+  // Local clock that interpolates between server updates for smooth display
+  useEffect(() => {
+    if (!timerState.isRunning) {
+      isRunningRef.current = false;
+      return;
+    }
+    
+    isRunningRef.current = true;
+    
+    const interval = setInterval(() => {
+      if (!isRunningRef.current) return;
+      
+      const now = Date.now();
+      const clientDelta = now - lastSyncTimeRef.current;
+      const interpolatedMs = lastServerElapsedMsRef.current + clientDelta;
+      
+      setLocalElapsedMs(interpolatedMs);
+    }, 50); // Update every 50ms for smooth display
+    
+    return () => clearInterval(interval);
+  }, [timerState.isRunning]);
 
   // Start timer
   const startTimer = useCallback(async (periodNumber?: number) => {
@@ -161,12 +211,25 @@ export function useTimer(options: UseTimerOptions) {
       setLoading(true);
       setError(null);
       
+      const now = Date.now();
+      
+      // Optimistically update local interpolation state to prevent visual reset
+      const newElapsedMs = timeInSeconds * 1000;
+      lastServerElapsedMsRef.current = newElapsedMs;
+      lastSyncTimeRef.current = now;
+      setLocalElapsedMs(newElapsedMs);
+      
+      // Track this optimistic update to ignore stale SignalR updates
+      lastOptimisticUpdateRef.current = { timeMs: newElapsedMs, timestamp: now };
+      
       await timerService.setTimer(matchId, timeInSeconds);
       
-      // Don't reload timer status - let SignalR handle the update
+      // SignalR will reconcile with actual server time
     } catch (err) {
       console.error('Error setting timer:', err);
       setError(err instanceof Error ? err.message : 'Failed to set timer');
+      // Clear the optimistic update on error
+      lastOptimisticUpdateRef.current = null;
     } finally {
       setLoading(false);
     }
@@ -178,12 +241,28 @@ export function useTimer(options: UseTimerOptions) {
       setLoading(true);
       setError(null);
       
+      // Calculate current time from refs (accounts for running time since last sync)
+      const now = Date.now();
+      const clientDelta = isRunningRef.current ? (now - lastSyncTimeRef.current) : 0;
+      const currentMs = lastServerElapsedMsRef.current + clientDelta;
+      
+      // Optimistically update local interpolation state to prevent visual reset
+      const newElapsedMs = Math.max(0, currentMs + (adjustmentInSeconds * 1000));
+      lastServerElapsedMsRef.current = newElapsedMs;
+      lastSyncTimeRef.current = now;
+      setLocalElapsedMs(newElapsedMs);
+      
+      // Track this optimistic update to ignore stale SignalR updates
+      lastOptimisticUpdateRef.current = { timeMs: newElapsedMs, timestamp: now };
+      
       await timerService.adjustTimer(matchId, adjustmentInSeconds);
       
-      // Don't reload timer status - let SignalR handle the update
+      // SignalR will reconcile with actual server time
     } catch (err) {
       console.error('Error adjusting timer:', err);
       setError(err instanceof Error ? err.message : 'Failed to adjust timer');
+      // Clear the optimistic update on error
+      lastOptimisticUpdateRef.current = null;
     } finally {
       setLoading(false);
     }
@@ -222,6 +301,34 @@ export function useTimer(options: UseTimerOptions) {
           }
           lastSeqRef.current = Math.max(lastSeqRef.current, timerUpdate.Sequence);
         }
+        
+        const serverMs = timerUpdate.ElapsedMilliseconds || 0;
+        const now = Date.now();
+        
+        // Check if we have a recent optimistic update that should take precedence
+        if (lastOptimisticUpdateRef.current) {
+          const { timeMs: optimisticMs, timestamp: optimisticTimestamp } = lastOptimisticUpdateRef.current;
+          const timeSinceOptimistic = now - optimisticTimestamp;
+          
+          // If the optimistic update was made recently (within 2 seconds) and the server update
+          // is significantly older (more than 500ms behind), ignore this stale update
+          if (timeSinceOptimistic < 2000 && Math.abs(serverMs - optimisticMs) > 500) {
+            console.log('Ignoring stale SignalR update:', serverMs, 'vs optimistic:', optimisticMs);
+            return;
+          }
+          
+          // If the server update is close to our optimistic update (within 500ms) or
+          // enough time has passed, accept it and clear the optimistic update
+          if (Math.abs(serverMs - optimisticMs) <= 500 || timeSinceOptimistic >= 2000) {
+            lastOptimisticUpdateRef.current = null;
+          }
+        }
+        
+        // Sync local clock with server time
+        lastServerElapsedMsRef.current = serverMs;
+        lastSyncTimeRef.current = now;
+        setLocalElapsedMs(serverMs);
+        
         // Format the elapsed time to only show hours when needed
         let formattedTime = timerUpdate.ElapsedTime;
 
@@ -322,8 +429,26 @@ export function useTimer(options: UseTimerOptions) {
     };
   }, [matchId, autoConnect, loadTimerStatus]); // Include loadTimerStatus dependency
 
+  // Format milliseconds to display time
+  const formatMilliseconds = useCallback((ms: number): string => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    return hours > 0
+      ? `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      : `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }, []);
+
+  // Use local interpolated time for smooth display
+  const displayTime = useMemo(() => 
+    formatMilliseconds(localElapsedMs), 
+    [localElapsedMs, formatMilliseconds]
+  );
+
   return {
-    timerState,
+    timerState: { ...timerState, elapsedTime: displayTime },
     loading,
     error,
     startTimer,

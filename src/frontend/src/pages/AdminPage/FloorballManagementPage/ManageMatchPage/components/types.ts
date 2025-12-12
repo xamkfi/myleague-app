@@ -94,6 +94,8 @@ export interface GoalForm {
   teamId: string;
   playerId: string;
   assisterId: string;
+  timeMinutes: number;
+  timeSeconds: number;
 }
 
 export interface PenaltyForm {
