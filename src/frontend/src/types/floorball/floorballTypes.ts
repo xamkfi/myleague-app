@@ -69,7 +69,7 @@ export interface FloorballTeam {
   id: string;
   name: string;
   shortName: string;
-  divisionId: string;
+  divisionId?: string | null;
   club: Club;
   homeArena: string;
   primaryJerseyColor: string;
