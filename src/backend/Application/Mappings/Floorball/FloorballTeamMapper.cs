@@ -41,6 +41,7 @@ public static class FloorballTeamMapper
         return new FloorballTeamDto(
             team.Id,
             team.Name,
+            team.ShortName,
             team.DivisionId,
             ClubMapper.ToDto(club),
             team.HomeArena,
@@ -117,7 +118,8 @@ public static class FloorballTeamMapper
             command.HomeArena,
             command.PrimaryJerseyColor,
             command.TeamCategory,
-            command.SecondaryJerseyColor
+            command.SecondaryJerseyColor,
+            command.ShortName
         );
     }
 
@@ -139,9 +141,61 @@ public static class FloorballTeamMapper
         team.UpdateDivision(command.DivisionId);
         team.UpdateHomeArena(command.HomeArena);
         team.UpdateJerseyColors(command.PrimaryJerseyColor, command.SecondaryJerseyColor!);
+        team.UpdateShortName(command.ShortName);
         
         // Update logo URL
         Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;
         team.UpdateLogo(logoUri);
+    }
+
+    /// <summary>
+    /// Maps a FloorballTeam entity to a FloorballTeamSummaryDto (without roster)
+    /// </summary>
+    /// <param name="team">The team entity to map</param>
+    /// <param name="club">The club entity (optional, since Club navigation is ignored in EF)</param>
+    /// <returns>The mapped summary DTO</returns>
+    /// <exception cref="ArgumentNullException">Thrown when team is null</exception>
+    public static FloorballTeamSummaryDto ToSummaryDto(FloorballTeam team, Club? club)
+    {
+        if (team == null)
+            throw new ArgumentNullException(nameof(team));
+
+        // Use the provided club parameter, or throw an exception if it's null
+        if (club == null)
+            throw new ArgumentNullException(nameof(club), "Club must be provided since the Club navigation property is ignored in EF configuration");
+
+        string? effectiveLogoUrl = team.GetEffectiveLogoUrl(club.LogoUrl)?.ToString();
+
+        return new FloorballTeamSummaryDto(
+            team.Id,
+            team.Name,
+            team.DivisionId,
+            ClubMapper.ToDto(club),
+            team.HomeArena,
+            team.PrimaryJerseyColor,
+            team.SecondaryJerseyColor,
+            effectiveLogoUrl,
+            team.HasActiveMembers,
+            team.TeamCategory);
+    }
+
+    /// <summary>
+    /// Maps a collection of FloorballTeam entities to FloorballTeamSummaryDtos (without roster)
+    /// </summary>
+    /// <param name="teams">The team entities to map</param>
+    /// <param name="clubs">Dictionary of clubs keyed by club ID</param>
+    /// <returns>The mapped summary DTOs</returns>
+    /// <exception cref="ArgumentNullException">Thrown when teams is null</exception>
+    public static IEnumerable<FloorballTeamSummaryDto> ToSummaryDtos(IEnumerable<FloorballTeam> teams, Dictionary<Guid, Club>? clubs = null)
+    {
+        if (teams == null)
+            throw new ArgumentNullException(nameof(teams));
+
+        return teams.Select(team => 
+        {
+            Club? club = null;
+            clubs?.TryGetValue(team.ClubId, out club);
+            return ToSummaryDto(team, club);
+        });
     }
 } 

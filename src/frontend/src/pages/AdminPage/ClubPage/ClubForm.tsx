@@ -42,22 +42,17 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    // const iso = toIsoFromDmy(values.foundingDate);
+    
     const payload: ClubRequest = {
       name: values.name.trim(),
-      city: values.city.trim(),
-      country: values.country.trim(),
-      foundingDate: values.foundingDate == '' ? null : values.foundingDate
+      ...(values.city && values.city.trim().length > 0 && { city: values.city.trim() }),
+      ...(values.country && values.country.trim().length > 0 && { country: values.country.trim() }),
+      ...(values.foundingDate && values.foundingDate !== '' && { foundingDate: values.foundingDate }),
+      ...(values.websiteUrl && values.websiteUrl.trim().length > 0 && { websiteUrl: values.websiteUrl.trim() }),
+      ...(values.logoUrl && values.logoUrl.trim().length > 0 && { logoUrl: values.logoUrl.trim() }),
+      ...(values.contactEmail && values.contactEmail.trim().length > 0 && { contactEmail: values.contactEmail.trim() })
     };
-    if (values.websiteUrl && values.websiteUrl.trim().length > 0) {
-      payload.websiteUrl = values.websiteUrl.trim();
-    }
-    if (values.logoUrl && values.logoUrl.trim().length > 0) {
-      payload.logoUrl = values.logoUrl.trim();
-    }
-    if (values.contactEmail && values.contactEmail.trim().length > 0) {
-      payload.contactEmail = values.contactEmail.trim();
-    }
+    
     try {
       await onSubmit(payload);
     } catch (err) {
@@ -81,27 +76,27 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
           />
         </div>
         <div className="form-group">
-          <label htmlFor="club-city">{t('clubs.form.city', 'City')} *</label>
+          <label htmlFor="club-city">{t('clubs.form.city', 'City')}</label>
           <input
             id="club-city"
             type="text"
-            value={values.city}
+            value={values.city ?? ''}
             onChange={(e) => handleChange('city', e.target.value)}
             placeholder={t('clubs.form.cityPlaceholder', 'Enter city')}
           />
         </div>
         <div className="form-group">
-          <label htmlFor="club-country">{t('clubs.form.country', 'Country')} *</label>
+          <label htmlFor="club-country">{t('clubs.form.country', 'Country')}</label>
           <input
             id="club-country"
             type="text"
-            value={values.country}
+            value={values.country ?? ''}
             onChange={(e) => handleChange('country', e.target.value)}
             placeholder={t('clubs.form.countryPlaceholder', 'Enter country')}
           />
         </div>
         <div className="form-group">
-          <label htmlFor="club-founding-date">{t('clubs.form.foundingDate', 'Founding Date')} *</label>
+          <label htmlFor="club-founding-date">{t('clubs.form.foundingDate', 'Founding Date')}</label>
           <input
             id="club-founding-date"
             type="date"

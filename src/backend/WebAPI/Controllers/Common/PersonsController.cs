@@ -1,4 +1,4 @@
-﻿using Application.Commands.Clubs;
+using Application.Commands.Clubs;
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
@@ -157,31 +157,35 @@ namespace WebAPI.Controllers.Common
         /// Search persons by name
         /// </summary>
         /// <param name="name">The name to search for (searches both first and last names)</param>
+        /// <param name="page">The page number (1-based)</param>
+        /// <param name="pageSize">The number of items per page</param>
         /// <returns></returns>
         [HttpGet("search")]
-        [ProducesResponseType(typeof(ApiResponse<List<PersonDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<List<PersonDto>>), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse<List<PersonDto>>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<PersonDto>>>> SearchPersonsByName([FromQuery] string name)
+        [ProducesResponseType(typeof(PaginatedApiResponse<PersonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PaginatedApiResponse<PersonDto>>> SearchPersonsByName(
+            [FromQuery] string name,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                return BadRequest(ApiResponse<List<PersonDto>>.ErrorResponse("Name parameter is required"));
+                return BadRequest(PaginatedApiResponse<PersonDto>.ErrorResponse("Name parameter is required"));
             }
 
-            _logger.LogInformation("Searching persons by name: {Name}", name);
+            _logger.LogInformation("Searching persons by name: {Name} - Page: {Page}, PageSize: {PageSize}", name, page, pageSize);
 
-            SearchPersonByNameQuery query = new SearchPersonByNameQuery(name);
-            Result<IEnumerable<PersonDto>> result = await _mediator.Send(query);
+            SearchPersonByNameQuery query = new SearchPersonByNameQuery(name, page, pageSize);
+            Result<PagedResult<PersonDto>> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
             {
-                List<PersonDto> personList = result.Data.ToList();
-                return Ok(ApiResponse<List<PersonDto>>.SuccessResponse(personList, $"Found {personList.Count} persons matching '{name}'"));
+                return Ok(PaginatedApiResponse<PersonDto>.SuccessResponse(result.Data, $"Found {result.Data.TotalCount} persons matching '{name}'"));
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<PersonDto>>.ErrorResponse(errorMessage));
+            return StatusCode(500, PaginatedApiResponse<PersonDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>

@@ -4,13 +4,11 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import { getClubs, type Club } from '../../../../api/common/clubService';
-import { divisionService } from '../../../../api/common/divisionService';
 import { 
   TeamCategory,
   type FloorballTeam, 
   type FloorballTeamRequest
 } from '../../../../types/floorball/floorballTypes';
-import type { DivisionType } from '../../../../types/common/divisionType';
 import './EditTeamPage.scss';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
@@ -22,12 +20,12 @@ const EditTeamPage = () => {
   const [loading, setLoading] = useState(false);
   const [loadingTeam, setLoadingTeam] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [divisions, setDivisions] = useState<DivisionType[]>([]);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [currentTeam, setCurrentTeam] = useState<FloorballTeam | null>(null);
   
   const [formData, setFormData] = useState<FloorballTeamRequest>({
     name: '',
+    shortName: '',
     divisionId: '',
     clubId: '',
     homeArena: '',
@@ -35,6 +33,9 @@ const EditTeamPage = () => {
     category: 'Adult' as TeamCategory,
     secondaryJerseyColor: ''
   });
+
+  // Add a separate state to track the existing divisionId
+  const [existingDivisionId, setExistingDivisionId] = useState<string | null>(null);
   
   const loadTeamData = useCallback(async () => {
     if (!teamId) return;
@@ -44,8 +45,11 @@ const EditTeamPage = () => {
       const team = await floorballTeamService.getById(teamId);
       
       setCurrentTeam(team);
+      // Store the existing divisionId separately
+      setExistingDivisionId(team.divisionId || null);
       setFormData({
         name: team.name,
+        shortName: team.shortName,
         divisionId: team.divisionId,
         clubId: team.club.id,
         homeArena: team.homeArena,
@@ -67,7 +71,6 @@ const EditTeamPage = () => {
   useEffect(() => {
     if (teamId) {
       loadTeamData();
-      loadDivisions();
       loadClubs();
     }
   }, [teamId, loadTeamData]);
@@ -79,16 +82,6 @@ const EditTeamPage = () => {
     } catch (err) {
       console.error('Error loading clubs:', err);
       setClubs([]);
-    }
-  };
-
-  const loadDivisions = async () => {
-    try {
-      const response = await divisionService.getAll();
-      setDivisions(response.data);
-    } catch (err) {
-      console.error('Error loading divisions:', err);
-      setDivisions([]);
     }
   };
 
@@ -108,11 +101,14 @@ const EditTeamPage = () => {
       // Prepare update data with proper validation
       const updateData: FloorballTeamRequest = {
         name: formData.name,
+        shortName: formData.shortName?.trim() || undefined,
         divisionId: formData.divisionId,
         clubId: formData.clubId,
         homeArena: formData.homeArena,
         primaryJerseyColor: formData.primaryJerseyColor,
         category: formData.category,
+        // Preserve the existing divisionId if it exists
+        ...(existingDivisionId ? { divisionId: existingDivisionId } : {}),
         // Only include secondaryJerseyColor if it's valid (2-50 characters) or omit it entirely
         ...(formData.secondaryJerseyColor && formData.secondaryJerseyColor.length >= 2 && formData.secondaryJerseyColor.length <= 50
           ? { secondaryJerseyColor: formData.secondaryJerseyColor }
@@ -164,16 +160,35 @@ const EditTeamPage = () => {
         <ErrorPopup message={error} />
 
         <form onSubmit={handleSubmit} className="edit-team-form">
-          <div className="form-group">
-            <label htmlFor="teamName">{t('floorball.teams.name', 'Team Name')} *</label>
-            <input
-              id="teamName"
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              required
-              placeholder={t('floorball.teams.namePlaceholder', 'Enter team name')}
-            />
+          <div className="form-row name-row">
+            <div className="form-group">
+              <label htmlFor="teamName">{t('floorball.teams.name', 'Team Name')} *</label>
+              <input
+                id="teamName"
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                required
+                placeholder={t('floorball.teams.namePlaceholder', 'Enter team name')}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="teamShortName">{t('floorball.teams.shortName', 'Short Name / Acronym')}</label>
+              <input
+                id="teamShortName"
+                type="text"
+                value={formData.shortName || ''}
+                onChange={(e) => handleInputChange('shortName', e.target.value.toUpperCase())}
+                placeholder={t('floorball.teams.shortNamePlaceholder', 'e.g., NYR')}
+                maxLength={4}
+              />
+              {formData.shortName && formData.shortName.length > 4 && (
+                <div className="validation-error">
+                  {t('floorball.teams.shortNameTooLong', 'Short name cannot exceed 4 characters')}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
@@ -191,35 +206,18 @@ const EditTeamPage = () => {
             </select>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="division">{t('floorball.teams.division', 'Division')} *</label>
-              <select
-                id="division"
-                value={formData.divisionId}
-                onChange={(e) => handleInputChange('divisionId', e.target.value)}
-                required
-              >
-                <option value="">{t('floorball.teams.selectDivision', 'Select division...')}</option>
-                {divisions.map(division => (
-                  <option key={division.id} value={division.id}>{division.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="category">{t('floorball.teams.category', 'Category')} *</label>
-              <select
-                id="category"
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value as TeamCategory)}
-                required
-              >
-                <option value="Adult">{t('floorball.categories.adult', 'Adult')}</option>
-                <option value="Youth">{t('floorball.categories.youth', 'Youth')}</option>
-                <option value="Women">{t('floorball.categories.women', 'Women')}</option>
-              </select>
-            </div>
+          <div className="form-group">
+            <label htmlFor="category">{t('floorball.teams.category', 'Category')} *</label>
+            <select
+              id="category"
+              value={formData.category}
+              onChange={(e) => handleInputChange('category', e.target.value as TeamCategory)}
+              required
+            >
+              <option value="Adult">{t('floorball.categories.adult', 'Adult')}</option>
+              <option value="Youth">{t('floorball.categories.youth', 'Youth')}</option>
+              <option value="Women">{t('floorball.categories.women', 'Women')}</option>
+            </select>
           </div>
 
           <div className="form-group">

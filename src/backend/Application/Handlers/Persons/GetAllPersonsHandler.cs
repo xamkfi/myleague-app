@@ -1,4 +1,4 @@
-﻿using Application.Queries.Persons;
+using Application.Queries.Persons;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
 using Application.Common;
@@ -62,6 +62,14 @@ namespace Application.Handlers.Persons
 
                 int actualPageSize = validationResult.Data!.ActualPageSize;
 
+                // Get total count before pagination
+                int totalCount = await _personRepository.GetCountAsync(
+                    request.firstName,
+                    request.lastName,
+                    request.birthDate,
+                    request.isRegistered,
+                    cancellationToken);
+
                 // Get persons
                 IEnumerable<Person> persons = await _personRepository.GetAllAsync(
                     request.page,
@@ -74,10 +82,10 @@ namespace Application.Handlers.Persons
 
                 IEnumerable<PersonDto> personDtos = PersonMapper.ToDtos(persons);
 
-                // Create paged result
+                // Create paged result with actual total count
                 PagedResult<PersonDto> pagedResult = CreatePagedResult(
                     personDtos,
-                    personDtos.Count(),
+                    totalCount,
                     request.page,
                     actualPageSize);
 

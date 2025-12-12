@@ -130,10 +130,10 @@ const PenaltyRecordingForm = ({
                   Selected player has no jersey number.
                 </div>
               )}
+              <button onClick={onClose} className="cancel-btn">Cancel</button>
               <button onClick={onRecordPenalty} disabled={loading || missingJersey} className="submit-btn">
                 {loading ? 'Recording...' : missingJersey ? 'Missing jersey' : 'Record Penalty'}
               </button>
-              <button onClick={onClose} className="cancel-btn">Cancel</button>
             </div>
           </div>
         </div>

@@ -55,7 +55,9 @@ const LiveMatchEventsHistory = ({
         <div className="events-list">
           {allEvents.map(event => {
             const { label, icon } = getEventTypeLabel(event.type);
-            const teamShort = getTeamShortName(event.teamName);
+            const teamShort = event.teamShortName?.trim()
+              ? event.teamShortName
+              : getTeamShortName(event.teamName);
 
             return (
               <div key={event.id} className={`event-item ${event.type}`}>

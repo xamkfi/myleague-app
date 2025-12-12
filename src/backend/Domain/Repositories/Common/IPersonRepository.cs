@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Common;
 
 namespace Domain.Repositories.Common;
@@ -41,6 +42,17 @@ public interface IPersonRepository
     /// </summary>
     /// <returns>A collection of all persons</returns>
     Task<IEnumerable<Person>> GetAllAsync(int page, int pageSize, string? firstName, string? lastName, string? birthDate, bool? isRegistered, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of persons matching the filters
+    /// </summary>
+    /// <param name="firstName">Optional first name filter</param>
+    /// <param name="lastName">Optional last name filter</param>
+    /// <param name="birthDate">Optional birth date filter</param>
+    /// <param name="isRegistered">Optional registration status filter</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Total count of persons matching the filters</returns>
+    Task<int> GetCountAsync(string? firstName, string? lastName, string? birthDate, bool? isRegistered, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets persons by first name
@@ -87,10 +99,11 @@ public interface IPersonRepository
     /// Searches for persons by name.
     /// </summary>
     /// <param name="searchTerm">The search term.</param>
-    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="page">The page number (1-based).</param>
+    /// <param name="pageSize">The number of items per page.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A collection of persons matching the search term.</returns>
-    Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default);
+    /// <returns>A paged result containing persons matching the search term.</returns>
+    Task<PagedResult<Person>> SearchByNameAsync(string searchTerm, int page, int pageSize, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Checks if a person exists

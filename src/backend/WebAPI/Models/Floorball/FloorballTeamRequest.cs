@@ -23,6 +23,22 @@ namespace WebAPI.Models.Floorball
     }
 
     /// <summary>
+    /// Request model for getting paginated floorball teams without roster
+    /// </summary>
+    public record GetAllTeamsWithoutRosterRequest : PagedRequestBase
+    {
+        /// <summary>
+        /// Gets the search term filter
+        /// </summary>
+        public string? SearchTerm { get; init; }
+
+        /// <summary>
+        /// Gets the team category filter
+        /// </summary>
+        public TeamCategory? TeamCategory { get; init; }
+    }
+
+    /// <summary>
     /// Request model for creating or updating a floorball team
     /// </summary>
     public class FloorballTeamRequest
@@ -77,6 +93,12 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Team category is required")]
         public TeamCategory Category { get; set; }
+
+        /// <summary>
+        /// The short name / acronym of the team (max 4 characters)
+        /// </summary>
+        [StringLength(4, MinimumLength = 1, ErrorMessage = "Short name must be 1 to 4 characters")]
+        public string? ShortName { get; set; }
     }
     
     /// <summary>

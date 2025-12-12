@@ -15,6 +15,7 @@ using WebAPI.Models.Floorball;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
 using Domain.Enums.Floorball;
+using Domain.Enums.Common;
 
 namespace WebAPI.Controllers.Floorball
 {
@@ -176,6 +177,38 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Gets all floorball teams without roster with pagination, search, and filtering
+        /// </summary>
+        /// <param name="request">Query parameters for pagination and filtering</param>
+        /// <returns>Paginated list of floorball teams without roster</returns>
+        [HttpGet("without-roster")]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballTeamSummaryDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballTeamSummaryDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballTeamSummaryDto>), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PaginatedApiResponse<FloorballTeamSummaryDto>>> GetAllTeamsWithoutRoster([FromQuery] GetAllTeamsWithoutRosterRequest request)
+        {
+            _logger.LogInformation("Getting all floorball teams without roster - Page: {Page}, PageSize: {PageSize}, SearchTerm: {SearchTerm}, TeamCategory: {TeamCategory}", 
+                request.Page, request.PageSize, request.SearchTerm, request.TeamCategory);
+
+            var query = new GetAllTeamsWithoutRosterQuery(
+                request.Page,
+                request.PageSize,
+                request.SearchTerm,
+                request.TeamCategory
+            );
+
+            Result<PagedResult<FloorballTeamSummaryDto>> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(PaginatedApiResponse<FloorballTeamSummaryDto>.SuccessResponse(result.Data, "Floorball teams without roster retrieved successfully"));
+            }
+
+            string errorMessage = result.Error ?? result.GetErrorsString();
+            return StatusCode(500, PaginatedApiResponse<FloorballTeamSummaryDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Creates a new floorball team
         /// </summary>
         /// <param name="request">Create team request</param>
@@ -205,7 +238,8 @@ namespace WebAPI.Controllers.Floorball
                 request.HomeArena,
                 request.PrimaryJerseyColor,
                 request.Category,
-                request.SecondaryJerseyColor);
+                request.SecondaryJerseyColor,
+                request.ShortName);
 
             Result<FloorballTeamDto> result = await _mediator.Send(command);
 
@@ -257,7 +291,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PrimaryJerseyColor,
                 request.Category,
                 request.SecondaryJerseyColor,
-                request.LogoUrl);
+                request.LogoUrl,
+                request.ShortName);
 
             Result<FloorballTeamDto> result = await _mediator.Send(command);
 

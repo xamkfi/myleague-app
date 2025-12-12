@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -60,7 +60,8 @@ namespace Application.Handlers.Common
             const int maxResultsPerEntityType = 5;
 
             IEnumerable<Club> clubs = await _clubRepository.SearchByNameAsync(searchTerm, maxResultsPerEntityType, cancellationToken);
-            IEnumerable<Person> persons = await _personRepository.SearchByNameAsync(searchTerm, maxResultsPerEntityType, cancellationToken);
+            PagedResult<Person> personsResult = await _personRepository.SearchByNameAsync(searchTerm, page: 1, pageSize: maxResultsPerEntityType, cancellationToken);
+            IEnumerable<Person> persons = personsResult.Items;
             IEnumerable<FloorballTeam> teams = await _floorballTeamRepository.SearchByNameAsync(searchTerm, maxResultsPerEntityType, cancellationToken);
 
             // Enrich person data
