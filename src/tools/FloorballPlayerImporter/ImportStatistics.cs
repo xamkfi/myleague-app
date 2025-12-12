@@ -11,6 +11,16 @@ public class ImportStatistics
     public int TotalProcessed { get; set; }
 
     /// <summary>
+    /// Number of new clubs created
+    /// </summary>
+    public int ClubsCreated { get; set; }
+
+    /// <summary>
+    /// Number of new teams created
+    /// </summary>
+    public int TeamsCreated { get; set; }
+
+    /// <summary>
     /// Number of new FloorballPlayer entities created
     /// </summary>
     public int PlayersCreated { get; set; }

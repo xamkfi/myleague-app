@@ -65,6 +65,8 @@ public static class Program
             Console.WriteLine(new string('=', 60));
             Console.WriteLine("Import Summary");
             Console.WriteLine(new string('=', 60));
+            Console.WriteLine($"Clubs created: {stats.ClubsCreated}");
+            Console.WriteLine($"Teams created: {stats.TeamsCreated}");
             Console.WriteLine($"Total players processed: {stats.TotalProcessed}");
             Console.WriteLine($"New FloorballPlayers created: {stats.PlayersCreated}");
             Console.WriteLine($"Players assigned to teams: {stats.PlayersAssignedToTeam}");

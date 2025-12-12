@@ -4,6 +4,8 @@ A console tool for importing floorball players from JSON files. The tool searche
 
 ## Features
 
+- **Club Auto-Creation**: Automatically creates clubs if they don't exist (using team name as club name)
+- **Team Auto-Creation**: Automatically creates teams if they don't exist (under the auto-created club)
 - **Person Lookup**: Finds existing persons in the system by first and last name
 - **Player Creation**: Automatically creates FloorballPlayer entities for persons who don't have one
 - **Team Assignment**: Adds players to teams with specified jersey numbers and positions
@@ -15,7 +17,8 @@ A console tool for importing floorball players from JSON files. The tool searche
 - .NET 9.0 SDK
 - Backend API running (default: http://localhost:8080)
 - Persons must already exist in the system
-- Teams must already exist in the system
+
+**Note**: Clubs and teams will be created automatically if they don't exist. The club name will be the same as the team name.
 
 ## Configuration
 
@@ -92,17 +95,23 @@ Found 1 JSON file(s) to process.
 Processing file: poyryn-pantterit-roster.json
   Team: Pöyryn Pantterit
   Players in file: 18
-  Found team (ID: 12345678-1234-1234-1234-123456789012)
+  Team not found, creating new team: Pöyryn Pantterit
+  Creating new club: Pöyryn Pantterit
+  Created new club: Pöyryn Pantterit (ID: 12345678-1234-1234-1234-123456789012)
+  Created new team: Pöyryn Pantterit (ID: 87654321-4321-4321-4321-210987654321)
+  Using team (ID: 87654321-4321-4321-4321-210987654321)
   Existing jersey numbers on team: 0
   Processing: Antti Pänkäläinen (#3, Goalie)
-    Found person (ID: 87654321-4321-4321-4321-210987654321)
-    Created new FloorballPlayer (ID: 11111111-1111-1111-1111-111111111111)
+    Found person (ID: 11111111-1111-1111-1111-111111111111)
+    Created new FloorballPlayer (ID: 22222222-2222-2222-2222-222222222222)
     SUCCESS: Added to team as Goalkeeper with jersey #3
   ...
 
 ============================================================
 Import Summary
 ============================================================
+Clubs created: 1
+Teams created: 1
 Total players processed: 18
 New FloorballPlayers created: 5
 Players assigned to teams: 15
@@ -121,7 +130,9 @@ Successfully Assigned Players (15):
 
 The tool handles several scenarios:
 
-- **Team Not Found**: If the specified team doesn't exist, the import for that file is skipped
+- **Club/Team Auto-Creation**: If a club or team doesn't exist, it will be created automatically
+  - Club name will be the same as the team name
+  - Default values will be used for optional fields (HomeArena: "TBD", Colors: "White"/"Black", Category: Adult)
 - **Person Not Found**: If a person doesn't exist, that player is skipped (logged as warning)
 - **Duplicate Jersey**: If a jersey number is already in use (except 0), the player is skipped
 - **API Errors**: Any API failures are logged with detailed error messages
@@ -161,10 +172,6 @@ The tool references:
 - `System.Net.Http.Json` - for HTTP client functionality
 
 ## Troubleshooting
-
-### "Team not found" error
-- Ensure the team name in the JSON matches exactly (case-insensitive)
-- Verify the team exists in the system via the API
 
 ### "Person not found" warnings
 - Check that persons are created in the system first

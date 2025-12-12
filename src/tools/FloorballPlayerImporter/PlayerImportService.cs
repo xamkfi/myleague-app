@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Application.DTOs.Common;
 using Application.DTOs.Floorball;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 using FloorballPlayerImporter.Models;
 using WebAPI.Models.Common;
@@ -80,18 +81,18 @@ public class PlayerImportService
         Console.WriteLine($"  Team: {roster.Team}");
         Console.WriteLine($"  Players in file: {roster.Players.Count}");
 
-        // Find the team by name
-        FloorballTeamDto? team = await FindTeamByNameAsync(roster.Team);
+        // Find or create the team by name
+        FloorballTeamDto? team = await FindOrCreateTeamAsync(roster.Team, stats);
         if (team == null)
         {
-            string error = $"Team not found: {roster.Team}";
+            string error = $"Failed to find or create team: {roster.Team}";
             stats.Errors.Add(error);
             stats.Failed++;
             Console.Error.WriteLine($"  ERROR: {error}");
             return;
         }
 
-        Console.WriteLine($"  Found team (ID: {team.Id})");
+        Console.WriteLine($"  Using team (ID: {team.Id})");
 
         // Get existing roster to check for duplicate jersey numbers
         HashSet<int> existingJerseyNumbers = await GetExistingJerseyNumbersAsync(team.Id);
@@ -197,6 +198,132 @@ public class PlayerImportService
 
         return apiResponse.Data.FirstOrDefault(t => 
             string.Equals(t.Name, teamName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Find a club by name (case-insensitive)
+    /// </summary>
+    private async Task<ClubDto?> FindClubByNameAsync(string clubName)
+    {
+        HttpResponseMessage response = await _httpClient.GetAsync("api/clubs");
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        ApiResponse<List<ClubDto>>? apiResponse = 
+            await response.Content.ReadFromJsonAsync<ApiResponse<List<ClubDto>>>(_jsonOptions);
+
+        if (apiResponse == null || !apiResponse.Success || apiResponse.Data == null)
+        {
+            return null;
+        }
+
+        return apiResponse.Data.FirstOrDefault(c => 
+            string.Equals(c.Name, clubName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Find or create a club by name
+    /// </summary>
+    private async Task<ClubDto?> FindOrCreateClubAsync(string clubName, ImportStatistics stats)
+    {
+        // Try to find existing club
+        ClubDto? existingClub = await FindClubByNameAsync(clubName);
+        if (existingClub != null)
+        {
+            Console.WriteLine($"  Found existing club: {existingClub.Name} (ID: {existingClub.Id})");
+            return existingClub;
+        }
+
+        // Create new club
+        Console.WriteLine($"  Creating new club: {clubName}");
+        CreateClubRequest clubRequest = new CreateClubRequest
+        {
+            Name = clubName,
+            City = null,
+            Country = null,
+            FoundingDate = null,
+            WebsiteUrl = null,
+            LogoUrl = null,
+            ContactEmail = null
+        };
+
+        HttpResponseMessage createResponse = await _httpClient.PostAsJsonAsync("api/clubs", clubRequest);
+        if (!createResponse.IsSuccessStatusCode)
+        {
+            Console.Error.WriteLine($"  ERROR: Failed to create club. Status: {createResponse.StatusCode}");
+            return null;
+        }
+
+        ApiResponse<ClubDto>? createApiResponse = 
+            await createResponse.Content.ReadFromJsonAsync<ApiResponse<ClubDto>>(_jsonOptions);
+
+        if (createApiResponse != null && createApiResponse.Success && createApiResponse.Data != null)
+        {
+            stats.ClubsCreated++;
+            Console.WriteLine($"  Created new club: {createApiResponse.Data.Name} (ID: {createApiResponse.Data.Id})");
+            return createApiResponse.Data;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Find or create a team by name
+    /// </summary>
+    private async Task<FloorballTeamDto?> FindOrCreateTeamAsync(string teamName, ImportStatistics stats)
+    {
+        // Try to find existing team
+        FloorballTeamDto? existingTeam = await FindTeamByNameAsync(teamName);
+        if (existingTeam != null)
+        {
+            Console.WriteLine($"  Found existing team: {existingTeam.Name} (ID: {existingTeam.Id})");
+            return existingTeam;
+        }
+
+        // Team doesn't exist, so we need to create it
+        // First, find or create the club (use same name as team)
+        Console.WriteLine($"  Team not found, creating new team: {teamName}");
+        ClubDto? club = await FindOrCreateClubAsync(teamName, stats);
+        if (club == null)
+        {
+            Console.Error.WriteLine($"  ERROR: Failed to find or create club for team: {teamName}");
+            return null;
+        }
+
+        // Create new team
+        FloorballTeamRequest teamRequest = new FloorballTeamRequest
+        {
+            Name = teamName,
+            ClubId = club.Id,
+            DivisionId = null,
+            HomeArena = "TBD",
+            PrimaryJerseyColor = "White",
+            SecondaryJerseyColor = "Black",
+            Category = TeamCategory.Adult
+        };
+
+        HttpResponseMessage createResponse = await _httpClient.PostAsJsonAsync("api/floorballteam", teamRequest);
+        if (!createResponse.IsSuccessStatusCode)
+        {
+            string errorContent = await createResponse.Content.ReadAsStringAsync();
+            Console.Error.WriteLine($"  ERROR: Failed to create team. Status: {createResponse.StatusCode}");
+            Console.Error.WriteLine($"  Response: {errorContent}");
+            return null;
+        }
+
+        ApiResponse<FloorballTeamDto>? createApiResponse = 
+            await createResponse.Content.ReadFromJsonAsync<ApiResponse<FloorballTeamDto>>(_jsonOptions);
+
+        if (createApiResponse != null && createApiResponse.Success && createApiResponse.Data != null)
+        {
+            stats.TeamsCreated++;
+            Console.WriteLine($"  Created new team: {createApiResponse.Data.Name} (ID: {createApiResponse.Data.Id})");
+            return createApiResponse.Data;
+        }
+
+        return null;
     }
 
     /// <summary>
