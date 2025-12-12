@@ -8,7 +8,7 @@ import type {
 } from '../../../../../api/floorball/floorballSeasonService';
 import { floorballSeasonService } from '../../../../../api/floorball/floorballSeasonService';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
-import { type FloorballTeam } from '../../../../../types/floorball/floorballTypes';
+import { type FloorballTeam, TeamCategory } from '../../../../../types/floorball/floorballTypes';
 import { useDivisions } from '../../../../../hooks/useDivisions';
 import './EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
@@ -41,9 +41,13 @@ const EditSeasonPage = () => {
   const [allTeams, setAllTeams] = useState<FloorballTeam[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
   const [savingTeams, setSavingTeams] = useState(false);
-  const [selectedDivisionForTeam, setSelectedDivisionForTeam] = useState<string>('');
   const [addedTeams, setAddedTeams] = useState<Map<string, string>>(new Map()); // Map<teamId, divisionId>
   const [removedTeams, setRemovedTeams] = useState<Set<string>>(new Set());
+  
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [teamCategory, setTeamCategory] = useState<TeamCategory | ''>('');
 
   const loadSeason = useCallback(async () => {
     if (!seasonId) return;
@@ -72,22 +76,31 @@ const EditSeasonPage = () => {
     }
   }, [seasonId, loadSeason]);
 
-  // Load teams when modal opens
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Load teams when season changes or filters change
   useEffect(() => {
     const loadAllTeams = async () => {
+      if (!season) return;
+      
       try {
         setLoadingTeams(true);
-        const response = await floorballTeamService.getAll({
-          pageSize: 50 // Get all teams
+        const response = await floorballTeamService.getAllWithoutRoster({
+          page: 1,
+          pageSize: 100, // Get more teams
+          searchTerm: debouncedSearchTerm || undefined,
+          teamCategory: teamCategory || undefined
         });
         
         if (response && response.data && Array.isArray(response.data)) {
-          // Include teams from all divisions in the season
-          const seasonDivisionIds = season?.seasonDivisions?.map(sd => sd.divisionId) || [];
-          const seasonTeams = seasonDivisionIds.length > 0 
-            ? response.data.filter(team => seasonDivisionIds.includes(team.divisionId))
-            : response.data;
-          setAllTeams(seasonTeams);
+          setAllTeams(response.data);
         } else {
           setAllTeams([]);
         }
@@ -100,7 +113,7 @@ const EditSeasonPage = () => {
     };
 
     loadAllTeams();
-  }, [season]);
+  }, [season, debouncedSearchTerm, teamCategory]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -336,7 +349,7 @@ const EditSeasonPage = () => {
     }
   };
 
-  const addTeamToSeason = (team: FloorballTeam, divisionId: string) => {
+  const addTeamToSeason = (team: FloorballTeam) => {
     if (!season) return;
     
     setError(null); // Clear any existing errors
@@ -347,22 +360,36 @@ const EditSeasonPage = () => {
       return;
     }
     
-    // Check division match
-    if (team.divisionId !== divisionId) {
-      setError(t('floorball.seasons.errors.teamDivisionMismatch', 'Team division does not match selected season division.'));
-      return;
+    // Determine which division to use
+    let targetDivisionId: string | null = null;
+    
+    if (team.divisionId != null) {
+      // Team has a division - check if it matches any season division
+      const matchingSeasonDivision = season.seasonDivisions?.find(sd => sd.divisionId === team.divisionId);
+      if (matchingSeasonDivision) {
+        targetDivisionId = team.divisionId;
+      } else {
+        setError(t('floorball.seasons.errors.teamDivisionNotInSeason', 'Team division is not part of this season.'));
+        return;
+      }
+    } else {
+      // Team has no division - use the first season division
+      if (season.seasonDivisions && season.seasonDivisions.length > 0) {
+        targetDivisionId = season.seasonDivisions[0].divisionId;
+      } else {
+        setError(t('floorball.seasons.errors.noDivisionsInSeason', 'Season has no divisions. Please add divisions first.'));
+        return;
+      }
     }
     
-    // Check if division is in season
-    const seasonDivision = season.seasonDivisions?.find(sd => sd.divisionId === divisionId);
-    if (!seasonDivision) {
-      setError(t('floorball.seasons.errors.divisionNotInSeason', 'Selected division is not part of this season.'));
+    if (!targetDivisionId) {
+      setError(t('floorball.seasons.errors.cannotDetermineDivision', 'Cannot determine division for team.'));
       return;
     }
     
     setAddedTeams(prev => {
       const newMap = new Map(prev);
-      newMap.set(team.id, divisionId);
+      newMap.set(team.id, targetDivisionId);
       return newMap;
     });
     setRemovedTeams(prev => {
@@ -424,7 +451,6 @@ const EditSeasonPage = () => {
       // Clear local state
       setAddedTeams(new Map());
       setRemovedTeams(new Set());
-      setSelectedDivisionForTeam('');
       
       // Reload season data
       await loadSeason();
@@ -701,26 +727,27 @@ const EditSeasonPage = () => {
                 </div>
               ) : (
                 <>
-                  <div className="division-selector">
-                    <label htmlFor="team-division-select">
-                      {t('floorball.seasons.selectDivisionForTeam', 'Select Division for Team Assignment')} *
-                    </label>
-                    <select
-                      id="team-division-select"
-                      value={selectedDivisionForTeam}
-                      onChange={(e) => setSelectedDivisionForTeam(e.target.value)}
-                      disabled={savingTeams}
-                    >
-                      <option value="">{t('floorball.seasons.placeholders.selectDivision', 'Select division')}</option>
-                      {season?.seasonDivisions?.map(seasonDivision => {
-                        const division = divisions.find(d => d.id === seasonDivision.divisionId);
-                        return (
-                          <option key={seasonDivision.divisionId} value={seasonDivision.divisionId}>
-                            {division?.name || seasonDivision.divisionId}
-                          </option>
-                        );
-                      })}
-                    </select>
+                  <div className="division-info">
+                    <h4>{t('floorball.seasons.seasonInfo', 'Season Information')}</h4>
+                    <p className="season-name">
+                      <strong>{t('floorball.seasons.fields.name', 'Season')}:</strong> {season?.name}
+                    </p>
+                    <p className="season-divisions">
+                      <strong>{t('floorball.seasons.divisions', 'Division')}:</strong>{' '}
+                      {season?.seasonDivisions && season.seasonDivisions.length > 0 ? (
+                        season.seasonDivisions.map((seasonDivision, index) => {
+                          const division = divisions.find(d => d.id === seasonDivision.divisionId);
+                          return (
+                            <span key={seasonDivision.divisionId}>
+                              {division?.name || seasonDivision.divisionId}
+                              {index < season.seasonDivisions.length - 1 ? ', ' : ''}
+                            </span>
+                          );
+                        })
+                      ) : (
+                        <span>{t('floorball.seasons.noDivisions', 'No divisions')}</span>
+                      )}
+                    </p>
                   </div>
 
                   <div className="teams-sections-container">
@@ -736,7 +763,7 @@ const EditSeasonPage = () => {
                           <div className="team-info">
                             <span className="team-name">{team.name}</span>
                             <span className="team-club">{team.club.name}</span>
-                            <span className={`team-division division-${team.divisionId}`}>
+                            <span className={`team-division division-${team.divisionId || 'none'}`}>
                               {divisions.find(d => d.id == team.divisionId)?.name || ''}
                             </span>
                           </div>
@@ -757,42 +784,57 @@ const EditSeasonPage = () => {
                 {/* Available Teams */}
                 <div className="teams-section">
                   <h4>
-                    {t('floorball.seasons.availableTeams', 'Available Teams')} 
-                    {selectedDivisionForTeam && (
-                      <span className="filter-info">
-                        {' '}({availableTeams.filter(t => t.divisionId === selectedDivisionForTeam).length} in selected division)
-                      </span>
-                    )}
+                    {t('floorball.seasons.availableTeams', 'Available Teams')} ({availableTeams.length})
                   </h4>
+                  
+                  {/* Search and Filter Controls */}
+                  <div className="teams-search-filters">
+                    <div className="search-input-wrapper">
+                      <input
+                        type="text"
+                        placeholder={t('floorball.seasons.searchTeams', 'Search teams...')}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="teams-search-input"
+                      />
+                    </div>
+                    <select
+                      value={teamCategory}
+                      onChange={(e) => setTeamCategory(e.target.value as TeamCategory | '')}
+                      className="team-category-select"
+                    >
+                      <option value="">{t('floorball.seasons.allCategories', 'All Categories')}</option>
+                      <option value={TeamCategory.Adult}>{t('floorball.teams.category.adult', 'Adult')}</option>
+                      <option value={TeamCategory.Youth}>{t('floorball.teams.category.youth', 'Youth')}</option>
+                      <option value={TeamCategory.Women}>{t('floorball.teams.category.women', 'Women')}</option>
+                    </select>
+                  </div>
+
                   {loadingTeams ? (
                     <p>{t('common.loading', 'Loading...')}</p>
-                  ) : !selectedDivisionForTeam ? (
-                    <p className="no-teams">{t('floorball.seasons.selectDivisionFirst', 'Please select a division above to see available teams')}</p>
-                  ) : availableTeams.filter(t => t.divisionId === selectedDivisionForTeam).length === 0 ? (
-                    <p className="no-teams">{t('floorball.seasons.noAvailableTeamsInDivision', 'No available teams in this division')}</p>
+                  ) : availableTeams.length === 0 ? (
+                    <p className="no-teams">{t('floorball.seasons.noAvailableTeams', 'No available teams')}</p>
                   ) : (
                     <div className="teams-list">
-                      {availableTeams
-                        .filter(team => team.divisionId === selectedDivisionForTeam)
-                        .map(team => (
-                          <div key={team.id} className="team-item">
-                            <div className="team-info">
-                              <span className="team-name">{team.name}</span>
-                              <span className="team-club">{team.club.name}</span>
-                              <span className={`team-division division-${team.divisionId.toLowerCase()}`}>
-                                {divisions.find(d => d.id == team.divisionId)?.name || ''}
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              className="btn btn-primary btn-sm"
-                              onClick={() => addTeamToSeason(team, selectedDivisionForTeam)}
-                              disabled={savingTeams}
-                            >
-                              ➕ {t('common.add', 'Add')}
-                            </button>
+                      {availableTeams.map(team => (
+                        <div key={team.id} className="team-item">
+                          <div className="team-info">
+                            <span className="team-name">{team.name}</span>
+                            <span className="team-club">{team.club.name}</span>
+                            <span className={`team-division division-${team.divisionId?.toLowerCase() || 'none'}`}>
+                              {divisions.find(d => d.id == team.divisionId)?.name || ''}
+                            </span>
                           </div>
-                        ))}
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={() => addTeamToSeason(team)}
+                            disabled={savingTeams}
+                          >
+                            ➕ {t('common.add', 'Add')}
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

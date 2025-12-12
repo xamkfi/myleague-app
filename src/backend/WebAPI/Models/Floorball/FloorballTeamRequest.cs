@@ -23,6 +23,22 @@ namespace WebAPI.Models.Floorball
     }
 
     /// <summary>
+    /// Request model for getting paginated floorball teams without roster
+    /// </summary>
+    public record GetAllTeamsWithoutRosterRequest : PagedRequestBase
+    {
+        /// <summary>
+        /// Gets the search term filter
+        /// </summary>
+        public string? SearchTerm { get; init; }
+
+        /// <summary>
+        /// Gets the team category filter
+        /// </summary>
+        public TeamCategory? TeamCategory { get; init; }
+    }
+
+    /// <summary>
     /// Request model for creating or updating a floorball team
     /// </summary>
     public class FloorballTeamRequest

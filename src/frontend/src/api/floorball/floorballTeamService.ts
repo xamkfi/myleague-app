@@ -6,7 +6,8 @@ import type {
   PaginatedApiResponse,
   FloorballTeamPlayerDto,
   UpdateFloorballTeamPlayerRequest,
-  FloorballPosition
+  FloorballPosition,
+  TeamCategory
 } from '../../types/floorball/floorballTypes';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 
@@ -224,5 +225,36 @@ export const floorballTeamService = {
     }
 
     return apiResponse.data;
+  },
+
+  /**
+   * Get all floorball teams without roster with pagination, search, and filtering
+   */
+  getAllWithoutRoster: async (params?: {
+    page?: number;
+    pageSize?: number;
+    searchTerm?: string;
+    teamCategory?: TeamCategory;
+  }): Promise<PaginatedApiResponse<FloorballTeam>> => {
+    const searchParams = new URLSearchParams();
+    
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
+    if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
+    if (params?.teamCategory) searchParams.append('teamCategory', params.teamCategory);
+
+    const url = `${API_URL}/FloorballTeam/without-roster${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch floorball teams');
+    }
+    
+    const apiResponse: PaginatedApiResponse<FloorballTeam> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch floorball teams');
+    }
+    
+    return apiResponse;
   },
 }; 

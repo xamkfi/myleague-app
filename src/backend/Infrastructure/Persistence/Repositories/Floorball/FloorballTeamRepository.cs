@@ -1,6 +1,7 @@
 using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
+using Domain.Enums.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -383,6 +384,52 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             return await query
                 .OrderBy(t => t.Name)
                 .ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets paginated floorball teams without roster with filtering support
+        /// </summary>
+        /// <param name="page">Page number (1-based)</param>
+        /// <param name="pageSize">Number of items per page</param>
+        /// <param name="searchTerm">Optional search term to filter by team name</param>
+        /// <param name="teamCategory">Optional team category filter (Adult, Youth, Women)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Paginated collection of floorball teams without roster</returns>
+        public async Task<PagedResult<FloorballTeam>> GetAllTeamsWithoutRosterAsync(
+            int page,
+            int pageSize,
+            string? searchTerm = null,
+            TeamCategory? teamCategory = null,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballTeam> query = _entities.AsQueryable();
+
+            // Apply search term filter
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                string loweredSearchTerm = searchTerm.ToLower();
+                query = query.Where(t => t.Name.ToLower().Contains(loweredSearchTerm));
+            }
+
+            // Apply team category filter
+            if (teamCategory.HasValue)
+            {
+                query = query.Where(t => t.TeamCategory == teamCategory.Value);
+            }
+
+            // Apply ordering by name
+            query = query.OrderBy(t => t.Name);
+
+            // Get total count before pagination
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            // Apply pagination - NOTE: Roster is NOT included for performance
+            List<FloorballTeam> items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return PagedResult.Create(items, totalCount, page, pageSize);
         }
     }
 } 
