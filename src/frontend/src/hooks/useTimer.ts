@@ -205,35 +205,29 @@ export function useTimer(options: UseTimerOptions) {
     }
   }, [matchId]);
 
-  // Set timer to specific time
+  // Set timer to specific time (NOT optimistic - waits for backend confirmation)
   const setTimer = useCallback(async (timeInSeconds: number) => {
     try {
       setLoading(true);
       setError(null);
       
-      const now = Date.now();
-      
-      // Optimistically update local interpolation state to prevent visual reset
-      const newElapsedMs = timeInSeconds * 1000;
-      lastServerElapsedMsRef.current = newElapsedMs;
-      lastSyncTimeRef.current = now;
-      setLocalElapsedMs(newElapsedMs);
-      
-      // Track this optimistic update to ignore stale SignalR updates
-      lastOptimisticUpdateRef.current = { timeMs: newElapsedMs, timestamp: now };
-      
+      // Call backend to set the time
       await timerService.setTimer(matchId, timeInSeconds);
       
-      // SignalR will reconcile with actual server time
+      // Wait for backend confirmation and load the updated timer status
+      await loadTimerStatus();
+      
+      // Clear any pending optimistic updates
+      lastOptimisticUpdateRef.current = null;
+      
+      console.log('Timer set successfully to', timeInSeconds, 'seconds');
     } catch (err) {
       console.error('Error setting timer:', err);
       setError(err instanceof Error ? err.message : 'Failed to set timer');
-      // Clear the optimistic update on error
-      lastOptimisticUpdateRef.current = null;
     } finally {
       setLoading(false);
     }
-  }, [matchId]);
+  }, [matchId, loadTimerStatus]);
 
   // Adjust timer by specific seconds (can be positive or negative)
   const adjustTimer = useCallback(async (adjustmentInSeconds: number) => {
