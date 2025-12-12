@@ -24,12 +24,14 @@
 }
 
 .period-row {
-  width: 369px;
+  width: 100%;
+  max-width: 574px;
   height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  flex-wrap: wrap;
 }
 
 .period-chip {
@@ -52,6 +54,23 @@
   }
   &.completed {
     width: 119px;
+  }
+  
+  // Special styling for overtime and shootout periods
+  &.period-chip--extra {
+    font-weight: map.get($font-weights, 'bold');
+    
+    &.started {
+      color: $color-yellow-primary;
+      width: 119px;
+    }
+    &.upcoming {
+      color: $color-yellow-muted;
+      width: 135px;
+    }
+    &.completed {
+      width: 135px;
+    }
   }
 }
 

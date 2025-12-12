@@ -14,7 +14,8 @@ namespace Application.DTOs.Floorball
     /// </summary>
     /// <param name="HomeScore">The home team's score for this period</param>
     /// <param name="AwayScore">The away team's score for this period</param>
-    public record PeriodScoreDto(int HomeScore, int AwayScore);
+    /// <param name="IsCompleted">Whether the period has been completed</param>
+    public record PeriodScoreDto(int HomeScore, int AwayScore, bool IsCompleted);
 
     /// <summary>
     /// Data Transfer Object for FloorballMatch entity

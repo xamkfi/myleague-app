@@ -144,6 +144,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setLocalClock: timer.setLocalClock,
     currentTimerElapsedTime: timer.currentTimerElapsedTime,
     isOpen: true,
+    loadCurrentMatchStatus: matchData.loadCurrentMatchStatus,
     onStateUpdate: handleStateUpdate,
   });
 
@@ -271,18 +272,48 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           const startedPeriods = new Set<number>();
           const endedPeriods = new Set<number>();
           
-          for (let i = 1; i < currentPeriod; i++) {
-            startedPeriods.add(i);
-            endedPeriods.add(i);
-          }
+          // Use the periodScores from match data to determine which periods have ended
+          const periodScores = matchData.currentMatch.periodScores || {};
           
+          // Only mark periods as started if they've been completed or are the current period
+          Object.entries(periodScores).forEach(([periodNum, scoreData]) => {
+            const period = parseInt(periodNum);
+            
+            // A period is started if it's completed OR if it's the current period
+            if (scoreData.isCompleted) {
+              startedPeriods.add(period);
+              endedPeriods.add(period);
+            } else if (period === currentPeriod) {
+              // Only mark as started if it's the current period from the timer
+              startedPeriods.add(period);
+            }
+          });
+          
+          // Ensure current period is marked as started (safety check)
           startedPeriods.add(currentPeriod);
           
-          const nextPeriod = currentPeriod + 1;
+          // Next period is the first period that hasn't been started yet
+          let nextPeriod = 1;
+          for (let i = 1; i <= 4; i++) {
+            if (!startedPeriods.has(i)) {
+              nextPeriod = i;
+              break;
+            }
+          }
+          if (nextPeriod > 4 || (startedPeriods.has(4))) {
+            nextPeriod = 0; // No more periods to start
+          }
+          
+          console.log('Initialized period state:', { 
+            startedPeriods: Array.from(startedPeriods), 
+            endedPeriods: Array.from(endedPeriods), 
+            nextPeriod,
+            currentPeriod 
+          });
           
           periodManagement.setStartedPeriods(startedPeriods);
           periodManagement.setEndedPeriods(endedPeriods);
-          periodManagement.setNextPeriodToStart(nextPeriod <= 4 ? nextPeriod : 0);
+          periodManagement.setNextPeriodToStart(nextPeriod);
 
         } else {
           periodManagement.setStartedPeriods(new Set());

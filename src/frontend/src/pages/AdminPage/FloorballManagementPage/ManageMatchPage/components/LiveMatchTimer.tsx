@@ -68,7 +68,9 @@ const LiveMatchTimer = ({
 
   const periodLabels: Record<number, string> = {
     1: 'Period 1',
-    2: 'Period 2'
+    2: 'Period 2',
+    3: 'Overtime',
+    4: 'Shootout'
   };
 
   // Turn digits red at 15:00 (900s) and after, except during shootout
@@ -76,13 +78,22 @@ const LiveMatchTimer = ({
   // Timer controls enabled only if current period has started and not ended
   const controlsEnabled = startedPeriods.has(clock.period) && !endedPeriods.has(clock.period);
 
+  // Determine which periods to show
+  const periodsToShow = [1, 2];
+  if (currentMatch.wentToOvertime) {
+    periodsToShow.push(3);
+  }
+  if (currentMatch.wentToShootout) {
+    periodsToShow.push(4);
+  }
+
   return (
     <>
       <div className="clock-card">
         <div className="clock-inner">
           <div className="period-row">
-            {[1, 2].map((p) => (
-              <div key={p} className={`period-chip ${getChipStatus(p)}`}>
+            {periodsToShow.map((p) => (
+              <div key={p} className={`period-chip ${getChipStatus(p)} ${p > 2 ? 'period-chip--extra' : ''}`}>
                 {`${periodLabels[p]}: ${getChipStatus(p)}`}
               </div>
             ))}
