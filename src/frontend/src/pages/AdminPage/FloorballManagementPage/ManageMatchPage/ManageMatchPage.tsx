@@ -149,10 +149,14 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     onStateUpdate: handleStateUpdate,
   });
 
+  // State to hold the function that gets current elapsed seconds (includes optimistic updates)
+  const [getCurrentElapsedSeconds, setGetCurrentElapsedSeconds] = useState<(() => number) | null>(null);
+
   const forms = useFormState({
     currentMatch: matchData.currentMatch,
     clock: timer.localClock,
     currentTimerElapsedTime: timer.currentTimerElapsedTime,
+    getCurrentElapsedSeconds,
     loadMatchEvents: matchEvents.loadMatchEvents,
     loadCurrentMatchStatus: matchData.loadCurrentMatchStatus,
     setError: matchData.setError
@@ -232,6 +236,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setGetToggleFromTimer
   } = timer;
   const { setShowGoalForm, setShowPenaltyForm } = forms;
+
   const { setShowOvertimeConfirmation } = periodManagement;
 
   // Local refs to timer controls (start/reset)
@@ -471,6 +476,11 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setGetToggleFromTimer(prev => (prev !== toggleFunction ? toggleFunction : prev));
   }, [setGetToggleFromTimer]);
 
+  // MEMOIZED: Get current elapsed seconds handler
+  const handleGetCurrentElapsedSeconds = useCallback((getSeconds: () => number) => {
+    setGetCurrentElapsedSeconds(prev => (prev !== getSeconds ? getSeconds : prev));
+  }, []);
+
 
   // MEMOIZED: Start match and then start timer once timer is mounted
   const handleStartMatchAndTimer = useCallback(async () => {
@@ -655,6 +665,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             onPeriodControlClick={handlePeriodControlClick}
             onTimerUpdate={handleTimerUpdate}
             onGetCurrentTime={handleGetCurrentTime}
+            onGetCurrentElapsedSeconds={handleGetCurrentElapsedSeconds}
             onGetToggleFunction={handleGetToggleFunction}
             onGetResetFunction={handleGetResetFunction}
             onGetStartFunction={handleGetStartFunction}
@@ -781,7 +792,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             getPlayersForTeam={matchData.getPlayersForTeam}
             onRecordGoal={forms.recordGoal}
             onClose={handleCloseGoalForm}
-            formatTime={timer.formatTime}
           />
 
           <PenaltyRecordingForm
@@ -796,7 +806,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             getPlayersForTeam={matchData.getPlayersForTeam}
             onRecordPenalty={forms.recordPenalty}
             onClose={handleClosePenaltyForm}
-            formatTime={timer.formatTime}
           />
         </div>
         

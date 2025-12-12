@@ -305,14 +305,21 @@ export function useTimer(options: UseTimerOptions) {
         const serverMs = timerUpdate.ElapsedMilliseconds || 0;
         const now = Date.now();
         
+        // ALWAYS accept state changes that indicate major events (period reset, pause)
+        const isPeriodReset = serverMs < 5000; // Less than 5 seconds indicates period start/reset
+        const isPauseEvent = !timerUpdate.IsRunning && isRunningRef.current; // Transition to paused
+        const isResumeEvent = timerUpdate.IsRunning && !isRunningRef.current; // Transition to running
+        
         // Check if we have a recent optimistic update that should take precedence
-        if (lastOptimisticUpdateRef.current) {
+        if (lastOptimisticUpdateRef.current && !isPeriodReset && !isPauseEvent && !isResumeEvent) {
           const { timeMs: optimisticMs, timestamp: optimisticTimestamp } = lastOptimisticUpdateRef.current;
           const timeSinceOptimistic = now - optimisticTimestamp;
           
-          // If the optimistic update was made recently (within 2 seconds) and the server update
-          // is significantly older (more than 500ms behind), ignore this stale update
-          if (timeSinceOptimistic < 2000 && Math.abs(serverMs - optimisticMs) > 500) {
+          // Only ignore the update if:
+          // 1. The optimistic update is recent (< 2 seconds old)
+          // 2. The server time is BEHIND the optimistic time (server is stale)
+          // 3. The difference is significant (> 500ms)
+          if (timeSinceOptimistic < 2000 && serverMs < optimisticMs && (optimisticMs - serverMs) > 500) {
             console.log('Ignoring stale SignalR update:', serverMs, 'vs optimistic:', optimisticMs);
             return;
           }
@@ -322,11 +329,15 @@ export function useTimer(options: UseTimerOptions) {
           if (Math.abs(serverMs - optimisticMs) <= 500 || timeSinceOptimistic >= 2000) {
             lastOptimisticUpdateRef.current = null;
           }
+        } else if (isPeriodReset || isPauseEvent || isResumeEvent) {
+          // Clear optimistic updates on major state changes
+          lastOptimisticUpdateRef.current = null;
         }
         
         // Sync local clock with server time
         lastServerElapsedMsRef.current = serverMs;
         lastSyncTimeRef.current = now;
+        isRunningRef.current = timerUpdate.IsRunning; // CRITICAL: Update isRunning ref!
         setLocalElapsedMs(serverMs);
         
         // Format the elapsed time to only show hours when needed
@@ -447,8 +458,14 @@ export function useTimer(options: UseTimerOptions) {
     [localElapsedMs, formatMilliseconds]
   );
 
+  const currentElapsedSeconds = useMemo(() => 
+    Math.floor(localElapsedMs / 1000),
+    [localElapsedMs]
+  );
+
   return {
     timerState: { ...timerState, elapsedTime: displayTime },
+    currentElapsedSeconds,
     loading,
     error,
     startTimer,

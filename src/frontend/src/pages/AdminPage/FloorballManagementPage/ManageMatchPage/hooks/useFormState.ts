@@ -11,6 +11,7 @@ interface UseFormStateProps {
   currentMatch: FloorballMatchDto;
   clock: LocalClock;
   currentTimerElapsedTime: number;
+  getCurrentElapsedSeconds: (() => number) | null;
   loadMatchEvents: () => Promise<void>;
   loadCurrentMatchStatus: () => Promise<void>;
   setError: (error: string | null) => void;
@@ -20,6 +21,7 @@ export const useFormState = ({
   currentMatch,
   clock,
   currentTimerElapsedTime,
+  getCurrentElapsedSeconds,
   loadMatchEvents,
   loadCurrentMatchStatus,
   setError
@@ -59,35 +61,38 @@ export const useFormState = ({
    * @param teamId The ID of the team to open the form for
    */
   const openGoalFormForTeam = useCallback((teamId: string) => {
-    // Initialize time from current timer
-    const timeMinutes = Math.floor(currentTimerElapsedTime / 60);
-    const timeSeconds = currentTimerElapsedTime % 60;
+    // Use getCurrentElapsedSeconds if available (includes optimistic updates), otherwise fall back to currentTimerElapsedTime
+    const elapsedSeconds = getCurrentElapsedSeconds ? getCurrentElapsedSeconds() : currentTimerElapsedTime;
+    const timeMinutes = Math.floor(elapsedSeconds / 60);
+    const timeSeconds = elapsedSeconds % 60;
     setGoalForm(prev => ({ ...prev, teamId, timeMinutes, timeSeconds }));
     setShowGoalForm(true);
-  }, [currentTimerElapsedTime]);
+  }, [getCurrentElapsedSeconds, currentTimerElapsedTime]);
 
   /**
    * Opens the penalty form for a specific team
    * @param teamId The ID of the team to open the form for
    */
   const openPenaltyFormForTeam = useCallback((teamId: string) => {
-    // Initialize time from current timer
-    const timeMinutes = Math.floor(currentTimerElapsedTime / 60);
-    const timeSeconds = currentTimerElapsedTime % 60;
+    // Use getCurrentElapsedSeconds if available (includes optimistic updates), otherwise fall back to currentTimerElapsedTime
+    const elapsedSeconds = getCurrentElapsedSeconds ? getCurrentElapsedSeconds() : currentTimerElapsedTime;
+    const timeMinutes = Math.floor(elapsedSeconds / 60);
+    const timeSeconds = elapsedSeconds % 60;
     setPenaltyForm(prev => ({ ...prev, teamId, timeMinutes, timeSeconds }));
     setShowPenaltyForm(true);
-  }, [currentTimerElapsedTime]);
+  }, [getCurrentElapsedSeconds, currentTimerElapsedTime]);
 
   /**
    * Opens the penalty form
    */
   const openPenaltyForm = useCallback(() => {
-    // Initialize time from current timer
-    const timeMinutes = Math.floor(currentTimerElapsedTime / 60);
-    const timeSeconds = currentTimerElapsedTime % 60;
+    // Use getCurrentElapsedSeconds if available (includes optimistic updates), otherwise fall back to currentTimerElapsedTime
+    const elapsedSeconds = getCurrentElapsedSeconds ? getCurrentElapsedSeconds() : currentTimerElapsedTime;
+    const timeMinutes = Math.floor(elapsedSeconds / 60);
+    const timeSeconds = elapsedSeconds % 60;
     setPenaltyForm(prev => ({ ...prev, timeMinutes, timeSeconds }));
     setShowPenaltyForm(true);
-  }, [currentTimerElapsedTime]);
+  }, [getCurrentElapsedSeconds, currentTimerElapsedTime]);
 
   /**
    * Records a goal event

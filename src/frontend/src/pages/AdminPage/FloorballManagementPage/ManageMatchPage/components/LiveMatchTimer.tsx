@@ -22,6 +22,7 @@ interface LiveMatchTimerProps {
   onPeriodControlClick: () => void;
   onTimerUpdate: (update: TimerUpdate) => void;
   onGetCurrentTime: (getTime: () => string) => void;
+  onGetCurrentElapsedSeconds: (getSeconds: () => number) => void;
   onGetToggleFunction: (toggleFunction: () => Promise<void>) => void;
   onGetResetFunction?: (resetFunction: () => void) => void;
   onGetStartFunction?: (startFunction: () => Promise<void>) => void;
@@ -48,6 +49,7 @@ const LiveMatchTimer = ({
   onPeriodControlClick,
   onTimerUpdate,
   onGetCurrentTime,
+  onGetCurrentElapsedSeconds,
   onGetToggleFunction,
   onGetResetFunction,
   onGetStartFunction,
@@ -125,6 +127,7 @@ const LiveMatchTimer = ({
                     isActive={isOpen}
                     onTimerUpdate={onTimerUpdate}
                     onGetCurrentTime={onGetCurrentTime}
+                    onGetCurrentElapsedSeconds={onGetCurrentElapsedSeconds}
                     onGetToggleFunction={onGetToggleFunction}
                     onGetResetFunction={onGetResetFunction}
                     onGetStartFunction={onGetStartFunction}
