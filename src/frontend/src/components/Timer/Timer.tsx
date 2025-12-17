@@ -239,11 +239,27 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
                 10s
               </button>
               <button
+                onClick={() => handleAdjustTime(-1)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time decrease one-second-back"
+                title="Go back 1 second"
+              >
+                1s
+              </button>
+              <button
                 onClick={handleToggle}
                 disabled={buttonStates.toggleDisabled}
                 className={`timer-button ${timerState.isRunning ? 'pause' : 'start'}`}
               >
                 {timerState.isRunning ? 'Pause' : 'Play'}
+              </button>
+              <button
+                onClick={() => handleAdjustTime(1)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time increase one-second-forward"
+                title="Advance 1 second"
+              >
+                1s
               </button>
               <button
                 onClick={() => handleAdjustTime(10)}
