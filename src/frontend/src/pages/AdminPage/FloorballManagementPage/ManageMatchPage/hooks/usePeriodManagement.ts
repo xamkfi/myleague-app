@@ -10,6 +10,7 @@ interface UsePeriodManagementProps {
   currentTimerElapsedTime: number;
   isOpen: boolean;
   onStateUpdate?: (updates: StateUpdate) => void;
+  loadCurrentMatchStatus?: () => Promise<void>;
 }
 
 export const usePeriodManagement = ({
@@ -17,7 +18,8 @@ export const usePeriodManagement = ({
   clock,
   setLocalClock,
   currentTimerElapsedTime,
-  onStateUpdate
+  onStateUpdate,
+  loadCurrentMatchStatus
 }: UsePeriodManagementProps) => {
   // State for tracking which periods have been started and ended
   const [startedPeriods, setStartedPeriods] = useState<Set<number>>(new Set());
@@ -115,14 +117,27 @@ export const usePeriodManagement = ({
       
       console.log(`Starting period ${nextPeriodToStart} for match ${currentMatch.id}`);
       
-      // Start the period via API (server-managed for 1; record phase for 3/4)
+      // Backend will auto-start timer when period starts
       if (nextPeriodToStart === 3) {
+        // Record overtime first, then start the period
         await floorballMatchEventService.recordOvertime(currentMatch.id);
-        console.log(`Recorded overtime for match ${currentMatch.id}`);
+        await floorballMatchEventService.startPeriod(currentMatch.id, 3);
+        console.log(`Started overtime for match ${currentMatch.id}`);
+        // Refresh match status to get wentToOvertime flag
+        if (loadCurrentMatchStatus) {
+          await loadCurrentMatchStatus();
+        }
       } else if (nextPeriodToStart === 4) {
+        // Record shootout first, then start the period
         await floorballMatchEventService.recordShootout(currentMatch.id);
-        console.log(`Recorded shootout for match ${currentMatch.id}`);
+        await floorballMatchEventService.startPeriod(currentMatch.id, 4);
+        console.log(`Started shootout for match ${currentMatch.id}`);
+        // Refresh match status to get wentToShootout flag
+        if (loadCurrentMatchStatus) {
+          await loadCurrentMatchStatus();
+        }
       } else {
+        // Regular period 2 (period 1 is started by match start)
         await floorballMatchEventService.startPeriod(currentMatch.id, nextPeriodToStart);
         console.log(`Started period ${nextPeriodToStart} for match ${currentMatch.id}`);
       }
@@ -130,12 +145,12 @@ export const usePeriodManagement = ({
       // Mark this period as started
       setStartedPeriods(prev => new Set([...prev, nextPeriodToStart]));
       
-      // Update the clock to the new period
+user       // Update clock display (backend auto-starts timer for periods 1-3, not shootout)
       const newClock = { 
         period: nextPeriodToStart, 
         minutes: 0, 
         seconds: 0, 
-        isRunning: false 
+        isRunning: nextPeriodToStart !== 4  // Shootout has no timer
       };
       setLocalClock(newClock);
       if (onStateUpdate) {
@@ -154,7 +169,7 @@ export const usePeriodManagement = ({
     } finally {
       setPeriodLoading(prev => ({ ...prev, [nextPeriodToStart]: false }));
     }
-  }, [nextPeriodToStart, currentMatch.id, setLocalClock, onStateUpdate]);
+  }, [nextPeriodToStart, currentMatch.id, setLocalClock, onStateUpdate, loadCurrentMatchStatus]);
 
   /**
    * Records overtime for the current match
@@ -163,15 +178,20 @@ export const usePeriodManagement = ({
     try {
       await floorballMatchEventService.recordOvertime(currentMatch.id);
       
-      // Start the overtime period (period 3)
+      // Start the overtime period (period 3) - backend will auto-start timer
       await floorballMatchEventService.startPeriod(currentMatch.id, 3);
+      
+      // Refresh match status to get wentToOvertime flag
+      if (loadCurrentMatchStatus) {
+        await loadCurrentMatchStatus();
+      }
       
       // Update the clock to period 3
       const newClock = { 
         period: 3, 
         minutes: 0, 
         seconds: 0, 
-        isRunning: false 
+        isRunning: true  // Backend auto-starts the timer
       };
       setLocalClock(newClock);
       // Ensure local state reflects that OT has started
@@ -188,7 +208,7 @@ export const usePeriodManagement = ({
       console.error('Error recording overtime:', error);
       throw error;
     }
-  }, [currentMatch.id, setLocalClock, onStateUpdate]);
+  }, [currentMatch.id, setLocalClock, onStateUpdate, loadCurrentMatchStatus]);
 
   /**
    * Records shootout for the current match
@@ -197,15 +217,20 @@ export const usePeriodManagement = ({
     try {
       await floorballMatchEventService.recordShootout(currentMatch.id);
       
-      // Start the shootout period (period 4)
+      // Start the shootout period (period 4) - backend will auto-start timer
       await floorballMatchEventService.startPeriod(currentMatch.id, 4);
+      
+      // Refresh match status to get wentToShootout flag
+      if (loadCurrentMatchStatus) {
+        await loadCurrentMatchStatus();
+      }
       
       // Update the clock to period 4
       const newClock = { 
         period: 4, 
         minutes: 0, 
         seconds: 0, 
-        isRunning: false 
+        isRunning: false  // Shootout has no timer
       };
       setLocalClock(newClock);
       // Ensure local state reflects that shootout has started
@@ -222,7 +247,7 @@ export const usePeriodManagement = ({
       console.error('Error recording shootout:', error);
       throw error;
     }
-  }, [currentMatch.id, setLocalClock, onStateUpdate]);
+  }, [currentMatch.id, setLocalClock, onStateUpdate, loadCurrentMatchStatus]);
 
   /**
    * Determines if we can end the current period
@@ -233,14 +258,15 @@ export const usePeriodManagement = ({
       notLoading: !periodLoading[clock.period],
       periodStarted: startedPeriods.has(clock.period),
       periodNotEnded: !endedPeriods.has(clock.period),
-      hasNextPeriod: nextPeriodToStart > 0
+      hasNextPeriod: nextPeriodToStart > 0,
+      isShootout: clock.period === 4  // Shootout is always endable even if nextPeriod is 0
     };
     
     const canEnd = conditions.matchInProgress && 
                    conditions.notLoading &&
                    conditions.periodStarted &&
                    conditions.periodNotEnded &&
-                   conditions.hasNextPeriod;
+                   (conditions.hasNextPeriod || conditions.isShootout);  // Allow ending shootout
         
     return canEnd;
   }, [currentMatch.status, periodLoading, clock.period, startedPeriods, endedPeriods, nextPeriodToStart]);
@@ -298,12 +324,12 @@ export const usePeriodManagement = ({
         return 'Ending...';
       }
       
-      if (clock.period === 4) {
+      if (clock.period === 3) {
         return '🔴 End Overtime';
       }
       
-      if (clock.period === 5) {
-        return '🔴 End Shootout';
+      if (clock.period === 4) {
+        return '🏁 End Shootout';
       }
       
       return 'End period';

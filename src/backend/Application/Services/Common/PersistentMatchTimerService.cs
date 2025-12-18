@@ -98,7 +98,19 @@ namespace Application.Services.Common
                     return;
                 }
 
-                // Set/keep initial started-at only if never started before
+                // If period changed, reset timer to 0:00 for new period
+                if (periodNumber.HasValue && 
+                    timerState.PeriodNumber.HasValue &&
+                    timerState.PeriodNumber.Value != periodNumber.Value)
+                {
+                    _logger.LogInformation(
+                        "Period changed from {OldPeriod} to {NewPeriod}, resetting timer for match {MatchId}",
+                        timerState.PeriodNumber, periodNumber, matchId);
+                    
+                    timerState.Reset();
+                }
+
+                // Set/keep initial started-at only if never started before or was reset
                 if (timerState.StartedAt == null)
                 {
                     timerState.StartedAt = DateTime.UtcNow;

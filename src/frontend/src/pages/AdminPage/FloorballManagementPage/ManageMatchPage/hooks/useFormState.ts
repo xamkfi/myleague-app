@@ -11,6 +11,7 @@ interface UseFormStateProps {
   currentMatch: FloorballMatchDto;
   clock: LocalClock;
   currentTimerElapsedTime: number;
+  getCurrentElapsedSeconds: (() => number) | null;
   loadMatchEvents: () => Promise<void>;
   loadCurrentMatchStatus: () => Promise<void>;
   setError: (error: string | null) => void;
@@ -20,6 +21,7 @@ export const useFormState = ({
   currentMatch,
   clock,
   currentTimerElapsedTime,
+  getCurrentElapsedSeconds,
   loadMatchEvents,
   loadCurrentMatchStatus,
   setError
@@ -33,6 +35,8 @@ export const useFormState = ({
     teamId: '',
     playerId: '',
     assisterId: '',
+    timeMinutes: 0,
+    timeSeconds: 0,
   });
   
   const [penaltyForm, setPenaltyForm] = useState<PenaltyForm>({
@@ -57,25 +61,38 @@ export const useFormState = ({
    * @param teamId The ID of the team to open the form for
    */
   const openGoalFormForTeam = useCallback((teamId: string) => {
-    setGoalForm(prev => ({ ...prev, teamId }));
+    // Use getCurrentElapsedSeconds if available (includes optimistic updates), otherwise fall back to currentTimerElapsedTime
+    const elapsedSeconds = getCurrentElapsedSeconds ? getCurrentElapsedSeconds() : currentTimerElapsedTime;
+    const timeMinutes = Math.floor(elapsedSeconds / 60);
+    const timeSeconds = elapsedSeconds % 60;
+    setGoalForm(prev => ({ ...prev, teamId, timeMinutes, timeSeconds }));
     setShowGoalForm(true);
-  }, []);
+  }, [getCurrentElapsedSeconds, currentTimerElapsedTime]);
 
   /**
    * Opens the penalty form for a specific team
    * @param teamId The ID of the team to open the form for
    */
   const openPenaltyFormForTeam = useCallback((teamId: string) => {
-    setPenaltyForm(prev => ({ ...prev, teamId }));
+    // Use getCurrentElapsedSeconds if available (includes optimistic updates), otherwise fall back to currentTimerElapsedTime
+    const elapsedSeconds = getCurrentElapsedSeconds ? getCurrentElapsedSeconds() : currentTimerElapsedTime;
+    const timeMinutes = Math.floor(elapsedSeconds / 60);
+    const timeSeconds = elapsedSeconds % 60;
+    setPenaltyForm(prev => ({ ...prev, teamId, timeMinutes, timeSeconds }));
     setShowPenaltyForm(true);
-  }, []);
+  }, [getCurrentElapsedSeconds, currentTimerElapsedTime]);
 
   /**
    * Opens the penalty form
    */
   const openPenaltyForm = useCallback(() => {
+    // Use getCurrentElapsedSeconds if available (includes optimistic updates), otherwise fall back to currentTimerElapsedTime
+    const elapsedSeconds = getCurrentElapsedSeconds ? getCurrentElapsedSeconds() : currentTimerElapsedTime;
+    const timeMinutes = Math.floor(elapsedSeconds / 60);
+    const timeSeconds = elapsedSeconds % 60;
+    setPenaltyForm(prev => ({ ...prev, timeMinutes, timeSeconds }));
     setShowPenaltyForm(true);
-  }, []);
+  }, [getCurrentElapsedSeconds, currentTimerElapsedTime]);
 
   /**
    * Records a goal event
@@ -97,13 +114,16 @@ export const useFormState = ({
       setLoading(true);
       goalThrottleRef.current[key] = now;
       
+      // Calculate time in seconds from the form time values (not the running clock)
+      const timeInSeconds = goalForm.timeMinutes * 60 + goalForm.timeSeconds;
+      
       const goalData: RecordGoalEventRequest = {
         matchId: currentMatch.id,
         teamId: goalForm.teamId,
         playerId: goalForm.playerId,
         assisterId: goalForm.assisterId || undefined,
         periodNumber: clock.period,
-        timeInSeconds: currentTimerElapsedTime,
+        timeInSeconds: timeInSeconds,
         wasInOvertime: currentMatch.wentToOvertime || clock.period > 2,
         wasInShootout: currentMatch.wentToShootout || clock.period > 3,
       };
@@ -116,7 +136,7 @@ export const useFormState = ({
       await loadCurrentMatchStatus();
       
       // Reset form
-      setGoalForm({ teamId: '', playerId: '', assisterId: '' });
+      setGoalForm({ teamId: '', playerId: '', assisterId: '', timeMinutes: 0, timeSeconds: 0 });
       setShowGoalForm(false);
       setError(null);
       
@@ -126,7 +146,7 @@ export const useFormState = ({
     } finally {
       setLoading(false);
     }
-  }, [goalForm, currentMatch, clock.period, currentTimerElapsedTime, loadMatchEvents, loadCurrentMatchStatus, setError]);
+  }, [goalForm, currentMatch, clock.period, loadMatchEvents, loadCurrentMatchStatus, setError]);
 
   /**
    * Records a penalty event
@@ -148,6 +168,9 @@ export const useFormState = ({
       setLoading(true);
       penaltyThrottleRef.current[key] = now;
       
+      // Calculate time in seconds from the form time values (not the running clock)
+      const timeInSeconds = penaltyForm.timeMinutes * 60 + penaltyForm.timeSeconds;
+      
       const penaltyData: RecordPenaltyEventRequest = {
         matchId: currentMatch.id,
         teamId: penaltyForm.teamId,
@@ -155,7 +178,7 @@ export const useFormState = ({
         penaltyType: penaltyForm.penaltyType,
         durationMinutes: penaltyForm.minutes,
         periodNumber: clock.period,
-        timeInSeconds: currentTimerElapsedTime,
+        timeInSeconds: timeInSeconds,
         description: penaltyForm.description,
       };
       
@@ -186,7 +209,7 @@ export const useFormState = ({
     } finally {
       setLoading(false);
     }
-  }, [penaltyForm, currentMatch, clock.period, currentTimerElapsedTime, loadMatchEvents, loadCurrentMatchStatus, setError]);
+  }, [penaltyForm, currentMatch, clock.period, loadMatchEvents, loadCurrentMatchStatus, setError]);
 
   return {
     // Form visibility

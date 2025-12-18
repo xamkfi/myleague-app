@@ -12,12 +12,10 @@ interface GoalRecordingFormProps {
   homeTeam: FloorballTeam | null;
   awayTeam: FloorballTeam | null;
   clock: LocalClock;
-  currentTimerElapsedTime: number;
   loading: boolean;
   getPlayersForTeam: (teamId: string) => FloorballPlayerDto[];
   onRecordGoal: () => Promise<void>;
   onClose: () => void;
-  formatTime: (minutes: number, seconds: number) => string;
 }
 
 const GoalRecordingForm = ({
@@ -27,12 +25,10 @@ const GoalRecordingForm = ({
   currentMatch,
   homeTeam,
   awayTeam,
-  currentTimerElapsedTime,
   loading,
   getPlayersForTeam,
   onRecordGoal,
-  onClose,
-  formatTime
+  onClose
 }: GoalRecordingFormProps) => {
   const [goalType, setGoalType] = useState<string>('');
   if (!showGoalForm) return null;
@@ -115,13 +111,35 @@ const GoalRecordingForm = ({
             
             <div className="form-row">
               <label htmlFor="goal-time">Time</label>
-              <input
-                id="goal-time"
-                type="text"
-                className="time-input"
-                defaultValue={formatTime(Math.floor(currentTimerElapsedTime / 60), currentTimerElapsedTime % 60)}
-                placeholder="00:00:00"
-              />
+              <div className="time-input-group">
+                <input
+                  id="goal-time-minutes"
+                  type="number"
+                  className="time-input time-input-minutes"
+                  value={goalForm.timeMinutes}
+                  onChange={(e) => {
+                    const mins = Math.max(0, Math.min(99, parseInt(e.target.value) || 0));
+                    setGoalForm(prev => ({ ...prev, timeMinutes: mins }));
+                  }}
+                  min="0"
+                  max="99"
+                  placeholder="MM"
+                />
+                <span className="time-separator">:</span>
+                <input
+                  id="goal-time-seconds"
+                  type="number"
+                  className="time-input time-input-seconds"
+                  value={goalForm.timeSeconds}
+                  onChange={(e) => {
+                    const secs = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                    setGoalForm(prev => ({ ...prev, timeSeconds: secs }));
+                  }}
+                  min="0"
+                  max="59"
+                  placeholder="SS"
+                />
+              </div>
             </div>
             
             <div className="form-actions">

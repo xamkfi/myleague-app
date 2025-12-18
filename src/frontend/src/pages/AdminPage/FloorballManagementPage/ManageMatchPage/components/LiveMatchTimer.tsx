@@ -22,6 +22,7 @@ interface LiveMatchTimerProps {
   onPeriodControlClick: () => void;
   onTimerUpdate: (update: TimerUpdate) => void;
   onGetCurrentTime: (getTime: () => string) => void;
+  onGetCurrentElapsedSeconds: (getSeconds: () => number) => void;
   onGetToggleFunction: (toggleFunction: () => Promise<void>) => void;
   onGetResetFunction?: (resetFunction: () => void) => void;
   onGetStartFunction?: (startFunction: () => Promise<void>) => void;
@@ -48,6 +49,7 @@ const LiveMatchTimer = ({
   onPeriodControlClick,
   onTimerUpdate,
   onGetCurrentTime,
+  onGetCurrentElapsedSeconds,
   onGetToggleFunction,
   onGetResetFunction,
   onGetStartFunction,
@@ -68,21 +70,32 @@ const LiveMatchTimer = ({
 
   const periodLabels: Record<number, string> = {
     1: 'Period 1',
-    2: 'Period 2'
+    2: 'Period 2',
+    3: 'Overtime',
+    4: 'Shootout'
   };
 
   // Turn digits red at 15:00 (900s) and after, except during shootout
   const shouldPeriodEnd = currentTimerElapsedTime >= 900 && !isInShootout();
-  // Timer controls enabled only if current period has started and not ended
-  const controlsEnabled = startedPeriods.has(clock.period) && !endedPeriods.has(clock.period);
+  // Timer controls enabled only if current period has started and not ended, and not in shootout
+  const controlsEnabled = startedPeriods.has(clock.period) && !endedPeriods.has(clock.period) && clock.period !== 4;
+
+  // Determine which periods to show
+  const periodsToShow = [1, 2];
+  if (currentMatch.wentToOvertime) {
+    periodsToShow.push(3);
+  }
+  if (currentMatch.wentToShootout) {
+    periodsToShow.push(4);
+  }
 
   return (
     <>
       <div className="clock-card">
         <div className="clock-inner">
           <div className="period-row">
-            {[1, 2].map((p) => (
-              <div key={p} className={`period-chip ${getChipStatus(p)}`}>
+            {periodsToShow.map((p) => (
+              <div key={p} className={`period-chip ${getChipStatus(p)} ${p > 2 ? 'period-chip--extra' : ''}`}>
                 {`${periodLabels[p]}: ${getChipStatus(p)}`}
               </div>
             ))}
@@ -98,6 +111,12 @@ const LiveMatchTimer = ({
                   {isStartMatchDisabled ? 'Select goalies to start' : 'Start Match'}
                 </button>
               </div>
+            ) : currentMatch.status === 'Completed' ? (
+              <div className="start-match-container">
+                <div className="match-completed-message">
+                  🏁 Match Completed
+                </div>
+              </div>
             ) : (
               <>
                 <div className={`clock-digits${shouldPeriodEnd ? ' timer-digits--critical' : ''}`}>
@@ -108,6 +127,7 @@ const LiveMatchTimer = ({
                     isActive={isOpen}
                     onTimerUpdate={onTimerUpdate}
                     onGetCurrentTime={onGetCurrentTime}
+                    onGetCurrentElapsedSeconds={onGetCurrentElapsedSeconds}
                     onGetToggleFunction={onGetToggleFunction}
                     onGetResetFunction={onGetResetFunction}
                     onGetStartFunction={onGetStartFunction}

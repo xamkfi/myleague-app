@@ -46,7 +46,7 @@ public static class FloorballMatchMapper
             .OrderBy(ps => ps.PeriodNumber)
             .ToDictionary(
                 ps => ps.PeriodNumber,
-                ps => new PeriodScoreDto(ps.HomeScore, ps.AwayScore)
+                ps => new PeriodScoreDto(ps.HomeScore, ps.AwayScore, ps.IsCompleted)
             );
 
         // Map goal events with player names
@@ -285,7 +285,7 @@ public static class FloorballMatchMapper
 
         return periodScores.ToDictionary(
             kvp => kvp.PeriodNumber,
-            kvp => new PeriodScoreDto(kvp.HomeScore, kvp.AwayScore)
+            kvp => new PeriodScoreDto(kvp.HomeScore, kvp.AwayScore, kvp.IsCompleted)
         );
     }
 

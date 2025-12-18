@@ -10,6 +10,7 @@ interface TimerProps {
   periodNumber?: number;
   onTimerUpdate?: (update: TimerUpdate) => void;
   onGetCurrentTime?: (getTime: () => string) => void;
+  onGetCurrentElapsedSeconds?: (getSeconds: () => number) => void;
   onGetToggleFunction?: (toggleFunction: () => Promise<void>) => void;
   onGetResetFunction?: (resetFunction: () => void) => void;
   onGetStartFunction?: (startFunction: () => Promise<void>) => void;
@@ -26,7 +27,7 @@ interface TimerProps {
   nextPeriodToStart?: number;
 }
 
-export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetToggleFunction, onGetResetFunction, onGetStartFunction, onGetStopFunction, controlsEnabled = true, isActive = true, keybindsEnabled = false, onPeriodControlClick, canEndPeriod, getPeriodControlButtonText, periodLoading, nextPeriodToStart }: TimerProps) => {
+export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, onGetCurrentElapsedSeconds, onGetToggleFunction, onGetResetFunction, onGetStartFunction, onGetStopFunction, controlsEnabled = true, isActive = true, keybindsEnabled = false, onPeriodControlClick, canEndPeriod, getPeriodControlButtonText, periodLoading, nextPeriodToStart }: TimerProps) => {
   // State for time input modal
   const [showTimeInputModal, setShowTimeInputModal] = useState(false);
 
@@ -40,6 +41,7 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
 
   const {
     timerState,
+    currentElapsedSeconds,
     loading,
     error,
     startTimer,
@@ -57,12 +59,22 @@ export const Timer = ({ matchId, periodNumber, onTimerUpdate, onGetCurrentTime, 
   // Provide a function to get current time to parent component
   const getCurrentTime = useCallback(() => timerState.elapsedTime, [timerState.elapsedTime]);
 
+  // Provide a function to get current elapsed seconds to parent component
+  const getCurrentElapsedSecondsFunc = useCallback(() => currentElapsedSeconds, [currentElapsedSeconds]);
+
   // Notify parent component of the getCurrentTime function
   useEffect(() => {
     if (onGetCurrentTime && isActive) {
       onGetCurrentTime(getCurrentTime);
     }
   }, [onGetCurrentTime, getCurrentTime, isActive]);
+
+  // Notify parent component of the getCurrentElapsedSeconds function
+  useEffect(() => {
+    if (onGetCurrentElapsedSeconds && isActive) {
+      onGetCurrentElapsedSeconds(getCurrentElapsedSecondsFunc);
+    }
+  }, [onGetCurrentElapsedSeconds, getCurrentElapsedSecondsFunc, isActive]);
 
   const handleStart = useCallback(async () => {
     try {

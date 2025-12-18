@@ -11,12 +11,10 @@ interface PenaltyRecordingFormProps {
   homeTeam: FloorballTeam | null;
   awayTeam: FloorballTeam | null;
   clock: LocalClock;
-  currentTimerElapsedTime: number;
   loading: boolean;
   getPlayersForTeam: (teamId: string) => FloorballPlayerDto[];
   onRecordPenalty: () => Promise<void>;
   onClose: () => void;
-  formatTime: (minutes: number, seconds: number) => string;
 }
 
 const PenaltyRecordingForm = ({
@@ -26,12 +24,10 @@ const PenaltyRecordingForm = ({
   currentMatch,
   homeTeam,
   awayTeam,
-  currentTimerElapsedTime,
   loading,
   getPlayersForTeam,
   onRecordPenalty,
-  onClose,
-  formatTime
+  onClose
 }: PenaltyRecordingFormProps) => {
   if (!showPenaltyForm) return null;
 
@@ -108,13 +104,35 @@ const PenaltyRecordingForm = ({
 
             <div className="form-row">
               <label htmlFor="penalty-time">Time</label>
-              <input
-                id="penalty-time"
-                type="text"
-                className="time-input"
-                defaultValue={formatTime(Math.floor(currentTimerElapsedTime / 60), currentTimerElapsedTime % 60)}
-                placeholder="(current time)"
-              />
+              <div className="time-input-group">
+                <input
+                  id="penalty-time-minutes"
+                  type="number"
+                  className="time-input time-input-minutes"
+                  value={penaltyForm.timeMinutes}
+                  onChange={(e) => {
+                    const mins = Math.max(0, Math.min(99, parseInt(e.target.value) || 0));
+                    setPenaltyForm(prev => ({ ...prev, timeMinutes: mins }));
+                  }}
+                  min="0"
+                  max="99"
+                  placeholder="MM"
+                />
+                <span className="time-separator">:</span>
+                <input
+                  id="penalty-time-seconds"
+                  type="number"
+                  className="time-input time-input-seconds"
+                  value={penaltyForm.timeSeconds}
+                  onChange={(e) => {
+                    const secs = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                    setPenaltyForm(prev => ({ ...prev, timeSeconds: secs }));
+                  }}
+                  min="0"
+                  max="59"
+                  placeholder="SS"
+                />
+              </div>
             </div>
 
             <textarea 

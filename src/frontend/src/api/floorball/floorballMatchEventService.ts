@@ -318,21 +318,25 @@ export const floorballMatchEventService = {
   /**
    * Start a period in a floorball match
    */
-  startPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<void>> => {
+  startPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Starting period:', periodNumber, 'for match:', matchId);
-      // For period 1, use start-match; for overtime/shootout, handled by dedicated endpoints.
+      
+      // Period 1 handled by start-match (existing)
       if (periodNumber === 1) {
         const response = await fetch(`${API_URL}/FloorballMatch/start-match/${matchId}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
-        return await handleApiResponse<void>(response);
+        return await handleApiResponse<FloorballMatchDto>(response);
       }
-      // No server call required for other periods
-      return { success: true, data: undefined as unknown as void, message: 'Period start handled client-side', errors: [] };
+      
+      // Period 2+ handled by new start-period endpoint (backend will auto-start timer)
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/period/${periodNumber}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return await handleApiResponse<FloorballMatchDto>(response);
     } catch (error) {
       console.error('Error starting period:', error);
       throw error;

@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seeder", "src\tools\Seeder\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImporter", "src\tools\DataImporter\DataImporter.csproj", "{09E576DB-86E2-1F75-3B95-4E297291CB06}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FloorballPlayerImporter", "src\tools\FloorballPlayerImporter\FloorballPlayerImporter.csproj", "{436FEA9C-BD67-476F-AFA1-918F470112DA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -169,6 +171,18 @@ Global
 		{09E576DB-86E2-1F75-3B95-4E297291CB06}.Release|x64.Build.0 = Release|Any CPU
 		{09E576DB-86E2-1F75-3B95-4E297291CB06}.Release|x86.ActiveCfg = Release|Any CPU
 		{09E576DB-86E2-1F75-3B95-4E297291CB06}.Release|x86.Build.0 = Release|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Debug|x64.Build.0 = Debug|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Debug|x86.Build.0 = Debug|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Release|x64.ActiveCfg = Release|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Release|x64.Build.0 = Release|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Release|x86.ActiveCfg = Release|Any CPU
+		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -189,6 +203,7 @@ Global
 		{DCB6FCB8-FF92-AC57-0842-1F72A354D6B1} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{ACB1727F-F53F-4FC3-B1AA-B8389C04E2B2} = {DCB6FCB8-FF92-AC57-0842-1F72A354D6B1}
 		{09E576DB-86E2-1F75-3B95-4E297291CB06} = {DCB6FCB8-FF92-AC57-0842-1F72A354D6B1}
+		{436FEA9C-BD67-476F-AFA1-918F470112DA} = {DCB6FCB8-FF92-AC57-0842-1F72A354D6B1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9D660FA3-5546-4139-9D40-5ADC755D63C4}

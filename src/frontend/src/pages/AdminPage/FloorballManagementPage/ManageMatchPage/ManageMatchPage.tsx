@@ -48,6 +48,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   const [selectedOfficials, setSelectedOfficials] = useState<string[]>(match.officials || []);
   const [officialOptions, setOfficialOptions] = useState<Array<{ id: string; name: string }>>([]);
   const [officialsSaving, setOfficialsSaving] = useState<boolean>(false);
+  const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState(false);
   const lastSaveRef = useRef<Record<string, number>>({});
 
   // This effect ensures that if the match prop is updated from the server,
@@ -144,13 +145,18 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setLocalClock: timer.setLocalClock,
     currentTimerElapsedTime: timer.currentTimerElapsedTime,
     isOpen: true,
+    loadCurrentMatchStatus: matchData.loadCurrentMatchStatus,
     onStateUpdate: handleStateUpdate,
   });
+
+  // State to hold the function that gets current elapsed seconds (includes optimistic updates)
+  const [getCurrentElapsedSeconds, setGetCurrentElapsedSeconds] = useState<(() => number) | null>(null);
 
   const forms = useFormState({
     currentMatch: matchData.currentMatch,
     clock: timer.localClock,
     currentTimerElapsedTime: timer.currentTimerElapsedTime,
+    getCurrentElapsedSeconds,
     loadMatchEvents: matchEvents.loadMatchEvents,
     loadCurrentMatchStatus: matchData.loadCurrentMatchStatus,
     setError: matchData.setError
@@ -230,7 +236,8 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setGetToggleFromTimer
   } = timer;
   const { setShowGoalForm, setShowPenaltyForm } = forms;
-  const { setShowOvertimeConfirmation, setShowShootoutConfirmation } = periodManagement;
+
+  const { setShowOvertimeConfirmation } = periodManagement;
 
   // Local refs to timer controls (start/reset)
   const [startTimerFn, setStartTimerFn] = useState<(() => Promise<void>) | null>(null);
@@ -271,18 +278,48 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           const startedPeriods = new Set<number>();
           const endedPeriods = new Set<number>();
           
-          for (let i = 1; i < currentPeriod; i++) {
-            startedPeriods.add(i);
-            endedPeriods.add(i);
-          }
+          // Use the periodScores from match data to determine which periods have ended
+          const periodScores = matchData.currentMatch.periodScores || {};
           
+          // Only mark periods as started if they've been completed or are the current period
+          Object.entries(periodScores).forEach(([periodNum, scoreData]) => {
+            const period = parseInt(periodNum);
+            
+            // A period is started if it's completed OR if it's the current period
+            if (scoreData.isCompleted) {
+              startedPeriods.add(period);
+              endedPeriods.add(period);
+            } else if (period === currentPeriod) {
+              // Only mark as started if it's the current period from the timer
+              startedPeriods.add(period);
+            }
+          });
+          
+          // Ensure current period is marked as started (safety check)
           startedPeriods.add(currentPeriod);
           
-          const nextPeriod = currentPeriod + 1;
+          // Next period is the first period that hasn't been started yet
+          let nextPeriod = 1;
+          for (let i = 1; i <= 4; i++) {
+            if (!startedPeriods.has(i)) {
+              nextPeriod = i;
+              break;
+            }
+          }
+          if (nextPeriod > 4 || (startedPeriods.has(4))) {
+            nextPeriod = 0; // No more periods to start
+          }
+          
+          console.log('Initialized period state:', { 
+            startedPeriods: Array.from(startedPeriods), 
+            endedPeriods: Array.from(endedPeriods), 
+            nextPeriod,
+            currentPeriod 
+          });
           
           periodManagement.setStartedPeriods(startedPeriods);
           periodManagement.setEndedPeriods(endedPeriods);
-          periodManagement.setNextPeriodToStart(nextPeriod <= 4 ? nextPeriod : 0);
+          periodManagement.setNextPeriodToStart(nextPeriod);
 
         } else {
           periodManagement.setStartedPeriods(new Set());
@@ -361,6 +398,13 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   // MEMOIZED: Handles the period control button click
   const handlePeriodControlClick = useCallback(() => {
     if (periodManagement.canEndPeriod()) {
+      // Special handling for shootout (period 4) - show confirmation before ending match
+      if (timer.localClock.period === 4) {
+        // Show confirmation dialog for ending the match
+        setShowEndMatchConfirmation(true);
+        return;
+      }
+      
       // Determine elapsed time (get from timer if available, else use last known)
       let totalSeconds = 0;
       if (getCurrentTimeFromTimer) {
@@ -391,17 +435,20 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         })();
       }
     } else {
-      // Start the next period and immediately start the timer
+      // Start the next period and immediately start the timer (unless it's shootout)
       (async () => {
         await periodManagement.startPeriod();
-        if (startTimerFn) {
-          await startTimerFn();
-        } else if (getToggleFromTimer) {
-          await getToggleFromTimer();
+        // Don't start timer for shootout (period 4)
+        if (periodManagement.nextPeriodToStart !== 4) {
+          if (startTimerFn) {
+            await startTimerFn();
+          } else if (getToggleFromTimer) {
+            await getToggleFromTimer();
+          }
         }
       })();
     }
-  }, [periodManagement, getCurrentTimeFromTimer, elapsedTime, setCurrentTimerElapsedTime, resetTimerFn, startTimerFn, getToggleFromTimer]);
+  }, [periodManagement, getCurrentTimeFromTimer, elapsedTime, setCurrentTimerElapsedTime, resetTimerFn, startTimerFn, getToggleFromTimer, timer.localClock.period, matchControls]);
 
   // MEMOIZED: Timer update handler
   const handleTimerUpdate = useCallback((update: TimerUpdate) => {
@@ -428,6 +475,11 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   const handleGetToggleFunction = useCallback((toggleFunction: () => Promise<void>) => {
     setGetToggleFromTimer(prev => (prev !== toggleFunction ? toggleFunction : prev));
   }, [setGetToggleFromTimer]);
+
+  // MEMOIZED: Get current elapsed seconds handler
+  const handleGetCurrentElapsedSeconds = useCallback((getSeconds: () => number) => {
+    setGetCurrentElapsedSeconds(prev => (prev !== getSeconds ? getSeconds : prev));
+  }, []);
 
 
   // MEMOIZED: Start match and then start timer once timer is mounted
@@ -456,6 +508,11 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setShowPenaltyForm(false);
   }, [setShowPenaltyForm]);
 
+  // MEMOIZED: Show confirmation when user wants to complete the match
+  const handleCompleteMatchRequest = useCallback(() => {
+    setShowEndMatchConfirmation(true);
+  }, []);
+
   return (
     <>
       {/* Header */}
@@ -464,7 +521,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         awayTeam={matchData.awayTeam}
         currentMatch={matchData.currentMatch}
         onClose={() => navigate('/admin/floorball/matches')}
-        onCompleteLive={matchControls.handleCompleteLive}
+        onCompleteLive={handleCompleteMatchRequest}
       />
 
       {/* Error Display */}
@@ -527,7 +584,22 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             await getToggleFromTimer();
           }
         }}
-        onCancel={() => setShowShootoutConfirmation(false)}
+        onCancel={() => periodManagement.setShowShootoutConfirmation(false)}
+      />
+
+      <ConfirmationDialog
+        isOpen={showEndMatchConfirmation}
+        icon="🏁"
+        title="Confirm End Match"
+        message={`Are you sure you want to complete this match?${timer.localClock.period === 4 ? ' This will end the shootout.' : ''}`}
+        warningMessage="This will finalize the match results. This action cannot be undone."
+        confirmText="Complete Match"
+        isLoading={matchData.loading}
+        onConfirm={async () => {
+          await matchControls.handleCompleteLive();
+          setShowEndMatchConfirmation(false);
+        }}
+        onCancel={() => setShowEndMatchConfirmation(false)}
       />
 
       {/* Delete Event Confirmation */}
@@ -593,6 +665,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             onPeriodControlClick={handlePeriodControlClick}
             onTimerUpdate={handleTimerUpdate}
             onGetCurrentTime={handleGetCurrentTime}
+            onGetCurrentElapsedSeconds={handleGetCurrentElapsedSeconds}
             onGetToggleFunction={handleGetToggleFunction}
             onGetResetFunction={handleGetResetFunction}
             onGetStartFunction={handleGetStartFunction}
@@ -715,12 +788,10 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             homeTeam={matchData.homeTeam}
             awayTeam={matchData.awayTeam}
             clock={timer.localClock}
-            currentTimerElapsedTime={timer.currentTimerElapsedTime}
             loading={forms.loading}
             getPlayersForTeam={matchData.getPlayersForTeam}
             onRecordGoal={forms.recordGoal}
             onClose={handleCloseGoalForm}
-            formatTime={timer.formatTime}
           />
 
           <PenaltyRecordingForm
@@ -731,12 +802,10 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             homeTeam={matchData.homeTeam}
             awayTeam={matchData.awayTeam}
             clock={timer.localClock}
-            currentTimerElapsedTime={timer.currentTimerElapsedTime}
             loading={forms.loading}
             getPlayersForTeam={matchData.getPlayersForTeam}
             onRecordPenalty={forms.recordPenalty}
             onClose={handleClosePenaltyForm}
-            formatTime={timer.formatTime}
           />
         </div>
         

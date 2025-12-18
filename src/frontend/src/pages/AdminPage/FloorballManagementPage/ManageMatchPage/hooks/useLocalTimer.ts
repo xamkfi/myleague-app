@@ -28,6 +28,20 @@ export const useLocalTimer = ({ isOpen, matchId, onStateUpdate }: UseLocalTimerP
         const timerStatus = await timerService.getTimerStatus(matchId);
         
         if (timerStatus.exists && timerStatus.periodNumber) {
+          // Parse elapsed time to initialize currentTimerElapsedTime
+          let totalSeconds = 0;
+          if (timerStatus.elapsedTime) {
+            const timeParts = timerStatus.elapsedTime.split(':');
+            if (timeParts.length === 3) {
+              const [h, m, s] = timeParts.map(part => parseInt(part, 10) || 0);
+              totalSeconds = h * 3600 + m * 60 + s;
+            } else if (timeParts.length === 2) {
+              const [m, s] = timeParts.map(part => parseInt(part, 10) || 0);
+              totalSeconds = m * 60 + s;
+            }
+          }
+          setCurrentTimerElapsedTime(totalSeconds);
+          
           const restoredClock = {
             period: timerStatus.periodNumber,
             minutes: 0,
@@ -35,7 +49,7 @@ export const useLocalTimer = ({ isOpen, matchId, onStateUpdate }: UseLocalTimerP
             isRunning: false
           };
           
-          console.log('Restoring period state to:', timerStatus.periodNumber);
+          console.log('Restoring period state to:', timerStatus.periodNumber, 'with elapsed time:', totalSeconds);
           setLocalClock(restoredClock);
           
           if (onStateUpdate) {
@@ -50,6 +64,7 @@ export const useLocalTimer = ({ isOpen, matchId, onStateUpdate }: UseLocalTimerP
             seconds: 0,
             isRunning: false
           };
+          setCurrentTimerElapsedTime(0);
           setLocalClock(initialClock);
           
           if (onStateUpdate) {
@@ -66,6 +81,7 @@ export const useLocalTimer = ({ isOpen, matchId, onStateUpdate }: UseLocalTimerP
           seconds: 0,
           isRunning: false
         };
+        setCurrentTimerElapsedTime(0);
         setLocalClock(fallbackClock);
         
         if (onStateUpdate) {
