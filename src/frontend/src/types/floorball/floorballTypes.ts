@@ -1,3 +1,5 @@
+import { SportsCategory } from "../common/sports";
+
 // Enums
 export enum FloorballPosition {
   None = 'None',
@@ -19,6 +21,7 @@ export enum FloorballMatchStatus {
   Cancelled = 'Cancelled',
   Postponed = 'Postponed'
 }
+
 
 // Base interfaces
 export interface Club {
@@ -208,6 +211,7 @@ export interface FloorballMatchDto {
   scheduledDateTime: string;
   venue?: string;
   status: FloorballMatchStatus;
+  sportCategory: SportsCategory;
   homeScore: number;
   awayScore: number;
   wentToOvertime: boolean;

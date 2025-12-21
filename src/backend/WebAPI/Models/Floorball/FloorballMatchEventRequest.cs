@@ -82,6 +82,11 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Penalty type is required")]
         public string PenaltyType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Description of the penalty
+        /// </summary>
+        public string Description { get; set; } = string.Empty;
     }
 
     /// <summary>

@@ -461,7 +461,7 @@ namespace WebAPI.Controllers.Floorball
                 request.DurationMinutes,
                 request.PeriodNumber,
                 request.TimeInSeconds,
-                string.Empty);
+                request.Description);
 
             Result<FloorballMatchDto> result = await _mediator.Send(command);
 

@@ -1,5 +1,10 @@
+
+import { SportsCategory } from '../../../types/common/sports';
 import type { FloorballMatchDto, FloorballGoalEventDto, FloorballPenaltyEventDto } from '../../../types/floorball/floorballTypes';
 import { getPeriodName } from './matchUtils';
+import { IoFootball } from "react-icons/io5";
+import { FaHockeyPuck } from "react-icons/fa";
+import { GiMeshBall } from "react-icons/gi";
 
 type MatchEventItem = {
   type: 'goal' | 'penalty';
@@ -85,13 +90,50 @@ export default function MatchEvents({ match }: MatchEventsProps) {
 
   const isHomeTeam = (teamId: string) => teamId === match.homeTeamId;
 
+  // Generic type for any event that has timeInSeconds property
+  // This works for floorball, hockey, and football events
+  type EventWithTime = {
+    timeInSeconds: number;
+  };
+
+  const renderTime = (event: EventWithTime): string => {
+    const totalSeconds = event.timeInSeconds;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    switch(match.sportCategory){
+      case SportsCategory.Football:
+        // Football only shows minutes
+        return minutes.toString();
+      case SportsCategory.Floorball:
+      case SportsCategory.Icehockey:
+        // Floorball and Ice hockey show minutes:seconds
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      default:
+        return minutes.toString();
+    }
+  }
+
+  const renderSportIcon = () => {
+    switch (match.sportCategory) {
+      case SportsCategory.Floorball:
+        return <GiMeshBall size={20}/>
+      case SportsCategory.Football:
+        return <IoFootball size={20} />;
+      case SportsCategory.Icehockey:
+        return <FaHockeyPuck />;
+      default:
+        return '⚽';
+    }
+  };
+
   const renderGoalEvent = (event: FloorballGoalEventDto, isHome: boolean) => (
     <div className={`event-row ${isHome ? 'home-event' : 'away-event'}`}>
       <div className="event-left">
         {isHome && (
           <>
-            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
-            <div className="event-icon goal">⚽</div>
+            <span className="event-time">{renderTime(event)}</span>
+            <div className="">{renderSportIcon()}</div>
             <span className="event-score">{getScoreAtEvent(event)}</span>
             <div className="goal-info">
               <span className="event-player">{event.playerName || 'Unknown Player'}</span>
@@ -111,8 +153,8 @@ export default function MatchEvents({ match }: MatchEventsProps) {
               {event.secondaryAssisterName && event.secondaryAssisterName !== 'Unknown Player' && <span className="event-assist"> ({event.secondaryAssisterName})</span>}
             </div>
             <span className="event-score">{getScoreAtEvent(event)}</span>
-            <div className="event-icon goal">⚽</div>
-            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
+            <div className="">{renderSportIcon()}</div>
+            <span className="event-time">{renderTime(event)}</span>
           </>
         )}
       </div>
@@ -124,11 +166,12 @@ export default function MatchEvents({ match }: MatchEventsProps) {
       <div className="event-left">
         {isHome && (
           <>
-            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
+            <span className="event-time">{renderTime(event)}</span>
             <div className="event-icon penalty">🟨</div>
             <span className="event-player">
               {event.playerName || 'Team penalty'}
               {event.penaltyType && ` (${event.penaltyType.toLowerCase()})`}
+              {event.description && `: ${event.description}`}
             </span>
           </>
         )}
@@ -139,9 +182,10 @@ export default function MatchEvents({ match }: MatchEventsProps) {
             <span className="event-player">
               {event.playerName || 'Team penalty'}
               {event.penaltyType && ` (${event.penaltyType.toLowerCase()})`}
+              {event.description && `: ${event.description}`}
             </span>
             <div className="event-icon penalty">🟨</div>
-            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
+            <span className="event-time">{renderTime(event)}</span>
           </>
         )}
       </div>

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 
 namespace Application.DTOs.Floorball
@@ -49,6 +50,7 @@ namespace Application.DTOs.Floorball
         DateTime ScheduledDateTime,
         string? Venue,
         FloorballMatchStatus Status,
+        SportsCategory SportCategory,
         int HomeScore,
         int AwayScore,
         bool WentToOvertime,
