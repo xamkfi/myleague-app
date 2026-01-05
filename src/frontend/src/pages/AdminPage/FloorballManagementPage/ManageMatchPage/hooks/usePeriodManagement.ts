@@ -145,7 +145,7 @@ export const usePeriodManagement = ({
       // Mark this period as started
       setStartedPeriods(prev => new Set([...prev, nextPeriodToStart]));
       
-user       // Update clock display (backend auto-starts timer for periods 1-3, not shootout)
+      // Update clock display (backend auto-starts timer for periods 1-3, not shootout)
       const newClock = { 
         period: nextPeriodToStart, 
         minutes: 0, 

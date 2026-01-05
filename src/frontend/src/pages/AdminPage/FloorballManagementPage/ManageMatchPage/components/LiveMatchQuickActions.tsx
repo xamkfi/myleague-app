@@ -83,7 +83,7 @@ const LiveMatchQuickActions = ({
           >
             <span className="btn-label">Record Away Save</span>
             <span className="btn-meta">
-              <span className={`btn-key ${keybindsEnabled ? '' : 'disabled'}`}>(P)</span>
+              <span className={`btn-key ${keybindsEnabled ? '' : 'disabled'}`}>(R)</span>
               <span className="btn-icon" aria-hidden="true">🛡️</span>
             </span>
           </button>

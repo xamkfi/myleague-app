@@ -367,7 +367,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     !forms.showGoalForm &&
     !forms.showPenaltyForm;
 
-  // Handle Q/P/Space keybinds
+  // Handle Q/R/Space keybinds
   useEffect(() => {
     if (!keybindsEnabled) return;
     const handler = (e: KeyboardEvent) => {
@@ -382,7 +382,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         handleRecordSave('home', homeGoalieId);
         e.preventDefault();
       }
-      if (key === 'p' && awayGoalieId) {
+      if (key === 'r' && awayGoalieId) {
         handleRecordSave('away', awayGoalieId);
         e.preventDefault();
       }

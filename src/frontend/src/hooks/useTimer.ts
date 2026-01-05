@@ -83,6 +83,7 @@ export function useTimer(options: UseTimerOptions) {
       // Initialize local interpolation state with current server time
       lastServerElapsedMsRef.current = elapsedMs;
       lastSyncTimeRef.current = Date.now();
+      isRunningRef.current = status.isRunning; // CRITICAL: Set isRunning ref!
       setLocalElapsedMs(elapsedMs);
       
       setTimerState({
@@ -131,6 +132,7 @@ export function useTimer(options: UseTimerOptions) {
       await timerService.startTimer(matchId, periodNumber);
       
       // Optimistically update local state; SignalR will reconcile
+      isRunningRef.current = true; // Update ref immediately
       setTimerState(prev => ({
         ...prev,
         isRunning: true,
@@ -153,6 +155,7 @@ export function useTimer(options: UseTimerOptions) {
       await timerService.stopTimer(matchId);
       
       // Optimistically update local state; SignalR will reconcile
+      isRunningRef.current = false; // Update ref immediately
       setTimerState(prev => ({
         ...prev,
         isRunning: false,
@@ -175,6 +178,10 @@ export function useTimer(options: UseTimerOptions) {
       await timerService.resetTimer(matchId);
       
       // Optimistically update local state; SignalR will reconcile
+      lastServerElapsedMsRef.current = 0;
+      lastSyncTimeRef.current = Date.now();
+      isRunningRef.current = false; // Update ref immediately
+      setLocalElapsedMs(0);
       setTimerState({
         isRunning: false,
         elapsedTime: '00:00',
