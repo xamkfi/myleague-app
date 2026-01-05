@@ -357,33 +357,33 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
   const handleDeleteEvent = useCallback(async () => {
     if (!eventToDelete?.eventId) {
-            matchData.setError('Cannot delete: missing event id');
-            setEventToDelete(null);
-            return;
-          }
+      matchData.setError('Cannot delete: missing event id');
+      setEventToDelete(null);
+      return;
+    }
     
-          try {
-            setDeleteEventLoading(true);
-            matchData.setError(null);
-            await matchData.loadCurrentMatchStatus();
+    try {
+      setDeleteEventLoading(true);
+      matchData.setError(null);
+      await matchData.loadCurrentMatchStatus();
       
-            if (eventToDelete.type === 'goal') {
-              await floorballMatchService.deleteGoal(match.id, eventToDelete.eventId);
-            } else if (eventToDelete.type === 'penalty') {
-              await floorballMatchService.deletePenalty(match.id, eventToDelete.eventId);
-            } else if (eventToDelete.type === 'save') {
-              await floorballMatchService.deleteSave(match.id, eventToDelete.eventId);
-            }
+      if (eventToDelete.type === 'goal') {
+        await floorballMatchService.deleteGoal(match.id, eventToDelete.eventId);
+      } else if (eventToDelete.type === 'penalty') {
+        await floorballMatchService.deletePenalty(match.id, eventToDelete.eventId);
+      } else if (eventToDelete.type === 'save') {
+        await floorballMatchService.deleteSave(match.id, eventToDelete.eventId);
+      }
       
-            await matchData.loadCurrentMatchStatus();
-            await matchEvents.loadMatchEvents();
-            setEventToDelete(null);
-          } catch (err) {
-            matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
-            setEventToDelete(null);
-          } finally {
-            setDeleteEventLoading(false);
-          }
+      await matchData.loadCurrentMatchStatus();
+      await matchEvents.loadMatchEvents();
+      setEventToDelete(null);
+    } catch (err) {
+      matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
+      setEventToDelete(null);
+    } finally {
+      setDeleteEventLoading(false);
+    }
   }, [eventToDelete, match.id, matchData, matchEvents]);
 
   const handleOfficialSelect = useCallback(async (index: number, refereeId: string) => {

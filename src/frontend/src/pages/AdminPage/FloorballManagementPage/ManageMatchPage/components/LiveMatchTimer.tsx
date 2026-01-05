@@ -156,4 +156,4 @@ const LiveMatchTimer = ({
   );
 };
 
-export default LiveMatchTimer; 
+export default LiveMatchTimer;
