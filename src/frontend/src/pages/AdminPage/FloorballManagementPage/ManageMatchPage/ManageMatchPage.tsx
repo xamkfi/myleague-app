@@ -288,6 +288,11 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     if (lastSaveRef.current[key] && now - lastSaveRef.current[key] < 1000) return;
     lastSaveRef.current[key] = now;
 
+    // Get the LIVE elapsed time from the timer callback, not the stale context state
+    const currentElapsedSeconds = timerContext.callbacks.getCurrentElapsedSeconds
+      ? timerContext.callbacks.getCurrentElapsedSeconds()
+      : timerContext.elapsedTimeSeconds;
+
     try {
       setSaveLoading(true);
       const payload: RecordSaveEventRequest = {
@@ -296,7 +301,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         teamId: team === 'home' ? homeTeamId : awayTeamId,
         playerId: goalieId,
         periodNumber: timerContext.currentPeriod,
-        timeInSeconds: timerContext.elapsedTimeSeconds,
+        timeInSeconds: currentElapsedSeconds,
         wasInOvertime: matchWentToOvertime || timerContext.currentPeriod > 2,
         wasInShootout: matchWentToShootout || timerContext.currentPeriod > 3,
       };
@@ -308,7 +313,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     } finally {
       setSaveLoading(false);
     }
-  }, [match.id, homeTeamId, awayTeamId, matchWentToOvertime, matchWentToShootout, timerContext.currentPeriod, timerContext.elapsedTimeSeconds, matchEvents, matchData]);
+  }, [match.id, homeTeamId, awayTeamId, matchWentToOvertime, matchWentToShootout, timerContext.currentPeriod, timerContext.elapsedTimeSeconds, timerContext.callbacks, matchEvents, matchData]);
 
   const handleStartMatchAndTimer = useCallback(async () => {
     await matchControls.handleStartMatch();
@@ -322,7 +327,12 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         return;
       }
       
-      const isUnder15Minutes = timerContext.elapsedTimeSeconds < 900;
+      // Get live elapsed time from callback, not stale context state
+      const currentElapsedSeconds = timerContext.callbacks.getCurrentElapsedSeconds
+        ? timerContext.callbacks.getCurrentElapsedSeconds()
+        : timerContext.elapsedTimeSeconds;
+      
+      const isUnder15Minutes = currentElapsedSeconds < 900;
       if (isUnder15Minutes) {
         periodManagement.setShowEndPeriodConfirmation(true);
       } else {
