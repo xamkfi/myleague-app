@@ -144,7 +144,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     !forms.showGoalForm &&
     !forms.showPenaltyForm;
 
-  // Load officials
+  // Load officials - only runs once when match.id is available
   useEffect(() => {
     let isCancelled = false;
     const loadOfficials = async () => {
@@ -164,13 +164,13 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         }
       } catch (error) {
         if (!isCancelled) {
-          matchData.setError(error instanceof Error ? error.message : 'Failed to load officials');
+          console.error('Failed to load officials:', error);
         }
       }
     };
     loadOfficials();
     return () => { isCancelled = true; };
-  }, [match.id, matchData]);
+  }, [match.id]);
 
   // Initialize period state
   useEffect(() => {
@@ -191,7 +191,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
               endedPeriods.add(period);
             } else if (period === currentPeriod) {
               startedPeriods.add(period);
-            }
+          }
           });
           
           startedPeriods.add(currentPeriod);
@@ -357,33 +357,33 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
   const handleDeleteEvent = useCallback(async () => {
     if (!eventToDelete?.eventId) {
-      matchData.setError('Cannot delete: missing event id');
-      setEventToDelete(null);
-      return;
-    }
+            matchData.setError('Cannot delete: missing event id');
+            setEventToDelete(null);
+            return;
+          }
     
-    try {
-      setDeleteEventLoading(true);
-      matchData.setError(null);
-      await matchData.loadCurrentMatchStatus();
+          try {
+            setDeleteEventLoading(true);
+            matchData.setError(null);
+            await matchData.loadCurrentMatchStatus();
       
-      if (eventToDelete.type === 'goal') {
-        await floorballMatchService.deleteGoal(match.id, eventToDelete.eventId);
-      } else if (eventToDelete.type === 'penalty') {
-        await floorballMatchService.deletePenalty(match.id, eventToDelete.eventId);
-      } else if (eventToDelete.type === 'save') {
-        await floorballMatchService.deleteSave(match.id, eventToDelete.eventId);
-      }
+            if (eventToDelete.type === 'goal') {
+              await floorballMatchService.deleteGoal(match.id, eventToDelete.eventId);
+            } else if (eventToDelete.type === 'penalty') {
+              await floorballMatchService.deletePenalty(match.id, eventToDelete.eventId);
+            } else if (eventToDelete.type === 'save') {
+              await floorballMatchService.deleteSave(match.id, eventToDelete.eventId);
+            }
       
-      await matchData.loadCurrentMatchStatus();
-      await matchEvents.loadMatchEvents();
-      setEventToDelete(null);
-    } catch (err) {
-      matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
-      setEventToDelete(null);
-    } finally {
-      setDeleteEventLoading(false);
-    }
+            await matchData.loadCurrentMatchStatus();
+            await matchEvents.loadMatchEvents();
+            setEventToDelete(null);
+          } catch (err) {
+            matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
+            setEventToDelete(null);
+          } finally {
+            setDeleteEventLoading(false);
+          }
   }, [eventToDelete, match.id, matchData, matchEvents]);
 
   const handleOfficialSelect = useCallback(async (index: number, refereeId: string) => {
@@ -686,14 +686,14 @@ const ManageMatchPage = () => {
 
   return (
     <PageTemplate title="Manage match page">
-      <div className="manage-match-page">
+    <div className="manage-match-page">
         <div className="page-header">
           <div className="page-header__top">
             <h1 className="page-title-compact font-title">MATCH MANAGEMENT</h1>
           </div>
         </div>
         <ManageMatchPageWithContext match={match} setMatch={setMatch} />
-      </div>
+    </div>
     </PageTemplate>
   );
 };

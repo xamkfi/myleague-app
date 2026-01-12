@@ -100,39 +100,39 @@ const LiveMatchTimer = ({
   };
 
   return (
-    <div className="clock-card">
-      <div className="clock-inner">
-        <div className="period-row">
+      <div className="clock-card">
+        <div className="clock-inner">
+          <div className="period-row">
           {periodsToShow.map((p) => (
             <div key={p} className={`period-chip ${getChipStatus(p)} ${p > 2 ? 'period-chip--extra' : ''}`}>
-              {`${periodLabels[p]}: ${getChipStatus(p)}`}
-            </div>
-          ))}
-        </div>
-        <div className="clock-time">
-          {currentMatch.status === 'Scheduled' ? (
-            <div className="start-match-container">
-              <button
-                onClick={onStartMatch}
-                disabled={loading || isStartMatchDisabled}
-                className="start-match-btn"
-              >
-                {isStartMatchDisabled ? 'Select goalies to start' : 'Start Match'}
-              </button>
-            </div>
+                {`${periodLabels[p]}: ${getChipStatus(p)}`}
+              </div>
+            ))}
+          </div>
+          <div className="clock-time">
+            {currentMatch.status === 'Scheduled' ? (
+              <div className="start-match-container">
+                <button
+                  onClick={onStartMatch}
+                  disabled={loading || isStartMatchDisabled}
+                  className="start-match-btn"
+                >
+                  {isStartMatchDisabled ? 'Select goalies to start' : 'Start Match'}
+                </button>
+              </div>
           ) : currentMatch.status === 'Completed' ? (
             <div className="start-match-container">
               <div className="match-completed-message">
                 🏁 Match Completed
               </div>
             </div>
-          ) : (
-            <div className={`clock-digits${shouldPeriodEnd ? ' timer-digits--critical' : ''}`}>
-              <MemoizedTimer
-                key={`timer-${currentMatch.id}`}
-                matchId={currentMatch.id}
+            ) : (
+                <div className={`clock-digits${shouldPeriodEnd ? ' timer-digits--critical' : ''}`}>
+                  <MemoizedTimer
+                    key={`timer-${currentMatch.id}`}
+                    matchId={currentMatch.id}
                 periodNumber={currentPeriod}
-                isActive={isOpen}
+                    isActive={isOpen}
                 onTimerUpdate={handleTimerUpdate}
                 onGetCurrentTime={handleGetCurrentTime}
                 onGetCurrentElapsedSeconds={handleGetCurrentElapsedSeconds}
@@ -140,20 +140,20 @@ const LiveMatchTimer = ({
                 onGetResetFunction={handleGetResetFunction}
                 onGetStartFunction={handleGetStartFunction}
                 onGetStopFunction={handleGetStopFunction}
-                controlsEnabled={controlsEnabled}
-                keybindsEnabled={keybindsEnabled}
-                onPeriodControlClick={onPeriodControlClick}
-                canEndPeriod={canEndPeriod}
-                getPeriodControlButtonText={getPeriodControlButtonText}
-                periodLoading={periodLoading}
-                nextPeriodToStart={nextPeriodToStart}
-              />
-            </div>
-          )}
+                    controlsEnabled={controlsEnabled}
+                    keybindsEnabled={keybindsEnabled}
+                    onPeriodControlClick={onPeriodControlClick}
+                    canEndPeriod={canEndPeriod}
+                    getPeriodControlButtonText={getPeriodControlButtonText}
+                    periodLoading={periodLoading}
+                    nextPeriodToStart={nextPeriodToStart}
+                  />
+                </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
   );
 };
 
-export default LiveMatchTimer;
+export default LiveMatchTimer; 
