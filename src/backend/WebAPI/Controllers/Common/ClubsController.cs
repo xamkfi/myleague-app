@@ -5,6 +5,9 @@ using Application.Queries.Clubs;
 using Application.DTOs.Common;
 using Application.Common;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
+using Domain.Common;
+using System.Linq;
 
 namespace WebAPI.Controllers.Club;
 
@@ -31,27 +34,27 @@ public class ClubsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all clubs
+    /// Get clubs with pagination
     /// </summary>
-    /// <returns>List of all clubs</returns>
+    /// <returns>Paginated list of clubs</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<List<ClubDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ApiResponse<List<ClubDto>>>> GetAllClubs()
+    [ProducesResponseType(typeof(PaginatedApiResponse<ClubDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedApiResponse<ClubDto>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<ClubDto>>> GetAllClubs([FromQuery] GetClubsRequest request)
     {
-        _logger.LogInformation("Getting all clubs");
+        _logger.LogInformation("Getting clubs page {Page} size {PageSize}", request.Page, request.PageSize);
         
-        GetAllClubsQuery query = new GetAllClubsQuery();
-        Result<IEnumerable<ClubDto>> result = await _mediator.Send(query);
+        GetAllClubsQuery query = new GetAllClubsQuery(request.Page, request.PageSize);
+        Result<PagedResult<ClubDto>> result = await _mediator.Send(query);
 
         if (result.IsSuccess && result.Data != null)
         {
-            List<ClubDto> clubsList = result.Data.ToList();
-            return Ok(ApiResponse<List<ClubDto>>.SuccessResponse(clubsList, "Clubs retrieved successfully"));
+            PagedResult<ClubDto> paged = result.Data;
+            return Ok(PaginatedApiResponse<ClubDto>.SuccessResponse(paged, "Clubs retrieved successfully"));
         }
 
         string errorMessage = result.Error ?? result.GetErrorsString();
-        return StatusCode(500, ApiResponse<List<ClubDto>>.ErrorResponse(errorMessage));
+        return StatusCode(500, PaginatedApiResponse<ClubDto>.ErrorResponse(errorMessage));
     }
 
     /// <summary>
@@ -61,8 +64,8 @@ public class ClubsController : ControllerBase
     /// <returns>Club details</returns>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<ClubDto>>> GetClubById(Guid id)
     {
         _logger.LogInformation("Getting club with ID: {ClubId}", id);
@@ -86,8 +89,8 @@ public class ClubsController : ControllerBase
     /// <returns>Created club details</returns>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<ClubDto>>> CreateClub([FromBody] CreateClubRequest request)
     {
         _logger.LogInformation("Creating new club: {ClubName}", request.Name);
@@ -114,7 +117,9 @@ public class ClubsController : ControllerBase
         }
 
         string errorMessage = result.Error ?? result.GetErrorsString();
-        return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
+        List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+        return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage, errorList));
     }
 
     /// <summary>
@@ -125,9 +130,9 @@ public class ClubsController : ControllerBase
     /// <returns>Updated club details</returns>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<ClubDto>>> UpdateClub(Guid id, [FromBody] UpdateClubRequest request)
     {
         _logger.LogInformation("Updating club with ID: {ClubId}", id);
@@ -201,9 +206,9 @@ public class ClubsController : ControllerBase
     /// <returns>Updated club details</returns>
     [HttpPatch("{id:guid}/logo")]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<ClubDto>>> UpdateClubLogo(Guid id, [FromBody] string? logoUrl)
     {
         _logger.LogInformation("Updating logo for club with ID: {ClubId}", id);
@@ -225,5 +230,44 @@ public class ClubsController : ControllerBase
         }
 
         return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
+    }
+
+    /// <summary>
+    /// Search clubs by name
+    /// </summary>
+    /// <param name="name">The name to search for</param>
+    /// <returns>List of clubs matching the search term</returns>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(ApiResponse<List<ClubDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<List<ClubDto>>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<List<ClubDto>>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<List<ClubDto>>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<List<ClubDto>>>> GetClubsByName([FromQuery] string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return BadRequest(ApiResponse<List<ClubDto>>.ErrorResponse("Name parameter is required"));
+        }
+
+        _logger.LogInformation("Searching clubs by name: {Name}", name);
+
+        GetClubsByNameQuery query = new GetClubsByNameQuery(name);
+        Result<IEnumerable<ClubDto>> result = await _mediator.Send(query);
+
+        if (result.IsSuccess && result.Data != null)
+        {
+            List<ClubDto> clubList = result.Data.ToList();
+            return Ok(ApiResponse<List<ClubDto>>.SuccessResponse(clubList, "Clubs found successfully"));
+        }
+
+        string errorMessage = result.Error ?? result.GetErrorsString();
+        
+        // Check if it's a not found error
+        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+        {
+            return NotFound(ApiResponse<List<ClubDto>>.ErrorResponse(errorMessage));
+        }
+
+        return BadRequest(ApiResponse<List<ClubDto>>.ErrorResponse(errorMessage));
     }
 } 

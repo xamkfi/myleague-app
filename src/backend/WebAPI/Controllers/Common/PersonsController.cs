@@ -1,4 +1,4 @@
-﻿using Application.Commands.Clubs;
+using Application.Commands.Clubs;
 using Application.Commands.Persons;
 using Application.Common;
 using Application.DTOs.Common;
@@ -10,6 +10,7 @@ using Domain.ValueObjects.Common;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Controllers.Common
 {
@@ -40,9 +41,9 @@ namespace WebAPI.Controllers.Common
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<List<PersonDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<PersonDto>>>> GetAllPersons([FromQuery] GetPersonsRequest request)
+        [ProducesResponseType(typeof(PaginatedApiResponse<PersonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PaginatedApiResponse<PersonDto>>> GetAllPersons([FromQuery] GetPersonsRequest request)
         {
             _logger.LogInformation("Getting all persons");
 
@@ -77,7 +78,7 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<PersonDto>>.ErrorResponse(errorMessage));
+            return StatusCode(500, PaginatedApiResponse<PersonDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>
@@ -87,8 +88,8 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> GetPersonById(Guid id)
         {
             _logger.LogInformation("Getting person by Id: {Id}", id);
@@ -120,9 +121,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpGet("by-email")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> GetPersonByEmail([FromQuery] string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -156,31 +157,35 @@ namespace WebAPI.Controllers.Common
         /// Search persons by name
         /// </summary>
         /// <param name="name">The name to search for (searches both first and last names)</param>
+        /// <param name="page">The page number (1-based)</param>
+        /// <param name="pageSize">The number of items per page</param>
         /// <returns></returns>
         [HttpGet("search")]
-        [ProducesResponseType(typeof(ApiResponse<List<PersonDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<PersonDto>>>> SearchPersonsByName([FromQuery] string name)
+        [ProducesResponseType(typeof(PaginatedApiResponse<PersonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PaginatedApiResponse<PersonDto>>> SearchPersonsByName(
+            [FromQuery] string name,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                return BadRequest(ApiResponse<List<PersonDto>>.ErrorResponse("Name parameter is required"));
+                return BadRequest(PaginatedApiResponse<PersonDto>.ErrorResponse("Name parameter is required"));
             }
 
-            _logger.LogInformation("Searching persons by name: {Name}", name);
+            _logger.LogInformation("Searching persons by name: {Name} - Page: {Page}, PageSize: {PageSize}", name, page, pageSize);
 
-            SearchPersonByNameQuery query = new SearchPersonByNameQuery(name);
-            Result<IEnumerable<PersonDto>> result = await _mediator.Send(query);
+            SearchPersonByNameQuery query = new SearchPersonByNameQuery(name, page, pageSize);
+            Result<PagedResult<PersonDto>> result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
             {
-                List<PersonDto> personList = result.Data.ToList();
-                return Ok(ApiResponse<List<PersonDto>>.SuccessResponse(personList, $"Found {personList.Count} persons matching '{name}'"));
+                return Ok(PaginatedApiResponse<PersonDto>.SuccessResponse(result.Data, $"Found {result.Data.TotalCount} persons matching '{name}'"));
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<PersonDto>>.ErrorResponse(errorMessage));
+            return StatusCode(500, PaginatedApiResponse<PersonDto>.ErrorResponse(errorMessage));
         }
 
         /// <summary>
@@ -190,15 +195,20 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> CreatePerson([FromBody] CreatePersonRequest request)
         {
             _logger.LogInformation("Creating new person: {FirstName} {LastName}", request.FirstName, request.LastName);
 
-            // Validate BirthDate format
-            if (!DateTime.TryParse(request.BirthDate, out DateTime birthDateUtc))
-                return BadRequest(ApiResponse<PersonDto>.ErrorResponse("Birth date must be a valid date-time in ISO 8601 format (e.g., 2017-07-21T17:32:28Z, 2020.10.25, 2020-10-25)"));
+            // Parse BirthDate if provided
+            DateTime? birthDateUtc = null;
+            if (!string.IsNullOrWhiteSpace(request.BirthDate))
+            {
+                if (!DateTime.TryParse(request.BirthDate, out DateTime parsedDate))
+                    return BadRequest(ApiResponse<PersonDto>.ErrorResponse("Birth date must be a valid date-time in ISO 8601 format (e.g., 2017-07-21T17:32:28Z, 2020.10.25, 2020-10-25)"));
+                birthDateUtc = parsedDate;
+            }
 
             CreatePersonCommand command = new CreatePersonCommand(
                 request.FirstName,
@@ -220,7 +230,9 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -231,9 +243,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePerson(Guid id, [FromBody] UpdatePersonRequest request)
         {
             _logger.LogInformation("Updating person with Id: {Id}", id);
@@ -255,14 +267,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -273,9 +287,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPatch("{id:guid}/basic-info")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePersonBasicInfo(Guid id, [FromBody] UpdatePersonBasicInfoRequest request)
         {
             _logger.LogInformation("Updating person basic info with Id: {Id}", id);
@@ -289,14 +303,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -307,9 +323,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPatch("{id:guid}/address")]
         [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<AddressDto>>> UpdatePersonAddress(Guid id, [FromBody] UpdatePersonAddressRequest request)
         {
             _logger.LogInformation("Updating person address with Id: {Id}", id);
@@ -330,14 +346,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<AddressDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<AddressDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<AddressDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -348,9 +366,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPatch("{id:guid}/contact-info")]
         [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<ContactInfoDto>>> UpdatePersonContactInfo(Guid id, [FromBody] UpdatePersonContactInfoRequest request)
         {
             _logger.LogInformation("Updating person contact info with Id: {Id}", id);
@@ -369,14 +387,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -387,9 +407,9 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpPatch("{id:guid}/registration")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePersonRegistration(Guid id, [FromBody] bool isRegistered)
         {
             _logger.LogInformation("Updating person registration status with Id: {Id} to {IsRegistered}", id, isRegistered);
@@ -403,14 +423,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -420,8 +442,8 @@ namespace WebAPI.Controllers.Common
         /// <returns>Person with teams information</returns>
         [HttpGet("{id:guid}/teams")]
         [ProducesResponseType(typeof(ApiResponse<PersonWithTeamsDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonWithTeamsDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonWithTeamsDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonWithTeamsDto>>> GetPersonWithTeams(Guid id)
         {
             _logger.LogInformation("Getting person with teams for Id: {Id}", id);
@@ -435,14 +457,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage));
             }
             
-            return StatusCode(500, ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage));
+            return StatusCode(500, ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -453,9 +477,9 @@ namespace WebAPI.Controllers.Common
         /// <returns>The updated person</returns>
         [HttpPatch("{id:guid}/role")]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePersonRole(Guid id, [FromBody] Domain.Enums.Common.PersonRole role)
         {
             _logger.LogInformation("Updating person role with Id: {Id} to {Role}", id, role);
@@ -469,14 +493,16 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
             }
             
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -501,6 +527,8 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
 
             // Check if it's a not found error
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))

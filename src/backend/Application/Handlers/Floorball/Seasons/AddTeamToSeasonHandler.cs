@@ -23,8 +23,10 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
 {
     private readonly IFloorballSeasonRepository _seasonRepository;
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly IFloorballUnitOfWork _floorballUnitOfWork;
+    private readonly IFloorballStatisticsRepository _floorballStatisticsRepository;
     private readonly ILogger<AddTeamToSeasonHandler> _logger;
 
     /// <summary>
@@ -32,19 +34,26 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
     /// </summary>
     /// <param name="seasonRepository">The floorball season repository</param>
     /// <param name="teamRepository">The floorball team repository</param>
+    /// <param name="seasonDivisionRepository">The floorball season division repository</param>
     /// <param name="clubRepository">The club repository</param>
+    /// <param name="floorballUnitOfWork">The floorball unit of work</param>
+    /// <param name="floorballStatisticsRepository">The floorball statistics repository</param>
     /// <param name="logger">The logger</param>
     public AddTeamToSeasonHandler(
         IFloorballSeasonRepository seasonRepository,
         IFloorballTeamRepository teamRepository,
+        IFloorballSeasonDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         IFloorballUnitOfWork floorballUnitOfWork,
+        IFloorballStatisticsRepository floorballStatisticsRepository,
         ILogger<AddTeamToSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
         _teamRepository = teamRepository;
+        _seasonDivisionRepository = seasonDivisionRepository;
         _clubRepository = clubRepository;
         _floorballUnitOfWork = floorballUnitOfWork;
+        _floorballStatisticsRepository = floorballStatisticsRepository;
         _logger = logger;
     }
 
@@ -78,7 +87,16 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
             
             // Use the domain method to add the team (includes business logic validation)
             season.AddTeam(team);
-            
+
+            //Initialize the player season statistics for the added team players
+            List<FloorballPlayerSeasonStatistics> players = new List<FloorballPlayerSeasonStatistics>();
+            foreach (FloorballTeamPlayer player in team.Roster)
+            {
+                FloorballPlayerSeasonStatistics playerSeasonStatistics = new FloorballPlayerSeasonStatistics(player.PlayerId, request.TeamId, request.SeasonId);
+                players.Add(playerSeasonStatistics);
+            }
+            await _floorballStatisticsRepository.SavePlayerSeasonStatisticsBatchAsync(players, cancellationToken);
+
             // Save changes explicitly to trigger domain events
             await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -93,7 +111,9 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
                 }
             }
 
-            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, clubsDict);
+            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+            IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
+            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, seasonDivisionDtos, clubsDict);
             _logger.LogInformation("Successfully added team {TeamId} to season {SeasonId}", request.TeamId, request.SeasonId);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);

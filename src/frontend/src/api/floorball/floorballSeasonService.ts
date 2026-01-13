@@ -37,14 +37,19 @@ const parseErrorResponse = async (response: Response, defaultMessage: string): P
   return `HTTP ${response.status}: ${defaultMessage}`;
 };
 
+export interface FloorballSeasonDivisionDto {
+  divisionId: string;
+  teamCount: number;
+}
+
 export interface FloorballSeasonDto {
   id: string;
   name: string;
-  divisionId: string;
   startDate: string;
   endDate: string;
   isActive: boolean;
   isCompleted: boolean;
+  seasonDivisions: FloorballSeasonDivisionDto[];
   teams: FloorballTeam[];
   matches: unknown[];
 } 
@@ -53,14 +58,13 @@ export interface CreateFloorballSeasonRequest {
   name: string;
   startDate: string;
   endDate: string;
-  divisionId: string;
+  divisionIds: string[];
 }
 
 export interface UpdateFloorballSeasonRequest {
   name: string;
   startDate: string;
   endDate: string;
-  divisionId: string;
 }
 
 export const floorballSeasonService = {
@@ -399,6 +403,122 @@ export const floorballSeasonService = {
       return apiResponse;
     } catch (error) {
       console.error('Error in floorballSeasonService.removeTeamFromSeason:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Add a division to a floorball season
+   */
+  addDivisionToSeason: async (seasonId: string, divisionId: string): Promise<ApiResponse<void>> => {
+    try {
+      console.log('Adding division to season:', { seasonId, divisionId });
+      
+      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to add division to season');
+        throw new Error(errorMessage);
+      }
+      
+      const apiResponse: ApiResponse<void> = await response.json();
+      
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to add division to season');
+      }
+      
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballSeasonService.addDivisionToSeason:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Remove a division from a floorball season
+   */
+  removeDivisionFromSeason: async (seasonId: string, divisionId: string): Promise<ApiResponse<void>> => {
+    try {
+      console.log('Removing division from season:', { seasonId, divisionId });
+      
+      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to remove division from season');
+        throw new Error(errorMessage);
+      }
+      
+      const apiResponse: ApiResponse<void> = await response.json();
+      
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to remove division from season');
+      }
+      
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballSeasonService.removeDivisionFromSeason:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Add a team to a specific division of a floorball season
+   */
+  addTeamToSeasonDivision: async (seasonId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
+    try {
+      console.log('Adding team to season division:', { seasonId, divisionId, teamId });
+      
+      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}/teams/${teamId}`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to add team to season division');
+        throw new Error(errorMessage);
+      }
+      
+      const apiResponse: ApiResponse<void> = await response.json();
+      
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to add team to season division');
+      }
+      
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballSeasonService.addTeamToSeasonDivision:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Remove a team from a specific division of a floorball season
+   */
+  removeTeamFromSeasonDivision: async (seasonId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
+    try {
+      console.log('Removing team from season division:', { seasonId, divisionId, teamId });
+      
+      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}/teams/${teamId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to remove team from season division');
+        throw new Error(errorMessage);
+      }
+      
+      const apiResponse: ApiResponse<void> = await response.json();
+      
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to remove team from season division');
+      }
+      
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballSeasonService.removeTeamFromSeasonDivision:', error);
       throw error;
     }
   }

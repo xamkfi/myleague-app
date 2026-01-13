@@ -13,10 +13,15 @@ export const TimeInputModal = ({ isOpen, currentTime, onSetTime, onClose, loadin
   const [minutes, setMinutes] = useState<string>('');
   const [seconds, setSeconds] = useState<string>('');
   const [error, setError] = useState<string>('');
-
-  // Parse current time when modal opens
+  const [staticTime, setStaticTime] = useState<string>(''); // Store static snapshot of time
+  
+  // Capture a static snapshot of the current time ONCE when modal opens
+  // Note: currentTime is intentionally excluded from deps to prevent continuous updates
   useEffect(() => {
-    if (isOpen && currentTime) {
+    if (isOpen) {
+      // Capture the time at the moment the modal opens (static snapshot)
+      setStaticTime(currentTime);
+      
       const parts = currentTime.split(':');
       if (parts.length >= 2) {
         // Handle both MM:SS and HH:MM:SS formats
@@ -25,8 +30,12 @@ export const TimeInputModal = ({ isOpen, currentTime, onSetTime, onClose, loadin
         setMinutes(mins);
         setSeconds(secs);
       }
+    } else {
+      // Reset when modal closes
+      setError('');
     }
-  }, [isOpen, currentTime]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]); // Only depend on isOpen - currentTime intentionally excluded
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +102,7 @@ export const TimeInputModal = ({ isOpen, currentTime, onSetTime, onClose, loadin
 
         <form onSubmit={handleSubmit} className="time-input-form">
           <div className="time-input-section">
-            <label>Current Time: <span className="current-time">{currentTime}</span></label>
+            <label>Current Time: <span className="current-time">{staticTime}</span></label>
           </div>
 
           <div className="time-input-fields">

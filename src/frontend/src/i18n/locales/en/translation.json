@@ -24,12 +24,143 @@
     "fi": "Finnish",
     "switchLanguage": "Switch language"
   },
+  "matchPage": {
+    "navigation": {
+      "summary": "SUMMARY",
+      "stats": "STATS",
+      "lineups": "LINEUPS",
+      "table": "TABLE"
+    },
+    "dateTime": {
+      "weekdays": {
+        "Monday": "Monday",
+        "Tuesday": "Tuesday",
+        "Wednesday": "Wednesday",
+        "Thursday": "Thursday",
+        "Friday": "Friday",
+        "Saturday": "Saturday",
+        "Sunday": "Sunday"
+      },
+      "months": {
+        "Jan": "Jan",
+        "Feb": "Feb",
+        "Mar": "Mar",
+        "Apr": "Apr",
+        "May": "May",
+        "Jun": "Jun",
+        "Jul": "Jul",
+        "Aug": "Aug",
+        "Sep": "Sep",
+        "Oct": "Oct",
+        "Nov": "Nov",
+        "Dec": "Dec"
+      }
+    },
+    "matchInfo": {
+      "venue": "Venue",
+      "status": "Status",
+      "overtime": "Went to overtime",
+      "shootout": "Went to shootout"
+    },
+    "stats": {
+      "title": "Team Statistics",
+      "shotsOnTarget": "Shots on Target",
+      "goalieSaves": "Goalie Saves",
+      "savePercentage": "Save Percentage",
+      "penaltyMinutes": "Penalty Minutes",
+      "loading": "Loading live match statistics...",
+      "realTimeEnabled": "Real-time updates enabled",
+      "noStats": "No statistics available"
+    },
+    "events": {
+      "goal": "Goal",
+      "penalty": "Penalty",
+      "matchStart": "Match Started",
+      "matchEnd": "Match Ended",
+      "periodStart": "Period Started",
+      "periodEnd": "Period Ended",
+      "timeout": "Timeout",
+      "noEvents": "No match events yet"
+    },
+    "timer": {
+      "start": "Start Timer",
+      "stop": "Stop Timer",
+      "reset": "Reset Timer",
+      "adjust": "Adjust Time",
+      "period": "Period {{number}}"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
   "admin": {
     "title": "Admin Dashboard",
+    "database": "Database",
+    "sportsTitle": "Sports",
+    "view": "Admin view",
     "actions": {
-      "managePerson": "Edit/Add Person",
-      "news": "Create News",
-      "floorball": "Floorball Management"
+      "home": "Home",
+      "persons": "Persons",
+      "managePerson": "Manage persons",
+      "news": "News",
+      "manageNews": "Manage news",
+      "divisions": "Divisions",
+      "manageDivisions": "Manage sport divisions",
+      "floorball": "Floorball",
+      "manageFloorball": "Manage floorball",
+      "clubs": "Clubs",
+      "manageClubs": "Manage clubs"
+    },
+    "divisions": {
+      "title": "Manage Divisions",
+      "manageTitle": "Manage divisions",
+      "subtitle": "Create, edit, activate or remove sport divisions across the league.",
+      "search": "Search by name or description...",
+      "emptyFiltered": "No divisions match your filters.",
+      "emptyDefault": "No divisions found yet.",
+      "table": {
+        "sport": "Sport",
+        "level": "Level",
+        "status": "Status",
+        "created": "Created"
+      },
+      "filters": {
+        "sport": "Sport",
+        "status": "Status"
+      },
+      "actions": {
+        "create": "Create division",
+        "activate": "Activate division",
+        "deactivate": "Deactivate division",
+        "menu": "Division actions menu"
+      },
+      "confirmDelete": {
+        "title": "Delete division",
+        "message": "Are you sure you want to delete division \"{{divisionName}}\"? This action cannot be undone."
+      },
+      "errors": {
+        "load": "Failed to load divisions. Please try again.",
+        "loadSingle": "Failed to load division data.",
+        "updateStatus": "Failed to update status. Please try again.",
+        "delete": "Failed to delete division. Please try again.",
+        "save": "Failed to save division. Please try again.",
+        "levelRequired": "Level must be a number."
+      },
+      "form": {
+        "loading": "Loading division...",
+        "createTitle": "Create division",
+        "editTitle": "Edit division",
+        "createSubtitle": "Provide the information for the new division.",
+        "editSubtitle": "Update the key details of this division.",
+        "namePlaceholder": "Division name",
+        "levelHelper": "1 = highest",
+        "descriptionPlaceholder": "Short summary of this division",
+        "sportPlaceholder": "e.g. Floorball",
+        "sportHint": "Sport type cannot be changed for existing divisions."
+      }
     },
     "persons":{
       "title": "Person Management",
@@ -261,6 +392,49 @@
       }
     }
   },
+  "clubs": {
+    "manage": {
+      "title": "Manage Clubs"
+    },
+    "total": "Total",
+    "createNew": "Create New Club",
+    "searchPlaceholder": "Search clubs by name or city...",
+    "searchAria": "Search clubs",
+    "empty": "No clubs found",
+    "create": {
+      "title": "Create Club"
+    },
+    "table": {
+      "name": "Club Name",
+      "city": "City",
+      "country": "Country",
+      "foundingDate": "Founding Date",
+      "actions": "Actions"
+    },
+    "form": {
+      "name": "Club Name",
+      "city": "City",
+      "country": "Country",
+      "foundingDate": "Founding Date",
+      "foundingDatePlaceholder": "dd-mm-yyyy",
+      "namePlaceholder": "Enter club name",
+      "cityPlaceholder": "Enter city",
+      "countryPlaceholder": "Enter country",
+      "websiteUrl": "Website URL",
+      "logoUrl": "Logo URL",
+      "contactEmail": "Contact Email"
+    },
+    "details": {
+      "title": "Club Details",
+      "foundingDate": "Founding Date",
+      "teams": "Teams",
+      "noTeams": "No teams yet",
+      "members": "Members"
+    },
+    "confirmDeleteTitle": "Delete club?",
+    "confirmDelete": "Are you sure you want to delete this club?",
+    "confirmDeleteWarning": "This action cannot be undone."
+  },
   "floorball": {
     "management": {
       "title": "Floorball Management",
@@ -274,7 +448,8 @@
       },
       "comingSoonAlert": "🚧 {{featureName}} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯",
       "actions": {
-        "teams": "Manage Teams",
+        "teams": "Teams",
+        "manageTeams": "Manage teams",
         "players": "Manage Players",
         "coaches": "Manage Coaches",
         "teamManagers": "Manage Team Managers",
@@ -315,6 +490,16 @@
         "homeArena": "Home Arena",
         "activeMembers": "Active Members",
         "actions": "Actions"
+      },
+      "assignPlayerToTeam": "Assign to Team",
+      "assignPlayersToTeam": "Assign Players to Team",
+      "selectTeam": "Select Team",
+      "chooseTeam": "Choose a team...",
+      "addToRoster": "Add to Roster",
+      "errors": {
+        "loadFailed": "Failed to load teams",
+        "selectTeam": "Please select a team",
+        "invalidJerseyNumber": "Jersey number must be between 1 and 99"
       }
     },
     "divisions": {
@@ -333,6 +518,7 @@
       "searchPersons": "Search available persons...",
       "searchPlayers": "Search players...",
       "selected": "{{count}} selected",
+      "selectedPlayers": "{{count}} players selected",
       "selectAll": "Select All",
       "selectAllVisible": "Select all visible persons",
       "createPlayer": "Create Player",
@@ -362,12 +548,22 @@
       },
       "noPlayersInTeam": "This team has no players assigned yet.",
       "addPlayersHelp": "Use the edit button to manage team roster and add players.",
+      "actions": {
+        "menu": "Player actions menu",
+        "activate": "Activate Player",
+        "deactivate": "Deactivate Player",
+        "bulkActivate": "Activate Selected ({{count}})",
+        "bulkDeactivate": "Deactivate Selected ({{count}})",
+        "bulkDelete": "Delete Selected ({{count}})",
+        "bulkAssignToTeam": "Assign to Team ({{count}})"
+      },
       "errors": {
         "loadPlayers": "Failed to load players. Please try again.",
         "deleteFailed": "Failed to delete player. Please try again."
       }
     },
     "positions": {
+      "none": "None",
       "center": "Center",
       "winger": "Winger",
       "defender": "Defender",
@@ -421,7 +617,7 @@
       "women": "Women"
     },
     "referees": {
-      "title": "Manage Floorball Referees",
+      "title": "Manage Referees",
       "totalCount": "{{count}} referees",
       "createNew": "Create New Referee",
       "createFromPerson": "Create Referee from Available Persons",
@@ -558,6 +754,7 @@
     "loading": "Loading…",
     "edit": "Edit",
     "delete": "Delete",
+    "save": "Save",
     "deleting": "Deleting...",
     "cancel": "Cancel",
     "active": "Active",
@@ -612,7 +809,41 @@
     "results": "Results",
     "resultsTitle": "RESULTS",
     "roster": "Roster",
-    "stats": "Stats",
+    "stats": {
+      "Stats": "Stats",
+      "loading": "Loading team statistics...",
+      "error": "Error loading team statistics",
+      "noStats": "No statistics available",
+      "noStatsDesc": "Team statistics are not available for this season.",
+      "currentSeason": "Current Season",
+      "overallRecord": "Overall Record",
+      "gamesPlayed": "Games Played",
+      "wins": "Wins",
+      "losses": "Losses",
+      "ties": "Ties",
+      "points": "Points",
+      "goals": "Goals",
+      "goalsFor": "Goals For",
+      "goalsAgainst": "Goals Against",
+      "goalDifference": "Goal Difference",
+      "shooting": "Shooting",
+      "shotsFor": "Shots For",
+      "shotsAgainst": "Shots Against",
+      "shotPercentage": "Shot Percentage",
+      "specialTeams": "Special Teams",
+      "powerPlay": "Power Play",
+      "penaltyKill": "Penalty Kill",
+      "shortHandedGoals": "Short Handed Goals",
+      "faceoffs": "Faceoffs",
+      "faceoffPercentage": "Faceoff Percentage",
+      "penalties": "Penalties",
+      "penaltyMinutes": "Penalty Minutes",
+      "homeVsAway": "Home vs Away",
+      "home": "Home",
+      "away": "Away",
+      "winPercentage": "Win %",
+      "perGame": "per game"
+    },
     "standings": "Standings",
     "todaysMatches": "TODAY'S MATCHES",
     "latestMatches": "Latest Matches",
@@ -663,6 +894,32 @@
     "loading": "Loading results…",
     "noResults": "No results found."
   },
+  "leaguePage": {
+    "title": "League",
+    "defaultTitle": "League",
+    "tabs": {
+      "summary": "Summary",
+      "standings": "Standings",
+      "results": "Results",
+      "fixtures": "Fixtures"
+    },
+    "summary": {
+      "title": "League Summary",
+      "leagueInformation": "League Information",
+      "season": "Season:",
+      "teams": "Teams:",
+      "matchesPlayed": "Matches Played:",
+      "goalsScored": "Goals Scored:",
+      "avgGoalsPerGame": "Avg Goals/Game:",
+      "loading": "Loading summary...",
+      "error": "Error: {{error}}",
+      "noData": "No data available"
+    },
+    "errors": {
+      "loadLeagueData": "Failed to load league data",
+      "loadMatches": "Failed to load matches"
+    }
+  },
   "roster": {
     "jerseyNumber": "#",
     "name": "Name",
@@ -689,4 +946,4 @@
       "redCards": "Red cards"
     }
   }
-} 
+}

@@ -1,14 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
+import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import './FloorballSeasonsPage.scss';
 import { useSeasonsManagement } from './hooks/useSeasonsManagement';
 import { SeasonsPageHeader } from './components/SeasonsPageHeader';
 import { SeasonsFilters } from './components/SeasonsFilters';
-import { ErrorMessage } from './components/ErrorMessage';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { LoadingState } from './components/LoadingState';
 import { SeasonsContent } from './components/SeasonsContent';
-import BackButton from '../../../../components/BackButton/BackButton';
 import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
 
 const FloorballSeasonsPage = () => {
@@ -53,18 +52,13 @@ const FloorballSeasonsPage = () => {
     <PageTemplate title={t('floorball.seasons.title', 'Manage Seasons')}>
       <div className="floorball-seasons-container">
 
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball" 
-          text={t('common.back', 'Back to Floorball Management')} 
-        />
-
+        <h2 className="floorball-seasons-title">{t('floorball.seasons.title', 'MANAGE SEASONS')}</h2>
         <SeasonsPageHeader
           seasonsCount={seasons.length}
           onCreateSeason={() => navigate('/admin/floorball/seasons/create')}
         />
 
-        {error && <ErrorMessage message={error} />}
+        <ErrorPopup message={error} />
 
         <SeasonsFilters
           showActiveOnly={showActiveOnly}

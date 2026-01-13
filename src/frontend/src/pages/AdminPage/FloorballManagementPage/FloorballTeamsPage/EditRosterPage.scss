@@ -1,0 +1,412 @@
+@use '@variables' as *;
+@use "sass:map";
+
+.edit-roster-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: $color-neutral-white;
+
+  .edit-roster-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #111827;
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+
+  .team-info-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid $color-neutral-medium-grey;
+
+    .team-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: $color-blue-deep;
+    }
+
+    .roster-count {
+      font-size: 0.95rem;
+      color: $color-neutral-dark-grey;
+      padding: 0.25rem 0.75rem;
+      background-color: #f3f4f6;
+      border-radius: 12px;
+    }
+  }
+
+  .edit-roster-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    
+    p {
+      font-size: 1.1rem;
+      color: $color-neutral-medium-grey;
+    }
+  }
+
+  .edit-roster-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .roster-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: flex-start;
+    flex: 1;
+  }
+
+  .add-player-button {
+    padding: 0.75rem 1.5rem;
+    background-color: $color-blue-light;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+
+    .button-icon {
+      width: 16px;
+      height: 16px;
+      filter: brightness(0) invert(1);
+    }
+
+    &:hover {
+      background-color: $color-blue-deep;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+    }
+  }
+
+  // Table wrapper
+  .roster-table-wrapper {
+    position: relative;
+    margin-bottom: 2rem;
+    padding: map.get($spacing, "base") map.get($spacing, "md");
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: $border-radius-default;
+
+    table.roster-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+
+      thead {
+        tr {
+          border-bottom: 2px solid $color-neutral-medium-grey;
+        }
+
+        th {
+          padding: 1rem 1.5rem;
+          font-weight: 600;
+          color: $color-neutral-black;
+          font-size: 0.85rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          text-align: left;
+          
+          &.status-column,
+          &.actions-column {
+            text-align: center;
+          }
+
+          &.jersey-column {
+            text-align: center;
+            width: 120px;
+          }
+
+          &.position-column {
+            width: 140px;
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          transition: background-color 0.2s ease-in-out;
+          border-bottom: 1px solid $color-neutral-medium-grey;
+
+          &:hover {
+            background-color: rgba(13, 110, 253, 0.05);
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            font-size: 0.875rem;
+
+            &.name-column {
+              min-width: 200px;
+
+              span.player-name {
+                font-size: 0.875rem;
+                font-weight: 600;
+                color: #111827;
+              }
+            }
+
+            &.jersey-column {
+              text-align: center;
+              width: 120px;
+
+              span.jersey-number {
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: $color-neutral-dark-grey;
+              }
+
+              .jersey-select {
+                width: 80px;
+                padding: 0.375rem 0.5rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: $color-neutral-dark-grey;
+                background-color: $color-neutral-white;
+                border: 1px solid $color-neutral-medium-grey;
+                border-radius: 4px;
+                cursor: pointer;
+                text-align: center;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+                &:hover:not(:disabled) {
+                  border-color: $color-blue-light;
+                }
+
+                &:focus {
+                  outline: none;
+                  border-color: $color-blue-light;
+                  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+                }
+
+                &:disabled {
+                  opacity: 0.6;
+                  cursor: not-allowed;
+                }
+              }
+            }
+
+            &.position-column {
+              min-width: 140px;
+
+              span.position {
+                font-size: 0.875rem;
+                color: $color-neutral-dark-grey;
+              }
+
+              .position-select {
+                width: 120px;
+                padding: 0.375rem 0.5rem;
+                font-size: 0.875rem;
+                color: $color-neutral-dark-grey;
+                background-color: $color-neutral-white;
+                border: 1px solid $color-neutral-medium-grey;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+                &:hover:not(:disabled) {
+                  border-color: $color-blue-light;
+                }
+
+                &:focus {
+                  outline: none;
+                  border-color: $color-blue-light;
+                  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+                }
+
+                &:disabled {
+                  opacity: 0.6;
+                  cursor: not-allowed;
+                }
+              }
+            }
+
+            &.status-column {
+              text-align: center;
+              width: 100px;
+            }
+
+            &.actions-column {
+              text-align: center;
+              width: 100px;
+            }
+
+            &.no-players {
+              text-align: center;
+              padding: 3rem 2rem;
+              color: $color-neutral-dark-grey;
+              font-size: 1rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Status badge
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 0.875rem;
+    font-weight: 600;
+    
+    &.active {
+      background-color: $color-green-pale;
+      color: $color-green-muted;
+    }
+    
+    &.inactive {
+      background-color: #fee2e2;
+      color: $color-red-muted;
+    }
+  }
+
+  // Player Actions Dropdown
+  .player-actions-dropdown {
+    position: relative;
+    display: inline-block;
+
+    .dropdown-trigger {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      transition: all 0.2s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      &:active {
+        background-color: #e9ecef;
+      }
+
+      .three-dots {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #6c757d;
+        line-height: 1;
+      }
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: white;
+      border: 1px solid #dee2e6;
+      border-radius: 0.375rem;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      min-width: 180px;
+      padding: 0.5rem 0;
+    }
+
+    .dropdown-item {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 1rem;
+      border: none;
+      background: none;
+      text-align: left;
+      font-size: 0.875rem;
+      color: $color-neutral-black;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      &.status-item {
+        color: $color-neutral-black;
+        
+        &:hover {
+          background-color: $color-blue-secondary-pale;
+        }
+      }
+
+      &.delete-item {
+        color: $color-red-muted;
+        
+        &:hover {
+          background-color: $color-red-pale;
+        }
+      }
+    }
+  }
+
+  // Footer
+  .roster-footer {
+    display: flex;
+    justify-content: flex-start;
+    padding-top: 1rem;
+    border-top: 1px solid $color-neutral-medium-grey;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .edit-roster-container {
+    padding: 1rem;
+
+    .edit-roster-header {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .roster-actions {
+      flex-direction: column;
+      width: 100%;
+
+      .add-player-button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .team-info-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .roster-table-wrapper {
+      table.roster-table {
+        font-size: 0.875rem;
+        
+        th, td {
+          padding: 0.75rem 0.5rem;
+        }
+      }
+    }
+  }
+}

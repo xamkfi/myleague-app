@@ -57,48 +57,18 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SaveTeamSeasonStatisticsAsync(FloorballTeamSeasonStatistics statistics, CancellationToken cancellationToken = default)
     {
-        const int maxRetries = 3;
-        int retryCount = 0;
+        FloorballTeamSeasonStatistics? existing = await GetTeamSeasonStatisticsAsync(statistics.TeamId, statistics.SeasonId, cancellationToken);
 
-        while (retryCount < maxRetries)
+        if (existing == null)
         {
-            try
-            {
-                FloorballTeamSeasonStatistics? existing = await GetTeamSeasonStatisticsAsync(statistics.TeamId, statistics.SeasonId, cancellationToken);
-
-                if (existing == null)
-                {
-                    await _context.FloorballTeamSeasonStatistics.AddAsync(statistics, cancellationToken);
-                }
-                else
-                {
-                    // Use SetValues for domain entities with private setters - this is the correct EF Core approach
-                    _context.Entry(existing).CurrentValues.SetValues(statistics);
-                    // Update the UpdatedAt timestamp
-                    _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
-                }
-
-                await _context.SaveChangesAsync(cancellationToken);
-                return; // Success, exit the method
-            }
-            catch (DbUpdateConcurrencyException) when (retryCount < maxRetries - 1)
-            {
-                // Retry after a short delay
-                retryCount++;
-                await Task.Delay(TimeSpan.FromMilliseconds(100 * retryCount), cancellationToken);
-
-                // Refresh the context to get the latest data
-                foreach (EntityEntry entry in _context.ChangeTracker.Entries())
-                {
-                    entry.State = EntityState.Detached;
-                }
-            }
-            catch (DbUpdateConcurrencyException) when (retryCount >= maxRetries - 1)
-            {
-                // Log the final failure and rethrow
-                throw;
-            }
+            await _context.FloorballTeamSeasonStatistics.AddAsync(statistics, cancellationToken);
         }
+        else
+        {
+            _context.Entry(existing).CurrentValues.SetValues(statistics);
+            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+        }
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion
@@ -147,9 +117,9 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
+    public async Task<List<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballPlayerSeasonStatistics
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Season).Include(x => x.Team)
             .Where(s => s.PlayerId == playerId)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -158,48 +128,18 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SavePlayerSeasonStatisticsAsync(FloorballPlayerSeasonStatistics statistics, CancellationToken cancellationToken = default)
     {
-        const int maxRetries = 3;
-        int retryCount = 0;
+        FloorballPlayerSeasonStatistics? existing = await GetPlayerSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.SeasonId, cancellationToken);
 
-        while (retryCount < maxRetries)
+        if (existing == null)
         {
-            try
-            {
-                FloorballPlayerSeasonStatistics? existing = await GetPlayerSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.SeasonId, cancellationToken);
-
-                if (existing == null)
-                {
-                    await _context.FloorballPlayerSeasonStatistics.AddAsync(statistics, cancellationToken);
-                }
-                else
-                {
-                    // Use SetValues for domain entities with private setters - this is the correct EF Core approach
-                    _context.Entry(existing).CurrentValues.SetValues(statistics);
-                    // Update the UpdatedAt timestamp
-                    _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
-                }
-
-                await _context.SaveChangesAsync(cancellationToken);
-                return; // Success, exit the method
-            }
-            catch (DbUpdateConcurrencyException) when (retryCount < maxRetries - 1)
-            {
-                // Retry after a short delay
-                retryCount++;
-                await Task.Delay(TimeSpan.FromMilliseconds(100 * retryCount), cancellationToken);
-
-                // Refresh the context to get the latest data
-                foreach (EntityEntry entry in _context.ChangeTracker.Entries())
-                {
-                    entry.State = EntityState.Detached;
-                }
-            }
-            catch (DbUpdateConcurrencyException) when (retryCount >= maxRetries - 1)
-            {
-                // Log the final failure and rethrow
-                throw;
-            }
+            await _context.FloorballPlayerSeasonStatistics.AddAsync(statistics, cancellationToken);
         }
+        else
+        {
+            _context.Entry(existing).CurrentValues.SetValues(statistics);
+            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+        }
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion
@@ -235,9 +175,9 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
+    public async Task<List<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballGoalieSeasonStatistics
+        return await _context.FloorballGoalieSeasonStatistics.Include(x => x.Team).Include(x => x.Season).Include(x => x.Player)
             .Where(s => s.PlayerId == playerId)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -246,48 +186,18 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SaveGoalieSeasonStatisticsAsync(FloorballGoalieSeasonStatistics statistics, CancellationToken cancellationToken = default)
     {
-        const int maxRetries = 3;
-        int retryCount = 0;
+        FloorballGoalieSeasonStatistics? existing = await GetGoalieSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.SeasonId, cancellationToken);
 
-        while (retryCount < maxRetries)
+        if (existing == null)
         {
-            try
-            {
-                FloorballGoalieSeasonStatistics? existing = await GetGoalieSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.SeasonId, cancellationToken);
-
-                if (existing == null)
-                {
-                    await _context.FloorballGoalieSeasonStatistics.AddAsync(statistics, cancellationToken);
-                }
-                else
-                {
-                    // Use SetValues for domain entities with private setters - this is the correct EF Core approach
-                    _context.Entry(existing).CurrentValues.SetValues(statistics);
-                    // Update the UpdatedAt timestamp
-                    _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
-                }
-
-                await _context.SaveChangesAsync(cancellationToken);
-                return; // Success, exit the method
-            }
-            catch (DbUpdateConcurrencyException) when (retryCount < maxRetries - 1)
-            {
-                // Retry after a short delay
-                retryCount++;
-                await Task.Delay(TimeSpan.FromMilliseconds(100 * retryCount), cancellationToken);
-
-                // Refresh the context to get the latest data
-                foreach (EntityEntry entry in _context.ChangeTracker.Entries())
-                {
-                    entry.State = EntityState.Detached;
-                }
-            }
-            catch (DbUpdateConcurrencyException) when (retryCount >= maxRetries - 1)
-            {
-                // Log the final failure and rethrow
-                throw;
-            }
+            await _context.FloorballGoalieSeasonStatistics.AddAsync(statistics, cancellationToken);
         }
+        else
+        {
+            _context.Entry(existing).CurrentValues.SetValues(statistics);
+            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+        }
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion
@@ -322,8 +232,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         {
             _context.Entry(existing).CurrentValues.SetValues(statistics);
         }
-        
-        await _context.SaveChangesAsync(cancellationToken);
+        // SaveChanges is deferred to the UnitOfWork
     }
 
     #endregion

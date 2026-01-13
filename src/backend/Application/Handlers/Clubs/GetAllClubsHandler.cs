@@ -2,58 +2,99 @@ using Application.Queries.Clubs;
 using Application.DTOs.Common;
 using Application.Mappings.Common;
 using Application.Common;
-using Domain.Entities.Common;
+using Application.Handlers.Common;
+using Application.Services.Common;
+using Domain.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace Application.Handlers.Clubs;
 
 /// <summary>
-/// Handler for retrieving all clubs
+/// Handler for retrieving clubs with pagination support
 /// </summary>
-public class GetAllClubsHandler : IRequestHandler<GetAllClubsQuery, Result<IEnumerable<ClubDto>>>
+public class GetAllClubsHandler : BasePagedQueryHandler<GetAllClubsQuery, ClubDto>, IRequestHandler<GetAllClubsQuery, Result<PagedResult<ClubDto>>>
 {
     private readonly IClubRepository _clubRepository;
-    private readonly ILogger<GetAllClubsHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the GetAllClubsHandler class
     /// </summary>
     /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
-    public GetAllClubsHandler(IClubRepository clubRepository, ILogger<GetAllClubsHandler> logger)
+    /// <param name="paginationService">The pagination service</param>
+    public GetAllClubsHandler(
+        IClubRepository clubRepository, 
+        ILogger<GetAllClubsHandler> logger,
+        IPaginationService paginationService) : base(paginationService, logger)
     {
         _clubRepository = clubRepository;
-        _logger = logger;
     }
 
     /// <summary>
     /// Handles the GetAllClubsQuery request
     /// </summary>
-    /// <param name="request">The query</param>
+    /// <param name="request">The query containing pagination parameters</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>All clubs as DTOs wrapped in a Result</returns>
-    public async Task<Result<IEnumerable<ClubDto>>> Handle(GetAllClubsQuery request, CancellationToken cancellationToken)
+    /// <returns>A paginated collection of clubs as DTOs wrapped in a Result</returns>
+    public async Task<Result<PagedResult<ClubDto>>> Handle(GetAllClubsQuery request, CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("Retrieving all clubs");
-            
-            IEnumerable<Club> clubs = await _clubRepository.GetAllAsync();
-            IEnumerable<ClubDto> clubDtos = ClubMapper.ToDtos(clubs);
-            
-            _logger.LogInformation("Successfully retrieved {ClubCount} clubs", clubDtos.Count());
-            
-            return Result<IEnumerable<ClubDto>>.Success(clubDtos);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            _logger.LogInformation("Retrieving clubs - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
+
+            // Validate pagination parameters using base handler
+            Result<PaginationValidationResult> validationResult = ValidatePaginationParameters(
+                request.Page, request.PageSize, GetAllClubsQuery.ResourceKey);
+
+            if (validationResult.IsFailure)
+            {
+                return Result<PagedResult<ClubDto>>.Failure(validationResult.Error!);
+            }
+
+            int actualPageSize = validationResult.Data!.ActualPageSize;
+
+            // Check for cancellation before database operations
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Get paginated clubs using database-level pagination
+            PagedResult<Domain.Entities.Common.Club> pagedClubs = await _clubRepository.GetPagedAsync(
+                request.Page,
+                actualPageSize,
+                cancellationToken);
+
+            IEnumerable<ClubDto> clubDtos = ClubMapper.ToDtos(pagedClubs.Items);
+
+            // Check for cancellation after database operations
+            cancellationToken.ThrowIfCancellationRequested();
+
+            PagedResult<ClubDto> pagedResult = CreatePagedResult(
+                clubDtos, 
+                pagedClubs.TotalCount, 
+                pagedClubs.Page, 
+                pagedClubs.PageSize);
+
+            _logger.LogInformation("Successfully retrieved {Count} clubs out of {TotalCount} total", 
+                pagedClubs.ItemCount, pagedClubs.TotalCount);
+
+            return Result<PagedResult<ClubDto>>.Success(pagedResult);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Clubs retrieval was cancelled - Page: {Page}, PageSize: {PageSize}", 
+                request.Page, request.PageSize);
+            throw; // Re-throw to let the framework handle it
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving all clubs");
-            return Result<IEnumerable<ClubDto>>.Failure("An error occurred while retrieving clubs.");
+            _logger.LogError(ex, "Error occurred while retrieving clubs");
+            return Result<PagedResult<ClubDto>>.Failure("An error occurred while retrieving clubs.");
         }
     }
-} 
+}
+
+

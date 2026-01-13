@@ -10,6 +10,8 @@
   border-radius: map.get($border-radius, "lg");
   box-shadow: $box-shadow-drop-1;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 .standing-header {
@@ -73,53 +75,46 @@
     }
   }
 
-  .table-headers {
-    display: flex;
-    font-size: map.get($font-sizes, "sm");
-    font-weight: map.get($font-weights, "bold");
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: map.get($spacing, "sm") map.get($spacing, "lg");
-    
-    .header-rank {
-      width: 8%;
-      text-align: center;
-      padding-right: map.get($spacing, "sm");
-    }
+  // Removed old flex headers; headers now in table thead
+}
 
-    .header-team {
-      width: 25%;
-      text-align: left;
-      padding-right: map.get($spacing, "sm");
-    }
-
-    .header-spacer {
-      width: 20%;
-      min-width: 200px;
-      padding-right: map.get($spacing, "sm");
-    }
-
-    .header-item {
-      width: 8%;
-      text-align: center;
-      padding-right: map.get($spacing, "sm");
-      
-      &:nth-child(6) { // Goals column
-        width: 12%;
-      }
-      &:nth-child(11) { // Form column
-        width: 20%;
-      }
-    }
-  }
+.table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .standing-table {
   width: 100%;
   border-collapse: collapse;
   background: $color-white;
+  table-layout: fixed;
+  max-width: 100%;
+  min-width: 600px; // Ensure table has minimum width for readability
+
+  // Use colgroup-driven widths to ensure th/td alignment
+  col.rank-col { width: 8%; }
+  col.team-col { width: 25%; }
+  col.spacer-col { width: 20%; }
+  col.stats-col { width: 8%; }
+  col.goals-col { width: 12%; }
+  col.points-col { width: 8%; }
+  col.form-col { width: 20%; }
+
+  thead .header-row {
+    background: #e6f0ff; // light blue
+  }
+
+  thead th {
+    padding: map.get($spacing, "sm");
+    font-size: map.get($font-sizes, "sm");
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $color-neutral-black;
+  }
   
-  .table-row {
+  tbody tr {
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     transition: background-color 0.2s ease;
 
@@ -143,14 +138,12 @@
 
 // Column-specific styling
 .rank-col {
-  width: 8%;
   text-align: center;
   font-weight: map.get($font-weights, "bold");
   color: $color-neutral-black;
 }
 
 .team-col {
-  width: 25%;
   text-align: left;
 
   .team-info {
@@ -192,8 +185,6 @@
 }
 
 .spacer-col {
-  width: 20%;
-  min-width: 200px;
   text-align: left;
 
   .team-info {
@@ -215,32 +206,22 @@
   text-align: center;
   font-weight: map.get($font-weights, "medium");
   color: $color-neutral-black;
-  width: 8%;
-}
-
-.stats-col {
-  text-align: center;
-  font-weight: map.get($font-weights, "medium");
-  color: $color-neutral-black;
 }
 
 .goals-col {
   text-align: center;
   font-weight: map.get($font-weights, "medium");
   color: $color-neutral-black;
-  width: 12%;
 }
 
 .points-col {
   text-align: center;
   font-weight: map.get($font-weights, "bold");
   color: $color-neutral-black;
-  width: 8%;
 }
 
 .form-col {
   text-align: center;
-  width: 20%;
 
   .form-indicators {
     display: flex;
@@ -248,10 +229,12 @@
     justify-content: center;
   }
 
-  .form-indicator {
+  .form-box {
     width: 20px;
     height: 20px;
     border-radius: map.get($border-radius, "sm");
+    cursor: default;
+    transition: transform 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -259,20 +242,21 @@
     font-weight: map.get($font-weights, "bold");
     color: $color-white;
 
-    &.form-w {
+    &.form-Win {
       background: $color-green-primary;
     }
 
-    &.form-d {
+    &.form-Tie {
       background: $color-yellow-primary;
     }
 
-    &.form-l {
+    &.form-Loss {
       background: $color-red-primary;
     }
 
-    &.form-unknown {
+    &.form-Unknown {
       background: $color-neutral-medium-grey;
+      box-shadow: 0 1px 2px rgba($color-neutral-medium-grey, 0.3);
     }
   }
 }
@@ -308,14 +292,19 @@
   }
 
   .standing-table {
-    .table-row td {
+    col.team-col { width: 30%; }
+    col.stats-col { width: 7%; }
+    col.goals-col { width: 10%; }
+    col.points-col { width: 7%; }
+    col.form-col { width: 18%; }
+
+    tbody tr td {
       padding: map.get($spacing, "sm") map.get($spacing, "xs");
       font-size: map.get($font-sizes, "xs");
     }
   }
 
   .team-col {
-    width: 30%;
 
     .logo-image {
       width: 28px;
@@ -328,26 +317,13 @@
     }
   }
 
-  .stats-col {
-    width: 7%;
-  }
-
-  .goals-col {
-    width: 10%;
-  }
-
-  .points-col {
-    width: 7%;
-  }
-
   .form-col {
-    width: 18%;
 
     .form-indicators {
       gap: 5px;
     }
 
-    .form-indicator {
+    .form-box {
       width: 18px;
       height: 18px;
     }
@@ -355,10 +331,33 @@
 }
 
 @media (max-width: 768px) {
+  .standing-container {
+    margin: map.get($spacing, "xs");
+    padding: 0 map.get($spacing, "xs"); // reduce side padding to 8px
+  }
+
   .standing-header {
     flex-direction: column;
     gap: map.get($spacing, "sm");
     padding: map.get($spacing, "sm");
+
+    .header-top-row {
+      flex-direction: column;
+      gap: map.get($spacing, "sm");
+      align-items: flex-start;
+    }
+
+    .view-buttons {
+      width: 100%;
+      flex-wrap: wrap;
+      
+      .view-button {
+        padding: map.get($spacing, "2xs") map.get($spacing, "xs");
+        font-size: map.get($font-sizes, "xs");
+        flex: 1;
+        min-width: 80px;
+      }
+    }
 
     .league-selector {
       align-self: flex-start;
@@ -387,13 +386,18 @@
   }
 
   .standing-table {
-    .table-row td {
+    col.team-col { width: 35%; }
+    col.stats-col { width: 6%; }
+    col.goals-col { width: 8%; }
+    col.points-col { width: 6%; }
+    col.form-col { width: 15%; }
+
+    tbody tr td {
       padding: map.get($spacing, "xs");
     }
   }
 
   .team-col {
-    width: 35%;
 
     .logo-image {
       width: 24px;
@@ -406,26 +410,13 @@
     }
   }
 
-  .stats-col {
-    width: 6%;
-  }
-
-  .goals-col {
-    width: 8%;
-  }
-
-  .points-col {
-    width: 6%;
-  }
-
   .form-col {
-    width: 15%;
 
     .form-indicators {
       gap: 4px;
     }
 
-    .form-indicator {
+    .form-box {
       width: 16px;
       height: 16px;
     }
@@ -435,9 +426,19 @@
 @media (max-width: 480px) {
   .standing-container {
     margin: map.get($spacing, "xs");
+    padding: 0 map.get($spacing, "xs"); // ensure side padding is 8px on small phones
   }
 
   .standing-header {
+    padding: map.get($spacing, "xs");
+    .view-buttons {
+      gap: map.get($spacing, "2xs");
+      .view-button {
+        padding: map.get($spacing, "2xs") map.get($spacing, "xs");
+        font-size: map.get($font-sizes, "xs");
+        line-height: 1.1;
+      }
+    }
     .table-headers {
       font-size: map.get($font-sizes, "xs");
       padding: map.get($spacing, "xs");
@@ -459,8 +460,41 @@
     }
   }
 
+  .standing-table {
+    min-width: 400px; // Reduced minimum width for very small screens
+    
+    // Hide spacer column entirely on very small screens
+    col.spacer-col { display: none; }
+    th.spacer-col, td.spacer-col { display: none; }
+
+    // Re-balance widths to fit the screen when spacer is hidden
+    col.rank-col { width: 6%; }
+    col.team-col { width: 34%; }
+    col.stats-col { width: 5%; } // MP, W, D, L, GD reuse
+    col.goals-col { width: 8%; }
+    col.points-col { width: 8%; }
+    col.form-col { width: 18%; }
+
+    thead th { 
+      padding: map.get($spacing, "2xs") map.get($spacing, "xs");
+      font-size: map.get($font-sizes, "xs");
+    }
+    tbody tr td {
+      padding: map.get($spacing, "2xs") map.get($spacing, "xs");
+      font-size: map.get($font-sizes, "xs");
+    }
+
+    // Prevent ellipsis on numeric/stat columns on very small screens
+    tbody tr td.stats-col,
+    tbody tr td.points-col,
+    tbody tr td.goals-col {
+      text-overflow: clip;
+      overflow: visible;
+      white-space: nowrap;
+    }
+  }
+
   .team-col {
-    width: 40%;
 
     .logo-image {
       width: 20px;
@@ -477,28 +511,15 @@
     }
   }
 
-  .stats-col {
-    width: 5%;
-  }
-
-  .goals-col {
-    width: 7%;
-  }
-
-  .points-col {
-    width: 5%;
-  }
-
   .form-col {
-    width: 12%;
 
     .form-indicators {
       gap: 3px;
     }
 
-    .form-indicator {
-      width: 14px;
-      height: 14px;
+    .form-box {
+      width: 12px;
+      height: 12px;
     }
   }
 }

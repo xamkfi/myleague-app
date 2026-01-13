@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Floorball;
 
 namespace WebAPI.Controllers.Floorball
@@ -46,13 +47,13 @@ namespace WebAPI.Controllers.Floorball
         /// <returns>Paginated list of floorball players</returns>
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<FloorballPlayerDto>>> GetAllPlayers([FromQuery] GetFloorballPlayersRequest request)
         {
             _logger.LogInformation("Getting all floorball players with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-            var query = new GetAllFloorballPlayersQuery(
+            GetAllFloorballPlayersQuery query = new GetAllFloorballPlayersQuery(
                 request.Page,
                 request.PageSize,
                 request.IsActive,
@@ -79,13 +80,13 @@ namespace WebAPI.Controllers.Floorball
         /// <returns>Paginated list of active floorball players</returns>
         [HttpGet("active")]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballPlayerDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<FloorballPlayerDto>>> GetActivePlayers([FromQuery] GetActiveFloorballPlayersRequest request)
         {
             _logger.LogInformation("Getting active floorball players with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-            var query = new GetActiveFloorballPlayersQuery(
+            GetActiveFloorballPlayersQuery query = new GetActiveFloorballPlayersQuery(
                 request.Page,
                 request.PageSize,
                 request.Position,
@@ -156,7 +157,8 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to create floorball player";
-            return BadRequest(ApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+            return BadRequest(ApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -186,12 +188,14 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update floorball player";
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage));
             }
 
-            return BadRequest(ApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<FloorballPlayerDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>

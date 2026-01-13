@@ -11,10 +11,10 @@ import type {
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
 import MatchForm from '../MatchOverviewPage/Components/MatchForm/MatchForm';
-import BackButton from '../../../../components/BackButton/BackButton';
-import Navbar from '../../../../components/Navigation/Navbar';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import './EditMatchPage.scss';
 import '../MatchOverviewPage/MatchOverviewPage.scss';
+import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 
 const EditMatchPage = () => {
   const [loading, setLoading] = useState(false);
@@ -75,11 +75,15 @@ const EditMatchPage = () => {
 
       const changes: Promise<unknown>[] = [];
 
-      if (updatedData.seasonId !== matchData.seasonId) {
+      if (updatedData.seasonId && updatedData.seasonId !== matchData.seasonId) {
         changes.push(floorballMatchService.changeSeason(matchData.id, updatedData.seasonId));
       }
       
-      if (updatedData.homeTeamId !== matchData.homeTeamId || updatedData.awayTeamId !== matchData.awayTeamId) {
+      if (
+        updatedData.homeTeamId &&
+        updatedData.awayTeamId &&
+        (updatedData.homeTeamId !== matchData.homeTeamId || updatedData.awayTeamId !== matchData.awayTeamId)
+      ) {
         changes.push(floorballMatchService.changeTeams(matchData.id, updatedData.homeTeamId, updatedData.awayTeamId));
       }
       
@@ -89,6 +93,10 @@ const EditMatchPage = () => {
       
       if (updatedData.scheduledDateTime !== matchData.scheduledDateTime) {
         changes.push(floorballMatchService.changeDateTime(matchData.id, updatedData.scheduledDateTime));
+      }
+
+      if (updatedData.refereeId && updatedData.refereeId !== matchData.refereeId) {
+        changes.push(floorballMatchService.changeReferee(matchData.id, updatedData.refereeId));
       }
 
       if (changes.length === 0) {
@@ -124,12 +132,11 @@ const EditMatchPage = () => {
   }
   
   return (
+    <PageTemplate title={'Edit match'}>
     <div className="match-management">
-      <Navbar />
       <div className="match-management__content edit-match-page">
         <div className="page-header">
           <div className="header-left">
-            <BackButton to="/admin/floorball/matches" text="Back" />
           </div>
           <div className="header-center">
             <h1>Edit Match</h1>
@@ -137,13 +144,7 @@ const EditMatchPage = () => {
           <div className="header-right"></div>
         </div>
 
-        {error && (
-          <div className="error-alert page-error">
-            <span className="error-icon">⚠️</span>
-            <span className="error-text">{error}</span>
-            <button onClick={() => setError(null)} className="error-close">×</button>
-          </div>
-        )}
+        <ErrorPopup message={error} />
 
         <div className="form-container">
           {matchData ? (
@@ -161,6 +162,7 @@ const EditMatchPage = () => {
         </div>
       </div>
     </div>
+    </PageTemplate>
   );
 };
 

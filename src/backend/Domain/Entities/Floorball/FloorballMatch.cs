@@ -1,15 +1,13 @@
 using Domain.Enums;
 using Domain.Enums.Floorball;
 using System.Collections.Generic;
-using Domain.EventSourcing;
-using Domain.DomainEvents.Floorball;
 
 namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a floorball match
 /// </summary>
-public class FloorballMatch : AggregateRoot
+public class FloorballMatch : BaseEntity
 {
     /// <summary>
     /// Gets the season this match belongs to
@@ -187,7 +185,7 @@ public class FloorballMatch : AggregateRoot
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
-        for (int i = 1; i <= 3; i++)
+        for (int i = 1; i <= 2; i++)
         {
             _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
         }
@@ -318,8 +316,6 @@ public class FloorballMatch : AggregateRoot
 
         Status = FloorballMatchStatus.Scheduled;
         
-        // Add domain event
-        AddDomainEvent(new FloorballMatchRescheduledEvent(Id, oldDateTime, newDateTime, oldVenue, Venue ?? string.Empty));
     }
 
     /// <summary>
@@ -334,8 +330,6 @@ public class FloorballMatch : AggregateRoot
         FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Postponed;
         
-        // Add domain event
-        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
     }
 
     /// <summary>
@@ -355,12 +349,7 @@ public class FloorballMatch : AggregateRoot
             throw new InvalidOperationException("A match cannot start without goalies assigned for both teams.");
         }
 
-        FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.InProgress;
-
-        //Add domain events
-        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
-        AddDomainEvent(new FloorballMatchStartedEvent(Id, DateTime.UtcNow));
     }
 
     /// <summary>
@@ -457,18 +446,6 @@ public class FloorballMatch : AggregateRoot
             }
         }
 
-        // Add domain event
-        AddDomainEvent(new FloorballGoalScoredEvent(
-            Id,
-            scoringTeam.Id,
-            scoringPlayer.Id,
-            periodNumber,
-            timeInSeconds,
-            WentToOvertime,
-            false, // isPenaltyShot
-            WentToShootout, // isShootout
-            assistingPlayer?.Id,
-            secondaryAssistingPlayer?.Id));
 
         return goalEvent;
     }
@@ -521,16 +498,6 @@ public class FloorballMatch : AggregateRoot
             description ?? string.Empty);
         _events.Add(penaltyEvent);
         
-        // Add domain event
-        AddDomainEvent(new FloorballPenaltyAssignedEvent(
-            Id,
-            team.Id,
-            player?.Id,
-            penaltyType,
-            minutes,
-            periodNumber,
-            timeInSeconds,
-            description ?? string.Empty));
 
         return penaltyEvent;
     }
@@ -580,15 +547,6 @@ public class FloorballMatch : AggregateRoot
             wasInShootout);
         _events.Add(saveEvent);
 
-        // Add domain event
-        AddDomainEvent(new FloorballSaveEvent(
-            Id,
-            team.Id,
-            goalie.Id,
-            periodNumber,
-            timeInSeconds,
-            wasInOvertime,
-            wasInShootout));
 
         return saveEvent;
     }
@@ -604,7 +562,7 @@ public class FloorballMatch : AggregateRoot
     {
         ArgumentNullException.ThrowIfNull(referee);
 
-        if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
+        if (Status == FloorballMatchStatus.Completed || Status == FloorballMatchStatus.Cancelled)
             throw new InvalidOperationException($"Cannot add officials to a match with status {Status}.");
 
         if (_officials.Contains(referee))
@@ -613,9 +571,44 @@ public class FloorballMatch : AggregateRoot
         _officials.Add(referee);
 
 
-        // Add domain event
-        AddDomainEvent(new FloorballOfficialAssignedEvent(Id, referee.Id));
 
+    }
+
+    /// <summary>
+    /// Removes an official (referee) from the match. Ensures at least one official remains.
+    /// </summary>
+    /// <param name="refereeId">The referee ID to remove</param>
+    /// <exception cref="InvalidOperationException">Thrown when removal would leave zero officials or match status disallows change</exception>
+    public void RemoveOfficial(Guid refereeId)
+    {
+        if (Status == FloorballMatchStatus.Completed || Status == FloorballMatchStatus.Cancelled)
+            throw new InvalidOperationException($"Cannot remove officials from a match with status {Status}.");
+
+        FloorballReferee? existing = _officials.FirstOrDefault(o => o.Id == refereeId);
+        if (existing == null)
+            return;
+
+        if (_officials.Count <= 1)
+            throw new InvalidOperationException("Cannot remove the last official from the match.");
+
+        _officials.Remove(existing);
+    }
+
+    /// <summary>
+    /// Replaces the officials collection with the provided set. Requires at least one official.
+    /// </summary>
+    public void SetOfficials(IEnumerable<FloorballReferee> officials)
+    {
+        ArgumentNullException.ThrowIfNull(officials);
+        if (Status == FloorballMatchStatus.Completed || Status == FloorballMatchStatus.Cancelled)
+            throw new InvalidOperationException($"Cannot update officials when match status is {Status}.");
+
+        List<FloorballReferee> refs = officials.Distinct().ToList();
+        if (refs.Count == 0)
+            throw new InvalidOperationException("Match must have at least one official.");
+
+        _officials.Clear();
+        _officials.AddRange(refs);
     }
 
     /// <summary>
@@ -624,9 +617,13 @@ public class FloorballMatch : AggregateRoot
     public void RecordOvertime()
     {
         WentToOvertime = true;
-        
-        // Add domain event
-        AddDomainEvent(new FloorballMatchOvertimeStartedEvent(Id));
+
+        // Create a periodscore for non-regular period (Overtime)
+        if (_periodScores.All(ps => ps.PeriodNumber != 3))
+        {
+            _periodScores.Add(new FloorballPeriodScore(Id, 3, HomeTeamId, AwayTeamId));
+        }
+
     }
 
     /// <summary>
@@ -635,9 +632,13 @@ public class FloorballMatch : AggregateRoot
     public void RecordShootout()
     {
         WentToShootout = true;
-        
-        // Add domain event
-        AddDomainEvent(new FloorballMatchShootoutStartedEvent(Id));
+
+        // Create a periodscore for non-regular period (Shootout)
+        if (_periodScores.All(ps => ps.PeriodNumber != 4))
+        {
+            _periodScores.Add(new FloorballPeriodScore(Id, 4, HomeTeamId, AwayTeamId));
+        }
+
     }
 
     /// <summary>
@@ -657,10 +658,6 @@ public class FloorballMatch : AggregateRoot
         {
             referee.RecordMatchOfficiated();
         }
-
-        //Add domain events
-        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
-        AddDomainEvent(new FloorballMatchCompletedEvent(Id, HomeScore, AwayScore, WentToOvertime, WentToShootout));
     }
 
     /// <summary>
@@ -675,8 +672,6 @@ public class FloorballMatch : AggregateRoot
         FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Cancelled;
         
-        // Add domain event
-        AddDomainEvent(new FloorballMatchStatusChangedEvent(Id, oldStatus, Status));
     }
 
     /// <summary>
@@ -721,14 +716,6 @@ public class FloorballMatch : AggregateRoot
             }
         }
 
-        // Add domain event for goal deletion
-        AddDomainEvent(new FloorballGoalDeletedEvent(
-            Id,
-            goalEvent.TeamId,
-            goalEvent.ScoringPlayerId,
-            goalEvent.PeriodNumber,
-            goalEvent.TimeInSeconds,
-            goalEvent.AssistingPlayerId));
 
         return goalEvent;
     }
@@ -753,18 +740,32 @@ public class FloorballMatch : AggregateRoot
         // Remove the penalty event
         _events.Remove(penaltyEvent);
 
-        // Add domain event for penalty deletion
-        AddDomainEvent(new FloorballPenaltyDeletedEvent(
-            Id,
-            penaltyEvent.TeamId,
-            penaltyEvent.PlayerId,
-            penaltyEvent.PenaltyType,
-            penaltyEvent.DurationInMinutes,
-            penaltyEvent.PeriodNumber,
-            penaltyEvent.TimeInSeconds,
-            penaltyEvent.Description));
-
         return penaltyEvent;
+    }
+
+    /// <summary>
+    /// Deletes a save event from the match
+    /// </summary>
+    /// <param name="saveEventId">The ID of the save event to delete</param>
+    /// <returns>The deleted save event</returns>
+    /// <exception cref="ArgumentException">Thrown when the save event is not found</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in a state that allows deleting saves</exception>
+    public FloorballSave DeleteSaveEvent(Guid saveEventId)
+    {
+        if (Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException("Cannot delete save events unless match is in progress.");
+
+        // Find the save event
+        FloorballSave? saveEvent = _events.OfType<FloorballSave>().FirstOrDefault(s => s.Id == saveEventId);
+        if (saveEvent == null)
+            throw new ArgumentException($"Save event with ID {saveEventId} not found in this match.", nameof(saveEventId));
+
+        // Remove the save event
+        _events.Remove(saveEvent);
+
+        // No direct score changes for saves
+
+        return saveEvent;
     }
 
     public void EndPeriod(int periodNumber)
@@ -780,8 +781,6 @@ public class FloorballMatch : AggregateRoot
             throw new InvalidOperationException($"Period {periodNumber} has not been started.");
 
         periodScore.Complete();
-
-        AddDomainEvent(new FloorballPeriodEndedEvent(Id, periodNumber, HomeScore, AwayScore, periodNumber == 3));
     }
 
     /// <summary>
@@ -803,8 +802,6 @@ public class FloorballMatch : AggregateRoot
         Guid? previousGoalieId = HomeActiveGoalieId;
         HomeActiveGoalieId = goalieId;
 
-        // Add domain event
-        AddDomainEvent(new FloorballGoalieChangedEvent(Id, HomeTeamId, previousGoalieId, goalieId));
     }
 
     /// <summary>
@@ -826,8 +823,6 @@ public class FloorballMatch : AggregateRoot
         Guid? previousGoalieId = AwayActiveGoalieId;
         AwayActiveGoalieId = goalieId;
 
-        // Add domain event
-        AddDomainEvent(new FloorballGoalieChangedEvent(Id, AwayTeamId, previousGoalieId, goalieId));
     }
 
     /// <summary>

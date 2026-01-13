@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Application.DTOs.Common;
 using Domain.Enums.Floorball;
@@ -10,6 +10,7 @@ namespace Application.DTOs.Floorball
     /// </summary>
     /// <param name="Id">The unique identifier of the team</param>
     /// <param name="Name">The name of the team</param>
+    /// <param name="ShortName">The short name of the team</param>
     /// <param name="Division">The division level of the team</param>
     /// <param name="Club">The club this team belongs to</param>
     /// <param name="HomeArena">The team's home arena</param>
@@ -21,6 +22,7 @@ namespace Application.DTOs.Floorball
     public record FloorballTeamDto(
         Guid Id,
         string Name,
+        string ShortName,
         Guid? DivisionId,
         ClubDto Club,
         string HomeArena,

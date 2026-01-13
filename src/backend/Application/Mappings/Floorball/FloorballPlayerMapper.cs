@@ -45,7 +45,7 @@ public static class FloorballPlayerMapper
                 player.PersonId,
                 "Unknown",
                 "Player", 
-                DateTime.MinValue,
+                null,
                 "Unknown Player",
                 Domain.Enums.Common.PersonRole.User,
                 false,

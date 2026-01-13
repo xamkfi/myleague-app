@@ -21,13 +21,6 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .IsRequired()
                 .HasMaxLength(100);
 
-            // Ignore the Division navigation property since it's in a different DbContext (CommonDbContext)
-            // We use DivisionId as foreign key instead for cross-context relationships
-            builder.Ignore(s => s.Division);
-
-            builder.Property(s => s.DivisionId)
-                .IsRequired();
-
             builder.Property(s => s.StartDate)
                 .IsRequired();
 

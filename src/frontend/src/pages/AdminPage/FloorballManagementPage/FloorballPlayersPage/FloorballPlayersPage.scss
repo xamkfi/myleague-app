@@ -52,6 +52,14 @@
   min-height: 100vh;
 }
 
+.floorball-players-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #111827;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
 .floorball-players-container {
   padding: 2rem;
   max-width: 1400px;
@@ -78,13 +86,6 @@
   align-items: center;
   margin-bottom: 1rem;
 
-}
-
-.players-count {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #495057;
-  text-align: left;
 }
 
 .players-actions {
@@ -220,8 +221,9 @@
   align-items: center;
   margin-bottom: 1.5rem;
   padding: 1rem 1.5rem;
-  border-radius: 0.5rem;
-  color: white;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -236,8 +238,8 @@
 
     .selected-count {
       font-weight: 600;
-      color: white;
-      font-size: 0.875rem;
+      color: #495057;
+      font-size: 0.95rem;
     }
 
     .selection-buttons {
@@ -257,19 +259,20 @@
   }
 
   .control-btn {
-    padding: 0.5rem 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 0.375rem;
-    background-color: transparent;
-    color: white;
-    font-size: 0.75rem;
+    padding: 0.5rem 1.25rem;
+    border: 1.5px solid #dee2e6;
+    border-radius: 20px;
+    background-color: white;
+    color: #495057;
+    font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
 
     &:hover:not(:disabled) {
-      background-color: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.5);
+      background-color: #e9ecef;
+      border-color: #adb5bd;
+      transform: translateY(-1px);
     }
 
     &:disabled {
@@ -279,71 +282,136 @@
   }
 
   .bulk-activate-btn {
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.5rem;
     border: none;
-    border-radius: 0.375rem;
+    border-radius: 24px;
     background-color: #10b981;
     color: white;
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.875rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 
     &:hover:not(:disabled) {
       background-color: #059669;
       transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
     }
 
     &:disabled {
-      opacity: 0.7;
+      opacity: 0.6;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
     }
   }
 
   .bulk-deactivate-btn {
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.5rem;
     border: none;
-    border-radius: 0.375rem;
+    border-radius: 24px;
     background-color: #f59e0b;
     color: white;
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.875rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
 
     &:hover:not(:disabled) {
       background-color: #d97706;
       transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
     }
 
     &:disabled {
-      opacity: 0.7;
+      opacity: 0.6;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
     }
   }
 
   .bulk-delete-btn {
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.5rem;
     border: none;
-    border-radius: 0.375rem;
+    border-radius: 24px;
     background-color: #ef4444;
     color: white;
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.875rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
 
     &:hover:not(:disabled) {
       background-color: #dc2626;
       transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
     }
 
     &:disabled {
-      opacity: 0.7;
+      opacity: 0.6;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
+    }
+  }
+  .dead-deletebtn {
+    padding: 0.625rem 1.5rem;
+    border: none;
+    border-radius: 24px;
+    background-color: #7a7a7a;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(39, 39, 39, 0.2);
+
+    &:hover:not(:disabled) {
+      background-color: #535353;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(39, 39, 39, 0.2);;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .bulk-team-assign-btn {
+    padding: 0.625rem 1.5rem;
+    border: none;
+    border-radius: 24px;
+    background-color: #6366f1;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px #4947c2;
+
+    &:hover:not(:disabled) {
+      background-color: #5855eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px #4947c2;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
   }
 }
@@ -417,7 +485,6 @@
 
 .players-table {
   width: 100%;
-  min-height: 400px;
 
 
   thead {   

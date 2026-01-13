@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import PageTemplate from '../../../../components/PageTemplate/PageTemplate';
-import BackButton from '../../../../components/BackButton/BackButton';
+import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
 import type { FloorballTeam, PaginatedApiResponse } from '../../../../types/floorball/floorballTypes';
 import TeamsTable from './components/TeamsTable';
 import './FloorballTeamsPage.scss';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
 const FloorballTeamsPage = () => {
   const { t } = useTranslation();
@@ -131,6 +131,11 @@ const FloorballTeamsPage = () => {
     navigate(`/admin/floorball/teams/${teamId}/edit`);
   };
 
+  // Handle edit roster
+  const handleEditRoster = (teamId: string) => {
+    navigate(`/admin/floorball/teams/${teamId}/roster`);
+  };
+
   // Handle delete team
   const handleDelete = async (teamId: string, teamName: string) => {
     if (!window.confirm(t('floorball.teams.confirmDelete', { name: teamName }))) {
@@ -170,11 +175,7 @@ const FloorballTeamsPage = () => {
   return (
     <PageTemplate title={t('floorball.teams.title', 'Manage Teams')}>
       <div className="floorball-teams-container">
-
-        {/* Back button */}
-        <BackButton 
-          to="/admin/floorball" 
-        />
+        <h2 className="floorball-teams-title">{t('floorball.teams.title', 'MANAGE TEAMS')}</h2>
         
         {/* Header with actions */}
         <div className="floorball-teams-header">
@@ -203,16 +204,13 @@ const FloorballTeamsPage = () => {
         </div>
 
         {/* Error message */}
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
+        <ErrorPopup message={error} />
 
         {/* Teams table */}
         <TeamsTable
           teams={filteredTeams}
           onEdit={handleEdit}
+          onEditRoster={handleEditRoster}
           onDelete={handleDelete}
           loading={loading}
           pagination={{

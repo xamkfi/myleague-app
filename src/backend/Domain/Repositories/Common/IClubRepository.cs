@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Common;
 
 namespace Domain.Repositories.Common;
@@ -89,4 +90,13 @@ public interface IClubRepository
     /// <param name="name">The club name</param>
     /// <returns>True if a club with the name exists, false otherwise</returns>
     Task<bool> ExistsByNameAsync(string name);
+    
+    /// <summary>
+    /// Gets a paginated list of clubs ordered by name.
+    /// </summary>
+    /// <param name="page">The page number (1-based)</param>
+    /// <param name="pageSize">The number of items per page</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated collection of clubs</returns>
+    Task<PagedResult<Club>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
 } 

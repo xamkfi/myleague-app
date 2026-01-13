@@ -6,6 +6,7 @@ using Application.Queries.NewsArticles;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using Application.Commands.Common;
 
 namespace WebAPI.Controllers.Common
@@ -39,8 +40,8 @@ namespace WebAPI.Controllers.Common
         /// <returns>Paginated list of news articles</returns>
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedApiResponse<NewsArticleListDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<NewsArticleListDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<NewsArticleListDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<NewsArticleListDto>>> GetAllNews([FromQuery] GetNewsArticlesRequest request)
         {
             _logger.LogInformation("Getting all news articles with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
@@ -73,8 +74,8 @@ namespace WebAPI.Controllers.Common
         /// <returns>The news article details</returns>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<NewsArticleDto>>> GetNewsById(Guid id)
         {
             _logger.LogInformation("Getting news article by ID: {NewsId}", id);
@@ -103,8 +104,8 @@ namespace WebAPI.Controllers.Common
         /// <returns>The created news article</returns>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<NewsArticleDto>>> CreateNews([FromBody] CreateNewsArticleRequest request)
         {
             _logger.LogInformation("Creating new news article with title: {Title}", request.Title);
@@ -130,7 +131,9 @@ namespace WebAPI.Controllers.Common
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
-            return BadRequest(ApiResponse<NewsArticleDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<NewsArticleDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -141,9 +144,9 @@ namespace WebAPI.Controllers.Common
         /// <returns>The updated news article</returns>
         [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<NewsArticleDto>>> UpdateNews(Guid id, [FromBody] UpdateNewsArticleRequest request)
         {
             _logger.LogInformation("Updating news article with ID: {NewsId}", id);
@@ -184,8 +187,8 @@ namespace WebAPI.Controllers.Common
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/archive")]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<bool>>> ArchiveNews(Guid id)
         {
             _logger.LogInformation("Archiving news article with ID: {NewsId}", id);
@@ -214,8 +217,8 @@ namespace WebAPI.Controllers.Common
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/restore")]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<bool>>> RestoreNews(Guid id)
         {
             _logger.LogInformation("Restoring news article with ID: {NewsId}", id);
@@ -245,9 +248,9 @@ namespace WebAPI.Controllers.Common
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/image")]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<bool>>> SetNewsImage(Guid id, [FromBody] SetNewsArticleImageRequest request)
         {
             _logger.LogInformation("Setting image for news article with ID: {NewsId}", id);
@@ -277,9 +280,9 @@ namespace WebAPI.Controllers.Common
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/tags")]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<bool>>> AddNewsTag(Guid id, [FromBody] AddNewsArticleTagRequest request)
         {
             _logger.LogInformation("Adding tag '{Tag}' to news article with ID: {NewsId}", request.Tag, id);
@@ -309,9 +312,9 @@ namespace WebAPI.Controllers.Common
         /// <returns>Success status</returns>
         [HttpDelete("{id:guid}/tags")]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<bool>>> RemoveNewsTag(Guid id, [FromBody] RemoveNewsArticleTagRequest request)
         {
             _logger.LogInformation("Removing tag '{Tag}' from news article with ID: {NewsId}", request.Tag, id);
@@ -340,8 +343,8 @@ namespace WebAPI.Controllers.Common
         /// <returns>List of matching news articles</returns>
         [HttpGet("search")]
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> SearchNews([FromQuery] SearchNewsArticlesRequest request)
         {
             _logger.LogInformation("Searching news articles with term: {SearchTerm}", request.SearchTerm);
@@ -366,7 +369,7 @@ namespace WebAPI.Controllers.Common
         /// <returns>List of recent news articles</returns>
         [HttpGet("recent")]
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetRecentNews([FromQuery] GetRecentNewsArticlesRequest request)
         {
             _logger.LogInformation("Getting recent news articles - Count: {Count}", request.Count);
@@ -391,7 +394,7 @@ namespace WebAPI.Controllers.Common
         /// <returns>List of news articles in the specified category</returns>
         [HttpGet("category/{category}")]
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetNewsByCategory(string category)
         {
             _logger.LogInformation("Getting news articles by category: {Category}", category);
@@ -416,7 +419,7 @@ namespace WebAPI.Controllers.Common
         /// <returns>List of news articles with the specified tag</returns>
         [HttpGet("tag/{tag}")]
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetNewsByTag(string tag)
         {
             _logger.LogInformation("Getting news articles by tag: {Tag}", tag);
@@ -441,7 +444,7 @@ namespace WebAPI.Controllers.Common
         /// <returns>List of news articles by the specified author</returns>
         [HttpGet("author/{author}")]
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetNewsByAuthor(string author)
         {
             _logger.LogInformation("Getting news articles by author: {Author}", author);
@@ -465,7 +468,7 @@ namespace WebAPI.Controllers.Common
         /// <returns>List of available news categories</returns>
         [HttpGet("categories")]
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleCategoryDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<List<NewsArticleCategoryDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleCategoryDto>>>> GetNewsCategories()
         {
             _logger.LogInformation("Getting all news categories");
@@ -489,7 +492,7 @@ namespace WebAPI.Controllers.Common
         /// <returns>List of all used tags</returns>
         [HttpGet("tags")]
         [ProducesResponseType(typeof(ApiResponse<List<string>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<List<string>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<string>>>> GetNewsTags()
         {
             _logger.LogInformation("Getting all news tags");
@@ -514,8 +517,8 @@ namespace WebAPI.Controllers.Common
         /// <returns>The URL of the uploaded image</returns>
         [HttpPost("upload-image")]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> UploadImage([FromForm] IFormFile file)
         {
             _logger.LogInformation("Uploading image: {FileName}", file?.FileName);
@@ -578,8 +581,8 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpDelete("delete-image")]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> DeleteImage([FromQuery] string url)
         {
             _logger.LogInformation("Deleting image: {url}", url);
@@ -626,7 +629,7 @@ namespace WebAPI.Controllers.Common
         /// <returns></returns>
         [HttpGet("main-news")]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ApiResponse<NewsArticleDto>>> GetMainNews()
         {
             GetMainNewsQuery query = new GetMainNewsQuery();
@@ -636,6 +639,35 @@ namespace WebAPI.Controllers.Common
                 return NotFound(ApiResponse<NewsArticleDto>.ErrorResponse("No main news found."));
 
             return Ok(ApiResponse<NewsArticleDto>.SuccessResponse(response.Data, "Main news retrieved successfully"));
+        }
+
+        /// <summary>
+        /// Deletes news by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<bool>>> DeleteNews(Guid id)
+        {
+            _logger.LogInformation("Deleting news article with ID: {NewsId}", id);
+
+            var command = new DeleteNewsArticleCommand(id);
+            Result<bool> result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+            {
+                return Ok(ApiResponse<bool>.SuccessResponse(result.Data, "News article deleted successfully"));
+            }
+
+            if (result.Error?.Contains("not found") == true)
+            {
+                return NotFound(ApiResponse<bool>.ErrorResponse($"News article with ID '{id}' not found."));
+            }
+
+            string errorMessage = result.Error ?? result.GetErrorsString();
+            return StatusCode(500, ApiResponse<bool>.ErrorResponse(errorMessage));
         }
     }
 }

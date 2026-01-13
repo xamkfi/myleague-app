@@ -157,7 +157,7 @@ namespace WebAPI.Controllers.Floorball
 
             CreateFloorballSeasonCommand command = new CreateFloorballSeasonCommand(
                 request.Name,
-                request.DivisionId,
+                request.DivisionIds,
                 startDate,
                 endDate
             );
@@ -174,7 +174,9 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to create floorball season";
-            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -212,12 +214,14 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update floorball season";
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
             }
 
-            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -305,12 +309,14 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to complete floorball season";
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
             }
 
-            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -337,12 +343,14 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to add team to floorball season";
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
             }
 
-            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -369,12 +377,14 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to remove team from floorball season";
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
             }
 
-            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<FloorballSeasonDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 export interface Address {
   street1: string;
-  street2: string;
+  street2: string | null;
   city: string;
   postalCode: string;
   country: string;
@@ -9,7 +9,7 @@ export interface Address {
 export interface ContactInfo {
   email: string;
   phone: string;
-  alternativePhone: string;
+  alternativePhone: string | null;
 }
 
 export enum PersonRole {
@@ -22,7 +22,7 @@ export interface Person {
   id: string;
   firstName: string;
   lastName: string;
-  birthDate: string;
+  birthDate: string | null;
   fullName: string;
   isRegistered: boolean;
   role: PersonRole;
@@ -33,7 +33,7 @@ export interface Person {
 export interface PersonFormData {
   firstName: string;
   lastName: string;
-  birthDate: string;
+  birthDate: string | null;
   isRegistered: boolean;
   role: PersonRole;
   address: Address;
@@ -45,4 +45,21 @@ export interface EnhancedPersonFormData extends PersonFormData {
   teamId?: string;
   position?: string; // Will use FloorballPosition enum values
   jerseyNumber?: number;
+}
+
+export interface PaginatedApiResponse<T> {
+  success: boolean;
+  data: T[];
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    startItem: number;
+    endItem: number;
+  };
+  message: string;
+  errors: string[];
 } 

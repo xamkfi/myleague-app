@@ -143,6 +143,7 @@ export const useMatchEvents = ({
             AssisterId?: string;
             SecondaryAssisterId?: string;
             // Handle camelCase field names from JSON serialization
+            eventId?: string;
             matchId?: string;
             teamId?: string;
             playerId?: string;
@@ -187,8 +188,10 @@ export const useMatchEvents = ({
           return {
             id: `goal-${teamId}-${playerId}-${periodNumber}-${timeInSeconds}`,
             type: 'goal' as const,
+            eventId: goalData.eventId ?? '',
             teamId: teamId,
             teamName: teamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+            teamShortName: teamId === currentMatch.homeTeamId ? homeTeam?.shortName : awayTeam?.shortName,
             playerId: playerId,
             playerName: getPlayerNameById(playerId),
             assisterId: assisterId,
@@ -216,6 +219,7 @@ export const useMatchEvents = ({
             Minutes?: number;
             Description?: string;
             // Handle camelCase field names from JSON serialization
+            eventId?: string;
             matchId?: string;
             teamId?: string;
             playerId?: string;
@@ -258,8 +262,10 @@ export const useMatchEvents = ({
           return {
             id: `penalty-${penaltyTeamId}-${penaltyPlayerId || 'team'}-${penaltyPeriodNumber}-${penaltyTimeInSeconds}`,
             type: 'penalty' as const,
+            eventId: penaltyData.eventId ?? '',
             teamId: penaltyTeamId,
             teamName: penaltyTeamId === currentMatch.homeTeamId ? (homeTeam?.name || 'Home') : (awayTeam?.name || 'Away'),
+            teamShortName: penaltyTeamId === currentMatch.homeTeamId ? homeTeam?.shortName : awayTeam?.shortName,
             playerId: penaltyPlayerId,
             playerName: penaltyPlayerId ? getPlayerNameById(penaltyPlayerId) : 'Team Penalty',
             periodNumber: penaltyPeriodNumber,
@@ -281,6 +287,7 @@ export const useMatchEvents = ({
             TimeInSeconds?: number; timeInSeconds?: number;
             IsOvertime?: boolean; wasInOvertime?: boolean;
             IsShootout?: boolean; wasInShootout?: boolean;
+            eventId?: string;
           }
           const d = event.data as AnySaveLike;
           const saveData: SaveEventData = {
@@ -296,8 +303,10 @@ export const useMatchEvents = ({
           return {
             id: `save-${TeamId}-${GoalieId}-${PeriodNumber}-${TimeInSeconds}`,
             type: 'save' as const,
+            eventId: d.eventId ?? '',
             teamId: TeamId,
             teamName: TeamId === currentMatch.homeTeamId ? homeTeam?.name || 'Home' : awayTeam?.name || 'Away',
+            teamShortName: TeamId === currentMatch.homeTeamId ? homeTeam?.shortName : awayTeam?.shortName,
             playerId: GoalieId,
             playerName: getPlayerNameById(GoalieId),
             periodNumber: PeriodNumber,
@@ -324,7 +333,15 @@ export const useMatchEvents = ({
 
     console.log('Final sorted events:', sortedEvents);
     return sortedEvents;
-  }, [matchEvents, currentMatch.homeTeamId, homeTeam?.name, awayTeam?.name, getPlayerNameById]);
+  }, [
+    matchEvents,
+    currentMatch.homeTeamId,
+    homeTeam?.name,
+    homeTeam?.shortName,
+    awayTeam?.name,
+    awayTeam?.shortName,
+    getPlayerNameById
+  ]);
 
   return {
     matchEvents,

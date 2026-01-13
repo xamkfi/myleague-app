@@ -6,40 +6,9 @@ import type {
   UpdateFloorballMatchRequest,
   GetFloorballMatchesRequest
 } from '../../types/floorball/floorballTypes';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-/**
- * Helper function to parse error responses properly
- */
-const parseErrorResponse = async (response: Response, defaultMessage: string): Promise<string> => {
-  try {
-    const responseText = await response.text();
-    console.error('API Error Response (raw):', responseText);
-    
-    if (responseText) {
-      try {
-        const errorResponse = JSON.parse(responseText);
-        console.error('API Error Response (parsed):', errorResponse);
-        
-        if (errorResponse.errors && Array.isArray(errorResponse.errors)) {
-          return errorResponse.errors.join(', ');
-        } else if (errorResponse.message) {
-          return errorResponse.message;
-        } else {
-          return responseText;
-        }
-      } catch {
-        // If JSON parsing fails, use the raw text
-        return responseText;
-      }
-    }
-  } catch (readError) {
-    console.error('Error reading response:', readError);
-  }
-  
-  return `HTTP ${response.status}: ${defaultMessage}`;
-};
 
 export const floorballMatchService = {
   /**
@@ -56,18 +25,19 @@ export const floorballMatchService = {
       if (params?.startDate) searchParams.append('startDate', params.startDate);
       if (params?.endDate) searchParams.append('endDate', params.endDate);
       if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+      if (params?.searchQuery) searchParams.append('searchQuery', params.searchQuery);
 
       const url = `${API_URL}/FloorballMatch?${searchParams.toString()}`;
       console.log('Fetching matches from URL:', url);
       
       const response = await fetch(url);
+      const apiResponse: PaginatedApiResponse<FloorballMatchDto> = await response.json();
       
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball matches');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to fetch floorball matches');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: PaginatedApiResponse<FloorballMatchDto> = await response.json();
       console.log('API Response:', apiResponse);
       
       if (!apiResponse.success) {
@@ -82,6 +52,61 @@ export const floorballMatchService = {
   },
 
   /**
+   * Delete a goal event from a match
+   */
+  deleteGoal: async (matchId: string, goalEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const url = `${API_URL}/FloorballMatch/${matchId}/goal/${goalEventId}`;
+    console.log('DELETE goal URL:', url);
+    const response = await fetch(url, {
+      method: 'DELETE'
+    });
+
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+    
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete goal');
+      throw new Error(errorMessage);
+    }
+    return apiResponse;
+  },
+
+  /**
+   * Delete a penalty event from a match
+   */
+  deletePenalty: async (matchId: string, penaltyEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const url = `${API_URL}/FloorballMatch/${matchId}/penalty/${penaltyEventId}`;
+    console.log('DELETE penalty URL:', url);
+    const response = await fetch(url, {
+      method: 'DELETE'
+    });
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete penalty');
+      throw new Error(errorMessage);
+    }
+    return apiResponse;
+  },
+
+  /**
+   * Delete a save event from a match
+   */
+  deleteSave: async (matchId: string, saveEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const url = `${API_URL}/FloorballMatch/${matchId}/save/${saveEventId}`;
+    console.log('DELETE save URL:', url);
+    const response = await fetch(url, {
+      method: 'DELETE'
+    });
+
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+    
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete save');
+      throw new Error(errorMessage);
+    }
+    return apiResponse;
+  },
+
+  /**
    * Get matches by season ID
    */
   getBySeason: async (seasonId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {
@@ -90,13 +115,13 @@ export const floorballMatchService = {
       console.log('Fetching matches by season from URL:', url);
       
       const response = await fetch(url);
+      const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to fetch matches by season');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to fetch matches by season');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch matches by season');
@@ -118,13 +143,13 @@ export const floorballMatchService = {
       console.log('Fetching matches by team from URL:', url);
       
       const response = await fetch(url);
+      const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to fetch matches by team');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to fetch matches by team');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch matches by team');
@@ -147,12 +172,12 @@ export const floorballMatchService = {
       
       const response = await fetch(url);
       
+      const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to fetch today\'s matches by team');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to fetch today\'s matches by team');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch today\'s matches by team');
@@ -174,13 +199,13 @@ export const floorballMatchService = {
       console.log('Fetching match from URL:', url);
       
       const response = await fetch(url);
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball match');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to fetch floorball match');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch floorball match');
@@ -207,17 +232,17 @@ export const floorballMatchService = {
         },
         body: JSON.stringify(data),
       });
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+      console.log('Create API Response:', apiResponse);
       
       console.log('Create response status:', response.status);
       console.log('Create response ok:', response.ok);
       
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to create floorball match');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to create floorball match');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
-      console.log('Create API Response:', apiResponse);
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to create floorball match');
@@ -244,13 +269,13 @@ export const floorballMatchService = {
         },
         body: JSON.stringify(data),
       });
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to update floorball match');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to update floorball match');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to update floorball match');
@@ -276,13 +301,13 @@ export const floorballMatchService = {
           'Content-Type': 'application/json',
         },
       });
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to start floorball match');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to start floorball match');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to start floorball match');
@@ -309,12 +334,13 @@ export const floorballMatchService = {
         },
       });
       
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to complete floorball match');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to complete floorball match');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to complete floorball match');
@@ -342,12 +368,12 @@ export const floorballMatchService = {
         body: JSON.stringify({ newSeasonId: seasonId }),
       });
       
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to change match season');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to change match season');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match season');
@@ -375,12 +401,12 @@ export const floorballMatchService = {
         body: JSON.stringify({ newHomeTeamId: homeTeamId, newAwayTeamId: awayTeamId }),
       });
       
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to change match teams');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to change match teams');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match teams');
@@ -412,12 +438,12 @@ export const floorballMatchService = {
         body: JSON.stringify({ id, scheduledDateTime: current.data.scheduledDateTime, venue }),
       });
       
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to change match venue');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to change match venue');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match venue');
@@ -448,13 +474,13 @@ export const floorballMatchService = {
         },
         body: JSON.stringify({ id, scheduledDateTime, venue: current.data.venue }),
       });
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to change match date/time');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to change match date/time');
         throw new Error(errorMessage);
       }
       
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match date/time');
@@ -479,18 +505,136 @@ export const floorballMatchService = {
         },
       });
 
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to change goalie');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to change goalie');
         throw new Error(errorMessage);
       }
 
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to change goalie');
       }
       return apiResponse;
     } catch (error) {
       console.error('Error in floorballMatchService.changeGoalie:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Change match referee
+   */
+  changeReferee: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/referee/${refereeId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const raw = await response.text();
+      const apiResponse: ApiResponse<FloorballMatchDto> = raw ? JSON.parse(raw) : { success: response.ok, data: undefined as unknown as FloorballMatchDto, message: '', errors: [] };
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to change match referee');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match referee');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.changeReferee:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update match officials list
+   */
+  updateOfficials: async (matchId: string, officials: string[]): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ officials }),
+      });
+
+      const raw = await response.text();
+      const apiResponse: ApiResponse<FloorballMatchDto> = raw ? JSON.parse(raw) : { success: response.ok, data: undefined as unknown as FloorballMatchDto, message: '', errors: [] };
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to update match officials');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to update match officials');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.updateOfficials:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Add a single official (append).
+   */
+  addOfficial: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refereeId }),
+      });
+
+      const raw = await response.text();
+      const apiResponse: ApiResponse<FloorballMatchDto> = raw ? JSON.parse(raw) : { success: response.ok, data: undefined as unknown as FloorballMatchDto, message: '', errors: [] };
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to add official');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to add official');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.addOfficial:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delete an official from a match.
+   */
+  deleteOfficial: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials/${refereeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const raw = await response.text();
+      const apiResponse: ApiResponse<FloorballMatchDto> = raw ? JSON.parse(raw) : { success: response.ok, data: undefined as unknown as FloorballMatchDto, message: '', errors: [] };
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete official');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete official');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.deleteOfficial:', error);
       throw error;
     }
   }

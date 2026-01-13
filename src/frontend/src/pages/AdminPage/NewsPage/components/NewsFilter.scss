@@ -31,6 +31,18 @@
     flex-direction: column;
     gap: 0.5rem;
 
+    &.filter-checkbox {
+      flex-direction: row;
+      align-items: center;
+
+      label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0;
+      }
+    }
+
     label {
       font-size: 0.875rem;
       font-weight: 500;
@@ -73,6 +85,9 @@
     display: flex;
     gap: 0.75rem;
     align-items: end;
+    &.single-button {
+      justify-content: flex-start;
+    }
 
     .filter-button {
       padding: 0.5rem 1rem;
@@ -82,21 +97,6 @@
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s ease;
-
-      &.filter-apply {
-        background-color: #3b82f6;
-        color: white;
-
-        &:hover {
-          background-color: #2563eb;
-          transform: translateY(-1px);
-          box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
-        }
-
-        &:active {
-          transform: translateY(0);
-        }
-      }
 
       &.filter-clear {
         background-color: #f3f4f6;

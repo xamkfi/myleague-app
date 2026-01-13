@@ -3,7 +3,6 @@
 @use './components/SeasonsFilters.scss';
 @use './components/ErrorMessage.scss';
 @use './components/LoadingState.scss';
-@use './components/BackButton.scss';
 @use '@variables' as *;
 @use 'sass:map';
 
@@ -13,6 +12,14 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.floorball-seasons-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #111827;
+  text-align: left;
+  margin-bottom: 1rem;
 }
 
 // Table container styles
@@ -96,6 +103,19 @@
       font-weight: 600;
       line-height: 1.4;
       display: block;
+    }
+  }
+
+  .divisions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    align-items: center;
+
+    .no-divisions {
+      color: #6c757d;
+      font-size: 0.75rem;
+      font-style: italic;
     }
   }
 
@@ -363,9 +383,16 @@
 
         .season-meta {
           display: flex;
-          gap: 1rem;
+          flex-wrap: wrap;
+          gap: 0.5rem;
           font-size: 0.9rem;
           color: #6c757d;
+
+          .divisions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+          }
 
           .division {
             background: #007bff;

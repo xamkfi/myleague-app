@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,13 +22,15 @@ namespace Application.Commands.Floorball.Team
     /// <param name="TeamCategory"></param>
     /// <param name="SecondaryJerseyColor"></param>
     /// <param name="LogoUrl"></param>
+    /// <param name="ShortName"></param>
     public record UpdateFloorballTeamCommand(
         Guid Id,
         string Name,
-        Guid DivisionId,
+        Guid? DivisionId,
         string HomeArena,
         string PrimaryJerseyColor,
         TeamCategory TeamCategory,
         string? SecondaryJerseyColor,
-        string? LogoUrl) : IRequest<Result<FloorballTeamDto>>;
+        string? LogoUrl,
+        string? ShortName) : IRequest<Result<FloorballTeamDto>>;
 }

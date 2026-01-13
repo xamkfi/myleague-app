@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Application.DTOs.Common;
 using Application.Services.Common;
@@ -14,6 +15,7 @@ namespace MyLeague.Infrastructure.Services.Common
     {
         private readonly DomainEventNotifier _notifier;
         private readonly ILogger<TimerNotificationService> _logger;
+        private readonly ConcurrentDictionary<Guid, long> _sequences = new();
 
         /// <summary>
         /// Initializes a new instance of the TimerNotificationService class
@@ -38,6 +40,10 @@ namespace MyLeague.Infrastructure.Services.Common
         {
             try
             {
+                // Assign a monotonically increasing sequence for every match across ALL notifications.
+                // This guarantees consistent ordering regardless of the event source.
+                long seq = _sequences.AddOrUpdate(matchId, 1, (_, prev) => prev + 1);
+                update.Sequence = seq;
                 // Send to match-specific group
                 await _notifier.NotifyMatchAsync(matchId, "TimerUpdateEvent", update);
             }

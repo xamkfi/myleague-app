@@ -73,6 +73,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <param name="endDate">Optional end date filter</param>
         /// <param name="status">Optional match status filter</param>
         /// <param name="sortOrder">Optional sort order ("asc" or "desc")</param>
+        /// <param name="searchQuery">Optional search query to filter by team names (case-insensitive, partial match)</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Paginated collection of floorball matches</returns>
         public async Task<PagedResult<FloorballMatch>> GetPagedAsync(
@@ -84,6 +85,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             DateTime? endDate = null,
             FloorballMatchStatus? status = null,
             string sortOrder = "desc",
+            string? searchQuery = null,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballMatch> query = _entities
@@ -118,6 +120,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (status.HasValue)
             {
                 query = query.Where(m => m.Status == status.Value);
+            }
+
+            // Apply search query filter (team names)
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                string searchTerm = searchQuery.Trim().ToLower();
+                query = query.Where(m => 
+                    m.HomeTeam.Name.ToLower().Contains(searchTerm) || 
+                    m.AwayTeam.Name.ToLower().Contains(searchTerm)
+                );
             }
 
             // Apply ordering by scheduled date
@@ -349,10 +361,12 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public override async Task UpdateAsync(FloorballMatch match)
         {
             _dbContext.Entry(match).State = EntityState.Modified;
-            foreach (var periodScore in match.PeriodScores)
+            // Ensure related PeriodScores modifications are tracked and persisted
+            foreach (FloorballPeriodScore periodScore in match.PeriodScores)
             {
                 _dbContext.Entry(periodScore).State = EntityState.Modified;
             }
+
             await Task.CompletedTask;
         }
 

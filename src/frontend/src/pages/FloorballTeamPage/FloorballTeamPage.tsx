@@ -51,7 +51,7 @@ function FloorballTeamPage() {
       
       // Find the active season for this division
       const seasonForDivision = activeSeasons.find(season => 
-        season.divisionId === divisionId && season.isActive
+        season.seasonDivisions?.some(sd => sd.divisionId === divisionId) && season.isActive
       );
       
       return seasonForDivision || null;
@@ -83,13 +83,21 @@ function FloorballTeamPage() {
           const teamResponse = await floorballTeamService.getById(foundTeam.id);
           setTeam(teamResponse);
 
-          // Fetch division the team is in
-          const divisionResponse = await divisionService.getById(teamResponse.divisionId)
-          setDivision(divisionResponse.data)
+          // Fetch division the team is in (division is optional)
+          if (teamResponse.divisionId) {
+            const divisionResponse = await divisionService.getById(teamResponse.divisionId);
+            setDivision(divisionResponse.data);
+          } else {
+            setDivision(null);
+          }
 
-          // Fetch current season for this division
-          const currentSeasonData = await getCurrentSeason(teamResponse.divisionId);
-          setCurrentSeason(currentSeasonData);
+          // Fetch current season for this division (division is optional)
+          if (teamResponse.divisionId) {
+            const currentSeasonData = await getCurrentSeason(teamResponse.divisionId);
+            setCurrentSeason(currentSeasonData);
+          } else {
+            setCurrentSeason(null);
+          }
         } else {
           setError('Team not found');
         }

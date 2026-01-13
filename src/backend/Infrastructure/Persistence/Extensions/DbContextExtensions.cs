@@ -1,9 +1,6 @@
-using Domain.DomainEvents;
 using Domain.Entities;
-using Domain.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using MyLeague.Infrastructure.DomainEvents;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using System.Reflection;
 
@@ -23,25 +20,10 @@ namespace MyLeague.Infrastructure.Persistence.Extensions
         /// <returns>The number of state entries written to the database</returns>
         public static async Task<int> SaveChangesWithEventsAsync(
             this DbContext dbContext,
-            IDomainEventDispatcher dispatcher,
             CancellationToken cancellationToken = default)
         {
             // Update audit fields before processing domain events
             UpdateAuditFields(dbContext);
-
-            // Get all the entities that implement IAggregateRoot
-            var aggregateRoots = dbContext.ChangeTracker.Entries<AggregateRoot>()
-                .Where(x => x.Entity.DomainEvents.Any())
-                .Select(x => x.Entity)
-                .ToList();
-
-            // Collect all domain events from aggregate roots
-            var domainEvents = aggregateRoots
-                .SelectMany(x => x.DomainEvents)
-                .ToList();
-
-            // Clear the domain events from the aggregate roots
-            aggregateRoots.ForEach(aggregate => aggregate.ClearDomainEvents());
 
             // Save changes to the database using the appropriate method to avoid recursion
             int result;
@@ -61,9 +43,6 @@ namespace MyLeague.Infrastructure.Persistence.Extensions
                 // For other DbContext types, call the base SaveChangesAsync directly
                 result = await dbContext.SaveChangesAsync(cancellationToken);
             }
-
-            // Dispatch the domain events after the changes have been saved
-            await dispatcher.DispatchAsync(domainEvents);
 
             return result;
         }

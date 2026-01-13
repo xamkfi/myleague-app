@@ -58,6 +58,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<FloorballSeasonDivisionTeam>> GetSeasonDivisionTeamsAsync(Guid seasonId)
+        {
+            return await _db.Set<FloorballSeasonDivisionTeam>()
+                .Include(sdt => sdt.Team)
+                .Where(sdt => sdt.SeasonId == seasonId)
+                .ToListAsync();
+        }
+
         public async Task AddSeasonDivisionAsync(Guid seasonId, Guid divisionId)
         {
             bool exists = await _db.Set<FloorballSeasonDivision>().AnyAsync(sd => sd.SeasonId == seasonId && sd.DivisionId == divisionId);

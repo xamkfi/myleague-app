@@ -1,28 +1,18 @@
-using Domain.EventSourcing;
-using Domain.DomainEvents.Floorball;
-using Domain.Entities.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Domain.Entities.Floorball;
 
 /// <summary>
 /// Represents a floorball season
 /// </summary>
-public class FloorballSeason : AggregateRoot
+public class FloorballSeason : BaseEntity
 {
     /// <summary>
     /// Gets the name of the season (e.g., "2023-2024")
     /// </summary>
     public string Name { get; private set; }
-
-    /// <summary>
-    /// Gets the division this season belongs to
-    /// </summary>
-    public Division Division { get; private set; }
-
-    /// <summary>
-    /// Gets the ID of the division this season belongs to
-    /// </summary>
-    public Guid DivisionId { get; private set; }
 
     /// <summary>
     /// Gets the start date of the season
@@ -63,8 +53,6 @@ public class FloorballSeason : AggregateRoot
     {
         Id = Guid.NewGuid();
         Name = string.Empty; // Initialize to avoid CS8618
-        Division = default!; // Initialize to avoid CS8618
-        DivisionId = Guid.Empty; // Initialize to avoid CS8618
         StartDate = default; // Initialize to avoid CS8618
         EndDate = default; // Initialize to avoid CS8618
         IsActive = false;
@@ -77,11 +65,10 @@ public class FloorballSeason : AggregateRoot
     /// Initializes a new instance of the FloorballSeason class
     /// </summary>
     /// <param name="name">The name of the season</param>
-    /// <param name="division">The division this season belongs to</param>
     /// <param name="startDate">The start date of the season</param>
     /// <param name="endDate">The end date of the season</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
-    public FloorballSeason(string name, Guid divisionId, DateTime startDate, DateTime endDate)
+    public FloorballSeason(string name, DateTime startDate, DateTime endDate)
     {
         ArgumentNullException.ThrowIfNull(name);
         if (string.IsNullOrWhiteSpace(name))
@@ -91,8 +78,6 @@ public class FloorballSeason : AggregateRoot
         
         Id = Guid.NewGuid();
         Name = name;
-        Division = default!;
-        DivisionId = divisionId;
         StartDate = startDate;
         EndDate = endDate;
         IsActive = false;
@@ -100,7 +85,6 @@ public class FloorballSeason : AggregateRoot
         _teams = new List<FloorballTeam>();
         _matches = new List<FloorballMatch>();
         
-        AddDomainEvent(new FloorballSeasonCreatedEvent(Id, name, divisionId, startDate, endDate));
     }
 
     /// <summary>
@@ -124,7 +108,6 @@ public class FloorballSeason : AggregateRoot
         StartDate = startDate;
         EndDate = endDate;
         
-        AddDomainEvent(new FloorballSeasonDetailsUpdatedEvent(Id, name, startDate, endDate));
     }
 
     /// <summary>
@@ -144,28 +127,8 @@ public class FloorballSeason : AggregateRoot
         StartDate = startDate;
         EndDate = endDate;
         
-        AddDomainEvent(new FloorballSeasonDateRangeUpdatedEvent(Id, startDate, endDate));
     }
 
-    /// <summary>
-    /// Updates the division of the season
-    /// </summary>
-    /// <param name="division">The new division</param>
-    /// <exception cref="InvalidOperationException">Thrown when the season is completed or has teams in a different division</exception>
-    public void UpdateDivision(Division division)
-    {
-        ArgumentNullException.ThrowIfNull(division);
-        
-        if (IsCompleted)
-            throw new InvalidOperationException("Cannot update a completed season.");
-        if (_teams.Count > 0 && _teams.Any(t => t.DivisionId != division.Id))
-            throw new InvalidOperationException("Cannot change division because some teams in this season belong to a different division.");
-        
-        Division = division;
-        DivisionId = division.Id;
-        
-        AddDomainEvent(new FloorballSeasonDivisionUpdatedEvent(Id, division));
-    }
 
     /// <summary>
     /// Activates the season
@@ -177,7 +140,6 @@ public class FloorballSeason : AggregateRoot
             throw new InvalidOperationException("Cannot activate a completed season.");
 
         IsActive = true;
-        AddDomainEvent(new FloorballSeasonActivatedEvent(Id));
     }
 
     /// <summary>
@@ -186,7 +148,6 @@ public class FloorballSeason : AggregateRoot
     public void Deactivate()
     {
         IsActive = false;
-        AddDomainEvent(new FloorballSeasonDeactivatedEvent(Id));
     }
 
     /// <summary>
@@ -196,7 +157,6 @@ public class FloorballSeason : AggregateRoot
     {
         IsActive = false;
         IsCompleted = true;
-        AddDomainEvent(new FloorballSeasonCompletedEvent(Id));
     }
 
     /// <summary>
@@ -210,12 +170,9 @@ public class FloorballSeason : AggregateRoot
         ArgumentNullException.ThrowIfNull(team);
         if (IsCompleted)
             throw new InvalidOperationException("Cannot add a team to a completed season.");
-        if (team.DivisionId != DivisionId)
-            throw new InvalidOperationException($"Team division does not match season division.");
         if (_teams.Contains(team))
             return;
         _teams.Add(team);
-        AddDomainEvent(new FloorballTeamAddedToSeasonEvent(Id, team.Id));
     }
 
     /// <summary>
@@ -232,7 +189,6 @@ public class FloorballSeason : AggregateRoot
         if (_matches.Count > 0 && _matches.Any(m => m.HomeTeam == team || m.AwayTeam == team))
             throw new InvalidOperationException("Cannot remove team that is part of scheduled matches.");
         _teams.Remove(team);
-        AddDomainEvent(new FloorballTeamRemovedFromSeasonEvent(Id, team.Id));
     }
 
     /// <summary>
@@ -252,6 +208,5 @@ public class FloorballSeason : AggregateRoot
             return;
         _matches.Add(match);
         
-        AddDomainEvent(new FloorballMatchAddedToSeasonEvent(Id, match.Id, match.HomeTeamId, match.AwayTeamId));
     }
 } 

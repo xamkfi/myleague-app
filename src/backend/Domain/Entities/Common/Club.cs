@@ -1,17 +1,14 @@
-using Domain.DomainEvents.Common;
-using Domain.DomainEvents.Floorball;
 using Domain.Entities.Floorball;
 using Domain.Entities.Hockey;
 using Domain.Enums.Common;
 using Domain.Enums.Hockey;
-using Domain.EventSourcing;
 
 namespace Domain.Entities.Common
 {
     /// <summary>
     /// Represents a sports club that can have both floorball and hockey teams.
     /// </summary>
-    public class Club : AggregateRoot
+    public class Club : BaseEntity
     {
         /// <summary>
         /// Gets the name of the club.
@@ -78,8 +75,8 @@ namespace Domain.Entities.Common
         /// Initializes a new instance of the <see cref="Club"/> class.
         /// </summary>
         /// <param name="name">The name of the club.</param>
-        /// <param name="city">The city where the club is located.</param>
-        /// <param name="country">The country where the club is located.</param>
+        /// <param name="city">The city where the club is located (optional).</param>
+        /// <param name="country">The country where the club is located (optional).</param>
         /// <param name="foundingDate">The founding date of the club (optional).</param>
         /// <param name="websiteUrl">The website URL of the club (optional).</param>
         /// <param name="logoUrl">The logo URL of the club (optional).</param>
@@ -88,48 +85,42 @@ namespace Domain.Entities.Common
         /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
         public Club(
             string name,
-            string city,
-            string country,
+            string? city = null,
+            string? country = null,
             DateTime? foundingDate = null,
             Uri? websiteUrl = null,
             Uri? logoUrl = null,
             string? contactEmail = null)
         {
             ValidateRequired(name, nameof(name));
-            ValidateRequired(city, nameof(city));
-            ValidateRequired(country, nameof(country));
 
             Id = Guid.NewGuid();
             Name = name;
-            City = city;
-            Country = country;
+            City = city ?? string.Empty;
+            Country = country ?? string.Empty;
             FoundingDate = foundingDate ?? DateTime.UtcNow;
             WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
             LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
             ContactEmail = contactEmail ?? "contact@example.com";
 
-            AddDomainEvent(new ClubRegisteredEvent(Id, Name, City, Country, FoundingDate));
         }
 
         /// <summary>
         /// Updates the basic information of the club.
         /// </summary>
         /// <param name="name">The new name of the club.</param>
-        /// <param name="city">The new city of the club.</param>
-        /// <param name="country">The new country of the club.</param>
+        /// <param name="city">The new city of the club (optional).</param>
+        /// <param name="country">The new country of the club (optional).</param>
         /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
         /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
-        public void UpdateBasicInfo(string name, string city, string country)
+        public void UpdateBasicInfo(string name, string? city = null, string? country = null)
         {
             ValidateRequired(name, nameof(name));
-            ValidateRequired(city, nameof(city));
-            ValidateRequired(country, nameof(country));
 
             Name = name;
-            City = city;
-            Country = country;
+            City = city ?? string.Empty;
+            Country = country ?? string.Empty;
 
-            AddDomainEvent(new ClubInfoUpdatedEvent(Id, Name, City, Country));
         }
 
         /// <summary>
@@ -148,10 +139,13 @@ namespace Domain.Entities.Common
         /// <summary>
         /// Updates the founding date of the club.
         /// </summary>
-        /// <param name="foundingDate">The new founding date of the club.</param>
-        public void UpdateFoundingDate(DateTime foundingDate)
+        /// <param name="foundingDate">The new founding date of the club (optional).</param>
+        public void UpdateFoundingDate(DateTime? foundingDate)
         {
-            FoundingDate = foundingDate;
+            if (foundingDate.HasValue)
+            {
+                FoundingDate = foundingDate.Value;
+            }
         }
 
         /// <summary>
@@ -192,7 +186,6 @@ namespace Domain.Entities.Common
                 throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
 
             _floorballTeams.Remove(team);
-            AddDomainEvent(new FloorballTeamRemovedEvent(Id, teamId));
             return true;
         }
 

@@ -2,26 +2,15 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using Domain.Enums.Floorball;
 using Domain.Enums.Common;
+using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Models.Floorball
 {
     /// <summary>
     /// Request model for getting paginated floorball teams
     /// </summary>
-    public record GetFloorballTeamsRequest
+    public record GetFloorballTeamsRequest : PagedRequestBase
     {
-        /// <summary>
-        /// Gets the page number (1-based)
-        /// </summary>
-        [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
-        public int Page { get; init; } = 1;
-
-        /// <summary>
-        /// Gets the number of items per page (0 means use default)
-        /// </summary>
-        [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
-        public int PageSize { get; init; } = 0;
-
         /// <summary>
         /// Gets the club ID filter
         /// </summary>
@@ -31,6 +20,22 @@ namespace WebAPI.Models.Floorball
         /// Gets the division filter
         /// </summary>
         public string? Division { get; init; }
+    }
+
+    /// <summary>
+    /// Request model for getting paginated floorball teams without roster
+    /// </summary>
+    public record GetAllTeamsWithoutRosterRequest : PagedRequestBase
+    {
+        /// <summary>
+        /// Gets the search term filter
+        /// </summary>
+        public string? SearchTerm { get; init; }
+
+        /// <summary>
+        /// Gets the team category filter
+        /// </summary>
+        public TeamCategory? TeamCategory { get; init; }
     }
 
     /// <summary>
@@ -48,8 +53,7 @@ namespace WebAPI.Models.Floorball
         /// <summary>
         /// The division the team plays in
         /// </summary>
-        [Required(ErrorMessage = "Division is required")]
-        public Guid DivisionId { get; set; }
+        public Guid? DivisionId { get; set; }
 
         /// <summary>
         /// The ID of the club the team belongs to
@@ -89,6 +93,12 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Team category is required")]
         public TeamCategory Category { get; set; }
+
+        /// <summary>
+        /// The short name / acronym of the team (max 4 characters)
+        /// </summary>
+        [StringLength(4, MinimumLength = 1, ErrorMessage = "Short name must be 1 to 4 characters")]
+        public string? ShortName { get; set; }
     }
     
     /// <summary>

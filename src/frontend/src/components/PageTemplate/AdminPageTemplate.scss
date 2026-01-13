@@ -1,0 +1,41 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../styles/common' as *;
+
+.admin-page {
+  &-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: $color-blue-darkest;
+  }
+  
+  &-content {
+    flex: 1;
+    margin-left: 250px; // Width of the admin navbar
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: map.get($spacing, 'xl'); // Padding around the white content
+  }
+
+  &-body {
+    flex: 1;
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: map.get($spacing, 'xl');
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    > * {
+      width: 100%;
+    }
+  }
+}
+
+.placeholder-text {
+  font-size: map.get($font-sizes, 'md');
+  margin-top: map.get($spacing, 'xl');
+  text-align: center;
+  color: $color-text-muted;
+}
+

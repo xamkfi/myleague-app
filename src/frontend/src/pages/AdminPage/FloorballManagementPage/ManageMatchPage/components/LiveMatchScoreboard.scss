@@ -1,0 +1,70 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+.scoreboard {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 140px;
+  padding: 24px;
+  border: 1px solid var(--mm-border-color, #D1D0D6);
+  border-radius: 8px;
+  background: var(--mm-bg-color, #FBFBFD);
+
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center content within full-width background */
+  gap: clamp(12px, 3vw, 24px);
+
+  .team-score {
+    text-align: center;
+    /* Keep teams near the center while allowing some growth */
+    flex: 0 1 clamp(200px, 28vw, 320px);
+    min-width: 0; /* allow ellipsis in flex children */
+
+    .team-name {
+      font-family: $font-family-body;
+      font-size: clamp(14px, 1.6vw, 18px);
+      font-weight: map.get($font-weights, 'semibold');
+      line-height: 24px;
+      letter-spacing: 0;
+      color: $color-neutral-black;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .score {
+      font-family: $font-family-display;
+      font-size: clamp(40px, 6vw, 64px);
+      line-height: 1.1;
+      font-weight: map.get($font-weights, 'medium');
+      letter-spacing: 0.05em;
+      color: $color-neutral-black;
+      text-align: center;
+    }
+  }
+
+  .score-separator {
+    align-self: center;
+    height: 40px;
+    width: 28px;
+    min-width: 28px;
+    flex: 0 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    position: relative;
+    top: 14px;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 4px;
+      background: $color-neutral-dark-grey;
+      border-radius: 1px;
+    }
+  }
+}
+
+

@@ -1,4 +1,5 @@
 using System;
+using Domain.Enums.Common;
 
 namespace Application.DTOs.Common;
 
@@ -10,6 +11,6 @@ public record DivisionDto(
     string Name,
     string Description,
     int Level,
-    string SportType,
+    SportsCategory SportType,
     bool IsActive,
     DateTime CreatedDate); 

@@ -10,9 +10,9 @@ namespace Application.Commands.Clubs;
 /// </summary>
 public record CreateClubCommand(
     string Name,
-    string City,
-    string Country,
-    DateTime FoundingDate,
-    string WebsiteUrl = "",
-    string LogoUrl = "",
-    string ContactEmail = "") : IRequest<Result<ClubDto>>; 
+    string? City,
+    string? Country,
+    DateTime? FoundingDate,
+    string? WebsiteUrl = "",
+    string? LogoUrl = "",
+    string? ContactEmail = "") : IRequest<Result<ClubDto>>; 

@@ -2,6 +2,11 @@
 @use '@variables' as *;
 @use '../../../../styles/common' as *;
 
+.match-result-table-container {
+  width: 100%;
+  overflow-x: auto; /* keep layout usable if content grows */
+}
+
 .status-badge {
   padding: 4px 10px;
   border-radius: 6px;
@@ -10,9 +15,10 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   display: inline-block;
-  min-width: 80px;
+  min-width: 100px;
   text-align: center;
   border: none;
+  white-space: nowrap;
 }
 
 .status-Scheduled {
@@ -50,6 +56,8 @@
   background: #fff;
   flex-wrap: wrap;
   position: relative;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
 }
 
 .match-result-date {
@@ -101,6 +109,7 @@
 
 .match-result-status {
   margin-right: 1.5rem;
+  flex: 0 0 auto;
 }
 
 .match-result-link {
@@ -190,9 +199,20 @@
     padding: 1px 5px;
   }
   .status-badge {
-    min-width: 60px;
+    min-width: 104px;
     font-size: 0.85em;
-    padding: 3px 6px;
+    padding: 3px 8px;
+  }
+  .match-result-row {
+    padding: 0.5rem 0.75rem;
+  }
+  .match-result-date {
+    flex: 1 1 100%;
+  }
+  .match-result-teams {
+    flex: 1 1 auto;
+    text-align: left;
+    justify-content: flex-start;
   }
   .match-result-table__link .btn-link {
     padding: 5px 10px;

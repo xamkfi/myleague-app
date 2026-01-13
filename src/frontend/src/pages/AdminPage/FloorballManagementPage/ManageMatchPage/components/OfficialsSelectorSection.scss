@@ -1,0 +1,94 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
+.officials-selector-section {
+  margin-top: 8px;
+  width: 622px;
+  padding: 24px;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .officials-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .officials-title {
+      margin: 0;
+      font-family: $font-family-display;
+      font-weight: map.get($font-weights, 'medium');
+      font-size: 14px;
+      line-height: 24px;
+      letter-spacing: 0;
+      color: $color-neutral-black;
+    }
+
+    .officials-add-btn {
+      background: $color-neutral-light-grey;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-family: $font-family-body;
+      font-size: 12px;
+      cursor: pointer;
+      color: $color-neutral-black;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .officials-rows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .officials-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    select {
+      width: 279px;
+      height: 40px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: $color-neutral-light-grey;
+      font-family: $font-family-body;
+      font-weight: map.get($font-weights, 'regular');
+      font-size: 14px;
+      line-height: 24px;
+      letter-spacing: 0;
+      color: $color-neutral-black;
+      appearance: auto;
+    }
+
+    .officials-remove-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: 4px;
+      background: #fff;
+      color: $color-neutral-black;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+

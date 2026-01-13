@@ -46,12 +46,13 @@ public static class FloorballMatchMapper
             .OrderBy(ps => ps.PeriodNumber)
             .ToDictionary(
                 ps => ps.PeriodNumber,
-                ps => new PeriodScoreDto(ps.HomeScore, ps.AwayScore)
+                ps => new PeriodScoreDto(ps.HomeScore, ps.AwayScore, ps.IsCompleted)
             );
 
         // Map goal events with player names
         List<FloorballGoalEventDto> goalEvents = match.GoalEvents
             .Select(g => new FloorballGoalEventDto(
+                g.Id,
                 g.TeamId,
                 g.ScoringPlayerId ?? Guid.Empty,
                 g.AssistingPlayerId,
@@ -68,6 +69,7 @@ public static class FloorballMatchMapper
         // Map penalty events with player names
         List<FloorballPenaltyEventDto> penaltyEvents = match.PenaltyEvents
             .Select(p => new FloorballPenaltyEventDto(
+                p.Id,
                 p.TeamId,
                 p.PlayerId,
                 p.PenaltyType,
@@ -82,6 +84,7 @@ public static class FloorballMatchMapper
         List<FloorballSaveEventDto> saveEvents = match.SaveEvents
             .Select(s => new FloorballSaveEventDto
             {
+                Id = s.Id,
                 TeamId = s.TeamId,
                 GoalieId = s.GoalieId,
                 PeriodNumber = s.PeriodNumber,
@@ -95,6 +98,7 @@ public static class FloorballMatchMapper
         return new FloorballMatchDto(
             match.Id,
             match.SeasonId,
+            match.Season.Name,
             match.HomeTeamId,
             match.HomeTeam.Name,
             match.HomeTeam.LogoUrl,
@@ -172,17 +176,19 @@ public static class FloorballMatchMapper
     /// <param name="awayTeamName">The away team name (placeholder until team lookups are implemented)</param>
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when match is null</exception>
-    public static FloorballMatchDto ToDto(EventSourcedFloorballMatch match, string homeTeamName = "Home Team", string awayTeamName = "Away Team")
+    public static FloorballMatchDto ToDto(FloorballMatch match, string homeTeamName = "Home Team", string awayTeamName = "Away Team")
     {
         if (match == null)
             throw new ArgumentNullException(nameof(match));
 
         // Convert period scores from tuple format to PeriodScoreDto format
         Dictionary<int, PeriodScoreDto> periodScores = ConvertPeriodScores(match.PeriodScores);
+        List<Guid> officials = ConvertOfficials(match.Officials);
 
         return new FloorballMatchDto(
             match.Id,
             match.SeasonId,
+            "default",
             match.HomeTeamId,
             homeTeamName,
             null,
@@ -199,7 +205,7 @@ public static class FloorballMatchMapper
             null, // EventSourcedFloorballMatch does not have HomeActiveGoalieId
             null, // EventSourcedFloorballMatch does not have AwayActiveGoalieId
             periodScores,
-            match.OfficialIds,
+            officials,
             new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed
             new List<FloorballPenaltyEventDto>(), // TODO: Map penalty events when needed
             new List<FloorballSaveEventDto>()
@@ -271,16 +277,35 @@ public static class FloorballMatchMapper
     /// </summary>
     /// <param name="periodScores">The period scores in tuple format</param>
     /// <returns>The period scores in PeriodScoreDto format</returns>
-    public static Dictionary<int, PeriodScoreDto> ConvertPeriodScores(IReadOnlyDictionary<int, (int HomeScore, int AwayScore)> periodScores)
+    public static Dictionary<int, PeriodScoreDto> ConvertPeriodScores(IReadOnlyCollection<FloorballPeriodScore> periodScores)
     {
         if (periodScores == null)
             return new Dictionary<int, PeriodScoreDto>();
 
+
         return periodScores.ToDictionary(
-            kvp => kvp.Key,
-            kvp => new PeriodScoreDto(kvp.Value.HomeScore, kvp.Value.AwayScore)
+            kvp => kvp.PeriodNumber,
+            kvp => new PeriodScoreDto(kvp.HomeScore, kvp.AwayScore, kvp.IsCompleted)
         );
     }
+
+    //public static Dictionary<int, PeriodScoreDto> ConvertPeriodScores(IReadOnlyDictionary<int, (int HomeScore, int AwayScore)> periodScores)
+    //{
+    //    if (periodScores == null)
+    //        return new Dictionary<int, PeriodScoreDto>();
+
+    //    return periodScores.ToDictionary(
+    //        kvp => kvp.Key,
+    //        kvp => new PeriodScoreDto(kvp.Value.HomeScore, kvp.Value.AwayScore)
+    //    );
+    //}
+
+    public static List<Guid> ConvertOfficials(IReadOnlyCollection<FloorballReferee> referees)
+    {
+        return referees.Select(r => r.Id).ToList();
+    }
+
+
 
     /// <summary>
     /// Gets the player name from the person lookup dictionary

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Domain.Enums.Common;
 
 namespace WebAPI.Models.Common;
 
@@ -36,8 +37,7 @@ public record CreateDivisionRequest
     /// </summary>
     /// <example>Floorball</example>
     [Required(ErrorMessage = "Sport type is required")]
-    [StringLength(50, ErrorMessage = "Sport type cannot exceed 50 characters")]
-    public string SportType { get; init; } = string.Empty;
+    public SportsCategory SportType { get; init; } = SportsCategory.None;
 }
 
 /// <summary>

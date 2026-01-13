@@ -7,6 +7,7 @@ using Application.Common;
 using Domain.Common;
 using Application.DTOs.Floorball;
 using MediatR;
+using Domain.Enums.Floorball;
 
 namespace Application.Queries.Floorball.Match
 {
@@ -20,7 +21,9 @@ namespace Application.Queries.Floorball.Match
         Guid? TeamId = null,
         DateTime? StartDate = null,
         DateTime? EndDate = null,
-        string SortOrder = "desc" // "asc" or "desc"
+        string SortOrder = "desc", // "asc" or "desc"
+        string? SearchQuery = null, // Search by team names (case-insensitive, partial match)
+        FloorballMatchStatus? Status = null
     ) : IRequest<Result<PagedResult<FloorballMatchDto>>>
     {
         /// <summary>

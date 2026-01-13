@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
@@ -108,7 +109,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             {
                 if (DateTime.TryParse(birthDate, out DateTime date))
                 {
-                    query = query.Where(p => p.BirthDate.Date == date.Date);
+                    query = query.Where(p => p.BirthDate.HasValue && p.BirthDate.Value.Date == date.Date);
                 }
                 else
                 {
@@ -129,6 +130,57 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the total count of persons matching the filters
+        /// </summary>
+        /// <param name="firstName">Optional first name filter</param>
+        /// <param name="lastName">Optional last name filter</param>
+        /// <param name="birthDate">Optional birth date filter</param>
+        /// <param name="isRegistered">Optional registration status filter</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Total count of persons matching the filters</returns>
+        public async Task<int> GetCountAsync(
+            string? firstName,
+            string? lastName,
+            string? birthDate,
+            bool? isRegistered,
+            CancellationToken cancellationToken = default)
+        {
+            // Build query with same filters as GetAllAsync
+            IQueryable<Person> query = _entities.AsQueryable();
+
+            // Apply filters
+            if (!string.IsNullOrWhiteSpace(firstName))
+            {
+                query = query.Where(p => p.FirstName.Contains(firstName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(lastName))
+            {
+                query = query.Where(p => p.LastName.Contains(lastName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(birthDate))
+            {
+                if (DateTime.TryParse(birthDate, out DateTime date))
+                {
+                    query = query.Where(p => p.BirthDate.HasValue && p.BirthDate.Value.Date == date.Date);
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid birth date format provided: {BirthDate}", birthDate);
+                }
+            }
+
+            // Only apply isRegistered filter if it has a value
+            if (isRegistered.HasValue)
+            {
+                query = query.Where(p => p.IsRegistered == isRegistered.Value);
+            }
+
+            return await query.CountAsync(cancellationToken);
         }
 
         /// <summary>
@@ -167,7 +219,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             DateTime minBirthDate = DateTime.UtcNow.AddYears(-maxAge - 1);
             
             return await _entities
-                .Where(p => p.BirthDate >= minBirthDate && p.BirthDate <= maxBirthDate)
+                .Where(p => p.BirthDate.HasValue && p.BirthDate.Value >= minBirthDate && p.BirthDate.Value <= maxBirthDate)
                 .ToListAsync();
         }
 
@@ -207,19 +259,32 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// Searches for persons by name
         /// </summary>
         /// <param name="searchTerm">The search term.</param>
-        /// <param name="count">The maximum number of results to return.</param>
+        /// <param name="page">The page number (1-based).</param>
+        /// <param name="pageSize">The number of items per page.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>A collection of persons matching the search term.</returns>
-        public async Task<IEnumerable<Person>> SearchByNameAsync(string searchTerm, int count, CancellationToken cancellationToken = default)
+        /// <returns>A paged result containing persons matching the search term.</returns>
+        public async Task<PagedResult<Person>> SearchByNameAsync(string searchTerm, int page, int pageSize, CancellationToken cancellationToken = default)
         {
             string lowercasedTerm = searchTerm.ToLower();
-            return await _entities
+            
+            // Build the base query
+            IQueryable<Person> query = _entities
                 .Where(p => (p.FirstName.ToLower() + " " + p.LastName.ToLower()).Contains(lowercasedTerm) ||
-                            (p.LastName.ToLower() + " " + p.FirstName.ToLower()).Contains(lowercasedTerm))
+                            (p.LastName.ToLower() + " " + p.FirstName.ToLower()).Contains(lowercasedTerm));
+
+            // Get total count before pagination
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            // Apply ordering and pagination
+            List<Person> items = await query
                 .OrderBy(p => p.LastName)
                 .ThenBy(p => p.FirstName)
-                .Take(count)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellationToken);
+
+            // Create and return paged result
+            return PagedResult.Create(items, totalCount, page, pageSize);
         }
 
         /// <summary>

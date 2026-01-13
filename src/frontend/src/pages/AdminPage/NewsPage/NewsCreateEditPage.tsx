@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import PageTemplate from "../../../components/PageTemplate/PageTemplate";
+import PageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
 import QuillEditor from "./components/QuillEditor";
 import { useTranslation } from "react-i18next";
 import NewsInputs, { type NewsInputsData } from "./components/NewsInputs";
@@ -121,16 +121,41 @@ export default function NewsCreateEditPage() {
         const newsToSubmit = convertToNewsData();
         
         if (isEditMode) {
-          const updateData = {
+          // Helper function to convert empty strings to null
+          const toNullIfEmpty = (value: string | undefined | null): string | null => {
+            if (!value || value.trim() === '') return null;
+            return value.trim();
+          };
+
+          // Helper function to convert empty array to null
+          const toNullIfEmptyArray = <T,>(arr: T[]): T[] | null => {
+            if (!arr || arr.length === 0) return null;
+            return arr;
+          };
+
+          const trimmedMainPicture = toNullIfEmpty(newsData.mainPicture);
+          const filteredTags = newsData.tags.filter(tag => tag.trim() !== '');
+
+          const updateData: {
+            title: string;
+            contentHtml: string;
+            mainImage: string | null;
+            summary: string | null;
+            imageUrls: string[] | null;
+            author: string | null;
+            category: string | null;
+            sportCategory: string | null;
+            tags: string[] | null;
+          } = {
             title: newsData.title.trim(),
             contentHtml: value.trim(),
-            mainImage: newsData.mainPicture || null,
-            summary: newsData.summary?.trim() || null,
-            imageUrls: [newsData.mainPicture || null],
-            author: newsData.author?.trim() || null,
-            category: newsData.category || null,
-            sportCategory: newsData.sportCategory || null,
-            tags: newsData.tags.filter(tag => tag.trim() !== '').map(tag => tag || null)
+            mainImage: trimmedMainPicture,
+            summary: toNullIfEmpty(newsData.summary),
+            imageUrls: trimmedMainPicture ? [trimmedMainPicture] : null,
+            author: toNullIfEmpty(newsData.author),
+            category: toNullIfEmpty(newsData.category),
+            sportCategory: toNullIfEmpty(newsData.sportCategory),
+            tags: toNullIfEmptyArray(filteredTags)
           };
           await UpdateNewsService(id, updateData);
           console.log("News updated successfully:", newsToSubmit);
@@ -259,7 +284,6 @@ export default function NewsCreateEditPage() {
 
   return (
     <PageTemplate title={isEditMode ? t('admin.news.edit', 'Edit News Article') : t('admin.news.create', 'Create News Article')}>
-      
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-6xl mx-auto px-4 py-3">

@@ -16,9 +16,6 @@ public class CreateFloorballTeamCommandValidator : AbstractValidator<CreateFloor
             .NotEmpty().WithMessage("Team name is required")
             .MaximumLength(100).WithMessage("Team name cannot exceed 100 characters");
 
-        RuleFor(x => x.DivisionId)
-            .NotNull().WithMessage("Division is required");
-
         RuleFor(x => x.ClubId)
             .NotEmpty().WithMessage("Club ID is required")
             .NotEqual(Guid.Empty).WithMessage("Club ID cannot be empty");
@@ -38,5 +35,9 @@ public class CreateFloorballTeamCommandValidator : AbstractValidator<CreateFloor
         RuleFor(x => x.SecondaryJerseyColor)
             .MaximumLength(50).WithMessage("Secondary jersey color cannot exceed 50 characters")
             .When(x => !string.IsNullOrEmpty(x.SecondaryJerseyColor));
+
+        RuleFor(x => x.ShortName)
+            .MaximumLength(4).WithMessage("Short name cannot exceed 4 characters")
+            .When(x => !string.IsNullOrWhiteSpace(x.ShortName));
     }
 } 

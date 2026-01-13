@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { NewsArticleDto, PaginatedNewsResponse } from '../../../../api/news/newsService'; 
-import { newsService, archiveNewsService, restoreNewsService } from '../../../../api/news/newsService';
+import { newsService, archiveNewsService, restoreNewsService, deleteNewsService } from '../../../../api/news/newsService';
 import Pagination from '../../../../components/Pagination';
 import "../styles/NewsList.scss";
 
@@ -11,6 +11,7 @@ interface NewsListProps {
     category: string;
     sportCategory: string;
     searchTerm: string;
+    includeArchived: boolean;
   };
 }
 
@@ -32,7 +33,10 @@ const NewsList = ({ filters }: NewsListProps) => {
     try {
       setLoading(true);
       const response = await newsService({
-        ...(filters || { category: '', sportCategory: '', searchTerm: '' }),
+        category: filters?.category ?? '',
+        sportCategory: filters?.sportCategory ?? '',
+        searchTerm: filters?.searchTerm ?? '',
+        includeArchived: filters?.includeArchived ?? true,
         page,
         pageSize: size
       });
@@ -81,8 +85,7 @@ const NewsList = ({ filters }: NewsListProps) => {
     if (window.confirm(t('admin.news.confirmDelete', 'Are you sure you want to delete this news article?'))) {
       setDeletingArticle(id);
       try {
-        // Note: You'll need to implement delete functionality in newsService
-        // await newsService.delete(id);
+        await deleteNewsService(id);
         
         // Remove the article from current page
         const updatedArticles = newsArticles.filter(article => article.id !== id);

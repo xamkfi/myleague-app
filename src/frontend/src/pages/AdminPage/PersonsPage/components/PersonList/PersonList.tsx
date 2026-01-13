@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, memo, useImperativeHandle, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Person } from '../../../../../types/admin/personTypes';
+import type { Person, PaginatedApiResponse } from '../../../../../types/admin/personTypes';
 import { PersonRole } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
 import PaginationControls from '../PaginationControls/PaginationControls';
@@ -11,10 +11,76 @@ interface PersonListProps {
   refreshTrigger?: number; // Used to trigger refresh from parent
 }
 
+interface SearchBarProps {
+  onSearchChange: (value: string) => void;
+  placeholder: string;
+}
+
+export interface SearchBarRef {
+  clear: () => void;
+  focus: () => void;
+  getValue: () => string;
+}
+
+// Memoized search bar component with internal state - only re-renders when callbacks change
+const SearchBar = memo(forwardRef<SearchBarRef, SearchBarProps>(({ onSearchChange, placeholder }, ref) => {
+  const [internalValue, setInternalValue] = useState('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    clear: () => {
+      setInternalValue('');
+      inputRef.current?.focus();
+    },
+    focus: () => {
+      inputRef.current?.focus();
+    },
+    getValue: () => internalValue,
+  }));
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInternalValue(value);
+    onSearchChange(value);
+  };
+
+  const handleClear = () => {
+    setInternalValue('');
+    onSearchChange('');
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div className="persons-search-bar">
+      <input
+        ref={inputRef}
+        type="text"
+        value={internalValue}
+        onChange={handleChange}
+        placeholder={placeholder}
+        className="persons-search-input"
+      />
+      {internalValue && (
+        <button
+          className="search-clear-button"
+          onClick={handleClear}
+          title="Clear search"
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}));
+
+SearchBar.displayName = 'SearchBar';
+
 const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   const { t } = useTranslation();
   const [persons, setPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
+  const [paginationLoading, setPaginationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingRegistration, setUpdatingRegistration] = useState<string | null>(null);
   const [updatingRole, setUpdatingRole] = useState<string | null>(null);
@@ -22,31 +88,126 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const debounceTimerRef = useRef<number | null>(null);
+  const previousSearchTermRef = useRef('');
+  const searchBarRef = useRef<SearchBarRef>(null);
+  const shouldRestoreFocusRef = useRef(false);
 
   // Selection state for multiselect
   const [selectedPersons, setSelectedPersons] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  const fetchPersons = useCallback(async () => {
+  // Debounce search term - only update if it actually changed
+  useEffect(() => {
+    // Clear any existing timer
+    if (debounceTimerRef.current !== null) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Only update if search term actually changed (skip if same as previous)
+    if (searchTerm !== previousSearchTermRef.current) {
+      debounceTimerRef.current = window.setTimeout(() => {
+        // Only search if there are at least 2 characters, otherwise clear search
+        if (searchTerm.trim().length >= 2) {
+          setDebouncedSearchTerm(searchTerm);
+        } else {
+          setDebouncedSearchTerm('');
+        }
+        previousSearchTermRef.current = searchTerm;
+      }, 300); // 300ms delay
+    }
+
+    return () => {
+      if (debounceTimerRef.current !== null) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [searchTerm]);
+
+  const fetchPersons = useCallback(async (isInitialLoad = false) => {
+    // Check if search input has focus before fetching
+    // We check if the active element is an input and if searchBarRef exists
+    const activeElement = document.activeElement;
+    const hadFocus = activeElement?.tagName === 'INPUT' && searchBarRef.current !== null;
+    shouldRestoreFocusRef.current = hadFocus;
+    
     try {
-      setLoading(true);
-      const data = await personApi.getAll();
-      setPersons(data);
+      if (isInitialLoad) {
+        setLoading(true);
+      } else {
+        setPaginationLoading(true);
+      }
+      
+      if (debouncedSearchTerm.trim()) {
+        // Use search API when there's a search term (server-side pagination)
+        const response: PaginatedApiResponse<Person> = await personApi.search(
+          debouncedSearchTerm.trim(),
+          currentPage,
+          pageSize
+        );
+        
+        setPersons(response.data);
+        setTotalCount(response.pagination.totalCount);
+        setTotalPages(response.pagination.totalPages);
+      } else {
+        // Use getAll when there's no search term (server-side pagination)
+        const response: PaginatedApiResponse<Person> = await personApi.getAll(currentPage, pageSize);
+        setPersons(response.data);
+        setTotalCount(response.pagination.totalCount);
+        setTotalPages(response.pagination.totalPages);
+      }
+      
       setError(null);
     } catch (error) {
       console.error('Failed to fetch persons:', error);
       setError(t('admin.persons.errors.fetchFailed', 'Failed to fetch persons'));
+      setPersons([]);
+      setTotalCount(0);
+      setTotalPages(1);
     } finally {
-      setLoading(false);
+      if (isInitialLoad) {
+        setLoading(false);
+      }
+      setPaginationLoading(false);
     }
-  }, [t]);
+  }, [debouncedSearchTerm, currentPage, pageSize, t]);
+
+  // Restore focus after loading completes if search input had focus
+  useLayoutEffect(() => {
+    if (!loading && shouldRestoreFocusRef.current && searchBarRef.current) {
+      searchBarRef.current.focus();
+      shouldRestoreFocusRef.current = false;
+    }
+  }, [loading]);
+
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
-    fetchPersons();
-  }, [fetchPersons, refreshTrigger]);
+    const run = async () => {
+      await fetchPersons(isInitialLoad);
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
+      }
+    };
+
+    run();
+  }, [fetchPersons, refreshTrigger, isInitialLoad]);
+
+  const formatBirthDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return '-';
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) return '-';
+    const day = parsed.getDate().toString().padStart(2, '0');
+    const month = (parsed.getMonth() + 1).toString().padStart(2, '0');
+    const year = parsed.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
 
   const handleEdit = (id: string) => {
     if (onEditPerson) {
@@ -59,7 +220,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
       try {
         await personApi.delete(id);
         // Refresh the list to get updated data
-        await fetchPersons();
+        await fetchPersons(false);
         // Clear selection if the deleted person was selected
         setSelectedPersons(prev => {
           const newSet = new Set(prev);
@@ -142,7 +303,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   };
 
   const selectAllFilteredPersons = () => {
-    setSelectedPersons(new Set(filteredPersons.map(p => p.id)));
+    setSelectedPersons(new Set(persons.map(p => p.id)));
   };
 
   const clearSelection = () => {
@@ -166,7 +327,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         }
         
         // Refresh the list and clear selection
-        await fetchPersons();
+        await fetchPersons(false);
         setSelectedPersons(new Set());
         
         // Show success message
@@ -184,81 +345,67 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
     }
   };
 
-  // Search filtering
-  const filteredPersons = persons.filter(person =>
-    person.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Pagination calculations (applied to filtered results)
-  const totalCount = filteredPersons.length;
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedPersons = filteredPersons.slice(startIndex, endIndex);
+  // Backend already paginates both search and non-search responses
+  const paginatedPersons = persons;
 
   // Handle page change
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-  };
+  }, []);
 
   // Handle page size change
-  const handlePageSizeChange = (newPageSize: number) => {
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
     setPageSize(newPageSize);
     setCurrentPage(1); // Reset to first page when changing page size
-  };
+  }, []);
 
-  // Handle search input change
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+  // Handle search input change - receives value directly, not event
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
     setCurrentPage(1); // Reset to first page when searching
     setSelectedPersons(new Set()); // Clear selection when searching
-  };
-
-  if (loading) {
-    return <div className="persons-loading">{t('admin.persons.loading', 'Loading persons...')}</div>;
-  }
-
-  if (error) {
-    return <div className="persons-error">{error}</div>;
-  }
+    
+    // If clearing search or less than 2 characters, immediately clear debounced term
+    if (!value.trim() || value.trim().length < 2) {
+      setDebouncedSearchTerm('');
+      previousSearchTermRef.current = value;
+    }
+  }, []);
 
   return (
     <div className="persons-list">
-      {/* Search Bar */}
-      <div className="persons-search-bar">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          placeholder={t('admin.persons.searchPlaceholder', 'Search persons by name...') as string}
-          className="persons-search-input"
-        />
-        {searchTerm && (
-          <button
-            className="search-clear-button"
-            onClick={() => setSearchTerm('')}
-            title={t('admin.persons.clearSearch', 'Clear search')}
-          >
-            ✕
-          </button>
-        )}
-      </div>
+      {/* Search Bar - Always rendered to preserve state */}
+      <SearchBar
+        ref={searchBarRef}
+        onSearchChange={handleSearchChange}
+        placeholder={t('admin.persons.searchPlaceholder', 'Search persons by name...') as string}
+      />
 
-      {/* Selection Controls */}
+      {loading && (
+        <div className="persons-loading">{t('admin.persons.loading', 'Loading persons...')}</div>
+      )}
+
+      {error && (
+        <div className="persons-error">{error}</div>
+      )}
+
+      {!loading && !error && (
+        <>
+          {/* Selection Controls */}
       <div className="selection-controls">
         <div className="selection-info">
           <span className="selected-count">
             {t('admin.persons.selected', '{{count}} selected', { count: selectedPersons.size })}
           </span>
-          {filteredPersons.length > 0 && (
+          {persons.length > 0 && (
             <div className="selection-buttons">
               <button
                 type="button"
                 className="control-btn"
                 onClick={selectAllFilteredPersons}
-                disabled={selectedPersons.size === filteredPersons.length}
+                disabled={selectedPersons.size === persons.length}
               >
-                {t('common.selectAll', 'Select All')} ({filteredPersons.length})
+                {t('common.selectAll', 'Select All')} ({persons.length})
               </button>
               <button
                 type="button"
@@ -288,20 +435,21 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
             </button>
           </div>
         )}
-      </div>
+          </div>
 
-      {/* Pagination Controls - Top */}
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalCount={totalCount}
-        pageSize={pageSize}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-      />
+          {/* Pagination Controls - Top */}
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
 
-      <table>
-        <thead>
+          <div className="persons-table-wrapper">
+            <table>
+              <thead>
           <tr>
             <th className="select-column">
               <input
@@ -328,9 +476,9 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
             <th>{t('admin.persons.table.role', 'Role')}</th>
             <th>{t('admin.persons.table.actions', 'Actions')}</th>
           </tr>
-        </thead>
-        <tbody>
-          {paginatedPersons.map(person => (
+              </thead>
+              <tbody>
+              {paginatedPersons.map(person => (
             <tr 
               key={person.id}
               className={selectedPersons.has(person.id) ? 'selected' : ''}
@@ -347,7 +495,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
                 {person.fullName}
               </td>
               <td onClick={() => togglePersonSelection(person.id)} className="clickable-cell">
-                {new Date(person.birthDate).toLocaleDateString()}
+                {formatBirthDate(person.birthDate)}
               </td>
               <td onClick={() => togglePersonSelection(person.id)} className="clickable-cell">
                 {person.contactInfo?.email || '-'}
@@ -413,31 +561,39 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
                   </button>
                 </div>
               </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </tr>
+              ))}
+              </tbody>
+            </table>
+            {paginationLoading && (
+              <div className="pagination-loading-overlay">
+                <div className="loading-spinner-small" />
+              </div>
+            )}
+          </div>
 
-      {/* Pagination Controls - Bottom */}
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalCount={totalCount}
-        pageSize={pageSize}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-      />
+          {/* Pagination Controls - Bottom */}
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
 
-      {persons.length === 0 && (
+          {persons.length === 0 && (
         <div className="no-data">
           {t('admin.persons.noData', 'No persons found')}
         </div>
       )}
 
-      {persons.length > 0 && filteredPersons.length === 0 && (
-        <div className="no-search-results">
-          {t('admin.persons.noSearchResults', 'No persons found matching "{{searchTerm}}"', { searchTerm })}
-        </div>
+          {debouncedSearchTerm && persons.length === 0 && (
+            <div className="no-search-results">
+              {t('admin.persons.noSearchResults', 'No persons found matching "{{searchTerm}}"', { searchTerm: debouncedSearchTerm })}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

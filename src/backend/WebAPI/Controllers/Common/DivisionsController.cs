@@ -1,9 +1,11 @@
+using System;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Application.Commands.Common;
 using Application.Queries.Common;
 using Application.DTOs.Common;
 using Application.Common;
+using Domain.Enums.Common;
 using WebAPI.Models.Common;
 
 namespace WebAPI.Controllers.Common;
@@ -36,7 +38,7 @@ public class DivisionsController : ControllerBase
     /// <returns>List of all divisions</returns>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<DivisionDto>>>> GetAllDivisions()
     {
         _logger.LogInformation("Getting all divisions");
@@ -61,8 +63,8 @@ public class DivisionsController : ControllerBase
     /// <returns>Division details</returns>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<DivisionDto>>> GetDivisionById(Guid id)
     {
         _logger.LogInformation("Getting division with ID: {DivisionId}", id);
@@ -87,15 +89,20 @@ public class DivisionsController : ControllerBase
     /// <returns>List of divisions for the specified sport type</returns>
     [HttpGet("sport/{sportType}")]
     [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<DivisionDto>>>> GetDivisionsBySportType(
         string sportType, 
         [FromQuery] bool activeOnly = false)
     {
-        _logger.LogInformation("Getting divisions for sport type: {SportType}, ActiveOnly: {ActiveOnly}", sportType, activeOnly);
+        if (!TryParseSportType(sportType, out SportsCategory parsedSportType, out string? parseError))
+        {
+            return BadRequest(ApiResponse<List<DivisionDto>>.ErrorResponse(parseError ?? "Invalid sport type."));
+        }
+
+        _logger.LogInformation("Getting divisions for sport type: {SportType}, ActiveOnly: {ActiveOnly}", parsedSportType, activeOnly);
         
-        GetDivisionsBySportTypeQuery query = new GetDivisionsBySportTypeQuery(sportType, activeOnly);
+        GetDivisionsBySportTypeQuery query = new GetDivisionsBySportTypeQuery(parsedSportType, activeOnly);
         Result<IEnumerable<DivisionDto>> result = await _mediator.Send(query);
 
         if (result.IsSuccess && result.Data != null)
@@ -122,10 +129,17 @@ public class DivisionsController : ControllerBase
     /// <returns>Created division details</returns>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<DivisionDto>>> CreateDivision([FromBody] CreateDivisionRequest request)
     {
+        if (request.SportType == SportsCategory.None)
+        {
+            const string message = "Sport type cannot be None.";
+            List<string> errors = new() { message };
+            return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(message, errors));
+        }
+
         _logger.LogInformation("Creating new division: {DivisionName} for {SportType}", request.Name, request.SportType);
 
         CreateDivisionCommand command = new CreateDivisionCommand(
@@ -147,7 +161,9 @@ public class DivisionsController : ControllerBase
         }
 
         string errorMessage = result.Error ?? result.GetErrorsString();
-        return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(errorMessage));
+        List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+
+        return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(errorMessage, errorList));
     }
 
     /// <summary>
@@ -158,9 +174,9 @@ public class DivisionsController : ControllerBase
     /// <returns>Updated division details</returns>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<DivisionDto>>> UpdateDivision(Guid id, [FromBody] UpdateDivisionRequest request)
     {
         _logger.LogInformation("Updating division with ID: {DivisionId}", id);
@@ -284,5 +300,26 @@ public class DivisionsController : ControllerBase
         }
 
         return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
+    }
+
+    private static bool TryParseSportType(string? value, out SportsCategory sportType, out string? errorMessage)
+    {
+        sportType = SportsCategory.None;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            errorMessage = "Sport type is required.";
+            return false;
+        }
+
+        if (!Enum.TryParse(value, true, out sportType) || sportType == SportsCategory.None)
+        {
+            errorMessage = $"Invalid sport type '{value}'.";
+            sportType = SportsCategory.None;
+            return false;
+        }
+
+        errorMessage = null;
+        return true;
     }
 } 

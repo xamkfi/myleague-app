@@ -32,6 +32,8 @@ public interface IFloorballMatchRepository
     /// <param name="startDate">Optional start date filter</param>
     /// <param name="endDate">Optional end date filter</param>
     /// <param name="status">Optional match status filter</param>
+    /// <param name="sortOrder">Optional sort order ("asc" or "desc")</param>
+    /// <param name="searchQuery">Optional search query to filter by team names (case-insensitive, partial match)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated collection of floorball matches</returns>
     Task<PagedResult<FloorballMatch>> GetPagedAsync(
@@ -43,6 +45,7 @@ public interface IFloorballMatchRepository
         DateTime? endDate = null,
         FloorballMatchStatus? status = null,
         string sortOrder = "desc",
+        string? searchQuery = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>

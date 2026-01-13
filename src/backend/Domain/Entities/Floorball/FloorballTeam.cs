@@ -1,8 +1,6 @@
 using Domain.ValueObjects.Floorball;
 using Domain.Entities;
-using Domain.EventSourcing;
 using Domain.Entities.Common;
-using Domain.DomainEvents.Floorball;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 
@@ -11,7 +9,7 @@ namespace Domain.Entities.Floorball;
 /// <summary>
 /// Represents a floorball team within a club
 /// </summary>
-public class FloorballTeam : AggregateRoot
+public class FloorballTeam : BaseEntity
 {
     /// <summary>
     /// Gets the name of the team
@@ -26,12 +24,12 @@ public class FloorballTeam : AggregateRoot
     /// <summary>
     /// Gets the division level of the team
     /// </summary>
-    public Division Division { get; private set; }
+    public Division? Division { get; private set; }
 
     /// <summary>
     /// Gets the ID of the division this team belongs to
     /// </summary>
-    public Guid DivisionId { get; private set; }
+    public Guid? DivisionId { get; private set; }
 
     /// <summary>
     /// Gets the club this team belongs to
@@ -111,7 +109,7 @@ public class FloorballTeam : AggregateRoot
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
     public FloorballTeam(
         string name, 
-        Guid divisionId, 
+        Guid? divisionId, 
         Club club,
         string homeArena,
         string primaryJerseyColor,
@@ -133,18 +131,8 @@ public class FloorballTeam : AggregateRoot
         Id = Guid.NewGuid();
 
         Name = name;
-        if(!string.IsNullOrWhiteSpace(shortName))
-        {
-            if(shortName.Length > 3)
-                throw new ArgumentException("Short name cannot exceed 3 characters.", nameof(shortName));
-
-            ShortName = shortName;
-        }
-        else
-        {
-            // Default to the first 3 characters of the name if no short name is provided
-            ShortName = name.Length > 3 ? name.Substring(0, 3).ToUpperInvariant() : name.ToUpperInvariant();
-        }
+        ShortName = string.Empty;
+        ApplyShortName(shortName, name);
 
         DivisionId = divisionId;
         Division = default!;
@@ -156,14 +144,31 @@ public class FloorballTeam : AggregateRoot
         TeamCategory = teamCategory;
         LogoUrl = logoUrl;
         
-        AddDomainEvent(new FloorballTeamRegisteredEvent(
-            Id, 
-            name, 
-            divisionId, 
-            club.Id, 
-            homeArena, 
-            primaryJerseyColor, 
-            secondaryJerseyColor));
+    }
+
+    /// <summary>
+    /// Updates the team's short name (max 4 characters). If null/empty, defaults to first 3 chars of Name.
+    /// </summary>
+    /// <param name="shortName">New short name</param>
+    public void UpdateShortName(string? shortName)
+    {
+        ApplyShortName(shortName, Name);
+    }
+
+    private void ApplyShortName(string? shortName, string baseName)
+    {
+        if (!string.IsNullOrWhiteSpace(shortName))
+        {
+            if (shortName.Length > 4)
+                throw new ArgumentException("Short name cannot exceed 4 characters.", nameof(shortName));
+
+            ShortName = shortName.ToUpperInvariant();
+        }
+        else
+        {
+            // Default to 3 characters when not provided
+            ShortName = baseName.Length > 3 ? baseName[..3].ToUpperInvariant() : baseName.ToUpperInvariant();
+        }
     }
 
     /// <summary>
@@ -183,7 +188,7 @@ public class FloorballTeam : AggregateRoot
     /// Updates the team's division
     /// </summary>
     /// <param name="division">The new division</param>
-    public void UpdateDivision(Guid divisionId)
+    public void UpdateDivision(Guid? divisionId)
     {
         DivisionId = divisionId;
     }
@@ -261,12 +266,6 @@ public class FloorballTeam : AggregateRoot
         var teamPlayer = new FloorballTeamPlayer(Id, player.Id, position, jerseyNumber);
         _roster.Add(teamPlayer);
         
-        // Create and add a domain event for player addition
-        AddDomainEvent(new FloorballPlayerAddedToTeamEvent(
-            Id,
-            player.Id,
-            position,
-            jerseyNumber));
     }
 
     /// <summary>
@@ -282,10 +281,6 @@ public class FloorballTeam : AggregateRoot
 
         _roster.Remove(teamPlayer);
         
-        // Create and add a domain event for player removal
-        AddDomainEvent(new FloorballPlayerRemovedFromTeamEvent(
-            Id,
-            playerId));
     }
 
     /// <summary>
@@ -344,12 +339,5 @@ public class FloorballTeam : AggregateRoot
         teamPlayer.UpdateJerseyNumber(jerseyNumber);
         teamPlayer.SetActiveStatus(isActive);
         
-        // Create and add a domain event for player update
-        AddDomainEvent(new FloorballPlayerUpdatedInTeamEvent(
-            Id,
-            playerId,
-            position,
-            jerseyNumber,
-            isActive));
     }
 } 

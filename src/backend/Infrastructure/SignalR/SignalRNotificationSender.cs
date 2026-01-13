@@ -1,13 +1,14 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using Application.Interfaces.Common;
 
 namespace MyLeague.Infrastructure.SignalR
 {
     /// <summary>
     /// SignalR implementation of the notification sender interface
     /// </summary>
-    public class SignalRNotificationSender : INotificationSender
+    public class SignalRNotificationSender : INotificationSenderService
     {
         private readonly DomainEventNotifier _notifier;
         private readonly ILogger<SignalRNotificationSender> _logger;
@@ -37,12 +38,34 @@ namespace MyLeague.Infrastructure.SignalR
             {
                 _logger.LogInformation("Sending notification for event {EventName}", eventName);
                 await _notifier.NotifyAsync(eventName, payload);
+
+                //Send to match-specific group
+                if (TryExtractMatchId(payload, out Guid matchId))
+                {
+                    await _notifier.NotifyMatchAsync(matchId, eventName, payload);
+                    _logger.LogInformation("Also sent {EventName} to match group Match_{MatchId}", eventName, matchId);
+                }
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending notification for event {EventName}", eventName);
                 throw;
             }
+        }
+
+        private static bool TryExtractMatchId(object payload, out Guid matchId)
+        {
+            matchId = Guid.Empty;
+            
+            var matchIdProperty = payload.GetType().GetProperty("MatchId");
+            if (matchIdProperty?.GetValue(payload) is Guid id)
+            {
+                matchId = id;
+                return true;
+            }
+            
+            return false;
         }
     }
 } 

@@ -68,7 +68,8 @@ export interface FloorballReferee {
 export interface FloorballTeam {
   id: string;
   name: string;
-  divisionId: string;
+  shortName: string;
+  divisionId?: string | null;
   club: Club;
   homeArena: string;
   primaryJerseyColor: string;
@@ -76,6 +77,7 @@ export interface FloorballTeam {
   logoUrl?: string;
   hasActiveMembers: boolean;
   roster: FloorballTeamPlayer[];
+  teamCategory?: TeamCategory;
 }
 
 export interface FloorballTeamNameResult {
@@ -118,14 +120,15 @@ export interface GetFloorballTeamsRequest {
 
 export interface FloorballTeamRequest {
   name: string;
-  divisionId: string;
+  divisionId?: string;
   clubId: string;
   homeArena: string;
   primaryJerseyColor: string;
   category?: TeamCategory;
   secondaryJerseyColor?: string;
   logoUrl?: string;
-} 
+  shortName?: string;
+}
 
 // Team Player Management types
 export interface FloorballTeamPlayerDto {
@@ -154,6 +157,7 @@ export interface AddPlayerToTeamRequest {
 
 // Match Event types
 export interface FloorballGoalEventDto {
+  id: string;
   teamId: string;
   playerId: string;
   assisterId?: string;
@@ -168,6 +172,7 @@ export interface FloorballGoalEventDto {
 }
 
 export interface FloorballPenaltyEventDto {
+  id: string;
   teamId: string;
   playerId?: string;
   penaltyType: string;
@@ -180,6 +185,7 @@ export interface FloorballPenaltyEventDto {
 
 // Save event DTO
 export interface FloorballSaveEventDto {
+  id: string;
   teamId: string;
   goalieId: string; // goalie id
   periodNumber: number;
@@ -189,14 +195,16 @@ export interface FloorballSaveEventDto {
   playerName?: string;
 }
 
-// Match-related interfaces
 export interface FloorballMatchDto {
   id: string;
   seasonId: string;
+  seasonName: string;
   homeTeamId: string;
   homeTeamName: string;
+  homeTeamLogo: string | null;
   awayTeamId: string;
   awayTeamName: string;
+  awayTeamLogo: string | null;
   scheduledDateTime: string;
   venue?: string;
   status: FloorballMatchStatus;
@@ -206,19 +214,18 @@ export interface FloorballMatchDto {
   wentToShootout: boolean;
   homeActiveGoalieId?: string;
   awayActiveGoalieId?: string;
-  periodScores: Record<number, { homeScore: number; awayScore: number }>;
+  refereeId?: string;
+  periodScores: Record<number, { homeScore: number; awayScore: number; isCompleted: boolean }>;
   officials: string[];
   goalEvents: FloorballGoalEventDto[];
   penaltyEvents: FloorballPenaltyEventDto[];
   saveEvents: FloorballSaveEventDto[];
-  homeClub?: Club;
-  awayClub?: Club;
 }
 
 export interface CreateFloorballMatchRequest {
-  seasonId: string;
-  homeTeamId: string;
-  awayTeamId: string;
+  seasonId?: string;
+  homeTeamId?: string;
+  awayTeamId?: string;
   refereeId?: string;
   scheduledDateTime: string;
   venue?: string;
@@ -228,6 +235,7 @@ export interface UpdateFloorballMatchRequest {
   id: string;
   scheduledDateTime: string;
   venue?: string;
+  refereeId?: string;
 }
 
 // New types for edit match functionality
@@ -256,4 +264,5 @@ export interface GetFloorballMatchesRequest {
   startDate?: string;
   endDate?: string;
   sortOrder?: string;
+  searchQuery?: string;
 } 

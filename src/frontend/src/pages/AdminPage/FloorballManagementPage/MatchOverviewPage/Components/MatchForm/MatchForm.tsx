@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import type { 
   CreateFloorballMatchRequest,
   FloorballMatchDto,
@@ -8,6 +10,9 @@ import { floorballSeasonSearchService } from '../../../../../../api/floorball/fl
 import { floorballTeamNameSearchService } from '../../../../../../api/floorball/floorballTeamNameSearchService';
 import { floorballRefereeSearchService } from '../../../../../../api/floorball/floorballRefereeSearchService';
 import './MatchForm.scss';
+import ErrorPopup from '../../../../../../components/ErrorPopup/ErrorPopup';
+
+const GUEST_REFEREE_NAME = 'GUEST REFEREE';
 
 type MatchFormMode = 'create' | 'edit';
 
@@ -29,10 +34,10 @@ const MatchForm = ({
   loading = false
 }: MatchFormProps) => {
   const [formData, setFormData] = useState<CreateFloorballMatchRequest>({
-    seasonId: '',
-    homeTeamId: '',
-    awayTeamId: '',
-    refereeId: '',
+    seasonId: undefined,
+    homeTeamId: undefined,
+    awayTeamId: undefined,
+    refereeId: undefined,
     scheduledDateTime: '',
     venue: ''
   });
@@ -41,11 +46,31 @@ const MatchForm = ({
   const [minutesInput, setMinutesInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [dateError, setDateError] = useState<string | null>(null);
+  const lastKeyIsBackspaceRef = useRef(false);
   
   // State for pre-loaded dropdown options
   const [initialSeasonOptions, setInitialSeasonOptions] = useState<Array<{id: string, name: string}>>([]);
   const [initialHomeTeamOptions, setInitialHomeTeamOptions] = useState<Array<{id: string, name: string}>>([]);
   const [initialAwayTeamOptions, setInitialAwayTeamOptions] = useState<Array<{id: string, name: string}>>([]);
+
+  const promoteGuestReferee = useCallback((options: Array<{ id: string; name: string }>) => {
+    const guestIndex = options.findIndex(option => option.name.toUpperCase() === GUEST_REFEREE_NAME);
+    if (guestIndex <= 0) {
+      return options;
+    }
+    const guest = options[guestIndex];
+    const remaining = options.filter((_, index) => index !== guestIndex);
+    return [guest, ...remaining];
+  }, []);
+
+  const searchRefereesWithGuest = useCallback(async (query: string, page: number) => {
+    const result = await floorballRefereeSearchService.searchReferees(query, page);
+    return {
+      data: promoteGuestReferee(result.data),
+      pagination: result.pagination
+    };
+  }, [promoteGuestReferee]);
 
   // Create initial options from initialData for immediate display
   const createInitialOptions = useCallback(() => {
@@ -118,7 +143,7 @@ const MatchForm = ({
         seasonId: initialData.seasonId,
         homeTeamId: initialData.homeTeamId,
         awayTeamId: initialData.awayTeamId,
-        refereeId: '', // We don't have referee info in the DTO
+        refereeId: initialData.refereeId,
         scheduledDateTime: initialData.scheduledDateTime,
         venue: initialData.venue || ''
       });
@@ -134,10 +159,10 @@ const MatchForm = ({
     } else {
       // Reset form for create mode
       setFormData({
-        seasonId: '',
-        homeTeamId: '',
-        awayTeamId: '',
-        refereeId: '',
+        seasonId: undefined,
+        homeTeamId: undefined,
+        awayTeamId: undefined,
+        refereeId: undefined,
         scheduledDateTime: '',
         venue: ''
       });
@@ -149,6 +174,27 @@ const MatchForm = ({
       createInitialOptions();
     }
   }, [mode, initialData, createInitialOptions, preloadInitialOptions]);
+
+  // Ensure referee dropdown defaults to guest when available
+  useEffect(() => {
+    const ensureGuestReferee = async () => {
+      try {
+        const result = await floorballRefereeSearchService.searchReferees('', 1);
+        const promoted = promoteGuestReferee(result.data);
+        const guest = promoted.find(option => option.name.toUpperCase() === GUEST_REFEREE_NAME);
+        if (guest) {
+          setFormData(prev => ({
+            ...prev,
+            refereeId: prev.refereeId ?? guest.id
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to load referees for default selection', err);
+      }
+    };
+
+    ensureGuestReferee();
+  }, [promoteGuestReferee]);
 
   // Custom search functions that include initial options
   const searchSeasonsWithInitial = useCallback(async (query: string, page: number) => {
@@ -258,6 +304,99 @@ const MatchForm = ({
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
     updateScheduledDateTime(date, hoursInput, minutesInput);
+    setDateError(null);
+  };
+
+  // TODO: If needed, extract date input logic into a reusable DateField utility to use elsewhere.
+
+  // Parse DD/MM/YYYY safely
+  const parseDdMmYyyy = (value: string): Date | null => {
+    const parts = value.split('/');
+    if (parts.length !== 3) return null;
+    const [ddStr, mmStr, yyyyStr] = parts;
+    const dd = parseInt(ddStr, 10);
+    const mm = parseInt(mmStr, 10);
+    const yyyy = parseInt(yyyyStr, 10);
+    if (!Number.isFinite(dd) || !Number.isFinite(mm) || !Number.isFinite(yyyy)) return null;
+    if (yyyyStr.length !== 4) return null;
+    if (dd < 1 || mm < 1 || mm > 12) return null;
+    const d = new Date(yyyy, mm - 1, dd);
+    if (d.getFullYear() !== yyyy || d.getMonth() !== mm - 1 || d.getDate() !== dd) return null;
+    return d;
+  };
+
+  const handleDateChangeRaw = (e: unknown) => {
+    // react-datepicker may call onChangeRaw with keyboard/mouse events or undefined during calendar selection
+    const inputEl = (e as React.ChangeEvent<HTMLInputElement>)?.target as HTMLInputElement | undefined;
+    if (!inputEl || typeof inputEl.value !== 'string') {
+      // Event did not originate from the text input (e.g., calendar click). Ignore.
+      return;
+    }
+    let value = inputEl.value.replace(/[^0-9/]/g, '');
+
+    // Auto-insert slashes exactly after DD and MM (only when typing forward)
+    if (!lastKeyIsBackspaceRef.current) {
+      if (value.length === 2 && value.indexOf('/') === -1) {
+        value = value + '/';
+      }
+      if (value.length === 5 && value[2] === '/' && value.lastIndexOf('/') === 2) {
+        value = value + '/';
+      }
+    }
+
+    // Limit to DD/MM/YYYY length
+    if (value.length > 10) {
+      value = value.slice(0, 10);
+    }
+
+    // Reflect possibly reformatted value back to the input
+    inputEl.value = value;
+
+    if (value === '') {
+      setSelectedDate(null);
+      updateScheduledDateTime(null, hoursInput, minutesInput);
+      setDateError(null);
+      return;
+    }
+    // Allow user to type; validate when pattern matches fully
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+      const parsed = parseDdMmYyyy(value);
+      if (parsed) {
+        setSelectedDate(parsed);
+        updateScheduledDateTime(parsed, hoursInput, minutesInput);
+        setDateError(null);
+      } else {
+        setDateError('Invalid date. Use DD/MM/YYYY');
+      }
+    }
+  };
+
+  const handleDateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    lastKeyIsBackspaceRef.current = e.key === 'Backspace';
+    const input = e.currentTarget;
+    const { selectionStart, selectionEnd, value } = input;
+    if (e.key === 'Backspace' && selectionStart === selectionEnd && selectionStart && value[selectionStart - 1] === '/') {
+      // Remove the slash and move cursor one position left
+      e.preventDefault();
+      const newVal = value.slice(0, selectionStart - 1) + value.slice(selectionStart);
+      input.value = newVal;
+      // Move caret
+      requestAnimationFrame(() => {
+        input.setSelectionRange((selectionStart as number) - 1, (selectionStart as number) - 1);
+      });
+    }
+  };
+
+  const handleDateBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      setDateError(null);
+      return;
+    }
+    const parsed = parseDdMmYyyy(value);
+    if (!parsed) {
+      setDateError('Invalid date. Use DD/MM/YYYY');
+    }
   };
 
   const handleHoursChange = (value: string) => {
@@ -284,40 +423,43 @@ const MatchForm = ({
     try {
       setError(null);
 
-      if (mode === 'create') {
-        if (!formData.seasonId || !formData.homeTeamId || !formData.awayTeamId || !formData.scheduledDateTime) {
-          setError('Please fill in all required fields');
-          return;
-        }
-  
-        if (formData.homeTeamId === formData.awayTeamId) {
-          setError('Home team and away team cannot be the same');
-          return;
-        }
-  
-        // Validate time inputs
-        if (!selectedDate || !hoursInput || !minutesInput) {
-          setError('Please enter a valid date and time');
-          return;
-        }
+      if (!formData.refereeId) {
+        setError('Please select a referee');
+        return;
       }
 
+      // if (mode === 'create') {
+      //   if (!formData.seasonId || !formData.homeTeamId || !formData.awayTeamId || !formData.scheduledDateTime) {
+      //     setError('Please fill in all required fields');
+      //     return;
+      //   }
+  
+      //   if (formData.homeTeamId === formData.awayTeamId) {
+      //     setError('Home team and away team cannot be the same');
+      //     return;
+      //   }
+  
+      //   // Validate time inputs
+      //   if (!selectedDate || !hoursInput || !minutesInput) {
+      //     setError('Please enter a valid date and time');
+      //     return;
+      //   }
+      // }
+
       await onSubmit(formData);
-      
       if (mode === 'create') {
         // Reset form on success
         setFormData({
-          seasonId: '',
-          homeTeamId: '',
-          awayTeamId: '',
-          refereeId: '',
+          seasonId: undefined,
+          homeTeamId: undefined,
+          awayTeamId: undefined,
+          refereeId: undefined,
           scheduledDateTime: '',
           venue: ''
         });
         setSelectedDate(null);
         setHoursInput('');
         setMinutesInput('');
-        
         // Clear initial options
         createInitialOptions();
       }
@@ -332,7 +474,7 @@ const MatchForm = ({
       seasonId: '',
       homeTeamId: '',
       awayTeamId: '',
-      refereeId: '',
+      refereeId: undefined,
       scheduledDateTime: '',
       venue: ''
     });
@@ -369,11 +511,13 @@ const MatchForm = ({
   return (
     <>
       {error && (
-        <div className="error-alert">
-          <span className="error-icon">⚠️</span>
-          <span className="error-text">{error}</span>
-          <button onClick={() => setError(null)} className="error-close">×</button>
-        </div>
+        <ErrorPopup message={error} />
+
+        // <div className="error-alert">
+        //   <span className="error-icon">⚠️</span>
+        //   <span className="error-text">{error}</span>
+        //   <button onClick={() => setError(null)} className="error-close">×</button>
+        // </div>
       )}
       
       <form onSubmit={handleSubmit} className="modal-form">
@@ -422,34 +566,43 @@ const MatchForm = ({
             />
           </div>
         </div>
-        {mode === 'create' && (
-          <div className="form-group create-match-form-row">
-            <label htmlFor="referee">Referee</label>
-            <div className="input-wrapper">
-              <SearchableInfiniteDropdown
-                placeholder="Select Referee"
-                value={formData.refereeId}
-                onChange={(value) => setFormData(prev => ({ ...prev, refereeId: value }))}
-                onSearch={floorballRefereeSearchService.searchReferees}
-                searchPlaceholder="Search referees..."
-                emptyMessage="No referees found"
-              />
-            </div>
+        <div className="form-group create-match-form-row">
+          <label htmlFor="referee">Referee *</label>
+          <div className="input-wrapper">
+            <SearchableInfiniteDropdown
+              placeholder="Select Referee"
+              value={formData.refereeId}
+              onChange={(value) => setFormData(prev => ({ ...prev, refereeId: value }))}
+              onSearch={searchRefereesWithGuest}
+              searchPlaceholder="Search referees..."
+              emptyMessage="No referees found"
+              required
+              loadInitialDataOnMount
+            />
           </div>
-        )}
+        </div>
         <div className="form-group create-match-form-row">
           <label>Date & Time *</label>
           <div className="input-wrapper">
             <div className="datetime-input-group">
               <div className="date-input">
-                <input
-                  type="date"
-                  value={selectedDate ? selectedDate.toISOString().split('T')[0] : ''}
-                  onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : null)}
+                <DatePicker
+                  selected={selectedDate}
+                  onChange={(date) => handleDateChange(date)}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="DD/MM/YYYY"
+                  isClearable
+                  onChangeRaw={(e) => handleDateChangeRaw(e as unknown as React.ChangeEvent<HTMLInputElement>)}
+                  onBlur={handleDateBlur}
+                  onKeyDown={(e) => handleDateKeyDown(e as React.KeyboardEvent<HTMLInputElement>)}
+                  shouldCloseOnSelect
+                  autoComplete="off"
                   className="date-picker-input"
-                  required
                 />
               </div>
+              {dateError && (
+                <div className="field-error" role="alert">{dateError}</div>
+              )}
               <div className="time-input-group">
                 <input
                   type="number"

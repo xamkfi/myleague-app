@@ -1,4 +1,76 @@
 {
+  "matchPage": {
+    "navigation": {
+      "summary": "YHTEENVETO",
+      "stats": "TILASTOT",
+      "lineups": "KOKOONPANOT",
+      "table": "SARJATAULUKKO"
+    },
+    "dateTime": {
+      "weekdays": {
+        "Monday": "Maanantai",
+        "Tuesday": "Tiistai",
+        "Wednesday": "Keskiviikko",
+        "Thursday": "Torstai",
+        "Friday": "Perjantai",
+        "Saturday": "Lauantai",
+        "Sunday": "Sunnuntai"
+      },
+      "months": {
+        "Jan": "Tammi",
+        "Feb": "Helmi",
+        "Mar": "Maalis",
+        "Apr": "Huhti",
+        "May": "Touko",
+        "Jun": "Kesä",
+        "Jul": "Heinä",
+        "Aug": "Elo",
+        "Sep": "Syys",
+        "Oct": "Loka",
+        "Nov": "Marras",
+        "Dec": "Joulu"
+      }
+    },
+    "matchInfo": {
+      "venue": "Pelipaikka",
+      "status": "Tila",
+      "overtime": "Jatkoaika",
+      "shootout": "Voittomaalikilpailu"
+    },
+    "stats": {
+      "title": "Joukkuetilastot",
+      "shotsOnTarget": "Laukaukset maalia kohti",
+      "goalieSaves": "Torjunnat",
+      "savePercentage": "Torjuntaprosentti",
+      "penaltyMinutes": "Jäähyminuutit",
+      "loading": "Ladataan ottelutilastoja...",
+      "realTimeEnabled": "Reaaliaikaiset päivitykset käytössä",
+      "noStats": "Tilastoja ei saatavilla"
+    },
+    "events": {
+      "goal": "Maali",
+      "penalty": "Jäähy",
+      "matchStart": "Ottelu alkoi",
+      "matchEnd": "Ottelu päättyi",
+      "periodStart": "Erä alkoi",
+      "periodEnd": "Erä päättyi",
+      "timeout": "Aikalisä",
+      "noEvents": "Ei ottelutapahtumia"
+    },
+    "timer": {
+      "start": "Käynnistä kello",
+      "stop": "Pysäytä kello",
+      "reset": "Nollaa kello",
+      "adjust": "Säädä aikaa",
+      "period": "{{number}}. erä"
+    },
+    "status": {
+      "scheduled": "Tuleva",
+      "inProgress": "Käynnissä",
+      "completed": "Päättynyt",
+      "cancelled": "Peruttu"
+    }
+  },
   "nav": {
     "news": "Uutiset",
     "rules": "Säännöt",
@@ -26,10 +98,69 @@
   },
   "admin": {
     "title": "Hallintapaneeli",
+    "database": "Tietokanta",
+    "sportsTitle": "Urheilulajit",
+    "view": "Admin näkymä",
     "actions": {
-      "managePerson": "Muokkaa/Lisää Henkilö",
-      "news": "Luo Uutinen",
-      "floorball": "Salibandyn Hallinta"
+      "home": "Koti",
+      "persons": "Henkilöt",
+      "managePerson": "Hallitse henkilöitä",
+      "news": "Uutiset",
+      "manageNews": "Hallitse uutisia",
+      "divisions": "Sarjat",
+      "manageDivisions": "Hallitse sarjoja",
+      "floorball": "Salibandy",
+      "manageFloorball": "Hallitse salibandya",
+      "clubs": "Seurat",
+      "manageClubs": "Hallitse seuroja"
+    },
+    "divisions": {
+      "title": "Sarjojen hallinta",
+      "manageTitle": "Hallinnoi sarjoja",
+      "subtitle": "Luo, muokkaa, aktivoi tai poista eri lajien sarjoja.",
+      "search": "Hae nimellä tai kuvauksella...",
+      "emptyFiltered": "Yhtään sarjaa ei löytynyt valituilla suodattimilla.",
+      "emptyDefault": "Sarjoja ei ole vielä luotu.",
+      "table": {
+        "sport": "Laji",
+        "level": "Taso",
+        "status": "Tila",
+        "created": "Luotu"
+      },
+      "filters": {
+        "sport": "Laji",
+        "status": "Tila"
+      },
+      "actions": {
+        "create": "Luo sarja",
+        "activate": "Aktivoi",
+        "deactivate": "Deaktivoi",
+        "menu": "Sarjan toiminnot -valikko"
+      },
+      "confirmDelete": {
+        "title": "Poista sarja",
+        "message": "Haluatko varmasti poistaa sarjan \"{{divisionName}}\"? Tätä toimintoa ei voi perua."
+      },
+      "errors": {
+        "load": "Sarjojen lataus epäonnistui. Yritä uudelleen.",
+        "loadSingle": "Sarjan tietojen lataus epäonnistui.",
+        "updateStatus": "Tilaa ei voitu päivittää. Yritä uudelleen.",
+        "delete": "Sarjan poistaminen epäonnistui. Yritä uudelleen.",
+        "save": "Sarjan tallennus epäonnistui. Yritä uudelleen.",
+        "levelRequired": "Taso tulee antaa numerona."
+      },
+      "form": {
+        "loading": "Ladataan sarjaa...",
+        "createTitle": "Luo sarja",
+        "editTitle": "Muokkaa sarjaa",
+        "createSubtitle": "Täytä uuden sarjan perustiedot.",
+        "editSubtitle": "Päivitä tämän sarjan keskeiset tiedot.",
+        "namePlaceholder": "Sarjan nimi",
+        "levelHelper": "1 = korkein",
+        "descriptionPlaceholder": "Lyhyt kuvaus sarjasta",
+        "sportPlaceholder": "esim. Floorball",
+        "sportHint": "Sarjan lajia ei voi muuttaa jälkikäteen."
+      }
     },
     "persons":{
       "title": "Henkilöiden hallinta",
@@ -261,6 +392,49 @@
       }
     }
   },
+  "clubs": {
+    "manage": {
+      "title": "Seurojen Hallinta"
+    },
+    "total": "Yhteensä",
+    "createNew": "Luo Uusi Seura",
+    "searchPlaceholder": "Hae seuroja nimellä tai kaupungilla...",
+    "searchAria": "Hae seuroja",
+    "empty": "Seuroja ei löytynyt",
+    "create": {
+      "title": "Luo Seura"
+    },
+    "table": {
+      "name": "Seuran Nimi",
+      "city": "Kaupunki",
+      "country": "Maa",
+      "foundingDate": "Perustettu",
+      "actions": "Toiminnot"
+    },
+    "form": {
+      "name": "Seuran Nimi",
+      "city": "Kaupunki",
+      "country": "Maa",
+      "foundingDate": "Perustettu",
+      "foundingDatePlaceholder": "pp-kk-vvvv",
+      "namePlaceholder": "Anna seuran nimi",
+      "cityPlaceholder": "Anna kaupunki",
+      "countryPlaceholder": "Anna maa",
+      "websiteUrl": "Verkkosivun URL",
+      "logoUrl": "Logon URL",
+      "contactEmail": "Yhteyssähköposti"
+    },
+    "details": {
+      "title": "Seuran Tiedot",
+      "foundingDate": "Perustettu",
+      "teams": "Joukkueet",
+      "noTeams": "Ei joukkueita vielä",
+      "members": "Jäseniä"
+    },
+    "confirmDeleteTitle": "Poista seura?",
+    "confirmDelete": "Haluatko varmasti poistaa tämän seuran?",
+    "confirmDeleteWarning": "Tätä toimintoa ei voi perua."
+  },
   "floorball": {
     "management": {
       "title": "Salibandyn Hallinta",
@@ -274,7 +448,8 @@
       },
       "comingSoonAlert": "🚧 {{featureName}} tulossa pian! 🚧\n\nKehitystiimimme työskentelee kovasti tuodakseen sinulle tämän ominaisuuden. Pysy kuulolla päivityksistä! 🎯",
       "actions": {
-        "teams": "Hallitse Joukkueita",
+        "teams": "Joukkueet",
+        "manageTeams": "Hallitse joukkueita",
         "players": "Hallitse Pelaajia",
         "coaches": "Hallitse Valmentajia",
         "teamManagers": "Hallitse Joukkueenjohtajia",
@@ -315,6 +490,16 @@
         "homeArena": "Kotihalli",
         "activeMembers": "Aktiivisia Jäseniä",
         "actions": "Muut"
+      },
+      "assignPlayerToTeam": "Määritä Joukkueeseen",
+      "assignPlayersToTeam": "Määritä Pelaajat Joukkueeseen",
+      "selectTeam": "Valitse Joukkue",
+      "chooseTeam": "Valitse joukkue...",
+      "addToRoster": "Lisää Kokoonpanoon",
+      "errors": {
+        "loadFailed": "Joukkueiden lataus epäonnistui",
+        "selectTeam": "Valitse joukkue",
+        "invalidJerseyNumber": "Pelinumeron täytyy olla välillä 1-99"
       }
     },
     "divisions": {
@@ -333,6 +518,7 @@
       "searchPersons": "Hae saatavilla olevia henkilöitä...",
       "searchPlayers": "Hae pelaajia...",
       "selected": "{{count}} valittu",
+      "selectedPlayers": "{{count}} pelaajaa valittu",
       "selectAll": "Valitse kaikki",
       "selectAllVisible": "Valitse kaikki näkyvät henkilöt",
       "createPlayer": "Luo Pelaaja",
@@ -362,12 +548,22 @@
       },
       "noPlayersInTeam": "Tällä joukkueella ei ole vielä pelaajia määritelty.",
       "addPlayersHelp": "Käytä muokkaa-painiketta hallitaksesi joukkueen kokoonpanoa ja lisätäksesi pelaajia.",
+      "actions": {
+        "menu": "Pelaajan toimintovalikko",
+        "activate": "Aktivoi Pelaaja",
+        "deactivate": "Deaktivoi Pelaaja",
+        "bulkActivate": "Aktivoi Valitut ({{count}})",
+        "bulkDeactivate": "Deaktivoi Valitut ({{count}})",
+        "bulkDelete": "Poista Valitut ({{count}})",
+        "bulkAssignToTeam": "Määritä Joukkueeseen ({{count}})"
+      },
       "errors": {
         "loadPlayers": "Pelaajien lataus epäonnistui. Yritä uudelleen.",
         "deleteFailed": "Pelaajan poisto epäonnistui. Yritä uudelleen."
       }
     },
     "positions": {
+      "none": "Ei määritelty",
       "center": "Keskushyökkääjä",
       "winger": "Laitahyökkääjä",
       "defender": "Puolustaja",
@@ -531,33 +727,13 @@
       }
     }
   },
-  "roster": {
-    "positions": {
-      "Goalkeeper": "Maalivahdit",
-      "Defender": "Puolustajat", 
-      "Center": "Keskushyökkääjät",
-      "Forward": "Hyökkääjät"
-    },
-    "jerseyNumber": "#",
-    "name": "Nimi",
-    "age": "Ikä",
-    "matchesPlayed": "Pelit",
-    "goals": "Maalit",
-    "assists": "Syötöt",
-    "tooltips": {
-      "jerseyNumber": "Pelinumero",
-      "age": "Ikä",
-      "matchesPlayed": "Pelatut ottelut",
-      "goals": "Maalit",
-      "assists": "Syötöt"
-    }
-  },
   "common": {
     "back": "Takaisin",
     "backTo": "Takaisin",
     "loading": "Ladataan...",
     "edit": "Muokkaa",
     "delete": "Poista",
+    "save": "Tallenna",
     "deleting": "Poistetaan...",
     "cancel": "Peruuta",
     "active": "Aktiivinen",
@@ -612,7 +788,41 @@
     "results": "Tulokset",
     "resultsTitle": "TULOKSET",
     "roster": "Kokoonpano",
-    "stats": "Tilastot",
+    "stats": {
+      "Stats": "Tilastot",
+      "loading": "Ladataan joukkueen tilastoja...",
+      "error": "Tilastojen lataus epäonnistui",
+      "noStats": "Tilastoja ei saatavilla",
+      "noStatsDesc": "Joukkueen tilastot eivät ole saatavilla tälle kaudelle.",
+      "currentSeason": "Nykyinen kausi",
+      "overallRecord": "Kokonaistilanne",
+      "gamesPlayed": "Pelatut pelit",
+      "wins": "Voitot",
+      "losses": "Tappiot",
+      "ties": "Tasapelit",
+      "points": "Pisteet",
+      "goals": "Maalit",
+      "goalsFor": "Tehdyt maalit",
+      "goalsAgainst": "Päästetyt maalit",
+      "goalDifference": "Maaliero",
+      "shooting": "Laukaukset",
+      "shotsFor": "Laukaukset maalia kohti",
+      "shotsAgainst": "Laukaukset vastaan",
+      "shotPercentage": "Laukausprosentti",
+      "specialTeams": "Ylivoimapelit",
+      "powerPlay": "Ylivoimapeli",
+      "penaltyKill": "Alivoimapeli",
+      "shortHandedGoals": "Alivoimamaalit",
+      "faceoffs": "Aloitukset",
+      "faceoffPercentage": "Aloitustilasto",
+      "penalties": "Rangaistukset",
+      "penaltyMinutes": "Jäähyminuutit",
+      "homeVsAway": "Koti vs Vieras",
+      "home": "Koti",
+      "away": "Vieras",
+      "winPercentage": "Voittoprosentti",
+      "perGame": "per ottelu"
+    },
     "standings": "Sarjataulukko",
     "todaysMatches": "TÄNÄÄN",
     "latestMatches": "VIIMEISIMMÄT",
@@ -656,5 +866,31 @@
   "searchBar": {
     "placeholder": "Hae...",
     "button": "Hae"
+  },
+  "leaguePage": {
+    "title": "Sarja",
+    "defaultTitle": "Sarja",
+    "tabs": {
+      "summary": "Yhteenveto",
+      "standings": "Sarjataulukko",
+      "results": "Tulokset",
+      "fixtures": "Otteluohjelma"
+    },
+    "summary": {
+      "title": "Sarjan Yhteenveto",
+      "leagueInformation": "Sarjan Tiedot",
+      "season": "Kausi:",
+      "teams": "Joukkueet:",
+      "matchesPlayed": "Pelatut ottelut:",
+      "goalsScored": "Tehdyt maalit:",
+      "avgGoalsPerGame": "Keskim. maalit/ottelu:",
+      "loading": "Ladataan yhteenvetoa...",
+      "error": "Virhe: {{error}}",
+      "noData": "Tietoja ei saatavilla"
+    },
+    "errors": {
+      "loadLeagueData": "Sarjan tietojen lataus epäonnistui",
+      "loadMatches": "Otteluiden lataus epäonnistui"
+    }
   }
 } 

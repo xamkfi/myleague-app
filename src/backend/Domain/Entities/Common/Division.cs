@@ -1,12 +1,11 @@
-using Domain.EventSourcing;
-using Domain.DomainEvents.Common;
+using Domain.Enums.Common;
 
 namespace Domain.Entities.Common;
 
 /// <summary>
 /// Represents a division in sports leagues
 /// </summary>
-public class Division : AggregateRoot
+public class Division : BaseEntity
 {
 
     /// <summary>
@@ -27,7 +26,7 @@ public class Division : AggregateRoot
     /// <summary>
     /// Gets the sport type this division belongs to
     /// </summary>
-    public string SportType { get; private set; }
+    public SportsCategory SportType { get; private set; }
 
     /// <summary>
     /// Gets whether this division is currently active
@@ -47,7 +46,7 @@ public class Division : AggregateRoot
         Id = Guid.NewGuid();
         Name = string.Empty;
         Description = string.Empty;
-        SportType = string.Empty;
+        SportType = SportsCategory.None;
         IsActive = true;
         CreatedDate = DateTime.UtcNow;
     }
@@ -60,18 +59,19 @@ public class Division : AggregateRoot
     /// <param name="level">The level of the division (lower numbers = higher level)</param>
     /// <param name="sportType">The sport type this division belongs to</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
-    public Division(string name, string description, int level, string sportType)
+    public Division(string name, string description, int level, SportsCategory sportType)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(description);
-        ArgumentNullException.ThrowIfNull(sportType);
-        
+
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Division name cannot be null or empty.", nameof(name));
-        if (string.IsNullOrWhiteSpace(sportType))
-            throw new ArgumentException("Sport type cannot be null or empty.", nameof(sportType));
-        if (level < 0)
-            throw new ArgumentException("Division level cannot be negative.", nameof(level));
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Division description cannot be null or empty.", nameof(description));
+        if (sportType == SportsCategory.None)
+            throw new ArgumentException("Sport type cannot be None.", nameof(sportType));
+        if (level < 1)
+            throw new ArgumentException("Division level must be greater than 0.", nameof(level));
 
         Id = Guid.NewGuid();
         Name = name;
@@ -80,8 +80,6 @@ public class Division : AggregateRoot
         SportType = sportType;
         IsActive = true;
         CreatedDate = DateTime.UtcNow;
-
-        AddDomainEvent(new DivisionCreatedEvent(Id, name, description, level, sportType));
     }
 
     /// <summary>
@@ -98,14 +96,15 @@ public class Division : AggregateRoot
         
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Division name cannot be null or empty.", nameof(name));
-        if (level < 0)
-            throw new ArgumentException("Division level cannot be negative.", nameof(level));
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Division description cannot be null or empty.", nameof(description));
+        if (level < 1)
+            throw new ArgumentException("Division level must be greater than 0.", nameof(level));
 
         Name = name;
         Description = description;
         Level = level;
 
-        AddDomainEvent(new DivisionUpdatedEvent(Id, name, description, level));
     }
 
     /// <summary>
@@ -116,7 +115,6 @@ public class Division : AggregateRoot
         if (!IsActive)
         {
             IsActive = true;
-            AddDomainEvent(new DivisionActivatedEvent(Id));
         }
     }
 
@@ -128,7 +126,6 @@ public class Division : AggregateRoot
         if (IsActive)
         {
             IsActive = false;
-            AddDomainEvent(new DivisionDeactivatedEvent(Id));
         }
     }
 } 

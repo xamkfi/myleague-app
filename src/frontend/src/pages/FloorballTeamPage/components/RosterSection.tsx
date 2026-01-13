@@ -33,13 +33,13 @@ export default function RosterSection({ team }: RosterSectionProps) {
 
       {/* Playing positions */}
       {playerPositions.map((pos, key) => (
-        <div className="roster-container">
-          <div key={key}>
-            <div className="roster-position-header">
-              {t(`roster.positions.${pos}`)}
-            </div>
+        <div className="roster-container" key={key}>
+          <div className="roster-position-header">
+            {t(`roster.positions.${pos}`)}
+          </div>
 
-            <div className="roster-position-container">
+          <div className="roster-position-container">
+            <div className="table-wrapper">
               <div className="table stats-header ">
                 <div className="roster-jersey" title={t('roster.tooltips.jerseyNumber')}>{t('roster.jerseyNumber')}</div>
                 <div className="roster-player-name">{t('roster.name')}</div>
@@ -54,32 +54,33 @@ export default function RosterSection({ team }: RosterSectionProps) {
                   <div
                     className="table roster-player"
                     onClick={() => navigateToPlayerPage(player.playerId)}
+                    key={player.playerId}
                   >
-
+                    
                     <div className="roster-jersey row">
                       {player.jerseyNumber}
                     </div>
-
+                    
                     <div className="roster-player-name">
                       {player.playerName}
                     </div>
-
+                    
                     <div className="roster-age">
                       {player.age ?? 99}
                     </div>
-
+                    
                     <div className="roster-games-played">
                       {player.gamesPlayed}
                     </div>
-
+                    
                     <div className="roster-goals">
                       {player.goals ?? "-"}
                     </div>
-
+                    
                     <div className="roster-assists">
                       {player.assists ?? "-"}
                     </div>
-
+                    
                   </div>
                 )}
             </div>

@@ -21,9 +21,11 @@ export interface TimerUpdate {
   MatchId: string; // Backend sends with PascalCase
   PeriodNumber?: number;
   ElapsedTime: string;
+  ElapsedMilliseconds?: number; // optional: prefer for math when present
   IsRunning: boolean;
   LastUpdated: string;
   EventType: string;
+  Sequence?: number; // optional: ordering token
 }
 
 export const timerService = {

@@ -215,7 +215,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasColumnType("uuid")
                         .HasComment("Unique identifier for the entity");
 
-                    b.Property<DateTime>("BirthDate")
+                    b.Property<DateTime?>("BirthDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedAt")

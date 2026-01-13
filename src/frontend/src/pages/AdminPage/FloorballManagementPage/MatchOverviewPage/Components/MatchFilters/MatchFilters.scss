@@ -1,14 +1,61 @@
 .filter-section {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   margin-bottom: 24px;
+}
+
+.filter-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .filter-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+  }
 
   label {
     font-weight: 500;
     color: #374151;
     font-size: 0.875rem;
     white-space: nowrap;
+  }
+
+  .search-filter {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.875rem;
+    color: #374151;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    &:hover {
+      border-color: #9ca3af;
+    }
   }
 
   .season-filter {
@@ -20,7 +67,7 @@
     color: #374151;
     cursor: pointer;
     transition: border-color 0.2s, box-shadow 0.2s;
-    min-width: 200px;
+    width: 100%;
 
     &:focus {
       outline: none;
@@ -34,14 +81,16 @@
   }
 }
 
+
 // Responsive design
 @media (max-width: 768px) {
   .filter-section {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    .filter-row {
+      flex-direction: column;
+      gap: 16px;
+    }
 
-    .season-filter {
+    .filter-item {
       width: 100%;
       min-width: unset;
     }
@@ -56,6 +105,7 @@
       font-size: 0.8rem;
     }
 
+    .search-filter,
     .season-filter {
       font-size: 0.8rem;
       padding: 6px 10px;

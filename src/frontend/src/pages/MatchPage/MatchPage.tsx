@@ -4,15 +4,12 @@ import { floorballMatchService } from '../../api/floorball/floorballMatchService
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import './MatchPage.scss';
 import { signalRService, type MatchEvent } from '../../services/signalRService';
+import { MATCH_NOTIFICATION_EVENTS } from '../../constants/MatchNotifications';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import MatchBreadcrumb from './components/MatchBreadcrumb';
 import MatchHeader from './components/MatchHeader';
 import MatchNavigation, { type TabType } from './components/MatchNavigation';
 import MatchTabContent from './components/MatchTabContent';
-
-// SignalR event names used by the backend. Consider centralising these to a constants file if reused elsewhere.
-const GOAL_SCORED_EVENT = 'FloorballGoalScored';
-const PENALTY_ASSIGNED_EVENT = 'FloorballPenaltyAssigned';
 
 
 
@@ -62,10 +59,30 @@ export default function MatchPage() {
         // Listen for match-specific events
         unsubscribeCallback = signalRService.onMatchEvent((evt: MatchEvent) => {
           // These are events specific to our match, no need to filter by matchId
-          if (evt.eventType === GOAL_SCORED_EVENT || evt.eventType === PENALTY_ASSIGNED_EVENT) {
-            console.log(`Received match event for match ${id}:`, evt);
-            // Simply reload the match so UI stays consistent
-            loadMatch();
+          switch (evt.eventType) {
+            case MATCH_NOTIFICATION_EVENTS.GOAL_SCORED:
+              console.log(`Goal scored in match ${id}:`, evt);
+              loadMatch();
+              break;
+            case MATCH_NOTIFICATION_EVENTS.PENALTY_ASSIGNED:
+              console.log(`Penalty assigned in match ${id}:`, evt);
+              loadMatch();
+              break;
+            case MATCH_NOTIFICATION_EVENTS.SAVE_RECORDED:
+              console.log(`Save recorded in match ${id}:`, evt);
+              loadMatch();
+              break;
+            case MATCH_NOTIFICATION_EVENTS.MATCH_STARTED:
+              console.log(`Match ${id} has started:`, evt);
+              loadMatch();
+              break;
+            case MATCH_NOTIFICATION_EVENTS.MATCH_COMPLETED:
+              console.log(`Match ${id} has completed:`, evt);
+              loadMatch();
+              break;
+            default:
+              // Ignore other events
+              break;
           }
         });
         
@@ -124,13 +141,18 @@ export default function MatchPage() {
 
 
   return (
-    <PageTemplate title="Match Details">
-      <div className="match-page">
-        <MatchBreadcrumb />
-        <MatchHeader match={match} />
-        <MatchNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-        <MatchTabContent activeTab={activeTab} match={match} />
-      </div>
-    </PageTemplate>
+    <div className="match-page-wrapper">
+      <PageTemplate title="Match Details">
+        <div className="match-page">
+          <MatchBreadcrumb 
+            seasonName={match.seasonName}
+            seasonId={match.seasonId}
+          />
+          <MatchHeader match={match} />
+          <MatchNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <MatchTabContent activeTab={activeTab} match={match} />
+        </div>
+      </PageTemplate>
+    </div>
   );
 }

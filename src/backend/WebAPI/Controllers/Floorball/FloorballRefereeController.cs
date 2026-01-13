@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Floorball;
 
 namespace WebAPI.Controllers.Floorball
@@ -76,7 +77,8 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to create floorball referee";
-            return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage));
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+            return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -132,12 +134,13 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update floorball referee";
+            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage));
             }
 
-            return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage));
+            return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage, errorList));
         }
 
         /// <summary>
@@ -163,6 +166,7 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to delete floorball referee";
+
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse.ErrorResponse(errorMessage));
@@ -182,8 +186,8 @@ namespace WebAPI.Controllers.Floorball
         /// <returns>Paginated list of floorball referees</returns>
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballRefereeDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballRefereeDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballRefereeDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<FloorballRefereeDto>>> GetAllReferees(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 0,

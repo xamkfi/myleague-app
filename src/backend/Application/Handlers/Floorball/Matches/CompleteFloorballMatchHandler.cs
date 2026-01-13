@@ -4,7 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Commands.Floorball.Match;
 using Application.Common;
+using Application.Constants;
 using Application.DTOs.Floorball;
+using Application.Interfaces.Common;
 using Application.Mappings.Floorball;
 using Application.Services.Common;
 using Domain.Entities.Floorball;
@@ -24,6 +26,7 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly IMatchTimerService _timerService;
+    private readonly INotificationSenderService _notificationSenderService;
     private readonly ILogger<CompleteFloorballMatchHandler> _logger;
 
     /// <summary>
@@ -39,12 +42,14 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
         IFloorballStatisticsRepository statisticsRepository,
         IFloorballUnitOfWork unitOfWork,
         IMatchTimerService timerService,
+        INotificationSenderService notificationSenderService,
         ILogger<CompleteFloorballMatchHandler> logger)
     {
         _matchRepository = matchRepository;
         _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
         _timerService = timerService;
+        _notificationSenderService = notificationSenderService;
         _logger = logger;
     }
 
@@ -87,6 +92,10 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
                 _logger.LogWarning(timerEx, "Failed to destroy timer for completed match: {MatchId}. This is non-critical.", request.Id);
                 // Don't fail the match completion if timer destruction fails
             }
+
+            await _notificationSenderService.SendNotificationAsync(
+                FloorballNotificationEvents.MatchCompleted,
+                new { MatchId = match.Id });
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             _logger.LogInformation("Successfully completed floorball match: {MatchId}", request.Id);

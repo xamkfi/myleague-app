@@ -1,24 +1,14 @@
 using System.ComponentModel.DataAnnotations;
+using WebAPI.Models.Common.Pagination;
+using Domain.Enums.Floorball;
 
 namespace WebAPI.Models.Floorball;
 
 /// <summary>
 /// Request model for getting paginated floorball matches
 /// </summary>
-public record GetFloorballMatchesRequest
+public record GetFloorballMatchesRequest : PagedRequestBase
 {
-    /// <summary>
-    /// Gets the page number (1-based)
-    /// </summary>
-    [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
-    public int Page { get; init; } = 1;
-
-    /// <summary>
-    /// Gets the number of items per page (0 means use default)
-    /// </summary>
-    [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
-    public int PageSize { get; init; } = 0;
-
     /// <summary>
     /// Gets the season ID filter
     /// </summary>
@@ -40,28 +30,26 @@ public record GetFloorballMatchesRequest
     public DateTime? EndDate { get; init; }
 
     /// <summary>
+    /// Gets the match status filter
+    /// </summary>
+    public FloorballMatchStatus? Status { get; init; }
+
+    /// <summary>
     /// Gets the sort order ("asc" or "desc")
     /// </summary>
     public string SortOrder { get; init; } = "desc";
+
+    /// <summary>
+    /// Gets the search query to filter matches by team names (case-insensitive, partial match)
+    /// </summary>
+    public string? SearchQuery { get; init; }
 }
 
 /// <summary>
 /// Request model for getting team matches with pagination and filtering (team ID comes from route)
 /// </summary>
-public record GetTeamMatchesRequest
+public record GetTeamMatchesRequest : PagedRequestBase
 {
-    /// <summary>
-    /// Gets the page number (1-based)
-    /// </summary>
-    [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than 0")]
-    public int Page { get; init; } = 1;
-
-    /// <summary>
-    /// Gets the number of items per page (0 means use default)
-    /// </summary>
-    [Range(0, 100, ErrorMessage = "Page size must be between 0 and 100")]
-    public int PageSize { get; init; } = 0;
-
     /// <summary>
     /// Gets the start date filter (matches on or after this date)
     /// </summary>
@@ -82,19 +70,19 @@ public record CreateFloorballMatchRequest
     /// Gets the season ID
     /// </summary>
     [Required(ErrorMessage = "Season ID is required")]
-    public Guid SeasonId { get; init; }
+    public Guid? SeasonId { get; init; }
 
     /// <summary>
     /// Gets the home team ID
     /// </summary>
     [Required(ErrorMessage = "Home team ID is required")]
-    public Guid HomeTeamId { get; init; }
+    public Guid? HomeTeamId { get; init; }
 
     /// <summary>
     /// Gets the away team ID
     /// </summary>
     [Required(ErrorMessage = "Away team ID is required")]
-    public Guid AwayTeamId { get; init; }
+    public Guid? AwayTeamId { get; init; }
 
     /// <summary>
     /// Gets the referee ID (optional)
@@ -175,6 +163,7 @@ public record RecordGoalRequest
     /// Gets the period number
     /// </summary>
     [Required(ErrorMessage = "Period number is required")]
+    [Range(1, 4, ErrorMessage = "Period number must be between 1 and 4")]
     public int PeriodNumber { get; init; }
 
     /// <summary>

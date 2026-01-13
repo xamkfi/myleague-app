@@ -2,28 +2,44 @@
 @use '@variables' as *;
 @use '../../styles/common' as *;
 
-.match-page {
-  min-height: 100vh;
-  background-color: #f8f9fa;
-  padding: 0;
+// Override PageTemplate padding for MatchPage only
+.match-page-wrapper .page-body {
+  padding: 0 !important;
 }
 
-.breadcrumb {
-  background-color: #1a1a1a;
+.match-page {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.match-breadcrumb {
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
   color: white;
-  padding: 8px 20px;
-  font-size: 12px;
+  padding: 12px 20px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
+  border-radius: 8px 8px 0 0;
 
-  .settings-link {
-    margin-left: auto;
-    color: #ccc;
+  .season-link {
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
-    
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
     &:hover {
       color: white;
+      transform: translateX(2px);
+    }
+
+    .arrow {
+      font-size: 18px;
+      line-height: 1;
+      margin-top: -2px;
     }
   }
 }
@@ -33,12 +49,22 @@
   color: white;
   padding: 30px 20px;
   text-align: center;
-}
 
-.match-date-time {
-  font-size: 14px;
-  opacity: 0.9;
-  margin-bottom: 20px;
+  .match-info {
+    margin-bottom: 1.5rem;
+    
+    .match-date-time {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .season-name {
+      font-size: 16px;
+      font-weight: 500;
+      margin-top: 8px;
+      opacity: 0.95;
+    }
+  }
 }
 
 .teams-container {
@@ -170,14 +196,37 @@
   padding: 30px;
   max-width: 1000px;
   margin: 0 auto;
+
+  .summary-stats-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #e1e8ed;
+
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    // Make stats more compact in summary view
+    .match-stats {
+      padding: 0;
+      
+      .stats-header {
+        margin-bottom: 1.5rem;
+      }
+
+      .stats-content {
+        gap: 1rem;
+      }
+    }
+  }
 }
 
 .match-info {
   background-color: #f8f9fa;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 30px;
-
   p {
     margin: 0 0 10px 0;
     font-size: 14px;
@@ -347,39 +396,393 @@
   color: #dc3545;
 }
 
-// Responsive design
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
 @media (max-width: 768px) {
+  .match-page {
+    padding-top: map.get($spacing, 'sm');
+    padding-bottom: map.get($spacing, 'sm');
+  }
+
+  .match-breadcrumb {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    font-size: map.get($font-sizes, 'sm');
+    border-radius: map.get($border-radius, 'sm') map.get($border-radius, 'sm') 0 0;
+    
+    .season-link {
+      font-size: map.get($font-sizes, 'sm');
+      gap: map.get($spacing, 'xs');
+      
+      .arrow {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .match-header {
+    padding: map.get($spacing, 'lg') map.get($spacing, 'md');
+    display: flex;
+    flex-direction: column;
+
+    // Ensure stacking order on mobile: teams on top, then status, then info
+    .teams-container { order: 1; }
+    .match-status { order: 2; }
+    .match-info { order: 3; }
+    
+    .match-info {
+      margin-bottom: map.get($spacing, 'md');
+      
+      .match-date-time {
+        font-size: map.get($font-sizes, 'sm');
+      }
+      
+      .season-name {
+        font-size: map.get($font-sizes, 'base');
+        margin-top: map.get($spacing, 'xs');
+      }
+    }
+  }
+
   .teams-container {
-    gap: 20px;
+    gap: map.get($spacing, 'md');
+    margin-bottom: map.get($spacing, 'md');
+    flex-direction: row; // keep in a single row on mobile
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+  }
+
+  .team-section {
+    min-width: 120px;
+    flex-direction: row;
+    align-items: center;
+    gap: map.get($spacing, 'sm');
+    
+    &.away {
+      flex-direction: row-reverse;
+    }
   }
 
   .team-crest {
-    width: 60px;
-    height: 60px;
-    font-size: 14px;
+    width: 50px;
+    height: 50px;
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: 0;
+    flex-shrink: 0;
   }
 
   .team-name {
-    font-size: 14px;
+    font-size: map.get($font-sizes, 'sm');
+    text-align: left;
+    
+    .away & {
+      text-align: right;
+    }
+  }
+
+  .score-container {
+    order: 0; // keep score in the middle row-wise
+    margin-bottom: 0;
   }
 
   .match-score {
-    font-size: 36px;
-    gap: 10px;
+    font-size: 2.5rem;
+    gap: map.get($spacing, 'sm');
+  }
+
+  .vs-separator {
+    font-size: map.get($font-sizes, 'lg');
+  }
+
+  .match-status {
+    font-size: map.get($font-sizes, 'sm');
+    margin-top: map.get($spacing, 'sm');
   }
 
   .navigation-tabs {
     overflow-x: auto;
     justify-content: flex-start;
+    padding: 0 map.get($spacing, 'sm');
+    -webkit-overflow-scrolling: touch;
+    
+    .nav-tab {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+      font-size: map.get($font-sizes, 'sm');
+      white-space: nowrap;
+      min-width: 80px;
+      text-align: center;
+    }
   }
 
   .summary-content {
-    padding: 20px;
+    padding: map.get($spacing, 'md');
+    
+    .summary-stats-section {
+      margin-top: map.get($spacing, 'lg');
+      padding-top: map.get($spacing, 'md');
+    }
   }
 
   .period-scores-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: map.get($spacing, 'sm');
+  }
+
+  .period-score {
+    padding: map.get($spacing, 'sm');
+    
+    .period-label {
+      font-size: map.get($font-sizes, 'xs');
+      margin-bottom: map.get($spacing, 'xs');
+    }
+    
+    .period-result {
+      font-size: map.get($font-sizes, 'base');
+    }
+  }
+
+  .match-info {
+    padding: map.get($spacing, 'md');
+    border-radius: map.get($border-radius, 'sm');
+    
+    p {
+      font-size: map.get($font-sizes, 'sm');
+      margin-bottom: map.get($spacing, 'xs');
+    }
+  }
+
+  .events-section {
+    margin-top: map.get($spacing, 'md');
+    
+    h3 {
+      font-size: map.get($font-sizes, 'lg');
+      margin-bottom: map.get($spacing, 'md');
+    }
+  }
+
+  .events-list {
+    gap: map.get($spacing, 'sm');
+  }
+
+  .event-item {
+    padding: map.get($spacing, 'sm');
+    gap: map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'sm');
+  }
+
+  .event-icon {
+    width: 32px;
+    height: 32px;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  .event-time {
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .event-description {
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .event-player {
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  .event-assists {
+    font-size: map.get($font-sizes, 'xs');
+    margin-top: map.get($spacing, 'xs');
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .match-page {
+    padding-top: map.get($spacing, 'xs');
+    padding-bottom: map.get($spacing, 'xs');
+  }
+
+  .match-breadcrumb {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    font-size: map.get($font-sizes, 'xs');
+    
+    .season-link {
+      font-size: map.get($font-sizes, 'xs');
+      
+      .arrow {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .match-header {
+    padding: map.get($spacing, 'md') map.get($spacing, 'sm');
+    display: flex;
+    flex-direction: column;
+
+    // Ensure stacking order on smaller phones as well
+    .teams-container { order: 1; }
+    .match-status { order: 2; }
+    .match-info { order: 3; }
+    
+    .match-info {
+      margin-bottom: map.get($spacing, 'sm');
+      
+      .match-date-time {
+        font-size: map.get($font-sizes, 'xs');
+      }
+      
+      .season-name {
+        font-size: map.get($font-sizes, 'sm');
+      }
+    }
+  }
+
+  .teams-container {
+    gap: map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .team-section {
+    min-width: 100px;
+    gap: map.get($spacing, 'xs');
+  }
+
+  .team-crest {
+    width: 40px;
+    height: 40px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .team-name {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .match-score {
+    font-size: 2rem;
+    gap: map.get($spacing, 'xs');
+  }
+
+  .vs-separator {
+    font-size: map.get($font-sizes, 'base');
+  }
+
+  .match-status {
+    font-size: map.get($font-sizes, 'xs');
+    margin-top: map.get($spacing, 'xs');
+  }
+
+  .navigation-tabs {
+    padding: 0 map.get($spacing, 'xs');
+    
+    .nav-tab {
+      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+      font-size: map.get($font-sizes, 'xs');
+      min-width: 70px;
+    }
+  }
+
+  .summary-content {
+    padding: map.get($spacing, 'sm');
+    
+    .summary-stats-section {
+      margin-top: map.get($spacing, 'md');
+      padding-top: map.get($spacing, 'sm');
+      
+      h3 {
+        font-size: map.get($font-sizes, 'base');
+        margin-bottom: map.get($spacing, 'sm');
+      }
+    }
+  }
+
+  .period-scores-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: map.get($spacing, 'xs');
+  }
+
+  .period-score {
+    padding: map.get($spacing, 'xs');
+    
+    .period-label {
+      font-size: map.get($font-sizes, 'xs');
+    }
+    
+    .period-result {
+      font-size: map.get($font-sizes, 'sm');
+    }
+  }
+
+  .match-info {
+    padding: map.get($spacing, 'sm');
+    
+    p {
+      font-size: map.get($font-sizes, 'xs');
+    }
+  }
+
+  .events-section {
+    margin-top: map.get($spacing, 'sm');
+    
+    h3 {
+      font-size: map.get($font-sizes, 'base');
+      margin-bottom: map.get($spacing, 'sm');
+    }
+  }
+
+  .events-list {
+    gap: map.get($spacing, 'xs');
+  }
+
+  .event-item {
+    padding: map.get($spacing, 'xs');
+    gap: map.get($spacing, 'xs');
+  }
+
+  .event-icon {
+    width: 28px;
+    height: 28px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .event-time {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .event-description {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .event-player {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .event-assists {
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .match-score {
+    font-size: 1.8rem;
+  }
+  
+  .team-crest {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .team-name {
+    font-size: map.get($font-sizes, 'xs');
+  }
+  
+  .navigation-tabs .nav-tab {
+    padding: map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'xs');
+    min-width: 60px;
   }
 }
 
@@ -513,34 +916,91 @@
 
 // Responsive adjustments for match events
 @media (max-width: 768px) {
+  .match-events {
+    margin-top: map.get($spacing, 'md');
+  }
+
+  .period-section {
+    margin-bottom: map.get($spacing, 'md');
+    border-radius: map.get($border-radius, 'sm');
+  }
+
   .period-header {
-    padding: 10px 15px;
-    font-size: 12px;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  .period-name {
+    font-size: map.get($font-sizes, 'sm');
   }
 
   .period-score {
-    font-size: 14px;
+    font-size: map.get($font-sizes, 'sm');
   }
 
   .event-row {
-    padding: 10px 15px;
-    min-height: 45px;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    min-height: 40px;
   }
 
   .event-time,
   .event-score,
   .event-player {
-    font-size: 12px;
+    font-size: map.get($font-sizes, 'sm');
   }
 
   .event-assist {
-    font-size: 11px;
+    font-size: map.get($font-sizes, 'xs');
   }
 
   .event-icon {
     width: 20px;
     height: 20px;
-    font-size: 12px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
+
+@media (max-width: 480px) {
+  .match-events {
+    margin-top: map.get($spacing, 'sm');
+  }
+
+  .period-section {
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .period-header {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .period-name {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .period-score {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .event-row {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    min-height: 35px;
+  }
+
+  .event-time,
+  .event-score,
+  .event-player {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .event-assist {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .event-icon {
+    width: 18px;
+    height: 18px;
+    font-size: map.get($font-sizes, 'xs');
   }
 }
 

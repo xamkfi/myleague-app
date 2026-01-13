@@ -98,37 +98,27 @@ namespace Application.Services.Common
                     return;
                 }
 
-                DateTime now = DateTime.UtcNow;
-                timerState.IsRunning = true;
-                
-                // Only set StartedAt if this is the first start (StartedAt is null)
-                // This preserves the original start time for pause/resume cycles
+                // If period changed, reset timer to 0:00 for new period
+                if (periodNumber.HasValue && 
+                    timerState.PeriodNumber.HasValue &&
+                    timerState.PeriodNumber.Value != periodNumber.Value)
+                {
+                    _logger.LogInformation(
+                        "Period changed from {OldPeriod} to {NewPeriod}, resetting timer for match {MatchId}",
+                        timerState.PeriodNumber, periodNumber, matchId);
+                    
+                    timerState.Reset();
+                }
+
+                // Set/keep initial started-at only if never started before or was reset
                 if (timerState.StartedAt == null)
                 {
-                    timerState.StartedAt = now;
-                    _logger.LogInformation("Set StartedAt to {StartedAt} for match {MatchId}", now, matchId);
+                    timerState.StartedAt = DateTime.UtcNow;
                 }
-                else
-                {
-                    _logger.LogInformation("Timer already has StartedAt {StartedAt} for match {MatchId}", timerState.StartedAt, matchId);
-                }
-                
-                // Set LastResumedAt to track when timer was last resumed
-                timerState.LastResumedAt = now;
-                
-                // If timer was paused, add the pause duration to TotalPausedDuration
-                if (timerState.PausedAt.HasValue)
-                {
-                    TimeSpan pauseDuration = now - timerState.PausedAt.Value;
-                    timerState.TotalPausedDuration += pauseDuration;
-                    _logger.LogInformation("Added pause duration {PauseDuration} to TotalPausedDuration for match {MatchId}", pauseDuration, matchId);
-                }
-                
-                // Clear PausedAt when starting (timer is no longer paused)
-                timerState.PausedAt = null;
-                
+
+                // Update period and start via domain method (initializes runtime stopwatch and clears PausedAt)
                 timerState.PeriodNumber = periodNumber;
-                timerState.LastUpdated = now;
+                timerState.Start();
 
                 _logger.LogInformation("Timer state after start - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}, TotalPausedDuration: {TotalPausedDuration}", 
                     timerState.IsRunning, timerState.StartedAt, timerState.PausedAt, timerState.TotalPausedDuration);
@@ -174,22 +164,11 @@ namespace Application.Services.Common
                     return;
                 }
 
-                if (!timerState.IsRunning)
-                {
-                    _logger.LogInformation("Timer is already stopped for match {MatchId}", matchId);
-                    return;
-                }
-
                 _logger.LogInformation("Timer state before stop - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}, TotalPausedDuration: {TotalPausedDuration}", 
                     timerState.IsRunning, timerState.StartedAt, timerState.PausedAt, timerState.TotalPausedDuration);
 
-                DateTime now = DateTime.UtcNow;
-                
-                // When stopping, just set PausedAt to mark when it was paused
-                // Don't add to TotalPausedDuration - that's for previous pauses
-                timerState.PausedAt = now;
-                timerState.IsRunning = false;
-                timerState.LastUpdated = now;
+                // Use domain pause to fold the last running segment and stop the runtime stopwatch
+                timerState.Pause();
 
                 _logger.LogInformation("Timer state after stop - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}, TotalPausedDuration: {TotalPausedDuration}", 
                     timerState.IsRunning, timerState.StartedAt, timerState.PausedAt, timerState.TotalPausedDuration);
@@ -240,11 +219,7 @@ namespace Application.Services.Common
                     return;
                 }
 
-                timerState.StartedAt = null;
-                timerState.PausedAt = null;
-                timerState.TotalPausedDuration = TimeSpan.Zero;
-                timerState.IsRunning = false;
-                timerState.LastUpdated = DateTime.UtcNow;
+                timerState.Reset();
 
                 await _timerRepository.SaveTimerStateAsync(matchId, timerState);
                 _timerStore.TryRemove(matchId, out TimerState? removedState);
@@ -294,14 +269,13 @@ namespace Application.Services.Common
 
                 if (timerState!.IsRunning)
                 {
-                    // If timer was running, keep it running and set LastResumedAt
-                    timerState.LastResumedAt = now;
+                    // If timer is (or should be) running, initialize runtime stopwatch via Start()
                     timerState.PausedAt = null;
-                    timerState.IsRunning = true;
+                    timerState.Start();
                 }
                 else
                 {
-                    // If timer was paused/stopped, set PausedAt to now to maintain the set time
+                    // If paused/stopped, fix the persisted timestamps to reflect set value
                     timerState.PausedAt = now;
                     timerState.LastResumedAt = null;
                     timerState.IsRunning = false;

@@ -1,129 +1,158 @@
 import React from 'react';
-import { Timer } from '../../../../../components/Timer/Timer';
+import './LiveMatchTimer.scss';
+import { MatchTimer } from '../../../../../components/MatchTimer';
+import { useMatchTimerContext } from '../context';
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
-import type { TimerUpdate } from '../../../../../api/common/timerService';
-import type { LocalClock } from './types';
 
 // Create a memoized Timer component to prevent unnecessary re-renders
-const MemoizedTimer = React.memo(Timer);
+const MemoizedTimer = React.memo(MatchTimer);
 
 interface LiveMatchTimerProps {
   currentMatch: FloorballMatchDto;
-  clock: LocalClock;
   isOpen: boolean;
   loading: boolean;
   startedPeriods: Set<number>;
   endedPeriods: Set<number>;
   nextPeriodToStart: number;
   periodLoading: Record<number, boolean>;
-  currentTimerElapsedTime: number;
   onStartMatch: () => Promise<void>;
   onPeriodControlClick: () => void;
-  onTimerUpdate: (update: TimerUpdate) => void;
-  onGetCurrentTime: (getTime: () => string) => void;
-  onGetToggleFunction: (toggleFunction: () => Promise<void>) => void;
   canEndPeriod: () => boolean;
-  getPeriodStatus: () => string;
   getPeriodControlButtonText: () => string;
-  isInOvertime: () => boolean;
-  isInShootout: () => boolean;
-  formatTime: (minutes: number, seconds: number) => string;
   keybindsEnabled: boolean;
   isStartMatchDisabled: boolean;
 }
 
 const LiveMatchTimer = ({
   currentMatch,
-  clock,
   isOpen,
   loading,
+  startedPeriods,
+  endedPeriods,
   nextPeriodToStart,
   periodLoading,
   onStartMatch,
   onPeriodControlClick,
-  onTimerUpdate,
-  onGetCurrentTime,
-  onGetToggleFunction,
   canEndPeriod,
-  getPeriodStatus,
   getPeriodControlButtonText,
-  isInOvertime,
-  isInShootout,
   keybindsEnabled,
-  isStartMatchDisabled
+  isStartMatchDisabled,
 }: LiveMatchTimerProps) => {
+  const {
+    currentPeriod,
+    elapsedTimeSeconds,
+    registerCallback,
+    handleTimerUpdate,
+  } = useMatchTimerContext();
+
+  const getChipStatus = (p: number) => {
+    if (endedPeriods.has(p)) return 'completed';
+    if (startedPeriods.has(p)) return 'started';
+    return 'upcoming';
+  };
+
+  const periodLabels: Record<number, string> = {
+    1: 'Period 1',
+    2: 'Period 2',
+    3: 'Overtime',
+    4: 'Shootout',
+  };
+
+  // Turn digits red at 15:00 (900s) and after, except during shootout
+  const isInShootout = currentPeriod === 4;
+  const shouldPeriodEnd = elapsedTimeSeconds >= 900 && !isInShootout;
+  
+  // Timer controls enabled only if current period has started and not ended, and not in shootout
+  const controlsEnabled = startedPeriods.has(currentPeriod) && !endedPeriods.has(currentPeriod) && currentPeriod !== 4;
+
+  // Determine which periods to show
+  const periodsToShow = [1, 2];
+  if (currentMatch.wentToOvertime) {
+    periodsToShow.push(3);
+  }
+  if (currentMatch.wentToShootout) {
+    periodsToShow.push(4);
+  }
+
+  // Register timer callbacks when they're provided
+  const handleGetCurrentTime = (getTime: () => string) => {
+    registerCallback('getCurrentTime', getTime);
+  };
+
+  const handleGetCurrentElapsedSeconds = (getSeconds: () => number) => {
+    registerCallback('getCurrentElapsedSeconds', getSeconds);
+  };
+
+  const handleGetToggleFunction = (toggleFn: () => Promise<void>) => {
+    registerCallback('toggle', toggleFn);
+  };
+
+  const handleGetResetFunction = (resetFn: () => void) => {
+    registerCallback('reset', resetFn);
+  };
+
+  const handleGetStartFunction = (startFn: () => Promise<void>) => {
+    registerCallback('start', startFn);
+  };
+
+  const handleGetStopFunction = (stopFn: () => void) => {
+    registerCallback('stop', stopFn);
+  };
+
   return (
-    <div className={`clock-score-section ${isInOvertime() ? 'overtime' : ''} ${isInShootout() ? 'shootout' : ''}`}>
-      {currentMatch.status === 'Completed' && (
-        <div className="match-finished-notice">
-          <span className="notice-icon">🏁</span>
-          <span className="notice-text">Match has been finished. Live tracking has been stopped.</span>
-        </div>
-      )}
-      {currentMatch.status !== 'InProgress' && currentMatch.status !== 'Completed' && (
-        <div className="not-live-notice">
-          <span className="notice-icon">⏸️</span>
-          <span className="notice-text">Match is not live yet. Use the clock button to start the match and first period.</span>
-        </div>
-      )}
-      
-      {/* Period Management - Simplified */}
-      <div className="period-management">
-        <div className="period-status">
-          Period {clock.period}: {getPeriodStatus()}
-        </div>
-      </div>
-      
-      {/* Timer Component */}
-      <div className="timer-container">
-        {currentMatch.status === 'Scheduled' ? (
-          <div className="start-match-container">
-            <button 
-              onClick={onStartMatch}
-              disabled={loading || isStartMatchDisabled}
-              className="start-match-btn"
-            >
-              {isStartMatchDisabled ? 'Select goalies to start' : '🏁 Start Match'}
-            </button>
-            <div className="start-match-hint">
-              {isStartMatchDisabled 
-                ? 'Both teams must have an active goalie selected before the match can be started.'
-                : 'Click to start the match. After starting, you can use the timer controls below.'
-              }
+      <div className="clock-card">
+        <div className="clock-inner">
+          <div className="period-row">
+          {periodsToShow.map((p) => (
+            <div key={p} className={`period-chip ${getChipStatus(p)} ${p > 2 ? 'period-chip--extra' : ''}`}>
+                {`${periodLabels[p]}: ${getChipStatus(p)}`}
+              </div>
+            ))}
+          </div>
+          <div className="clock-time">
+            {currentMatch.status === 'Scheduled' ? (
+              <div className="start-match-container">
+                <button
+                  onClick={onStartMatch}
+                  disabled={loading || isStartMatchDisabled}
+                  className="start-match-btn"
+                >
+                  {isStartMatchDisabled ? 'Select goalies to start' : 'Start Match'}
+                </button>
+              </div>
+          ) : currentMatch.status === 'Completed' ? (
+            <div className="start-match-container">
+              <div className="match-completed-message">
+                🏁 Match Completed
+              </div>
             </div>
+            ) : (
+                <div className={`clock-digits${shouldPeriodEnd ? ' timer-digits--critical' : ''}`}>
+                  <MemoizedTimer
+                    key={`timer-${currentMatch.id}`}
+                    matchId={currentMatch.id}
+                periodNumber={currentPeriod}
+                    isActive={isOpen}
+                onTimerUpdate={handleTimerUpdate}
+                onGetCurrentTime={handleGetCurrentTime}
+                onGetCurrentElapsedSeconds={handleGetCurrentElapsedSeconds}
+                onGetToggleFunction={handleGetToggleFunction}
+                onGetResetFunction={handleGetResetFunction}
+                onGetStartFunction={handleGetStartFunction}
+                onGetStopFunction={handleGetStopFunction}
+                    controlsEnabled={controlsEnabled}
+                    keybindsEnabled={keybindsEnabled}
+                    onPeriodControlClick={onPeriodControlClick}
+                    canEndPeriod={canEndPeriod}
+                    getPeriodControlButtonText={getPeriodControlButtonText}
+                    periodLoading={periodLoading}
+                    nextPeriodToStart={nextPeriodToStart}
+                  />
+                </div>
+            )}
           </div>
-        ) : currentMatch.status === 'InProgress' ? (
-          <MemoizedTimer 
-            key={`timer-${currentMatch.id}`} // Remove status from key to prevent re-mounting
-            matchId={currentMatch.id} 
-            periodNumber={clock.period}
-            isActive={isOpen} // Only activate timer when modal is open
-            onTimerUpdate={onTimerUpdate}
-            onGetCurrentTime={onGetCurrentTime}
-            onGetToggleFunction={onGetToggleFunction}
-            keybindsEnabled={keybindsEnabled}
-          />
-        ) : (
-          <div className="timer-loading">
-            <div>00:00</div>
-          </div>
-        )}
+        </div>
       </div>
-      
-      {/* Period Control Button - End Period or Start Period */}
-      <div className="clock-start-reset">
-        <button 
-          onClick={() => {
-            onPeriodControlClick();
-          }} 
-          className="period-control-btn"
-          title={canEndPeriod() ? "End the current period" : "Start the next period"}
-          disabled={periodLoading[canEndPeriod() ? clock.period : nextPeriodToStart]}
-        >
-          {getPeriodControlButtonText()}
-        </button>
-      </div>
-    </div>
   );
 };
 

@@ -15,10 +15,14 @@ import PersonForm from '../pages/AdminPage/PersonsPage/components/PersonForm/Per
 import PersonUserPage from '../pages/PersonUserPage/PersonUserPage';
 import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
 import NewsCreateEditPage from '../pages/AdminPage/NewsPage/NewsCreateEditPage';
+import DivisionsPage from '../pages/AdminPage/DivisionsPage/DivisionsPage';
+import DivisionFormPage from '../pages/AdminPage/DivisionsPage/DivisionFormPage';
 import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/FloorballManagementPage';
 import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
 import CreateTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/CreateTeamPage';
 import EditTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditTeamPage';
+import EditRosterPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditRosterPage';
+import AddPlayerToRosterPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/AddPlayerToRosterPage';
 import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage';
 import CreatePlayerPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePlayerPage/CreatePlayerPage';
 import CreatePersonPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePersonPage/CreatePersonPage';
@@ -40,11 +44,36 @@ import NewsManagementPage from '../pages/AdminPage/NewsPage/NewsManagementPage';
 import FloorballTeamPlayerUserPage from '../pages/FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage';
 import MatchPage from '../pages/MatchPage/MatchPage';
 import LeaguePage from '../pages/LeaguePage/LeaguePage';
+import ClubsManagementPage from '../pages/AdminPage/ClubPage/ClubsManagementPage';
+import CreateClubPage from '../pages/AdminPage/ClubPage/CreateClubPage';
+import EditClubPage from '../pages/AdminPage/ClubPage/EditClubPage';
+import ClubDetailsPage from '../pages/AdminPage/ClubPage/ClubDetailsPage';
 
 export const routes: RouteObject[] = [
   {
     path: '/',
     element: <HomePage />
+  },
+  {
+    path: '/admin/clubs',
+    children: [
+      {
+        index: true,
+        element: <ClubsManagementPage />
+      },
+      {
+        path: 'create',
+        element: <CreateClubPage />
+      },
+      {
+        path: ':id',
+        element: <ClubDetailsPage />
+      },
+      {
+        path: ':id/edit',
+        element: <EditClubPage />
+      }
+    ]
   },
   {
     path: '/uutiset',
@@ -112,6 +141,23 @@ export const routes: RouteObject[] = [
     ]
   },
   {
+    path: '/admin/divisions',
+    children: [
+      {
+        index: true,
+        element: <DivisionsPage />,
+      },
+      {
+        path: 'create',
+        element: <DivisionFormPage />,
+      },
+      {
+        path: ':divisionId/edit',
+        element: <DivisionFormPage />,
+      },
+    ],
+  },
+  {
     path: '/admin/floorball',
     children: [
       {
@@ -132,6 +178,14 @@ export const routes: RouteObject[] = [
           {
             path: ':id/edit',
             element: <EditTeamPage/>
+          },
+          {
+            path: ':id/roster',
+            element: <EditRosterPage/>
+          },
+          {
+            path: ':id/roster/add',
+            element: <AddPlayerToRosterPage/>
           }
         ]
       },

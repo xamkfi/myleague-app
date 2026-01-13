@@ -2,15 +2,13 @@
 using Domain.Enums.Hockey;
 using Domain.ValueObjects.Hockey;
 using System.Collections.Generic;
-using Domain.EventSourcing;
-using Domain.DomainEvents.Hockey;
 
 namespace Domain.Entities.Hockey;
 
 /// <summary>
 /// Represents a Hockey match
 /// </summary>
-public class HockeyMatch : AggregateRoot
+public class HockeyMatch : BaseEntity
 {
     /// <summary>
     /// Gets the season this match belongs to
@@ -207,8 +205,6 @@ public class HockeyMatch : AggregateRoot
 
         Status = HockeyMatchStatus.Scheduled;
 
-        // Add domain event
-        AddDomainEvent(new HockeyMatchRescheduledEvent(Id, oldDateTime, newDateTime, oldVenue, Venue ?? string.Empty));
     }
 
     /// <summary>
@@ -223,8 +219,6 @@ public class HockeyMatch : AggregateRoot
         HockeyMatchStatus oldStatus = Status;
         Status = HockeyMatchStatus.Postponed;
 
-        // Add domain event
-        AddDomainEvent(new HockeyMatchStatusChangedEvent(Id, oldStatus, Status));
     }
 
     /// <summary>
@@ -241,10 +235,6 @@ public class HockeyMatch : AggregateRoot
 
         HockeyMatchStatus oldStatus = Status;
         Status = HockeyMatchStatus.InProgress;
-
-        // Add domain events
-        AddDomainEvent(new HockeyMatchStatusChangedEvent(Id, oldStatus, Status));
-        AddDomainEvent(new HockeyMatchStartedEvent(Id, DateTime.UtcNow));
     }
 
     /// <summary>
@@ -332,16 +322,6 @@ public class HockeyMatch : AggregateRoot
             }
         }
 
-        // Add domain event
-        AddDomainEvent(new HockeyGoalScoredEvent(
-            Id,
-            scoringTeam.Id,
-            scoringPlayer.Id,
-            periodNumber,
-            timeInSeconds,
-            WentToOvertime,
-            false, // Is shootout goal
-            assistingPlayer?.Id));
     }
 
     /// <summary>
@@ -385,16 +365,6 @@ public class HockeyMatch : AggregateRoot
             description ?? string.Empty);
         _events.Add(penaltyEvent);
 
-        // Add domain event
-        AddDomainEvent(new HockeyPenaltyAssignedEvent(
-            Id,
-            team.Id,
-            player?.Id,
-            penaltyType,
-            minutes,
-            periodNumber,
-            timeInSeconds,
-            description ?? string.Empty));
     }
 
     /// <summary>
@@ -415,8 +385,6 @@ public class HockeyMatch : AggregateRoot
 
         _officials.Add(referee);
 
-        // Add domain event
-        AddDomainEvent(new HockeyOfficialAssignedEvent(Id, referee.Id));
     }
 
     /// <summary>
@@ -426,8 +394,7 @@ public class HockeyMatch : AggregateRoot
     {
         WentToOvertime = true;
 
-        // Add domain event
-        AddDomainEvent(new HockeyMatchOvertimeStartedEvent(Id));
+
     }
 
     /// <summary>
@@ -437,8 +404,7 @@ public class HockeyMatch : AggregateRoot
     {
         WentToShootout = true;
 
-        // Add domain event
-        AddDomainEvent(new HockeyMatchShootoutStartedEvent(Id));
+
     }
 
     /// <summary>
@@ -459,9 +425,6 @@ public class HockeyMatch : AggregateRoot
             referee.RecordMatchOfficiated();
         }
 
-        // Add domain events
-        AddDomainEvent(new HockeyMatchStatusChangedEvent(Id, oldStatus, Status));
-        AddDomainEvent(new HockeyMatchCompletedEvent(Id, HomeScore, AwayScore, WentToOvertime, WentToShootout));
     }
 
     /// <summary>
@@ -476,7 +439,5 @@ public class HockeyMatch : AggregateRoot
         HockeyMatchStatus oldStatus = Status;
         Status = HockeyMatchStatus.Cancelled;
 
-        // Add domain event
-        AddDomainEvent(new HockeyMatchStatusChangedEvent(Id, oldStatus, Status));
     }
 }

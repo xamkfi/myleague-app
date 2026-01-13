@@ -1,0 +1,208 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
+.event-form {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+    align-items: center;
+
+    .cancel-btn {
+      color: #dc3545;
+      background: transparent;
+      border: 1px solid #d1d5db;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 8px 12px;
+    }
+
+    .submit-btn {
+      margin-left: auto;
+      font-weight: 700;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      padding: 8px 12px;
+    }
+  }
+}
+
+
+/* Local modal styles for goal recording */
+.goal-record-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.goal-record-modal {
+  background: $color-neutral-white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: inline-block;
+  width: auto;
+  min-width: 420px;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.goal-record-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  padding-bottom: 0;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 32px;
+    font-weight: 500;
+    color: $color-text-primary;
+  }
+}
+
+.goal-record-modal__close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: $color-neutral-medium-grey;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.goal-record-modal__body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  // Simplify inner card styling to match white modal background
+  .event-form.goal-form {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    label {
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: 400;
+      color: $color-text-primary;
+    }
+
+    select {
+      width: 372px;
+      height: 40px;
+      padding: 8px 16px;
+      border-radius: 4px;
+      background: $color-neutral-light-grey;
+      border: 1px solid #d1d5db;
+      font-size: 16px;
+      line-height: 24px;
+      color: $color-text-primary;
+
+      &.select-field:not(.is-placeholder) {
+        color: $color-text-primary; // ensure selected names use dark label color
+      }
+
+      &.is-placeholder {
+        color: $color-neutral-dark-grey;
+        font-size: 14px;
+        line-height: 24px;
+        font-weight: 400;
+      }
+
+      option {
+        color: $color-text-primary; // non-placeholder options in dropdown
+      }
+      option[disabled] {
+        color: $color-neutral-dark-grey;
+      }
+    }
+    
+    .time-input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 372px;
+
+      .time-input {
+        width: auto;
+        height: 40px;
+        padding: 8px 16px;
+        border-radius: 4px;
+        background: $color-neutral-light-grey;
+        border: 1px solid #d1d5db;
+        font-size: 16px;
+        line-height: 24px;
+        color: $color-text-primary;
+        text-align: center;
+
+        &.time-input-minutes {
+          flex: 1;
+          min-width: 80px;
+        }
+
+        &.time-input-seconds {
+          flex: 1;
+          min-width: 80px;
+        }
+
+        // Remove spinner arrows
+        &::-webkit-inner-spin-button,
+        &::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        -moz-appearance: textfield;
+      }
+
+      .time-separator {
+        font-size: 20px;
+        font-weight: 600;
+        color: $color-text-primary;
+      }
+    }
+
+    .time-input {
+      width: 372px;
+      height: 40px;
+      padding: 8px 16px;
+      border-radius: 4px;
+      background: $color-neutral-light-grey;
+      border: 1px solid #d1d5db;
+      font-size: 16px;
+      line-height: 24px;
+      color: $color-text-primary;
+    }
+  }
+}
+
+

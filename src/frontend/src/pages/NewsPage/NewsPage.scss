@@ -2,6 +2,11 @@
 @use '@variables' as *;
 @use '../../styles/common' as *;
 
+// Override PageTemplate padding for NewsPage only
+.news-page .page-body {
+  padding: 0 !important;
+}
+
 .news {
   &-container {
     width: 100%;
@@ -211,6 +216,7 @@
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   -webkit-box-orient: vertical;
   max-height: 7.68rem; /* 4 lines * 1.92 line-height */
   flex-shrink: 0;
@@ -228,6 +234,7 @@
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   -webkit-box-orient: vertical;
   max-height: 6.16rem; /* 4 lines * 1.54 line-height */
   flex: 1;
@@ -273,7 +280,27 @@
   font-weight: 700;
   color: #222;
   height: 36px;
+  margin-bottom: map.get($spacing, 'lg');
+}
 
+.news-filter-wrapper {
+  width: 100%;
+  margin-bottom: map.get($spacing, 'lg');
+}
+
+.no-news-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: map.get($spacing, 'xl');
+  color: $color-text-muted;
+  font-size: map.get($font-sizes, 'md');
+}
+
+.news-pagination-wrapper {
+  width: 100%;
+  margin-top: map.get($spacing, 'lg');
+  display: flex;
+  justify-content: center;
 }
 
 .news-grid {
@@ -498,21 +525,288 @@
   }
 }
 
-@media (max-width: 900px) {
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+  .news-main-bg {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    left: 0;
+    right: 0;
+    min-height: 280px;
+    padding: map.get($spacing, 'sm') 0;
+  }
+  
+  .news-main-section {
+    margin: map.get($spacing, 'sm') 0;
+    padding: 0 map.get($spacing, 'sm');
+  }
+  
   .main-news-card {
     flex-direction: column;
-    height: auto; /* Allow height to adjust on mobile */
-    min-height: 500px; /* Minimum height for mobile */
+    height: auto;
+    min-height: 350px;
+    max-width: 100%;
+    border-radius: map.get($border-radius, 'lg');
   }
+  
   .main-news-image-container {
-    flex: 0 0 250px; /* Fixed height for mobile */
+    flex: 0 0 180px;
     width: 100%;
-    height: 250px; /* Fixed height for mobile */
-    min-width: unset;
-    max-width: unset;
+    height: 180px;
+    aspect-ratio: 16/9;
   }
+  
   .main-news-content {
-    padding: 1.5rem 1rem;
     flex: 1;
+    padding: map.get($spacing, 'md');
+    min-height: 200px;
+  }
+  
+  .main-news-category {
+    font-size: 0.85rem;
+    margin-bottom: map.get($spacing, 'xs');
+  }
+  
+  .main-news-title {
+    font-size: 1.25rem;
+    margin-bottom: map.get($spacing, 'sm');
+    line-height: 1.3;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    max-height: 4.875rem; // 3 lines * 1.625 line-height
+  }
+  
+  .main-news-summary {
+    font-size: 0.95rem;
+    margin-bottom: map.get($spacing, 'md');
+    line-height: 1.4;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    max-height: 3.99rem; // 3 lines * 1.33 line-height
+  }
+  
+  .main-news-button {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    font-size: 0.9rem;
+    border-radius: map.get($border-radius, 'lg');
+  }
+  
+  // News filter panel mobile styles
+  .news-filter-panel {
+    flex-direction: column;
+    gap: map.get($spacing, 'sm');
+    align-items: stretch;
+    padding: map.get($spacing, 'sm');
+    background: $color-neutral-white;
+    border-radius: map.get($border-radius, 'lg');
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    .search-input {
+      margin-left: 0;
+      width: 100%;
+      order: 3; // Move search to bottom on mobile
+    }
+    
+    .category-dropdown {
+      width: 100%;
+      padding: map.get($spacing, 'sm');
+      font-size: map.get($font-sizes, 'base');
+    }
+  }
+  
+  // News list section mobile styles
+  .news-list-section {
+    margin: map.get($spacing, 'sm');
+    padding: map.get($spacing, 'md');
+    width: calc(100% - #{map.get($spacing, 'sm') * 2});
+    border-radius: map.get($border-radius, 'lg');
+    gap: map.get($spacing, 'sm');
+  }
+  
+  .news-list-title {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: map.get($spacing, 'sm');
+  }
+  
+  .news-filter-wrapper {
+    margin-bottom: map.get($spacing, 'sm');
+  }
+  
+  .no-news-message {
+    padding: map.get($spacing, 'lg');
+    font-size: map.get($font-sizes, 'base');
+  }
+  
+  .news-pagination-wrapper {
+    margin-top: map.get($spacing, 'md');
+  }
+  
+  // News grid mobile styles
+  .news-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: map.get($spacing, 'sm');
+  }
+  
+  .news-card {
+    aspect-ratio: 4/3; // Better mobile aspect ratio
+    border-radius: map.get($border-radius, 'sm');
+  }
+  
+  .news-card-overlay {
+    padding: map.get($spacing, 'sm');
+  }
+  
+  .news-card-title {
+    font-size: map.get($font-sizes, 'xs');
+    line-height: 1.2;
+  }
+  
+  .news-card-date {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+  }
+  
+  .sport-category-badge {
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .news-main-bg {
+    min-height: 250px;
+    padding: map.get($spacing, 'xs') 0;
+  }
+  
+  .news-main-section {
+    margin: map.get($spacing, 'xs') 0;
+    padding: 0 map.get($spacing, 'xs');
+  }
+  
+  .main-news-card {
+    min-height: 300px;
+    border-radius: map.get($border-radius, 'sm');
+  }
+  
+  .main-news-image-container {
+    flex: 0 0 150px;
+    height: 150px;
+  }
+  
+  .main-news-content {
+    padding: map.get($spacing, 'sm');
+    min-height: 150px;
+  }
+  
+  .main-news-category {
+    font-size: 0.8rem;
+  }
+  
+  .main-news-title {
+    font-size: 1.1rem;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    max-height: 3.25rem; // 2 lines * 1.625 line-height
+  }
+  
+  .main-news-summary {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    max-height: 2.66rem; // 2 lines * 1.33 line-height
+  }
+  
+  .main-news-button {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    font-size: 0.85rem;
+  }
+  
+  .news-filter-panel {
+    padding: map.get($spacing, 'xs');
+    gap: map.get($spacing, 'xs');
+    
+    .category-dropdown {
+      padding: map.get($spacing, 'xs');
+      font-size: map.get($font-sizes, 'sm');
+    }
+  }
+  
+  .news-list-section {
+    margin: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'sm');
+    width: calc(100% - #{map.get($spacing, 'xs') * 2});
+    gap: map.get($spacing, 'xs');
+  }
+  
+  .news-list-title {
+    font-size: 1.3rem;
+  }
+  
+  .news-filter-wrapper {
+    margin-bottom: map.get($spacing, 'xs');
+  }
+  
+  .no-news-message {
+    padding: map.get($spacing, 'md');
+    font-size: map.get($font-sizes, 'sm');
+  }
+  
+  .news-pagination-wrapper {
+    margin-top: map.get($spacing, 'sm');
+  }
+  
+  .news-grid {
+    grid-template-columns: 1fr;
+    gap: map.get($spacing, 'xs');
+  }
+  
+  .news-card {
+    aspect-ratio: 16/10;
+  }
+  
+  .news-card-overlay {
+    padding: map.get($spacing, 'xs');
+  }
+  
+  .news-card-title {
+    font-size: map.get($font-sizes, 'sm-xs');
+  }
+  
+  .news-card-date {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+  }
+  
+  .sport-category-badge {
+    top: 0.4rem;
+    right: 0.4rem;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.3rem;
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .main-news-title {
+    font-size: 1rem;
+  }
+  
+  .main-news-summary {
+    font-size: 0.85rem;
+  }
+  
+  .news-list-title {
+    font-size: 1.2rem;
+  }
+  
+  .news-card-title {
+    font-size: map.get($font-sizes, 'xs');
   }
 } 
