@@ -243,6 +243,14 @@ export const MatchTimer = ({
                 1s
               </button>
               <button
+                onClick={() => handleAdjustTime(1)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time increase one-second-forward"
+                title="Advance 1 second"
+              >
+                1s
+              </button>
+              <button
                 onClick={() => handleAdjustTime(10)}
                 disabled={buttonStates.adjustDisabled}
                 className="timer-button adjust-time increase seconds-forward"
