@@ -1,14 +1,18 @@
 # MyLeague Azure Infrastructure
 
-This directory contains Bicep templates for deploying the MyLeague backend infrastructure to Azure.
+This directory contains Bicep templates for deploying the MyLeague infrastructure to Azure.
 
 ## Architecture
 
 The infrastructure consists of:
 
+### Backend
 - **App Service Plan** (Basic B1) - Hosts the .NET 9 API
 - **App Service** - The MyLeague API application
 - **PostgreSQL Flexible Server** (Burstable B1ms) - Database server
+
+### Frontend
+- **Azure Static Web App** (Free tier) - Hosts the React SPA
 
 ## Prerequisites
 
@@ -71,7 +75,57 @@ chmod +x deploy.sh
 
 ---
 
-## Manual Deployment
+## Frontend Deployment
+
+After deploying the backend, deploy the frontend:
+
+### Windows (PowerShell)
+
+```powershell
+# Deploy infrastructure only
+.\deploy-frontend.ps1
+
+# Deploy infrastructure AND application
+.\deploy-frontend.ps1 -DeployApp
+
+# With specific backend URL
+.\deploy-frontend.ps1 -ApiBackendUrl "https://myleague-dev-api.azurewebsites.net" -DeployApp
+```
+
+### Frontend Script Options
+
+| Option | Description |
+|--------|-------------|
+| `-Environment dev` | Target environment (dev, staging, prod) |
+| `-Location westeurope` | Azure region |
+| `-ApiBackendUrl "url"` | Backend API URL (auto-detected if not provided) |
+| `-DeployApp` | Also build and deploy the React application |
+| `-SkipLogin` | Skip Azure login check |
+
+### Manual Frontend Deployment
+
+```bash
+# 1. Deploy infrastructure
+az deployment group create \
+  --resource-group myleague-dev-rg \
+  --template-file main-frontend.bicep \
+  --parameters main-frontend.bicepparam
+
+# 2. Get deployment token
+az staticwebapp secrets list \
+  --name myleague-dev-web \
+  --query "properties.apiKey" -o tsv
+
+# 3. Build and deploy React app
+cd src/frontend
+pnpm install
+pnpm run build
+swa deploy ./dist --deployment-token <your-token>
+```
+
+---
+
+## Manual Backend Deployment
 
 If you prefer manual deployment:
 
@@ -198,6 +252,7 @@ Or connect to the database using a tool like Azure Data Studio or pgAdmin.
 |----------|-----|----------------------|
 | App Service Plan | Basic B1 | ~$13 |
 | PostgreSQL Flexible Server | Burstable B1ms | ~$12 |
+| Static Web App | Free | $0 |
 | **Total** | | **~$25/month** |
 
 ## Customization
@@ -273,13 +328,17 @@ az group delete --name myleague-dev-rg --yes --no-wait
 
 ```
 infra/
-├── deploy.ps1                 # PowerShell deployment script (Windows)
-├── deploy.sh                  # Bash deployment script (Linux/macOS)
-├── main.bicep                 # Main deployment template
-├── main.bicepparam            # Dev environment parameters
+├── deploy.ps1                 # Backend deployment script (Windows)
+├── deploy.sh                  # Backend deployment script (Linux/macOS)
+├── deploy-frontend.ps1        # Frontend deployment script (Windows)
+├── main.bicep                 # Backend infrastructure template
+├── main.bicepparam            # Backend parameters (dev)
+├── main-frontend.bicep        # Frontend infrastructure template
+├── main-frontend.bicepparam   # Frontend parameters (dev)
 ├── modules/
 │   ├── app-service-plan.bicep # App Service Plan module
 │   ├── app-service.bicep      # App Service module
-│   └── postgresql.bicep       # PostgreSQL module
+│   ├── postgresql.bicep       # PostgreSQL module
+│   └── static-web-app.bicep   # Static Web App module
 └── README.md                  # This file
 ```
