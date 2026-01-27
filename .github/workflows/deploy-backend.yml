@@ -1,0 +1,61 @@
+name: Deploy Backend to Azure
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+  # Auto deploy on push to main (optional - comment out if you only want manual)
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'src/backend/**'
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  AZURE_WEBAPP_NAME: myleague-dev-api
+  AZURE_RESOURCE_GROUP: myleague-dev-rg
+  WORKING_DIRECTORY: src/backend/WebAPI
+
+jobs:
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Publish
+        run: dotnet publish --configuration Release --no-build --output ./publish
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ${{ env.WORKING_DIRECTORY }}/publish
