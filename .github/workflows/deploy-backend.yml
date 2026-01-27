@@ -17,7 +17,7 @@ on:
   # Auto deploy on push to test branch
   push:
     branches:
-      - xamkture/myl-59-create-cd-for-backend
+      - development
     paths:
       - 'src/backend/**'
 
