@@ -6,7 +6,7 @@ using Application.Common;
 namespace Application.Commands.Clubs;
 
 /// <summary>
-/// Command for creating a new club
+/// Command for creating a new club.
 /// </summary>
 public record CreateClubCommand(
     string Name,
