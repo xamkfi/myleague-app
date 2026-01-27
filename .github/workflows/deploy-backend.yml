@@ -14,12 +14,12 @@ on:
           - staging
           - prod
 
-  # Auto deploy on push to main (optional - comment out if you only want manual)
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - 'src/backend/**'
+  # Auto deploy on push to test branch
+  push:
+    branches:
+      - xamkture/myl-59-create-cd-for-backend
+    paths:
+      - 'src/backend/**'
 
 env:
   DOTNET_VERSION: '9.0.x'
