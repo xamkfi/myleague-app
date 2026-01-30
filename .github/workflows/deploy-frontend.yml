@@ -1,0 +1,59 @@
+name: Deploy Frontend to Azure
+
+on:
+  # Auto deploy on push to development branch
+  push:
+    branches:
+      - development
+    paths:
+      - 'src/frontend/**'
+
+  # Manual trigger
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+  FRONTEND_PATH: 'src/frontend'
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Azure Static Web App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          cache-dependency-path: ${{ env.FRONTEND_PATH }}/pnpm-lock.yaml
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: ${{ env.FRONTEND_PATH }}
+
+      - name: Create production environment file
+        run: echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env.production
+        working-directory: ${{ env.FRONTEND_PATH }}
+
+      - name: Build application
+        run: pnpm run build
+        working-directory: ${{ env.FRONTEND_PATH }}
+
+      - name: Deploy to Azure Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APP_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: ${{ env.FRONTEND_PATH }}
+          output_location: 'dist'
+          skip_app_build: true
