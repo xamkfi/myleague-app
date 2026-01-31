@@ -944,5 +944,15 @@
       "loadLeagueData": "Sarjan tietojen lataus epäonnistui",
       "loadMatches": "Otteluiden lataus epäonnistui"
     }
+  },
+  "clubsPage": {
+    "title": "Seurat",
+    "description": "Selaa ja hae MAHL-liigan seuroja.",
+    "searchPlaceholder": "Hae seuroja...",
+    "noClubs": "Seuroja ei löytynyt",
+    "viewClub": "Katso seura",
+    "loading": "Ladataan seuroja...",
+    "error": "Seurojen lataus epäonnistui",
+    "totalClubs": "{{count}} seuraa"
   }
 } 

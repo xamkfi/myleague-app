@@ -2,9 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle/LanguageToggle';
-import type { Club } from '../../api/common/clubService';
-import { getClubs } from '../../api/common/clubService';
-import { createClubSlug } from '../../utils/slugUtils';
 import './Navbar.scss';
 import SearchBar from '../SearchBar';
 
@@ -35,10 +32,7 @@ const useIsMobile = () => {
 function Navbar() {
   const { t } = useTranslation();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [clubs, setClubs] = useState<Club[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const dropdownRef = useRef<HTMLLIElement>(null);
   const sportsDropdownRef = useRef<HTMLLIElement>(null);
   const isMobile = useIsMobile();
   
@@ -60,31 +54,14 @@ function Navbar() {
   }, [isMobile, isMobileMenuOpen]);
 
   useEffect(() => {
-    const fetchClubs = async () => {
-      try {
-        setLoading(true);
-        const clubsData = await getClubs();
-        setClubs(clubsData);
-      } catch (error) {
-        console.error('Failed to fetch clubs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchClubs();
-  }, []);
-
-  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
       
-      // Check if click is inside any dropdown
-      const isInsideClubs = dropdownRef.current?.contains(target);
+      // Check if click is inside sports dropdown
       const isInsideSports = sportsDropdownRef.current?.contains(target);
       
-      // Only close if click is outside ALL dropdowns
-      if (!isInsideClubs && !isInsideSports) {
+      // Close dropdown if click is outside
+      if (!isInsideSports) {
         setActiveDropdown(null);
       }
     }
@@ -173,29 +150,8 @@ function Navbar() {
               </ul>
             )}
           </li>
-          <li 
-            ref={dropdownRef}
-            className={`navbar-item dropdown ${activeDropdown === 'clubs' ? 'active' : ''}`}
-          >
-            <div className="dropdown-trigger" onClick={() => handleDropdownClick('clubs')}>
-              <span className="dropdown-label">{t('nav.clubs')}</span>
-              <span className="dropdown-icon">▼</span>
-            </div>
-            {activeDropdown === 'clubs' && (
-              <ul className="dropdown-menu">
-                {loading ? (
-                  <li className="loading">Loading clubs...</li>
-                ) : (
-                  clubs.map((club) => (
-                    <li key={club.id}>
-                      <Link to={`/club/${createClubSlug(club)}`} onClick={() => setActiveDropdown(null)}>
-                        {club.name}
-                      </Link>
-                    </li>
-                  ))
-                )}
-              </ul>
-            )}
+          <li className="navbar-item">
+            <Link to="/clubs">{t('nav.clubs')}</Link>
           </li>
         </ul>
       </div>
@@ -253,20 +209,7 @@ function Navbar() {
               </ul>
             </li>
             <li className="mobile-navbar-item">
-              <span className="mobile-dropdown-label">{t('nav.clubs')}</span>
-              {loading ? (
-                <div className="mobile-loading">Loading clubs...</div>
-              ) : (
-                <ul className="mobile-clubs-list">
-                  {clubs.map((club) => (
-                    <li key={club.id}>
-                      <Link to={`/club/${createClubSlug(club)}`} onClick={closeMobileMenu}>
-                        {club.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <Link to="/clubs" onClick={closeMobileMenu}>{t('nav.clubs')}</Link>
             </li>
           </ul>
           
@@ -280,4 +223,4 @@ function Navbar() {
   );
 }
 
-export default Navbar; 
+export default Navbar;

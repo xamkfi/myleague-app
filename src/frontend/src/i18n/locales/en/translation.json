@@ -997,5 +997,15 @@
       "yellowCards": "Yellow cards",
       "redCards": "Red cards"
     }
+  },
+  "clubsPage": {
+    "title": "Clubs",
+    "description": "Browse and search MAHL league clubs.",
+    "searchPlaceholder": "Search clubs...",
+    "noClubs": "No clubs found",
+    "viewClub": "View club",
+    "loading": "Loading clubs...",
+    "error": "Failed to load clubs",
+    "totalClubs": "{{count}} clubs"
   }
 }
