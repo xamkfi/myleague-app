@@ -14,10 +14,28 @@
     "title": "SUMMER SEASON IS HERE",
     "buttonText": "EXPLORE SUMMER EVENTS"
   },
+  "homePage": {
+    "newsSection": {
+      "title": "Latest News",
+      "readMore": "Read more",
+      "noNews": "No news available",
+      "loading": "Loading news...",
+      "error": "Failed to load news",
+      "retry": "Try again"
+    }
+  },
   "sidebar": {
     "nextMatch": "NEXT MATCH",
     "standings": "STANDINGS",
-    "stats": "STATISTICS"
+    "stats": "STATISTICS",
+    "liveMatches": "Live",
+    "upcomingMatches": "Upcoming",
+    "completedMatches": "Completed",
+    "noLiveMatches": "No live matches",
+    "noUpcomingMatches": "No upcoming matches",
+    "noCompletedMatches": "No completed matches",
+    "loading": "Loading...",
+    "error": "Failed to load matches"
   },
   "language": {
     "en": "English",
@@ -894,6 +912,40 @@
     "loading": "Loading results…",
     "noResults": "No results found."
   },
+  "sports": {
+    "allSports": "All sports",
+    "floorball": "Floorball",
+    "iceHockey": "Ice Hockey"
+  },
+  "sportsPage": {
+    "title": "Sports",
+    "description": "MAHL sports are divided into different sports categories. Select a sport to see leagues, matches, and statistics.",
+    "floorballDescription": "Floorball is a fast-paced indoor sport where two teams compete to score goals.",
+    "iceHockeyDescription": "Ice hockey is an intense team sport played on ice.",
+    "viewLeagues": "View leagues",
+    "comingSoon": "Coming soon"
+  },
+  "floorballPage": {
+    "title": "Floorball",
+    "description": "Browse floorball leagues, standings, and statistics.",
+    "loading": "Loading leagues...",
+    "error": "Failed to load leagues",
+    "retry": "Try again",
+    "noSeasons": "No leagues available",
+    "active": "Active",
+    "completed": "Completed",
+    "fixtures": "Fixtures",
+    "standings": "Standings",
+    "playerStats": "Player Statistics",
+    "goalieStats": "Goalie Statistics",
+    "teamStats": "Team Statistics",
+    "standingsTitle": "STANDINGS",
+    "loadingStandings": "Loading standings...",
+    "team": "TEAM",
+    "gamesShort": "GP",
+    "pointsShort": "PTS",
+    "viewFullTable": ">> full table"
+  },
   "leaguePage": {
     "title": "League",
     "defaultTitle": "League",
@@ -945,5 +997,15 @@
       "yellowCards": "Yellow cards",
       "redCards": "Red cards"
     }
+  },
+  "clubsPage": {
+    "title": "Clubs",
+    "description": "Browse and search MAHL league clubs.",
+    "searchPlaceholder": "Search clubs...",
+    "noClubs": "No clubs found",
+    "viewClub": "View club",
+    "loading": "Loading clubs...",
+    "error": "Failed to load clubs",
+    "totalClubs": "{{count}} clubs"
   }
 }

@@ -48,6 +48,8 @@ import ClubsManagementPage from '../pages/AdminPage/ClubPage/ClubsManagementPage
 import CreateClubPage from '../pages/AdminPage/ClubPage/CreateClubPage';
 import EditClubPage from '../pages/AdminPage/ClubPage/EditClubPage';
 import ClubDetailsPage from '../pages/AdminPage/ClubPage/ClubDetailsPage';
+import FloorballPage from '../pages/FloorballPage/FloorballPage';
+import ClubsPage from '../pages/ClubsPage/ClubsPage';
 
 export const routes: RouteObject[] = [
   {
@@ -106,6 +108,18 @@ export const routes: RouteObject[] = [
   {
     path: '/lajit',
     element: <SportsPage />
+  },
+  {
+    path: '/sports',
+    element: <SportsPage />
+  },
+  {
+    path: '/sports/floorball',
+    element: <FloorballPage />
+  },
+  {
+    path: '/clubs',
+    element: <ClubsPage />
   },
   {
     path: '/club/:slug',

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
@@ -16,7 +16,34 @@ type TabType = 'summary' | 'news' | 'results' | 'fixtures' | 'standings';
 export default function LeaguePage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const [activeTab, setActiveTab] = useState<TabType>('summary');
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get initial tab from URL params or default to 'summary'
+  const getInitialTab = (): TabType => {
+    const tabParam = searchParams.get('tab');
+    const validTabs: TabType[] = ['summary', 'news', 'results', 'fixtures', 'standings'];
+    if (tabParam && validTabs.includes(tabParam as TabType)) {
+      return tabParam as TabType;
+    }
+    return 'summary';
+  };
+  
+  const [activeTab, setActiveTab] = useState<TabType>(getInitialTab);
+  
+  // Update tab when URL params change
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    const validTabs: TabType[] = ['summary', 'news', 'results', 'fixtures', 'standings'];
+    if (tabParam && validTabs.includes(tabParam as TabType)) {
+      setActiveTab(tabParam as TabType);
+    }
+  }, [searchParams]);
+  
+  // Update URL when tab changes
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
   
   // State for season statistics data
   const [seasonSummary, setSeasonSummary] = useState<FloorballSeasonStatisticsSummaryDto | null>(null);
@@ -166,7 +193,7 @@ export default function LeaguePage() {
                     <button
                       key={tab.key}
                       className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
-                      onClick={() => setActiveTab(tab.key)}
+                      onClick={() => handleTabChange(tab.key)}
                     >
                       {tab.label}
                     </button>

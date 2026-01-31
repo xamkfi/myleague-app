@@ -160,7 +160,8 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
 
-      .mobile-clubs-list {
+      .mobile-clubs-list,
+      .mobile-sports-list {
         list-style: none;
         padding: 0;
         margin: map.get($spacing, 'sm') 0 0 0;
@@ -179,6 +180,14 @@
               background: rgba(255, 255, 255, 0.1);
               border-radius: 4px;
             }
+          }
+
+          .disabled-link {
+            font-size: map.get($font-sizes, 'base');
+            padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+            color: rgba($color-blue-background, 0.4);
+            cursor: not-allowed;
+            display: block;
           }
         }
       }
@@ -204,6 +213,13 @@
   gap: map.get($spacing, 'xxs');
   cursor: pointer;
   position: relative;
+
+  &-trigger {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    cursor: pointer;
+  }
 
   &-label {
     color: $color-white;
@@ -260,6 +276,13 @@
           background-color: rgba($color-navbar, 0.1);
           text-decoration: none;
         }
+      }
+
+      .disabled-link {
+        display: block;
+        padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+        color: rgba($color-navbar, 0.4);
+        cursor: not-allowed;
       }
     }
   }

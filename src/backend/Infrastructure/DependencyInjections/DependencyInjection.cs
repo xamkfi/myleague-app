@@ -1,9 +1,12 @@
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
 using Domain.Services.Floorball;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.Persistence;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
@@ -14,6 +17,7 @@ using Application.Interfaces.Common;
 using Application.Services.Common;
 using MyLeague.Infrastructure.Services.ImageStorage;
 using MyLeague.Infrastructure.Services.Common;
+using Microsoft.Extensions.Hosting;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -71,7 +75,23 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballSeasonRepository, FloorballSeasonRepository>();
             services.AddScoped<IFloorballSeasonDivisionRepository, FloorballSeasonDivisionRepository>();
             services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
-            services.AddScoped<IImageStorageService, AzureBlobImageStorageService>();
+            services.AddScoped<IImageStorageService>(sp =>
+            {
+                IConfiguration config = sp.GetRequiredService<IConfiguration>();
+                IWebHostEnvironment env = sp.GetRequiredService<IWebHostEnvironment>();
+                bool useLocalStorage = env.IsDevelopment()
+                    && string.IsNullOrWhiteSpace(config.GetConnectionString("AzureBlobSasUrl"));
+
+                if (useLocalStorage)
+                {
+                    return new LocalFileImageStorageService(
+                        env,
+                        sp.GetRequiredService<IHttpContextAccessor>(),
+                        config,
+                        sp.GetRequiredService<ILogger<LocalFileImageStorageService>>());
+                }
+                return new AzureBlobImageStorageService(config);
+            });
             services.AddScoped<IPersonNameProvider, PersonNameProvider>();
             
             // Add timer services

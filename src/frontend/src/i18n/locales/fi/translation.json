@@ -86,10 +86,28 @@
     "title": "KESÄKAUSI ON TÄÄLLÄ",
     "buttonText": "TUTUSTU KESÄN TAPAHTUMIIN"
   },
+  "homePage": {
+    "newsSection": {
+      "title": "Ajankohtaista",
+      "readMore": "Lue lisää",
+      "noNews": "Ei uutisia saatavilla",
+      "loading": "Ladataan uutisia...",
+      "error": "Uutisten lataaminen epäonnistui",
+      "retry": "Yritä uudelleen"
+    }
+  },
   "sidebar": {
     "nextMatch": "SEURAAVA PELI",
     "standings": "SARJATAULUKKO",
-    "stats": "TILASTOT"
+    "stats": "TILASTOT",
+    "liveMatches": "Käynnissä",
+    "upcomingMatches": "Tulevat",
+    "completedMatches": "Päättyneet",
+    "noLiveMatches": "Ei käynnissä olevia otteluita",
+    "noUpcomingMatches": "Ei tulevia otteluita",
+    "noCompletedMatches": "Ei päättyneitä otteluita",
+    "loading": "Ladataan...",
+    "error": "Otteluiden lataus epäonnistui"
   },
   "language": {
     "en": "Englanti",
@@ -867,6 +885,40 @@
     "placeholder": "Hae...",
     "button": "Hae"
   },
+  "sports": {
+    "allSports": "Kaikki lajit",
+    "floorball": "Salibandy",
+    "iceHockey": "Jääkiekko"
+  },
+  "sportsPage": {
+    "title": "Lajit",
+    "description": "MAHL lajit jakaantuvat eri urheilulajeihin. Valitse laji nähdäksesi sarjat, ottelut ja tilastot.",
+    "floorballDescription": "Salibandy on nopeatempinen sisäurheilulaji, jossa kaksi joukkuetta kilpailee maalien tekemisessä.",
+    "iceHockeyDescription": "Jääkiekko on intensiivinen joukkuelaji jäällä.",
+    "viewLeagues": "Näytä sarjat",
+    "comingSoon": "Tulossa pian"
+  },
+  "floorballPage": {
+    "title": "Salibandy",
+    "description": "Selaa salibandyn sarjoja, sarjataulukoita ja tilastoja.",
+    "loading": "Ladataan sarjoja...",
+    "error": "Sarjojen lataus epäonnistui",
+    "retry": "Yritä uudelleen",
+    "noSeasons": "Ei sarjoja saatavilla",
+    "active": "Aktiivinen",
+    "completed": "Päättynyt",
+    "fixtures": "Otteluohjelma",
+    "standings": "Sarjataulukko",
+    "playerStats": "Pelaajatilastot",
+    "goalieStats": "Maalivahtitilastot",
+    "teamStats": "Joukkuetilastot",
+    "standingsTitle": "SARJATAULUKKO",
+    "loadingStandings": "Ladataan sarjataulukkoa...",
+    "team": "JOUKKUE",
+    "gamesShort": "O",
+    "pointsShort": "PTS",
+    "viewFullTable": ">> koko taulukko"
+  },
   "leaguePage": {
     "title": "Sarja",
     "defaultTitle": "Sarja",
@@ -892,5 +944,15 @@
       "loadLeagueData": "Sarjan tietojen lataus epäonnistui",
       "loadMatches": "Otteluiden lataus epäonnistui"
     }
+  },
+  "clubsPage": {
+    "title": "Seurat",
+    "description": "Selaa ja hae MAHL-liigan seuroja.",
+    "searchPlaceholder": "Hae seuroja...",
+    "noClubs": "Seuroja ei löytynyt",
+    "viewClub": "Katso seura",
+    "loading": "Ladataan seuroja...",
+    "error": "Seurojen lataus epäonnistui",
+    "totalClubs": "{{count}} seuraa"
   }
 } 

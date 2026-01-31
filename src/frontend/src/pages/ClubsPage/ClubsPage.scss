@@ -1,0 +1,281 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.clubs-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: map.get($spacing, 'lg');
+
+  &__header {
+    text-align: center;
+    margin-bottom: map.get($spacing, 'xl');
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, 'xxl');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-white;
+    margin-bottom: map.get($spacing, 'md');
+  }
+
+  &__description {
+    font-size: map.get($font-sizes, 'lg');
+    color: rgba($color-white, 0.8);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  &__search {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto map.get($spacing, 'xl');
+  }
+
+  &__search-input {
+    width: 100%;
+    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+    padding-right: 50px;
+    font-size: map.get($font-sizes, 'base');
+    background: $color-blue-darkest;
+    border: 1px solid rgba($color-white, 0.2);
+    border-radius: map.get($border-radius, 'lg');
+    color: $color-white;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &::placeholder {
+      color: rgba($color-white, 0.5);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-secondary;
+      box-shadow: 0 0 0 3px rgba($color-blue-secondary, 0.2);
+    }
+  }
+
+  &__search-clear {
+    position: absolute;
+    right: map.get($spacing, 'md');
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba($color-white, 0.5);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: map.get($spacing, 'xs');
+    line-height: 1;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $color-white;
+    }
+  }
+
+  &__count {
+    text-align: center;
+    color: rgba($color-white, 0.6);
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'lg');
+  }
+
+  &__loading,
+  &__error,
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: rgba($color-white, 0.7);
+    gap: map.get($spacing, 'md');
+  }
+
+  &__retry-btn {
+    background: $color-blue-secondary;
+    color: $color-white;
+    border: none;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'lg');
+    border-radius: map.get($border-radius, 'lg');
+    cursor: pointer;
+    font-weight: map.get($font-weights, 'semibold');
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: $color-blue-secondary-muted;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: map.get($spacing, 'lg');
+    margin-bottom: map.get($spacing, 'xl');
+  }
+
+  &__pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: map.get($spacing, 'md');
+    margin-top: map.get($spacing, 'xl');
+  }
+}
+
+.club-card {
+  display: flex;
+  flex-direction: column;
+  background: $color-blue-darkest;
+  border-radius: map.get($border-radius, 'lg');
+  overflow: hidden;
+  text-decoration: none;
+  border: 1px solid rgba($color-white, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    border-color: rgba($color-blue-secondary, 0.3);
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    background: linear-gradient(180deg, rgba($color-blue-deep, 0.4) 0%, transparent 100%);
+    padding: map.get($spacing, 'md');
+
+    img {
+      max-width: 80px;
+      max-height: 80px;
+      object-fit: contain;
+    }
+  }
+
+  &__logo-placeholder {
+    font-size: 3rem;
+    opacity: 0.5;
+  }
+
+  &__content {
+    padding: map.get($spacing, 'lg');
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  &__name {
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-white;
+    margin: 0 0 map.get($spacing, 'xs');
+  }
+
+  &__city {
+    font-size: map.get($font-sizes, 'sm');
+    color: rgba($color-white, 0.6);
+    margin: 0 0 map.get($spacing, 'md');
+  }
+
+  &__link {
+    margin-top: auto;
+    color: $color-blue-secondary;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    transition: color 0.2s ease;
+  }
+
+  &:hover &__link {
+    color: $color-blue-secondary-light;
+  }
+}
+
+.pagination-btn {
+  background: $color-blue-darkest;
+  color: $color-white;
+  border: 1px solid rgba($color-white, 0.2);
+  padding: map.get($spacing, 'sm') map.get($spacing, 'lg');
+  border-radius: map.get($border-radius, 'lg');
+  cursor: pointer;
+  font-weight: map.get($font-weights, 'medium');
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-blue-deep;
+    border-color: rgba($color-white, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.pagination-info {
+  color: rgba($color-white, 0.7);
+  font-size: map.get($font-sizes, 'sm');
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba($color-white, 0.1);
+  border-top-color: $color-blue-secondary;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .clubs-page {
+    padding: map.get($spacing, 'md');
+
+    &__header {
+      margin-bottom: map.get($spacing, 'lg');
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'xl');
+    }
+
+    &__description {
+      font-size: map.get($font-sizes, 'base');
+    }
+
+    &__search {
+      margin-bottom: map.get($spacing, 'lg');
+    }
+
+    &__search-input {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+      padding-right: 40px;
+    }
+
+    &__grid {
+      grid-template-columns: 1fr;
+      gap: map.get($spacing, 'md');
+    }
+  }
+
+  .club-card {
+    &__logo {
+      height: 100px;
+    }
+
+    &__content {
+      padding: map.get($spacing, 'md');
+    }
+  }
+
+  .clubs-page__pagination {
+    flex-wrap: wrap;
+  }
+}

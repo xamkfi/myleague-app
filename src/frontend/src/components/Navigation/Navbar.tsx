@@ -2,11 +2,14 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle/LanguageToggle';
-import type { Club } from '../../api/common/clubService';
-import { getClubs } from '../../api/common/clubService';
-import { createClubSlug } from '../../utils/slugUtils';
 import './Navbar.scss';
 import SearchBar from '../SearchBar';
+
+// Sports configuration
+const SPORTS_CONFIG = [
+  { id: 'floorball', path: '/sports/floorball', translationKey: 'sports.floorball' },
+  { id: 'icehockey', path: '/sports/icehockey', translationKey: 'sports.iceHockey', disabled: true }
+];
 
 // Custom hook for mobile detection
 const useIsMobile = () => {
@@ -29,10 +32,8 @@ const useIsMobile = () => {
 function Navbar() {
   const { t } = useTranslation();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [clubs, setClubs] = useState<Club[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const dropdownRef = useRef<HTMLLIElement>(null);
+  const sportsDropdownRef = useRef<HTMLLIElement>(null);
   const isMobile = useIsMobile();
   
   // Add hamburger menu toggle
@@ -53,24 +54,14 @@ function Navbar() {
   }, [isMobile, isMobileMenuOpen]);
 
   useEffect(() => {
-    const fetchClubs = async () => {
-      try {
-        setLoading(true);
-        const clubsData = await getClubs();
-        setClubs(clubsData);
-      } catch (error) {
-        console.error('Failed to fetch clubs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchClubs();
-  }, []);
-
-  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      
+      // Check if click is inside sports dropdown
+      const isInsideSports = sportsDropdownRef.current?.contains(target);
+      
+      // Close dropdown if click is outside
+      if (!isInsideSports) {
         setActiveDropdown(null);
       }
     }
@@ -134,32 +125,33 @@ function Navbar() {
             <Link to="/turnaukset">{t('nav.tournaments')}</Link>
             <span className="dropdown-icon">▼</span>
           </li>
-          <li className="navbar-item dropdown">
-            <Link to="/lajit">{t('nav.sports')}</Link>
-            <span className="dropdown-icon">▼</span>
-          </li>
           <li 
-            ref={dropdownRef}
-            className={`navbar-item dropdown ${activeDropdown === 'clubs' ? 'active' : ''}`}
-            onClick={() => handleDropdownClick('clubs')}
+            ref={sportsDropdownRef}
+            className={`navbar-item dropdown ${activeDropdown === 'sports' ? 'active' : ''}`}
           >
-            <span className="dropdown-label">{t('nav.clubs')}</span>
-            <span className="dropdown-icon">▼</span>
-            {activeDropdown === 'clubs' && (
+            <div className="dropdown-trigger" onClick={() => handleDropdownClick('sports')}>
+              <span className="dropdown-label">{t('nav.sports')}</span>
+              <span className="dropdown-icon">▼</span>
+            </div>
+            {activeDropdown === 'sports' && (
               <ul className="dropdown-menu">
-                {loading ? (
-                  <li className="loading">Loading clubs...</li>
-                ) : (
-                  clubs.map((club) => (
-                    <li key={club.id}>
-                      <Link to={`/club/${createClubSlug(club)}`}>
-                        {club.name}
-                      </Link>
-                    </li>
-                  ))
-                )}
+                <li>
+                  <Link to="/sports" onClick={() => setActiveDropdown(null)}>{t('sports.allSports')}</Link>
+                </li>
+                {SPORTS_CONFIG.map((sport) => (
+                  <li key={sport.id}>
+                    {sport.disabled ? (
+                      <span className="disabled-link">{t(sport.translationKey)}</span>
+                    ) : (
+                      <Link to={sport.path} onClick={() => setActiveDropdown(null)}>{t(sport.translationKey)}</Link>
+                    )}
+                  </li>
+                ))}
               </ul>
             )}
+          </li>
+          <li className="navbar-item">
+            <Link to="/clubs">{t('nav.clubs')}</Link>
           </li>
         </ul>
       </div>
@@ -200,23 +192,24 @@ function Navbar() {
               <Link to="/turnaukset" onClick={closeMobileMenu}>{t('nav.tournaments')}</Link>
             </li>
             <li className="mobile-navbar-item">
-              <Link to="/lajit" onClick={closeMobileMenu}>{t('nav.sports')}</Link>
+              <span className="mobile-dropdown-label">{t('nav.sports')}</span>
+              <ul className="mobile-sports-list">
+                <li>
+                  <Link to="/sports" onClick={closeMobileMenu}>{t('sports.allSports')}</Link>
+                </li>
+                {SPORTS_CONFIG.map((sport) => (
+                  <li key={sport.id}>
+                    {sport.disabled ? (
+                      <span className="disabled-link">{t(sport.translationKey)}</span>
+                    ) : (
+                      <Link to={sport.path} onClick={closeMobileMenu}>{t(sport.translationKey)}</Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
             </li>
             <li className="mobile-navbar-item">
-              <span className="mobile-dropdown-label">{t('nav.clubs')}</span>
-              {loading ? (
-                <div className="mobile-loading">Loading clubs...</div>
-              ) : (
-                <ul className="mobile-clubs-list">
-                  {clubs.map((club) => (
-                    <li key={club.id}>
-                      <Link to={`/club/${createClubSlug(club)}`} onClick={closeMobileMenu}>
-                        {club.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <Link to="/clubs" onClick={closeMobileMenu}>{t('nav.clubs')}</Link>
             </li>
           </ul>
           
@@ -230,4 +223,4 @@ function Navbar() {
   );
 }
 
-export default Navbar; 
+export default Navbar;
