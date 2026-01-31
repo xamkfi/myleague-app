@@ -885,6 +885,40 @@
     "placeholder": "Hae...",
     "button": "Hae"
   },
+  "sports": {
+    "allSports": "Kaikki lajit",
+    "floorball": "Salibandy",
+    "iceHockey": "Jääkiekko"
+  },
+  "sportsPage": {
+    "title": "Lajit",
+    "description": "MAHL lajit jakaantuvat eri urheilulajeihin. Valitse laji nähdäksesi sarjat, ottelut ja tilastot.",
+    "floorballDescription": "Salibandy on nopeatempinen sisäurheilulaji, jossa kaksi joukkuetta kilpailee maalien tekemisessä.",
+    "iceHockeyDescription": "Jääkiekko on intensiivinen joukkuelaji jäällä.",
+    "viewLeagues": "Näytä sarjat",
+    "comingSoon": "Tulossa pian"
+  },
+  "floorballPage": {
+    "title": "Salibandy",
+    "description": "Selaa salibandyn sarjoja, sarjataulukoita ja tilastoja.",
+    "loading": "Ladataan sarjoja...",
+    "error": "Sarjojen lataus epäonnistui",
+    "retry": "Yritä uudelleen",
+    "noSeasons": "Ei sarjoja saatavilla",
+    "active": "Aktiivinen",
+    "completed": "Päättynyt",
+    "fixtures": "Otteluohjelma",
+    "standings": "Sarjataulukko",
+    "playerStats": "Pelaajatilastot",
+    "goalieStats": "Maalivahtitilastot",
+    "teamStats": "Joukkuetilastot",
+    "standingsTitle": "SARJATAULUKKO",
+    "loadingStandings": "Ladataan sarjataulukkoa...",
+    "team": "JOUKKUE",
+    "gamesShort": "O",
+    "pointsShort": "PTS",
+    "viewFullTable": ">> koko taulukko"
+  },
   "leaguePage": {
     "title": "Sarja",
     "defaultTitle": "Sarja",
