@@ -99,7 +99,15 @@
   "sidebar": {
     "nextMatch": "SEURAAVA PELI",
     "standings": "SARJATAULUKKO",
-    "stats": "TILASTOT"
+    "stats": "TILASTOT",
+    "liveMatches": "Käynnissä",
+    "upcomingMatches": "Tulevat",
+    "completedMatches": "Päättyneet",
+    "noLiveMatches": "Ei käynnissä olevia otteluita",
+    "noUpcomingMatches": "Ei tulevia otteluita",
+    "noCompletedMatches": "Ei päättyneitä otteluita",
+    "loading": "Ladataan...",
+    "error": "Otteluiden lataus epäonnistui"
   },
   "language": {
     "en": "Englanti",

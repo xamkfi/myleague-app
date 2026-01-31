@@ -1,91 +1,270 @@
 @use 'sass:map';
 @use '@variables' as *;
-@use '@common' as *;
 
 .match-sidebar {
-  composes: sidebar;
-}
+  display: flex;
+  flex-direction: column;
+  padding: map.get($spacing, 'md');
+  background: $color-neutral-white;
+  border-radius: map.get($border-radius, 'lg');
+  height: 100%;
+  overflow-y: auto;
 
-.sidebar {
-  &-title,
-  &-standings-title,
-  &-stats-title {
-    @extend .text-center;
-    margin-bottom: map.get($spacing, 'sm');
-    font-weight: map.get($font-weights, 'bold');
-  }
-}
-
-.match-date {
-  @extend .text-center;
-  margin-bottom: map.get($spacing, 'md');
-  font-size: map.get($font-sizes, 'sm');
-}
-
-.teams-container {
-  @include flex-center;
-  gap: map.get($spacing, 'base');
-  margin-bottom: map.get($spacing, 'lg');
-}
-
-.team {
-  &-logo,
-  &-placeholder-logo {
-    width: 70px;
-    height: 70px;
-    border-radius: map.get($border-radius, 'full');
-    background-color: $color-placeholder;
-    @include flex-center;
-  }
-
-  &-indicator {
-    width: 30px;
+  &__loading,
+  &__error {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    padding: map.get($spacing, 'xl');
+    text-align: center;
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'sm');
+    gap: map.get($spacing, 'sm');
   }
 
-  &-circle {
-    @extend .circle-icon;
+  &__retry-btn {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
+    background: $color-blue-medium;
+    color: $color-white;
+    border: none;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    cursor: pointer;
+    transition: background $transition-default;
+
+    &:hover {
+      background: $color-blue-deep;
+    }
   }
 
-  &-name {
+  &__section {
+    margin-bottom: map.get($spacing, 'md');
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__section-title {
+    font-family: $font-family-display;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: map.get($spacing, 'sm');
+    padding-bottom: map.get($spacing, 'xs');
+    border-bottom: 2px solid $color-neutral-medium-grey;
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+
+    &--live {
+      border-bottom-color: $color-red-primary;
+      color: $color-red-primary;
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__empty {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-text-muted;
+    text-align: center;
+    padding: map.get($spacing, 'sm');
+    font-style: italic;
+  }
+}
+
+// Live indicator dot (pulsing animation)
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  background: $color-red-primary;
+  border-radius: 50%;
+  animation: pulse-live 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+// Loading spinner
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid $color-neutral-medium-grey;
+  border-top-color: $color-blue-medium;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ===== SIDEBAR MATCH CARD =====
+.sidebar-match-card {
+  background: $color-neutral-light-grey;
+  border-radius: map.get($border-radius, 'sm');
+  padding: map.get($spacing, 'sm');
+  cursor: pointer;
+  transition: background $transition-default, transform $transition-default;
+
+  &:hover {
+    background: $color-neutral-medium-grey;
+    transform: translateX(2px);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  &__live-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px map.get($spacing, 'xs');
+    background: $color-red-primary;
+    color: $color-white;
+    font-size: 0.6rem;
+    font-weight: map.get($font-weights, 'bold');
+    border-radius: map.get($border-radius, 'sm');
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background: $color-white;
+      border-radius: 50%;
+      animation: pulse-live 1.5s ease-in-out infinite;
+    }
+  }
+
+  &__time {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-text-muted;
+  }
+
+  &__teams {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xxs');
+  }
+
+  &__team {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__team-info {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    min-width: 0;
     flex: 1;
-    padding-left: map.get($spacing, 'xs');
   }
 
-  &-points {
-    text-align: right;
+  &__logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  &__logo-placeholder {
+    width: 20px;
+    height: 20px;
+    background: $color-neutral-medium-grey;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__team-name {
+    font-size: map.get($font-sizes, 'xs');
     font-weight: map.get($font-weights, 'medium');
+    color: $color-text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__score {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    min-width: 20px;
+    text-align: right;
+  }
+
+  &__venue {
+    font-size: 0.65rem;
+    color: $color-text-muted;
+    margin-top: map.get($spacing, 'xxs');
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
-.vs-text {
-  font-size: map.get($font-sizes, 'sm');
-}
+// ===== RESPONSIVE STYLES =====
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .match-sidebar {
+    padding: map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'sm');
 
-.standings,
-.stats {
-  &-table {
-    @extend .table-container;
+    &__section-title {
+      font-size: map.get($font-sizes, 'xs');
+    }
+
+    &__empty {
+      font-size: 0.7rem;
+      padding: map.get($spacing, 'xs');
+    }
   }
 
-  &-row {
-    @extend .table-row;
+  .sidebar-match-card {
+    padding: map.get($spacing, 'xs');
+
+    &__team-name {
+      font-size: 0.7rem;
+    }
+
+    &__score {
+      font-size: map.get($font-sizes, 'xs');
+    }
+
+    &__venue {
+      font-size: 0.6rem;
+    }
   }
 }
 
-.position {
-  width: 30px;
-  text-align: right;
-  padding-right: map.get($spacing, 'xs');
+@media (max-width: map.get($breakpoints, 'mobile')) {
+  .match-sidebar {
+    &__loading,
+    &__error {
+      padding: map.get($spacing, 'md');
+      font-size: map.get($font-sizes, 'xs');
+    }
+  }
 }
-
-.player-name {
-  flex: 1;
-  padding-left: map.get($spacing, 'xs');
-}
-
-.stat-value {
-  text-align: right;
-  font-weight: map.get($font-weights, 'medium');
-} 

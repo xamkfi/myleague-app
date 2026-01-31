@@ -1,43 +1,62 @@
+import { useState, useEffect } from 'react';
 import HomeNewsSection from '../../components/HomeNewsSection/HomeNewsSection';
+import MainNewsCard from '../../components/MainNewsCard/MainNewsCard';
 import MatchSidebar from '../../components/MatchSidebar/MatchSidebar';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import { getMainNewsArticle, type NewsArticleDto } from '../../api/news/newsService';
 import './HomePage.scss';
 
-const mockStandings = {
-  rows: [
-    { position: 1, team: 'JOUKKUE 1', points: 37 },
-    { position: 2, team: 'JOUKKUE 2', points: 32 },
-    { position: 3, team: 'JOUKKUE 3', points: 30 }
-  ]
-};
-
-const mockTeamStats = [
-  { teamName: 'Joukkue 1', playerName: '', value: 4 },
-  { teamName: 'Joukkue 2', playerName: '', value: 3 },
-  { teamName: 'Joukkue 1', playerName: '', value: 4 },
-  { teamName: 'Joukkue 2', playerName: '', value: 3 },
-  { teamName: 'Joukkue 1', playerName: '', value: 4 },
-  { teamName: 'Joukkue 2', playerName: '', value: 3 }
-];
-
 function HomePage() {
+  const [mainNews, setMainNews] = useState<NewsArticleDto | null>(null);
+  const [isLoadingMainNews, setIsLoadingMainNews] = useState(true);
+
+  useEffect(() => {
+    const fetchMainNews = async () => {
+      try {
+        const news = await getMainNewsArticle();
+        setMainNews(news);
+      } catch (error) {
+        console.error('Failed to fetch main news:', error);
+      } finally {
+        setIsLoadingMainNews(false);
+      }
+    };
+
+    fetchMainNews();
+  }, []);
+
   return (
     <PageTemplate title="Home">
       <div className="home-page">
+        {/* Main News Hero Section */}
+        {!isLoadingMainNews && mainNews && (
+          <div className="hero-news-container">
+            <MainNewsCard news={mainNews} />
+          </div>
+        )}
+
+        {/* Loading skeleton for main news */}
+        {isLoadingMainNews && (
+          <div className="hero-news-container hero-news-container--loading">
+            <div className="main-news-skeleton">
+              <div className="skeleton-image" />
+              <div className="skeleton-content">
+                <div className="skeleton-category" />
+                <div className="skeleton-title" />
+                <div className="skeleton-summary" />
+                <div className="skeleton-button" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Content Section: News List + Sidebar */}
         <div className="main-content">
           <div className="news-section-container">
             <HomeNewsSection />
           </div>
           <div className="sidebar-container">
-            <MatchSidebar
-              match={{
-                date: '12/6/2025',
-                homeTeam: { name: 'Team 1' },
-                awayTeam: { name: 'Team 2' }
-              }}
-              standings={mockStandings}
-              teamStats={mockTeamStats}
-            />
+            <MatchSidebar />
           </div>
         </div>
       </div>

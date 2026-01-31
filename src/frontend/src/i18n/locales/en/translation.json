@@ -27,7 +27,15 @@
   "sidebar": {
     "nextMatch": "NEXT MATCH",
     "standings": "STANDINGS",
-    "stats": "STATISTICS"
+    "stats": "STATISTICS",
+    "liveMatches": "Live",
+    "upcomingMatches": "Upcoming",
+    "completedMatches": "Completed",
+    "noLiveMatches": "No live matches",
+    "noUpcomingMatches": "No upcoming matches",
+    "noCompletedMatches": "No completed matches",
+    "loading": "Loading...",
+    "error": "Failed to load matches"
   },
   "language": {
     "en": "English",
