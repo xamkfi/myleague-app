@@ -86,6 +86,16 @@
     "title": "KESÄKAUSI ON TÄÄLLÄ",
     "buttonText": "TUTUSTU KESÄN TAPAHTUMIIN"
   },
+  "homePage": {
+    "newsSection": {
+      "title": "Ajankohtaista",
+      "readMore": "Lue lisää",
+      "noNews": "Ei uutisia saatavilla",
+      "loading": "Ladataan uutisia...",
+      "error": "Uutisten lataaminen epäonnistui",
+      "retry": "Yritä uudelleen"
+    }
+  },
   "sidebar": {
     "nextMatch": "SEURAAVA PELI",
     "standings": "SARJATAULUKKO",

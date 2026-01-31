@@ -14,6 +14,16 @@
     "title": "SUMMER SEASON IS HERE",
     "buttonText": "EXPLORE SUMMER EVENTS"
   },
+  "homePage": {
+    "newsSection": {
+      "title": "Latest News",
+      "readMore": "Read more",
+      "noNews": "No news available",
+      "loading": "Loading news...",
+      "error": "Failed to load news",
+      "retry": "Try again"
+    }
+  },
   "sidebar": {
     "nextMatch": "NEXT MATCH",
     "standings": "STANDINGS",

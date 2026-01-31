@@ -1,0 +1,330 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// ===== HOME NEWS SECTION =====
+.home-news-section {
+  display: flex;
+  flex-direction: column;
+  padding: map.get($spacing, 'md');
+  background: $color-neutral-white;
+  border-radius: map.get($border-radius, 'lg');
+  box-shadow: $box-shadow-drop-1;
+  height: 100%;
+  overflow-y: auto;
+
+  &__title {
+    font-family: $font-family-display;
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    margin-bottom: map.get($spacing, 'md');
+    padding-bottom: map.get($spacing, 'sm');
+    border-bottom: 2px solid $color-blue-medium;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'md');
+  }
+
+  &__empty,
+  &__error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: map.get($spacing, 'xl');
+    text-align: center;
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'md');
+  }
+
+  &__retry-btn {
+    margin-top: map.get($spacing, 'md');
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    background: $color-blue-medium;
+    color: $color-white;
+    border: none;
+    border-radius: map.get($border-radius, 'lg');
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'semibold');
+    cursor: pointer;
+    transition: background $transition-default;
+
+    &:hover {
+      background: $color-blue-deep;
+    }
+  }
+}
+
+// ===== HOME NEWS CARD =====
+.home-news-card {
+  display: flex;
+  flex-direction: row;
+  background: $color-white;
+  border-radius: map.get($border-radius, 'lg');
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform $transition-default, box-shadow $transition-default;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+    .home-news-card__image {
+      transform: scale(1.05);
+    }
+
+    .home-news-card__read-more {
+      color: $color-blue-deep;
+    }
+  }
+
+  &__image-container {
+    flex: 0 0 35%;
+    min-width: 200px;
+    max-width: 280px;
+    aspect-ratio: 16/10;
+    overflow: hidden;
+    background: $color-neutral-light-grey;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform $transition-default;
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: map.get($spacing, 'md');
+    min-width: 0; // Prevents flex child from overflowing
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
+    flex-wrap: wrap;
+  }
+
+  &__category {
+    display: inline-block;
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+    background: $color-blue-light;
+    color: $color-white;
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'semibold');
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: map.get($border-radius, 'sm');
+  }
+
+  &__date {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
+
+  &__title {
+    font-family: $font-family-display;
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    margin-bottom: map.get($spacing, 'xs');
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__summary {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-neutral-dark-grey;
+    line-height: 1.5;
+    margin-bottom: map.get($spacing, 'sm');
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  &__read-more {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-medium;
+    transition: color $transition-default;
+    margin-top: auto;
+  }
+
+  // Skeleton loading state
+  &--skeleton {
+    pointer-events: none;
+    
+    .skeleton-image {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+
+    .skeleton-meta {
+      width: 120px;
+      height: 16px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+      border-radius: map.get($border-radius, 'sm');
+      margin-bottom: map.get($spacing, 'xs');
+    }
+
+    .skeleton-title {
+      width: 80%;
+      height: 24px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+      border-radius: map.get($border-radius, 'sm');
+      margin-bottom: map.get($spacing, 'sm');
+    }
+
+    .skeleton-summary {
+      width: 100%;
+      height: 14px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+      border-radius: map.get($border-radius, 'sm');
+      margin-bottom: map.get($spacing, 'xs');
+
+      &--short {
+        width: 60%;
+      }
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// ===== RESPONSIVE STYLES =====
+
+// Tablet
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .home-news-section {
+    padding: map.get($spacing, 'sm');
+
+    &__title {
+      font-size: map.get($font-sizes, 'md');
+      margin-bottom: map.get($spacing, 'sm');
+    }
+
+    &__list {
+      gap: map.get($spacing, 'sm');
+    }
+  }
+
+  .home-news-card {
+    flex-direction: column;
+
+    &__image-container {
+      flex: none;
+      width: 100%;
+      max-width: none;
+      min-width: auto;
+      height: 180px;
+      aspect-ratio: auto;
+    }
+
+    &__content {
+      padding: map.get($spacing, 'sm');
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'base');
+    }
+
+    &__summary {
+      font-size: map.get($font-sizes, 'sm');
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+    }
+  }
+}
+
+// Mobile
+@media (max-width: map.get($breakpoints, 'mobile')) {
+  .home-news-section {
+    padding: map.get($spacing, 'xs');
+    border-radius: map.get($border-radius, 'sm');
+
+    &__title {
+      font-size: map.get($font-sizes, 'base');
+      padding-bottom: map.get($spacing, 'xs');
+      margin-bottom: map.get($spacing, 'xs');
+    }
+
+    &__list {
+      gap: map.get($spacing, 'xs');
+    }
+
+    &__empty,
+    &__error {
+      padding: map.get($spacing, 'md');
+      font-size: map.get($font-sizes, 'sm');
+    }
+  }
+
+  .home-news-card {
+    border-radius: map.get($border-radius, 'sm');
+
+    &__image-container {
+      height: 150px;
+    }
+
+    &__content {
+      padding: map.get($spacing, 'xs');
+    }
+
+    &__meta {
+      margin-bottom: map.get($spacing, 'xxs');
+    }
+
+    &__category {
+      font-size: 0.6rem;
+      padding: 2px map.get($spacing, 'xs');
+    }
+
+    &__date {
+      font-size: map.get($font-sizes, 'xs');
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'sm');
+      margin-bottom: map.get($spacing, 'xxs');
+    }
+
+    &__summary {
+      font-size: map.get($font-sizes, 'xs');
+      margin-bottom: map.get($spacing, 'xs');
+    }
+
+    &__read-more {
+      font-size: map.get($font-sizes, 'xs');
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import HeroSection from '../../components/HeroSection/HeroSection';
+import HomeNewsSection from '../../components/HomeNewsSection/HomeNewsSection';
 import MatchSidebar from '../../components/MatchSidebar/MatchSidebar';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './HomePage.scss';
@@ -21,18 +21,12 @@ const mockTeamStats = [
 ];
 
 function HomePage() {
-  const handleExploreEvents = () => {
-    console.log('Explore events button clicked');
-  };
-
   return (
-    <PageTemplate title="Home" >
+    <PageTemplate title="Home">
       <div className="home-page">
         <div className="main-content">
-          <div className="hero-container">
-            <HeroSection
-              onButtonClick={handleExploreEvents}
-            />
+          <div className="news-section-container">
+            <HomeNewsSection />
           </div>
           <div className="sidebar-container">
             <MatchSidebar
