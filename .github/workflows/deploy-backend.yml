@@ -14,12 +14,13 @@ on:
           - staging
           - prod
 
-  # Auto deploy on push to test branch
-  push:
+  # Auto deploy after Backend CI passes
+  workflow_run:
+    workflows: ["Backend CI"]
+    types:
+      - completed
     branches:
       - development
-    paths:
-      - 'src/backend/**'
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -31,6 +32,8 @@ jobs:
   deploy:
     name: Deploy to Azure
     runs-on: ubuntu-latest
+    # Only run if triggered manually OR if CI workflow succeeded
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     
     steps:
       - name: Checkout code

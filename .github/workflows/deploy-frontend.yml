@@ -1,15 +1,16 @@
 name: Deploy Frontend to Azure
 
 on:
-  # Auto deploy on push to development branch
-  push:
-    branches:
-      - development
-    paths:
-      - 'src/frontend/**'
-
   # Manual trigger
   workflow_dispatch:
+
+  # Auto deploy after Frontend CI passes
+  workflow_run:
+    workflows: ["Frontend CI"]
+    types:
+      - completed
+    branches:
+      - development
 
 env:
   NODE_VERSION: '20.x'
@@ -19,6 +20,8 @@ jobs:
   build-and-deploy:
     name: Build and Deploy to Azure Static Web App
     runs-on: ubuntu-latest
+    # Only run if triggered manually OR if CI workflow succeeded
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
