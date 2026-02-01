@@ -61,8 +61,8 @@
     gap: map.get($spacing, 'xs');
 
     &--live {
-      border-bottom-color: $color-red-primary;
-      color: $color-red-primary;
+      border-bottom-color: $color-text-muted;
+      color: $color-text-primary;
     }
   }
 
