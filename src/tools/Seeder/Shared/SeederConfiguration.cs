@@ -1,8 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,15 +23,27 @@ public sealed class SeederConfiguration
     public List<PersonSeed> RefereePersons { get; set; } = new List<PersonSeed>();
     public List<FloorballSeasonSeed> FloorballSeasons { get; set; } = new List<FloorballSeasonSeed>();
     public List<FloorballTeamSeed> FloorballTeams { get; set; } = new List<FloorballTeamSeed>();
+    public List<FloorballMatchSeed> FloorballMatches { get; set; } = new List<FloorballMatchSeed>();
 
     public static SeederConfiguration Load()
     {
-        IConfigurationRoot configuration = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: true)
-            .AddJsonFile("appsettings.Development.json", optional: true)
-            .AddEnvironmentVariables()
-            .Build();
+        // Build path to data/testdata.json relative to the base directory
+        string testDataPath = Path.Combine(AppContext.BaseDirectory, "data", "testdata.json");
+
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.SetBasePath(AppContext.BaseDirectory);
+        builder.AddJsonFile("appsettings.json", optional: true);
+        builder.AddJsonFile("appsettings.Development.json", optional: true);
+
+        // Load testdata.json if it exists - it will override/merge with appsettings
+        if (File.Exists(testDataPath))
+        {
+            Console.WriteLine($"Loading test data from: {testDataPath}");
+            builder.AddJsonFile(testDataPath, optional: true);
+        }
+
+        builder.AddEnvironmentVariables();
+        IConfigurationRoot configuration = builder.Build();
 
         SeederConfiguration cfg = new SeederConfiguration();
         IConfigurationSection seederSection = configuration.GetSection("Seeder");

@@ -100,7 +100,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddSingleton<ITimerStore, InMemoryTimerStore>();
             
             // Register timer background service
-            services.AddHostedService<TimerBackgroundService>();
+            // No need for it now so disabled by default
+           // services.AddHostedService<TimerBackgroundService>();
 
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();

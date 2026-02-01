@@ -78,6 +78,16 @@ public class TeamPlayerByEmailSeed
 	public int JerseyNumber { get; init; } = 10;
 }
 
+public class FloorballMatchSeed
+{
+	public string HomeTeamName { get; init; } = string.Empty;
+	public string AwayTeamName { get; init; } = string.Empty;
+	public string SeasonName { get; init; } = string.Empty;
+	public string ScheduledDateTime { get; init; } = string.Empty;
+	public string? Venue { get; init; }
+	public string? RefereeEmail { get; init; }
+}
+
 public static class SeederHttp
 {
 	public static async Task EnsureSuccessWithBody(HttpResponseMessage response, string operation)

@@ -1,0 +1,233 @@
+{
+  "Seeder": {
+    "PlayerPersons": [
+      { "FirstName": "Aleksi", "LastName": "Virtanen", "BirthDate": "1998-03-15", "IsRegistered": true, "ContactInfo": { "Email": "aleksi.virtanen@helsinki.fi" } },
+      { "FirstName": "Mikko", "LastName": "Korhonen", "BirthDate": "1999-07-22", "IsRegistered": true, "ContactInfo": { "Email": "mikko.korhonen@helsinki.fi" } },
+      { "FirstName": "Juha", "LastName": "Laine", "BirthDate": "1997-11-05", "IsRegistered": true, "ContactInfo": { "Email": "juha.laine@helsinki.fi" } },
+      { "FirstName": "Tero", "LastName": "Mäkinen", "BirthDate": "2000-01-18", "IsRegistered": true, "ContactInfo": { "Email": "tero.makinen@helsinki.fi" } },
+      { "FirstName": "Antti", "LastName": "Järvinen", "BirthDate": "1996-08-30", "IsRegistered": true, "ContactInfo": { "Email": "antti.jarvinen@helsinki.fi" } },
+      { "FirstName": "Ville", "LastName": "Nieminen", "BirthDate": "1998-12-12", "IsRegistered": true, "ContactInfo": { "Email": "ville.nieminen@helsinki.fi" } },
+      { "FirstName": "Petri", "LastName": "Heikkinen", "BirthDate": "1999-04-25", "IsRegistered": true, "ContactInfo": { "Email": "petri.heikkinen@helsinki.fi" } },
+      { "FirstName": "Sami", "LastName": "Lehtonen", "BirthDate": "1997-09-08", "IsRegistered": true, "ContactInfo": { "Email": "sami.lehtonen@helsinki.fi" } },
+
+      { "FirstName": "Janne", "LastName": "Aalto", "BirthDate": "1998-05-20", "IsRegistered": true, "ContactInfo": { "Email": "janne.aalto@tampere.fi" } },
+      { "FirstName": "Kari", "LastName": "Rantanen", "BirthDate": "1999-02-14", "IsRegistered": true, "ContactInfo": { "Email": "kari.rantanen@tampere.fi" } },
+      { "FirstName": "Markus", "LastName": "Salonen", "BirthDate": "1997-06-28", "IsRegistered": true, "ContactInfo": { "Email": "markus.salonen@tampere.fi" } },
+      { "FirstName": "Lauri", "LastName": "Koskinen", "BirthDate": "2000-10-03", "IsRegistered": true, "ContactInfo": { "Email": "lauri.koskinen@tampere.fi" } },
+      { "FirstName": "Olli", "LastName": "Hämäläinen", "BirthDate": "1996-03-17", "IsRegistered": true, "ContactInfo": { "Email": "olli.hamalainen@tampere.fi" } },
+      { "FirstName": "Tuomas", "LastName": "Pitkänen", "BirthDate": "1998-07-11", "IsRegistered": true, "ContactInfo": { "Email": "tuomas.pitkanen@tampere.fi" } },
+      { "FirstName": "Henri", "LastName": "Lindgren", "BirthDate": "1999-11-24", "IsRegistered": true, "ContactInfo": { "Email": "henri.lindgren@tampere.fi" } },
+      { "FirstName": "Eero", "LastName": "Toivonen", "BirthDate": "1997-01-07", "IsRegistered": true, "ContactInfo": { "Email": "eero.toivonen@tampere.fi" } },
+
+      { "FirstName": "Matti", "LastName": "Karjalainen", "BirthDate": "1998-08-16", "IsRegistered": true, "ContactInfo": { "Email": "matti.karjalainen@oulu.fi" } },
+      { "FirstName": "Pekka", "LastName": "Väisänen", "BirthDate": "1999-12-29", "IsRegistered": true, "ContactInfo": { "Email": "pekka.vaisanen@oulu.fi" } },
+      { "FirstName": "Tommi", "LastName": "Lahtinen", "BirthDate": "1997-04-02", "IsRegistered": true, "ContactInfo": { "Email": "tommi.lahtinen@oulu.fi" } },
+      { "FirstName": "Jukka", "LastName": "Savolainen", "BirthDate": "2000-06-15", "IsRegistered": true, "ContactInfo": { "Email": "jukka.savolainen@oulu.fi" } },
+      { "FirstName": "Esa", "LastName": "Peltola", "BirthDate": "1996-10-28", "IsRegistered": true, "ContactInfo": { "Email": "esa.peltola@oulu.fi" } },
+      { "FirstName": "Risto", "LastName": "Hiltunen", "BirthDate": "1998-02-09", "IsRegistered": true, "ContactInfo": { "Email": "risto.hiltunen@oulu.fi" } },
+      { "FirstName": "Vesa", "LastName": "Niskanen", "BirthDate": "1999-05-23", "IsRegistered": true, "ContactInfo": { "Email": "vesa.niskanen@oulu.fi" } },
+      { "FirstName": "Ilkka", "LastName": "Leppänen", "BirthDate": "1997-09-06", "IsRegistered": true, "ContactInfo": { "Email": "ilkka.leppanen@oulu.fi" } },
+
+      { "FirstName": "Teemu", "LastName": "Hakala", "BirthDate": "1998-11-19", "IsRegistered": true, "ContactInfo": { "Email": "teemu.hakala@turku.fi" } },
+      { "FirstName": "Jari", "LastName": "Mattila", "BirthDate": "1999-03-04", "IsRegistered": true, "ContactInfo": { "Email": "jari.mattila@turku.fi" } },
+      { "FirstName": "Kimmo", "LastName": "Nurmi", "BirthDate": "1997-07-18", "IsRegistered": true, "ContactInfo": { "Email": "kimmo.nurmi@turku.fi" } },
+      { "FirstName": "Hannu", "LastName": "Oksanen", "BirthDate": "2000-12-01", "IsRegistered": true, "ContactInfo": { "Email": "hannu.oksanen@turku.fi" } },
+      { "FirstName": "Seppo", "LastName": "Partanen", "BirthDate": "1996-04-14", "IsRegistered": true, "ContactInfo": { "Email": "seppo.partanen@turku.fi" } },
+      { "FirstName": "Raimo", "LastName": "Laaksonen", "BirthDate": "1998-08-27", "IsRegistered": true, "ContactInfo": { "Email": "raimo.laaksonen@turku.fi" } },
+      { "FirstName": "Paavo", "LastName": "Mustonen", "BirthDate": "1999-01-10", "IsRegistered": true, "ContactInfo": { "Email": "paavo.mustonen@turku.fi" } },
+      { "FirstName": "Kalevi", "LastName": "Saarinen", "BirthDate": "1997-05-24", "IsRegistered": true, "ContactInfo": { "Email": "kalevi.saarinen@turku.fi" } }
+    ],
+
+    "GoaliePersons": [
+      { "FirstName": "Jussi", "LastName": "Vehviläinen", "BirthDate": "1996-06-10", "IsRegistered": true, "ContactInfo": { "Email": "jussi.vehvilainen@helsinki.fi" } },
+      { "FirstName": "Arto", "LastName": "Mikkola", "BirthDate": "1995-09-23", "IsRegistered": true, "ContactInfo": { "Email": "arto.mikkola@helsinki.fi" } },
+
+      { "FirstName": "Harri", "LastName": "Rautiainen", "BirthDate": "1996-12-05", "IsRegistered": true, "ContactInfo": { "Email": "harri.rautiainen@tampere.fi" } },
+      { "FirstName": "Jouko", "LastName": "Ahtiainen", "BirthDate": "1995-03-18", "IsRegistered": true, "ContactInfo": { "Email": "jouko.ahtiainen@tampere.fi" } },
+
+      { "FirstName": "Keijo", "LastName": "Turunen", "BirthDate": "1996-07-31", "IsRegistered": true, "ContactInfo": { "Email": "keijo.turunen@oulu.fi" } },
+      { "FirstName": "Leo", "LastName": "Manninen", "BirthDate": "1995-11-13", "IsRegistered": true, "ContactInfo": { "Email": "leo.manninen@oulu.fi" } },
+
+      { "FirstName": "Olavi", "LastName": "Eriksson", "BirthDate": "1996-02-26", "IsRegistered": true, "ContactInfo": { "Email": "olavi.eriksson@turku.fi" } },
+      { "FirstName": "Pauli", "LastName": "Kallio", "BirthDate": "1995-06-09", "IsRegistered": true, "ContactInfo": { "Email": "pauli.kallio@turku.fi" } }
+    ],
+
+    "RefereePersons": [
+      { "FirstName": "Erkki", "LastName": "Tuominen", "BirthDate": "1982-04-15", "IsRegistered": true, "ContactInfo": { "Email": "erkki.tuominen@referee.fi" } },
+      { "FirstName": "Tapio", "LastName": "Heinonen", "BirthDate": "1985-08-22", "IsRegistered": true, "ContactInfo": { "Email": "tapio.heinonen@referee.fi" } },
+      { "FirstName": "Veikko", "LastName": "Koivisto", "BirthDate": "1980-11-30", "IsRegistered": true, "ContactInfo": { "Email": "veikko.koivisto@referee.fi" } },
+      { "FirstName": "Aarne", "LastName": "Niemistö", "BirthDate": "1983-02-07", "IsRegistered": true, "ContactInfo": { "Email": "aarne.niemisto@referee.fi" } }
+    ],
+
+    "Clubs": [
+      {
+        "Name": "Thunder Sports Club",
+        "City": "Helsinki",
+        "Country": "Finland",
+        "FoundingDate": "1995-01-01T00:00:00Z",
+        "WebsiteUrl": "https://thundersports.fi",
+        "LogoUrl": "https://example.com/thunder-logo.png",
+        "ContactEmail": "info@thundersports.fi"
+      },
+      {
+        "Name": "Arctic Athletics",
+        "City": "Tampere",
+        "Country": "Finland",
+        "FoundingDate": "1998-03-15T00:00:00Z",
+        "WebsiteUrl": "https://arcticathletics.fi",
+        "LogoUrl": "https://example.com/arctic-logo.png",
+        "ContactEmail": "info@arcticathletics.fi"
+      },
+      {
+        "Name": "Northern Eagles",
+        "City": "Oulu",
+        "Country": "Finland",
+        "FoundingDate": "2001-06-20T00:00:00Z",
+        "WebsiteUrl": "https://northerneagles.fi",
+        "LogoUrl": "https://example.com/eagles-logo.png",
+        "ContactEmail": "info@northerneagles.fi"
+      },
+      {
+        "Name": "Baltic Lions",
+        "City": "Turku",
+        "Country": "Finland",
+        "FoundingDate": "1992-09-10T00:00:00Z",
+        "WebsiteUrl": "https://balticlions.fi",
+        "LogoUrl": "https://example.com/lions-logo.png",
+        "ContactEmail": "info@balticlions.fi"
+      }
+    ],
+
+    "Divisions": [
+      { "Name": "Premier Division", "Description": "Top tier floorball league", "Level": 1, "SportType": "Floorball" },
+      { "Name": "Division One", "Description": "Second tier floorball league", "Level": 2, "SportType": "Floorball" }
+    ],
+
+    "FloorballSeasons": [
+      { "Name": "2026 Premier Season", "StartDate": "2026-01-01", "EndDate": "2026-12-31", "DivisionName": "Premier Division" },
+      { "Name": "2026 Division One Season", "StartDate": "2026-01-01", "EndDate": "2026-12-31", "DivisionName": "Division One" }
+    ],
+
+    "FloorballTeams": [
+      {
+        "Name": "Helsinki Thunder",
+        "DivisionName": "Premier Division",
+        "ClubName": "Thunder Sports Club",
+        "HomeArena": "Helsinki Arena",
+        "PrimaryJerseyColor": "Blue",
+        "SecondaryJerseyColor": "Yellow",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "aleksi.virtanen@helsinki.fi", "Position": 1, "JerseyNumber": 9 },
+          { "PersonEmail": "mikko.korhonen@helsinki.fi", "Position": 1, "JerseyNumber": 11 },
+          { "PersonEmail": "juha.laine@helsinki.fi", "Position": 1, "JerseyNumber": 15 },
+          { "PersonEmail": "tero.makinen@helsinki.fi", "Position": 1, "JerseyNumber": 18 },
+          { "PersonEmail": "antti.jarvinen@helsinki.fi", "Position": 3, "JerseyNumber": 3 },
+          { "PersonEmail": "ville.nieminen@helsinki.fi", "Position": 3, "JerseyNumber": 5 },
+          { "PersonEmail": "petri.heikkinen@helsinki.fi", "Position": 3, "JerseyNumber": 7 },
+          { "PersonEmail": "sami.lehtonen@helsinki.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "jussi.vehvilainen@helsinki.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "arto.mikkola@helsinki.fi", "Position": 4, "JerseyNumber": 30 }
+        ]
+      },
+      {
+        "Name": "Tampere Storm",
+        "DivisionName": "Premier Division",
+        "ClubName": "Arctic Athletics",
+        "HomeArena": "Tampere Ice Hall",
+        "PrimaryJerseyColor": "Red",
+        "SecondaryJerseyColor": "White",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "janne.aalto@tampere.fi", "Position": 1, "JerseyNumber": 10 },
+          { "PersonEmail": "kari.rantanen@tampere.fi", "Position": 1, "JerseyNumber": 12 },
+          { "PersonEmail": "markus.salonen@tampere.fi", "Position": 1, "JerseyNumber": 14 },
+          { "PersonEmail": "lauri.koskinen@tampere.fi", "Position": 1, "JerseyNumber": 16 },
+          { "PersonEmail": "olli.hamalainen@tampere.fi", "Position": 3, "JerseyNumber": 2 },
+          { "PersonEmail": "tuomas.pitkanen@tampere.fi", "Position": 3, "JerseyNumber": 4 },
+          { "PersonEmail": "henri.lindgren@tampere.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "eero.toivonen@tampere.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "harri.rautiainen@tampere.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "jouko.ahtiainen@tampere.fi", "Position": 4, "JerseyNumber": 31 }
+        ]
+      },
+      {
+        "Name": "Oulu Eagles",
+        "DivisionName": "Division One",
+        "ClubName": "Northern Eagles",
+        "HomeArena": "Oulu Sports Center",
+        "PrimaryJerseyColor": "Green",
+        "SecondaryJerseyColor": "Black",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "matti.karjalainen@oulu.fi", "Position": 1, "JerseyNumber": 9 },
+          { "PersonEmail": "pekka.vaisanen@oulu.fi", "Position": 1, "JerseyNumber": 11 },
+          { "PersonEmail": "tommi.lahtinen@oulu.fi", "Position": 1, "JerseyNumber": 13 },
+          { "PersonEmail": "jukka.savolainen@oulu.fi", "Position": 1, "JerseyNumber": 17 },
+          { "PersonEmail": "esa.peltola@oulu.fi", "Position": 3, "JerseyNumber": 3 },
+          { "PersonEmail": "risto.hiltunen@oulu.fi", "Position": 3, "JerseyNumber": 5 },
+          { "PersonEmail": "vesa.niskanen@oulu.fi", "Position": 3, "JerseyNumber": 7 },
+          { "PersonEmail": "ilkka.leppanen@oulu.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "keijo.turunen@oulu.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "leo.manninen@oulu.fi", "Position": 4, "JerseyNumber": 29 }
+        ]
+      },
+      {
+        "Name": "Turku Lions",
+        "DivisionName": "Division One",
+        "ClubName": "Baltic Lions",
+        "HomeArena": "Turku Ball Arena",
+        "PrimaryJerseyColor": "Orange",
+        "SecondaryJerseyColor": "Brown",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "teemu.hakala@turku.fi", "Position": 1, "JerseyNumber": 10 },
+          { "PersonEmail": "jari.mattila@turku.fi", "Position": 1, "JerseyNumber": 12 },
+          { "PersonEmail": "kimmo.nurmi@turku.fi", "Position": 1, "JerseyNumber": 14 },
+          { "PersonEmail": "hannu.oksanen@turku.fi", "Position": 1, "JerseyNumber": 19 },
+          { "PersonEmail": "seppo.partanen@turku.fi", "Position": 3, "JerseyNumber": 2 },
+          { "PersonEmail": "raimo.laaksonen@turku.fi", "Position": 3, "JerseyNumber": 4 },
+          { "PersonEmail": "paavo.mustonen@turku.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "kalevi.saarinen@turku.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "olavi.eriksson@turku.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "pauli.kallio@turku.fi", "Position": 4, "JerseyNumber": 32 }
+        ]
+      }
+    ],
+
+    "FloorballMatches": [
+      {
+        "HomeTeamName": "Helsinki Thunder",
+        "AwayTeamName": "Tampere Storm",
+        "SeasonName": "2026 Premier Season",
+        "ScheduledDateTime": "2026-02-15T18:00:00",
+        "Venue": "Helsinki Arena",
+        "RefereeEmail": "erkki.tuominen@referee.fi"
+      },
+      {
+        "HomeTeamName": "Tampere Storm",
+        "AwayTeamName": "Helsinki Thunder",
+        "SeasonName": "2026 Premier Season",
+        "ScheduledDateTime": "2026-03-22T17:00:00",
+        "Venue": "Tampere Ice Hall",
+        "RefereeEmail": "tapio.heinonen@referee.fi"
+      },
+      {
+        "HomeTeamName": "Oulu Eagles",
+        "AwayTeamName": "Turku Lions",
+        "SeasonName": "2026 Division One Season",
+        "ScheduledDateTime": "2026-02-08T16:00:00",
+        "Venue": "Oulu Sports Center",
+        "RefereeEmail": "veikko.koivisto@referee.fi"
+      },
+      {
+        "HomeTeamName": "Turku Lions",
+        "AwayTeamName": "Oulu Eagles",
+        "SeasonName": "2026 Division One Season",
+        "ScheduledDateTime": "2026-03-15T18:30:00",
+        "Venue": "Turku Ball Arena",
+        "RefereeEmail": "aarne.niemisto@referee.fi"
+      }
+    ]
+  }
+}

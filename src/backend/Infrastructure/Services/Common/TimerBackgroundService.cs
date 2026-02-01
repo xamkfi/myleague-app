@@ -94,6 +94,9 @@ namespace MyLeague.Infrastructure.Services.Common
         /// <returns>A task representing the asynchronous operation</returns>
         private async Task SendPeriodicTimerUpdatesAsync()
         {
+            // TODO: Re-enable periodic timer updates when needed
+            return;
+            
             try
             {
                 _logger.LogDebug("TimerBackgroundService: Starting periodic update cycle");
