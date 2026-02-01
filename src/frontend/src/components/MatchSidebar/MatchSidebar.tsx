@@ -82,7 +82,7 @@ function MatchSidebar() {
 
   return (
     <div className="match-sidebar">
-      {/* Live Matches Section */}
+      {/* Live Matches Section. */}
       <div className="match-sidebar__section">
         <h3 className="match-sidebar__section-title match-sidebar__section-title--live">
           <span className="live-indicator" />
