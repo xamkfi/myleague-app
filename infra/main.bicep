@@ -5,6 +5,7 @@
 // - App Service Plan (Basic B1 Linux)
 // - App Service for .NET 9 API
 // - PostgreSQL Flexible Server (Burstable B1ms)
+// - Storage Account for image uploads
 // ============================================================================
 
 targetScope = 'resourceGroup'
@@ -38,8 +39,6 @@ param postgresAdminPassword string
 @allowed([
   'F1'
   'B1'
-  'B2'
-  'B3'
 ])
 param appServicePlanSku string = 'B1'
 
@@ -53,6 +52,14 @@ param postgresSku string = 'Standard_B1ms'
 @description('Allowed CORS origins for the API')
 param allowedOrigins array = []
 
+@description('The SKU for the Storage Account')
+@allowed([
+  'Standard_LRS'
+  'Standard_GRS'
+  'Standard_ZRS'
+])
+param storageSku string = 'Standard_LRS'
+
 // ============================================================================
 // Variables
 // ============================================================================
@@ -61,6 +68,8 @@ var resourcePrefix = '${baseName}-${environmentName}'
 var appServicePlanName = '${resourcePrefix}-plan'
 var appServiceName = '${resourcePrefix}-api'
 var postgresServerName = '${resourcePrefix}-postgres'
+// Storage account names must be 3-24 lowercase alphanumeric only
+var storageAccountName = toLower(replace('${baseName}${environmentName}storage', '-', ''))
 
 var tags = {
   Environment: environmentName
@@ -102,6 +111,18 @@ module postgres 'modules/postgresql.bicep' = {
   }
 }
 
+// Storage Account for image uploads
+module storageAccount 'modules/storage-account.bicep' = {
+  name: 'storageAccount'
+  params: {
+    name: storageAccountName
+    location: location
+    containerName: 'images'
+    skuName: storageSku
+    tags: tags
+  }
+}
+
 // App Service (API)
 module appService 'modules/app-service.bicep' = {
   name: 'appService'
@@ -112,6 +133,8 @@ module appService 'modules/app-service.bicep' = {
     postgresConnectionString: postgres.outputs.connectionString
     environmentName: aspnetEnvironment
     allowedOrigins: allowedOrigins
+    storageConnectionString: storageAccount.outputs.connectionString
+    storageContainerName: storageAccount.outputs.containerName
     tags: tags
   }
 }
@@ -140,3 +163,12 @@ output postgresServerName string = postgres.outputs.name
 
 @description('The name of the database')
 output databaseName string = postgres.outputs.databaseName
+
+@description('The name of the Storage Account')
+output storageAccountName string = storageAccount.outputs.name
+
+@description('The blob endpoint of the Storage Account')
+output storageBlobEndpoint string = storageAccount.outputs.blobEndpoint
+
+@description('The name of the blob container for images')
+output storageContainerName string = storageAccount.outputs.containerName

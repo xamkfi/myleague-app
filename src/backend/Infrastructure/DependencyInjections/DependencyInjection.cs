@@ -79,8 +79,11 @@ namespace MyLeague.Infrastructure.DependencyInjections
             {
                 IConfiguration config = sp.GetRequiredService<IConfiguration>();
                 IWebHostEnvironment env = sp.GetRequiredService<IWebHostEnvironment>();
-                bool useLocalStorage = env.IsDevelopment()
-                    && string.IsNullOrWhiteSpace(config.GetConnectionString("AzureBlobSasUrl"));
+
+                // Use Azure Blob Storage when ConnectionStrings:AzureBlobStorage is configured
+                // Otherwise use local file storage in Development
+                bool hasAzureConfig = !string.IsNullOrWhiteSpace(config.GetConnectionString("AzureBlobStorage"));
+                bool useLocalStorage = env.IsDevelopment() && !hasAzureConfig;
 
                 if (useLocalStorage)
                 {
@@ -90,7 +93,9 @@ namespace MyLeague.Infrastructure.DependencyInjections
                         config,
                         sp.GetRequiredService<ILogger<LocalFileImageStorageService>>());
                 }
-                return new AzureBlobImageStorageService(config);
+                return new AzureBlobImageStorageService(
+                    config,
+                    sp.GetRequiredService<ILogger<AzureBlobImageStorageService>>());
             });
             services.AddScoped<IPersonNameProvider, PersonNameProvider>();
             

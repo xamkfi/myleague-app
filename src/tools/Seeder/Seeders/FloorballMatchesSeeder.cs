@@ -127,4 +127,30 @@ public static class FloorballMatchesSeeder
 
         return map;
     }
+
+    /// <summary>
+    /// Fetches all referees from the API (paginating) so the email-to-referee map includes referees that already existed in the database.
+    /// </summary>
+    public static async Task<List<FloorballRefereeDto>> FetchAllRefereesFromApiAsync(HttpClient http, JsonSerializerOptions jsonOptions)
+    {
+        List<FloorballRefereeDto> all = new List<FloorballRefereeDto>();
+        const int pageSize = 100;
+        int page = 1;
+        while (true)
+        {
+            HttpResponseMessage resp = await http.GetAsync($"api/floorballreferee?page={page}&pageSize={pageSize}");
+            if (!resp.IsSuccessStatusCode)
+                break;
+            PaginatedApiResponse<FloorballRefereeDto>? api = await resp.Content.ReadFromJsonAsync<PaginatedApiResponse<FloorballRefereeDto>>(jsonOptions);
+            if (api?.Data == null || api.Data.Count() == 0)
+                break;
+            all.AddRange(api.Data);
+            if (api.Data.Count() < pageSize)
+                break;
+            page++;
+            if (page > 50)
+                break;
+        }
+        return all;
+    }
 }

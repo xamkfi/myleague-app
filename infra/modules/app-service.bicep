@@ -25,6 +25,13 @@ param tags object = {}
 @description('Allowed origins for CORS (comma-separated)')
 param allowedOrigins array = []
 
+@description('The connection string for the Storage Account')
+@secure()
+param storageConnectionString string = ''
+
+@description('The name of the blob container for images')
+param storageContainerName string = 'images'
+
 resource appService 'Microsoft.Web/sites@2023-12-01' = {
   name: name
   location: location
@@ -53,11 +60,20 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1'
         }
+        {
+          name: 'AzureStorage__ContainerName'
+          value: storageContainerName
+        }
       ]
       connectionStrings: [
         {
           name: 'DefaultConnection'
           connectionString: postgresConnectionString
+          type: 'Custom'
+        }
+        {
+          name: 'AzureBlobStorage'
+          connectionString: storageConnectionString
           type: 'Custom'
         }
       ]

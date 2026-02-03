@@ -65,8 +65,9 @@ public static class Program
 				}
 			}
 
-			// Create matches for seasons
-			Dictionary<string, Guid> emailToRefereeId = FloorballMatchesSeeder.BuildEmailToRefereeIdMap(referees, refereeEmailToPersonId);
+			// Build referee map from all referees in the API so existing referees are found
+			List<FloorballRefereeDto> allReferees = await FloorballMatchesSeeder.FetchAllRefereesFromApiAsync(http, jsonOptions);
+			Dictionary<string, Guid> emailToRefereeId = FloorballMatchesSeeder.BuildEmailToRefereeIdMap(allReferees, refereeEmailToPersonId);
 			List<FloorballMatchDto> matches = await FloorballMatchesSeeder.SeedAsync(http, jsonOptions, config.FloorballMatches, seasons, teams, referees, emailToRefereeId);
 
 			Console.WriteLine("\nSummary:");
