@@ -1,4 +1,4 @@
-import { VITE_API_URL } from '../../constants/config';
+import { API_URL } from '../../constants/config';
 import type {
   CreateDivisionInput,
   DivisionType,
@@ -7,7 +7,6 @@ import type {
 import type { SportsCategory } from '../../types/common/sports';
 import type { ApiResponse } from '../../types/common/apiResponseType';
 
-const API_URL = VITE_API_URL || '/api';
 const BASE_URL = `${API_URL}/Divisions`;
 
 const parseApiResponse = async <T>(

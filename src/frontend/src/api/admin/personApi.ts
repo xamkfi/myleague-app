@@ -1,5 +1,6 @@
 import type { Person, PersonFormData, PersonRole, PaginatedApiResponse } from '../../types/admin/personTypes';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
+import { API_URL } from '../../constants/config';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -7,8 +8,6 @@ interface ApiResponse<T> {
   message: string;
   errors: string[];
 }
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const personApi = {
   getAll: async (page: number = 1, pageSize: number = 25): Promise<PaginatedApiResponse<Person>> => {

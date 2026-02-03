@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Application.DTOs.Common;
@@ -33,11 +33,19 @@ public static class Program
 			List<DivisionDto> divisionResults = await DivisionsSeeder.SeedAsync(http, jsonOptions, config);
 
 			// Create separate persons for players, goalies, referees and then create corresponding entities using their person IDs
-			List<PersonDto> playerPersons = await PersonsSeeder.SeedListAsync(http, jsonOptions, config.PlayerPersons);
-			List<PersonDto> goaliePersons = await PersonsSeeder.SeedListAsync(http, jsonOptions, config.GoaliePersons);
-			List<PersonDto> refereePersons = await PersonsSeeder.SeedListAsync(http, jsonOptions, config.RefereePersons);
+			// Use the new method that returns seed email to person ID mapping
+			(List<PersonDto> playerPersons, Dictionary<string, Guid> playerEmailToPersonId) = await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, config.PlayerPersons);
+			(List<PersonDto> goaliePersons, Dictionary<string, Guid> goalieEmailToPersonId) = await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, config.GoaliePersons);
+			(List<PersonDto> refereePersons, Dictionary<string, Guid> refereeEmailToPersonId) = await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, config.RefereePersons);
 
-			(List<FloorballPlayerDto> players, Dictionary<string, Guid> emailToPlayerId) = await FloorballPlayersSeeder.SeedAsync(http, jsonOptions, playerPersons, goaliePersons);
+			// Merge player and goalie email mappings
+			Dictionary<string, Guid> seedEmailToPersonId = new Dictionary<string, Guid>(playerEmailToPersonId, StringComparer.OrdinalIgnoreCase);
+			foreach (KeyValuePair<string, Guid> kvp in goalieEmailToPersonId)
+			{
+				seedEmailToPersonId[kvp.Key] = kvp.Value;
+			}
+
+			(List<FloorballPlayerDto> players, Dictionary<string, Guid> emailToPlayerId) = await FloorballPlayersSeeder.SeedAsync(http, jsonOptions, playerPersons, goaliePersons, seedEmailToPersonId);
 			List<FloorballRefereeDto> referees = await FloorballRefereesSeeder.SeedAsync(http, jsonOptions, refereePersons.Select(p => p.Id).ToList());
 
 			// Optional: create seasons and teams (requires Divisions and Clubs)
@@ -57,6 +65,11 @@ public static class Program
 				}
 			}
 
+			// Build referee map from all referees in the API so existing referees are found
+			List<FloorballRefereeDto> allReferees = await FloorballMatchesSeeder.FetchAllRefereesFromApiAsync(http, jsonOptions);
+			Dictionary<string, Guid> emailToRefereeId = FloorballMatchesSeeder.BuildEmailToRefereeIdMap(allReferees, refereeEmailToPersonId);
+			List<FloorballMatchDto> matches = await FloorballMatchesSeeder.SeedAsync(http, jsonOptions, config.FloorballMatches, seasons, teams, referees, emailToRefereeId);
+
 			Console.WriteLine("\nSummary:");
 			Console.WriteLine($"  Persons created: {basePersons.Count}");
 			Console.WriteLine($"  Clubs created: {clubResults.Count}");
@@ -65,6 +78,7 @@ public static class Program
 			Console.WriteLine($"  Floorball referees created: {referees.Count}");
 			Console.WriteLine($"  Seasons created: {seasons.Count}");
 			Console.WriteLine($"  Teams created: {teams.Count}");
+			Console.WriteLine($"  Matches created: {matches.Count}");
 
 			http.Dispose();
 			return 0;

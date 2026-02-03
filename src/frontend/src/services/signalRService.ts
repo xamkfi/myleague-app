@@ -1,4 +1,5 @@
 import { HubConnection, HubConnectionBuilder, LogLevel, HubConnectionState } from '@microsoft/signalr';
+import { API_URL } from '../constants/config';
 
 export interface MatchEvent {
   eventType: string;
@@ -36,7 +37,7 @@ export class SignalRService {
     try {
       const apiUrl = import.meta.env.DEV 
         ? 'http://localhost:8080/api/health/ready'
-        : `${import.meta.env.VITE_API_URL}/health/ready`;
+        : `${API_URL}/health/ready`;
       
       const response = await fetch(apiUrl, {
         method: 'GET',
@@ -76,8 +77,7 @@ export class SignalRService {
       if (import.meta.env.DEV) {
         signalRUrl = 'http://localhost:8080/api/hubs/domainevent';
       } else {
-        const apiUrl = import.meta.env.VITE_API_URL || '';
-        const baseUrl = apiUrl.replace('/api', '');
+        const baseUrl = API_URL.replace('/api', '');
         signalRUrl = `${baseUrl}/api/hubs/domainevent`;
       }
 

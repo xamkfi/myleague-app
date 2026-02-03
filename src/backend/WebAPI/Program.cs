@@ -32,8 +32,21 @@ builder.Services.AddEndpointsApiExplorer();
 // Add OpenAPI and Scalar configuration using thread-safe extension method
 builder.Services.AddOpenApiConfiguration();
 
-// Add CORS configuration using extension method
-builder.Services.AddCorsConfiguration();
+// Add CORS for local development (Azure handles CORS in production via Portal/Bicep)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Development", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:4200",
+                "http://127.0.0.1:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 
 // Configure pagination options
 builder.Services.Configure<PaginationConfiguration>(
@@ -76,7 +89,11 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 // Use built-in middleware
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
+// Use code-level CORS only in development; Azure handles CORS in production
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("Development");
+}
 app.UseStaticFiles();
 app.UseAuthorization();
 

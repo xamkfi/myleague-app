@@ -1,3 +1,5 @@
+import { API_URL } from '../../../constants/config';
+
 interface FloorballMatch {
   id: string;
   seasonId: string;
@@ -52,8 +54,6 @@ interface GetMatchesRequest {
   status?: number; // FloorballMatchStatus enum: 1=Scheduled, 3=InProgress, 4=Completed, 5=Cancelled
   sortOrder?: string;
 }
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 export const getMatchesService = {
   getAll: async (params?: GetMatchesRequest): Promise<PaginatedApiResponse<FloorballMatch>> => {

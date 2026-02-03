@@ -71,22 +71,16 @@ public static class ServiceCollectionExtensions
             options.AddPolicy("AllowAll", policy =>
             {
                 policy.WithOrigins(
+                        // Local development
                         "http://localhost:3000",
                         "http://localhost:5173",
                         "http://localhost:4200",
-                        "http://127.0.0.1:5173")
+                        "http://127.0.0.1:5173",
+                        // Azure Static Web Apps (development azure static web app)
+                        "https://calm-tree-06b4ac003.2.azurestaticapps.net")
                       .AllowAnyMethod()
                       .AllowAnyHeader()
                       .AllowCredentials(); // Required for SignalR
-            });
-
-            // You can add more specific policies here for production
-            options.AddPolicy("Production", policy =>
-            {
-                policy.WithOrigins("https://yourdomain.com")
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials();
             });
         });
 

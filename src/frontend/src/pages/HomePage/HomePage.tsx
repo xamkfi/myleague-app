@@ -26,41 +26,43 @@ function HomePage() {
   }, []);
 
   return (
-    <PageTemplate title="Home">
-      <div className="home-page">
-        {/* Main News Hero Section */}
-        {!isLoadingMainNews && mainNews && (
-          <div className="hero-news-container">
-            <MainNewsCard news={mainNews} />
-          </div>
-        )}
+    <div className="home-page-wrapper">
+      <PageTemplate title="Home">
+        <div className="home-page">
+          {/* Main News Hero Section */}
+          {!isLoadingMainNews && mainNews && (
+            <div className="hero-news-container">
+              <MainNewsCard news={mainNews} />
+            </div>
+          )}
 
-        {/* Loading skeleton for main news */}
-        {isLoadingMainNews && (
-          <div className="hero-news-container hero-news-container--loading">
-            <div className="main-news-skeleton">
-              <div className="skeleton-image" />
-              <div className="skeleton-content">
-                <div className="skeleton-category" />
-                <div className="skeleton-title" />
-                <div className="skeleton-summary" />
-                <div className="skeleton-button" />
+          {/* Loading skeleton for main news */}
+          {isLoadingMainNews && (
+            <div className="hero-news-container hero-news-container--loading">
+              <div className="main-news-skeleton">
+                <div className="skeleton-image" />
+                <div className="skeleton-content">
+                  <div className="skeleton-category" />
+                  <div className="skeleton-title" />
+                  <div className="skeleton-summary" />
+                  <div className="skeleton-button" />
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Content Section: News List + Sidebar */}
-        <div className="main-content">
-          <div className="news-section-container">
-            <HomeNewsSection />
-          </div>
-          <div className="sidebar-container">
-            <MatchSidebar />
+          {/* Content Section: News List + Sidebar */}
+          <div className="main-content">
+            <div className="news-section-container">
+              <HomeNewsSection />
+            </div>
+            <div className="sidebar-container">
+              <MatchSidebar />
+            </div>
           </div>
         </div>
-      </div>
-    </PageTemplate>
+      </PageTemplate>
+    </div>
   );
 }
 

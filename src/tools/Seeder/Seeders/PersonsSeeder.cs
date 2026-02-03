@@ -14,16 +14,27 @@ public static class PersonsSeeder
 
 	public static async Task<List<PersonDto>> SeedListAsync(HttpClient http, JsonSerializerOptions jsonOptions, List<PersonSeed> persons)
 	{
+		(List<PersonDto> created, _) = await SeedListWithEmailMapAsync(http, jsonOptions, persons);
+		return created;
+	}
+
+	/// <summary>
+	/// Seeds persons and returns both the person DTOs and a mapping from seed email to person ID.
+	/// This is needed because existing persons found by name may have different emails in the database.
+	/// </summary>
+	public static async Task<(List<PersonDto> persons, Dictionary<string, Guid> seedEmailToPersonId)> SeedListWithEmailMapAsync(HttpClient http, JsonSerializerOptions jsonOptions, List<PersonSeed> persons)
+	{
 		List<PersonDto> created = new List<PersonDto>();
+		Dictionary<string, Guid> seedEmailToPersonId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
 
 		foreach (PersonSeed person in persons)
 		{
             // Idempotent check by email if available, else by name + birthdate
             PersonDto? existing = null;
-            string? email = person.ContactInfo != null ? person.ContactInfo.Email : null;
-            if (!string.IsNullOrWhiteSpace(email))
+            string? seedEmail = person.ContactInfo != null ? person.ContactInfo.Email : null;
+            if (!string.IsNullOrWhiteSpace(seedEmail))
             {
-                HttpResponseMessage getResp = await http.GetAsync("api/persons/by-email?email=" + Uri.EscapeDataString(email!));
+                HttpResponseMessage getResp = await http.GetAsync("api/persons/by-email?email=" + Uri.EscapeDataString(seedEmail!));
                 if (getResp.IsSuccessStatusCode)
                 {
                     ApiResponse<PersonDto>? getApi = await getResp.Content.ReadFromJsonAsync<ApiResponse<PersonDto>>(jsonOptions);
@@ -35,7 +46,7 @@ public static class PersonsSeeder
             }
             if (existing == null)
             {
-                // try search by full name
+                // try search by full name - the backend enforces unique names, so match by name only
                 string fullName = (person.FirstName + " " + person.LastName).Trim();
                 HttpResponseMessage searchResp = await http.GetAsync("api/persons/search?name=" + Uri.EscapeDataString(fullName));
                 if (searchResp.IsSuccessStatusCode)
@@ -45,22 +56,9 @@ public static class PersonsSeeder
                     {
                         foreach (PersonDto p in searchApi.Data)
                         {
-                            bool birthDateMatches = false;
-                            if (p.BirthDate.HasValue && !string.IsNullOrWhiteSpace(person.BirthDate))
-                            {
-                                // Both have birth dates, compare them
-                                birthDateMatches = p.BirthDate.Value.Date == DateTime.Parse(person.BirthDate).Date;
-                            }
-                            else if (!p.BirthDate.HasValue && string.IsNullOrWhiteSpace(person.BirthDate))
-                            {
-                                // Both are null/empty, consider them matching
-                                birthDateMatches = true;
-                            }
-                            // If one has birthdate and the other doesn't, they don't match (birthDateMatches remains false)
-
+                            // Match by name only since the backend enforces unique names
                             if (string.Equals(p.FirstName, person.FirstName, StringComparison.OrdinalIgnoreCase)
-                                && string.Equals(p.LastName, person.LastName, StringComparison.OrdinalIgnoreCase)
-                                && birthDateMatches)
+                                && string.Equals(p.LastName, person.LastName, StringComparison.OrdinalIgnoreCase))
                             {
                                 existing = p;
                                 break;
@@ -73,6 +71,11 @@ public static class PersonsSeeder
             if (existing != null)
             {
                 created.Add(existing);
+                // Map the seed email to the existing person's ID (even if they have different email in DB)
+                if (!string.IsNullOrWhiteSpace(seedEmail))
+                {
+                    seedEmailToPersonId[seedEmail!] = existing.Id;
+                }
                 Console.WriteLine("Person exists, skipping: " + existing.FullName + " (" + existing.Id + ")");
                 continue;
             }
@@ -97,10 +100,15 @@ public static class PersonsSeeder
             }
 
             created.Add(api.Data);
+            // Map the seed email to the newly created person's ID
+            if (!string.IsNullOrWhiteSpace(seedEmail))
+            {
+                seedEmailToPersonId[seedEmail!] = api.Data.Id;
+            }
             Console.WriteLine("Created person " + api.Data.FullName + " (" + api.Data.Id + ")");
 		}
 
-		return created;
+		return (created, seedEmailToPersonId);
 	}
 
     private static AddressDto? ToAddressDto(AddressSeed? seed)

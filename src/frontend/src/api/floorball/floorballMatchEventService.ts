@@ -2,6 +2,7 @@ import type {
   ApiResponse,
   FloorballMatchDto
 } from '../../types/floorball/floorballTypes';
+import { API_URL } from '../../constants/config';
 
 // Event DTOs
 export interface FloorballGoalEventDto {
@@ -30,8 +31,6 @@ export interface FloorballDomainEventDto {
   occurredOn: string;
   data: Record<string, unknown>;
 }
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Request interfaces matching backend models
 export interface RecordGoalEventRequest {

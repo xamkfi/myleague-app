@@ -4,8 +4,7 @@ import type {
   FloorballPosition,
 } from '../../types/floorball/floorballTypes';
 import type { Address, ContactInfo } from '../../types/admin/personTypes';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { API_URL } from '../../constants/config';
 
 export interface PersonDto {
   id: string;

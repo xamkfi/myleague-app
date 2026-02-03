@@ -1,0 +1,503 @@
+{
+  "Seeder": {
+    "PlayerPersons": [
+      { "FirstName": "Aleksi", "LastName": "Virtanen", "BirthDate": "1998-03-15", "IsRegistered": true, "ContactInfo": { "Email": "aleksi.virtanen@team1.fi" } },
+      { "FirstName": "Mikko", "LastName": "Korhonen", "BirthDate": "1999-07-22", "IsRegistered": true, "ContactInfo": { "Email": "mikko.korhonen@team1.fi" } },
+      { "FirstName": "Juha", "LastName": "Laine", "BirthDate": "1997-11-05", "IsRegistered": true, "ContactInfo": { "Email": "juha.laine@team1.fi" } },
+      { "FirstName": "Tero", "LastName": "Mäkinen", "BirthDate": "2000-01-18", "IsRegistered": true, "ContactInfo": { "Email": "tero.makinen@team1.fi" } },
+      { "FirstName": "Antti", "LastName": "Järvinen", "BirthDate": "1996-08-30", "IsRegistered": true, "ContactInfo": { "Email": "antti.jarvinen@team1.fi" } },
+      { "FirstName": "Ville", "LastName": "Nieminen", "BirthDate": "1998-12-12", "IsRegistered": true, "ContactInfo": { "Email": "ville.nieminen@team1.fi" } },
+      { "FirstName": "Petri", "LastName": "Heikkinen", "BirthDate": "1999-04-25", "IsRegistered": true, "ContactInfo": { "Email": "petri.heikkinen@team1.fi" } },
+      { "FirstName": "Sami", "LastName": "Lehtonen", "BirthDate": "1997-09-08", "IsRegistered": true, "ContactInfo": { "Email": "sami.lehtonen@team1.fi" } },
+
+      { "FirstName": "Janne", "LastName": "Aalto", "BirthDate": "1998-05-20", "IsRegistered": true, "ContactInfo": { "Email": "janne.aalto@team2.fi" } },
+      { "FirstName": "Kari", "LastName": "Rantanen", "BirthDate": "1999-02-14", "IsRegistered": true, "ContactInfo": { "Email": "kari.rantanen@team2.fi" } },
+      { "FirstName": "Markus", "LastName": "Salonen", "BirthDate": "1997-06-28", "IsRegistered": true, "ContactInfo": { "Email": "markus.salonen@team2.fi" } },
+      { "FirstName": "Lauri", "LastName": "Koskinen", "BirthDate": "2000-10-03", "IsRegistered": true, "ContactInfo": { "Email": "lauri.koskinen@team2.fi" } },
+      { "FirstName": "Olli", "LastName": "Hämäläinen", "BirthDate": "1996-03-17", "IsRegistered": true, "ContactInfo": { "Email": "olli.hamalainen@team2.fi" } },
+      { "FirstName": "Tuomas", "LastName": "Pitkänen", "BirthDate": "1998-07-11", "IsRegistered": true, "ContactInfo": { "Email": "tuomas.pitkanen@team2.fi" } },
+      { "FirstName": "Henri", "LastName": "Lindgren", "BirthDate": "1999-11-24", "IsRegistered": true, "ContactInfo": { "Email": "henri.lindgren@team2.fi" } },
+      { "FirstName": "Eero", "LastName": "Toivonen", "BirthDate": "1997-01-07", "IsRegistered": true, "ContactInfo": { "Email": "eero.toivonen@team2.fi" } },
+
+      { "FirstName": "Matti", "LastName": "Karjalainen", "BirthDate": "1998-08-16", "IsRegistered": true, "ContactInfo": { "Email": "matti.karjalainen@team3.fi" } },
+      { "FirstName": "Pekka", "LastName": "Väisänen", "BirthDate": "1999-12-29", "IsRegistered": true, "ContactInfo": { "Email": "pekka.vaisanen@team3.fi" } },
+      { "FirstName": "Tommi", "LastName": "Lahtinen", "BirthDate": "1997-04-02", "IsRegistered": true, "ContactInfo": { "Email": "tommi.lahtinen@team3.fi" } },
+      { "FirstName": "Jukka", "LastName": "Savolainen", "BirthDate": "2000-06-15", "IsRegistered": true, "ContactInfo": { "Email": "jukka.savolainen@team3.fi" } },
+      { "FirstName": "Esa", "LastName": "Peltola", "BirthDate": "1996-10-28", "IsRegistered": true, "ContactInfo": { "Email": "esa.peltola@team3.fi" } },
+      { "FirstName": "Risto", "LastName": "Hiltunen", "BirthDate": "1998-02-09", "IsRegistered": true, "ContactInfo": { "Email": "risto.hiltunen@team3.fi" } },
+      { "FirstName": "Vesa", "LastName": "Niskanen", "BirthDate": "1999-05-23", "IsRegistered": true, "ContactInfo": { "Email": "vesa.niskanen@team3.fi" } },
+      { "FirstName": "Ilkka", "LastName": "Leppänen", "BirthDate": "1997-09-06", "IsRegistered": true, "ContactInfo": { "Email": "ilkka.leppanen@team3.fi" } },
+
+      { "FirstName": "Teemu", "LastName": "Hakala", "BirthDate": "1998-11-19", "IsRegistered": true, "ContactInfo": { "Email": "teemu.hakala@team4.fi" } },
+      { "FirstName": "Jari", "LastName": "Mattila", "BirthDate": "1999-03-04", "IsRegistered": true, "ContactInfo": { "Email": "jari.mattila@team4.fi" } },
+      { "FirstName": "Kimmo", "LastName": "Nurmi", "BirthDate": "1997-07-18", "IsRegistered": true, "ContactInfo": { "Email": "kimmo.nurmi@team4.fi" } },
+      { "FirstName": "Hannu", "LastName": "Oksanen", "BirthDate": "2000-12-01", "IsRegistered": true, "ContactInfo": { "Email": "hannu.oksanen@team4.fi" } },
+      { "FirstName": "Seppo", "LastName": "Partanen", "BirthDate": "1996-04-14", "IsRegistered": true, "ContactInfo": { "Email": "seppo.partanen@team4.fi" } },
+      { "FirstName": "Raimo", "LastName": "Laaksonen", "BirthDate": "1998-08-27", "IsRegistered": true, "ContactInfo": { "Email": "raimo.laaksonen@team4.fi" } },
+      { "FirstName": "Paavo", "LastName": "Mustonen", "BirthDate": "1999-01-10", "IsRegistered": true, "ContactInfo": { "Email": "paavo.mustonen@team4.fi" } },
+      { "FirstName": "Kalevi", "LastName": "Saarinen", "BirthDate": "1997-05-24", "IsRegistered": true, "ContactInfo": { "Email": "kalevi.saarinen@team4.fi" } },
+
+      { "FirstName": "Tapio", "LastName": "Ruuska", "BirthDate": "1998-01-05", "IsRegistered": true, "ContactInfo": { "Email": "tapio.ruuska@team5.fi" } },
+      { "FirstName": "Veikko", "LastName": "Kuusela", "BirthDate": "1999-06-18", "IsRegistered": true, "ContactInfo": { "Email": "veikko.kuusela@team5.fi" } },
+      { "FirstName": "Aarne", "LastName": "Seppälä", "BirthDate": "1997-10-31", "IsRegistered": true, "ContactInfo": { "Email": "aarne.seppala@team5.fi" } },
+      { "FirstName": "Niilo", "LastName": "Harju", "BirthDate": "2000-03-14", "IsRegistered": true, "ContactInfo": { "Email": "niilo.harju@team5.fi" } },
+      { "FirstName": "Onni", "LastName": "Kivinen", "BirthDate": "1996-07-27", "IsRegistered": true, "ContactInfo": { "Email": "onni.kivinen@team5.fi" } },
+      { "FirstName": "Reino", "LastName": "Tuominen", "BirthDate": "1998-11-09", "IsRegistered": true, "ContactInfo": { "Email": "reino.tuominen@team5.fi" } },
+      { "FirstName": "Sakari", "LastName": "Ojala", "BirthDate": "1999-02-22", "IsRegistered": true, "ContactInfo": { "Email": "sakari.ojala@team5.fi" } },
+      { "FirstName": "Toivo", "LastName": "Nyman", "BirthDate": "1997-06-04", "IsRegistered": true, "ContactInfo": { "Email": "toivo.nyman@team5.fi" } },
+
+      { "FirstName": "Urho", "LastName": "Kallio", "BirthDate": "1998-04-17", "IsRegistered": true, "ContactInfo": { "Email": "urho.kallio@team6.fi" } },
+      { "FirstName": "Väinö", "LastName": "Rinne", "BirthDate": "1999-08-30", "IsRegistered": true, "ContactInfo": { "Email": "vaino.rinne@team6.fi" } },
+      { "FirstName": "Yrjö", "LastName": "Vuori", "BirthDate": "1997-12-13", "IsRegistered": true, "ContactInfo": { "Email": "yrjo.vuori@team6.fi" } },
+      { "FirstName": "Akseli", "LastName": "Mäkelä", "BirthDate": "2000-05-26", "IsRegistered": true, "ContactInfo": { "Email": "akseli.makela@team6.fi" } },
+      { "FirstName": "Elias", "LastName": "Kinnunen", "BirthDate": "1996-09-08", "IsRegistered": true, "ContactInfo": { "Email": "elias.kinnunen@team6.fi" } },
+      { "FirstName": "Frans", "LastName": "Ranta", "BirthDate": "1998-01-21", "IsRegistered": true, "ContactInfo": { "Email": "frans.ranta@team6.fi" } },
+      { "FirstName": "Gustav", "LastName": "Aho", "BirthDate": "1999-05-05", "IsRegistered": true, "ContactInfo": { "Email": "gustav.aho@team6.fi" } },
+      { "FirstName": "Hugo", "LastName": "Laitinen", "BirthDate": "1997-09-18", "IsRegistered": true, "ContactInfo": { "Email": "hugo.laitinen@team6.fi" } },
+
+      { "FirstName": "Iivari", "LastName": "Pesonen", "BirthDate": "1998-02-01", "IsRegistered": true, "ContactInfo": { "Email": "iivari.pesonen@team7.fi" } },
+      { "FirstName": "Jaakko", "LastName": "Salo", "BirthDate": "1999-06-14", "IsRegistered": true, "ContactInfo": { "Email": "jaakko.salo@team7.fi" } },
+      { "FirstName": "Kauko", "LastName": "Miettinen", "BirthDate": "1997-10-27", "IsRegistered": true, "ContactInfo": { "Email": "kauko.miettinen@team7.fi" } },
+      { "FirstName": "Launo", "LastName": "Valtonen", "BirthDate": "2000-03-10", "IsRegistered": true, "ContactInfo": { "Email": "launo.valtonen@team7.fi" } },
+      { "FirstName": "Mauno", "LastName": "Aaltonen", "BirthDate": "1996-07-23", "IsRegistered": true, "ContactInfo": { "Email": "mauno.aaltonen@team7.fi" } },
+      { "FirstName": "Niiles", "LastName": "Paavilainen", "BirthDate": "1998-11-05", "IsRegistered": true, "ContactInfo": { "Email": "niiles.paavilainen@team7.fi" } },
+      { "FirstName": "Otso", "LastName": "Rautio", "BirthDate": "1999-02-18", "IsRegistered": true, "ContactInfo": { "Email": "otso.rautio@team7.fi" } },
+      { "FirstName": "Pauli", "LastName": "Heinonen", "BirthDate": "1997-06-01", "IsRegistered": true, "ContactInfo": { "Email": "pauli.heinonen@team7.fi" } },
+
+      { "FirstName": "Rauli", "LastName": "Jokinen", "BirthDate": "1998-04-14", "IsRegistered": true, "ContactInfo": { "Email": "rauli.jokinen@team8.fi" } },
+      { "FirstName": "Santeri", "LastName": "Ketola", "BirthDate": "1999-08-27", "IsRegistered": true, "ContactInfo": { "Email": "santeri.ketola@team8.fi" } },
+      { "FirstName": "Taavi", "LastName": "Laakso", "BirthDate": "1997-12-10", "IsRegistered": true, "ContactInfo": { "Email": "taavi.laakso@team8.fi" } },
+      { "FirstName": "Ukko", "LastName": "Mäkitalo", "BirthDate": "2000-05-23", "IsRegistered": true, "ContactInfo": { "Email": "ukko.makitalo@team8.fi" } },
+      { "FirstName": "Vilho", "LastName": "Niemi", "BirthDate": "1996-09-05", "IsRegistered": true, "ContactInfo": { "Email": "vilho.niemi@team8.fi" } },
+      { "FirstName": "Wiljami", "LastName": "Ollikainen", "BirthDate": "1998-01-18", "IsRegistered": true, "ContactInfo": { "Email": "wiljami.ollikainen@team8.fi" } },
+      { "FirstName": "Aapo", "LastName": "Pulkkinen", "BirthDate": "1999-05-01", "IsRegistered": true, "ContactInfo": { "Email": "aapo.pulkkinen@team8.fi" } },
+      { "FirstName": "Bror", "LastName": "Rajala", "BirthDate": "1997-09-14", "IsRegistered": true, "ContactInfo": { "Email": "bror.rajala@team8.fi" } },
+
+      { "FirstName": "Clas", "LastName": "Salminen", "BirthDate": "1998-02-27", "IsRegistered": true, "ContactInfo": { "Email": "clas.salminen@team9.fi" } },
+      { "FirstName": "Dan", "LastName": "Tamminen", "BirthDate": "1999-07-10", "IsRegistered": true, "ContactInfo": { "Email": "dan.tamminen@team9.fi" } },
+      { "FirstName": "Erik", "LastName": "Uusitalo", "BirthDate": "1997-11-23", "IsRegistered": true, "ContactInfo": { "Email": "erik.uusitalo@team9.fi" } },
+      { "FirstName": "Felix", "LastName": "Vainio", "BirthDate": "2000-04-05", "IsRegistered": true, "ContactInfo": { "Email": "felix.vainio@team9.fi" } },
+      { "FirstName": "Georg", "LastName": "Ylikoski", "BirthDate": "1996-08-18", "IsRegistered": true, "ContactInfo": { "Email": "georg.ylikoski@team9.fi" } },
+      { "FirstName": "Heikki", "LastName": "Zetterberg", "BirthDate": "1998-12-01", "IsRegistered": true, "ContactInfo": { "Email": "heikki.zetterberg@team9.fi" } },
+      { "FirstName": "Isto", "LastName": "Ahokas", "BirthDate": "1999-03-14", "IsRegistered": true, "ContactInfo": { "Email": "isto.ahokas@team9.fi" } },
+      { "FirstName": "Joel", "LastName": "Blomqvist", "BirthDate": "1997-07-27", "IsRegistered": true, "ContactInfo": { "Email": "joel.blomqvist@team9.fi" } },
+
+      { "FirstName": "Kai", "LastName": "Carlsson", "BirthDate": "1998-05-10", "IsRegistered": true, "ContactInfo": { "Email": "kai.carlsson@team10.fi" } },
+      { "FirstName": "Lars", "LastName": "Dahlberg", "BirthDate": "1999-09-23", "IsRegistered": true, "ContactInfo": { "Email": "lars.dahlberg@team10.fi" } },
+      { "FirstName": "Mika", "LastName": "Ekholm", "BirthDate": "1997-01-05", "IsRegistered": true, "ContactInfo": { "Email": "mika.ekholm@team10.fi" } },
+      { "FirstName": "Niko", "LastName": "Forsman", "BirthDate": "2000-06-18", "IsRegistered": true, "ContactInfo": { "Email": "niko.forsman@team10.fi" } },
+      { "FirstName": "Oscar", "LastName": "Grönholm", "BirthDate": "1996-10-01", "IsRegistered": true, "ContactInfo": { "Email": "oscar.gronholm@team10.fi" } },
+      { "FirstName": "Patrik", "LastName": "Holmberg", "BirthDate": "1998-02-14", "IsRegistered": true, "ContactInfo": { "Email": "patrik.holmberg@team10.fi" } },
+      { "FirstName": "Rasmus", "LastName": "Isaksson", "BirthDate": "1999-06-27", "IsRegistered": true, "ContactInfo": { "Email": "rasmus.isaksson@team10.fi" } },
+      { "FirstName": "Simon", "LastName": "Johansson", "BirthDate": "1997-10-10", "IsRegistered": true, "ContactInfo": { "Email": "simon.johansson@team10.fi" } }
+    ],
+
+    "GoaliePersons": [
+      { "FirstName": "Jussi", "LastName": "Vehviläinen", "BirthDate": "1996-06-10", "IsRegistered": true, "ContactInfo": { "Email": "jussi.vehvilainen@team1.fi" } },
+      { "FirstName": "Arto", "LastName": "Mikkola", "BirthDate": "1995-09-23", "IsRegistered": true, "ContactInfo": { "Email": "arto.mikkola@team1.fi" } },
+      { "FirstName": "Harri", "LastName": "Rautiainen", "BirthDate": "1996-12-05", "IsRegistered": true, "ContactInfo": { "Email": "harri.rautiainen@team2.fi" } },
+      { "FirstName": "Jouko", "LastName": "Ahtiainen", "BirthDate": "1995-03-18", "IsRegistered": true, "ContactInfo": { "Email": "jouko.ahtiainen@team2.fi" } },
+      { "FirstName": "Keijo", "LastName": "Turunen", "BirthDate": "1996-07-31", "IsRegistered": true, "ContactInfo": { "Email": "keijo.turunen@team3.fi" } },
+      { "FirstName": "Leo", "LastName": "Manninen", "BirthDate": "1995-11-13", "IsRegistered": true, "ContactInfo": { "Email": "leo.manninen@team3.fi" } },
+      { "FirstName": "Olavi", "LastName": "Eriksson", "BirthDate": "1996-02-26", "IsRegistered": true, "ContactInfo": { "Email": "olavi.eriksson@team4.fi" } },
+      { "FirstName": "Pentti", "LastName": "Korpela", "BirthDate": "1995-06-09", "IsRegistered": true, "ContactInfo": { "Email": "pentti.korpela@team4.fi" } },
+      { "FirstName": "Reijo", "LastName": "Stenman", "BirthDate": "1996-04-22", "IsRegistered": true, "ContactInfo": { "Email": "reijo.stenman@team5.fi" } },
+      { "FirstName": "Sulevi", "LastName": "Lindholm", "BirthDate": "1995-08-05", "IsRegistered": true, "ContactInfo": { "Email": "sulevi.lindholm@team5.fi" } },
+      { "FirstName": "Tarmo", "LastName": "Westerlund", "BirthDate": "1996-01-18", "IsRegistered": true, "ContactInfo": { "Email": "tarmo.westerlund@team6.fi" } },
+      { "FirstName": "Unto", "LastName": "Björk", "BirthDate": "1995-05-01", "IsRegistered": true, "ContactInfo": { "Email": "unto.bjork@team6.fi" } },
+      { "FirstName": "Voitto", "LastName": "Sandberg", "BirthDate": "1996-09-14", "IsRegistered": true, "ContactInfo": { "Email": "voitto.sandberg@team7.fi" } },
+      { "FirstName": "Werner", "LastName": "Åberg", "BirthDate": "1995-12-27", "IsRegistered": true, "ContactInfo": { "Email": "werner.aberg@team7.fi" } },
+      { "FirstName": "Yrjänä", "LastName": "Öhman", "BirthDate": "1996-03-10", "IsRegistered": true, "ContactInfo": { "Email": "yrjana.ohman@team8.fi" } },
+      { "FirstName": "Åke", "LastName": "Lindqvist", "BirthDate": "1995-07-23", "IsRegistered": true, "ContactInfo": { "Email": "ake.lindqvist@team8.fi" } },
+      { "FirstName": "Örjan", "LastName": "Mattsson", "BirthDate": "1996-11-05", "IsRegistered": true, "ContactInfo": { "Email": "orjan.mattsson@team9.fi" } },
+      { "FirstName": "Alfred", "LastName": "Nyström", "BirthDate": "1995-02-18", "IsRegistered": true, "ContactInfo": { "Email": "alfred.nystrom@team9.fi" } },
+      { "FirstName": "Berndt", "LastName": "Söderström", "BirthDate": "1996-06-01", "IsRegistered": true, "ContactInfo": { "Email": "berndt.soderstrom@team10.fi" } },
+      { "FirstName": "Claes", "LastName": "Hedström", "BirthDate": "1995-10-14", "IsRegistered": true, "ContactInfo": { "Email": "claes.hedstrom@team10.fi" } }
+    ],
+
+    "RefereePersons": [
+      { "FirstName": "Erkki", "LastName": "Tuominen", "BirthDate": "1982-04-15", "IsRegistered": true, "ContactInfo": { "Email": "erkki.tuominen@referee.fi" } },
+      { "FirstName": "Tapio", "LastName": "Heinonen", "BirthDate": "1985-08-22", "IsRegistered": true, "ContactInfo": { "Email": "tapio.heinonen@referee.fi" } },
+      { "FirstName": "Veikko", "LastName": "Koivisto", "BirthDate": "1980-11-30", "IsRegistered": true, "ContactInfo": { "Email": "veikko.koivisto@referee.fi" } },
+      { "FirstName": "Aarne", "LastName": "Niemistö", "BirthDate": "1983-02-07", "IsRegistered": true, "ContactInfo": { "Email": "aarne.niemisto@referee.fi" } },
+      { "FirstName": "Birger", "LastName": "Lindström", "BirthDate": "1984-06-20", "IsRegistered": true, "ContactInfo": { "Email": "birger.lindstrom@referee.fi" } },
+      { "FirstName": "Curt", "LastName": "Mäkinen", "BirthDate": "1981-10-03", "IsRegistered": true, "ContactInfo": { "Email": "curt.makinen@referee.fi" } },
+      { "FirstName": "Dagfinn", "LastName": "Nurmi", "BirthDate": "1986-01-16", "IsRegistered": true, "ContactInfo": { "Email": "dagfinn.nurmi@referee.fi" } },
+      { "FirstName": "Edvin", "LastName": "Ojanen", "BirthDate": "1982-05-29", "IsRegistered": true, "ContactInfo": { "Email": "edvin.ojanen@referee.fi" } }
+    ],
+
+    "Clubs": [
+      { "Name": "Helsinki Hammers", "City": "Helsinki", "Country": "Finland", "FoundingDate": "1990-01-01T00:00:00Z", "WebsiteUrl": "https://helsinkihammers.fi", "LogoUrl": "https://example.com/logo-hammers.png", "ContactEmail": "info@helsinkihammers.fi" },
+      { "Name": "Tampere Titans", "City": "Tampere", "Country": "Finland", "FoundingDate": "1992-03-15T00:00:00Z", "WebsiteUrl": "https://tamperetitans.fi", "LogoUrl": "https://example.com/logo-titans.png", "ContactEmail": "info@tamperetitans.fi" },
+      { "Name": "Turku Thunder", "City": "Turku", "Country": "Finland", "FoundingDate": "1988-06-20T00:00:00Z", "WebsiteUrl": "https://turkuthunder.fi", "LogoUrl": "https://example.com/logo-thunder.png", "ContactEmail": "info@turkuthunder.fi" },
+      { "Name": "Oulu Outlaws", "City": "Oulu", "Country": "Finland", "FoundingDate": "1995-09-10T00:00:00Z", "WebsiteUrl": "https://ouluoutlaws.fi", "LogoUrl": "https://example.com/logo-outlaws.png", "ContactEmail": "info@ouluoutlaws.fi" },
+      { "Name": "Espoo Eagles", "City": "Espoo", "Country": "Finland", "FoundingDate": "1998-12-01T00:00:00Z", "WebsiteUrl": "https://espooeagles.fi", "LogoUrl": "https://example.com/logo-eagles.png", "ContactEmail": "info@espooeagles.fi" },
+      { "Name": "Vantaa Vikings", "City": "Vantaa", "Country": "Finland", "FoundingDate": "2000-02-14T00:00:00Z", "WebsiteUrl": "https://vantaavikings.fi", "LogoUrl": "https://example.com/logo-vikings.png", "ContactEmail": "info@vantaavikings.fi" },
+      { "Name": "Lahti Lions", "City": "Lahti", "Country": "Finland", "FoundingDate": "1993-05-27T00:00:00Z", "WebsiteUrl": "https://lahtilions.fi", "LogoUrl": "https://example.com/logo-lions.png", "ContactEmail": "info@lahtilions.fi" },
+      { "Name": "Kuopio Knights", "City": "Kuopio", "Country": "Finland", "FoundingDate": "1996-08-08T00:00:00Z", "WebsiteUrl": "https://kuopioknights.fi", "LogoUrl": "https://example.com/logo-knights.png", "ContactEmail": "info@kuopioknights.fi" },
+      { "Name": "Jyväskylä Jets", "City": "Jyväskylä", "Country": "Finland", "FoundingDate": "1991-11-21T00:00:00Z", "WebsiteUrl": "https://jyvaskylajets.fi", "LogoUrl": "https://example.com/logo-jets.png", "ContactEmail": "info@jyvaskylajets.fi" },
+      { "Name": "Pori Panthers", "City": "Pori", "Country": "Finland", "FoundingDate": "1994-04-04T00:00:00Z", "WebsiteUrl": "https://poripanthers.fi", "LogoUrl": "https://example.com/logo-panthers.png", "ContactEmail": "info@poripanthers.fi" }
+    ],
+
+    "Divisions": [
+      { "Name": "Championship Division", "Description": "Top tier championship floorball league", "Level": 1, "SportType": "Floorball" }
+    ],
+
+    "FloorballSeasons": [
+      { "Name": "2027 Championship Season", "StartDate": "2027-01-01", "EndDate": "2027-12-31", "DivisionName": "Championship Division" }
+    ],
+
+    "FloorballTeams": [
+      {
+        "Name": "Helsinki Hammers",
+        "DivisionName": "Championship Division",
+        "ClubName": "Helsinki Hammers",
+        "HomeArena": "Helsinki Arena",
+        "PrimaryJerseyColor": "Blue",
+        "SecondaryJerseyColor": "White",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "aleksi.virtanen@team1.fi", "Position": 1, "JerseyNumber": 9 },
+          { "PersonEmail": "mikko.korhonen@team1.fi", "Position": 1, "JerseyNumber": 11 },
+          { "PersonEmail": "juha.laine@team1.fi", "Position": 1, "JerseyNumber": 15 },
+          { "PersonEmail": "tero.makinen@team1.fi", "Position": 1, "JerseyNumber": 18 },
+          { "PersonEmail": "antti.jarvinen@team1.fi", "Position": 3, "JerseyNumber": 3 },
+          { "PersonEmail": "ville.nieminen@team1.fi", "Position": 3, "JerseyNumber": 5 },
+          { "PersonEmail": "petri.heikkinen@team1.fi", "Position": 3, "JerseyNumber": 7 },
+          { "PersonEmail": "sami.lehtonen@team1.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "jussi.vehvilainen@team1.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "arto.mikkola@team1.fi", "Position": 4, "JerseyNumber": 30 }
+        ]
+      },
+      {
+        "Name": "Tampere Titans",
+        "DivisionName": "Championship Division",
+        "ClubName": "Tampere Titans",
+        "HomeArena": "Tampere Sports Hall",
+        "PrimaryJerseyColor": "Red",
+        "SecondaryJerseyColor": "Black",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "janne.aalto@team2.fi", "Position": 1, "JerseyNumber": 10 },
+          { "PersonEmail": "kari.rantanen@team2.fi", "Position": 1, "JerseyNumber": 12 },
+          { "PersonEmail": "markus.salonen@team2.fi", "Position": 1, "JerseyNumber": 14 },
+          { "PersonEmail": "lauri.koskinen@team2.fi", "Position": 1, "JerseyNumber": 16 },
+          { "PersonEmail": "olli.hamalainen@team2.fi", "Position": 3, "JerseyNumber": 2 },
+          { "PersonEmail": "tuomas.pitkanen@team2.fi", "Position": 3, "JerseyNumber": 4 },
+          { "PersonEmail": "henri.lindgren@team2.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "eero.toivonen@team2.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "harri.rautiainen@team2.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "jouko.ahtiainen@team2.fi", "Position": 4, "JerseyNumber": 31 }
+        ]
+      },
+      {
+        "Name": "Turku Thunder",
+        "DivisionName": "Championship Division",
+        "ClubName": "Turku Thunder",
+        "HomeArena": "Turku Ball Arena",
+        "PrimaryJerseyColor": "Yellow",
+        "SecondaryJerseyColor": "Blue",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "matti.karjalainen@team3.fi", "Position": 1, "JerseyNumber": 9 },
+          { "PersonEmail": "pekka.vaisanen@team3.fi", "Position": 1, "JerseyNumber": 11 },
+          { "PersonEmail": "tommi.lahtinen@team3.fi", "Position": 1, "JerseyNumber": 13 },
+          { "PersonEmail": "jukka.savolainen@team3.fi", "Position": 1, "JerseyNumber": 17 },
+          { "PersonEmail": "esa.peltola@team3.fi", "Position": 3, "JerseyNumber": 3 },
+          { "PersonEmail": "risto.hiltunen@team3.fi", "Position": 3, "JerseyNumber": 5 },
+          { "PersonEmail": "vesa.niskanen@team3.fi", "Position": 3, "JerseyNumber": 7 },
+          { "PersonEmail": "ilkka.leppanen@team3.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "keijo.turunen@team3.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "leo.manninen@team3.fi", "Position": 4, "JerseyNumber": 29 }
+        ]
+      },
+      {
+        "Name": "Oulu Outlaws",
+        "DivisionName": "Championship Division",
+        "ClubName": "Oulu Outlaws",
+        "HomeArena": "Oulu Sports Center",
+        "PrimaryJerseyColor": "Green",
+        "SecondaryJerseyColor": "White",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "teemu.hakala@team4.fi", "Position": 1, "JerseyNumber": 10 },
+          { "PersonEmail": "jari.mattila@team4.fi", "Position": 1, "JerseyNumber": 12 },
+          { "PersonEmail": "kimmo.nurmi@team4.fi", "Position": 1, "JerseyNumber": 14 },
+          { "PersonEmail": "hannu.oksanen@team4.fi", "Position": 1, "JerseyNumber": 19 },
+          { "PersonEmail": "seppo.partanen@team4.fi", "Position": 3, "JerseyNumber": 2 },
+          { "PersonEmail": "raimo.laaksonen@team4.fi", "Position": 3, "JerseyNumber": 4 },
+          { "PersonEmail": "paavo.mustonen@team4.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "kalevi.saarinen@team4.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "olavi.eriksson@team4.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "pentti.korpela@team4.fi", "Position": 4, "JerseyNumber": 32 }
+        ]
+      },
+      {
+        "Name": "Espoo Eagles",
+        "DivisionName": "Championship Division",
+        "ClubName": "Espoo Eagles",
+        "HomeArena": "Espoo Arena",
+        "PrimaryJerseyColor": "Orange",
+        "SecondaryJerseyColor": "Black",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "tapio.ruuska@team5.fi", "Position": 1, "JerseyNumber": 9 },
+          { "PersonEmail": "veikko.kuusela@team5.fi", "Position": 1, "JerseyNumber": 11 },
+          { "PersonEmail": "aarne.seppala@team5.fi", "Position": 1, "JerseyNumber": 15 },
+          { "PersonEmail": "niilo.harju@team5.fi", "Position": 1, "JerseyNumber": 18 },
+          { "PersonEmail": "onni.kivinen@team5.fi", "Position": 3, "JerseyNumber": 3 },
+          { "PersonEmail": "reino.tuominen@team5.fi", "Position": 3, "JerseyNumber": 5 },
+          { "PersonEmail": "sakari.ojala@team5.fi", "Position": 3, "JerseyNumber": 7 },
+          { "PersonEmail": "toivo.nyman@team5.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "reijo.stenman@team5.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "sulevi.lindholm@team5.fi", "Position": 4, "JerseyNumber": 30 }
+        ]
+      },
+      {
+        "Name": "Vantaa Vikings",
+        "DivisionName": "Championship Division",
+        "ClubName": "Vantaa Vikings",
+        "HomeArena": "Vantaa Sports Hall",
+        "PrimaryJerseyColor": "Purple",
+        "SecondaryJerseyColor": "Gold",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "urho.kallio@team6.fi", "Position": 1, "JerseyNumber": 10 },
+          { "PersonEmail": "vaino.rinne@team6.fi", "Position": 1, "JerseyNumber": 12 },
+          { "PersonEmail": "yrjo.vuori@team6.fi", "Position": 1, "JerseyNumber": 14 },
+          { "PersonEmail": "akseli.makela@team6.fi", "Position": 1, "JerseyNumber": 16 },
+          { "PersonEmail": "elias.kinnunen@team6.fi", "Position": 3, "JerseyNumber": 2 },
+          { "PersonEmail": "frans.ranta@team6.fi", "Position": 3, "JerseyNumber": 4 },
+          { "PersonEmail": "gustav.aho@team6.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "hugo.laitinen@team6.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "tarmo.westerlund@team6.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "unto.bjork@team6.fi", "Position": 4, "JerseyNumber": 31 }
+        ]
+      },
+      {
+        "Name": "Lahti Lions",
+        "DivisionName": "Championship Division",
+        "ClubName": "Lahti Lions",
+        "HomeArena": "Lahti Arena",
+        "PrimaryJerseyColor": "Brown",
+        "SecondaryJerseyColor": "Gold",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "iivari.pesonen@team7.fi", "Position": 1, "JerseyNumber": 9 },
+          { "PersonEmail": "jaakko.salo@team7.fi", "Position": 1, "JerseyNumber": 11 },
+          { "PersonEmail": "kauko.miettinen@team7.fi", "Position": 1, "JerseyNumber": 13 },
+          { "PersonEmail": "launo.valtonen@team7.fi", "Position": 1, "JerseyNumber": 17 },
+          { "PersonEmail": "mauno.aaltonen@team7.fi", "Position": 3, "JerseyNumber": 3 },
+          { "PersonEmail": "niiles.paavilainen@team7.fi", "Position": 3, "JerseyNumber": 5 },
+          { "PersonEmail": "otso.rautio@team7.fi", "Position": 3, "JerseyNumber": 7 },
+          { "PersonEmail": "pauli.heinonen@team7.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "voitto.sandberg@team7.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "werner.aberg@team7.fi", "Position": 4, "JerseyNumber": 29 }
+        ]
+      },
+      {
+        "Name": "Kuopio Knights",
+        "DivisionName": "Championship Division",
+        "ClubName": "Kuopio Knights",
+        "HomeArena": "Kuopio Sports Center",
+        "PrimaryJerseyColor": "Silver",
+        "SecondaryJerseyColor": "Black",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "rauli.jokinen@team8.fi", "Position": 1, "JerseyNumber": 10 },
+          { "PersonEmail": "santeri.ketola@team8.fi", "Position": 1, "JerseyNumber": 12 },
+          { "PersonEmail": "taavi.laakso@team8.fi", "Position": 1, "JerseyNumber": 14 },
+          { "PersonEmail": "ukko.makitalo@team8.fi", "Position": 1, "JerseyNumber": 19 },
+          { "PersonEmail": "vilho.niemi@team8.fi", "Position": 3, "JerseyNumber": 2 },
+          { "PersonEmail": "wiljami.ollikainen@team8.fi", "Position": 3, "JerseyNumber": 4 },
+          { "PersonEmail": "aapo.pulkkinen@team8.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "bror.rajala@team8.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "yrjana.ohman@team8.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "ake.lindqvist@team8.fi", "Position": 4, "JerseyNumber": 32 }
+        ]
+      },
+      {
+        "Name": "Jyväskylä Jets",
+        "DivisionName": "Championship Division",
+        "ClubName": "Jyväskylä Jets",
+        "HomeArena": "Jyväskylä Arena",
+        "PrimaryJerseyColor": "Cyan",
+        "SecondaryJerseyColor": "White",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "clas.salminen@team9.fi", "Position": 1, "JerseyNumber": 9 },
+          { "PersonEmail": "dan.tamminen@team9.fi", "Position": 1, "JerseyNumber": 11 },
+          { "PersonEmail": "erik.uusitalo@team9.fi", "Position": 1, "JerseyNumber": 15 },
+          { "PersonEmail": "felix.vainio@team9.fi", "Position": 1, "JerseyNumber": 18 },
+          { "PersonEmail": "georg.ylikoski@team9.fi", "Position": 3, "JerseyNumber": 3 },
+          { "PersonEmail": "heikki.zetterberg@team9.fi", "Position": 3, "JerseyNumber": 5 },
+          { "PersonEmail": "isto.ahokas@team9.fi", "Position": 3, "JerseyNumber": 7 },
+          { "PersonEmail": "joel.blomqvist@team9.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "orjan.mattsson@team9.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "alfred.nystrom@team9.fi", "Position": 4, "JerseyNumber": 30 }
+        ]
+      },
+      {
+        "Name": "Pori Panthers",
+        "DivisionName": "Championship Division",
+        "ClubName": "Pori Panthers",
+        "HomeArena": "Pori Ball Hall",
+        "PrimaryJerseyColor": "Black",
+        "SecondaryJerseyColor": "Pink",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "kai.carlsson@team10.fi", "Position": 1, "JerseyNumber": 10 },
+          { "PersonEmail": "lars.dahlberg@team10.fi", "Position": 1, "JerseyNumber": 12 },
+          { "PersonEmail": "mika.ekholm@team10.fi", "Position": 1, "JerseyNumber": 14 },
+          { "PersonEmail": "niko.forsman@team10.fi", "Position": 1, "JerseyNumber": 16 },
+          { "PersonEmail": "oscar.gronholm@team10.fi", "Position": 3, "JerseyNumber": 2 },
+          { "PersonEmail": "patrik.holmberg@team10.fi", "Position": 3, "JerseyNumber": 4 },
+          { "PersonEmail": "rasmus.isaksson@team10.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "simon.johansson@team10.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "berndt.soderstrom@team10.fi", "Position": 4, "JerseyNumber": 1 },
+          { "PersonEmail": "claes.hedstrom@team10.fi", "Position": 4, "JerseyNumber": 31 }
+        ]
+      }
+    ],
+
+    "FloorballMatches": [
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-05T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-05T16:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-05T18:00:00", "Venue": "Espoo Arena", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-06T14:00:00", "Venue": "Lahti Arena", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Pori Panthers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-06T16:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-12T14:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-12T16:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-12T18:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-13T14:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-13T16:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "tapio.heinonen@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-19T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-19T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-19T18:00:00", "Venue": "Espoo Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-20T14:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-20T16:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-26T14:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-26T16:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-26T18:00:00", "Venue": "Lahti Arena", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-27T14:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-01-27T16:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "aarne.niemisto@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-02T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-02T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-02T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-03T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-03T16:00:00", "Venue": "Lahti Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-09T14:00:00", "Venue": "Espoo Arena", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-09T16:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-09T18:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-10T14:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-10T16:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "curt.makinen@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-16T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-16T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-16T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-17T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-17T16:00:00", "Venue": "Espoo Arena", "RefereeEmail": "veikko.koivisto@referee.fi" },
+
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-23T14:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-23T16:00:00", "Venue": "Lahti Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-23T18:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-24T14:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-02-24T16:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "edvin.ojanen@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-02T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-02T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-02T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-03T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Pori Panthers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-03T16:00:00", "Venue": "Espoo Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-09T14:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-09T16:00:00", "Venue": "Lahti Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-09T18:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-10T14:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-10T16:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "tapio.heinonen@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-16T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-16T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-16T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Pori Panthers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-17T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-17T16:00:00", "Venue": "Espoo Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-23T14:00:00", "Venue": "Lahti Arena", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-23T16:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-23T18:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-24T14:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-24T16:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "aarne.niemisto@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-30T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-30T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Pori Panthers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-30T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-31T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-03-31T16:00:00", "Venue": "Lahti Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-06T14:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-06T16:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-06T18:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-07T14:00:00", "Venue": "Espoo Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-07T16:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "curt.makinen@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-13T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Pori Panthers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-13T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-13T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-14T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Pori Panthers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-14T16:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "veikko.koivisto@referee.fi" },
+
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-20T14:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-20T16:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-20T18:00:00", "Venue": "Espoo Arena", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-21T14:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Pori Panthers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-21T16:00:00", "Venue": "Lahti Arena", "RefereeEmail": "edvin.ojanen@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Pori Panthers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-27T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-27T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-27T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-28T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-04-28T16:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "birger.lindstrom@referee.fi" },
+
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-04T14:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-04T16:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-04T18:00:00", "Venue": "Lahti Arena", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-05T14:00:00", "Venue": "Espoo Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Pori Panthers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-05T16:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "tapio.heinonen@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-11T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-11T16:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-11T18:00:00", "Venue": "Espoo Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-12T14:00:00", "Venue": "Lahti Arena", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Pori Panthers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-12T16:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-18T14:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-18T16:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-18T18:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-19T14:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-19T16:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "aarne.niemisto@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-25T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-25T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "curt.makinen@referee.fi" },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Lahti Lions", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-25T18:00:00", "Venue": "Espoo Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Vantaa Vikings", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-26T14:00:00", "Venue": "Vantaa Sports Hall", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Jyväskylä Jets", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-05-26T16:00:00", "Venue": "Jyväskylä Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-01T14:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-01T16:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "veikko.koivisto@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-01T18:00:00", "Venue": "Lahti Arena", "RefereeEmail": "aarne.niemisto@referee.fi" },
+      { "HomeTeamName": "Kuopio Knights", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-02T14:00:00", "Venue": "Kuopio Sports Center", "RefereeEmail": "birger.lindstrom@referee.fi" },
+      { "HomeTeamName": "Pori Panthers", "AwayTeamName": "Turku Thunder", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-02T16:00:00", "Venue": "Pori Ball Hall", "RefereeEmail": "curt.makinen@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-08T14:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "dagfinn.nurmi@referee.fi" },
+      { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-08T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "edvin.ojanen@referee.fi" },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-08T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
+      { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-09T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "tapio.heinonen@referee.fi" },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-09T16:00:00", "Venue": "Lahti Arena", "RefereeEmail": "veikko.koivisto@referee.fi" }
+    ]
+  }
+}

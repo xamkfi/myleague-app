@@ -10,10 +10,26 @@ namespace Seeder;
 
 public static class FloorballPlayersSeeder
 {
-	public static async Task<(List<FloorballPlayerDto> players, Dictionary<string, Guid> emailToPlayerId)> SeedAsync(HttpClient http, JsonSerializerOptions jsonOptions, List<PersonDto> playerPersons, List<PersonDto> goaliePersons)
+	public static async Task<(List<FloorballPlayerDto> players, Dictionary<string, Guid> emailToPlayerId)> SeedAsync(
+		HttpClient http,
+		JsonSerializerOptions jsonOptions,
+		List<PersonDto> playerPersons,
+		List<PersonDto> goaliePersons,
+		Dictionary<string, Guid> seedEmailToPersonId)
 	{
 		List<FloorballPlayerDto> created = new List<FloorballPlayerDto>();
 		Dictionary<string, Guid> emailToPlayerId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+
+		// Build a reverse mapping: person ID -> list of seed emails
+		Dictionary<Guid, List<string>> personIdToSeedEmails = new Dictionary<Guid, List<string>>();
+		foreach (KeyValuePair<string, Guid> kvp in seedEmailToPersonId)
+		{
+			if (!personIdToSeedEmails.ContainsKey(kvp.Value))
+			{
+				personIdToSeedEmails[kvp.Value] = new List<string>();
+			}
+			personIdToSeedEmails[kvp.Value].Add(kvp.Key);
+		}
 
 		List<PersonDto> all = new List<PersonDto>();
 		all.AddRange(playerPersons);
@@ -32,10 +48,13 @@ public static class FloorballPlayersSeeder
 					if (existing != null)
 					{
 						created.Add(existing);
-						string? emailExisting = person.ContactInfo != null ? person.ContactInfo.Email : null;
-						if (!string.IsNullOrWhiteSpace(emailExisting))
+						// Map all seed emails for this person to the player ID
+						if (personIdToSeedEmails.TryGetValue(person.Id, out List<string>? seedEmails))
 						{
-							emailToPlayerId[emailExisting!] = existing.Id;
+							foreach (string seedEmail in seedEmails)
+							{
+								emailToPlayerId[seedEmail] = existing.Id;
+							}
 						}
 						Console.WriteLine("Player exists for person, skipping: " + person.FullName + " (playerId: " + existing.Id + ")");
 						continue;
@@ -57,10 +76,13 @@ public static class FloorballPlayersSeeder
 			}
 
 			created.Add(api.Data);
-			string? email = person.ContactInfo != null ? person.ContactInfo.Email : null;
-			if (!string.IsNullOrWhiteSpace(email))
+			// Map all seed emails for this person to the player ID
+			if (personIdToSeedEmails.TryGetValue(person.Id, out List<string>? emails))
 			{
-				emailToPlayerId[email!] = api.Data.Id;
+				foreach (string seedEmail in emails)
+				{
+					emailToPlayerId[seedEmail] = api.Data.Id;
+				}
 			}
 			Console.WriteLine("Created floorball player for personId " + person.Id + " (playerId: " + api.Data.Id + ")");
 		}
