@@ -1,3 +1,4 @@
+import { API_URL } from '../../../constants/config';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -16,8 +17,6 @@ interface News{
   sportCategory: string | null,
   tags: string[] |null
 }
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export async function CreateNewsService(news: News){
     try {

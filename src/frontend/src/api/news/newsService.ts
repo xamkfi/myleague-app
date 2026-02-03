@@ -1,3 +1,5 @@
+import { API_URL } from '../../constants/config';
+
 export interface NewsArticleDto {
   id: string;
   title: string;
@@ -37,8 +39,6 @@ export interface PaginatedNewsResponse {
   data: NewsArticleDto[];
   pagination: PaginationInfo;
 }
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export async function newsService(params?: Partial<NewsParameters>): Promise<PaginatedNewsResponse | NewsArticleDto[]> {
   try {

@@ -1,4 +1,5 @@
 import type { NewsArticleDto } from '../../news/newsService';
+import { API_URL } from '../../../constants/config';
 
 interface UpdateNewsData {
   title: string;
@@ -18,8 +19,6 @@ interface ApiResponse<T> {
   message: string;
   errors: string[];
 }
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export async function UpdateNewsService(id: string, newsData: UpdateNewsData): Promise<NewsArticleDto> {
   try {

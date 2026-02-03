@@ -1,6 +1,5 @@
 import type { ApiResponse, PaginatedApiResponse } from '../../types/floorball/floorballTypes';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { API_URL } from '../../constants/config';
 
 // Referee types based on the backend DTOs
 export interface FloorballRefereeDto {

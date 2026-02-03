@@ -1,8 +1,7 @@
 import type { 
   ApiResponse
 } from '../../types/floorball/floorballTypes';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { API_URL } from '../../constants/config';
 
 // Statistics DTOs matching the backend
 export interface FloorballPlayerSeasonStatisticsDto {

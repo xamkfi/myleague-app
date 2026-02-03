@@ -2,8 +2,7 @@ import type {
   ApiResponse,
   FloorballTeam
 } from '../../types/floorball/floorballTypes';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { API_URL } from '../../constants/config';
 
 /**
  * Helper function to parse error responses properly
