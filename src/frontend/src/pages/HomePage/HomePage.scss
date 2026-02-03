@@ -1,16 +1,48 @@
 @use 'sass:map';
 @use '@variables' as *;
 
+// Override PageTemplate padding for HomePage only
+.home-page-wrapper .page-body {
+  padding: 0 !important;
+}
+
+.home-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100%;
+}
+
 .home-page {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 100%;
 
-  // Hero News Section at the top
+  // Hero News Section at the top - full viewport width
   .hero-news-container {
-    padding: map.get($spacing, 'md');
-    padding-bottom: 0;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    padding: 0;
+
+    // Override MainNewsCard styles to remove border-radius for full-width hero
+    .main-news-bg {
+      width: 100%;
+      border-radius: 0;
+    }
 
     &--loading {
+      background-image: $color-gradient-blue;
+      min-height: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: map.get($spacing, 'md') 0;
+
       .main-news-skeleton {
         display: flex;
         flex-direction: row;
@@ -19,6 +51,9 @@
         overflow: hidden;
         box-shadow: $box-shadow-drop-1;
         height: 360px;
+        max-width: 1200px;
+        width: calc(100% - #{map.get($spacing, 'md') * 2});
+        margin: 0 auto;
 
         .skeleton-image {
           flex: 0 0 60%;
@@ -82,12 +117,16 @@
     flex: 1;
     gap: map.get($spacing, 'md');
     padding: map.get($spacing, 'md');
+    width: 100%;
+    max-width: $max-width-page;
+    margin: 0 auto;
   }
 
   .news-section-container {
     flex: 1;
     min-width: 0;
-    max-height: 600px;
+    display: flex;
+    flex-direction: column;
   }
 
   .sidebar-container {
@@ -109,15 +148,26 @@
 
 // Tablet responsive
 @media (max-width: map.get($breakpoints, 'tablet')) {
+  .home-page-wrapper .page-body {
+    padding: 0 !important;
+  }
+
   .home-page {
     .hero-news-container {
-      padding: map.get($spacing, 'sm');
-      padding-bottom: 0;
+      // Keep full width on tablet
+      width: 100vw;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      left: 50%;
+      right: 50%;
+      padding: 0;
 
       &--loading .main-news-skeleton {
         flex-direction: column;
         height: auto;
         min-height: 320px;
+        margin: map.get($spacing, 'sm');
+        width: calc(100% - #{map.get($spacing, 'sm') * 2});
 
         .skeleton-image {
           flex: 0 0 180px;
@@ -138,7 +188,6 @@
     }
 
     .news-section-container {
-      max-height: none;
       order: 1;
     }
 
@@ -153,12 +202,19 @@
 @media (max-width: map.get($breakpoints, 'mobile')) {
   .home-page {
     .hero-news-container {
-      padding: map.get($spacing, 'xs');
-      padding-bottom: 0;
+      // Keep full width on mobile
+      width: 100vw;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      left: 50%;
+      right: 50%;
+      padding: 0;
 
       &--loading .main-news-skeleton {
         min-height: 280px;
         border-radius: map.get($border-radius, 'sm');
+        margin: map.get($spacing, 'xs');
+        width: calc(100% - #{map.get($spacing, 'xs') * 2});
 
         .skeleton-image {
           flex: 0 0 150px;
