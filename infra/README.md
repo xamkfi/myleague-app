@@ -1,15 +1,40 @@
 # MyLeague Azure Infrastructure
 
-This directory contains Bicep templates for deploying the MyLeague infrastructure to Azure.
+This directory contains infrastructure provisioning (Bicep/IaC) and application deployment scripts, organized into separate folders.
+
+## Folder Structure
+
+```
+infra/
+├── provision/                        # Infrastructure provisioning (Bicep + scripts)
+│   ├── backend.bicep                 # Backend infrastructure template
+│   ├── backend.bicepparam            # Backend parameters (dev)
+│   ├── frontend.bicep                # Frontend infrastructure template (SWA)
+│   ├── frontend.bicepparam           # Frontend parameters (dev)
+│   ├── provision-backend.ps1         # Provision backend infra (Windows)
+│   ├── provision-backend.sh          # Provision backend infra (Linux/macOS)
+│   ├── provision-frontend.ps1        # Provision frontend infra (Windows)
+│   └── modules/
+│       ├── app-service-plan.bicep    # App Service Plan module
+│       ├── app-service.bicep         # App Service module
+│       ├── postgresql.bicep          # PostgreSQL module
+│       ├── static-web-app.bicep      # Static Web App module
+│       └── storage-account.bicep     # Storage Account module
+├── deploy/                           # Application deployment scripts
+│   └── deploy-frontend.ps1          # Build & deploy React app to SWA (interactive)
+└── README.md
+```
+
+**`provision/`** = Create or update Azure resources (Bicep infrastructure-as-code)
+**`deploy/`** = Build and deploy application code to existing Azure resources
 
 ## Architecture
-
-The infrastructure consists of:
 
 ### Backend
 - **App Service Plan** (Basic B1) - Hosts the .NET 9 API
 - **App Service** - The MyLeague API application
 - **PostgreSQL Flexible Server** (Burstable B1ms) - Database server
+- **Storage Account** - Image uploads
 
 ### Frontend
 - **Azure Static Web App** (Free tier) - Hosts the React SPA
@@ -18,180 +43,101 @@ The infrastructure consists of:
 
 1. **Azure CLI** - Install from https://docs.microsoft.com/en-us/cli/azure/install-azure-cli
 2. **Azure Subscription** - You need an active Azure subscription
-3. **Bicep CLI** - Usually included with Azure CLI, or install separately
+3. **Bicep CLI** - Usually included with Azure CLI
+4. **pnpm** - For frontend builds (https://pnpm.io/installation)
+5. **SWA CLI** - For frontend deployment (`npm install -g @azure/static-web-apps-cli`)
 
-### Verify Installation
+## Quick Start
 
-```bash
-# Check Azure CLI version
-az --version
-
-# Check Bicep version
-az bicep version
-```
-
-## Quick Start (Recommended)
-
-Use the deployment scripts for the easiest experience:
-
-### Windows (PowerShell)
+### 1. Provision Backend Infrastructure
 
 ```powershell
-# Navigate to infra folder
-cd infra
-
-# Run deployment script (interactive)
-.\deploy.ps1
-
-# Or with parameters
-.\deploy.ps1 -Environment dev -Location westeurope
+cd infra/provision
+.\provision-backend.ps1
 ```
 
-### Linux / macOS (Bash)
+Or on Linux/macOS:
 
 ```bash
-# Navigate to infra folder
-cd infra
-
-# Make script executable (first time only)
-chmod +x deploy.sh
-
-# Run deployment script (interactive)
-./deploy.sh
-
-# Or with parameters
-./deploy.sh -e dev -l westeurope
+cd infra/provision
+chmod +x provision-backend.sh
+./provision-backend.sh
 ```
 
-### Script Options
-
-| Option | PowerShell | Bash | Description |
-|--------|------------|------|-------------|
-| Environment | `-Environment dev` | `-e dev` | Target environment (dev, staging, prod) |
-| Location | `-Location westeurope` | `-l westeurope` | Azure region |
-| Resource Group | `-ResourceGroupName mygroup` | `-g mygroup` | Override resource group name |
-| Password | `-PostgresPassword "pass"` | `-p "pass"` | PostgreSQL password (prompted if not provided) |
-| Skip Login | `-SkipLogin` | `-s` | Skip Azure login check |
-
----
-
-## Frontend Deployment
-
-After deploying the backend, deploy the frontend:
-
-### Windows (PowerShell)
+### 2. Provision Frontend Infrastructure
 
 ```powershell
-# Deploy infrastructure only
+cd infra/provision
+.\provision-frontend.ps1
+```
+
+### 3. Deploy Frontend Application
+
+```powershell
+cd infra/deploy
 .\deploy-frontend.ps1
-
-# Deploy infrastructure AND application
-.\deploy-frontend.ps1 -DeployApp
-
-# With specific backend URL
-.\deploy-frontend.ps1 -ApiBackendUrl "https://myleague-dev-api.azurewebsites.net" -DeployApp
 ```
 
-### Frontend Script Options
+The deploy script is interactive and will:
+1. Ask for the backend API base URL (e.g. `https://myleague-dev-api.azurewebsites.net`)
+2. Ask whether to append `/api` to the URL
+3. List available Azure Static Web Apps and let you pick one
+4. Build the React app and deploy it
+
+## Script Reference
+
+### Provision Scripts (infra/provision/)
+
+| Script | Description |
+|--------|-------------|
+| `provision-backend.ps1` | Provisions backend infra (App Service, PostgreSQL, Storage) |
+| `provision-backend.sh` | Same as above, for Linux/macOS |
+| `provision-frontend.ps1` | Provisions frontend infra (Azure Static Web App) |
+
+#### Backend Provision Options
+
+| Option | Description |
+|--------|-------------|
+| `-Environment dev` | Target environment (dev, staging, prod) |
+| `-Location westeurope` | Azure region |
+| `-ResourceGroupName mygroup` | Override resource group name |
+| `-PostgresPassword "pass"` | PostgreSQL password (prompted if not provided) |
+| `-SkipLogin` | Skip Azure login check |
+
+#### Frontend Provision Options
 
 | Option | Description |
 |--------|-------------|
 | `-Environment dev` | Target environment (dev, staging, prod) |
 | `-Location westeurope` | Azure region |
 | `-ApiBackendUrl "url"` | Backend API URL (auto-detected if not provided) |
-| `-DeployApp` | Also build and deploy the React application |
 | `-SkipLogin` | Skip Azure login check |
 
-### Manual Frontend Deployment
+### Deploy Scripts (infra/deploy/)
 
-```bash
-# 1. Deploy infrastructure
-az deployment group create \
-  --resource-group myleague-dev-rg \
-  --template-file main-frontend.bicep \
-  --parameters main-frontend.bicepparam
+| Script | Description |
+|--------|-------------|
+| `deploy-frontend.ps1` | Builds and deploys React app to an existing SWA |
 
-# 2. Get deployment token
-az staticwebapp secrets list \
-  --name myleague-dev-web \
-  --query "properties.apiKey" -o tsv
+#### Frontend Deploy Options
 
-# 3. Build and deploy React app
-cd src/frontend
-pnpm install
-pnpm run build
-swa deploy ./dist --deployment-token <your-token>
-```
+| Option | Description |
+|--------|-------------|
+| `-ApiBaseUrl "url"` | Backend API base URL (prompted if not provided) |
+| `-AppendApi` | Append /api to the URL (prompted if not provided) |
+| `-NoAppendApi` | Do not append /api |
+| `-StaticWebAppName "name"` | Target SWA (lists available if not provided) |
+| `-ResourceGroupName "rg"` | Resource group for the SWA |
+| `-DeploymentToken "token"` | SWA deployment token (auto-fetched if not provided) |
+| `-SkipLogin` | Skip Azure login check |
 
----
+## Manual Deployment
 
-## Manual Backend Deployment
+### Deploy Backend Application
 
-If you prefer manual deployment:
+After provisioning backend infrastructure:
 
-### 1. Login to Azure
-
-```bash
-az login
-```
-
-### 2. Set Your Subscription (if you have multiple)
-
-```bash
-# List subscriptions
-az account list --output table
-
-# Set the subscription you want to use
-az account set --subscription "Your Subscription Name"
-```
-
-### 3. Create Resource Group
-
-```bash
-# Create resource group in West Europe (or your preferred region)
-az group create --name myleague-dev-rg --location westeurope
-```
-
-### 4. Deploy Infrastructure
-
-```bash
-# Deploy with password prompt
-az deployment group create \
-  --resource-group myleague-dev-rg \
-  --template-file main.bicep \
-  --parameters main.bicepparam
-
-# Or provide password directly (not recommended for production)
-az deployment group create \
-  --resource-group myleague-dev-rg \
-  --template-file main.bicep \
-  --parameters main.bicepparam \
-  --parameters postgresAdminPassword='YourSecurePassword123!'
-```
-
-### 5. Get Deployment Outputs
-
-```bash
-# View all outputs
-az deployment group show \
-  --resource-group myleague-dev-rg \
-  --name main \
-  --query properties.outputs
-
-# Get just the API URL
-az deployment group show \
-  --resource-group myleague-dev-rg \
-  --name main \
-  --query properties.outputs.apiUrl.value -o tsv
-```
-
-## Deploying Your Application
-
-After the infrastructure is deployed, deploy your .NET API:
-
-### Option 1: Using Azure CLI
-
-```bash
+```powershell
 # Navigate to the WebAPI project
 cd src/backend/WebAPI
 
@@ -202,49 +148,17 @@ dotnet publish -c Release -o ./publish
 Compress-Archive -Path ./publish/* -DestinationPath ./app.zip -Force
 
 # Deploy to Azure
-az webapp deploy \
-  --resource-group myleague-dev-rg \
-  --name myleague-dev-api \
-  --src-path ./app.zip \
-  --type zip
+az webapp deploy --resource-group myleague-dev-rg --name myleague-dev-api --src-path ./app.zip --type zip
 ```
 
-### Option 2: Using Visual Studio / Rider
+### Run Database Migrations
 
-1. Right-click on the WebAPI project
-2. Select "Publish"
-3. Choose "Azure" as target
-4. Select your App Service (myleague-dev-api)
-5. Click Publish
-
-### Option 3: GitHub Actions (CI/CD)
-
-Set up GitHub Actions with the publish profile:
-
-```bash
-# Get the publish profile
-az webapp deployment list-publishing-profiles \
-  --resource-group myleague-dev-rg \
-  --name myleague-dev-api \
-  --xml
-```
-
-## Database Migrations
-
-After deployment, run Entity Framework migrations:
-
-```bash
-# Set connection string environment variable
+```powershell
 $env:ConnectionStrings__DefaultConnection = "Host=myleague-dev-postgres.postgres.database.azure.com;Database=myleague;Username=myleagueadmin;Password=YourPassword;SSL Mode=Require;Trust Server Certificate=true"
 
-# Navigate to WebAPI project
 cd src/backend/WebAPI
-
-# Run migrations
 dotnet ef database update --project ../Infrastructure/Infrastructure.csproj
 ```
-
-Or connect to the database using a tool like Azure Data Studio or pgAdmin.
 
 ## Estimated Costs
 
@@ -253,61 +167,26 @@ Or connect to the database using a tool like Azure Data Studio or pgAdmin.
 | App Service Plan | Basic B1 | ~$13 |
 | PostgreSQL Flexible Server | Burstable B1ms | ~$12 |
 | Static Web App | Free | $0 |
+| Storage Account | Standard_LRS | ~$0.02/GB/month |
 | **Total** | | **~$25/month** |
-
-## Customization
-
-### Change Region
-
-Edit `main.bicepparam` and update the `location` parameter:
-
-```bicep
-param location = 'northeurope'  // or any other Azure region
-```
-
-### Change SKUs
-
-For more performance, update the SKU parameters in `main.bicepparam`:
-
-```bicep
-param appServicePlanSku = 'B2'           // More CPU/RAM
-param postgresSku = 'Standard_B2s'       // More database resources
-```
-
-### Add CORS Origins
-
-Update the `allowedOrigins` array for your frontend URLs:
-
-```bicep
-param allowedOrigins = [
-  'http://localhost:5173'
-  'https://your-frontend-domain.com'
-]
-```
 
 ## Troubleshooting
 
 ### View App Service Logs
 
 ```bash
-# Stream live logs
 az webapp log tail --resource-group myleague-dev-rg --name myleague-dev-api
-
-# Download logs
-az webapp log download --resource-group myleague-dev-rg --name myleague-dev-api
 ```
 
-### Check App Service Health
+### Check API Health
 
 ```bash
-# Check if the API is healthy
 curl https://myleague-dev-api.azurewebsites.net/health/ready
 ```
 
 ### Connect to PostgreSQL
 
 ```bash
-# Allow your IP through firewall
 az postgres flexible-server firewall-rule create \
   --resource-group myleague-dev-rg \
   --name myleague-dev-postgres \
@@ -322,23 +201,4 @@ To delete all resources:
 
 ```bash
 az group delete --name myleague-dev-rg --yes --no-wait
-```
-
-## File Structure
-
-```
-infra/
-├── deploy.ps1                 # Backend deployment script (Windows)
-├── deploy.sh                  # Backend deployment script (Linux/macOS)
-├── deploy-frontend.ps1        # Frontend deployment script (Windows)
-├── main.bicep                 # Backend infrastructure template
-├── main.bicepparam            # Backend parameters (dev)
-├── main-frontend.bicep        # Frontend infrastructure template
-├── main-frontend.bicepparam   # Frontend parameters (dev)
-├── modules/
-│   ├── app-service-plan.bicep # App Service Plan module
-│   ├── app-service.bicep      # App Service module
-│   ├── postgresql.bicep       # PostgreSQL module
-│   └── static-web-app.bicep   # Static Web App module
-└── README.md                  # This file
 ```

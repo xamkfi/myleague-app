@@ -1,22 +1,34 @@
+@use 'sass:map';
+@use '@variables' as *;
+
 .match-breadcrumb {
-  padding: 1rem;
-  
+  background: $color-blue-darkest;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.8125rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: map.get($border-radius, 'lg') map.get($border-radius, 'lg') 0 0;
+
   .season-link {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.75);
     text-decoration: none;
-    font-size: 0.9rem;
     display: inline-flex;
     align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    letter-spacing: 0.25px;
     transition: color 0.2s ease;
 
     &:hover {
-      color: var(--primary);
+      color: white;
     }
 
     .arrow {
-      margin-left: 0.5rem;
-      font-size: 1.2rem;
+      font-size: 1.125rem;
       line-height: 1;
+      margin-top: -1px;
     }
   }
 }

@@ -1,5 +1,6 @@
 import { FloorballMatchStatus, type FloorballMatchDto } from '../../../types/floorball/floorballTypes';
 import { formatDate, getTeamInitials } from './matchUtils';
+import './MatchHeader.scss';
 
 interface MatchHeaderProps {
   match: FloorballMatchDto;
@@ -9,19 +10,6 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
   const scheduled = formatDate(match.scheduledDateTime);
   return (
     <div className="match-header">
-      <div className="match-info">
-        <div className="match-date-time">
-          <div className="date-line">
-            <span className="weekday">{scheduled.weekday}</span>
-            {'\u00A0\u00A0'}
-            <span className="date">{scheduled.date}</span>
-          </div>
-          <div className="time-line">
-            <span className="time">{scheduled.time}</span>
-          </div>
-        </div>
-      </div>
-      
       <div className="teams-container">
         <div className="team-section home">
           <div className="team-crest">
@@ -39,9 +27,7 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
               />
             )}
           </div>
-          <div className="team-info">
-            <div className="team-name">{match.homeTeamName}</div>
-          </div>
+          <div className="team-name">{match.homeTeamName}</div>
         </div>
 
         <div className="score-container">
@@ -72,22 +58,27 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
               />
             )}
           </div>
-          <div className="team-info">
-            <div className="team-name">{match.awayTeamName}</div>
-          </div>
+          <div className="team-name">{match.awayTeamName}</div>
         </div>
       </div>
 
+      <div className="match-date-time">
+        <span className="weekday">{scheduled.weekday}</span>
+        <span className="separator">·</span>
+        <span className="date">{scheduled.date}</span>
+        <span className="separator">·</span>
+        <span className="time">{scheduled.time}</span>
+      </div>
+
       {match.status === FloorballMatchStatus.InProgress && (
-        <div className="match-status">
-          <span className="status-indicator" aria-label="Live match">🔴</span>
+        <div className="match-status live">
+          <span className="status-dot" aria-label="Live match" />
           <span>LIVE</span>
         </div>
       )}
       
       {match.status === FloorballMatchStatus.Completed && (
-        <div className="match-status">
-          <span className="status-indicator" aria-label="Match completed">✅</span>
+        <div className="match-status final">
           <span>FINAL</span>
         </div>
       )}

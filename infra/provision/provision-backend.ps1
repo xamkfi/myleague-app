@@ -1,13 +1,14 @@
 <#
 .SYNOPSIS
-    Deploys MyLeague backend infrastructure to Azure.
+    Provisions MyLeague backend infrastructure in Azure.
 
 .DESCRIPTION
-    This script automates the deployment of Azure infrastructure for the MyLeague application.
-    It creates/uses a resource group and deploys App Service and PostgreSQL resources.
+    This script provisions Azure infrastructure for the MyLeague backend:
+    App Service Plan, App Service, PostgreSQL Flexible Server, and Storage Account.
+    This does NOT deploy the application code - use the deploy scripts for that.
 
 .PARAMETER Environment
-    The environment to deploy (dev, staging, prod). Default: dev
+    The environment to provision (dev, staging, prod). Default: dev
 
 .PARAMETER Location
     The Azure region for resources. Default: westeurope
@@ -22,16 +23,12 @@
     Skip the Azure login check (use if already logged in).
 
 .EXAMPLE
-    .\deploy.ps1
-    # Interactive deployment with prompts
+    .\provision-backend.ps1
+    # Interactive provisioning with prompts
 
 .EXAMPLE
-    .\deploy.ps1 -Environment staging -Location northeurope
-    # Deploy to staging in North Europe
-
-.EXAMPLE
-    .\deploy.ps1 -PostgresPassword "MySecurePass123!"
-    # Deploy with password provided (not recommended for production)
+    .\provision-backend.ps1 -Environment staging -Location northeurope
+    # Provision staging in North Europe
 #>
 
 param(
@@ -66,7 +63,7 @@ function Write-ErrorMsg { param($Message) Write-Host "[X] $Message" -ForegroundC
 Write-Host @"
 
 ================================================================
-        MyLeague Azure Infrastructure Deployment
+     MyLeague Backend Infrastructure Provisioning
 ================================================================
 
 "@ -ForegroundColor Magenta
@@ -199,11 +196,11 @@ else {
 # Deploy Infrastructure
 # ============================================================================
 
-Write-Step "Deploying infrastructure (this may take 5-10 minutes)..."
+Write-Step "Provisioning infrastructure (this may take 5-10 minutes)..."
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$templateFile = Join-Path $scriptDir "main.bicep"
-$parametersFile = Join-Path $scriptDir "main.bicepparam"
+$templateFile = Join-Path $scriptDir "backend.bicep"
+$parametersFile = Join-Path $scriptDir "backend.bicepparam"
 
 # Validate template first
 Write-Host "  Validating template..." -ForegroundColor Gray
@@ -235,11 +232,11 @@ $deploymentOutput = az deployment group create `
     --output json
 
 if ($LASTEXITCODE -ne 0) {
-    Write-ErrorMsg "Deployment failed"
+    Write-ErrorMsg "Provisioning failed"
     exit 1
 }
 
-Write-Success "Infrastructure deployed successfully!"
+Write-Success "Infrastructure provisioned successfully!"
 
 # ============================================================================
 # Display Outputs
@@ -255,7 +252,7 @@ $outputs = az deployment group show `
 
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Green
-Write-Host "  Deployment Complete!" -ForegroundColor Green
+Write-Host "  Infrastructure Provisioned!" -ForegroundColor Green
 Write-Host "================================================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  API URL:        $($outputs.apiUrl.value)" -ForegroundColor Green
@@ -293,4 +290,4 @@ Write-Host @"
 
 "@ -ForegroundColor Cyan
 
-Write-Host "Deployment completed at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Gray
+Write-Host "Provisioning completed at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Gray

@@ -1,4 +1,4 @@
-using './main.bicep'
+using './backend.bicep'
 
 // ============================================================================
 // Development Environment Parameters

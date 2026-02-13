@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import { personApi } from '../../../../../api/admin/personApi';
 import { floorballRefereeService } from '../../../../../api/floorball/floorballRefereeService';
 import type { Person, PaginatedApiResponse } from '../../../../../types/admin/personTypes';
+import Pagination from '../../../../../components/Pagination/Pagination';
 import './CreateRefereePage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
@@ -12,8 +13,10 @@ const CreateRefereePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [availablePersons, setAvailablePersons] = useState<Person[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const isFirstLoad = useRef(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -24,68 +27,81 @@ const CreateRefereePage = () => {
   const [licenseExpiryDate, setLicenseExpiryDate] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [existingRefereePersonIds, setExistingRefereePersonIds] = useState<Set<string>>(new Set());
+
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 300); // 300ms delay
+      setCurrentPage(1); // Reset to first page on new search
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fetch persons and filter out those who are already referees
+  // Fetch existing referee person IDs once on mount
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchExistingReferees = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        
-        let personsData: Person[];
-        
-        // Conditionally fetch based on search term
-        if (debouncedSearchTerm.trim()) {
-          // Use search API when there's a search term
-          // Note: Backend has a maximum pageSize of 50
-          const searchResponse: PaginatedApiResponse<Person> = await personApi.search(
-            debouncedSearchTerm.trim(),
-            1, // page
-            50 // pageSize - maximum allowed by backend
-          );
-          personsData = searchResponse.data;
-        } else {
-          // Use getAll when there's no search term
-          // Note: Backend has a maximum pageSize of 50
-          // Using pageSize 50 to get maximum results per page
-          const getAllResponse: PaginatedApiResponse<Person> = await personApi.getAll(1, 50);
-          personsData = getAllResponse.data;
-        }
-        
-        // Fetch existing referees using the same parameters that work in the main page
-        const refereesResponse = await floorballRefereeService.getAll({ 
-          pageSize: 50 
-        });
-        
-        // Extract person IDs that are already referees
-        const existingRefereePersonIds = new Set(
+        const refereesResponse = await floorballRefereeService.getAll({ pageSize: 50 });
+        const ids = new Set(
           (refereesResponse.data || []).map(referee => referee.personId)
         );
-        
-        // Filter out persons who are already referees
-        const availablePersonsData = personsData.filter(
-          person => !existingRefereePersonIds.has(person.id)
-        );
-        
-        setAvailablePersons(availablePersonsData);
+        setExistingRefereePersonIds(ids);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-        console.error('Error fetching data:', err);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching existing referees:', err);
       }
     };
+    fetchExistingReferees();
+  }, []);
 
-    fetchData();
-  }, [debouncedSearchTerm]);
+  // Fetch persons with server-side pagination
+  const fetchPersons = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      let response: PaginatedApiResponse<Person>;
+
+      if (debouncedSearchTerm.trim()) {
+        response = await personApi.search(
+          debouncedSearchTerm.trim(),
+          currentPage,
+          pageSize
+        );
+      } else {
+        response = await personApi.getAll(currentPage, pageSize);
+      }
+
+      // Filter out persons who are already referees
+      const availablePersonsData = response.data.filter(
+        person => !existingRefereePersonIds.has(person.id)
+      );
+
+      setAvailablePersons(availablePersonsData);
+      setTotalCount(response.pagination.totalCount);
+      setTotalPages(response.pagination.totalPages);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+      console.error('Error fetching data:', err);
+      setAvailablePersons([]);
+    } finally {
+      setLoading(false);
+      if (isFirstLoad.current) {
+        setInitialLoading(false);
+        isFirstLoad.current = false;
+      }
+    }
+  }, [debouncedSearchTerm, currentPage, pageSize, existingRefereePersonIds]);
+
+  useEffect(() => {
+    fetchPersons();
+  }, [fetchPersons]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -179,11 +195,16 @@ const CreateRefereePage = () => {
           });
           successCount++;
         } catch (err) {
-          console.error(`Failed to create referee for ${person.fullName}:`, err);
+          console.error(`Failed to create referee for ${person.firstName} ${person.lastName}:`, err);
         }
       }
       
-      // Remove the created persons from available persons list
+      // Update the existing referee IDs and remove created persons from available list
+      setExistingRefereePersonIds(prev => {
+        const newSet = new Set(prev);
+        selectedPersonIds.forEach(id => newSet.add(id));
+        return newSet;
+      });
       setAvailablePersons(prev => prev.filter(p => !selectedPersonIds.has(p.id)));
       
       // Clear any existing timeout to prevent flickering
@@ -220,7 +241,7 @@ const CreateRefereePage = () => {
 
   const selectedPersons = availablePersons.filter(p => selectedPersonIds.has(p.id));
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <PageTemplate title={t('floorball.referees.createNew', 'Create New Referee')}>
         <div className="create-referee-loading">
@@ -257,7 +278,6 @@ const CreateRefereePage = () => {
                   onChange={(e) => {
                     const value = e.target.value;
                     setSearchTerm(value);
-                    // If clearing search, immediately update debounced term to trigger fetch
                     if (!value.trim()) {
                       setDebouncedSearchTerm('');
                     }
@@ -274,11 +294,12 @@ const CreateRefereePage = () => {
             <ErrorPopup message={error} />
 
             {/* Selection Controls */}
-              <div className="selection-controls">
-                <div className="selection-info">
-                  <span className="selected-count">
-                    {t('floorball.referees.selectedCount', '{{count}} selected', { count: selectedPersonIds.size })}
-                  </span>
+            <div className="selection-controls">
+              <div className="selection-info">
+                <span className="selected-count">
+                  {t('floorball.referees.selectedCount', '{{count}} selected', { count: selectedPersonIds.size })}
+                </span>
+                {selectedPersonIds.size > 0 && (
                   <button
                     type="button"
                     className="clear-selection-btn"
@@ -286,32 +307,22 @@ const CreateRefereePage = () => {
                   >
                     {t('common.clear', 'Clear')}
                   </button>
-                </div>
-                <div className="proceed-action">
-                {selectedPersonIds.size > 0 && (
+                )}
+              </div>
+              <div className="proceed-action">
                 <button
                   onClick={handleProceedToForm}
-                  className="proceed-button"
-                  disabled={creating}
+                  className={`proceed-button ${selectedPersonIds.size === 0 ? 'disabled' : ''}`}
+                  disabled={creating || selectedPersonIds.size === 0}
                 >
                   {t('floorball.referees.createReferees', 'Create referee(s) ({{count}})', { count: selectedPersonIds.size })}
                 </button>
-                )}
-                {selectedPersonIds.size == 0 && (
-                  <button
-                  onClick={handleProceedToForm}
-                  className="dead-proceed-button"
-                  disabled={creating}
-                >
-                  {t('floorball.referees.createReferees', 'Create referee(s) ({{count}})', { count: selectedPersonIds.size })}
-                </button>
-                )}
               </div>
-              </div>
+            </div>
 
             {/* Persons Table */}
-            <div className="persons-table-wrapper">
-              {filteredPersons.length === 0 ? (
+            <div className={`persons-table-wrapper${loading ? ' is-loading' : ''}`}>
+              {filteredPersons.length === 0 && !loading ? (
                 <div className="no-persons">
                   <p>{searchTerm ? 
                     t('floorball.referees.noPersonsFound', 'No persons found matching your search') :
@@ -336,25 +347,33 @@ const CreateRefereePage = () => {
                           title={t('common.selectAll', 'Select all')}
                         />
                       </th>
-                      <th className="name-column">{t('common.name', 'Name')}</th>
-                      <th className="birthdate-column">{t('common.birthDate', 'Birth date')}</th>
+                      <th className="firstname-column">{t('common.firstName', 'First Name')}</th>
+                      <th className="lastname-column">{t('common.lastName', 'Last Name')}</th>
+                      <th className="birthdate-column">{t('common.birthDate', 'Birth Date')}</th>
                       <th className="registration-column">{t('common.registration', 'Registration')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredPersons.map((person) => (
-                      <tr key={person.id}>
+                      <tr 
+                        key={person.id}
+                        className={selectedPersonIds.has(person.id) ? 'selected' : ''}
+                        onClick={() => handlePersonSelect(person.id)}
+                      >
                         <td className="select-cell">
                           <input
                             type="checkbox"
                             checked={selectedPersonIds.has(person.id)}
                             onChange={() => handlePersonSelect(person.id)}
+                            onClick={(e) => e.stopPropagation()}
                             className="person-checkbox"
                           />
                         </td>
-                        <td className="name-cell">
-                          <div className="person-name">{person.fullName}</div>
-                          <div className="person-birthdate-mobile">{person.birthDate ? new Date(person.birthDate).toLocaleDateString() : '-'}</div>
+                        <td className="firstname-cell">
+                          {person.firstName || '-'}
+                        </td>
+                        <td className="lastname-cell">
+                          {person.lastName || '-'}
                         </td>
                         <td className="birthdate-cell">
                           {person.birthDate ? new Date(person.birthDate).toLocaleDateString() : '-'}
@@ -373,6 +392,23 @@ const CreateRefereePage = () => {
                 </table>
               )}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(newSize) => {
+                  setPageSize(newSize);
+                  setCurrentPage(1);
+                }}
+                pageSizeOptions={[10, 25, 50]}
+                className="compact"
+              />
+            )}
           </>
         ) : (
           <form onSubmit={handleCreateReferee} className="create-referee-form">
@@ -383,7 +419,7 @@ const CreateRefereePage = () => {
               <h3>{t('floorball.referees.selectedPersons', 'Selected persons:')}</h3>
               <ul>
                 {selectedPersons.map(person => (
-                  <li key={person.id}>{person.fullName}</li>
+                  <li key={person.id}>{[person.firstName, person.lastName].filter(Boolean).join(' ') || '-'}</li>
                 ))}
               </ul>
             </div>
