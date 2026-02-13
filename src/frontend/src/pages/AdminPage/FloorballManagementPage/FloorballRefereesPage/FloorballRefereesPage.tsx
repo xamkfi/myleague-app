@@ -27,7 +27,7 @@ const FloorballRefereesPage = () => {
   const filteredReferees = referees.filter(referee => {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase().trim();
-    const fullName = referee.person.fullName || '';
+    const fullName = [referee.person.firstName, referee.person.lastName].filter(Boolean).join(' ');
     return fullName.toLowerCase().includes(searchLower);
   });
 

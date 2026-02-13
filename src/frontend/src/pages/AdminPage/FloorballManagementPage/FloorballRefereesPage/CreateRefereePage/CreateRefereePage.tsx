@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
@@ -12,8 +12,10 @@ const CreateRefereePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [availablePersons, setAvailablePersons] = useState<Person[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const isFirstLoad = useRef(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -81,6 +83,10 @@ const CreateRefereePage = () => {
         console.error('Error fetching data:', err);
       } finally {
         setLoading(false);
+        if (isFirstLoad.current) {
+          setInitialLoading(false);
+          isFirstLoad.current = false;
+        }
       }
     };
 
@@ -179,7 +185,7 @@ const CreateRefereePage = () => {
           });
           successCount++;
         } catch (err) {
-          console.error(`Failed to create referee for ${person.fullName}:`, err);
+          console.error(`Failed to create referee for ${person.firstName} ${person.lastName}:`, err);
         }
       }
       
@@ -220,7 +226,7 @@ const CreateRefereePage = () => {
 
   const selectedPersons = availablePersons.filter(p => selectedPersonIds.has(p.id));
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <PageTemplate title={t('floorball.referees.createNew', 'Create New Referee')}>
         <div className="create-referee-loading">
@@ -310,7 +316,7 @@ const CreateRefereePage = () => {
               </div>
 
             {/* Persons Table */}
-            <div className="persons-table-wrapper">
+            <div className={`persons-table-wrapper${loading ? ' is-loading' : ''}`}>
               {filteredPersons.length === 0 ? (
                 <div className="no-persons">
                   <p>{searchTerm ? 
@@ -353,7 +359,7 @@ const CreateRefereePage = () => {
                           />
                         </td>
                         <td className="name-cell">
-                          <div className="person-name">{person.fullName}</div>
+                          <div className="person-name">{[person.firstName, person.lastName].filter(Boolean).join(' ') || '-'}</div>
                           <div className="person-birthdate-mobile">{person.birthDate ? new Date(person.birthDate).toLocaleDateString() : '-'}</div>
                         </td>
                         <td className="birthdate-cell">
@@ -383,7 +389,7 @@ const CreateRefereePage = () => {
               <h3>{t('floorball.referees.selectedPersons', 'Selected persons:')}</h3>
               <ul>
                 {selectedPersons.map(person => (
-                  <li key={person.id}>{person.fullName}</li>
+                  <li key={person.id}>{[person.firstName, person.lastName].filter(Boolean).join(' ') || '-'}</li>
                 ))}
               </ul>
             </div>

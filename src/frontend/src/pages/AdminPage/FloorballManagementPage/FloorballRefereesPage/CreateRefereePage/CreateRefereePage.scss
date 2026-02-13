@@ -187,6 +187,12 @@
   border-radius: 8px;
   overflow: hidden;
   background-color: white;
+  transition: opacity 0.2s ease;
+
+  &.is-loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }
 
 .persons-table {
@@ -245,10 +251,10 @@
     td {
       padding: 1rem 1.5rem;
       vertical-align: middle;
-      font-size: 0.95rem;
+      font-size: 0.875rem;
 
       &.name-cell {
-        font-weight: 600;
+        font-weight: 500;
         color: #212529;
 
         .person-name {

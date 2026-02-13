@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-    Deploys MyLeague frontend infrastructure and application to Azure.
+    Provisions MyLeague frontend infrastructure (Azure Static Web App) in Azure.
 
 .DESCRIPTION
-    This script automates the deployment of Azure Static Web App for the MyLeague frontend.
-    It can deploy just the infrastructure, or also build and deploy the React application.
+    This script provisions an Azure Static Web App for the MyLeague frontend.
+    This does NOT deploy the application code - use infra/deploy/deploy-frontend.ps1 for that.
 
 .PARAMETER Environment
-    The environment to deploy (dev, staging, prod). Default: dev
+    The environment to provision (dev, staging, prod). Default: dev
 
 .PARAMETER Location
     The Azure region for resources. Default: westeurope
@@ -16,25 +16,16 @@
     Override the resource group name. Default: myleague-{Environment}-rg
 
 .PARAMETER ApiBackendUrl
-    The URL of the backend API. If not provided, will try to get from existing backend deployment.
-
-.PARAMETER DeployApp
-    If specified, also builds and deploys the React application.
+    The URL of the backend API. If not provided, will try to detect from existing deployment.
 
 .PARAMETER SkipLogin
     Skip the Azure login check (use if already logged in).
 
 .EXAMPLE
-    .\deploy-frontend.ps1
-    # Deploy infrastructure only
+    .\provision-frontend.ps1
 
 .EXAMPLE
-    .\deploy-frontend.ps1 -DeployApp
-    # Deploy infrastructure and application
-
-.EXAMPLE
-    .\deploy-frontend.ps1 -ApiBackendUrl "https://myleague-dev-api.azurewebsites.net" -DeployApp
-    # Deploy with specific backend URL
+    .\provision-frontend.ps1 -ApiBackendUrl "https://myleague-dev-api.azurewebsites.net"
 #>
 
 param(
@@ -50,9 +41,6 @@ param(
 
     [Parameter()]
     [string]$ApiBackendUrl,
-
-    [Parameter()]
-    [switch]$DeployApp,
 
     [Parameter()]
     [switch]$SkipLogin
@@ -72,14 +60,13 @@ function Write-ErrorMsg { param($Message) Write-Host "[X] $Message" -ForegroundC
 Write-Host @"
 
 ================================================================
-        MyLeague Frontend Infrastructure Deployment
+     MyLeague Frontend Infrastructure Provisioning
 ================================================================
 
 "@ -ForegroundColor Magenta
 
 Write-Host "Environment: $Environment"
 Write-Host "Location:    $Location"
-Write-Host "Deploy App:  $DeployApp"
 Write-Host ""
 
 # Set default resource group name if not provided
@@ -116,33 +103,6 @@ else {
     }
     else {
         Write-ErrorMsg "Failed to install Bicep"
-        exit 1
-    }
-}
-
-# Check for SWA CLI if deploying app
-if ($DeployApp) {
-    if (Get-Command swa -ErrorAction SilentlyContinue) {
-        Write-Success "SWA CLI available"
-    }
-    else {
-        Write-WarningMsg "SWA CLI not found, installing..."
-        npm install -g @azure/static-web-apps-cli
-        if ($LASTEXITCODE -eq 0) {
-            Write-Success "SWA CLI installed"
-        }
-        else {
-            Write-ErrorMsg "Failed to install SWA CLI. Please install Node.js and run: npm install -g @azure/static-web-apps-cli"
-            exit 1
-        }
-    }
-
-    # Check for pnpm
-    if (Get-Command pnpm -ErrorAction SilentlyContinue) {
-        Write-Success "pnpm available"
-    }
-    else {
-        Write-ErrorMsg "pnpm is not installed. Please install from: https://pnpm.io/installation"
         exit 1
     }
 }
@@ -187,7 +147,7 @@ if (-not $ApiBackendUrl) {
         Write-Success "Found backend API URL: $ApiBackendUrl"
     }
     else {
-        Write-WarningMsg "Backend API URL not found. Frontend will be deployed without API configuration."
+        Write-WarningMsg "Backend API URL not found. Frontend will be provisioned without API configuration."
         Write-WarningMsg "You can update this later in the Static Web App settings."
         $ApiBackendUrl = ""
     }
@@ -217,14 +177,14 @@ else {
 }
 
 # ============================================================================
-# Deploy Infrastructure
+# Provision Infrastructure
 # ============================================================================
 
-Write-Step "Deploying frontend infrastructure..."
+Write-Step "Provisioning frontend infrastructure..."
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$templateFile = Join-Path $scriptDir "main-frontend.bicep"
-$parametersFile = Join-Path $scriptDir "main-frontend.bicepparam"
+$templateFile = Join-Path $scriptDir "frontend.bicep"
+$parametersFile = Join-Path $scriptDir "frontend.bicepparam"
 
 # Validate template first
 Write-Host "  Validating template..." -ForegroundColor Gray
@@ -256,11 +216,11 @@ $deploymentOutput = az deployment group create `
     --output json
 
 if ($LASTEXITCODE -ne 0) {
-    Write-ErrorMsg "Deployment failed"
+    Write-ErrorMsg "Provisioning failed"
     exit 1
 }
 
-Write-Success "Frontend infrastructure deployed!"
+Write-Success "Frontend infrastructure provisioned!"
 
 # ============================================================================
 # Get Deployment Outputs
@@ -280,7 +240,7 @@ $deploymentToken = $outputs.deploymentToken.value
 
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Green
-Write-Host "  Infrastructure Deployed!" -ForegroundColor Green
+Write-Host "  Frontend Infrastructure Provisioned!" -ForegroundColor Green
 Write-Host "================================================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Frontend URL:      $frontendUrl" -ForegroundColor Green
@@ -288,61 +248,6 @@ Write-Host "  Static Web App:    $staticWebAppName" -ForegroundColor Green
 Write-Host "  Backend API URL:   $ApiBackendUrl" -ForegroundColor Green
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Green
-
-# ============================================================================
-# Deploy Application (if requested)
-# ============================================================================
-
-if ($DeployApp) {
-    Write-Step "Building and deploying React application..."
-
-    $frontendPath = Join-Path (Split-Path -Parent $scriptDir) "src\frontend"
-    
-    if (-not (Test-Path $frontendPath)) {
-        Write-ErrorMsg "Frontend path not found: $frontendPath"
-        exit 1
-    }
-
-    # Create .env.production with API URL
-    $envFile = Join-Path $frontendPath ".env.production"
-    "VITE_API_URL=$ApiBackendUrl" | Out-File -FilePath $envFile -Encoding utf8
-    Write-Success "Created .env.production with API URL"
-
-    # Install dependencies
-    Write-Host "  Installing dependencies..." -ForegroundColor Gray
-    Push-Location $frontendPath
-    pnpm install
-    if ($LASTEXITCODE -ne 0) {
-        Pop-Location
-        Write-ErrorMsg "Failed to install dependencies"
-        exit 1
-    }
-
-    # Build the application
-    Write-Host "  Building application..." -ForegroundColor Gray
-    pnpm run build
-    if ($LASTEXITCODE -ne 0) {
-        Pop-Location
-        Write-ErrorMsg "Failed to build application"
-        exit 1
-    }
-    Write-Success "Application built"
-
-    # Deploy using SWA CLI
-    Write-Host "  Deploying to Azure Static Web App..." -ForegroundColor Gray
-    swa deploy ./dist `
-        --deployment-token $deploymentToken `
-        --env production
-
-    if ($LASTEXITCODE -ne 0) {
-        Pop-Location
-        Write-ErrorMsg "Failed to deploy application"
-        exit 1
-    }
-
-    Pop-Location
-    Write-Success "Application deployed!"
-}
 
 # ============================================================================
 # Next Steps
@@ -354,39 +259,19 @@ Write-Host @"
                        Next Steps
 ================================================================
 
-"@ -ForegroundColor Cyan
-
-if (-not $DeployApp) {
-    Write-Host @"
 1. Deploy the React application:
-   cd src/frontend
-   pnpm install
-   pnpm run build
-   swa deploy ./dist --deployment-token "$deploymentToken"
+   cd infra\deploy
+   .\deploy-frontend.ps1
 
-   Or run this script with -DeployApp flag:
-   .\deploy-frontend.ps1 -DeployApp
-
-"@ -ForegroundColor Cyan
-}
-
-Write-Host @"
 2. Update backend CORS settings:
-   Add '$frontendUrl' to the allowedOrigins in main.bicepparam
-   Then redeploy the backend.
+   Add '$frontendUrl' to the allowedOrigins in provision\backend.bicepparam
+   Then re-provision the backend.
 
-3. Configure custom domain (optional):
-   az staticwebapp hostname set --name $staticWebAppName --hostname your-domain.com
-
-4. View your application:
+3. View your application:
    $frontendUrl
 
 "@ -ForegroundColor Cyan
 
-Write-Host "Deployment completed at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Gray
-
-# Output deployment token for CI/CD
-Write-Host ""
 Write-Host "================================================================" -ForegroundColor Yellow
 Write-Host "  DEPLOYMENT TOKEN (save for CI/CD)" -ForegroundColor Yellow
 Write-Host "================================================================" -ForegroundColor Yellow

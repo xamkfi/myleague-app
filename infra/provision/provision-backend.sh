@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # ============================================================================
-# MyLeague Azure Infrastructure Deployment Script
+# MyLeague Backend Infrastructure Provisioning Script
 # ============================================================================
-# Usage: ./deploy.sh [options]
+# Usage: ./provision-backend.sh [options]
 #
 # Options:
 #   -e, --environment   Environment (dev, staging, prod). Default: dev
@@ -32,10 +32,10 @@ MAGENTA='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Helper functions
-print_step() { echo -e "\n${CYAN}▶ $1${NC}"; }
-print_success() { echo -e "${GREEN}✓ $1${NC}"; }
-print_warning() { echo -e "${YELLOW}⚠ $1${NC}"; }
-print_error() { echo -e "${RED}✗ $1${NC}"; }
+print_step() { echo -e "\n${CYAN}>> $1${NC}"; }
+print_success() { echo -e "${GREEN}[OK] $1${NC}"; }
+print_warning() { echo -e "${YELLOW}[!] $1${NC}"; }
+print_error() { echo -e "${RED}[X] $1${NC}"; }
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -61,7 +61,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -h|--help)
-            echo "Usage: ./deploy.sh [options]"
+            echo "Usage: ./provision-backend.sh [options]"
             echo ""
             echo "Options:"
             echo "  -e, --environment   Environment (dev, staging, prod). Default: dev"
@@ -92,9 +92,9 @@ fi
 
 # Banner
 echo -e "${MAGENTA}"
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║           MyLeague Azure Infrastructure Deployment           ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
+echo "================================================================"
+echo "     MyLeague Backend Infrastructure Provisioning"
+echo "================================================================"
 echo -e "${NC}"
 
 echo "Environment: $ENVIRONMENT"
@@ -134,7 +134,6 @@ if [ "$SKIP_LOGIN" = false ]; then
     fi
     
     ACCOUNT_NAME=$(az account show --query "name" -o tsv)
-    ACCOUNT_ID=$(az account show --query "id" -o tsv)
     print_success "Logged in to subscription: $ACCOUNT_NAME"
     
     # Confirm subscription
@@ -189,14 +188,14 @@ else
 fi
 
 # ============================================================================
-# Deploy Infrastructure
+# Provision Infrastructure
 # ============================================================================
 
-print_step "Deploying infrastructure (this may take 5-10 minutes)..."
+print_step "Provisioning infrastructure (this may take 5-10 minutes)..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TEMPLATE_FILE="$SCRIPT_DIR/main.bicep"
-PARAMETERS_FILE="$SCRIPT_DIR/main.bicepparam"
+TEMPLATE_FILE="$SCRIPT_DIR/backend.bicep"
+PARAMETERS_FILE="$SCRIPT_DIR/backend.bicepparam"
 DEPLOYMENT_NAME="myleague-${ENVIRONMENT}-$(date +%Y%m%d-%H%M%S)"
 
 # Validate template
@@ -224,7 +223,7 @@ az deployment group create \
     --name "$DEPLOYMENT_NAME" \
     --output none
 
-print_success "Infrastructure deployed successfully!"
+print_success "Infrastructure provisioned successfully!"
 
 # ============================================================================
 # Display Outputs
@@ -232,10 +231,8 @@ print_success "Infrastructure deployed successfully!"
 
 print_step "Deployment Outputs"
 
-# Get the latest deployment name
 LATEST_DEPLOYMENT=$(az deployment group list --resource-group "$RESOURCE_GROUP" --query "[0].name" -o tsv)
 
-# Get outputs
 API_URL=$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "$LATEST_DEPLOYMENT" --query "properties.outputs.apiUrl.value" -o tsv)
 APP_SERVICE_NAME=$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "$LATEST_DEPLOYMENT" --query "properties.outputs.appServiceName.value" -o tsv)
 POSTGRES_SERVER=$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "$LATEST_DEPLOYMENT" --query "properties.outputs.postgresServerName.value" -o tsv)
@@ -243,27 +240,21 @@ POSTGRES_FQDN=$(az deployment group show --resource-group "$RESOURCE_GROUP" --na
 DATABASE_NAME=$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "$LATEST_DEPLOYMENT" --query "properties.outputs.databaseName.value" -o tsv)
 
 echo ""
-echo -e "${GREEN}┌─────────────────────────────────────────────────────────────────┐${NC}"
-echo -e "${GREEN}│  Deployment Complete!                                           │${NC}"
-echo -e "${GREEN}├─────────────────────────────────────────────────────────────────┤${NC}"
-echo -e "${GREEN}│                                                                 │${NC}"
-echo -e "${GREEN}│  API URL:        $API_URL${NC}"
-echo -e "${GREEN}│  App Service:    $APP_SERVICE_NAME${NC}"
-echo -e "${GREEN}│  PostgreSQL:     $POSTGRES_SERVER${NC}"
-echo -e "${GREEN}│  Database:       $DATABASE_NAME${NC}"
-echo -e "${GREEN}│                                                                 │${NC}"
-echo -e "${GREEN}└─────────────────────────────────────────────────────────────────┘${NC}"
-
-# ============================================================================
-# Next Steps
-# ============================================================================
+echo -e "${GREEN}================================================================${NC}"
+echo -e "${GREEN}  Infrastructure Provisioned!${NC}"
+echo -e "${GREEN}================================================================${NC}"
+echo -e "${GREEN}  API URL:        $API_URL${NC}"
+echo -e "${GREEN}  App Service:    $APP_SERVICE_NAME${NC}"
+echo -e "${GREEN}  PostgreSQL:     $POSTGRES_SERVER${NC}"
+echo -e "${GREEN}  Database:       $DATABASE_NAME${NC}"
+echo -e "${GREEN}================================================================${NC}"
 
 echo -e "${CYAN}"
 cat << EOF
 
-╔══════════════════════════════════════════════════════════════╗
-║                         Next Steps                           ║
-╚══════════════════════════════════════════════════════════════╝
+================================================================
+                       Next Steps
+================================================================
 
 1. Deploy your application:
    cd src/backend/WebAPI
@@ -278,10 +269,7 @@ cat << EOF
 3. View logs:
    az webapp log tail --resource-group $RESOURCE_GROUP --name $APP_SERVICE_NAME
 
-4. Check health:
-   curl $API_URL/health/ready
-
 EOF
 echo -e "${NC}"
 
-echo "Deployment completed at $(date '+%Y-%m-%d %H:%M:%S')"
+echo "Provisioning completed at $(date '+%Y-%m-%d %H:%M:%S')"

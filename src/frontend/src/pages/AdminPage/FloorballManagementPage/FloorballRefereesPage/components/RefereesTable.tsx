@@ -53,7 +53,7 @@ const RefereesTable = ({ referees, onDelete }: RefereesTableProps) => {
           
           return (
             <tr key={referee.id}>
-              <td>{referee.person.fullName}</td>
+              <td>{[referee.person.firstName, referee.person.lastName].filter(Boolean).join(' ') || '-'}</td>
               <td>
                 <span 
                   className={`status-badge ${referee.isActive ? 'active' : 'inactive'}`}
