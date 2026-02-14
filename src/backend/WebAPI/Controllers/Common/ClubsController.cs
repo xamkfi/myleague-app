@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.Commands.Clubs;
 using Application.Queries.Clubs;
@@ -88,6 +89,7 @@ public class ClubsController : ControllerBase
     /// <param name="request">Club creation request</param>
     /// <returns>Created club details</returns>
     [HttpPost]
+    [Authorize]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status500InternalServerError)]
@@ -129,6 +131,7 @@ public class ClubsController : ControllerBase
     /// <param name="request">Club update request</param>
     /// <returns>Updated club details</returns>
     [HttpPut("{id:guid}")]
+    [Authorize]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status404NotFound)]
@@ -172,6 +175,7 @@ public class ClubsController : ControllerBase
     /// <param name="id">Club ID</param>
     /// <returns>Success confirmation</returns>
     [HttpDelete("{id:guid}")]
+    [Authorize]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -205,6 +209,7 @@ public class ClubsController : ControllerBase
     /// <param name="logoUrl">New logo URL</param>
     /// <returns>Updated club details</returns>
     [HttpPatch("{id:guid}/logo")]
+    [Authorize]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status404NotFound)]

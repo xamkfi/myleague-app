@@ -17,10 +17,12 @@ infra/
 │   └── modules/
 │       ├── app-service-plan.bicep    # App Service Plan module
 │       ├── app-service.bicep         # App Service module
+│       ├── communication-services.bicep  # Azure Communication Services (Email)
 │       ├── postgresql.bicep          # PostgreSQL module
 │       ├── static-web-app.bicep      # Static Web App module
 │       └── storage-account.bicep     # Storage Account module
 ├── deploy/                           # Application deployment scripts
+│   ├── deploy-backend.ps1           # Build & deploy .NET API to App Service (interactive)
 │   └── deploy-frontend.ps1          # Build & deploy React app to SWA (interactive)
 └── README.md
 ```
@@ -35,6 +37,9 @@ infra/
 - **App Service** - The MyLeague API application
 - **PostgreSQL Flexible Server** (Burstable B1ms) - Database server
 - **Storage Account** - Image uploads
+- **Azure Communication Services** - Email delivery (login codes)
+  - Email Service with Azure-managed domain (auto-verified)
+  - DoNotReply sender username
 
 ### Frontend
 - **Azure Static Web App** (Free tier) - Hosts the React SPA
@@ -44,8 +49,9 @@ infra/
 1. **Azure CLI** - Install from https://docs.microsoft.com/en-us/cli/azure/install-azure-cli
 2. **Azure Subscription** - You need an active Azure subscription
 3. **Bicep CLI** - Usually included with Azure CLI
-4. **pnpm** - For frontend builds (https://pnpm.io/installation)
-5. **SWA CLI** - For frontend deployment (`npm install -g @azure/static-web-apps-cli`)
+4. **.NET 9 SDK** - For backend builds (https://dotnet.microsoft.com/download)
+5. **pnpm** - For frontend builds (https://pnpm.io/installation)
+6. **SWA CLI** - For frontend deployment (`npm install -g @azure/static-web-apps-cli`)
 
 ## Quick Start
 
@@ -64,14 +70,35 @@ chmod +x provision-backend.sh
 ./provision-backend.sh
 ```
 
-### 2. Provision Frontend Infrastructure
+The script will interactively prompt for:
+- **PostgreSQL admin password** (min 8 characters)
+- **JWT secret key** (min 32 characters, used for HMAC-SHA256 token signing)
+- **Admin seed email** (optional, creates an admin user on first startup)
+
+This provisions all backend resources including Azure Communication Services for email delivery.
+
+### 2. Deploy Backend Application
+
+```powershell
+cd infra/deploy
+.\deploy-backend.ps1
+```
+
+The script will:
+1. Build and publish the .NET API
+2. List available App Services and let you pick one
+3. Deploy via zip deploy
+4. Optionally run EF Core database migrations
+5. Run a health check
+
+### 3. Provision Frontend Infrastructure
 
 ```powershell
 cd infra/provision
 .\provision-frontend.ps1
 ```
 
-### 3. Deploy Frontend Application
+### 4. Deploy Frontend Application
 
 ```powershell
 cd infra/deploy
@@ -90,7 +117,7 @@ The deploy script is interactive and will:
 
 | Script | Description |
 |--------|-------------|
-| `provision-backend.ps1` | Provisions backend infra (App Service, PostgreSQL, Storage) |
+| `provision-backend.ps1` | Provisions backend infra (App Service, PostgreSQL, Storage, ACS Email) |
 | `provision-backend.sh` | Same as above, for Linux/macOS |
 | `provision-frontend.ps1` | Provisions frontend infra (Azure Static Web App) |
 
@@ -102,6 +129,8 @@ The deploy script is interactive and will:
 | `-Location westeurope` | Azure region |
 | `-ResourceGroupName mygroup` | Override resource group name |
 | `-PostgresPassword "pass"` | PostgreSQL password (prompted if not provided) |
+| `-JwtSecretKey "key"` | JWT secret key, min 32 chars (prompted if not provided) |
+| `-SeedAdminEmail "email"` | Admin email for seeding (prompted if not provided) |
 | `-SkipLogin` | Skip Azure login check |
 
 #### Frontend Provision Options
@@ -117,7 +146,19 @@ The deploy script is interactive and will:
 
 | Script | Description |
 |--------|-------------|
+| `deploy-backend.ps1` | Builds and deploys .NET API to an existing App Service |
 | `deploy-frontend.ps1` | Builds and deploys React app to an existing SWA |
+
+#### Backend Deploy Options
+
+| Option | Description |
+|--------|-------------|
+| `-Environment dev` | Target environment (dev, staging, prod) |
+| `-ResourceGroupName "rg"` | Resource group (default: myleague-{env}-rg) |
+| `-AppServiceName "name"` | Target App Service (lists available if not provided) |
+| `-SkipLogin` | Skip Azure login check |
+| `-SkipMigrations` | Skip the migration prompt |
+| `-RunMigrations` | Automatically run migrations |
 
 #### Frontend Deploy Options
 
@@ -130,6 +171,25 @@ The deploy script is interactive and will:
 | `-ResourceGroupName "rg"` | Resource group for the SWA |
 | `-DeploymentToken "token"` | SWA deployment token (auto-fetched if not provided) |
 | `-SkipLogin` | Skip Azure login check |
+
+## Authentication Configuration
+
+The provisioning scripts automatically configure the following authentication settings on the App Service:
+
+| Setting | Source | Description |
+|---------|--------|-------------|
+| `Jwt__SecretKey` | Prompted during provisioning | HMAC-SHA256 signing key (min 32 chars) |
+| `Jwt__Issuer` | Default: `MyLeague` | JWT token issuer |
+| `Jwt__Audience` | Default: `MyLeague` | JWT token audience |
+| `AzureCommunicationServices__ConnectionString` | Auto from ACS module | ACS connection string |
+| `AzureCommunicationServices__SenderAddress` | Auto from ACS domain | Email sender (DoNotReply@...) |
+| `Seed__AdminEmail` | Prompted during provisioning | Initial admin user email |
+
+**JWT Secret Key Requirements:**
+- Must be at least 32 characters
+- Used for HMAC-SHA256 token signing
+- Should be unique per environment
+- Keep it secret -- do not commit to source control
 
 ## Manual Deployment
 
@@ -168,6 +228,7 @@ dotnet ef database update --project ../Infrastructure/Infrastructure.csproj
 | PostgreSQL Flexible Server | Burstable B1ms | ~$12 |
 | Static Web App | Free | $0 |
 | Storage Account | Standard_LRS | ~$0.02/GB/month |
+| Communication Services | Pay-as-you-go | ~$0 (100 free emails/day) |
 | **Total** | | **~$25/month** |
 
 ## Troubleshooting
@@ -193,6 +254,16 @@ az postgres flexible-server firewall-rule create \
   --rule-name AllowMyIP \
   --start-ip-address <your-ip> \
   --end-ip-address <your-ip>
+```
+
+### Check ACS Email Configuration
+
+```bash
+# View Communication Service details
+az communication show --name myleague-dev-comm --resource-group myleague-dev-rg
+
+# Check App Service settings
+az webapp config appsettings list --name myleague-dev-api --resource-group myleague-dev-rg --query "[?name=='AzureCommunicationServices__SenderAddress']"
 ```
 
 ## Clean Up

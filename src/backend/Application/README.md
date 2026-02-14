@@ -29,19 +29,43 @@ The Application layer follows **Clean Architecture** and **CQRS** principles:
 ```
 Application/
 ├── Commands/                # Write operations (CQRS Commands)
+│   ├── Auth/               # Authentication commands
+│   │   ├── RequestLoginCodeCommand.cs
+│   │   ├── VerifyLoginCodeCommand.cs
+│   │   ├── RefreshTokenCommand.cs
+│   │   └── RevokeTokenCommand.cs
+│   ├── Users/              # User management commands
 │   ├── Person/             # Person-related commands
 │   ├── Clubs/              # Club-related commands
 │   └── [Sport]/            # Sport-specific commands
 ├── Queries/                # Read operations (CQRS Queries)
+│   ├── Users/              # User-related queries
 │   ├── Clubs/              # Club-related queries
 │   └── [Sport]/            # Sport-specific queries
 ├── Handlers/               # Command and Query handlers
+│   ├── Auth/               # Authentication handlers
+│   │   ├── RequestLoginCodeHandler.cs
+│   │   ├── VerifyLoginCodeHandler.cs
+│   │   ├── RefreshTokenHandler.cs
+│   │   └── RevokeTokenHandler.cs
+│   ├── Users/              # User command/query handlers
 │   ├── Clubs/              # Club command/query handlers
 │   └── [Sport]/            # Sport-specific handlers
 ├── DTOs/                   # Data Transfer Objects
-│   ├── Common/             # Shared DTOs
+│   ├── Auth/               # Auth DTOs (AuthTokenDto)
+│   ├── Common/             # Shared DTOs (UserDto, PersonDto)
 │   └── [Domain]/           # Domain-specific DTOs
+├── Interfaces/             # Service abstractions
+│   └── Auth/               # Auth service interfaces
+│       ├── IEmailService.cs
+│       └── IJwtTokenService.cs
+├── Configuration/          # Configuration classes
+│   ├── JwtConfiguration.cs
+│   ├── LoginCodeConfiguration.cs
+│   ├── AzureCommunicationServicesConfiguration.cs
+│   └── SeedConfiguration.cs
 ├── Validators/             # FluentValidation validators
+│   ├── Auth/               # Auth command validators
 │   ├── Commands/           # Command validation rules
 │   └── Queries/            # Query validation rules
 ├── Behaviors/              # MediatR pipeline behaviors
@@ -326,10 +350,34 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 - Total count optimization
 - Skip/Take query optimization
 
-## 🛡️ Security Considerations
+## 🛡️ Security & Authentication
+
+### Passwordless Authentication Commands
+The application layer defines the full authentication flow as CQRS commands:
+
+| Command | Description |
+|---------|-------------|
+| `RequestLoginCodeCommand` | Generates a 6-digit code (via `RandomNumberGenerator`), stores it on the User entity, and sends it via `IEmailService` |
+| `VerifyLoginCodeCommand` | Validates the code, enforces brute-force protection (max 5 attempts), and returns JWT access token + refresh token |
+| `RefreshTokenCommand` | Performs refresh token rotation -- validates the existing token, revokes it, issues a new pair; detects token theft |
+| `RevokeTokenCommand` | Revokes a refresh token (used for logout) |
+
+### Service Interfaces
+| Interface | Description |
+|-----------|-------------|
+| `IEmailService` | Abstraction for sending login codes (console in dev, Azure Email in prod) |
+| `IJwtTokenService` | Generates JWT access tokens, refresh tokens, and token hashes |
+
+### Configuration Classes
+| Class | Config Section | Description |
+|-------|---------------|-------------|
+| `JwtConfiguration` | `Jwt` | Issuer, audience, secret key, token lifetimes |
+| `LoginCodeConfiguration` | `LoginCode` | Code length (6), expiration (10 min), max attempts (5) |
+| `AzureCommunicationServicesConfiguration` | `AzureCommunicationServices` | Connection string and sender address for Azure Email |
+| `SeedConfiguration` | `Seed` | Admin email for initial user creation |
 
 ### Input Validation
-- Comprehensive validation rules
+- Comprehensive validation rules for all auth commands
 - SQL injection prevention
 - XSS attack mitigation
 - Data sanitization

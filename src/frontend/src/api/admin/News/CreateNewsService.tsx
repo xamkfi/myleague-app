@@ -1,3 +1,4 @@
+import { authFetch } from '../../utils/authFetch';
 import { API_URL } from '../../../constants/config';
 
 interface ApiResponse<T> {
@@ -20,7 +21,7 @@ interface News{
 
 export async function CreateNewsService(news: News){
     try {
-        const response = await fetch(`${API_URL}/News`, { 
+        const response = await authFetch(`${API_URL}/News`, { 
           method: "POST",
           headers: {
             "Content-Type": "application/json" // serialize object to JSON

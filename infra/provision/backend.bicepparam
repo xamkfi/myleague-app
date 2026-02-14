@@ -33,3 +33,11 @@ param allowedOrigins = [
   'http://localhost:5173'  // Vite dev server
   'http://localhost:3000'  // Alternative dev port
 ]
+
+// JWT Secret Key - will be prompted during deployment
+// Must be at least 32 characters for HMAC-SHA256
+param jwtSecretKey = '' // Will be prompted during deployment
+
+// Seed - admin email for initial user (optional)
+// Set this to create an admin user on first startup
+param seedAdminEmail = ''

@@ -1,4 +1,3 @@
-using System;
 using Application.Common;
 using Application.DTOs.Common;
 using MediatR;
@@ -6,6 +5,6 @@ using MediatR;
 namespace Application.Queries.Users;
 
 /// <summary>
-/// Query for getting a user by username
+/// Query for getting a user by email address
 /// </summary>
-public record GetUserByUsernameQuery(string Username) : IRequest<Result<UserDto>>; 
+public record GetUserByEmailQuery(string Email) : IRequest<Result<UserDto>>;

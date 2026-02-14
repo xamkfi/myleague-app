@@ -6,6 +6,7 @@
 // - App Service for .NET 9 API
 // - PostgreSQL Flexible Server (Burstable B1ms)
 // - Storage Account for image uploads
+// - Azure Communication Services (Email with Azure-managed domain)
 // ============================================================================
 
 targetScope = 'resourceGroup'
@@ -60,6 +61,13 @@ param allowedOrigins array = []
 ])
 param storageSku string = 'Standard_LRS'
 
+@description('The JWT secret key for signing tokens (must be at least 32 characters)')
+@secure()
+param jwtSecretKey string
+
+@description('The admin email for database seeding (optional)')
+param seedAdminEmail string = ''
+
 // ============================================================================
 // Variables
 // ============================================================================
@@ -70,6 +78,9 @@ var appServiceName = '${resourcePrefix}-api'
 var postgresServerName = '${resourcePrefix}-postgres'
 // Storage account names must be 3-24 lowercase alphanumeric only
 var storageAccountName = toLower(replace('${baseName}${environmentName}storage', '-', ''))
+
+var communicationServiceName = '${resourcePrefix}-comm'
+var emailServiceName = '${resourcePrefix}-email'
 
 var tags = {
   Environment: environmentName
@@ -123,6 +134,16 @@ module storageAccount 'modules/storage-account.bicep' = {
   }
 }
 
+// Azure Communication Services (Email)
+module communicationServices 'modules/communication-services.bicep' = {
+  name: 'communicationServices'
+  params: {
+    name: communicationServiceName
+    emailServiceName: emailServiceName
+    tags: tags
+  }
+}
+
 // App Service (API)
 module appService 'modules/app-service.bicep' = {
   name: 'appService'
@@ -135,6 +156,10 @@ module appService 'modules/app-service.bicep' = {
     allowedOrigins: allowedOrigins
     storageConnectionString: storageAccount.outputs.connectionString
     storageContainerName: storageAccount.outputs.containerName
+    jwtSecretKey: jwtSecretKey
+    acsConnectionString: communicationServices.outputs.connectionString
+    acsSenderAddress: communicationServices.outputs.senderAddress
+    seedAdminEmail: seedAdminEmail
     tags: tags
   }
 }
@@ -172,3 +197,12 @@ output storageBlobEndpoint string = storageAccount.outputs.blobEndpoint
 
 @description('The name of the blob container for images')
 output storageContainerName string = storageAccount.outputs.containerName
+
+@description('The name of the Communication Service')
+output communicationServiceName string = communicationServices.outputs.name
+
+@description('The name of the Email Service')
+output emailServiceName string = communicationServices.outputs.emailServiceName
+
+@description('The sender email address for the Communication Service')
+output acsSenderAddress string = communicationServices.outputs.senderAddress

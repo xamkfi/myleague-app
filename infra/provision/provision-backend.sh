@@ -10,6 +10,8 @@
 #   -l, --location      Azure region. Default: westeurope
 #   -g, --resource-group Override resource group name
 #   -p, --password      PostgreSQL admin password (will prompt if not provided)
+#   -j, --jwt-secret    JWT secret key for token signing (min 32 chars, prompted if not provided)
+#   -a, --admin-email   Admin email for database seeding (optional)
 #   -s, --skip-login    Skip Azure login check
 #   -h, --help          Show this help message
 # ============================================================================
@@ -21,6 +23,8 @@ ENVIRONMENT="dev"
 LOCATION="westeurope"
 RESOURCE_GROUP=""
 POSTGRES_PASSWORD=""
+JWT_SECRET_KEY=""
+SEED_ADMIN_EMAIL=""
 SKIP_LOGIN=false
 
 # Colors
@@ -56,6 +60,14 @@ while [[ $# -gt 0 ]]; do
             POSTGRES_PASSWORD="$2"
             shift 2
             ;;
+        -j|--jwt-secret)
+            JWT_SECRET_KEY="$2"
+            shift 2
+            ;;
+        -a|--admin-email)
+            SEED_ADMIN_EMAIL="$2"
+            shift 2
+            ;;
         -s|--skip-login)
             SKIP_LOGIN=true
             shift
@@ -68,6 +80,8 @@ while [[ $# -gt 0 ]]; do
             echo "  -l, --location      Azure region. Default: westeurope"
             echo "  -g, --resource-group Override resource group name"
             echo "  -p, --password      PostgreSQL admin password"
+            echo "  -j, --jwt-secret    JWT secret key (min 32 chars)"
+            echo "  -a, --admin-email   Admin email for database seeding (optional)"
             echo "  -s, --skip-login    Skip Azure login check"
             echo "  -h, --help          Show this help message"
             exit 0
@@ -172,6 +186,35 @@ if [ -z "$POSTGRES_PASSWORD" ]; then
     fi
 fi
 
+# Get JWT Secret Key
+if [ -z "$JWT_SECRET_KEY" ]; then
+    echo ""
+    echo -e "${YELLOW}JWT Secret Key Requirements:${NC}"
+    echo "  - Minimum 32 characters"
+    echo "  - Used for HMAC-SHA256 token signing"
+    echo "  - Must be kept secret and unique per environment"
+    echo ""
+    
+    read -sp "Enter JWT secret key: " JWT_SECRET_KEY
+    echo ""
+    
+    if [ ${#JWT_SECRET_KEY} -lt 32 ]; then
+        print_error "JWT secret key must be at least 32 characters"
+        exit 1
+    fi
+fi
+
+# Get Seed Admin Email (optional)
+if [ -z "$SEED_ADMIN_EMAIL" ]; then
+    echo ""
+    echo -e "${YELLOW}Admin Seed Email (optional):${NC}"
+    echo "  - If set, an admin user with this email is created on first startup"
+    echo "  - Leave empty to skip"
+    echo ""
+    
+    read -p "Enter admin email (or press Enter to skip): " SEED_ADMIN_EMAIL
+fi
+
 print_success "Parameters configured"
 
 # ============================================================================
@@ -205,6 +248,8 @@ az deployment group validate \
     --template-file "$TEMPLATE_FILE" \
     --parameters "$PARAMETERS_FILE" \
     --parameters postgresAdminPassword="$POSTGRES_PASSWORD" \
+    --parameters jwtSecretKey="$JWT_SECRET_KEY" \
+    --parameters seedAdminEmail="$SEED_ADMIN_EMAIL" \
     --parameters location="$LOCATION" \
     --parameters environmentName="$ENVIRONMENT" \
     --output none
@@ -218,6 +263,8 @@ az deployment group create \
     --template-file "$TEMPLATE_FILE" \
     --parameters "$PARAMETERS_FILE" \
     --parameters postgresAdminPassword="$POSTGRES_PASSWORD" \
+    --parameters jwtSecretKey="$JWT_SECRET_KEY" \
+    --parameters seedAdminEmail="$SEED_ADMIN_EMAIL" \
     --parameters location="$LOCATION" \
     --parameters environmentName="$ENVIRONMENT" \
     --name "$DEPLOYMENT_NAME" \
@@ -238,6 +285,8 @@ APP_SERVICE_NAME=$(az deployment group show --resource-group "$RESOURCE_GROUP" -
 POSTGRES_SERVER=$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "$LATEST_DEPLOYMENT" --query "properties.outputs.postgresServerName.value" -o tsv)
 POSTGRES_FQDN=$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "$LATEST_DEPLOYMENT" --query "properties.outputs.postgresServerFqdn.value" -o tsv)
 DATABASE_NAME=$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "$LATEST_DEPLOYMENT" --query "properties.outputs.databaseName.value" -o tsv)
+COMM_SERVICE_NAME=$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "$LATEST_DEPLOYMENT" --query "properties.outputs.communicationServiceName.value" -o tsv)
+ACS_SENDER=$(az deployment group show --resource-group "$RESOURCE_GROUP" --name "$LATEST_DEPLOYMENT" --query "properties.outputs.acsSenderAddress.value" -o tsv)
 
 echo ""
 echo -e "${GREEN}================================================================${NC}"
@@ -247,6 +296,8 @@ echo -e "${GREEN}  API URL:        $API_URL${NC}"
 echo -e "${GREEN}  App Service:    $APP_SERVICE_NAME${NC}"
 echo -e "${GREEN}  PostgreSQL:     $POSTGRES_SERVER${NC}"
 echo -e "${GREEN}  Database:       $DATABASE_NAME${NC}"
+echo -e "${GREEN}  Comm Service:   $COMM_SERVICE_NAME${NC}"
+echo -e "${GREEN}  Email Sender:   $ACS_SENDER${NC}"
 echo -e "${GREEN}================================================================${NC}"
 
 echo -e "${CYAN}"
@@ -268,6 +319,10 @@ cat << EOF
 
 3. View logs:
    az webapp log tail --resource-group $RESOURCE_GROUP --name $APP_SERVICE_NAME
+
+Note: Azure Communication Services Email and JWT authentication have
+been automatically configured by this provisioning script.
+The ACS sender address is: $ACS_SENDER
 
 EOF
 echo -e "${NC}"

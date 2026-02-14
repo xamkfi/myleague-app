@@ -17,6 +17,7 @@ namespace WebAPI.Controllers.Floorball
     /// Controller for managing floorball team managers
     /// </summary>
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     [Produces("application/json")]
     public class FloorballTeamManagerController : ControllerBase

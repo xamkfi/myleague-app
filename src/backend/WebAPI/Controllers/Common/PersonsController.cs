@@ -8,6 +8,7 @@ using Application.Queries.Persons;
 using Domain.Common;
 using Domain.ValueObjects.Common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
@@ -194,6 +195,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
@@ -242,6 +244,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The update request</param>
         /// <returns></returns>
         [HttpPut("{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
@@ -286,6 +289,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The basic info update request</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/basic-info")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
@@ -322,6 +326,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The address update request</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/address")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status404NotFound)]
@@ -365,6 +370,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The contact info update request</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/contact-info")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status404NotFound)]
@@ -406,6 +412,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="isRegistered">The registration status</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/registration")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
@@ -476,6 +483,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="role">The new role</param>
         /// <returns>The updated person</returns>
         [HttpPatch("{id:guid}/role")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
@@ -511,6 +519,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]

@@ -143,6 +143,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Create season request</param>
         /// <returns>Created season details</returns>
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -186,6 +187,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update season request</param>
         /// <returns>Updated season details</returns>
         [HttpPut("{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -230,6 +232,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Activated season details</returns>
         [HttpPut("{id:guid}/activate")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -261,6 +264,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Deactivated season details</returns>
         [HttpPut("{id:guid}/deactivate")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -292,6 +296,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Completed season details</returns>
         [HttpPut("{id:guid}/complete")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -326,6 +331,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="teamId">Team ID</param>
         /// <returns>Updated season details</returns>
         [HttpPost("{seasonId:guid}/teams/{teamId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -360,6 +366,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="teamId">Team ID</param>
         /// <returns>Updated season details</returns>
         [HttpDelete("{seasonId:guid}/teams/{teamId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -393,6 +400,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="seasonId">Season ID</param>
         /// <param name="divisionId">Division ID</param>
         [HttpPost("{seasonId:guid}/divisions/{divisionId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> AddDivisionToSeason(Guid seasonId, Guid divisionId)
@@ -413,6 +421,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="seasonId">Season ID</param>
         /// <param name="divisionId">Division ID</param>
         [HttpDelete("{seasonId:guid}/divisions/{divisionId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> RemoveDivisionFromSeason(Guid seasonId, Guid divisionId)
@@ -434,6 +443,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="divisionId">Division ID</param>
         /// <param name="teamId">Team ID</param>
         [HttpPost("{seasonId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> AddTeamToSeasonDivision(Guid seasonId, Guid divisionId, Guid teamId)
@@ -455,6 +465,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="divisionId">Division ID</param>
         /// <param name="teamId">Team ID</param>
         [HttpDelete("{seasonId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> RemoveTeamFromSeasonDivision(Guid seasonId, Guid divisionId, Guid teamId)
@@ -475,6 +486,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

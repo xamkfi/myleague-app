@@ -14,9 +14,13 @@ using MyLeague.Infrastructure.Persistence.Repositories.Common;
 using MyLeague.Infrastructure.Persistence.UnitOfWork;
 using MyLeague.Infrastructure.HealthChecks;
 using Application.Interfaces.Common;
+using Application.Interfaces.Auth;
+using Application.Configuration;
 using Application.Services.Common;
 using MyLeague.Infrastructure.Services.ImageStorage;
 using MyLeague.Infrastructure.Services.Common;
+using MyLeague.Infrastructure.Services.Auth;
+using MyLeague.Infrastructure.Services.Seeding;
 using Microsoft.Extensions.Hosting;
 
 namespace MyLeague.Infrastructure.DependencyInjections
@@ -48,7 +52,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     connectionString,
                     b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
 
-            // Auto-apply migrations
+            // Auto-apply migrations and seed data
             using (ServiceProvider serviceProvider = services.BuildServiceProvider())
             {
                 using (IServiceScope scope = serviceProvider.CreateScope())
@@ -58,6 +62,11 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
                     FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
                     floorballDbContext.Database.Migrate();
+
+                    // Seed default users after migrations
+                    DatabaseSeeder seeder = new();
+                    IWebHostEnvironment env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+                    seeder.SeedAsync(scope.ServiceProvider, env, configuration).GetAwaiter().GetResult();
                 }
             }
 
@@ -65,6 +74,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IClubRepository, ClubRepository>();
             services.AddScoped<IPersonRepository, PersonRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
             services.AddScoped<IDivisionRepository, DivisionRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
@@ -98,6 +108,28 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     sp.GetRequiredService<ILogger<AzureBlobImageStorageService>>());
             });
             services.AddScoped<IPersonNameProvider, PersonNameProvider>();
+
+            // Add authentication services
+            services.AddScoped<IJwtTokenService, JwtTokenService>();
+            services.AddScoped<IEmailService>(sp =>
+            {
+                IWebHostEnvironment env = sp.GetRequiredService<IWebHostEnvironment>();
+                IConfiguration config = sp.GetRequiredService<IConfiguration>();
+
+                // Use console logging in development when Azure Communication Services is not configured
+                bool hasAzureConfig = !string.IsNullOrWhiteSpace(
+                    config.GetSection("AzureCommunicationServices:ConnectionString").Value);
+                bool useConsole = env.IsDevelopment() && !hasAzureConfig;
+
+                if (useConsole)
+                {
+                    return new ConsoleLoginCodeEmailService(
+                        sp.GetRequiredService<ILogger<ConsoleLoginCodeEmailService>>());
+                }
+                return new AzureCommunicationEmailService(
+                    sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AzureCommunicationServicesConfiguration>>(),
+                    sp.GetRequiredService<ILogger<AzureCommunicationEmailService>>());
+            });
             
             // Add timer services
             services.AddScoped<ITimerRepository, TimerRepository>();

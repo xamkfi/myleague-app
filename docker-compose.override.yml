@@ -9,6 +9,15 @@ services:
       - Serilog__WriteTo__2__Name=Seq
       - Serilog__WriteTo__2__Args__serverUrl=http://seq:80
       - Serilog__WriteTo__2__Args__apiKey=
+      # Auth - JWT
+      - Jwt__SecretKey=DevSuperSecretKeyThatIsAtLeast32Characters!!
+      - Jwt__Issuer=MyLeague
+      - Jwt__Audience=MyLeague
+      # Auth - Seed (default test user)
+      - Seed__AdminEmail=test@myleague.fi
+      # Auth - ACS (empty = use console in dev)
+      - AzureCommunicationServices__ConnectionString=
+      - AzureCommunicationServices__SenderAddress=
     ports:
       - "8080:8080"
     volumes:

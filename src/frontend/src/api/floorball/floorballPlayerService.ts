@@ -4,6 +4,7 @@ import type {
   FloorballPosition,
 } from '../../types/floorball/floorballTypes';
 import type { Address, ContactInfo } from '../../types/admin/personTypes';
+import { authFetch } from '../utils/authFetch';
 import { API_URL } from '../../constants/config';
 
 export interface PersonDto {
@@ -71,7 +72,7 @@ export const floorballPlayerService = {
       if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
 
       const url = `${API_URL}/FloorballPlayer?${searchParams.toString()}`;
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -120,7 +121,7 @@ export const floorballPlayerService = {
       const url = `${API_URL}/FloorballPlayer/${id}`;
       console.log('Fetching player from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -149,7 +150,7 @@ export const floorballPlayerService = {
       console.log('Updating player with ID:', id);
       console.log('Update data:', data);
       
-      const response = await fetch(`${API_URL}/FloorballPlayer/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballPlayer/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -187,7 +188,7 @@ export const floorballPlayerService = {
     try {
       console.log('Creating player for person ID:', data.personId);
       
-      const response = await fetch(`${API_URL}/FloorballPlayer`, {
+      const response = await authFetch(`${API_URL}/FloorballPlayer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +226,7 @@ export const floorballPlayerService = {
     try {
       console.log('Deleting player with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballPlayer/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballPlayer/${id}`, {
         method: 'DELETE',
       });
       

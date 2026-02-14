@@ -1,6 +1,7 @@
 import type { Person, PersonFormData, PersonRole, PaginatedApiResponse } from '../../types/admin/personTypes';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
+import { authFetch } from '../utils/authFetch';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -15,7 +16,7 @@ export const personApi = {
     searchParams.append('page', page.toString());
     searchParams.append('pageSize', pageSize.toString());
 
-    const response = await fetch(`${API_URL}/persons?${searchParams.toString()}`);
+    const response = await authFetch(`${API_URL}/persons?${searchParams.toString()}`);
     
     const apiResponse: PaginatedApiResponse<Person> = await response.json();
     
@@ -28,7 +29,7 @@ export const personApi = {
   },
 
   getById: async (id: string): Promise<Person> => {
-    const response = await fetch(`${API_URL}/persons/${id}`);
+    const response = await authFetch(`${API_URL}/persons/${id}`);
     if (!response.ok) {
       throw new Error('Failed to fetch person');
     }
@@ -44,7 +45,7 @@ export const personApi = {
   },
 
   create: async (data: PersonFormData): Promise<Person> => {
-    const response = await fetch(`${API_URL}/persons`, {
+    const response = await authFetch(`${API_URL}/persons`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,7 +63,7 @@ export const personApi = {
   },
 
   update: async (id: string, data: PersonFormData): Promise<Person> => {
-    const response = await fetch(`${API_URL}/persons/${id}`, {
+    const response = await authFetch(`${API_URL}/persons/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -81,7 +82,7 @@ export const personApi = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/persons/${id}`, {
+    const response = await authFetch(`${API_URL}/persons/${id}`, {
       method: 'DELETE',
     });
 
@@ -94,7 +95,7 @@ export const personApi = {
   },
 
   updateRegistration: async (id: string, isRegistered: boolean): Promise<Person> => {
-    const response = await fetch(`${API_URL}/persons/${id}/registration`, {
+    const response = await authFetch(`${API_URL}/persons/${id}/registration`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -114,7 +115,7 @@ export const personApi = {
 
   updateRole: async (id: string, role: PersonRole): Promise<Person> => {
     console.log('Sending role update request:', { id, role, type: typeof role }); // Debug log
-    const response = await fetch(`${API_URL}/persons/${id}/role`, {
+    const response = await authFetch(`${API_URL}/persons/${id}/role`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -142,7 +143,7 @@ export const personApi = {
     searchParams.append('page', page.toString());
     searchParams.append('pageSize', pageSize.toString());
 
-    const response = await fetch(`${API_URL}/persons/search?${searchParams.toString()}`);
+    const response = await authFetch(`${API_URL}/persons/search?${searchParams.toString()}`);
     
     const apiResponse: PaginatedApiResponse<Person> = await response.json();
     

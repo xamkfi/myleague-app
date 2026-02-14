@@ -32,6 +32,27 @@ param storageConnectionString string = ''
 @description('The name of the blob container for images')
 param storageContainerName string = 'images'
 
+// Authentication parameters
+@description('The JWT secret key for signing tokens (must be at least 32 characters)')
+@secure()
+param jwtSecretKey string
+
+@description('The JWT issuer')
+param jwtIssuer string = 'MyLeague'
+
+@description('The JWT audience')
+param jwtAudience string = 'MyLeague'
+
+@description('The Azure Communication Services connection string')
+@secure()
+param acsConnectionString string = ''
+
+@description('The Azure Communication Services sender email address')
+param acsSenderAddress string = ''
+
+@description('The admin email for database seeding')
+param seedAdminEmail string = ''
+
 resource appService 'Microsoft.Web/sites@2023-12-01' = {
   name: name
   location: location
@@ -63,6 +84,31 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'AzureStorage__ContainerName'
           value: storageContainerName
+        }
+        // Authentication settings
+        {
+          name: 'Jwt__SecretKey'
+          value: jwtSecretKey
+        }
+        {
+          name: 'Jwt__Issuer'
+          value: jwtIssuer
+        }
+        {
+          name: 'Jwt__Audience'
+          value: jwtAudience
+        }
+        {
+          name: 'AzureCommunicationServices__ConnectionString'
+          value: acsConnectionString
+        }
+        {
+          name: 'AzureCommunicationServices__SenderAddress'
+          value: acsSenderAddress
+        }
+        {
+          name: 'Seed__AdminEmail'
+          value: seedAdminEmail
         }
       ]
       connectionStrings: [

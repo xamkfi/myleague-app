@@ -19,6 +19,14 @@
 .PARAMETER PostgresPassword
     The PostgreSQL admin password. If not provided, you will be prompted.
 
+.PARAMETER JwtSecretKey
+    The JWT secret key for signing tokens. Must be at least 32 characters.
+    If not provided, you will be prompted.
+
+.PARAMETER SeedAdminEmail
+    The admin email for database seeding (optional).
+    If set, an admin user with this email is created on first startup.
+
 .PARAMETER SkipLogin
     Skip the Azure login check (use if already logged in).
 
@@ -44,6 +52,12 @@ param(
 
     [Parameter()]
     [string]$PostgresPassword,
+
+    [Parameter()]
+    [string]$JwtSecretKey,
+
+    [Parameter()]
+    [string]$SeedAdminEmail,
 
     [Parameter()]
     [switch]$SkipLogin
@@ -171,6 +185,37 @@ if (-not $PostgresPassword) {
     }
 }
 
+# Get JWT Secret Key
+if (-not $JwtSecretKey) {
+    Write-Host ""
+    Write-Host "JWT Secret Key Requirements:" -ForegroundColor Yellow
+    Write-Host "  - Minimum 32 characters"
+    Write-Host "  - Used for HMAC-SHA256 token signing"
+    Write-Host "  - Must be kept secret and unique per environment"
+    Write-Host ""
+    
+    $secureJwt = Read-Host "Enter JWT secret key" -AsSecureString
+    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureJwt)
+    $JwtSecretKey = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+    [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+    
+    if ($JwtSecretKey.Length -lt 32) {
+        Write-ErrorMsg "JWT secret key must be at least 32 characters"
+        exit 1
+    }
+}
+
+# Get Seed Admin Email (optional)
+if (-not $SeedAdminEmail) {
+    Write-Host ""
+    Write-Host "Admin Seed Email (optional):" -ForegroundColor Yellow
+    Write-Host "  - If set, an admin user with this email is created on first startup"
+    Write-Host "  - Leave empty to skip"
+    Write-Host ""
+    
+    $SeedAdminEmail = Read-Host "Enter admin email (or press Enter to skip)"
+}
+
 Write-Success "Parameters configured"
 
 # ============================================================================
@@ -209,6 +254,8 @@ az deployment group validate `
     --template-file $templateFile `
     --parameters $parametersFile `
     --parameters postgresAdminPassword=$PostgresPassword `
+    --parameters jwtSecretKey=$JwtSecretKey `
+    --parameters seedAdminEmail=$SeedAdminEmail `
     --parameters location=$Location `
     --parameters environmentName=$Environment `
     --output none
@@ -226,6 +273,8 @@ $deploymentOutput = az deployment group create `
     --template-file $templateFile `
     --parameters $parametersFile `
     --parameters postgresAdminPassword=$PostgresPassword `
+    --parameters jwtSecretKey=$JwtSecretKey `
+    --parameters seedAdminEmail=$SeedAdminEmail `
     --parameters location=$Location `
     --parameters environmentName=$Environment `
     --name "myleague-$Environment-$(Get-Date -Format 'yyyyMMdd-HHmmss')" `
@@ -259,6 +308,8 @@ Write-Host "  API URL:        $($outputs.apiUrl.value)" -ForegroundColor Green
 Write-Host "  App Service:    $($outputs.appServiceName.value)" -ForegroundColor Green  
 Write-Host "  PostgreSQL:     $($outputs.postgresServerName.value)" -ForegroundColor Green
 Write-Host "  Database:       $($outputs.databaseName.value)" -ForegroundColor Green
+Write-Host "  Comm Service:   $($outputs.communicationServiceName.value)" -ForegroundColor Green
+Write-Host "  Email Sender:   $($outputs.acsSenderAddress.value)" -ForegroundColor Green
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Green
 
@@ -273,6 +324,10 @@ Write-Host @"
 ================================================================
 
 1. Deploy your application:
+   cd infra/deploy
+   .\deploy-backend.ps1
+
+   Or manually:
    cd src/backend/WebAPI
    dotnet publish -c Release -o ./publish
    Compress-Archive -Path ./publish/* -DestinationPath ./app.zip -Force
@@ -287,6 +342,10 @@ Write-Host @"
 
 4. Check health:
    curl $($outputs.apiUrl.value)/health/ready
+
+Note: Azure Communication Services Email and JWT authentication have
+been automatically configured by this provisioning script.
+The ACS sender address is: $($outputs.acsSenderAddress.value)
 
 "@ -ForegroundColor Cyan
 

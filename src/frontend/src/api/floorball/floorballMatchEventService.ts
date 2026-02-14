@@ -2,6 +2,7 @@ import type {
   ApiResponse,
   FloorballMatchDto
 } from '../../types/floorball/floorballTypes';
+import { authFetch } from '../utils/authFetch';
 import { API_URL } from '../../constants/config';
 
 // Event DTOs
@@ -133,7 +134,7 @@ export const floorballMatchEventService = {
     try {
       console.log('Fetching match events for match:', matchId);
       // Use FloorballMatchController to fetch the match and synthesize events
-      const response = await fetch(`${API_URL}/FloorballMatch/by-id/${matchId}`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/by-id/${matchId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -236,7 +237,7 @@ export const floorballMatchEventService = {
         goalType: null
       };
 
-      const response = await fetch(`${API_URL}/FloorballMatch/record-goal`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/record-goal`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -269,7 +270,7 @@ export const floorballMatchEventService = {
         description: data.description ?? ''
       };
 
-      const response = await fetch(`${API_URL}/FloorballMatch/record-penalty`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/record-penalty`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -301,7 +302,7 @@ export const floorballMatchEventService = {
         wasInShootout: data.wasInShootout
       };
 
-      const response = await fetch(`${API_URL}/FloorballMatch/record-save`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/record-save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -323,7 +324,7 @@ export const floorballMatchEventService = {
       
       // Period 1 handled by start-match (existing)
       if (periodNumber === 1) {
-        const response = await fetch(`${API_URL}/FloorballMatch/start-match/${matchId}`, {
+        const response = await authFetch(`${API_URL}/FloorballMatch/start-match/${matchId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -331,7 +332,7 @@ export const floorballMatchEventService = {
       }
       
       // Period 2+ handled by new start-period endpoint (backend will auto-start timer)
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/period/${periodNumber}/start`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/period/${periodNumber}/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -348,7 +349,7 @@ export const floorballMatchEventService = {
   endPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Ending period:', periodNumber, 'for match:', matchId);
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/period/${periodNumber}/end`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/period/${periodNumber}/end`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
         });
@@ -365,7 +366,7 @@ export const floorballMatchEventService = {
   recordOvertime: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording overtime for match:', matchId);
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/overtime`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/overtime`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -384,7 +385,7 @@ export const floorballMatchEventService = {
   recordShootout: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording shootout for match:', matchId);
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/shootout`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/shootout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -403,7 +404,7 @@ export const floorballMatchEventService = {
   cancelMatch: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Canceling match:', matchId);
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/cancel`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/cancel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

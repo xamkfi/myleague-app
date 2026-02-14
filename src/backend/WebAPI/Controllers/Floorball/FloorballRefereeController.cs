@@ -45,6 +45,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Create referee request</param>
         /// <returns>Created referee details</returns>
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballRefereeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -88,6 +89,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update referee request</param>
         /// <returns>Updated referee details</returns>
         [HttpPut("{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballRefereeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -149,6 +151,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Referee ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

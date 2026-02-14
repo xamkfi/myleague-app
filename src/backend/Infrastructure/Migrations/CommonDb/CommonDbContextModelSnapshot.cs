@@ -262,6 +262,63 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.ToTable("Persons", "common");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Common.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasComment("Unique identifier for the entity");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReplacedByTokenId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_RefreshToken_CreatedAt");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("IX_RefreshToken_TokenHash");
+
+                    b.HasIndex("UpdatedAt")
+                        .HasDatabaseName("IX_RefreshToken_UpdatedAt")
+                        .HasFilter("\"UpdatedAt\" IS NOT NULL");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_RefreshToken_UserId");
+
+                    b.HasIndex("CreatedAt", "UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_RefreshToken_Audit");
+
+                    b.HasIndex("UserId", "RevokedAt", "ExpiresAt")
+                        .HasDatabaseName("IX_RefreshToken_ActiveByUser");
+
+                    b.ToTable("RefreshTokens", "common");
+                });
+
             modelBuilder.Entity("Domain.Entities.Common.TimerState", b =>
                 {
                     b.Property<Guid>("MatchId")
@@ -314,27 +371,53 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasColumnType("timestamp with time zone")
                         .HasComment("UTC timestamp when the entity was created");
 
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LoginCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int>("LoginCodeAttempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("LoginCodeExpiresAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("ClubAdmin");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasComment("UTC timestamp when the entity was last updated");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("IX_User_CreatedAt");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("IX_User_Email");
 
                     b.HasIndex("PersonId")
                         .HasDatabaseName("IX_User_PersonId");
@@ -342,10 +425,6 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.HasIndex("UpdatedAt")
                         .HasDatabaseName("IX_User_UpdatedAt")
                         .HasFilter("\"UpdatedAt\" IS NOT NULL");
-
-                    b.HasIndex("Username")
-                        .IsUnique()
-                        .HasDatabaseName("IX_User_Username");
 
                     b.HasIndex("CreatedAt", "UpdatedAt")
                         .IsDescending()
@@ -421,6 +500,17 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.Navigation("ContactInfo");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Common.RefreshToken", b =>
+                {
+                    b.HasOne("Domain.Entities.Common.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.Common.User", b =>
                 {
                     b.HasOne("Domain.Entities.Common.Person", "Person")
@@ -430,6 +520,11 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .IsRequired();
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Common.User", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

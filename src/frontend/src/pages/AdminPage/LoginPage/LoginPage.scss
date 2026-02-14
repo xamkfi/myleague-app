@@ -1,0 +1,217 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: $color-blue-darkest;
+  padding: map.get($spacing, 'lg');
+}
+
+// Centered column: brand on top, card below
+.login-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+}
+
+// Top section: MAHL brand + language toggle
+.login-top {
+  text-align: center;
+  margin-bottom: map.get($spacing, 'lg');
+}
+
+.login-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: map.get($spacing, 'base');
+}
+
+.login-brand {
+  font-size: 2.5rem;
+  font-weight: map.get($font-weights, 'bold');
+  color: $color-white;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+.login-brand-sub {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 4px 0 0 0;
+}
+
+// White card
+.login-card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem 2rem;
+}
+
+.login-header {
+  margin-bottom: 2rem;
+}
+
+.login-title {
+  font-family: $font-family-body;
+  font-size: 1.5rem;
+  font-weight: map.get($font-weights, 'semibold');
+  color: #1e3a5f;
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.login-subtitle {
+  font-family: $font-family-body;
+  font-size: map.get($font-sizes, 'sm');
+  color: #6b7684;
+  margin: 0;
+  line-height: $line-height-relaxed;
+}
+
+.login-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: $color-red-almost;
+  color: $color-red-muted;
+  border: 1px solid $color-red-pale;
+  border-radius: $border-radius-default;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  font-size: map.get($font-sizes, 'sm');
+  font-family: $font-family-body;
+}
+
+.login-error-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: $color-red-muted;
+  color: $color-white;
+  font-size: 0.7rem;
+  font-weight: map.get($font-weights, 'bold');
+  flex-shrink: 0;
+}
+
+.login-success {
+  background: $color-green-almost;
+  color: $color-green-muted;
+  border: 1px solid $color-green-pale;
+  border-radius: $border-radius-default;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  font-size: map.get($font-sizes, 'sm');
+  font-family: $font-family-body;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.login-label {
+  font-family: $font-family-body;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'medium');
+  color: #1e3a5f;
+}
+
+.login-input {
+  font-family: $font-family-body;
+  font-size: map.get($font-sizes, 'base');
+  padding: 0.75rem 1rem;
+  border: 1px solid #e0e4e9;
+  border-radius: $border-radius-default;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: #ffffff;
+  color: #1e3a5f;
+
+  &::placeholder {
+    color: $color-placeholder;
+  }
+
+  &:focus {
+    border-color: $color-blue-medium;
+    box-shadow: 0 0 0 3px rgba(42, 74, 99, 0.12);
+  }
+
+  &:disabled {
+    background: $color-neutral-light-grey;
+    cursor: not-allowed;
+  }
+}
+
+.login-input-code {
+  text-align: center;
+  letter-spacing: 0.5em;
+  font-size: map.get($font-sizes, 'lg');
+  font-weight: map.get($font-weights, 'semibold');
+}
+
+.login-button {
+  font-family: $font-family-body;
+  font-size: map.get($font-sizes, 'base');
+  font-weight: map.get($font-weights, 'semibold');
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: $border-radius-default;
+  background: #1e3a5f;
+  color: $color-white;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover:not(:disabled) {
+    background: $color-blue-darkest;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background: $color-neutral-medium-grey;
+    cursor: not-allowed;
+  }
+}
+
+.login-back-button {
+  font-family: $font-family-body;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'medium');
+  padding: 0.5rem;
+  border: none;
+  border-radius: $border-radius-default;
+  background: transparent;
+  color: #6b7684;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    color: #1e3a5f;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
