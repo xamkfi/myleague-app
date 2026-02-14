@@ -2,26 +2,28 @@ import type { FloorballTeam } from '../../../../../types/floorball/floorballType
 import './LiveMatchScoreboard.scss';
 
 interface LiveMatchScoreboardProps {
-  homeTeam: FloorballTeam | null;
-  awayTeam: FloorballTeam | null;
-  currentScore: { home: number; away: number };
+  leftTeam: FloorballTeam | null;
+  rightTeam: FloorballTeam | null;
+  leftScore: number;
+  rightScore: number;
 }
 
 const LiveMatchScoreboard = ({
-  homeTeam,
-  awayTeam,
-  currentScore
+  leftTeam,
+  rightTeam,
+  leftScore,
+  rightScore
 }: LiveMatchScoreboardProps) => {
   return (
     <div className="scoreboard">
       <div className="team-score">
-        <div className="team-name">{homeTeam?.name || 'Home'}</div>
-        <div className="score">{currentScore.home}</div>
+        <div className="team-name">{leftTeam?.name || 'Home'}</div>
+        <div className="score">{leftScore}</div>
       </div>
       <div className="score-separator">-</div>
       <div className="team-score">
-        <div className="team-name">{awayTeam?.name || 'Away'}</div>
-        <div className="score">{currentScore.away}</div>
+        <div className="team-name">{rightTeam?.name || 'Away'}</div>
+        <div className="score">{rightScore}</div>
       </div>
     </div>
   );

@@ -8,10 +8,12 @@ import { floorballMatchService } from '../../../../../api/floorball/floorballMat
 import ConfirmationDialog from './ConfirmationDialog';
 
 interface GoalieSelectorSectionProps {
-  homePlayers: FloorballPlayerDto[];
-  awayPlayers: FloorballPlayerDto[];
-  homeGoalieId: string;
-  awayGoalieId: string;
+  leftPlayers: FloorballPlayerDto[];
+  rightPlayers: FloorballPlayerDto[];
+  leftGoalieId: string;
+  rightGoalieId: string;
+  leftTeamSide: 'home' | 'away';
+  rightTeamSide: 'home' | 'away';
   setHomeGoalieId: (id: string) => void;
   setAwayGoalieId: (id: string) => void;
   currentMatch: FloorballMatchDto;
@@ -20,25 +22,27 @@ interface GoalieSelectorSectionProps {
 }
 
 const GoalieSelectorSection = ({
-  homePlayers,
-  awayPlayers,
-  homeGoalieId,
-  awayGoalieId,
+  leftPlayers,
+  rightPlayers,
+  leftGoalieId,
+  rightGoalieId,
+  leftTeamSide,
+  rightTeamSide,
   setHomeGoalieId,
   setAwayGoalieId,
   currentMatch,
   onMatchUpdated,
   setError
 }: GoalieSelectorSectionProps) => {
-  const homeGoalkeepers = useMemo(() => {
-    const gks = homePlayers.filter((p: FloorballPlayerDto) => p.position === FloorballPosition.Goalkeeper && p.isActive);
-    return gks.length > 0 ? gks : homePlayers;
-  }, [homePlayers]);
+  const leftGoalkeepers = useMemo(() => {
+    const gks = leftPlayers.filter((p: FloorballPlayerDto) => p.position === FloorballPosition.Goalkeeper && p.isActive);
+    return gks.length > 0 ? gks : leftPlayers;
+  }, [leftPlayers]);
 
-  const awayGoalkeepers = useMemo(() => {
-    const gks = awayPlayers.filter((p: FloorballPlayerDto) => p.position === FloorballPosition.Goalkeeper && p.isActive);
-    return gks.length > 0 ? gks : awayPlayers;
-  }, [awayPlayers]);
+  const rightGoalkeepers = useMemo(() => {
+    const gks = rightPlayers.filter((p: FloorballPlayerDto) => p.position === FloorballPosition.Goalkeeper && p.isActive);
+    return gks.length > 0 ? gks : rightPlayers;
+  }, [rightPlayers]);
 
   const [pendingGoalieChange, setPendingGoalieChange] = useState<{ team: 'home' | 'away'; goalieId: string; goalieName: string } | null>(null);
 
@@ -65,7 +69,7 @@ const GoalieSelectorSection = ({
       setHomeGoalieId(selectedId);
       if (!selectedId) return;
       if (currentMatch.status === 'InProgress' && currentMatch.homeActiveGoalieId !== selectedId) {
-        const newGoalie = homePlayers.find(p => p.id === selectedId);
+        const newGoalie = (leftTeamSide === 'home' ? leftPlayers : rightPlayers).find(p => p.id === selectedId);
         setPendingGoalieChange({
           team: 'home',
           goalieId: selectedId,
@@ -78,7 +82,7 @@ const GoalieSelectorSection = ({
       setAwayGoalieId(selectedId);
       if (!selectedId) return;
       if (currentMatch.status === 'InProgress' && currentMatch.awayActiveGoalieId !== selectedId) {
-        const newGoalie = awayPlayers.find(p => p.id === selectedId);
+        const newGoalie = (leftTeamSide === 'away' ? leftPlayers : rightPlayers).find(p => p.id === selectedId);
         setPendingGoalieChange({
           team: 'away',
           goalieId: selectedId,
@@ -88,16 +92,19 @@ const GoalieSelectorSection = ({
         changeGoalie('away', selectedId);
       }
     }
-  }, [setHomeGoalieId, setAwayGoalieId, currentMatch.status, currentMatch.homeActiveGoalieId, currentMatch.awayActiveGoalieId, homePlayers, awayPlayers, changeGoalie]);
+  }, [setHomeGoalieId, setAwayGoalieId, currentMatch.status, currentMatch.homeActiveGoalieId, currentMatch.awayActiveGoalieId, leftPlayers, rightPlayers, leftTeamSide, changeGoalie]);
 
   return (
     <div className="goalie-selector-section">
       <div className="goalie-dropdowns">
         <div className="goalie-dropdown">
           <div className="goalie-header">GOALKEEPER</div>
-          <select value={homeGoalieId} onChange={(e: ChangeEvent<HTMLSelectElement>) => handleSelectChange('home', e)}>
+          <select
+            value={leftGoalieId}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => handleSelectChange(leftTeamSide, e)}
+          >
             <option value="">SELECT GOALIE</option>
-            {homeGoalkeepers.map((gk: FloorballPlayerDto) => (
+            {leftGoalkeepers.map((gk: FloorballPlayerDto) => (
               <option key={gk.id} value={gk.id}>
                 {gk.person.firstName} {gk.person.lastName}
               </option>
@@ -106,9 +113,12 @@ const GoalieSelectorSection = ({
         </div>
         <div className="goalie-dropdown">
           <div className="goalie-header">GOALKEEPER</div>
-          <select value={awayGoalieId} onChange={(e: ChangeEvent<HTMLSelectElement>) => handleSelectChange('away', e)}>
+          <select
+            value={rightGoalieId}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => handleSelectChange(rightTeamSide, e)}
+          >
             <option value="">SELECT GOALIE</option>
-            {awayGoalkeepers.map((gk: FloorballPlayerDto) => (
+            {rightGoalkeepers.map((gk: FloorballPlayerDto) => (
               <option key={gk.id} value={gk.id}>
                 {gk.person.firstName} {gk.person.lastName}
               </option>

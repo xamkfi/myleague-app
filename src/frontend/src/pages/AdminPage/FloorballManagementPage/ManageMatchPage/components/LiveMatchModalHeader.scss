@@ -27,13 +27,21 @@
     flex: 1 1 auto;
     min-width: 0;
 
+    .title-and-swap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
     h2 {
       margin: 0;
       font-weight: 600; 
       font-size: 28px;
       line-height: 40px; 
       letter-spacing: 0;
-      flex: 1 1 auto;
+      flex: 0 1 auto;
       min-width: 0;
       white-space: nowrap;
       overflow: hidden;
@@ -85,6 +93,32 @@
         &:hover {
           background: #fff;
         }
+      }
+
+    }
+
+    .swap-sides-button {
+      box-sizing: border-box;
+      height: 40px;
+      padding: 8px 16px;
+      background: #FBFBFD;
+      color: $color-neutral-black;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+      flex: 0 0 auto;
+      white-space: nowrap;
+
+      &:hover {
+        background: #fff;
+        border-color: $color-neutral-black;
       }
     }
   }

@@ -39,8 +39,8 @@
     justify-self: start;
   }
 
-  .team-name.home { grid-column: 1; }
-  .team-name.away { grid-column: 2; }
+  .team-name.left { grid-column: 1; }
+  .team-name.right { grid-column: 2; }
   
   .team-actions {
     display: flex;

@@ -5,6 +5,8 @@ interface LiveMatchModalHeaderProps {
   homeTeam: FloorballTeam | null;
   awayTeam: FloorballTeam | null;
   currentMatch: FloorballMatchDto;
+  isSidesSwapped: boolean;
+  onToggleSides: () => void;
   onClose: () => void;
   onCompleteLive: () => void;
 }
@@ -13,13 +15,27 @@ const LiveMatchModalHeader = ({
   homeTeam,
   awayTeam,
   currentMatch,
+  isSidesSwapped,
+  onToggleSides,
   onClose,
   onCompleteLive
 }: LiveMatchModalHeaderProps) => {
+  const leftTeamName = isSidesSwapped ? awayTeam?.name || 'Away' : homeTeam?.name || 'Home';
+  const rightTeamName = isSidesSwapped ? homeTeam?.name || 'Home' : awayTeam?.name || 'Away';
+
   return (
     <div className="modal-header">
       <div className="live-match-info">
-        <h2>{homeTeam?.name || 'Home'} vs {awayTeam?.name || 'Away'}</h2>
+        <div className="title-and-swap">
+          <h2>{leftTeamName} vs {rightTeamName}</h2>
+          <button
+            onClick={onToggleSides}
+            className="swap-sides-button"
+            title="Swap visual sides for teams"
+          >
+            ↔ Swap sides
+          </button>
+        </div>
         <div className="status-controls">
           {currentMatch.status === 'Completed' ? (
             <>

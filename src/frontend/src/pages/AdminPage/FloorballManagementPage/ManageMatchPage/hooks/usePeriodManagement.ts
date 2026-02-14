@@ -46,6 +46,10 @@ export const usePeriodManagement = ({
       setPeriodLoading(prev => ({ ...prev, [currentPeriod]: true }));
       
       await floorballMatchEventService.endPeriod(currentMatch.id, currentPeriod);
+
+      if (loadCurrentMatchStatus) {
+        await loadCurrentMatchStatus();
+      }
       
       // Mark this period as ended
       setEndedPeriods(prev => new Set([...prev, currentPeriod]));
@@ -74,7 +78,7 @@ export const usePeriodManagement = ({
     } finally {
       setPeriodLoading(prev => ({ ...prev, [currentPeriod]: false }));
     }
-  }, [currentPeriod, currentMatch.id, setCurrentPeriod]);
+  }, [currentPeriod, currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus]);
 
   /**
    * Starts a new period

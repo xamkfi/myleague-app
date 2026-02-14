@@ -6,13 +6,15 @@ import type { FloorballMatchDto } from '../../../../../types/floorball/floorball
 import GoalieSelectorSection from './GoalieSelectorSection';
 
 interface ActivePlayersSelectorProps {
-  homePlayers: FloorballPlayerDto[];
-  awayPlayers: FloorballPlayerDto[];
-  homeTeamName?: string;
-  awayTeamName?: string;
+  leftPlayers: FloorballPlayerDto[];
+  rightPlayers: FloorballPlayerDto[];
+  leftTeamName?: string;
+  rightTeamName?: string;
+  leftTeamSide: 'home' | 'away';
+  rightTeamSide: 'home' | 'away';
   // Goalie selection (required to start match)
-  homeGoalieId: string;
-  awayGoalieId: string;
+  leftGoalieId: string;
+  rightGoalieId: string;
   setHomeGoalieId: (id: string) => void;
   setAwayGoalieId: (id: string) => void;
   currentMatch: FloorballMatchDto;
@@ -31,65 +33,81 @@ const renderPlayerOptions = (players: FloorballPlayerDto[]) => (
   </>
 );
 
-const ActivePlayersSelector = ({ homePlayers, awayPlayers, homeTeamName, awayTeamName, homeGoalieId, awayGoalieId, setHomeGoalieId, setAwayGoalieId, currentMatch, onMatchUpdated, setError }: ActivePlayersSelectorProps) => {
-  const activeHomePlayers = useMemo(() => homePlayers.filter((p) => p.isActive), [homePlayers]);
-  const activeAwayPlayers = useMemo(() => awayPlayers.filter((p) => p.isActive), [awayPlayers]);
+const ActivePlayersSelector = ({
+  leftPlayers,
+  rightPlayers,
+  leftTeamName,
+  rightTeamName,
+  leftTeamSide,
+  rightTeamSide,
+  leftGoalieId,
+  rightGoalieId,
+  setHomeGoalieId,
+  setAwayGoalieId,
+  currentMatch,
+  onMatchUpdated,
+  setError
+}: ActivePlayersSelectorProps) => {
+  const activeLeftPlayers = useMemo(() => leftPlayers.filter((p) => p.isActive), [leftPlayers]);
+  const activeRightPlayers = useMemo(() => rightPlayers.filter((p) => p.isActive), [rightPlayers]);
 
-  const [homeSelected, setHomeSelected] = useState<string[]>(['', '', '', '', '']);
-  const [awaySelected, setAwaySelected] = useState<string[]>(['', '', '', '', '']);
+  const [leftSelected, setLeftSelected] = useState<string[]>(['', '', '', '', '']);
+  const [rightSelected, setRightSelected] = useState<string[]>(['', '', '', '', '']);
 
   const handleChange = (
-    team: 'home' | 'away',
+    side: 'left' | 'right',
     index: number,
     e: ChangeEvent<HTMLSelectElement>
   ) => {
     const value = e.target.value;
-    if (team === 'home') {
-      const next = [...homeSelected];
+    if (side === 'left') {
+      const next = [...leftSelected];
       next[index] = value;
-      setHomeSelected(next);
+      setLeftSelected(next);
     } else {
-      const next = [...awaySelected];
+      const next = [...rightSelected];
       next[index] = value;
-      setAwaySelected(next);
+      setRightSelected(next);
     }
   };
 
   return (
     <div className="active-players-selector">
       <div className="aps-title">ACTIVE PLAYERS</div>
-      <div className="team-selects home-team-selects">
-        <div className="team-name home">{homeTeamName || 'Home Team'}</div>
-        {homeSelected.map((value, idx) => (
+      <div className="team-selects left-team-selects">
+        <div className="team-name left">{leftTeamName || 'Left Team'}</div>
+        {leftSelected.map((value, idx) => (
           <select
-            key={`home-active-${idx}`}
+            key={`left-active-${idx}`}
             value={value}
-            onChange={(e) => handleChange('home', idx, e)}
-            aria-label={`Home active player ${idx + 1}`}
+            onChange={(e) => handleChange('left', idx, e)}
+            aria-label={`Left active player ${idx + 1}`}
           >
-            {renderPlayerOptions(activeHomePlayers)}
+            {renderPlayerOptions(activeLeftPlayers)}
           </select>
         ))}
       </div>
-      <div className="team-selects away-team-selects">
-        <div className="team-name away">{awayTeamName || 'Away Team'}</div>
-        {awaySelected.map((value, idx) => (
+      <div className="team-selects right-team-selects">
+        <div className="team-name right">{rightTeamName || 'Right Team'}</div>
+        {rightSelected.map((value, idx) => (
           <select
-            key={`away-active-${idx}`}
+            key={`right-active-${idx}`}
             value={value}
-            onChange={(e) => handleChange('away', idx, e)}
-            aria-label={`Away active player ${idx + 1}`}
+            onChange={(e) => handleChange('right', idx, e)}
+            aria-label={`Right active player ${idx + 1}`}
           >
-            {renderPlayerOptions(activeAwayPlayers)}
+            {renderPlayerOptions(activeRightPlayers)}
           </select>
         ))}
       </div>
       <div className="goalkeeper-row">
         <GoalieSelectorSection
-          homePlayers={homePlayers}
-          awayPlayers={awayPlayers}
-          homeGoalieId={homeGoalieId}
-          awayGoalieId={awayGoalieId}
+          leftPlayers={leftPlayers}
+          rightPlayers={rightPlayers}
+          leftGoalieId={leftGoalieId}
+          rightGoalieId={rightGoalieId}
+          leftTeamSide={leftTeamSide}
+          rightTeamSide={rightTeamSide}
           setHomeGoalieId={setHomeGoalieId}
           setAwayGoalieId={setAwayGoalieId}
           currentMatch={currentMatch}
