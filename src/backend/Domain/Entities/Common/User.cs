@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Enums.Common;
 
 namespace Domain.Entities.Common
 {
@@ -21,6 +22,11 @@ namespace Domain.Entities.Common
         /// Matching person entity of the user
         /// </summary>
         public Person? Person { get; set; }
+
+        /// <summary>
+        /// The role of the user in the system
+        /// </summary>
+        public UserRole Role { get; set; }
 
         /// <summary>
         /// Whether the user account is active
@@ -65,7 +71,8 @@ namespace Domain.Entities.Common
         /// </summary>
         /// <param name="email">The email address of the user.</param>
         /// <param name="personId">The person ID linked to this user.</param>
-        public User(string email, Guid personId)
+        /// <param name="role">The role of the user (defaults to ClubAdmin).</param>
+        public User(string email, Guid personId, UserRole role = UserRole.ClubAdmin)
         {
             if (string.IsNullOrWhiteSpace(email))
                 throw new ArgumentException("Email cannot be null or empty.", nameof(email));
@@ -74,6 +81,7 @@ namespace Domain.Entities.Common
 
             Email = email;
             PersonId = personId;
+            Role = role;
             IsActive = true;
         }
 

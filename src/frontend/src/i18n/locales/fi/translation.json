@@ -130,7 +130,61 @@
       "floorball": "Salibandy",
       "manageFloorball": "Hallitse salibandya",
       "clubs": "Seurat",
-      "manageClubs": "Hallitse seuroja"
+      "manageClubs": "Hallitse seuroja",
+      "users": "Järjestelmäkäyttäjät",
+      "manageUsers": "Hallitse järjestelmäkäyttäjiä"
+    },
+    "users": {
+      "title": "Järjestelmäkäyttäjät",
+      "subtitle": "Luo, muokkaa tai poista järjestelmän käyttäjätilejä.",
+      "searchPlaceholder": "Hae nimellä tai sähköpostilla...",
+      "addUser": "Lisää käyttäjä",
+      "noData": "Järjestelmäkäyttäjiä ei löytynyt.",
+      "noSearchResults": "Yksikään käyttäjä ei vastaa hakuasi.",
+      "table": {
+        "person": "Henkilö",
+        "email": "Sähköposti",
+        "role": "Rooli",
+        "status": "Tila",
+        "lastLogin": "Viimeisin kirjautuminen",
+        "never": "Ei koskaan"
+      },
+      "form": {
+        "createTitle": "Lisää käyttäjä",
+        "editTitle": "Muokkaa käyttäjää",
+        "email": "Sähköposti",
+        "emailPlaceholder": "käyttäjä@esimerkki.fi",
+        "emailRequired": "Sähköposti on pakollinen",
+        "emailInvalid": "Virheellinen sähköpostiosoite",
+        "selectPerson": "Henkilö",
+        "searchPerson": "Hae henkilöitä...",
+        "noPerson": "Vapaita henkilöitä ei löytynyt",
+        "personRequired": "Henkilö on pakollinen",
+        "role": "Rooli",
+        "hasAccount": "Käyttäjätili on jo olemassa",
+        "save": "Tallenna",
+        "saving": "Tallennetaan..."
+      },
+      "roles": {
+        "systemAdmin": "Järjestelmänvalvoja",
+        "clubAdmin": "Seuran ylläpitäjä"
+      },
+      "confirmDelete": {
+        "title": "Poista käyttäjä",
+        "message": "Haluatko varmasti poistaa käyttäjän \"{{userName}}\"? Tätä toimintoa ei voi kumota.",
+        "warning": "Henkilötietoja ei poisteta, ainoastaan käyttäjätili."
+      },
+      "errors": {
+        "load": "Käyttäjien lataaminen epäonnistui. Yritä uudelleen.",
+        "create": "Käyttäjän luominen epäonnistui. Yritä uudelleen.",
+        "update": "Käyttäjän päivittäminen epäonnistui. Yritä uudelleen.",
+        "delete": "Käyttäjän poistaminen epäonnistui. Yritä uudelleen."
+      },
+      "success": {
+        "create": "Käyttäjä luotu onnistuneesti.",
+        "update": "Käyttäjä päivitetty onnistuneesti.",
+        "delete": "Käyttäjä poistettu onnistuneesti."
+      }
     },
     "divisions": {
       "title": "Sarjojen hallinta",

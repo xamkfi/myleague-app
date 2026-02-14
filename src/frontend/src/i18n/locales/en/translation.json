@@ -130,7 +130,61 @@
       "floorball": "Floorball",
       "manageFloorball": "Manage floorball",
       "clubs": "Clubs",
-      "manageClubs": "Manage clubs"
+      "manageClubs": "Manage clubs",
+      "users": "System Users",
+      "manageUsers": "Manage system users"
+    },
+    "users": {
+      "title": "System Users",
+      "subtitle": "Create, edit or remove system user accounts.",
+      "searchPlaceholder": "Search by name or email...",
+      "addUser": "Add User",
+      "noData": "No system users found yet.",
+      "noSearchResults": "No users match your filters.",
+      "table": {
+        "person": "Person",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "lastLogin": "Last Login",
+        "never": "Never"
+      },
+      "form": {
+        "createTitle": "Add User",
+        "editTitle": "Edit User",
+        "email": "Email",
+        "emailPlaceholder": "user@example.com",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email format",
+        "selectPerson": "Person",
+        "searchPerson": "Search persons...",
+        "noPerson": "No available persons found",
+        "personRequired": "Person is required",
+        "role": "Role",
+        "hasAccount": "Already has an account",
+        "save": "Save",
+        "saving": "Saving..."
+      },
+      "roles": {
+        "systemAdmin": "System Admin",
+        "clubAdmin": "Club Admin"
+      },
+      "confirmDelete": {
+        "title": "Delete user",
+        "message": "Are you sure you want to delete user \"{{userName}}\"? This action cannot be undone.",
+        "warning": "The person record will not be deleted, only the user account."
+      },
+      "errors": {
+        "load": "Failed to load users. Please try again.",
+        "create": "Failed to create user. Please try again.",
+        "update": "Failed to update user. Please try again.",
+        "delete": "Failed to delete user. Please try again."
+      },
+      "success": {
+        "create": "User created successfully.",
+        "update": "User updated successfully.",
+        "delete": "User deleted successfully."
+      }
     },
     "divisions": {
       "title": "Manage Divisions",

@@ -22,6 +22,7 @@ public static class UserMapper
             user.Id,
             user.Email,
             user.PersonId,
+            user.Role,
             user.IsActive,
             user.LastLoginAt,
             user.Person != null ? PersonMapper.ToDto(user.Person) :
@@ -51,7 +52,7 @@ public static class UserMapper
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        return new User(command.Email, command.PersonId);
+        return new User(command.Email, command.PersonId, command.Role);
     }
 
     /// <summary>
@@ -65,5 +66,6 @@ public static class UserMapper
         ArgumentNullException.ThrowIfNull(command);
 
         user.Email = command.Email;
+        user.Role = command.Role;
     }
 }

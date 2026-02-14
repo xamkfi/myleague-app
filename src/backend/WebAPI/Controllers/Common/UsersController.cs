@@ -168,7 +168,7 @@ public class UsersController : ControllerBase
     {
         _logger.LogInformation("Creating new user: {Email}", request.Email);
 
-        CreateUserCommand command = new(request.Email, request.PersonId);
+        CreateUserCommand command = new(request.Email, request.PersonId, request.Role);
         Result<UserDto> result = await _mediator.Send(command);
 
         if (result.IsSuccess && result.Data != null)
@@ -201,7 +201,7 @@ public class UsersController : ControllerBase
     {
         _logger.LogInformation("Updating user: {Id}", id);
 
-        UpdateUserCommand command = new(id, request.Email);
+        UpdateUserCommand command = new(id, request.Email, request.Role);
         Result<UserDto> result = await _mediator.Send(command);
 
         if (result.IsSuccess && result.Data != null)

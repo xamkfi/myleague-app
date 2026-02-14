@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Domain.Enums.Common;
 
 namespace WebAPI.Models.Common;
 
@@ -20,6 +21,11 @@ public record CreateUserRequest
     /// </summary>
     [Required(ErrorMessage = "Person ID is required")]
     public Guid PersonId { get; init; }
+
+    /// <summary>
+    /// Gets the role of the user (defaults to ClubAdmin)
+    /// </summary>
+    public UserRole Role { get; init; } = UserRole.ClubAdmin;
 }
 
 /// <summary>
@@ -34,4 +40,10 @@ public record UpdateUserRequest
     [EmailAddress(ErrorMessage = "A valid email address is required")]
     [StringLength(256, ErrorMessage = "Email must not exceed 256 characters")]
     public string Email { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the role of the user
+    /// </summary>
+    [Required(ErrorMessage = "Role is required")]
+    public UserRole Role { get; init; }
 }

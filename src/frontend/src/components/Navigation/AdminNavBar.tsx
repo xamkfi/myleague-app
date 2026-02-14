@@ -78,6 +78,12 @@ function AdminNavBar() {
                 <span>{t('admin.actions.clubs', 'Clubs')}</span>
               </Link>
             </li>
+            <li className={`admin-navbar-item ${isActive('/admin/users') ? 'active' : ''}`}>
+              <Link to="/admin/users">
+                <img src={PersonsIcon} alt="Users" className="icon" />
+                <span>{t('admin.actions.users', 'System Users')}</span>
+              </Link>
+            </li>
           </ul>
         </div>
 

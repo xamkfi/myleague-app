@@ -76,7 +76,7 @@ public class DatabaseSeeder
             role: role,
             contactInfo: new ContactInfo(email));
 
-        User user = new(email, person.Id);
+        User user = new(email, person.Id, UserRole.SystemAdmin);
 
         dbContext.Persons.Add(person);
         dbContext.Users.Add(user);

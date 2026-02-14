@@ -51,6 +51,7 @@ import ClubDetailsPage from '../pages/AdminPage/ClubPage/ClubDetailsPage';
 import FloorballPage from '../pages/FloorballPage/FloorballPage';
 import ClubsPage from '../pages/ClubsPage/ClubsPage';
 import LoginPage from '../pages/AdminPage/LoginPage/LoginPage';
+import UsersPage from '../pages/AdminPage/UsersPage/UsersPage';
 import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
 
 export const routes: RouteObject[] = [
@@ -82,6 +83,15 @@ export const routes: RouteObject[] = [
       {
         path: ':id/edit',
         element: <ProtectedRoute><EditClubPage /></ProtectedRoute>
+      }
+    ]
+  },
+  {
+    path: '/admin/users',
+    children: [
+      {
+        index: true,
+        element: <ProtectedRoute><UsersPage /></ProtectedRoute>
       }
     ]
   },

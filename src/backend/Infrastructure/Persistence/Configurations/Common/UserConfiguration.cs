@@ -1,4 +1,5 @@
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,6 +22,12 @@ public class UserConfiguration : BaseEntityConfiguration<User>
 
         builder.Property(u => u.PersonId)
             .IsRequired();
+
+        builder.Property(u => u.Role)
+            .IsRequired()
+            .HasDefaultValue(UserRole.ClubAdmin)
+            .HasConversion<string>()
+            .HasMaxLength(20);
 
         builder.Property(u => u.IsActive)
             .IsRequired()

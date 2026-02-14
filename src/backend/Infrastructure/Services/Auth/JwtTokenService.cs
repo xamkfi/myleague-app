@@ -34,10 +34,13 @@ public class JwtTokenService : IJwtTokenService
             new Claim("personId", user.PersonId.ToString())
         };
 
-        // Add role from person if available
+        // Add user role (SystemAdmin / ClubAdmin)
+        claims.Add(new Claim(ClaimTypes.Role, user.Role.ToString()));
+
+        // Add person role if available
         if (user.Person != null)
         {
-            claims.Add(new Claim(ClaimTypes.Role, user.Person.role.ToString()));
+            claims.Add(new Claim("personRole", user.Person.role.ToString()));
         }
 
         SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
