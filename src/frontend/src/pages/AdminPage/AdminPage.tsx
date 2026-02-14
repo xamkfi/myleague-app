@@ -59,6 +59,17 @@ const AdminPage = () => {
             </div>
             <img src={ClubsIcon} alt="Clubs" className="button-icon" />
           </button>
+
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/users')}
+          >
+            <div className="button-text">
+              <span className="button-title">{t('admin.actions.users', 'System Users')}</span>
+              <span className="button-subtitle">{t('admin.actions.manageUsers', 'Manage system users')}</span>
+            </div>
+            <img src={PersonIcon} alt="System Users" className="button-icon" />
+          </button>
           
         </div>
         <h2 className="admin-sport-selection">SPORTS SELECTION</h2>
