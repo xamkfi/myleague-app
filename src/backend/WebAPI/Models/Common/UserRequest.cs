@@ -8,20 +8,12 @@ namespace WebAPI.Models.Common;
 public record CreateUserRequest
 {
     /// <summary>
-    /// Gets the username of the user
+    /// Gets the email address of the user (login identifier)
     /// </summary>
-    [Required(ErrorMessage = "Username is required")]
-    [StringLength(100, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 100 characters")]
-    [RegularExpression("^[a-zA-Z0-9._-]+$", ErrorMessage = "Username can only contain letters, numbers, dots, underscores, and hyphens")]
-    public string Username { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets the password of the user
-    /// </summary>
-    [Required(ErrorMessage = "Password is required")]
-    [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", ErrorMessage = "Password must contain at least one lowercase letter, one uppercase letter, and one digit")]
-    public string Password { get; init; } = string.Empty;
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "A valid email address is required")]
+    [StringLength(256, ErrorMessage = "Email must not exceed 256 characters")]
+    public string Email { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets the person ID associated with this user
@@ -36,37 +28,10 @@ public record CreateUserRequest
 public record UpdateUserRequest
 {
     /// <summary>
-    /// Gets the username of the user
+    /// Gets the new email address of the user
     /// </summary>
-    [Required(ErrorMessage = "Username is required")]
-    [StringLength(100, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 100 characters")]
-    [RegularExpression("^[a-zA-Z0-9._-]+$", ErrorMessage = "Username can only contain letters, numbers, dots, underscores, and hyphens")]
-    public string Username { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets the new password of the user (optional)
-    /// </summary>
-    [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", ErrorMessage = "Password must contain at least one lowercase letter, one uppercase letter, and one digit")]
-    public string? Password { get; init; }
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "A valid email address is required")]
+    [StringLength(256, ErrorMessage = "Email must not exceed 256 characters")]
+    public string Email { get; init; } = string.Empty;
 }
-
-/// <summary>
-/// Request model for updating user password
-/// </summary>
-public record UpdateUserPasswordRequest
-{
-    /// <summary>
-    /// Gets the current password of the user
-    /// </summary>
-    [Required(ErrorMessage = "Current password is required")]
-    public string CurrentPassword { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets the new password of the user
-    /// </summary>
-    [Required(ErrorMessage = "New password is required")]
-    [StringLength(100, MinimumLength = 8, ErrorMessage = "New password must be between 8 and 100 characters")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", ErrorMessage = "New password must contain at least one lowercase letter, one uppercase letter, and one digit")]
-    public string NewPassword { get; init; } = string.Empty;
-} 

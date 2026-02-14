@@ -7,6 +7,8 @@ namespace Application.DTOs.Common;
 /// </summary>
 public record UserDto(
     Guid Id,
-    string Username,
+    string Email,
     Guid PersonId,
-    PersonDto Person); 
+    bool IsActive,
+    DateTime? LastLoginAt,
+    PersonDto Person);

@@ -1,4 +1,3 @@
-using System;
 using Application.Common;
 using Application.DTOs.Common;
 using MediatR;
@@ -9,6 +8,5 @@ namespace Application.Commands.Users;
 /// Command for creating a new user
 /// </summary>
 public record CreateUserCommand(
-    string Username,
-    string Password,
-    Guid PersonId) : IRequest<Result<UserDto>>; 
+    string Email,
+    Guid PersonId) : IRequest<Result<UserDto>>;

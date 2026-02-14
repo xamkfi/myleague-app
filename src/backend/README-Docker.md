@@ -105,6 +105,45 @@ docker-compose down -v
 docker-compose up -d
 ```
 
+## Authentication
+
+The application uses **passwordless email authentication**. No passwords are stored in the database.
+
+### How It Works
+1. Request a login code by calling `POST /api/auth/login` with `{ "email": "user@example.com" }`
+2. **In Docker/Development**: The login code is printed to the API container's console output. View it with:
+   ```bash
+   docker-compose logs -f api
+   ```
+   Look for a log line containing `[LOGIN CODE]`.
+3. Verify the code by calling `POST /api/auth/verify` with `{ "email": "...", "code": "123456" }` to receive a JWT access token and refresh token.
+4. Use the access token as `Authorization: Bearer <token>` on protected endpoints.
+
+### Default Test User
+In development, a test user (`test@myleague.local`) is automatically created on first startup. Use this email to test the login flow.
+
+### Admin User for Production
+To create an initial admin user in production, set the `Seed__AdminEmail` environment variable in `docker-compose.yml`:
+
+```yaml
+services:
+  webapi:
+    environment:
+      - Seed__AdminEmail=admin@yourdomain.com
+```
+
+### JWT & Auth Environment Variables
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `Jwt__SecretKey` | Secret key for signing JWTs | *(set in appsettings)* |
+| `Jwt__AccessTokenExpirationMinutes` | Access token lifetime | `15` |
+| `Jwt__RefreshTokenExpirationDays` | Refresh token lifetime | `7` |
+| `LoginCode__ExpirationMinutes` | Login code validity | `10` |
+| `LoginCode__MaxAttempts` | Max failed code attempts before lockout | `5` |
+| `Seed__AdminEmail` | Email for initial admin user (optional) | *(empty)* |
+| `AzureCommunicationServices__ConnectionString` | Azure Email connection string (production) | *(empty)* |
+| `AzureCommunicationServices__SenderAddress` | Sender email address (production) | *(empty)* |
+
 ## Development
 
 ### File Structure

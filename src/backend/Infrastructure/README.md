@@ -32,10 +32,19 @@ Infrastructure/
 ├── Persistence/              # Data access and persistence
 │   ├── Contexts/            # EF Core DbContext implementations
 │   ├── Repositories/        # Repository pattern implementations
+│   │   └── Common/          # Common repositories (UserRepository, RefreshTokenRepository, etc.)
 │   ├── Configurations/      # Entity Framework configurations
+│   │   └── Common/          # User, RefreshToken configurations
 │   ├── EventStores/         # Event sourcing storage
 │   ├── Extensions/          # EF Core extensions and helpers
 │   └── UnitOfWork/          # Transaction management
+├── Services/                # External service implementations
+│   ├── Auth/                # Authentication services
+│   │   ├── ConsoleLoginCodeEmailService.cs   # Dev: logs code to console
+│   │   ├── AzureCommunicationEmailService.cs # Prod: sends via Azure Email
+│   │   └── JwtTokenService.cs               # JWT + refresh token generation
+│   └── Seeding/             # Database seeding
+│       └── DatabaseSeeder.cs                # Seeds default/admin users
 ├── DomainEvents/            # Domain event handling infrastructure
 │   ├── Handlers/            # Specific domain event handlers
 │   ├── IDomainEventHandler.cs
@@ -61,11 +70,17 @@ Infrastructure/
 ## 🎯 Core Components
 
 ### Data Persistence
-- **CommonDbContext** - Shared entities and common data
+- **CommonDbContext** - Shared entities (User, RefreshToken, Person, Club, etc.)
 - **FloorballDbContext** - Floorball-specific data context
-- **Entity Configurations** - Fluent API entity mappings
-- **Repository Implementations** - Domain repository concrete classes
+- **Entity Configurations** - Fluent API entity mappings (including User and RefreshToken)
+- **Repository Implementations** - Domain repository concrete classes (UserRepository, RefreshTokenRepository, etc.)
 - **Unit of Work** - Transaction coordination across repositories
+
+### Authentication Services
+- **JwtTokenService** - Generates JWT access tokens (with userId, email, personId, role claims) and cryptographically secure refresh tokens; hashes tokens with SHA256
+- **ConsoleLoginCodeEmailService** - Development: prints the login code to console output
+- **AzureCommunicationEmailService** - Production: sends login code via Azure Communication Services Email
+- **DatabaseSeeder** - Seeds a default test user (`test@myleague.local`) in development and an optional admin user (configured via `Seed:AdminEmail`) in all environments
 
 ### Domain Event Infrastructure
 - **DomainEventDispatcher** - Central event dispatching
@@ -135,11 +150,13 @@ Infrastructure/
 - **Retry Policies** - Resilient external service calls
 - **Circuit Breakers** - Fault tolerance patterns
 
-### Security
+### Authentication & Security
+- **Passwordless Authentication** - Email-based login with one-time codes (no passwords stored)
+- **JWT Token Service** - Generates short-lived access tokens with user claims and cryptographically secure refresh tokens
+- **Email Service Abstraction** - `ConsoleLoginCodeEmailService` for dev (logs to console), `AzureCommunicationEmailService` for production (Azure Communication Services Email)
+- **Refresh Token Repository** - Stores only SHA256 hashes; supports rotation and revocation
 - **Connection Security** - Secure database connections
 - **Data Protection** - Sensitive data encryption
-- **Authentication Integration** - Identity system support
-- **Authorization** - Role-based access control
 
 ### Performance
 - **Connection Pooling** - Efficient database usage

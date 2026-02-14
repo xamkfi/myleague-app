@@ -245,10 +245,20 @@ MyLeague/
 
 ## 🔌 API Endpoints
 
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/login` | Request a login code (sent to email) |
+| POST | `/api/auth/verify` | Verify login code, receive JWT + refresh token |
+| POST | `/api/auth/refresh` | Refresh tokens using a valid refresh token |
+| POST | `/api/auth/logout` | Revoke a refresh token (logout) |
+| GET | `/api/auth/me` | Get current authenticated user info |
+
 ### Core Resources
 | Resource | Base URL | Description |
 |----------|----------|-------------|
 | **Clubs** | `/api/clubs` | Sports club management |
+| **Users** | `/api/users` | User management (requires auth) |
 | **Teams** | `/api/floorball/teams` | Floorball team operations |
 | **Players** | `/api/floorball/players` | Player management |
 | **Matches** | `/api/floorball/matches` | Match scheduling and results |
@@ -389,17 +399,34 @@ Access Seq at http://localhost:5341 for:
 - **Advanced queries** - Complex log analysis capabilities
 - **Performance monitoring** - Track application performance
 
-## 🔒 Security Features
+## 🔒 Security & Authentication
 
-### Current Implementation
-- **HTTPS Enforcement** - All API endpoints secured with HTTPS
-- **Input Validation** - Comprehensive validation using FluentValidation
-- **CORS Configuration** - Flexible cross-origin policy management
-- **Error Handling** - Secure error responses without sensitive data leakage
+### Passwordless Email Authentication
+MyLeague uses a passwordless login system -- no passwords are stored in the database. The authentication flow works as follows:
+
+1. **Request code** -- User submits their email to `POST /api/auth/login`
+2. **Receive code** -- A 6-digit code is sent to the email (logged to console in development, sent via Azure Communication Services Email in production)
+3. **Verify code** -- User submits the code to `POST /api/auth/verify` and receives a JWT access token (short-lived, 15 min) and a refresh token (long-lived, 7 days)
+4. **Use token** -- Include the access token as `Authorization: Bearer <token>` on protected endpoints
+5. **Refresh** -- When the access token expires, call `POST /api/auth/refresh` with the refresh token to get a new pair
+6. **Logout** -- Call `POST /api/auth/logout` to revoke the refresh token
+
+### Security Features
+- **Passwordless** -- No passwords stored; login codes are cryptographically generated and short-lived (10 min)
+- **Brute-force protection** -- Login codes lock after 5 failed attempts; user must request a new code
+- **JWT authentication** -- Short-lived access tokens with claims (userId, email, personId, role)
+- **Refresh token rotation** -- Each refresh revokes the old token and issues a new one; reuse of a revoked token revokes all tokens for that user (theft detection)
+- **Secure storage** -- Only SHA256 hashes of refresh tokens are stored in the database
+- **HTTPS enforcement** -- All API endpoints secured with HTTPS
+- **Input validation** -- Comprehensive validation using FluentValidation
+- **CORS configuration** -- Flexible cross-origin policy management
+- **Error handling** -- Secure error responses without sensitive data leakage
+
+### Default Users & Seeding
+- **Development** -- A test user (`test@myleague.local`, role: Admin) is automatically created on first startup. Request a login code and find it in the dev console output.
+- **Production / Azure** -- Set the `Seed__AdminEmail` environment variable (e.g., `admin@yourdomain.com`) in Azure App Service. An admin user will be created on first startup if it does not already exist.
 
 ### Planned Enhancements
-- **JWT Authentication** - Token-based authentication system
-- **Role-Based Authorization** - Granular permission system
 - **Rate Limiting** - API throttling and abuse prevention
 - **Audit Logging** - Comprehensive security event logging
 
@@ -465,7 +492,9 @@ The frontend supports multiple languages through i18next:
 - [x] Structured logging with Seq
 
 ### Phase 2: Enhanced Features 🚧
-- [ ] Authentication and authorization system
+- [x] Passwordless email authentication with JWT
+- [x] Refresh token rotation with theft detection
+- [x] Database seeding for dev and production admin users
 - [ ] Advanced reporting and analytics
 - [ ] Real-time match updates
 - [ ] Mobile-responsive design improvements

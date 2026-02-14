@@ -1,4 +1,3 @@
-using System;
 using Application.Common;
 using Application.DTOs.Common;
 using MediatR;
@@ -10,5 +9,4 @@ namespace Application.Commands.Users;
 /// </summary>
 public record UpdateUserCommand(
     Guid Id,
-    string Username,
-    string? Password = null) : IRequest<Result<UserDto>>; 
+    string Email) : IRequest<Result<UserDto>>;

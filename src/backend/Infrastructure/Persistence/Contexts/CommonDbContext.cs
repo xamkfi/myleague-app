@@ -45,6 +45,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<Division> Divisions { get; set; }
 
         /// <summary>
+        /// Gets or sets the RefreshTokens DbSet.
+        /// </summary>
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
+        /// <summary>
         /// Gets or sets the TimerStates DbSet.
         /// </summary>
         public DbSet<TimerState> TimerStates { get; set; }
@@ -99,6 +104,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new ClubConfiguration());
             modelBuilder.ApplyConfiguration(new NewsArticleConfiguration());
             modelBuilder.ApplyConfiguration(new DivisionConfiguration());
+            modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             modelBuilder.ApplyConfiguration(new TimerStateConfiguration());
         }
     }

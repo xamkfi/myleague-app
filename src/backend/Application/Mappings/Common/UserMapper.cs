@@ -1,118 +1,69 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using Application.Commands.Users;
 using Application.DTOs.Common;
-using Application.Mappings.Common;
 using Domain.Entities.Common;
 
-namespace Application.Mappings.Common
+namespace Application.Mappings.Common;
+
+/// <summary>
+/// Mapper class for User entity and related DTOs
+/// </summary>
+public static class UserMapper
 {
     /// <summary>
-    /// Mapper class for User entity and related DTOs
+    /// Maps a User to a UserDto
     /// </summary>
-    public static class UserMapper
+    /// <param name="user">The user entity</param>
+    /// <returns>The mapped UserDto</returns>
+    public static UserDto ToDto(User user)
     {
-        /// <summary>
-        /// Maps a User to a UserDto
-        /// </summary>
-        /// <param name="user">The user entity</param>
-        /// <returns>The mapped UserDto</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static UserDto ToDto(User user)
-        {
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
+        ArgumentNullException.ThrowIfNull(user);
 
-            return new UserDto(
-                user.Id,
-                user.Username,
-                user.PersonId,
-                user.Person != null ? PersonMapper.ToDto(user.Person) : 
-                    new PersonDto(user.PersonId, "Unknown", "User", DateTime.MinValue, "Unknown User", 
-                        Domain.Enums.Common.PersonRole.User, false, null, null)
-            );
-        }
-
-        /// <summary>
-        /// Maps a collection of User entities to a collection of UserDtos
-        /// </summary>
-        /// <param name="users">The user entities</param>
-        /// <returns>The mapped UserDtos</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static IEnumerable<UserDto> ToDtos(IEnumerable<User> users)
-        {
-            if (users == null)
-                throw new ArgumentNullException(nameof(users));
-
-            return users.Select(user => ToDto(user));
-        }
-
-        /// <summary>
-        /// Maps a CreateUserCommand to a User entity
-        /// </summary>
-        /// <param name="command">The create command</param>
-        /// <returns>The new User entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static User ToEntity(CreateUserCommand command)
-        {
-            if (command == null)
-                throw new ArgumentNullException(nameof(command));
-
-            string hashedPassword = HashPassword(command.Password);
-            
-            return new User(
-                command.Username,
-                hashedPassword,
-                command.PersonId
-            );
-        }
-
-        /// <summary>
-        /// Updates a User entity from an UpdateUserCommand
-        /// </summary>
-        /// <param name="user">The user entity to update</param>
-        /// <param name="command">The update command</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static void UpdateFromCommand(User user, UpdateUserCommand command)
-        {
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
-            if (command == null)
-                throw new ArgumentNullException(nameof(command));
-
-            user.Username = command.Username;
-            
-            if (!string.IsNullOrEmpty(command.Password))
-            {
-                user.PasswordHash = HashPassword(command.Password);
-            }
-        }
-
-        /// <summary>
-        /// Hashes a password using SHA256
-        /// </summary>
-        /// <param name="password">The password to hash</param>
-        /// <returns>The hashed password</returns>
-        private static string HashPassword(string password)
-        {
-            using var sha256 = SHA256.Create();
-            byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
-        }
-
-        /// <summary>
-        /// Verifies a password against a hash
-        /// </summary>
-        /// <param name="password">The password to verify</param>
-        /// <param name="hash">The hash to verify against</param>
-        /// <returns>True if the password matches the hash</returns>
-        public static bool VerifyPassword(string password, string hash)
-        {
-            string hashedPassword = HashPassword(password);
-            return hashedPassword == hash;
-        }
+        return new UserDto(
+            user.Id,
+            user.Email,
+            user.PersonId,
+            user.IsActive,
+            user.LastLoginAt,
+            user.Person != null ? PersonMapper.ToDto(user.Person) :
+                new PersonDto(user.PersonId, "Unknown", "User", DateTime.MinValue, "Unknown User",
+                    Domain.Enums.Common.PersonRole.User, false, null, null)
+        );
     }
-} 
+
+    /// <summary>
+    /// Maps a collection of User entities to a collection of UserDtos
+    /// </summary>
+    /// <param name="users">The user entities</param>
+    /// <returns>The mapped UserDtos</returns>
+    public static IEnumerable<UserDto> ToDtos(IEnumerable<User> users)
+    {
+        ArgumentNullException.ThrowIfNull(users);
+
+        return users.Select(ToDto);
+    }
+
+    /// <summary>
+    /// Maps a CreateUserCommand to a User entity
+    /// </summary>
+    /// <param name="command">The create command</param>
+    /// <returns>The new User entity</returns>
+    public static User ToEntity(CreateUserCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        return new User(command.Email, command.PersonId);
+    }
+
+    /// <summary>
+    /// Updates a User entity from an UpdateUserCommand
+    /// </summary>
+    /// <param name="user">The user entity to update</param>
+    /// <param name="command">The update command</param>
+    public static void UpdateFromCommand(User user, UpdateUserCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(command);
+
+        user.Email = command.Email;
+    }
+}
