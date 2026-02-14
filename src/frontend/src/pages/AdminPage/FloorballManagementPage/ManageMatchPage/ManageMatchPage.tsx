@@ -285,7 +285,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
     const key = `${match.id}:${team}:${goalieId}`;
     const now = Date.now();
-    if (lastSaveRef.current[key] && now - lastSaveRef.current[key] < 1000) return;
+    if (lastSaveRef.current[key] && now - lastSaveRef.current[key] < 250) return;
     lastSaveRef.current[key] = now;
 
     // Get the LIVE elapsed time from the timer callback, not the stale context state
