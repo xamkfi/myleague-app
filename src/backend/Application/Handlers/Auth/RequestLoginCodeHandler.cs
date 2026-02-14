@@ -14,7 +14,7 @@ namespace Application.Handlers.Auth;
 /// Handler for requesting a login code. Generates a cryptographically random code,
 /// stores it on the user, and sends it via email.
 /// </summary>
-public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, Result<bool>>
+public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, Result<string?>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -36,7 +36,7 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
         _logger = logger;
     }
 
-    public async Task<Result<bool>> Handle(RequestLoginCodeCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string?>> Handle(RequestLoginCodeCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -45,13 +45,13 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
             {
                 // Don't reveal whether the email exists -- return success regardless
                 _logger.LogInformation("Login code requested for non-existent email: {Email}", request.Email);
-                return Result<bool>.Success(true);
+                return Result<string?>.Success(null);
             }
 
             if (!user.IsActive)
             {
                 _logger.LogInformation("Login code requested for deactivated account: {Email}", request.Email);
-                return Result<bool>.Success(true);
+                return Result<string?>.Success(null);
             }
 
             // Generate cryptographically secure code
@@ -66,12 +66,12 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
             await _emailService.SendLoginCodeAsync(request.Email, code, cancellationToken);
 
             _logger.LogInformation("Login code sent to {Email}, expires at {ExpiresAt}", request.Email, expiresAt);
-            return Result<bool>.Success(true);
+            return Result<string?>.Success(code);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending login code to {Email}", request.Email);
-            return Result<bool>.Failure("An error occurred while sending the login code.");
+            return Result<string?>.Failure("An error occurred while sending the login code.");
         }
     }
 

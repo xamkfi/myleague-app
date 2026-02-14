@@ -21,16 +21,19 @@ public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<AuthController> _logger;
+    private readonly IWebHostEnvironment _environment;
 
     /// <summary>
     /// Initializes a new instance of the AuthController class
     /// </summary>
     /// <param name="mediator">The mediator</param>
     /// <param name="logger">The logger</param>
-    public AuthController(IMediator mediator, ILogger<AuthController> logger)
+    /// <param name="environment">The web host environment</param>
+    public AuthController(IMediator mediator, ILogger<AuthController> logger, IWebHostEnvironment environment)
     {
         _mediator = mediator;
         _logger = logger;
+        _environment = environment;
     }
 
     /// <summary>
@@ -39,17 +42,25 @@ public class AuthController : ControllerBase
     /// <param name="request">The login request containing the email</param>
     /// <returns>Success response (always returns 200 to prevent email enumeration)</returns>
     [HttpPost("login")]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse>> Login([FromBody] LoginRequest request)
     {
         _logger.LogInformation("Login code requested for email: {Email}", request.Email);
 
         RequestLoginCodeCommand command = new(request.Email);
-        Result<bool> result = await _mediator.Send(command);
+        Result<string?> result = await _mediator.Send(command);
 
         if (result.IsSuccess)
         {
+            // In development, include the code in the response for auto-fill convenience
+            if (_environment.IsDevelopment() && result.Data != null)
+            {
+                return Ok(ApiResponse<object>.SuccessResponse(
+                    new { devCode = result.Data },
+                    "If an account exists with this email, a login code has been sent."));
+            }
+
             return Ok(ApiResponse.SuccessResponse("If an account exists with this email, a login code has been sent."));
         }
 

@@ -954,5 +954,22 @@
     "loading": "Ladataan seuroja...",
     "error": "Seurojen lataus epäonnistui",
     "totalClubs": "{{count}} seuraa"
+  },
+  "auth": {
+    "loginTitle": "Ylläpito - Kirjautuminen",
+    "loginSubtitle": "Syötä sähköpostiosoitteesi saadaksesi kirjautumiskoodin.",
+    "enterCode": "Syötä sähköpostiisi lähetetty 6-numeroinen koodi.",
+    "emailLabel": "Sähköposti",
+    "emailPlaceholder": "nimi@sähköposti.fi",
+    "sendCode": "Lähetä koodi",
+    "sending": "Lähetetään...",
+    "codeLabel": "Kirjautumiskoodi",
+    "codePlaceholder": "000000",
+    "verify": "Vahvista",
+    "verifying": "Vahvistetaan...",
+    "back": "Takaisin",
+    "codeSent": "Kirjautumiskoodi on lähetetty sähköpostiisi.",
+    "unexpectedError": "Odottamaton virhe tapahtui.",
+    "logout": "Kirjaudu ulos"
   }
 } 

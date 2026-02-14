@@ -1007,5 +1007,22 @@
     "loading": "Loading clubs...",
     "error": "Failed to load clubs",
     "totalClubs": "{{count}} clubs"
+  },
+  "auth": {
+    "loginTitle": "Admin Login",
+    "loginSubtitle": "Enter your email to receive a login code.",
+    "enterCode": "Enter the 6-digit code sent to your email.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "your@email.com",
+    "sendCode": "Send Code",
+    "sending": "Sending...",
+    "codeLabel": "Login Code",
+    "codePlaceholder": "000000",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "back": "Back",
+    "codeSent": "A login code has been sent to your email.",
+    "unexpectedError": "An unexpected error occurred.",
+    "logout": "Log out"
   }
 }
