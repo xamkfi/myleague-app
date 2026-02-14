@@ -1,4 +1,5 @@
 import { API_URL } from '../../constants/config';
+import { authFetch } from '../utils/authFetch';
 
 export interface NewsArticleDto {
   id: string;
@@ -52,7 +53,7 @@ export async function newsService(params?: Partial<NewsParameters>): Promise<Pag
     if (params?.pageSize) queryParams.append("pageSize", params.pageSize.toString());
 
     const queryString = queryParams.toString();
-    const response = await fetch(`${API_URL}/News${queryString ? `?${queryString}` : ''}`, {
+    const response = await authFetch(`${API_URL}/News${queryString ? `?${queryString}` : ''}`, {
       method: "GET"
     });
 
@@ -74,7 +75,7 @@ export async function newsService(params?: Partial<NewsParameters>): Promise<Pag
 
 export async function archiveNewsService(id: string) {
   try {
-    const response = await fetch(`${API_URL}/News/${id}/archive`, {
+    const response = await authFetch(`${API_URL}/News/${id}/archive`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
@@ -99,7 +100,7 @@ export async function archiveNewsService(id: string) {
 
 export async function restoreNewsService(id: string) {
   try {
-    const response = await fetch(`${API_URL}/News/${id}/restore`, {
+    const response = await authFetch(`${API_URL}/News/${id}/restore`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
@@ -124,7 +125,7 @@ export async function restoreNewsService(id: string) {
 
 export async function deleteNewsService(id: string) {
   try {
-    const response = await fetch(`${API_URL}/News/${id}`, {
+    const response = await authFetch(`${API_URL}/News/${id}`, {
       method: "DELETE",
       headers: {
         'Content-Type': 'application/json',
@@ -149,7 +150,7 @@ export async function deleteNewsService(id: string) {
 
 export async function getMainNewsArticle() {
   try {
-    const response = await fetch(`${API_URL}/News/main-news`, { method: 'GET' });
+    const response = await authFetch(`${API_URL}/News/main-news`, { method: 'GET' });
     if (!response.ok) {
       return null;
     }

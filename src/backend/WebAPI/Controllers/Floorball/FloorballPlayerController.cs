@@ -140,6 +140,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Create player request</param>
         /// <returns>Created player details</returns>
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -168,6 +169,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update player request</param>
         /// <returns>Updated player details</returns>
         [HttpPut("{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -238,6 +240,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Player ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

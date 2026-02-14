@@ -1,9 +1,10 @@
-﻿using Application.Common;
+using Application.Common;
 using Domain.Common;
 using Application.DTOs.Common;
 using Application.Commands.NewsArticles;
 using Application.Queries.NewsArticles;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
@@ -103,6 +104,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The news article creation data</param>
         /// <returns>The created news article</returns>
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status500InternalServerError)]
@@ -143,6 +145,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The news article update data</param>
         /// <returns>The updated news article</returns>
         [HttpPut("{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status404NotFound)]
@@ -186,6 +189,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="id">The news article ID</param>
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/archive")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
@@ -216,6 +220,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="id">The news article ID</param>
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/restore")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
@@ -247,6 +252,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The image URL to set</param>
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/image")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
@@ -279,6 +285,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The tag to add</param>
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/tags")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
@@ -311,6 +318,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The tag to remove</param>
         /// <returns>Success status</returns>
         [HttpDelete("{id:guid}/tags")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
@@ -516,6 +524,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="file">The image file to upload</param>
         /// <returns>The URL of the uploaded image</returns>
         [HttpPost("upload-image")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
@@ -580,6 +589,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="url"></param>
         /// <returns></returns>
         [HttpDelete("delete-image")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
@@ -647,6 +657,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ApiResponse<bool>>> DeleteNews(Guid id)

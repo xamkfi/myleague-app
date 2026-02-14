@@ -9,6 +9,7 @@ import type {
   FloorballPosition,
   TeamCategory
 } from '../../types/floorball/floorballTypes';
+import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 
@@ -26,7 +27,7 @@ export const floorballTeamService = {
 
     const url = `${API_URL}/FloorballTeam${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
     
-    const response = await fetch(url);
+    const response = await authFetch(url);
     if (!response.ok) {
       throw new Error('Failed to fetch floorball teams');
     }
@@ -43,7 +44,7 @@ export const floorballTeamService = {
    * Get a floorball team by ID
    */
   getById: async (id: string): Promise<FloorballTeam> => {
-    const response = await fetch(`${API_URL}/FloorballTeam/${id}`);
+    const response = await authFetch(`${API_URL}/FloorballTeam/${id}`);
     if (!response.ok) {
       throw new Error('Failed to fetch floorball team');
     }
@@ -60,7 +61,7 @@ export const floorballTeamService = {
    * Create a new floorball team
    */
   create: async (data: FloorballTeamRequest): Promise<FloorballTeam> => {
-    const response = await fetch(`${API_URL}/FloorballTeam`, {
+    const response = await authFetch(`${API_URL}/FloorballTeam`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -90,7 +91,7 @@ export const floorballTeamService = {
       console.log('Updating team with ID:', id);
       console.log('Update data:', data);
       
-      const response = await fetch(`${API_URL}/FloorballTeam/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballTeam/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +125,7 @@ export const floorballTeamService = {
    * Delete a floorball team
    */
   delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/FloorballTeam/${id}`, {
+    const response = await authFetch(`${API_URL}/FloorballTeam/${id}`, {
       method: 'DELETE',
     });
     const apiResponse: ApiResponse<void> = await response.json();
@@ -155,7 +156,7 @@ export const floorballTeamService = {
       searchParams.append('jerseyNumber', jerseyNumber.toString());
     }
 
-    const response = await fetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}?${searchParams.toString()}`, {
+    const response = await authFetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}?${searchParams.toString()}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -186,7 +187,7 @@ export const floorballTeamService = {
   ): Promise<FloorballTeamPlayerDto> => {
     console.log('Updating team player:', { teamId, playerId, updateData });
 
-    const response = await fetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}`, {
+    const response = await authFetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -209,7 +210,7 @@ export const floorballTeamService = {
    * Remove a player from a team
    */
   removePlayerFromTeam: async (teamId: string, playerId: string): Promise<FloorballTeam> => {
-    const response = await fetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}`, {
+    const response = await authFetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}`, {
       method: 'DELETE',
     });
     
@@ -244,7 +245,7 @@ export const floorballTeamService = {
 
     const url = `${API_URL}/FloorballTeam/without-roster${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
     
-    const response = await fetch(url);
+    const response = await authFetch(url);
     if (!response.ok) {
       throw new Error('Failed to fetch floorball teams');
     }

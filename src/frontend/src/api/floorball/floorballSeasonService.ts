@@ -2,6 +2,7 @@ import type {
   ApiResponse,
   FloorballTeam
 } from '../../types/floorball/floorballTypes';
+import { authFetch } from '../utils/authFetch';
 import { API_URL } from '../../constants/config';
 
 /**
@@ -75,7 +76,7 @@ export const floorballSeasonService = {
       const url = `${API_URL}/FloorballSeason`;
       console.log('Fetching seasons from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       console.log('Response status:', response.status);
       console.log('Response ok:', response.ok);
@@ -107,7 +108,7 @@ export const floorballSeasonService = {
       const url = `${API_URL}/FloorballSeason/active`;
       console.log('Fetching active seasons from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch active floorball seasons');
@@ -135,7 +136,7 @@ export const floorballSeasonService = {
       const url = `${API_URL}/FloorballSeason/${id}`;
       console.log('Fetching season from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball season');
@@ -162,7 +163,7 @@ export const floorballSeasonService = {
     try {
       console.log('Creating season:', data);
       
-      const response = await fetch(`${API_URL}/FloorballSeason`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +201,7 @@ export const floorballSeasonService = {
       console.log('Updating season with ID:', id);
       console.log('Update data:', data);
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -237,7 +238,7 @@ export const floorballSeasonService = {
     try {
       console.log('Deleting season with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${id}`, {
         method: 'DELETE',
       });
       
@@ -268,7 +269,7 @@ export const floorballSeasonService = {
     try {
       console.log('Activating season with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${id}/activate`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${id}/activate`, {
         method: 'PUT',
       });
       
@@ -297,7 +298,7 @@ export const floorballSeasonService = {
     try {
       console.log('Deactivating season with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${id}/deactivate`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${id}/deactivate`, {
         method: 'PUT',
       });
       
@@ -326,7 +327,7 @@ export const floorballSeasonService = {
     try {
       console.log('Completing season with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${id}/complete`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${id}/complete`, {
         method: 'PUT',
       });
       
@@ -355,7 +356,7 @@ export const floorballSeasonService = {
     try {
       console.log('Adding team to season:', { seasonId, teamId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/teams/${teamId}`, {
         method: 'POST',
       });
       
@@ -384,7 +385,7 @@ export const floorballSeasonService = {
     try {
       console.log('Removing team from season:', { seasonId, teamId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/teams/${teamId}`, {
         method: 'DELETE',
       });
       
@@ -413,7 +414,7 @@ export const floorballSeasonService = {
     try {
       console.log('Adding division to season:', { seasonId, divisionId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}`, {
         method: 'POST',
       });
       
@@ -442,7 +443,7 @@ export const floorballSeasonService = {
     try {
       console.log('Removing division from season:', { seasonId, divisionId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}`, {
         method: 'DELETE',
       });
       
@@ -471,7 +472,7 @@ export const floorballSeasonService = {
     try {
       console.log('Adding team to season division:', { seasonId, divisionId, teamId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}/teams/${teamId}`, {
         method: 'POST',
       });
       
@@ -500,7 +501,7 @@ export const floorballSeasonService = {
     try {
       console.log('Removing team from season division:', { seasonId, divisionId, teamId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}/teams/${teamId}`, {
         method: 'DELETE',
       });
       

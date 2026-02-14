@@ -1,4 +1,5 @@
 import type { ApiResponse } from '../../types/common/apiResponseType';
+import { authFetch } from '../utils/authFetch';
 import { API_URL } from '../../constants/config';
 
 export interface TimeSpan {
@@ -32,7 +33,7 @@ export const timerService = {
    * Creates a timer for a match
    */
   createTimer: async (matchId: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/matches/${matchId}/timer/create`, {
+    const response = await authFetch(`${API_URL}/matches/${matchId}/timer/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -60,7 +61,7 @@ export const timerService = {
     
     console.log('Start timer API URL:', url.toString());
 
-    const response = await fetch(url.toString(), {
+    const response = await authFetch(url.toString(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -87,7 +88,7 @@ export const timerService = {
     console.log('Match ID:', matchId);
     console.log('API URL:', `${API_URL}/matches/${matchId}/timer/stop`);
     
-    const response = await fetch(`${API_URL}/matches/${matchId}/timer/stop`, {
+    const response = await authFetch(`${API_URL}/matches/${matchId}/timer/stop`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -110,7 +111,7 @@ export const timerService = {
    * Resets the timer for a match
    */
   resetTimer: async (matchId: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/matches/${matchId}/timer/reset`, {
+    const response = await authFetch(`${API_URL}/matches/${matchId}/timer/reset`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -127,7 +128,7 @@ export const timerService = {
    * Gets the elapsed time for a match
    */
   getElapsedTime: async (matchId: string): Promise<string> => {
-    const response = await fetch(`${API_URL}/matches/${matchId}/timer/elapsed`, {
+    const response = await authFetch(`${API_URL}/matches/${matchId}/timer/elapsed`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -163,7 +164,7 @@ export const timerService = {
    * Gets the timer status for a match
    */
   getTimerStatus: async (matchId: string): Promise<TimerStatusResponse> => {
-    const response = await fetch(`${API_URL}/matches/${matchId}/timer/status`, {
+    const response = await authFetch(`${API_URL}/matches/${matchId}/timer/status`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -187,7 +188,7 @@ export const timerService = {
     console.log('Match ID:', matchId);
     console.log('Time in seconds:', timeInSeconds);
     
-    const response = await fetch(`${API_URL}/matches/${matchId}/timer/set-time`, {
+    const response = await authFetch(`${API_URL}/matches/${matchId}/timer/set-time`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -257,7 +258,7 @@ export const timerService = {
    * Destroys the timer for a match
    */
   destroyTimer: async (matchId: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/matches/${matchId}/timer/destroy`, {
+    const response = await authFetch(`${API_URL}/matches/${matchId}/timer/destroy`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

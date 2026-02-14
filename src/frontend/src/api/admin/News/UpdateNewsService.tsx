@@ -1,4 +1,5 @@
 import type { NewsArticleDto } from '../../news/newsService';
+import { authFetch } from '../../utils/authFetch';
 import { API_URL } from '../../../constants/config';
 
 interface UpdateNewsData {
@@ -22,7 +23,7 @@ interface ApiResponse<T> {
 
 export async function UpdateNewsService(id: string, newsData: UpdateNewsData): Promise<NewsArticleDto> {
   try {
-    const response = await fetch(`${API_URL}/News/${id}`, {
+    const response = await authFetch(`${API_URL}/News/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
