@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Net;
@@ -155,6 +156,21 @@ namespace WebAPI.Controllers.Health
         public IActionResult GetLivenessAsync()
         {
             return Ok("Alive");
+        }
+
+        /// <summary>
+        /// Gets the application version (build date + git commit SHA)
+        /// </summary>
+        /// <returns>The application version</returns>
+        [HttpGet("/api/version")]
+        [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
+        public IActionResult GetVersion()
+        {
+            string version = typeof(Program).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion ?? "unknown";
+
+            return Ok(new { version });
         }
     }
 } 

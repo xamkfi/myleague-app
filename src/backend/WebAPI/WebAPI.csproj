@@ -40,4 +40,14 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
-</Project> 
+  <!-- Auto-generate version as yyyy-MM-dd.{git-short-sha} at build time -->
+  <Target Name="SetBuildVersion" BeforeTargets="GetAssemblyVersion;GenerateNuspec">
+    <Exec Command="git rev-parse --short HEAD" ConsoleToMsBuild="true" StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+    <PropertyGroup>
+      <InformationalVersion>$([System.DateTime]::UtcNow.ToString("yyyy-MM-dd")).$(GitCommitHash)</InformationalVersion>
+    </PropertyGroup>
+  </Target>
+
+</Project>
