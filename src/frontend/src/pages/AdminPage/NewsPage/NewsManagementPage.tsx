@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import NewsList from './components/NewsList';
+import Button from '../../../components/Button/Button';
+import AddIcon from '../../../assets/basicIcons/add.svg';
 import './NewsManagementPage.scss';
 import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
 import NewsFilter, { type NewsFilters } from './components/NewsFilter';
@@ -62,12 +64,13 @@ const NewsManagementPage = () => {
     <div className="news-management-page">
       <div className="page-header">
         <h1>{t('admin.news.pageTitle', 'News Management')}</h1>
-        <button 
-          className="create-new-button"
+        <Button
+          iconLeft={AddIcon}
+          rounded="pill"
           onClick={handleCreateNew}
         >
           {t('admin.news.createNew', 'Create New')}
-        </button>
+        </Button>
       </div>
       
       <NewsFilter

@@ -73,42 +73,6 @@
   }
 }
 
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-
-  button {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 0.375rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-
-    &.edit-button {
-      background-color: #0d6efd;
-      color: white;
-
-      &:hover {
-        background-color: #0b5ed7;
-      }
-    }
-
-    &.delete-button {
-      background-color: #dc3545;
-      color: white;
-
-      &:hover:not(:disabled) {
-        background-color: #bb2d3b;
-      }
-
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-    }
-  }
-}
 
 .archive-toggle {
   display: inline-flex;
@@ -149,19 +113,6 @@
 
   .status-text {
     font-size: 0.875rem;
-  }
-}
-
-.loading-spinner {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
   }
 }
 

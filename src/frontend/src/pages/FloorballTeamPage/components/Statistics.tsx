@@ -1,5 +1,6 @@
 import './Statistics.scss';
 import { useTranslation } from 'react-i18next';
+import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import type { FloorballTeamSeasonStatisticsDto } from '../../../api/floorball/floorballStatistics';
 
 interface StatisticsProps {
@@ -17,8 +18,7 @@ export default function Statistics({ teamStatistics, loading, error, seasonName 
     return (
       <div className="statistics-container">
         <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <h3>{t('teamUserPage.stats.loading')}</h3>
+          <LoadingSpinner size="lg" text={t('teamUserPage.stats.loading')} />
         </div>
       </div>
     );

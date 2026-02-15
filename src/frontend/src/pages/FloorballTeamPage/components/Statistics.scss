@@ -87,21 +87,6 @@
   }
 }
 
-.loading-state {
-  .loading-spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid #e5e7eb;
-    border-top-color: #1e40af;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto map.get($spacing, 'md');
-  }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 
 .error-state {
   h3 {

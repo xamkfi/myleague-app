@@ -188,50 +188,7 @@
 .users-actions-column,
 .users-actions-column-header {
   text-align: center;
-  width: 160px;
-}
-
-.users-action-buttons {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-}
-
-.users-action-btn {
-  border: none;
-  border-radius: 6px;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.users-action-btn--edit {
-  background-color: #eef2ff;
-  color: #4338ca;
-
-  &:hover:not(:disabled) {
-    background-color: #e0e7ff;
-  }
-}
-
-.users-action-btn--delete {
-  background-color: rgba(248, 113, 113, 0.12);
-  color: #b91c1c;
-
-  &:hover:not(:disabled) {
-    background-color: rgba(248, 113, 113, 0.22);
-  }
+  width: 80px;
 }
 
 /* ============================================================================

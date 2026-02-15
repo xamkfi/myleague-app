@@ -4,6 +4,7 @@ import { floorballMatchService } from '../../api/floorball/floorballMatchService
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import { FloorballMatchStatus } from '../../types/floorball/floorballTypes';
 import SidebarMatchCard from './SidebarMatchCard';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import './MatchSidebar.scss';
 
 const MAX_MATCHES_PER_SECTION = 5;
@@ -60,8 +61,7 @@ function MatchSidebar() {
     return (
       <div className="match-sidebar">
         <div className="match-sidebar__loading">
-          <div className="loading-spinner" />
-          <span>{t('sidebar.loading', 'Ladataan...')}</span>
+          <LoadingSpinner size="sm" text={t('sidebar.loading', 'Ladataan...')} />
         </div>
       </div>
     );

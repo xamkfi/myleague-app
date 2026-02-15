@@ -101,22 +101,6 @@
   }
 }
 
-// Loading spinner
-.loading-spinner {
-  width: 24px;
-  height: 24px;
-  border: 3px solid $color-neutral-medium-grey;
-  border-top-color: $color-blue-medium;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 // ===== SIDEBAR MATCH CARD =====
 // Card uses same background as navbar ($color-blue-darkest) with white text
 .sidebar-match-card {

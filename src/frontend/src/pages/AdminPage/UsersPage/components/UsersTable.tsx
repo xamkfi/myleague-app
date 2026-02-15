@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { SystemUser } from '../../../../types/admin/userTypes';
+import ActionsDropdown from '../../../../components/ActionsDropdown/ActionsDropdown';
 
 interface UsersTableProps {
   users: SystemUser[];
@@ -81,24 +82,13 @@ const UsersTable = ({ users, onEdit, onDelete }: UsersTableProps) => {
               </td>
               <td className="user-last-login">{formatDate(user.lastLoginAt)}</td>
               <td className="users-actions-column">
-                <div className="users-action-buttons">
-                  <button
-                    type="button"
-                    className="users-action-btn users-action-btn--edit"
-                    onClick={() => onEdit(user)}
-                    title={t('common.edit', 'Edit')}
-                  >
-                    {t('common.edit', 'Edit')}
-                  </button>
-                  <button
-                    type="button"
-                    className="users-action-btn users-action-btn--delete"
-                    onClick={() => onDelete(user)}
-                    title={t('common.delete', 'Delete')}
-                  >
-                    {t('common.delete', 'Delete')}
-                  </button>
-                </div>
+                <ActionsDropdown
+                  ariaLabel={t('admin.users.actions.menu', 'User actions menu')}
+                  actions={[
+                    { label: t('common.edit', 'Edit'), onClick: () => onEdit(user) },
+                    { label: t('common.delete', 'Delete'), onClick: () => onDelete(user), variant: 'danger' },
+                  ]}
+                />
               </td>
             </tr>
           ))}

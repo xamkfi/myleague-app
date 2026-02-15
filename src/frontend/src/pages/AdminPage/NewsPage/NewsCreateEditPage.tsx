@@ -4,7 +4,7 @@ import QuillEditor from "./components/QuillEditor";
 import { useTranslation } from "react-i18next";
 import NewsInputs, { type NewsInputsData } from "./components/NewsInputs";
 import PreviewNews from "./components/PreviewNews";
-import { LoadingSpinner } from "./components/LoadingSpinner";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { CreateNewsService } from "../../../api/admin/News/CreateNewsService";
 import { UpdateNewsService } from "../../../api/admin/News/UpdateNewsService";
 import { useNavigate, useParams } from "react-router-dom";
@@ -235,8 +235,7 @@ export default function NewsCreateEditPage() {
     return (
       <PageTemplate title={t('admin.news.loading', 'Loading...')}>
         <div className="flex justify-center items-center min-h-screen">
-          <LoadingSpinner />
-          <span className="ml-2">{t('admin.news.loading_article', 'Loading article...')}</span>
+          <LoadingSpinner text={t('admin.news.loading_article', 'Loading article...')} />
         </div>
       </PageTemplate>
     );
@@ -369,8 +368,7 @@ export default function NewsCreateEditPage() {
 
               {loadingAnimation && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-blue-600">Uploading image...</span>
-                  <LoadingSpinner/>
+                  <LoadingSpinner size="sm" text="Uploading image..." />
                 </div>
               )}
             </div>

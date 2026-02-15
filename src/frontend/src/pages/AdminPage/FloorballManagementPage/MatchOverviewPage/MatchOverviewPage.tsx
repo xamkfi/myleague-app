@@ -8,6 +8,7 @@ import CollapsibleMatchSection from './Components/CollapsibleMatchSection/Collap
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import './MatchOverviewPage.scss';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
@@ -230,10 +231,7 @@ const MatchOverviewPage = () => {
     return (
       <PageTemplate title={'Match Overview'}>
       <div className="match-overview">
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-            <p>{t('floorball.matches.loading', 'Loading matches...')}</p>
-          </div>
+          <LoadingSpinner text={t('floorball.matches.loading', 'Loading matches...')} />
       </div>
       </PageTemplate>
     );

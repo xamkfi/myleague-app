@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { clubService, type Club } from '../../api/common/clubService';
 import { createClubSlug } from '../../utils/slugUtils';
 import './ClubsPage.scss';
@@ -71,8 +72,7 @@ function ClubsPage() {
       <PageTemplate title={t('clubsPage.title')}>
         <div className="clubs-page">
           <div className="clubs-page__loading">
-            <div className="loading-spinner"></div>
-            <span>{t('clubsPage.loading')}</span>
+            <LoadingSpinner variant="light" text={t('clubsPage.loading')} />
           </div>
         </div>
       </PageTemplate>

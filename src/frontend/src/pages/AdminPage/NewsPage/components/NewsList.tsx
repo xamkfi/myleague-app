@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { NewsArticleDto, PaginatedNewsResponse } from '../../../../api/news/newsService'; 
 import { newsService, archiveNewsService, restoreNewsService, deleteNewsService } from '../../../../api/news/newsService';
 import Pagination from '../../../../components/Pagination';
+import ActionsDropdown from '../../../../components/ActionsDropdown/ActionsDropdown';
 import "../styles/NewsList.scss";
 
 interface NewsListProps {
@@ -202,25 +203,25 @@ const NewsList = ({ filters }: NewsListProps) => {
                 </button>
               </td>
               <td>
-                <div className="action-buttons">
-                  <button
-                    className="edit-button"
-                    onClick={() => handleEdit(article.id)}
-                  >
-                    {t('admin.news.actions.edit', 'Edit')}
-                  </button>
-                  <button
-                    className="delete-button"
-                    onClick={() => handleDelete(article.id)}
-                    disabled={deletingArticle === article.id}
-                  >
-                    {deletingArticle === article.id ? (
-                      <span className="loading-spinner">⏳</span>
-                    ) : (
-                      t('admin.news.actions.delete', 'Delete')
-                    )}
-                  </button>
-                </div>
+                <ActionsDropdown
+                  ariaLabel={t('admin.news.actions.menu', 'News actions menu')}
+                  actions={[
+                    { label: t('admin.news.actions.edit', 'Edit'), onClick: () => handleEdit(article.id) },
+                    {
+                      label: article.isArchived
+                        ? t('admin.news.actions.unarchive', 'Unarchive')
+                        : t('admin.news.actions.archive', 'Archive'),
+                      onClick: () => handleToggleArchive(article.id, article.isArchived),
+                      variant: 'status',
+                    },
+                    {
+                      label: t('admin.news.actions.delete', 'Delete'),
+                      onClick: () => handleDelete(article.id),
+                      variant: 'danger',
+                      disabled: deletingArticle === article.id,
+                    },
+                  ]}
+                />
               </td>
             </tr>
           ))}
