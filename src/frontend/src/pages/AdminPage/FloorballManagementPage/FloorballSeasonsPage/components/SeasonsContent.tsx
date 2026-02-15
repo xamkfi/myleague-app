@@ -9,6 +9,10 @@ interface SeasonsContentProps {
   onActivateToggle: (season: FloorballSeasonDto) => void;
   onComplete: (season: FloorballSeasonDto) => void;
   operationLoading?: string | null;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
+  onSelectAll: () => void;
+  onClearSelection: () => void;
 }
 
 export const SeasonsContent = ({
@@ -17,14 +21,18 @@ export const SeasonsContent = ({
   onDelete,
   onActivateToggle,
   onComplete,
-  operationLoading
+  operationLoading,
+  selectedIds,
+  onToggleSelect,
+  onSelectAll,
+  onClearSelection,
 }: SeasonsContentProps) => {
   const { t } = useTranslation();
 
   return (
     <div className="seasons-table-container">
       {seasons.length === 0 ? (
-        <div className="no-seasons">
+        <div className="admin-table__empty">
           <p>{t('floorball.seasons.noSeasons', 'No seasons found')}</p>
         </div>
       ) : (
@@ -35,8 +43,12 @@ export const SeasonsContent = ({
           onActivateToggle={onActivateToggle}
           onComplete={onComplete}
           operationLoading={operationLoading}
+          selectedIds={selectedIds}
+          onToggleSelect={onToggleSelect}
+          onSelectAll={onSelectAll}
+          onClearSelection={onClearSelection}
         />
       )}
     </div>
   );
-}; 
+};

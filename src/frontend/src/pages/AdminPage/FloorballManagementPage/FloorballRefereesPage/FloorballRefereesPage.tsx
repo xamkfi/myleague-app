@@ -7,6 +7,8 @@ import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import SearchField from '../../../../components/SearchField';
 import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
+import BulkActionsBar from '../../../../components/BulkActionsBar/BulkActionsBar';
+import '../../../../styles/AdminTable.scss';
 import './FloorballRefereesPage.scss';
 
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
@@ -22,6 +24,9 @@ const FloorballRefereesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const [deleteTimeoutId, setDeleteTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Filter referees based on search term
   const filteredReferees = referees.filter(referee => {
@@ -65,6 +70,27 @@ const FloorballRefereesPage = () => {
     fetchReferees();
   }, [t]);
 
+  // Selection handlers
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedIds(new Set(filteredReferees.map((r) => r.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
   const handleDelete = (refereeId: string) => {
     const referee = referees.find(r => r.id === refereeId);
     if (!referee) return;
@@ -84,6 +110,13 @@ const FloorballRefereesPage = () => {
       
       // Remove referee from list
       setReferees(prevReferees => prevReferees.filter(r => r.id !== refereeToDelete.id));
+      
+      // Clear selection if the deleted referee was selected
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(refereeToDelete.id);
+        return next;
+      });
       
       // Clear any existing timeout to prevent flickering
       if (deleteTimeoutId) {
@@ -110,6 +143,25 @@ const FloorballRefereesPage = () => {
   const handleCancelDelete = () => {
     setIsDeleteModalOpen(false);
     setRefereeToDelete(null);
+  };
+
+  // Bulk delete handler
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    try {
+      setError(null);
+      for (const id of selectedIds) {
+        await floorballRefereeService.delete(id);
+      }
+
+      // Remove deleted referees from list
+      setReferees((prev) => prev.filter((r) => !selectedIds.has(r.id)));
+      setSelectedIds(new Set());
+    } catch (err) {
+      setError(t('floorball.referees.errors.bulkDeleteFailed', 'Failed to delete selected referees. Please try again.'));
+      console.error('Bulk delete failed:', err);
+    }
   };
 
   if (loading) {
@@ -149,12 +201,31 @@ const FloorballRefereesPage = () => {
         
         {/* Error message */}
         <ErrorPopup message={error} />
-        
+
+        {/* Bulk Actions Bar */}
+        <BulkActionsBar
+          selectedCount={selectedIds.size}
+          totalCount={filteredReferees.length}
+          onSelectAll={selectAll}
+          onClearSelection={clearSelection}
+          actions={[
+            {
+              label: t('floorball.referees.actions.bulkDelete', 'Delete ({{count}})', { count: selectedIds.size }),
+              onClick: handleBulkDelete,
+              variant: 'danger',
+            },
+          ]}
+        />
+
         {/* Referees table */}
-        <div className="referees-table-wrapper">
+        <div className="admin-table__wrapper">
           <RefereesTable 
             referees={filteredReferees} 
-            onDelete={handleDelete} 
+            onDelete={handleDelete}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            onSelectAll={selectAll}
+            onClearSelection={clearSelection}
           />
         </div>
 
@@ -181,4 +252,4 @@ const FloorballRefereesPage = () => {
   );
 };
 
-export default FloorballRefereesPage; 
+export default FloorballRefereesPage;

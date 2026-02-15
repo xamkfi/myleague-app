@@ -15,8 +15,8 @@
 }
 
 .standing-header {
-  background: $color-gradient-blue;
-  color: $color-white;
+  background: $color-banner-bg;
+  color: $color-banner-text;
   padding: map.get($spacing, "md") map.get($spacing, "lg");
   display: flex;
   flex-direction: column;
@@ -120,6 +120,14 @@
 
     &:hover {
       background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    &.clickable-row {
+      cursor: pointer;
+
+      &:hover {
+        background-color: rgba($color-blue-background, 0.35);
+      }
     }
 
     &:last-child {

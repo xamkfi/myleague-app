@@ -39,12 +39,11 @@ export default function MatchRow({
   const periods = Array.from({ length: computedPeriodCount }, (_, i) => i + 1);
   const navigate = useNavigate();
 
+  const homeWon = homeScore > awayScore;
+  const awayWon = awayScore > homeScore;
+
   const handleClick = () => {
-//    if (onClick) {
-//      onClick();
-//    } else {
-      navigate(`/match/${id}`);
-//    }
+    navigate(`/match/${id}`);
   };
 
   return (
@@ -60,14 +59,14 @@ export default function MatchRow({
 
       {/* Teams */}
       <div className="match-row-teams-container">
-        <div className="match-row-home-team">
+        <div className={`match-row-home-team ${homeWon ? 'match-row-winner' : ''}`}>
           {homeTeamLogo && (
             <img src={homeTeamLogo} alt={`${homeTeamName} logo`} />
           )}
           {homeTeamName}
         </div>
 
-        <div className="match-row-away-team">
+        <div className={`match-row-away-team ${awayWon ? 'match-row-winner' : ''}`}>
           {awayTeamLogo && (
             <img src={awayTeamLogo} alt={`${awayTeamName} logo`} />
           )}
@@ -77,18 +76,19 @@ export default function MatchRow({
 
       {/* Total score */}
       <div className="match-row-total-score-container">
-        <div className="match-row-home-total-score">
+        <div className={`match-row-home-total-score ${homeWon ? 'match-row-score-winner' : ''}`}>
           {homeScore > 0 ? homeScore : '-'}
         </div>
-        <div className="match-row-away-total-score">
+        <div className={`match-row-away-total-score ${awayWon ? 'match-row-score-winner' : ''}`}>
           {awayScore > 0 ? awayScore : '-'}
         </div>
       </div>
 
-      {/* Period score */}
+      {/* Period scores with headers */}
       <div className="match-row-period-score-container">
         {periods.map((period) => (
           <div key={period} className="match-row-period">
+            <div className="match-row-period-header">E{period}</div>
             <div className="match-row-home-period-score">
               {periodScores && periodScores[period] ? periodScores[period].homeScore : ''}
             </div>
@@ -105,4 +105,4 @@ export default function MatchRow({
       </div>
     </div>
   );
-} 
+}

@@ -1,5 +1,7 @@
+import { useNavigate } from 'react-router-dom';
 import { FloorballMatchStatus, type FloorballMatchDto } from '../../../types/floorball/floorballTypes';
 import { formatDate, getTeamInitials } from './matchUtils';
+import { slugify } from '../../../utils/slugUtils';
 import './MatchHeader.scss';
 
 interface MatchHeaderProps {
@@ -7,17 +9,29 @@ interface MatchHeaderProps {
 }
 
 export default function MatchHeader({ match }: MatchHeaderProps) {
+  const navigate = useNavigate();
   const scheduled = formatDate(match.scheduledDateTime);
+
+  const handleTeamClick = (teamName: string) => {
+    navigate(`/team/${slugify(teamName)}`);
+  };
+
   return (
     <div className="match-header">
       <div className="teams-container">
-        <div className="team-section home">
+        <div
+          className="team-section home clickable"
+          role="link"
+          tabIndex={0}
+          onClick={() => handleTeamClick(match.homeTeamName)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleTeamClick(match.homeTeamName); }}
+        >
           <div className="team-crest">
             {getTeamInitials(match.homeTeamName)}
             {match.homeTeamLogo && (
               <img 
                 src={match.homeTeamLogo} 
-                alt="Home Team Logo" 
+                alt={`${match.homeTeamName} logo`}
                 className="team-logo"
                 loading="lazy"
                 onError={(e) => {
@@ -42,13 +56,19 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
           )}
         </div>
 
-        <div className="team-section away">
+        <div
+          className="team-section away clickable"
+          role="link"
+          tabIndex={0}
+          onClick={() => handleTeamClick(match.awayTeamName)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleTeamClick(match.awayTeamName); }}
+        >
           <div className="team-crest">
             {getTeamInitials(match.awayTeamName)}
             {match.awayTeamLogo && (
               <img 
                 src={match.awayTeamLogo} 
-                alt="Away Team Logo" 
+                alt={`${match.awayTeamName} logo`}
                 className="team-logo"
                 loading="lazy"
                 onError={(e) => {

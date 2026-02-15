@@ -96,14 +96,12 @@ const PersonForm = ({
   const [formData, setFormData] = useState<EnhancedPersonFormData>(getInitialFormData());
   const [selectedSport, setSelectedSport] = useState<SportType | ''>('');
 
-  const formatBirthDateForDisplay = (dateString: string | null | undefined): string => {
+  const formatBirthDateForInput = (dateString: string | null | undefined): string => {
     if (!dateString) return '';
     const parsed = new Date(dateString);
     if (Number.isNaN(parsed.getTime())) return '';
-    const day = parsed.getDate().toString().padStart(2, '0');
-    const month = (parsed.getMonth() + 1).toString().padStart(2, '0');
-    const year = parsed.getFullYear();
-    return `${day}-${month}-${year}`;
+    // Native date input expects yyyy-mm-dd
+    return parsed.toISOString().slice(0, 10);
   };
 
   useEffect(() => {
@@ -114,8 +112,8 @@ const PersonForm = ({
         setLoading(true);
         const person = await personApi.getById(id!);
         
-        // Convert stored date to dd-mm-yyyy for the text input; allow empty
-        const formattedDate = formatBirthDateForDisplay(person.birthDate);
+        // Convert stored date to yyyy-mm-dd for the native date input; allow empty
+        const formattedDate = formatBirthDateForInput(person.birthDate);
         
         setFormData({
           firstName: person.firstName,
@@ -151,39 +149,15 @@ const PersonForm = ({
     fetchPerson();
   }, [id, isEditMode, t]);
 
-  const parseBirthDate = (value: string | null): Date | null => {
-    const trimmed = value?.trim();
-    if (!trimmed) return null;
-    const parts = trimmed.split('-').map(Number);
-    if (parts.length !== 3 || parts.some(Number.isNaN)) {
-      return null;
-    }
-
-    // Prefer dd-mm-yyyy; fallback to yyyy-mm-dd if user types ISO
-    const isIsoFirst = parts[0] > 999;
-    const [year, month, day] = isIsoFirst ? parts : [parts[2], parts[1], parts[0]];
-    const parsed = new Date(year, month - 1, day);
-
-    if (
-      parsed.getFullYear() !== year ||
-      parsed.getMonth() !== month - 1 ||
-      parsed.getDate() !== day
-    ) {
-      return null;
-    }
-
-    parsed.setHours(0, 0, 0, 0);
-    return parsed;
-  };
-
   const validateBirthDate = (date: string | null): string | null => {
     // Birth date is optional, so empty string is valid
     if (!date || date.trim() === '') {
       return null;
     }
 
-    const birthDate = parseBirthDate(date);
-    if (!birthDate) {
+    // Native date input provides yyyy-mm-dd format
+    const birthDate = new Date(date);
+    if (Number.isNaN(birthDate.getTime())) {
       return t('admin.persons.validation.invalidDate');
     }
 
@@ -391,8 +365,9 @@ const PersonForm = ({
       }
 
       // Prepare person data (excluding team assignment fields)
+      // Native date input already provides yyyy-mm-dd format
       const normalizedBirthDate = formData.birthDate && formData.birthDate.trim() !== ''
-        ? parseBirthDate(formData.birthDate)?.toISOString().slice(0, 10) || null
+        ? formData.birthDate
         : null;
 
       const personData: PersonFormData = {
@@ -581,14 +556,12 @@ const PersonForm = ({
               {t('admin.persons.form.birthDate')}
             </label>
             <input
-              type="text"
+              type="date"
               id="birthDate"
               name="birthDate"
               value={formData.birthDate || ''}
               onChange={handleInputChange}
-              placeholder="dd-mm-yyyy"
-              inputMode="numeric"
-              pattern="\d{2}-\d{2}-\d{4}"
+              max={new Date().toISOString().slice(0, 10)}
               className={fieldErrors.birthDate ? 'person-error' : ''}
             />
             {fieldErrors.birthDate && (

@@ -1,0 +1,250 @@
+@use 'sass:map';
+@use 'variables' as *;
+
+/* ============================================================================
+   Shared Admin Table Styles
+   All admin-panel tables should use these classes for a consistent look.
+   ============================================================================ */
+
+// ── Wrapper ──
+.admin-table__wrapper {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  background-color: $color-white;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+// ── Table base ──
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 1rem;
+    border-top: 1px solid #f3f4f6;
+    font-size: 0.95rem;
+    vertical-align: middle;
+    color: #111827;
+  }
+
+  tbody tr:first-of-type td {
+    border-top: none;
+  }
+
+  // Clickable rows
+  tbody tr.admin-table__row--clickable {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: #f9fafb;
+    }
+  }
+
+  // Selected rows
+  tbody tr.admin-table__row--selected {
+    background-color: rgba(67, 56, 202, 0.06);
+
+    &:hover {
+      background-color: rgba(67, 56, 202, 0.1);
+    }
+  }
+}
+
+// ── Checkbox column ──
+.admin-table__checkbox-col {
+  width: 50px;
+  text-align: center;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #4f46e5;
+  }
+}
+
+// ── Actions column ──
+.admin-table__actions-col {
+  width: 80px;
+  text-align: center;
+}
+
+// ── Primary name cell ──
+.admin-table__name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.admin-table__subtitle {
+  margin-top: 0.25rem;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.admin-table__muted {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.admin-table__bold {
+  font-weight: 600;
+}
+
+// ── Status badges ──
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+
+  &--active {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #047857;
+  }
+
+  &--inactive {
+    background-color: rgba(248, 113, 113, 0.15);
+    color: #b91c1c;
+  }
+
+  &--system {
+    background-color: rgba(168, 85, 247, 0.15);
+    color: #7c3aed;
+  }
+
+  &--club {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #2563eb;
+  }
+
+  &--info {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #2563eb;
+  }
+
+  &--warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+  }
+
+  &--danger {
+    background-color: rgba(248, 113, 113, 0.15);
+    color: #b91c1c;
+  }
+
+  &--completed {
+    background-color: rgba(107, 114, 128, 0.15);
+    color: #374151;
+  }
+}
+
+// ── Toggle button (inline status toggler) ──
+.admin-table__toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--on {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #047857;
+  }
+
+  &--off {
+    background-color: rgba(107, 114, 128, 0.15);
+    color: #6b7280;
+  }
+}
+
+// ── Tags (e.g. category badges) ──
+.admin-tag {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &--blue {
+    background-color: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+  }
+
+  &--purple {
+    background-color: rgba(139, 92, 246, 0.12);
+    color: #7c3aed;
+  }
+}
+
+// ── Empty state ──
+.admin-table__empty {
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 1rem;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  background-color: #f9fafb;
+}
+
+// ── Sort header ──
+.admin-table__sortable {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    color: #374151;
+  }
+}
+
+.admin-table__sort-icon {
+  margin-left: 0.25rem;
+  font-size: 0.7rem;
+}
+
+// ── Responsive ──
+@media (max-width: 900px) {
+  .admin-table__wrapper {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+  }
+
+  .admin-table {
+    th {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.7rem;
+    }
+
+    td {
+      padding: 0.75rem;
+      font-size: 0.9rem;
+    }
+  }
+}

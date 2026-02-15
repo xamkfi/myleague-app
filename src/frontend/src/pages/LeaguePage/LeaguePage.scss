@@ -1,10 +1,14 @@
+@use 'sass:map';
+@use '@variables' as *;
+
 .league-page {
   width: 100%;
-  max-width: 1200px;
+  max-width: $max-width-page;
   margin: 0 auto;
-  color: white;
+  color: $color-white;
   position: relative;
-  padding-bottom: 2rem;
+  padding-bottom: map.get($spacing, 'lg');
+
   // Hero Image Background
   .hero-image-container {
     display: flex;
@@ -12,7 +16,7 @@
     align-items: center;
     justify-content: center;
     background: url('http://www.mahl.fi/images/Kausi_2024-2025/SB_Hurut_Minttu.png') center 15%;
-    background-color: #4a7a83;
+    background-color: $color-blue-medium;
     background-blend-mode: multiply;
     background-size: cover;
     background-repeat: no-repeat;
@@ -21,18 +25,18 @@
     transform: translateX(-50%);
     width: 100vw;
     min-height: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: map.get($spacing, 'lg');
     overflow: hidden;
 
     .hero-image {
       z-index: -1;
-      background-color: #2a4a83;
+      background-color: $color-blue-deep;
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(180deg, rgba(207, 218, 239, 0.00) 0%, rgba(42, 74, 131, 0.80) 75%, rgba(12, 29, 62, 0.80) 100%) center center;
+      background: linear-gradient(180deg, rgba($color-blue-background, 0) 0%, rgba($color-blue-deep, 0.80) 75%, rgba($color-blue-darkest, 0.80) 100%) center center;
       backdrop-filter: blur(4px);
       background-size: cover;
     }
@@ -41,31 +45,31 @@
     .league-header {
       display: flex;
       z-index: 1;
-      margin: 1rem 0px 0px 0px;
-      padding: 0px;
+      margin: map.get($spacing, 'base') 0 0 0;
+      padding: 0;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       align-content: center;
       border: none !important;
-      max-width: 1200px;
+      max-width: $max-width-page;
       width: 100%;
 
       .header-content {
-        padding: 1.5rem;
+        padding: map.get($spacing, 'md');
         display: flex;
         width: 100%;
-        color: white;
+        color: $color-white;
         justify-content: flex-start;
         align-items: flex-end;
-        gap: 1.5rem;
+        gap: map.get($spacing, 'md');
       }
 
       .league-branding {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 1rem;
+        gap: map.get($spacing, 'base');
         min-width: 192px;
         min-height: 192px;
         
@@ -77,16 +81,16 @@
           .trophy-icon {
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
+            background: rgba($color-white, 0.9);
+            border-radius: map.get($border-radius, 'lg-plus');
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4rem;
-            color: #1e40af;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: map.get($font-sizes, 'xxl');
+            color: $color-blue-deep;
+            border: 2px solid rgba($color-white, 0.3);
             backdrop-filter: blur(10px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: $box-shadow-drop-1;
           }
         }
       }
@@ -95,58 +99,59 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
+        gap: map.get($spacing, 'base');
         flex: 1;
 
         .league-title {
-          font-size: 3rem;
-          font-weight: bold;
+          font-size: map.get($font-sizes, 'xl');
+          font-weight: map.get($font-weights, 'bold');
           margin: 0;
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .league-details {
           display: flex;
-          gap: 2rem;
-          margin-bottom: 1rem;
+          gap: map.get($spacing, 'lg');
+          margin-bottom: map.get($spacing, 'base');
 
           .detail-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 1.1rem;
+            gap: map.get($spacing, 'xs');
+            font-size: map.get($font-sizes, 'base');
 
             .detail-icon {
-              font-size: 1.2rem;
+              font-size: map.get($font-sizes, 'md');
             }
           }
         }
 
         .league-tabs {
           display: flex;
-          gap: 0.5rem;
+          gap: map.get($spacing, 'xs');
           width: 100%;
 
           .tab-button {
-            padding: 0.75rem 1.5rem;
+            padding: map.get($spacing, 'sm') map.get($spacing, 'md');
             background: transparent;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            border-radius: 8px;
+            border: 2px solid rgba($color-white, 0.3);
+            color: $color-white;
+            border-radius: map.get($border-radius, 'lg');
             cursor: pointer;
-            font-weight: 500;
+            font-weight: map.get($font-weights, 'medium');
+            font-size: map.get($font-sizes, 'sm');
             transition: all 0.3s ease;
 
             &:hover {
-              background: rgba(255, 255, 255, 0.1);
-              border-color: rgba(255, 255, 255, 0.5);
+              background: rgba($color-white, 0.1);
+              border-color: rgba($color-white, 0.5);
             }
 
             &.active {
-              background: white;
-              color: #1e40af;
-              border-color: white;
-              font-weight: 600;
+              background: $color-white;
+              color: $color-blue-deep;
+              border-color: $color-white;
+              font-weight: map.get($font-weights, 'bold');
             }
           }
         }
@@ -155,11 +160,11 @@
   }
 
   .league-content {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin: 0 1rem;
+    background: $color-white;
+    border-radius: map.get($border-radius, 'lg-plus');
+    padding: map.get($spacing, 'lg');
+    box-shadow: $box-shadow-drop-1;
+    margin: 0 map.get($spacing, 'base');
   }
 }
 
@@ -171,12 +176,12 @@
       
       .league-header {
         margin-top: 40px;
-        border-radius: 0 0 8px 8px;
+        border-radius: 0 0 map.get($border-radius, 'lg') map.get($border-radius, 'lg');
         
         .header-content {
           flex-direction: column;
-          padding: 1rem;
-          gap: 1rem;
+          padding: map.get($spacing, 'base');
+          gap: map.get($spacing, 'base');
         }
 
         .league-branding {
@@ -191,20 +196,20 @@
             .trophy-icon {
               width: 100px;
               height: 100px;
-              font-size: 2rem;
+              font-size: map.get($font-sizes, 'lg');
             }
           }
         }
 
         .league-info {
           .league-title {
-            font-size: 2rem;
+            font-size: map.get($font-sizes, 'lg');
           }
 
           .league-details {
             justify-content: center;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: map.get($spacing, 'base');
           }
 
           .league-tabs {
@@ -212,8 +217,8 @@
             justify-content: center;
 
             .tab-button {
-              padding: 0.5rem 1rem;
-              font-size: 0.9rem;
+              padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+              font-size: map.get($font-sizes, 'sm');
             }
           }
         }
@@ -221,8 +226,8 @@
     }
 
     .league-content {
-      margin: 0 0.5rem;
-      padding: 1rem;
+      margin: 0 map.get($spacing, 'xs');
+      padding: map.get($spacing, 'base');
     }
   }
 }

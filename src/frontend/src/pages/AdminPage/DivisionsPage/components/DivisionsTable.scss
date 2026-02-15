@@ -1,91 +1,13 @@
-.divisions-table__wrapper {
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 1rem 1.5rem;
-  background-color: #fff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-}
-
-.divisions-table {
-  width: 100%;
-  border-collapse: collapse;
-
-  th {
-    text-align: left;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    color: #6b7280;
-    padding: 0.75rem 1rem;
-  }
-
-  td {
-    padding: 1rem;
-    border-top: 1px solid #f3f4f6;
-    font-size: 0.95rem;
-    vertical-align: top;
-    color: #111827;
-  }
-
-  tr:first-of-type td {
-    border-top: none;
-  }
-}
-
-.division-name {
-  font-weight: 600;
-  color: #111827;
-}
-
-.division-description {
-  margin-top: 0.35rem;
-  color: #6b7280;
-  font-size: 0.85rem;
-  max-width: 420px;
-}
-
-.division-sport,
-.division-level {
-  font-weight: 600;
-}
-
-.division-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 80px;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.division-status--active {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: #047857;
-}
-
-.division-status--inactive {
-  background-color: rgba(248, 113, 113, 0.15);
-  color: #b91c1c;
-}
-
-.division-actions-column,
-.division-actions-column-header {
-  text-align: center;
-  width: 80px;
-}
+/* Division-specific overrides – base table styles come from AdminTable.scss */
 
 @media (max-width: 900px) {
-  .divisions-table {
-    th:nth-child(4),
-    td:nth-child(4),
+  .admin-table {
+    /* Hide Status + Created columns on small screens */
     th:nth-child(5),
-    td:nth-child(5) {
+    td:nth-child(5),
+    th:nth-child(6),
+    td:nth-child(6) {
       display: none;
     }
   }
 }
-
-

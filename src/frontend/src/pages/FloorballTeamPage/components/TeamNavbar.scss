@@ -91,22 +91,12 @@
       
       span {
         font-size: map.get($font-sizes, 'xs');
-        
-        // Hide text on very small screens, show only icons
-        @media (max-width: 360px) {
-          font-size: 0;
-          
-          &::before {
-            content: attr(data-icon);
-            font-size: map.get($font-sizes, 'sm');
-          }
-        }
       }
     }
   }
 }
 
-// Very small screens (360px and below) - Icon only mode
+// Very small screens (360px and below)
 @media (max-width: 360px) {
   .team-navbar {
     .team-navbar-btn {
@@ -115,12 +105,7 @@
       min-height: 40px;
       
       span {
-        font-size: 0;
-        
-        &::before {
-          content: attr(data-icon);
-          font-size: map.get($font-sizes, 'sm');
-        }
+        font-size: map.get($font-sizes, 'xs');
       }
     }
   }

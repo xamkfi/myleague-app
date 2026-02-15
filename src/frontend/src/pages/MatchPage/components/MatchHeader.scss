@@ -25,6 +25,23 @@
     flex-direction: column;
     align-items: center;
     min-width: 140px;
+
+    &.clickable {
+      cursor: pointer;
+      outline: none;
+
+      &:hover .team-name,
+      &:focus-visible .team-name {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      &:hover .team-crest,
+      &:focus-visible .team-crest {
+        transform: scale(1.05);
+        border-color: rgba(255, 255, 255, 0.45);
+      }
+    }
   }
 
   .team-crest {
@@ -40,13 +57,10 @@
     margin-bottom: 0.625rem;
     border: 2px solid rgba(255, 255, 255, 0.2);
     position: relative;
+    overflow: hidden;
     backdrop-filter: blur(4px);
     letter-spacing: 1px;
-    transition: transform 0.2s ease;
-
-    &:hover {
-      transform: scale(1.05);
-    }
+    transition: transform 0.2s ease, border-color 0.2s ease;
   }
 
   .team-logo {
@@ -57,6 +71,7 @@
     position: absolute;
     top: 0;
     left: 0;
+    padding: 4px;
   }
 
   .team-name {
@@ -64,6 +79,8 @@
     font-weight: 600;
     text-align: center;
     letter-spacing: 0.25px;
+    color: $color-white;
+    transition: text-decoration 0.2s ease;
   }
 
   // ===== Score / VS =====

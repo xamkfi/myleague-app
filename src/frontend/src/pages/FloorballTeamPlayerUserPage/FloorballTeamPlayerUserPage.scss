@@ -218,8 +218,8 @@
 }
 
 .matches-table-header {
-  background: $color-gradient-blue;
-  color: $color-white;
+  background: $color-banner-bg;
+  color: $color-banner-text;
   display: flex;
   padding: map.get($spacing, 'md') map.get($spacing, 'sm');
   font-size: map.get($font-sizes, 'sm');
@@ -377,8 +377,8 @@
 }
 
 .career-table-header {
-  background: $color-gradient-blue;
-  color: $color-white;
+  background: $color-banner-bg;
+  color: $color-banner-text;
   display: flex;
   padding: map.get($spacing, 'md') map.get($spacing, 'sm');
   font-size: map.get($font-sizes, 'sm');

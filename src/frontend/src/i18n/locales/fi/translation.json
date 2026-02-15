@@ -978,21 +978,42 @@
     "defaultTitle": "Sarja",
     "tabs": {
       "summary": "Yhteenveto",
-      "standings": "Sarjataulukko",
+      "statistics": "Tilastot",
       "results": "Tulokset",
       "fixtures": "Otteluohjelma"
     },
     "summary": {
       "title": "Sarjan Yhteenveto",
       "leagueInformation": "Sarjan Tiedot",
-      "season": "Kausi:",
-      "teams": "Joukkueet:",
-      "matchesPlayed": "Pelatut ottelut:",
-      "goalsScored": "Tehdyt maalit:",
-      "avgGoalsPerGame": "Keskim. maalit/ottelu:",
+      "season": "Kausi",
+      "teams": "Joukkueet",
+      "matchesPlayed": "Pelatut ottelut",
+      "goalsScored": "Tehdyt maalit",
+      "avgGoalsPerGame": "Keskim. maalit/ottelu",
       "loading": "Ladataan yhteenvetoa...",
       "error": "Virhe: {{error}}",
-      "noData": "Tietoja ei saatavilla"
+      "noData": "Tietoja ei saatavilla",
+      "standingsPreview": "Sarjataulukko",
+      "viewFullStandings": "Katso koko taulukko"
+    },
+    "standings": {
+      "title": "Sarjataulukko",
+      "standings": "Sarjataulukko",
+      "topScorers": "Parhaat maalintekijät",
+      "topAssists": "Parhaat syöttäjät",
+      "emptyStandings": "Sarjataulukko ei ole vielä saatavilla",
+      "emptyStandingsDesc": "Sarjataulukko ilmestyy tähän, kun tietoja on saatavilla.",
+      "emptyScorers": "Maalintekijätilasto ei ole vielä saatavilla",
+      "emptyScorersDesc": "Pelaajien maalitilasto ilmestyy tähän, kun tietoja on saatavilla.",
+      "emptyAssists": "Syöttäjätilasto ei ole vielä saatavilla",
+      "emptyAssistsDesc": "Pelaajien syöttötilasto ilmestyy tähän, kun tietoja on saatavilla.",
+      "topGoalies": "Maalivahdit",
+      "emptyGoalies": "Maalivahtitilasto ei ole vielä saatavilla",
+      "emptyGoaliesDesc": "Maalivahtien tilasto ilmestyy tähän, kun tietoja on saatavilla.",
+      "goalieHeaders": {
+        "player": "PELAAJA",
+        "team": "JOUKKUE"
+      }
     },
     "errors": {
       "loadLeagueData": "Sarjan tietojen lataus epäonnistui",

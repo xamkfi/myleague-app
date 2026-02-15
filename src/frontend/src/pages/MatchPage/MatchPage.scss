@@ -305,8 +305,8 @@
 }
 
 .period-header {
-  background-color: $color-blue-darkest;
-  color: white;
+  background-color: $color-banner-bg;
+  color: $color-banner-text;
   padding: 0.5rem 1.25rem;
   display: flex;
   justify-content: space-between;
@@ -379,6 +379,39 @@
   font-size: 0.75rem;
   color: $color-neutral-dark-grey;
   font-style: italic;
+
+  &.clickable {
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $color-blue-secondary;
+      text-decoration: underline;
+    }
+  }
+}
+
+.event-player-link {
+  &.clickable {
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $color-blue-secondary;
+      text-decoration: underline;
+    }
+  }
+}
+
+.event-assists-inline {
+  font-size: 0.75rem;
+  color: $color-neutral-dark-grey;
+  font-style: italic;
+}
+
+.penalty-type {
+  font-weight: 400;
+  color: $color-neutral-dark-grey;
 }
 
 // ===== MOBILE RESPONSIVE STYLES =====

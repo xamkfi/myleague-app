@@ -28,6 +28,7 @@ const DivisionsPage = () => {
   const [divisionToDelete, setDivisionToDelete] = useState<DivisionType | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const loadDivisions = useCallback(async () => {
     try {
@@ -130,6 +131,55 @@ const DivisionsPage = () => {
     }
   };
 
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectedIds(new Set(filteredDivisions.map((d) => d.id)));
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkActivate = async () => {
+    for (const id of selectedIds) {
+      const division = divisions.find((d) => d.id === id);
+      if (division && !division.isActive) {
+        await handleToggleStatus(division);
+      }
+    }
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDeactivate = async () => {
+    for (const id of selectedIds) {
+      const division = divisions.find((d) => d.id === id);
+      if (division && division.isActive) {
+        await handleToggleStatus(division);
+      }
+    }
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    for (const id of selectedIds) {
+      try {
+        await divisionService.delete(id);
+        setDivisions((prev) => prev.filter((d) => d.id !== id));
+      } catch (err) {
+        console.error('Failed to delete division', err);
+      }
+    }
+    setSelectedIds(new Set());
+  };
+
   if (loading) {
     return (
       <PageTemplate title={t('admin.divisions.title', 'Manage Divisions')}>
@@ -218,6 +268,13 @@ const DivisionsPage = () => {
           onDelete={(division) => openDeleteModal(division)}
           onToggleStatus={(division) => handleToggleStatus(division)}
           statusUpdatingId={statusUpdatingId}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onSelectAll={handleSelectAll}
+          onClearSelection={handleClearSelection}
+          onBulkDelete={handleBulkDelete}
+          onBulkActivate={handleBulkActivate}
+          onBulkDeactivate={handleBulkDeactivate}
         />
 
         {filteredDivisions.length === 0 && (

@@ -11,7 +11,7 @@ import { floorballMatchService } from '../../api/floorball/floorballMatchService
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import './LeaguePage.scss';
 
-type TabType = 'summary' | 'news' | 'results' | 'fixtures' | 'standings';
+type TabType = 'summary' | 'news' | 'results' | 'fixtures' | 'statistics';
 
 export default function LeaguePage() {
   const { t } = useTranslation();
@@ -21,9 +21,13 @@ export default function LeaguePage() {
   // Get initial tab from URL params or default to 'summary'
   const getInitialTab = (): TabType => {
     const tabParam = searchParams.get('tab');
-    const validTabs: TabType[] = ['summary', 'news', 'results', 'fixtures', 'standings'];
+    const validTabs: TabType[] = ['summary', 'news', 'results', 'fixtures', 'statistics'];
     if (tabParam && validTabs.includes(tabParam as TabType)) {
       return tabParam as TabType;
+    }
+    // Support legacy 'standings' URL param by redirecting to 'statistics'
+    if (tabParam === 'standings') {
+      return 'statistics';
     }
     return 'summary';
   };
@@ -33,7 +37,7 @@ export default function LeaguePage() {
   // Update tab when URL params change
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    const validTabs: TabType[] = ['summary', 'news', 'results', 'fixtures', 'standings'];
+    const validTabs: TabType[] = ['summary', 'news', 'results', 'fixtures', 'statistics'];
     if (tabParam && validTabs.includes(tabParam as TabType)) {
       setActiveTab(tabParam as TabType);
     }
@@ -120,7 +124,7 @@ export default function LeaguePage() {
 
   const tabs: { key: TabType; label: string }[] = [
     { key: 'summary', label: t('leaguePage.tabs.summary') },
-    { key: 'standings', label: t('leaguePage.tabs.standings') },
+    { key: 'statistics', label: t('leaguePage.tabs.statistics') },
     { key: 'results', label: t('leaguePage.tabs.results') },
     { key: 'fixtures', label: t('leaguePage.tabs.fixtures') }
   ];
@@ -157,7 +161,7 @@ export default function LeaguePage() {
             handlePageChange={handlePageChange}
           />
         );
-      case 'standings':
+      case 'statistics':
         return (
           <LeagueStanding 
             seasonSummary={seasonSummary}
