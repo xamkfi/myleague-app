@@ -92,9 +92,16 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
+            // Load clubs for logo resolution (cross-context)
+            List<Guid> clubIds = pagedMatches.Items
+                .SelectMany(m => new[] { m.HomeTeam.ClubId, m.AwayTeam.ClubId })
+                .Distinct()
+                .ToList();
+
+            Dictionary<Guid, Club> clubLookup = await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
 
             // Map to DTOs with club data
-            IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(pagedMatches.Items);
+            IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(pagedMatches.Items, clubLookup);
             
             // Create the final paged result with DTOs
             PagedResult<FloorballMatchDto> pagedResult = CreatePagedResult(
