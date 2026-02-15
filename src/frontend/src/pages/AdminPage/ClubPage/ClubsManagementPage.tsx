@@ -141,7 +141,7 @@ function ClubsManagementPage() {
   const handleBulkDelete = async () => {
     for (const id of selectedIds) {
       try {
-        await clubService.delete(id);
+        await clubService.remove(id);
         setClubs((prev) => prev.filter((c) => c.id !== id));
       } catch (err) {
         console.error('Failed to delete club', err);

@@ -1,6 +1,14 @@
+import { useEffect, useState } from 'react';
+import { fetchBackendVersion } from '../../api/version/versionService';
 import './Footer.scss';
 
 export default function Footer() {
+  const [backendVersion, setBackendVersion] = useState<string>('...');
+
+  useEffect(() => {
+    fetchBackendVersion().then(setBackendVersion);
+  }, []);
+
   return (
     <footer className="footer">
       <div className="footer-sections">
@@ -34,6 +42,9 @@ export default function Footer() {
             <div>Seuratyöntekijä Mikko Loukonen<br/>mikko (at) mahl.fi<br/>044 209 9919</div>
           </div>
         </div>
+      </div>
+      <div className="footer-version">
+        Frontend: {__APP_VERSION__} | Backend: {backendVersion}
       </div>
     </footer>
   );

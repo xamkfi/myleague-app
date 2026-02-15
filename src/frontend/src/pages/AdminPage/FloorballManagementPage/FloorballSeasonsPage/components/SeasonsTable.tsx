@@ -63,7 +63,7 @@ export const SeasonsTable = ({
   };
 
   const getActions = (season: FloorballSeasonDto) => {
-    const actions = [
+    const actions: { label: string; onClick: () => void; variant?: 'default' | 'danger' | 'status'; disabled: boolean }[] = [
       {
         label: t('common.edit', 'Edit'),
         onClick: () => onEdit(season),

@@ -53,6 +53,17 @@
   gap: map.get($spacing, 'sm');
 }
 
+.footer-version {
+  width: 100%;
+  max-width: 1200px;
+  text-align: right;
+  font-size: 0.7rem;
+  opacity: 0.4;
+  padding: map.get($spacing, 'sm') map.get($spacing, 'lg') 0;
+  margin-top: map.get($spacing, 'sm');
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 // Mobile responsive styles
 @media (max-width: 768px) {
   .footer {
