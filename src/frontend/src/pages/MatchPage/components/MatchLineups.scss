@@ -1,174 +1,205 @@
 @use 'sass:map';
 @use '@variables' as *;
+@use '../../../styles/common' as *;
 
-.match-lineups {
-  padding: 1.25rem;
-  background: $color-neutral-light-grey;
+.match-lineups-container {
+  padding: map.get($spacing, 'md');
+  max-width: $max-width-page;
+  margin: 0 auto;
+}
+
+.match-lineups-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: map.get($spacing, 'md');
+}
+
+.lineup-team-block {
+  @include container;
+  padding: map.get($spacing, 'sm');
+}
+
+.lineup-team-title {
+  text-align: left;
+  margin-bottom: map.get($spacing, 'sm');
+  color: $color-blue-deep;
+  font-size: map.get($font-sizes, 'lg');
+  font-weight: map.get($font-weights, 'bold');
+}
+
+.lineup-position-group {
+  margin-bottom: map.get($spacing, 'md');
+}
+
+.lineup-position-label {
+  text-align: left;
+  border-radius: map.get($border-radius, 'sm');
+  background: $color-gradient-blue;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'bold');
+  padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+  color: $color-white;
+  margin-bottom: map.get($spacing, 'xs');
+}
+
+.lineup-table-wrap {
+  width: 100%;
+}
+
+.lineup-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 80px;
+  gap: map.get($spacing, 'sm');
+  align-items: center;
+  padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+
+  > * {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.lineup-row-header {
+  font-size: map.get($font-sizes, 'xs');
+  font-weight: map.get($font-weights, 'semibold');
+  color: $color-neutral-dark-grey;
+  border-bottom: 1px solid $color-neutral-medium-grey;
+  padding-bottom: map.get($spacing, 'xs');
+}
+
+.lineup-row-player {
+  border-bottom: 1px solid $color-neutral-light-grey;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+
+  &:hover {
+    background-color: $color-neutral-light-grey;
+
+    .player-link {
+      color: $color-blue-secondary;
+      text-decoration: underline;
+    }
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.lineup-col-number {
+  justify-content: center;
+}
+
+.jersey-badge {
+  width: 28px;
+  height: 28px;
   border-radius: map.get($border-radius, 'lg');
-  margin: 1.25rem 0;
+  border: 1px solid $color-neutral-medium-grey;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: map.get($font-weights, 'bold');
+  font-size: map.get($font-sizes, 'xs');
+  color: $color-neutral-dark-grey;
+}
 
-  .lineups-header {
+.lineup-col-name {
+  font-weight: map.get($font-weights, 'bold');
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-neutral-black;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-link {
+  transition: color 0.15s ease;
+}
+
+.lineup-col-pos {
+  font-size: map.get($font-sizes, 'xs');
+  color: $color-neutral-dark-grey;
+  text-transform: capitalize;
+  justify-content: center;
+}
+
+// ===== RESPONSIVE STYLES =====
+
+@media (max-width: 768px) {
+  .match-lineups-container {
+    padding: map.get($spacing, 'sm');
+  }
+
+  .match-lineups-grid {
+    grid-template-columns: 1fr;
+    gap: map.get($spacing, 'sm');
+  }
+
+  .lineup-team-block {
+    padding: map.get($spacing, 'sm');
+  }
+
+  .lineup-team-title {
+    font-size: map.get($font-sizes, 'md');
     text-align: center;
-    margin-bottom: 1.5rem;
-
-    h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: $color-blue-darkest;
-      margin: 0;
-    }
   }
 
-  .teams-container {
-    display: flex;
-    gap: 0.625rem;
-    align-items: flex-start;
-    justify-content: space-between;
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-      gap: 1.5rem;
-    }
+  .lineup-row {
+    grid-template-columns: 32px 1fr 70px;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'xs');
   }
 
-  .team-side {
-    flex: 1;
-    background: white;
-    border-radius: map.get($border-radius, 'lg');
-    padding: 1.25rem;
-    box-shadow: $box-shadow-drop-1;
-    border: 2px solid transparent;
-
-    &.home-team {
-      border-color: $color-blue-secondary;
-    }
-
-    &.away-team {
-      border-color: $color-blue-light;
-    }
+  .jersey-badge {
+    width: 24px;
+    height: 24px;
+    font-size: map.get($font-sizes, 'xs');
   }
 
-  .team-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid $color-neutral-light-grey;
-
-    .team-name {
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: $color-blue-darkest;
-      margin: 0;
-    }
-
-    .team-label {
-      background: $color-neutral-dark-grey;
-      color: white;
-      padding: 0.25rem 0.75rem;
-      border-radius: 16px;
-      font-size: 0.6875rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+  .lineup-col-name {
+    font-size: map.get($font-sizes, 'xs');
   }
 
-  .home-team .team-label {
-    background: $color-blue-secondary;
+  .lineup-position-label {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xs');
+  }
+}
+
+@media (max-width: 480px) {
+  .match-lineups-container {
+    padding: map.get($spacing, 'xs');
   }
 
-  .away-team .team-label {
-    background: $color-blue-light;
+  .lineup-team-block {
+    padding: map.get($spacing, 'xs');
   }
 
-  .vs-divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 50px;
-
-    @media (max-width: 768px) {
-      transform: rotate(90deg);
-      min-width: auto;
-      height: 50px;
-    }
-
-    span {
-      background: $color-blue-darkest;
-      color: white;
-      padding: 0.75rem 1rem;
-      border-radius: 50%;
-      font-weight: 700;
-      font-size: 0.9375rem;
-      box-shadow: $box-shadow-drop-1;
-    }
+  .lineup-team-title {
+    font-size: map.get($font-sizes, 'sm');
   }
 
-  .players-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
+  .lineup-row {
+    grid-template-columns: 28px 1fr 60px;
+    gap: map.get($spacing, 'xxs');
   }
 
-  .player-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.375rem 0.625rem;
-    background: $color-neutral-light-grey;
-    border-radius: map.get($border-radius, 'sm');
-    border-left: 3px solid $color-blue-secondary;
-    transition: all 0.15s ease;
+  .jersey-badge {
+    width: 22px;
+    height: 22px;
+  }
+}
 
-    &:hover {
-      background: $color-neutral-medium-grey-alpha;
-      transform: translateX(2px);
-    }
-
-    .player-position {
-      font-size: 0.75rem;
-      color: $color-neutral-dark-grey;
-      text-transform: capitalize;
-      min-width: 70px;
-      font-weight: 500;
-    }
-
-    .player-name {
-      flex: 1;
-      font-weight: 400;
-      color: $color-neutral-black;
-      font-size: 0.875rem;
-      margin: 0 0.75rem;
-    }
-
-    .player-number {
-      background: $color-blue-darkest;
-      color: white;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.75rem;
-      flex-shrink: 0;
-    }
+@media (max-width: 360px) {
+  .lineup-team-block {
+    padding: map.get($spacing, 'xxs');
   }
 
-  .away-team .player-row {
-    border-left-color: $color-blue-light;
+  .lineup-team-title {
+    font-size: map.get($font-sizes, 'xs');
   }
 
-  // Empty state
-  .players-list:empty::after {
-    content: "No players available";
-    display: block;
-    text-align: center;
-    color: $color-neutral-dark-grey;
-    font-style: italic;
-    padding: 1.25rem;
+  .lineup-row {
+    grid-template-columns: 24px 1fr 50px;
   }
 }

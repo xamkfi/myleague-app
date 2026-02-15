@@ -227,7 +227,6 @@ function FloorballTeamPage() {
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
-    console.log('Active tab changed to:', tabId);
     
     // Fetch data for stats/standings tabs only when first accessed
     if ((tabId === 'stats' || tabId === 'standings') && !fetchedTabs.has(tabId)) {

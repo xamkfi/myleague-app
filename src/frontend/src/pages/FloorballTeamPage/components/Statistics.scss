@@ -2,440 +2,261 @@
 @use '@variables' as *;
 @use '../../../styles/common' as *;
 
+// Root wrapper
 .statistics-container {
+  width: 100%;
+}
+
+// Season context label
+.statistics-season-label {
+  text-align: left;
+  color: $color-neutral-dark-grey;
+  font-size: map.get($font-sizes, "sm");
+  font-weight: map.get($font-weights, "medium");
+  margin-bottom: map.get($spacing, "sm");
+  padding-left: map.get($spacing, "xs");
+}
+
+// Section block (uses @include container like other tabs)
+.statistics-block {
   @include container;
   margin-bottom: map.get($spacing, "md");
   color: $color-neutral-black;
-  padding: map.get($spacing, 'lg');
-  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
-  border-radius: map.get($border-radius, 'xl');
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
-// Header Section
-.statistics-header {
-  margin-bottom: map.get($spacing, 'xl');
-  padding-bottom: map.get($spacing, 'lg');
-  border-bottom: 2px solid #e5e7eb;
-
-  .header-content {
-    display: flex;
-    align-items: center;
-    gap: map.get($spacing, 'md');
-
-    .team-logo {
-      width: 64px;
-      height: 64px;
-      object-fit: contain;
-      border-radius: map.get($border-radius, 'md');
-      background: white;
-      padding: map.get($spacing, 'xs');
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .header-text {
-      flex: 1;
-
-      h2 {
-        margin: 0;
-        font-size: map.get($font-sizes, 'xl');
-        font-weight: 700;
-        color: #1e40af;
-      }
-
-      .season-info {
-        margin: map.get($spacing, 'xs') 0 0 0;
-        color: #6b7280;
-        font-size: map.get($font-sizes, 'sm');
-      }
-    }
-  }
+// Section title (matches summary-header / roster-position-header pattern)
+.statistics-block-title {
+  text-align: left;
+  border-radius: map.get($border-radius, "sm");
+  margin-bottom: map.get($spacing, "sm");
+  color: $color-blue-deep;
+  font-size: map.get($font-sizes, "lg");
+  font-weight: map.get($font-weights, "bold");
 }
 
-// Section Title
-.statistics-section {
-  margin-bottom: map.get($spacing, 'xl');
-
-  .section-title {
-    font-size: map.get($font-sizes, 'lg');
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: map.get($spacing, 'md');
-    padding-bottom: map.get($spacing, 'xs');
-    border-bottom: 1px solid #e5e7eb;
-  }
-}
-
-// Loading, Error, and No Data States
-.loading-state,
-.error-state,
-.no-data-state {
+// Empty states (loading, error, no data)
+.statistics-empty-state {
   text-align: center;
   padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
 
   h3 {
     margin-bottom: map.get($spacing, 'sm');
-    color: #374151;
+    color: $color-neutral-dark-grey;
   }
 
   p {
-    color: #6b7280;
+    color: $color-neutral-dark-grey;
     margin: 0;
   }
-}
 
-
-.error-state {
-  h3 {
-    color: #dc2626;
-  }
-
-  p {
-    color: #991b1b;
+  &.statistics-error {
+    h3 { color: $color-red-primary; }
+    p { color: $color-red-muted; }
   }
 }
 
-.no-data-state {
-  h3 {
-    color: #6b7280;
-  }
-
-  p {
-    color: #9ca3af;
-  }
+// Horizontal scroll wrapper
+.statistics-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-// Stat Cards Grid
-.stat-cards-grid {
+// Grid row (shared base for header, data, and sub rows)
+.statistics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: map.get($spacing, 'md');
-  margin-bottom: map.get($spacing, 'md');
-}
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 450px;
+  padding: map.get($spacing, "sm") map.get($spacing, "sm");
 
-// Stat Card
-.stat-card {
-  background: white;
-  border-radius: map.get($border-radius, 'lg');
-  padding: map.get($spacing, 'md');
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: flex-start;
-  gap: map.get($spacing, 'sm');
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: #e5e7eb;
-    transition: height 0.3s ease;
+  > * {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
   }
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    border-color: #cbd5e1;
-
-    &::before {
-      height: 4px;
-    }
+  // Header row (blue gradient, matches stats-header pattern from roster)
+  &.statistics-grid-header {
+    border-radius: map.get($border-radius, "sm");
+    background: $color-gradient-blue;
+    font-size: map.get($font-sizes, "sm");
+    font-weight: map.get($font-weights, "bold");
+    padding: map.get($spacing, "xs") map.get($spacing, "sm");
+    color: $color-white;
   }
 
-  .stat-icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-    opacity: 0.8;
+  // Data row
+  &:not(.statistics-grid-header):not(.statistics-grid-sub) {
+    border-bottom: 1px solid $color-neutral-medium-grey;
   }
 
-  .stat-content {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .stat-title {
-    font-size: map.get($font-sizes, 'xs');
-    font-weight: 500;
-    color: #6b7280;
-    margin-bottom: map.get($spacing, 'xs');
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .stat-value {
-    font-size: map.get($font-sizes, 'xl');
-    font-weight: 700;
-    color: #1f2937;
-    line-height: 1.2;
-    margin-bottom: map.get($spacing, 'xxs');
-  }
-
-  .stat-subtitle {
-    font-size: map.get($font-sizes, 'xs');
-    color: #9ca3af;
-    font-weight: 500;
-  }
-
-  // Color variants
-  &.primary {
-    &::before {
-      background: linear-gradient(90deg, #3b82f6, #60a5fa);
-    }
-
-    .stat-value {
-      color: #2563eb;
-    }
-  }
-
-  &.success {
-    &::before {
-      background: linear-gradient(90deg, #10b981, #34d399);
-    }
-
-    .stat-value {
-      color: #059669;
-    }
-  }
-
-  &.danger {
-    &::before {
-      background: linear-gradient(90deg, #ef4444, #f87171);
-    }
-
-    .stat-value {
-      color: #dc2626;
-    }
-  }
-
-  &.warning {
-    &::before {
-      background: linear-gradient(90deg, #f59e0b, #fbbf24);
-    }
-
-    .stat-value {
-      color: #d97706;
-    }
-  }
-
-  &.highlight {
-    &::before {
-      background: linear-gradient(90deg, #8b5cf6, #a78bfa);
-    }
-
-    .stat-value {
-      color: #7c3aed;
-    }
-  }
-
-  // Trend indicators
-  &.trend-up {
-    border-left: 3px solid #10b981;
-  }
-
-  &.trend-down {
-    border-left: 3px solid #ef4444;
-  }
-
-  &.trend-neutral {
-    border-left: 3px solid #6b7280;
+  // Sub row (per game averages)
+  &.statistics-grid-sub {
+    padding: map.get($spacing, "xs") map.get($spacing, "sm");
+    font-size: map.get($font-sizes, "xs");
+    color: $color-neutral-dark-grey;
+    border-bottom: 1px solid $color-neutral-medium-grey;
   }
 }
 
-// Split Stats Container (Home vs Away)
-.split-stats-container {
+// Column definitions for each table type
+.statistics-record-cols {
+  grid-template-columns: repeat(6, 1fr);
+  gap: map.get($spacing, "sm");
+}
+
+.statistics-goals-cols {
+  grid-template-columns: repeat(6, 1fr);
+  gap: map.get($spacing, "sm");
+}
+
+.statistics-special-cols {
+  grid-template-columns: repeat(7, 1fr);
+  gap: map.get($spacing, "sm");
+}
+
+// Cell values
+.statistics-cell {
+  font-weight: map.get($font-weights, "bold");
+  font-size: map.get($font-sizes, "base");
+
+  &.cell-win { color: $color-green-muted; }
+  &.cell-loss { color: $color-red-muted; }
+  &.cell-highlight {
+    color: $color-blue-deep;
+    font-weight: map.get($font-weights, "extrabold");
+  }
+  &.cell-positive { color: $color-green-muted; }
+  &.cell-negative { color: $color-red-muted; }
+}
+
+// Home vs Away grid
+.statistics-ha-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: map.get($spacing, 'lg');
+  gap: map.get($spacing, "md");
 }
 
-.split-stat {
-  background: white;
-  border-radius: map.get($border-radius, 'lg');
-  padding: map.get($spacing, 'md');
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
-
-  .split-stat-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: map.get($spacing, 'md');
-    padding-bottom: map.get($spacing, 'sm');
-    border-bottom: 1px solid #e5e7eb;
-
-    h4 {
-      margin: 0;
-      font-size: map.get($font-sizes, 'md');
-      font-weight: 600;
-      color: #374151;
-    }
-
-    .home-icon,
-    .away-icon {
-      font-size: 1.25rem;
-    }
-  }
-
-  &.home-stat {
-    border-left: 4px solid #10b981;
-
-    .split-stat-header {
-      h4 {
-        color: #059669;
-      }
-    }
-  }
-
-  &.away-stat {
-    border-left: 4px solid #3b82f6;
-
-    .split-stat-header {
-      h4 {
-        color: #2563eb;
-      }
-    }
-  }
+.statistics-ha-card {
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: map.get($border-radius, "lg");
+  overflow: hidden;
 }
 
-// Stat Row
-.stat-row {
+.statistics-ha-title {
+  background: $color-gradient-blue;
+  color: $color-white;
+  font-weight: map.get($font-weights, "bold");
+  font-size: map.get($font-sizes, "sm");
+  padding: map.get($spacing, "xs") map.get($spacing, "base");
+}
+
+.statistics-ha-rows {
+  padding: map.get($spacing, "xs") 0;
+}
+
+.statistics-ha-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: map.get($spacing, 'sm') 0;
-  border-bottom: 1px solid #f3f4f6;
+  padding: map.get($spacing, "xs") map.get($spacing, "base");
+  border-bottom: 1px solid $color-neutral-light-grey;
 
   &:last-child {
     border-bottom: none;
   }
+}
 
-  .stat-label {
-    font-size: map.get($font-sizes, 'sm');
-    color: #6b7280;
-    font-weight: 500;
-  }
+.statistics-ha-label {
+  font-size: map.get($font-sizes, "sm");
+  color: $color-neutral-dark-grey;
+  font-weight: map.get($font-weights, "medium");
+}
 
-  .stat-value {
-    font-size: map.get($font-sizes, 'md');
-    font-weight: 600;
-    color: #1f2937;
-  }
+.statistics-ha-value {
+  font-size: map.get($font-sizes, "base");
+  font-weight: map.get($font-weights, "bold");
+  color: $color-neutral-black;
 }
 
 // ===== RESPONSIVE STYLES =====
 
-// Tablet and smaller (968px and below)
-@media (max-width: 968px) {
-  .stat-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: map.get($spacing, 'sm');
-  }
-
-  .statistics-header {
-    .header-content {
-      .team-logo {
-        width: 56px;
-        height: 56px;
-      }
-
-      .header-text {
-        h2 {
-          font-size: map.get($font-sizes, 'lg');
-        }
-      }
-    }
-  }
-}
-
 // Tablet and smaller (768px and below)
 @media (max-width: 768px) {
-  .statistics-container {
-    padding: map.get($spacing, 'md');
+  .statistics-season-label {
+    text-align: center;
+    padding-left: 0;
+  }
+
+  .statistics-block {
+    padding: map.get($spacing, 'sm');
     margin-bottom: map.get($spacing, 'sm');
   }
 
-  .stat-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: map.get($spacing, 'sm');
+  .statistics-block-title {
+    font-size: map.get($font-sizes, 'md');
+    text-align: center;
+    margin-bottom: map.get($spacing, 'sm');
   }
 
-  .split-stats-container {
-    grid-template-columns: 1fr;
-  }
+  .statistics-grid {
+    min-width: 350px;
 
-  .statistics-header {
-    .header-content {
-      flex-direction: column;
-      text-align: center;
-
-      .team-logo {
-        width: 48px;
-        height: 48px;
-      }
+    &.statistics-grid-header {
+      font-size: map.get($font-sizes, 'xs');
+      padding: map.get($spacing, 'xs');
     }
+  }
+
+  .statistics-record-cols,
+  .statistics-goals-cols {
+    gap: map.get($spacing, 'xxs');
+  }
+
+  .statistics-special-cols {
+    gap: map.get($spacing, 'xxs');
+  }
+
+  .statistics-cell {
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  .statistics-ha-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 // Mobile phones (480px and below)
 @media (max-width: 480px) {
-  .statistics-container {
-    padding: map.get($spacing, 'sm');
+  .statistics-block {
+    padding: map.get($spacing, 'xs');
     margin-bottom: map.get($spacing, 'xs');
-    border-radius: map.get($border-radius, 'md');
   }
 
-  .stat-cards-grid {
-    grid-template-columns: 1fr;
-    gap: map.get($spacing, 'xs');
+  .statistics-block-title {
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
   }
 
-  .stat-card {
-    padding: map.get($spacing, 'sm');
-
-    .stat-icon {
-      font-size: 1.25rem;
-    }
-
-    .stat-value {
-      font-size: map.get($font-sizes, 'lg');
-    }
+  .statistics-grid {
+    min-width: 300px;
   }
 
-  .statistics-section {
-    margin-bottom: map.get($spacing, 'lg');
-
-    .section-title {
-      font-size: map.get($font-sizes, 'md');
-    }
+  .statistics-cell {
+    font-size: map.get($font-sizes, 'xs');
   }
 }
 
 // Very small screens (360px and below)
 @media (max-width: 360px) {
-  .statistics-container {
-    padding: map.get($spacing, 'xs');
+  .statistics-block {
+    padding: map.get($spacing, 'xxs');
   }
 
-  .stat-card {
-    .stat-title {
-      font-size: 10px;
-    }
-
-    .stat-value {
-      font-size: map.get($font-sizes, 'md');
-    }
-
-    .stat-subtitle {
-      font-size: 10px;
-    }
+  .statistics-block-title {
+    font-size: map.get($font-sizes, 'xs');
   }
 }
