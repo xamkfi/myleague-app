@@ -1,10 +1,12 @@
 import './LeagueStanding.scss';
 import type { 
   FloorballPlayerSeasonStatisticsDto,
+  FloorballGoalieSeasonStatisticsDto,
   FloorballSeasonStatisticsSummaryDto,
   FloorballTeamSeasonStatisticsDto
 } from '../../api/floorball/floorballStatistics';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FloorballGameResult } from '../../api/floorball/floorballStatistics';
 
 interface LeagueStandingProps {
@@ -14,13 +16,15 @@ interface LeagueStandingProps {
 }
 
 export default function LeagueStanding({ seasonSummary, loading, error }: LeagueStandingProps) {
-  const [activeView, setActiveView] = useState<'standings' | 'scorers' | 'assists'>('standings');
+  const { t } = useTranslation();
+  const [activeView, setActiveView] = useState<'standings' | 'scorers' | 'assists' | 'goalies'>('standings');
+
   // Show loading state
   if (loading) {
     return (
       <div className="standing-container">
         <div className="loading-state">
-          <h3>Loading standings...</h3>
+          <h3>{t('leaguePage.summary.loading')}</h3>
         </div>
       </div>
     );
@@ -31,16 +35,14 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     return (
       <div className="standing-container">
         <div className="error-state">
-          <h3>Error loading standings</h3>
-          <p>{error}</p>
+          <h3>{t('leaguePage.summary.error', { error })}</h3>
         </div>
       </div>
     );
   }
 
-
   // Render table header row based on active view
-  const renderHeaderRow = (view: 'standings' | 'scorers' | 'assists') => {
+  const renderHeaderRow = (view: 'standings' | 'scorers' | 'assists' | 'goalies') => {
     if (view === 'standings') {
       return (
         <thead>
@@ -76,6 +78,24 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
       );
     }
 
+    if (view === 'goalies') {
+      return (
+        <thead>
+          <tr className="header-row">
+            <th className="rank-col">#</th>
+            <th className="team-col">{t('leaguePage.standings.goalieHeaders.player')}</th>
+            <th className="spacer-col">{t('leaguePage.standings.goalieHeaders.team')}</th>
+            <th className="stats-col">GP</th>
+            <th className="stats-col">W</th>
+            <th className="stats-col">L</th>
+            <th className="stats-col">GA</th>
+            <th className="stats-col">SV%</th>
+            <th className="stats-col">SO</th>
+          </tr>
+        </thead>
+      );
+    }
+
     // assists
     return (
       <thead>
@@ -98,8 +118,8 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     if (!seasonSummary || data.length === 0) {
       return (
         <div className="empty-state">
-          <h3>Standings are not available</h3>
-          <p>League standings will appear here once data is available.</p>
+          <h3>{t('leaguePage.standings.emptyStandings')}</h3>
+          <p>{t('leaguePage.standings.emptyStandingsDesc')}</p>
         </div>
       );
     }
@@ -132,22 +152,19 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    
-                      {team.teamLogo && team.teamLogo.trim() !== '' ? (
-                        <img 
-                          className="logo-image" 
-                          src={team.teamLogo} 
-                          alt={team.teamName}
-                          onError={(e) => {
-                            // Hide image if it fails to load - show empty container
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="logo-empty"></div>
-                      )}
-                    
+                    {team.teamLogo && team.teamLogo.trim() !== '' ? (
+                      <img 
+                        className="logo-image" 
+                        src={team.teamLogo} 
+                        alt={team.teamName}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="logo-empty"></div>
+                    )}
                     <span className="team-name">{team.teamName}</span>
                   </div>
                 </td>
@@ -166,7 +183,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                         <div 
                           key={formIndex} 
                           className={`form-box form-${result.toString()}`}
-                          title={result} // Add tooltip showing the full result
+                          title={result}
                         >
                           {result.charAt(0)}
                         </div>
@@ -189,8 +206,8 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     if (!seasonSummary || scorers.length === 0) {
       return (
         <div className="empty-state">
-          <h3>Top scorers are not available</h3>
-          <p>Player scoring leaders will appear here once data is available.</p>
+          <h3>{t('leaguePage.standings.emptyScorers')}</h3>
+          <p>{t('leaguePage.standings.emptyScorersDesc')}</p>
         </div>
       );
     }
@@ -224,7 +241,6 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                   </div>
                 </td>
                 <td className="stats-col"></td>
-                
                 <td className="stats-col">{player.goals}</td>
                 <td className="stats-col">{player.assists}</td>
               </tr>
@@ -242,8 +258,8 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     if (!seasonSummary || assists.length === 0) {
       return (
         <div className="empty-state">
-          <h3>Top assists are not available</h3>
-          <p>Player assist leaders will appear here once data is available.</p>
+          <h3>{t('leaguePage.standings.emptyAssists')}</h3>
+          <p>{t('leaguePage.standings.emptyAssistsDesc')}</p>
         </div>
       );
     }
@@ -277,7 +293,6 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                   </div>
                 </td>
                 <td className="stats-col"></td>
-                
                 <td className="stats-col">{player.assists}</td>
                 <td className="stats-col">{player.goals}</td>
               </tr>
@@ -288,7 +303,63 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     );
   };
 
-  // The headers are now rendered inside the tables with <thead>
+  // Render goalies table
+  const renderGoaliesTable = () => {
+    const goalies = seasonSummary?.topGoalies || [];
+
+    if (!seasonSummary || goalies.length === 0) {
+      return (
+        <div className="empty-state">
+          <h3>{t('leaguePage.standings.emptyGoalies')}</h3>
+          <p>{t('leaguePage.standings.emptyGoaliesDesc')}</p>
+        </div>
+      );
+    }
+
+    return (
+      <table className="standing-table">
+        <colgroup>
+          <col className="rank-col" />
+          <col className="team-col" />
+          <col className="spacer-col" />
+          <col className="stats-col" />
+          <col className="stats-col" />
+          <col className="stats-col" />
+          <col className="stats-col" />
+          <col className="stats-col" />
+          <col className="stats-col" />
+        </colgroup>
+        {renderHeaderRow('goalies')}
+        <tbody>
+          {goalies.map((goalie: FloorballGoalieSeasonStatisticsDto, index: number) => {
+            const rank = index + 1;
+
+            return (
+              <tr key={goalie.id}>
+                <td className="rank-col">{rank}</td>
+                <td className="team-col">
+                  <div className="team-info">
+                    <span className="team-name">{goalie.playerName}</span>
+                  </div>
+                </td>
+                <td className="spacer-col">
+                  <div className="team-info">
+                    <span className="team-name">{goalie.teamName}</span>
+                  </div>
+                </td>
+                <td className="stats-col">{goalie.gamesPlayed}</td>
+                <td className="stats-col">{goalie.wins}</td>
+                <td className="stats-col">{goalie.losses}</td>
+                <td className="stats-col">{goalie.goalsAgainst}</td>
+                <td className="points-col">{(goalie.savePercentage * 100).toFixed(1)}%</td>
+                <td className="stats-col">{goalie.shutouts}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    );
+  };
 
   // Render content based on active view
   const renderContent = () => {
@@ -299,6 +370,8 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
         return renderTopScorersTable();
       case 'assists':
         return renderTopAssistsTable();
+      case 'goalies':
+        return renderGoaliesTable();
       default:
         return renderStandingsTable();
     }
@@ -321,24 +394,28 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
               className={`view-button ${activeView === 'standings' ? 'active' : ''}`}
               onClick={() => setActiveView('standings')}
             >
-              Standings
+              {t('leaguePage.standings.standings')}
             </button>
             <button 
               className={`view-button ${activeView === 'scorers' ? 'active' : ''}`}
               onClick={() => setActiveView('scorers')}
             >
-              Top Scorers
+              {t('leaguePage.standings.topScorers')}
             </button>
             <button 
               className={`view-button ${activeView === 'assists' ? 'active' : ''}`}
               onClick={() => setActiveView('assists')}
             >
-              Top Assists
+              {t('leaguePage.standings.topAssists')}
+            </button>
+            <button 
+              className={`view-button ${activeView === 'goalies' ? 'active' : ''}`}
+              onClick={() => setActiveView('goalies')}
+            >
+              {t('leaguePage.standings.topGoalies')}
             </button>
           </div>
         </div>
-        
-        {/* Headers now live inside each table's thead for alignment */}
       </div>
 
       {/* Dynamic content based on active view */}
@@ -348,5 +425,3 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     </div>
   );
 }
-
-

@@ -130,7 +130,7 @@ function FloorballPage() {
           </tbody>
         </table>
         <Link 
-          to={`/league/${season.id}?tab=standings`}
+          to={`/league/${season.id}?tab=statistics`}
           className="standings-table__full-link"
         >
           {t('floorballPage.viewFullTable')}
@@ -162,7 +162,7 @@ function FloorballPage() {
           <Link to={`/league/${season.id}?tab=fixtures`} className="season-card__link">
             {t('floorballPage.fixtures')}
           </Link>
-          <Link to={`/league/${season.id}?tab=standings`} className="season-card__link">
+          <Link to={`/league/${season.id}?tab=statistics`} className="season-card__link">
             {t('floorballPage.standings')}
           </Link>
           <Link to={`/league/${season.id}?tab=summary`} className="season-card__link">

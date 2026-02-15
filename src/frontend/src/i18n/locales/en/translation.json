@@ -1005,21 +1005,42 @@
     "defaultTitle": "League",
     "tabs": {
       "summary": "Summary",
-      "standings": "Standings",
+      "statistics": "Statistics",
       "results": "Results",
       "fixtures": "Fixtures"
     },
     "summary": {
       "title": "League Summary",
       "leagueInformation": "League Information",
-      "season": "Season:",
-      "teams": "Teams:",
-      "matchesPlayed": "Matches Played:",
-      "goalsScored": "Goals Scored:",
-      "avgGoalsPerGame": "Avg Goals/Game:",
+      "season": "Season",
+      "teams": "Teams",
+      "matchesPlayed": "Matches Played",
+      "goalsScored": "Goals Scored",
+      "avgGoalsPerGame": "Avg Goals/Game",
       "loading": "Loading summary...",
       "error": "Error: {{error}}",
-      "noData": "No data available"
+      "noData": "No data available",
+      "standingsPreview": "Standings",
+      "viewFullStandings": "View Full Standings"
+    },
+    "standings": {
+      "title": "Standings",
+      "standings": "Standings",
+      "topScorers": "Top Scorers",
+      "topAssists": "Top Assists",
+      "emptyStandings": "Standings not available",
+      "emptyStandingsDesc": "League standings will appear here once data is available.",
+      "emptyScorers": "Top scorers not available",
+      "emptyScorersDesc": "Player scoring leaders will appear here once data is available.",
+      "emptyAssists": "Top assists not available",
+      "emptyAssistsDesc": "Player assist leaders will appear here once data is available.",
+      "topGoalies": "Goalies",
+      "emptyGoalies": "Goalie statistics not available",
+      "emptyGoaliesDesc": "Goalie statistics will appear here once data is available.",
+      "goalieHeaders": {
+        "player": "PLAYER",
+        "team": "TEAM"
+      }
     },
     "errors": {
       "loadLeagueData": "Failed to load league data",
