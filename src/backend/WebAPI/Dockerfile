@@ -19,12 +19,14 @@ COPY ["src/backend/Infrastructure/Infrastructure.csproj", "src/backend/Infrastru
 RUN dotnet restore "./src/backend/WebAPI/WebAPI.csproj"
 COPY . .
 WORKDIR "/src/src/backend/WebAPI"
-RUN dotnet build "./WebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
+ARG GIT_COMMIT_HASH=unknown
+RUN dotnet build "./WebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build -p:GitCommitHash=$GIT_COMMIT_HASH
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./WebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+ARG GIT_COMMIT_HASH=unknown
+RUN dotnet publish "./WebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false -p:GitCommitHash=$GIT_COMMIT_HASH
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
