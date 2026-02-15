@@ -5,226 +5,44 @@
   width: 100%;
   overflow: visible;
 
-  // Add spacing between elements
-  .pagination-container + table {
+  // Spacing between child sections
+  .persons-search-bar + .bulk-actions-bar,
+  .persons-search-bar + .pagination-container {
     margin-top: 1rem;
   }
 
-  .persons-search-bar + .selection-controls {
+  .bulk-actions-bar + .pagination-container {
     margin-top: 1rem;
   }
 
-  .selection-controls + .pagination-container {
+  .pagination-container + .admin-table__wrapper {
     margin-top: 1rem;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border-radius: 0.5rem;
-    overflow: hidden;
-
-    th, td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid #dee2e6;
-    }
-
-    th {
-      background-color: #f8f9fa;
-      font-weight: 600;
-      color: #495057;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    tr:hover {
-      background-color: #f8f9fa;
-    }
-
-    // Selected row styling
-    tr.selected {
-      background-color: #e3f2fd;
-      
-      &:hover {
-        background-color: #bbdefb;
-      }
-    }
-
-    // Select column styling
-    .select-column {
-      width: 40px;
-      text-align: center;
-      padding: 0.5rem;
-      
-      input[type="checkbox"] {
-        transform: scale(1.2);
-        cursor: pointer;
-      }
-    }
-
-    // Clickable cells for selection
-    .clickable-cell {
-      cursor: pointer;
-      user-select: none;
-      
-      &:hover {
-        background-color: rgba(13, 110, 253, 0.1);
-      }
-    }
-
-    .role-cell {
-      vertical-align: middle;
-      min-width: 140px;
-      position: relative;
-
-      .loading-spinner {
-        margin-left: 0.5rem;
-        vertical-align: middle;
-      }
-    }
   }
 }
 
-// Selection controls styling
-.selection-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid $color-neutral-medium-grey;
-
-  .selection-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-
-    .selected-count {
-      font-weight: 600;
-      color: #495057;
-      font-size: 0.9rem;
-    }
-
-    .selection-buttons {
-      display: flex;
-      gap: 0.5rem;
-    }
-  }
-
-  .bulk-actions {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .control-btn {
-    padding: 0.5rem 1rem;
-    border: 1px solid #ced4da;
-    border-radius: 0.375rem;
-    background-color: white;
-    color: #495057;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-
-    &:hover:not(:disabled) {
-      background-color: #e9ecef;
-      border-color: #adb5bd;
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  .bulk-delete-btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 0.375rem;
-    background-color: #dc3545;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-
-    &:hover:not(:disabled) {
-      background-color: #bb2d3b;
-      transform: translateY(-1px);
-    }
-
-    &:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-      transform: none;
-    }
-  }
-}
-
-
-.status-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+// Person-specific: clickable cells for toggling row selection
+.clickable-cell {
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  background: none;
+  user-select: none;
 
-  &.registered {
-    background-color: #198754;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background-color: #157347;
-      transform: translateY(-1px);
-    }
+  &:hover {
+    background-color: rgba(13, 110, 253, 0.1);
   }
+}
 
-  &.not-registered {
-    background-color: #6c757d;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background-color: #565e64;
-      transform: translateY(-1px);
-    }
-  }
-
-  &.updating {
-    opacity: 0.7;
-    cursor: wait;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-  }
-
-  .status-icon {
-    font-weight: bold;
-    font-size: 1rem;
-  }
-
-  .status-text {
-    font-size: 0.875rem;
-  }
+// Person-specific: role cell layout
+.role-cell {
+  vertical-align: middle;
+  min-width: 140px;
+  position: relative;
 
   .loading-spinner {
-    animation: pulse 1.5s ease-in-out infinite;
+    margin-left: 0.5rem;
+    vertical-align: middle;
   }
 }
 
+// Person-specific: role selector dropdown
 .role-selector {
   padding: 0.5rem 0.75rem;
   border: 1px solid #ced4da;
@@ -265,6 +83,11 @@
   }
 }
 
+// Loading spinner animation (used by registration toggle & role spinner)
+.loading-spinner {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -274,6 +97,7 @@
   }
 }
 
+// Loading / error / empty states
 .persons-loading,
 .persons-error,
 .no-data {
@@ -345,4 +169,9 @@
   background-color: #f8f9fa;
   border-radius: 0.5rem;
   margin-top: 1rem;
-} 
+}
+
+// Table area wrapper for pagination loading overlay positioning
+.persons-table-area {
+  position: relative;
+}

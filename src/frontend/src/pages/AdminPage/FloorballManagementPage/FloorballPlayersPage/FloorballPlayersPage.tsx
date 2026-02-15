@@ -11,6 +11,8 @@ import BulkStatusUpdateModal from './components/BulkStatusUpdateModal';
 import AssignToTeamModal from './components/AssignToTeamModal';
 import Pagination from '../../../../components/Pagination';
 import SearchField from '../../../../components/SearchField';
+import BulkActionsBar from '../../../../components/BulkActionsBar/BulkActionsBar';
+import '../../../../styles/AdminTable.scss';
 import './FloorballPlayersPage.scss';
 import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
@@ -634,78 +636,41 @@ const FloorballPlayersPage = () => {
         {/* Error message */}
         <ErrorPopup message={error} />
 
-        {/* Selection Controls */}
-          <div className="selection-controls">
-            <div className="selection-info">
-              <span className="selected-count">
-                {t('floorball.players.selected', '{{count}} selected', { count: selectedPlayers.size })}
-              </span>
-              <div className="selection-buttons">
-                <button
-                  type="button"
-                  className="control-btn"
-                  onClick={clearSelection}
-                >
-                  {t('common.clear', 'Clear')}
-                </button>
-              </div>
-            </div>
-            
-            {/* Bulk Actions */}
-            <div className="bulk-actions">
-              {selectedPlayers.size > 0 && (
-                <button
-                  type="button"
-                  className="bulk-team-assign-btn"
-                  onClick={handleBulkAssignToTeam}
-                  disabled={isBulkAssigning}
-                >
-                  {t('floorball.players.actions.bulkAssignToTeam', 'Assign to Team ({{count}})', { count: selectedPlayers.size })}
-                </button>
-              )}
-              {selectedInactiveCount > 0 && (
-                <button
-                  type="button"
-                  className="bulk-activate-btn"
-                  onClick={() => handleBulkStatusUpdate('activate')}
-                  disabled={isBulkStatusUpdating}
-                >
-                  {t('floorball.players.actions.bulkActivate', 'Activate Selected ({{count}})', { count: selectedInactiveCount })}
-                </button>
-              )}
-              {selectedActiveCount > 0 && (
-                <button
-                  type="button"
-                  className="bulk-deactivate-btn"
-                  onClick={() => handleBulkStatusUpdate('deactivate')}
-                  disabled={isBulkStatusUpdating}
-                >
-                  {t('floorball.players.actions.bulkDeactivate', 'Deactivate Selected ({{count}})', { count: selectedActiveCount })}
-                </button>
-              )}
-              {selectedPlayers.size > 0 && (
-                <button
-                type="button"
-                className="bulk-delete-btn"
-                onClick={handleBulkDelete}
-                disabled={isBulkDeleting}
-              >
-                {t('floorball.players.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPlayers.size })}
-              </button>
-              )}
-              {selectedPlayers.size == 0 && (
-                <button
-                type="button"
-                className="dead-deletebtn"
-                disabled={isBulkDeleting}
-              >
-                {t('floorball.players.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPlayers.size })}
-              </button>
-              )}              
-            </div>
-          </div>
+        {/* Bulk Actions Bar */}
+        <BulkActionsBar
+          selectedCount={selectedPlayers.size}
+          totalCount={players.length}
+          onSelectAll={selectAllPlayers}
+          onClearSelection={clearSelection}
+          actions={[
+            {
+              label: t('floorball.players.actions.bulkAssignToTeam', 'Assign to Team ({{count}})', { count: selectedPlayers.size }),
+              onClick: handleBulkAssignToTeam,
+              variant: 'default',
+              disabled: isBulkAssigning,
+            },
+            {
+              label: t('floorball.players.actions.bulkActivate', 'Activate ({{count}})', { count: selectedInactiveCount }),
+              onClick: () => handleBulkStatusUpdate('activate'),
+              variant: 'status',
+              disabled: isBulkStatusUpdating || selectedInactiveCount === 0,
+            },
+            {
+              label: t('floorball.players.actions.bulkDeactivate', 'Deactivate ({{count}})', { count: selectedActiveCount }),
+              onClick: () => handleBulkStatusUpdate('deactivate'),
+              variant: 'status',
+              disabled: isBulkStatusUpdating || selectedActiveCount === 0,
+            },
+            {
+              label: t('floorball.players.actions.bulkDelete', 'Delete ({{count}})', { count: selectedPlayers.size }),
+              onClick: handleBulkDelete,
+              variant: 'danger',
+              disabled: isBulkDeleting,
+            },
+          ]}
+        />
         {/* Players table */}
-        <div className={`players-table-wrapper ${paginationLoading ? 'pagination-loading' : ''}`}>
+        <div className={`admin-table__wrapper ${paginationLoading ? 'pagination-loading' : ''}`}>
           <PlayersTable 
             players={players} 
             onDelete={handleDelete}

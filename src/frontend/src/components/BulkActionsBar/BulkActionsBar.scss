@@ -1,0 +1,133 @@
+.bulk-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1.25rem;
+  margin-bottom: 0.75rem;
+  border-radius: 12px;
+  background-color: #eef2ff;
+  border: 1px solid #c7d2fe;
+}
+
+// ── Left side: count + select/clear ──
+.bulk-actions-bar__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.bulk-actions-bar__count {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #312e81;
+}
+
+.bulk-actions-bar__link-btn {
+  background: none;
+  border: none;
+  color: #4338ca;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+
+  &:hover {
+    color: #3730a3;
+  }
+}
+
+// ── Right side: actions dropdown ──
+.bulk-actions-bar__right {
+  position: relative;
+}
+
+.bulk-actions-bar__actions-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #a5b4fc;
+  background-color: #fff;
+  color: #4338ca;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background-color: #eef2ff;
+    border-color: #818cf8;
+  }
+}
+
+.bulk-actions-bar__chevron {
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
+.bulk-actions-bar__menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  min-width: 180px;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
+  padding: 0.35rem 0;
+  z-index: 20;
+}
+
+.bulk-actions-bar__item {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.55rem 1rem;
+  text-align: left;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #f3f4f6;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--status {
+    color: #4338ca;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(99, 102, 241, 0.12);
+    }
+  }
+
+  &--danger {
+    color: #b91c1c;
+
+    &:hover:not(:disabled) {
+      background-color: rgba(248, 113, 113, 0.1);
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .bulk-actions-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .bulk-actions-bar__right {
+    align-self: flex-end;
+  }
+}

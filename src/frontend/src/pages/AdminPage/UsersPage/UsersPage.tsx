@@ -23,6 +23,9 @@ const UsersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   // Form modal state
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<SystemUser | null>(null);
@@ -156,6 +159,48 @@ const UsersPage = () => {
     }
   };
 
+  // --- Selection handlers ---
+
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    setSelectedIds(new Set(filteredUsers.map((u) => u.id)));
+  }, [filteredUsers]);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+
+    try {
+      setError(null);
+      await Promise.all(
+        Array.from(selectedIds).map((id) => userService.delete(id)),
+      );
+      setUsers((prev) => prev.filter((u) => !selectedIds.has(u.id)));
+      setSelectedIds(new Set());
+    } catch (err) {
+      console.error('Failed to bulk delete users', err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('admin.users.errors.delete', 'Failed to delete user. Please try again.'),
+      );
+    }
+  }, [selectedIds, t]);
+
   // --- Render ---
 
   if (loading) {
@@ -228,6 +273,11 @@ const UsersPage = () => {
           users={filteredUsers}
           onEdit={openEditModal}
           onDelete={openDeleteModal}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onSelectAll={handleSelectAll}
+          onClearSelection={handleClearSelection}
+          onBulkDelete={handleBulkDelete}
         />
 
         {filteredUsers.length === 0 && !loading && (
