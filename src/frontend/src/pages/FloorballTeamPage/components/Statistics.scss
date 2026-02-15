@@ -78,14 +78,14 @@
     align-items: center;
   }
 
-  // Header row (blue gradient, matches stats-header pattern from roster)
+  // Header row (shared banner style)
   &.statistics-grid-header {
     border-radius: map.get($border-radius, "sm");
-    background: $color-gradient-blue;
+    background: $color-banner-bg;
     font-size: map.get($font-sizes, "sm");
     font-weight: map.get($font-weights, "bold");
     padding: map.get($spacing, "xs") map.get($spacing, "sm");
-    color: $color-white;
+    color: $color-banner-text;
   }
 
   // Data row
@@ -147,8 +147,8 @@
 }
 
 .statistics-ha-title {
-  background: $color-gradient-blue;
-  color: $color-white;
+  background: $color-banner-bg;
+  color: $color-banner-text;
   font-weight: map.get($font-weights, "bold");
   font-size: map.get($font-sizes, "sm");
   padding: map.get($spacing, "xs") map.get($spacing, "base");

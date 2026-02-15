@@ -83,8 +83,8 @@
   .results-season-header, .fixtures-season-header {
     display: flex;
     align-items: center;
-    background: $color-gradient-blue;
-    color: $color-white;
+    background: $color-banner-bg;
+    color: $color-banner-text;
     font-weight: map.get($font-weights, 'semibold');
     padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
     border-radius: map.get($border-radius, 'lg');

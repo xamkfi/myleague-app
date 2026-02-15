@@ -35,13 +35,13 @@
 .summary-season-header{
    text-align: left;
    border-radius: map.get($border-radius, "sm");
-   background: $color-gradient-blue;
+   background: $color-banner-bg;
    font-size: map.get($font-sizes, "md");
    font-weight: map.get($font-weights, "bold");
    padding:
       map.get($spacing, "xs") 
       map.get($spacing, "base");
-   color: $color-white;
+   color: $color-banner-text;
    cursor: pointer;
    transition: filter 0.2s ease, transform 0.05s ease;
    margin-bottom: map.get($spacing, 'sm');

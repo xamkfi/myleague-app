@@ -12,9 +12,9 @@
     align-items: center;
     margin-bottom: 2rem;
     padding: 0.75rem 1rem;
-    background-color: $color-blue-darkest;
+    background-color: $color-banner-bg;
     border-radius: map.get($border-radius, 'lg');
-    color: white;
+    color: $color-banner-text;
 
     .team-name {
       font-size: 0.9375rem;
