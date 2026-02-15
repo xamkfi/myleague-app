@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AdminPageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
+import Button from '../../../components/Button/Button';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
+import ActionsDropdown from '../../../components/ActionsDropdown/ActionsDropdown';
+import AddIcon from '../../../assets/basicIcons/add.svg';
 import { clubService, type Club } from '../../../api/common/clubService';
 import './ClubsManagementPage.scss';
 import Pagination from '../../../components/Pagination/Pagination';
@@ -141,12 +144,13 @@ function ClubsManagementPage() {
             </p>
           </div>
           <div className="right">
-            <button
-              className="btn create-club-button"
+            <Button
+              iconLeft={AddIcon}
+              rounded="pill"
               onClick={() => navigate('/admin/clubs/create')}
             >
-              + {t('clubs.createNew', 'Create New Club')}
-            </button>
+              {t('clubs.createNew', 'Create New Club')}
+            </Button>
           </div>
         </div>
 
@@ -229,12 +233,12 @@ function ClubsManagementPage() {
                       onClick={(e) => e.stopPropagation()}
                       aria-label={t('clubs.table.actions', 'Actions')}
                     >
-                      <button
-                        className="btn btn-secondary"
-                        onClick={() => navigate(`/admin/clubs/${club.id}/edit`)}
-                      >
-                        {t('common.edit', 'Edit')}
-                      </button>
+                      <ActionsDropdown
+                        ariaLabel={t('clubs.table.actionsMenu', 'Club actions menu')}
+                        actions={[
+                          { label: t('common.edit', 'Edit'), onClick: () => navigate(`/admin/clubs/${club.id}/edit`) },
+                        ]}
+                      />
                     </td>
                   </tr>
                 ))}

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
 import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto } from '../../api/floorball/floorballStatistics';
 import './FloorballPage.scss';
@@ -185,8 +186,7 @@ function FloorballPage() {
       <PageTemplate title={t('sports.floorball')}>
         <div className="floorball-page">
           <div className="floorball-page__loading">
-            <div className="loading-spinner"></div>
-            <span>{t('floorballPage.loading')}</span>
+            <LoadingSpinner variant="light" text={t('floorballPage.loading')} />
           </div>
         </div>
       </PageTemplate>

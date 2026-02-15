@@ -4,6 +4,7 @@ import type { Person, PaginatedApiResponse } from '../../../../../types/admin/pe
 import { PersonRole } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
 import PaginationControls from '../PaginationControls/PaginationControls';
+import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
 import './PersonList.scss';
 
 interface PersonListProps {
@@ -546,20 +547,13 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
                 )}
               </td>
               <td>
-                <div className="action-buttons">
-                  <button
-                    className="edit-button"
-                    onClick={() => handleEdit(person.id)}
-                  >
-                    {t('admin.persons.actions.edit', 'Edit')}
-                  </button>
-                  <button
-                    className="delete-button"
-                    onClick={() => handleDelete(person.id)}
-                  >
-                    {t('admin.persons.actions.delete', 'Delete')}
-                  </button>
-                </div>
+                <ActionsDropdown
+                  ariaLabel={t('admin.persons.actions.menu', 'Person actions menu')}
+                  actions={[
+                    { label: t('admin.persons.actions.edit', 'Edit'), onClick: () => handleEdit(person.id) },
+                    { label: t('admin.persons.actions.delete', 'Delete'), onClick: () => handleDelete(person.id), variant: 'danger' },
+                  ]}
+                />
               </td>
               </tr>
               ))}

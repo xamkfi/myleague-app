@@ -67,35 +67,6 @@
 
 
 
-// Loading Spinner
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid $color-neutral-light-grey;
-    border-top: 3px solid $color-blue-secondary;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: map.get($spacing, 'base');
-  }
-
-  p {
-    color: $color-text-muted;
-    font-size: 1.1rem;
-  }
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 // Error Alert
 .error-alert {
   display: flex;

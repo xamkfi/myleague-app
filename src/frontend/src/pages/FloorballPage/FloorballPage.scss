@@ -56,6 +56,7 @@
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
     gap: map.get($spacing, 'xl');
   }
+
 }
 
 .season-card {
@@ -230,21 +231,6 @@
     &:hover {
       color: $color-blue-secondary-light;
     }
-  }
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba($color-white, 0.1);
-  border-top-color: $color-blue-secondary;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 

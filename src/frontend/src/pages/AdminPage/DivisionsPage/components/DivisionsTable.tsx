@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { DivisionType } from '../../../../types/common/divisionType';
-import DivisionActionsDropdown from './DivisionActionsDropdown';
+import ActionsDropdown from '../../../../components/ActionsDropdown/ActionsDropdown';
 import './DivisionsTable.scss';
 
 interface DivisionsTableProps {
@@ -64,12 +64,20 @@ const DivisionsTable = ({
               </td>
               <td>{formatDate(division.createdDate)}</td>
               <td className="division-actions-column">
-                <DivisionActionsDropdown
-                  division={division}
-                  onEdit={onEdit}
-                  onToggleStatus={onToggleStatus}
-                  onDelete={onDelete}
-                  statusUpdatingId={statusUpdatingId}
+                <ActionsDropdown
+                  ariaLabel={t('admin.divisions.actions.menu', 'Division actions menu')}
+                  actions={[
+                    { label: t('common.edit', 'Edit'), onClick: () => onEdit(division.id) },
+                    {
+                      label: division.isActive
+                        ? t('admin.divisions.actions.deactivate', 'Deactivate')
+                        : t('admin.divisions.actions.activate', 'Activate'),
+                      onClick: () => onToggleStatus(division),
+                      variant: 'status',
+                      disabled: statusUpdatingId === division.id,
+                    },
+                    { label: t('common.delete', 'Delete'), onClick: () => onDelete(division), variant: 'danger' },
+                  ]}
                 />
               </td>
             </tr>
