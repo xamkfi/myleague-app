@@ -116,10 +116,22 @@
     transform: translateX(2px);
   }
 
+  &__season {
+    font-size: 0.65rem;
+    color: rgba($color-white, 0.7);
+    font-weight: map.get($font-weights, 'medium');
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: map.get($spacing, 'xxs');
+  }
+
   &__header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: map.get($spacing, 'xs');
     margin-bottom: map.get($spacing, 'xs');
   }
 
@@ -148,6 +160,8 @@
   &__time {
     font-size: map.get($font-sizes, 'xs');
     color: $color-white;
+    flex-shrink: 0;
+    margin-left: auto;
   }
 
   &__teams {
@@ -210,6 +224,43 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  &__debug {
+    margin-top: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'xs');
+    background: rgba(255, 255, 0, 0.1);
+    border: 1px dashed rgba(255, 255, 0, 0.4);
+    border-radius: map.get($border-radius, 'sm');
+    font-family: monospace;
+    font-size: 0.55rem;
+    line-height: 1.4;
+    color: rgba($color-white, 0.8);
+    word-break: break-all;
+  }
+
+  &__debug-title {
+    font-weight: map.get($font-weights, 'bold');
+    color: rgba(255, 255, 0, 0.8);
+    margin-bottom: 2px;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+  }
+
+  &__debug-row {
+    display: flex;
+    gap: 4px;
+
+    > span:first-child {
+      color: rgba(255, 255, 0, 0.6);
+      flex-shrink: 0;
+    }
+
+    > span:last-child {
+      color: rgba($color-white, 0.9);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
 }
 
 // ===== RESPONSIVE STYLES =====
@@ -237,6 +288,10 @@
 
     &__score {
       font-size: map.get($font-sizes, 'xs');
+    }
+
+    &__season {
+      font-size: 0.6rem;
     }
 
     &__venue {

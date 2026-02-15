@@ -1,39 +1,42 @@
+@use "sass:map";
+@use '@variables' as *;
+
 .floorball-seasons-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 0.5rem;
-  border: 1px solid #dee2e6;
+  margin-bottom: map.get($spacing, 'lg');
+  padding: map.get($spacing, 'base');
+  background-color: $color-neutral-light-grey;
+  border-radius: $border-radius-default;
+  border: 1px solid $color-border;
 
   .seasons-count {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #495057;
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-text-primary;
   }
 
   .seasons-actions {
     display: flex;
-    gap: 1rem;
+    gap: map.get($spacing, 'base');
   }
 
   .create-season-button {
-    padding: 0.75rem 1.5rem;
-    background-color: #28a745;
-    color: white;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    background-color: $color-blue-light;
+    color: $color-white;
     border: none;
-    border-radius: 0.375rem;
-    font-size: 1rem;
-    font-weight: 500;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'medium');
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    @include transition(all);
 
     &:hover {
-      background-color: #218838;
+      background-color: $color-blue-medium;
       transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+      box-shadow: $box-shadow-drop-1;
     }
 
     &:active {
@@ -43,10 +46,14 @@
 }
 
 // Responsive Design
-@media (max-width: 768px) {
+@media (max-width: map.get($breakpoints, 'tablet')) {
   .floorball-seasons-header {
     flex-direction: column;
-    gap: 1rem;
+    gap: map.get($spacing, 'base');
     align-items: stretch;
+
+    .create-season-button {
+      text-align: center;
+    }
   }
-} 
+}

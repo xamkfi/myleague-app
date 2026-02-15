@@ -160,7 +160,12 @@ namespace WebAPI.Controllers.Floorball
                 request.Name,
                 request.DivisionIds,
                 startDate,
-                endDate
+                endDate,
+                request.NumberOfPeriods,
+                request.PeriodDurationMinutes,
+                request.AllowOvertime,
+                request.OvertimeDurationMinutes,
+                request.AllowShootout
             );
 
             Result<FloorballSeasonDto> result = await _mediator.Send(command);
@@ -205,7 +210,12 @@ namespace WebAPI.Controllers.Floorball
                 id,
                 request.Name,
                 startDate,
-                endDate
+                endDate,
+                request.NumberOfPeriods,
+                request.PeriodDurationMinutes,
+                request.AllowOvertime,
+                request.OvertimeDurationMinutes,
+                request.AllowShootout
             );
 
             Result<FloorballSeasonDto> result = await _mediator.Send(command);

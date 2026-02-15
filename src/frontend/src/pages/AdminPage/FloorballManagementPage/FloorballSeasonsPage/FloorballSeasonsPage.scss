@@ -1,32 +1,25 @@
+@use "sass:map";
+@use '@variables' as *;
+
 // Import component-specific styles
 @use './components/SeasonsPageHeader.scss';
 @use './components/SeasonsFilters.scss';
 @use './components/ErrorMessage.scss';
 @use './components/LoadingState.scss';
-@use '@variables' as *;
-
 
 // Main container styles
 .floorball-seasons-container {
-  padding: 2rem;
+  padding: map.get($spacing, 'lg');
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.floorball-seasons-title {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #111827;
-  text-align: left;
-  margin-bottom: 1rem;
+// Table container styles - base table styles live in AdminTable.scss
+.seasons-table-container {
+  margin-bottom: map.get($spacing, 'lg');
 }
 
-// Table container styles – base table styles now live in AdminTable.scss
-.seasons-table-container {
-  margin-bottom: 2rem;
-}
-  
-// Modal Styles
+// ── Delete Confirmation Modal ──
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -38,14 +31,14 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1rem;
+  padding: map.get($spacing, 'base');
 
   .modal-content {
     display: flex;
     flex-direction: column;
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    background: $color-white;
+    border-radius: $border-radius-default;
+    box-shadow: $box-shadow-drop-1;
     max-width: 500px;
     width: 100%;
     max-height: 90vh;
@@ -55,20 +48,20 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.5rem;
-      border-bottom: 1px solid #dee2e6;
+      padding: map.get($spacing, 'md');
+      border-bottom: 1px solid $color-border;
 
       h3 {
         margin: 0;
-        color: #333;
-        font-size: 1.5rem;
+        color: $color-text-primary;
+        font-size: map.get($font-sizes, 'lg');
       }
 
       .modal-close-btn {
         background: none;
         border: none;
-        font-size: 1.5rem;
-        color: #6c757d;
+        font-size: map.get($font-sizes, 'lg');
+        color: $color-text-muted;
         cursor: pointer;
         padding: 0;
         width: 2rem;
@@ -76,382 +69,110 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 0.25rem;
-        transition: all 0.2s ease;
+        border-radius: map.get($border-radius, 'sm');
+        @include transition(all);
 
         &:hover {
-          background: #f8f9fa;
-          color: #333;
+          background: $color-neutral-light-grey;
+          color: $color-text-primary;
         }
       }
     }
 
     .modal-body {
-      padding: 1.5rem;
-
-      .form-group {
-        margin-bottom: 1.5rem;
-
-        label {
-          display: block;
-          margin-bottom: 0.5rem;
-          font-weight: 500;
-          color: #333;
-        }
-
-        input, select {
-          width: 100%;
-          padding: 0.75rem;
-          border: 1px solid #ced4da;
-          border-radius: 0.25rem;
-          background-color: white;
-          color: #333;
-          font-size: 1rem;
-          transition: border-color 0.2s ease;
-          box-sizing: border-box;
-
-          &:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-          }
-
-          &:disabled {
-            background-color: #e9ecef;
-            color: #6c757d;
-            cursor: not-allowed;
-          }
-        }
-      }
-
-      .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-
-        @media (max-width: 768px) {
-          grid-template-columns: 1fr;
-        }
-      }
+      padding: map.get($spacing, 'md');
 
       .warning-icon {
         text-align: center;
-        margin-bottom: 1rem;
+        margin-bottom: map.get($spacing, 'base');
 
         i {
-          font-size: 3rem;
-          color: #ff9800;
+          font-size: map.get($font-sizes, 'xl');
+          color: $color-yellow-primary;
         }
       }
 
       .season-details {
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 0.25rem;
-        margin: 1rem 0;
+        background: $color-neutral-light-grey;
+        padding: map.get($spacing, 'base');
+        border-radius: map.get($border-radius, 'sm');
+        margin: map.get($spacing, 'base') 0;
 
         strong {
           display: block;
-          font-size: 1.1rem;
-          color: #333;
-          margin-bottom: 0.5rem;
+          font-size: map.get($font-sizes, 'md');
+          color: $color-text-primary;
+          margin-bottom: map.get($spacing, 'xs');
         }
 
         .season-meta {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.5rem;
-          font-size: 0.9rem;
-          color: #6c757d;
+          gap: map.get($spacing, 'xs');
+          font-size: map.get($font-sizes, 'sm');
+          color: $color-text-muted;
 
           .divisions {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.25rem;
+            gap: map.get($spacing, 'xxs');
           }
 
           .division {
-            background: #007bff;
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            font-size: 0.8rem;
+            background: $color-blue-light;
+            color: $color-white;
+            padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+            border-radius: map.get($border-radius, 'sm');
+            font-size: map.get($font-sizes, 'xs');
           }
 
           .teams-warning {
-            color: #f57c00;
-            font-weight: 500;
+            color: $color-yellow-muted;
+            font-weight: map.get($font-weights, 'medium');
           }
         }
       }
 
       .warning-text {
-        color: #d32f2f;
-        font-weight: 500;
+        color: $color-red-primary;
+        font-weight: map.get($font-weights, 'medium');
         text-align: center;
-        margin-top: 1rem;
+        margin-top: map.get($spacing, 'base');
       }
     }
 
     .modal-footer {
       display: flex;
       justify-content: flex-end;
-      gap: 1rem;
-      padding: 1.5rem;
-      border-top: 1px solid #dee2e6;
+      gap: map.get($spacing, 'base');
+      padding: map.get($spacing, 'md');
+      border-top: 1px solid $color-border;
 
       .btn {
         min-width: 100px;
-        padding: 0.5rem 1rem;
-        border-radius: 0.25rem;
-        border: 1px solid;
+        padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+        border-radius: map.get($border-radius, 'sm');
+        border: none;
         cursor: pointer;
-        font-size: 1rem;
-        transition: all 0.2s ease;
+        font-size: map.get($font-sizes, 'base');
+        font-weight: map.get($font-weights, 'medium');
+        @include transition(all);
 
         &.btn-secondary {
-          background: white;
-          border-color: #6c757d;
-          color: #6c757d;
+          background: $color-button-secondary;
+          color: $color-white;
 
           &:hover {
-            background: #6c757d;
-            color: white;
+            background: $color-primary-dark;
           }
         }
 
-        &.btn-primary {
-          background: #007bff;
-          border-color: #007bff;
-          color: white;
+        &.btn-danger {
+          background: $color-red-primary;
+          color: $color-white;
 
           &:hover {
-            background: #0056b3;
-            border-color: #0056b3;
-          }
-
-          &:disabled {
-            background: #6c757d;
-            border-color: #6c757d;
-            cursor: not-allowed;
-          }
-        }
-      }
-    }
-
-    // Edit Season Modal specific styles  
-    &.edit-season-modal {
-      max-width: 800px;
-      width: 100%;
-
-      .tab-navigation {
-        display: flex;
-        border-bottom: 1px solid #dee2e6;
-        margin: 0;
-        padding: 0;
-
-        .tab-button {
-          flex: 1;
-          padding: 1rem 1.5rem;
-          border: none;
-          background: #f8f9fa;
-          color: #6c757d;
-          cursor: pointer;
-          font-size: 1rem;
-          border-bottom: 3px solid transparent;
-          transition: all 0.2s ease;
-
-          &:hover {
-            background: #e9ecef;
-            color: #495057;
-          }
-
-          &.active {
-            background: white;
-            color: #007bff;
-            border-bottom-color: #007bff;
-          }
-
-          &:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-          }
-        }
-      }
-
-      .teams-management {
-        .modal-body {
-          max-height: 70vh;
-          overflow-y: auto;
-          display: flex;
-          flex-direction: column;
-          gap: 2rem;
-        }
-
-        .teams-sections-container {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 2rem;
-          min-height: 400px;
-
-          @media (max-width: 768px) {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        .teams-section {
-          display: flex;
-          flex-direction: column;
-
-          h4 {
-            color: #333;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #dee2e6;
-            font-size: 1.1rem;
-          }
-
-          .no-teams {
-            color: #6c757d;
-            font-style: italic;
-            text-align: center;
-            padding: 2rem;
-            background: #f8f9fa;
-            border-radius: 0.25rem;
-            border: 1px dashed #dee2e6;
-          }
-
-          .teams-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            flex: 1;
-            overflow-y: auto;
-            max-height: 350px;
-            padding-right: 0.5rem;
-
-            &::-webkit-scrollbar {
-              width: 6px;
-            }
-
-            &::-webkit-scrollbar-track {
-              background: #f1f1f1;
-              border-radius: 3px;
-            }
-
-            &::-webkit-scrollbar-thumb {
-              background: #c1c1c1;
-              border-radius: 3px;
-
-              &:hover {
-                background: #a8a8a8;
-              }
-            }
-
-            .team-item {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding: 0.75rem;
-              background: #f8f9fa;
-              border-radius: 0.25rem;
-              border: 1px solid #dee2e6;
-              transition: all 0.2s ease;
-              min-height: 80px;
-
-              &:hover {
-                background: #e9ecef;
-                border-color: #adb5bd;
-                transform: translateY(-1px);
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-              }
-
-              .team-info {
-                display: flex;
-                flex-direction: column;
-                gap: 0.25rem;
-                flex: 1;
-                min-width: 0;
-
-                .team-name {
-                  font-weight: 600;
-                  color: #333;
-                  font-size: 0.95rem;
-                  white-space: nowrap;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                }
-
-                .team-club {
-                  color: #6c757d;
-                  font-size: 0.85rem;
-                  white-space: nowrap;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                }
-
-                .team-division {
-                  display: inline-block;
-                  padding: 0.2rem 0.4rem;
-                  border-radius: 0.25rem;
-                  font-size: 0.75rem;
-                  font-weight: 500;
-                  background: #007bff;
-                  color: white;
-                  width: fit-content;
-                  max-width: 100px;
-                  white-space: nowrap;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-
-                  &.division-Premier {
-                    background: #dc3545;
-                  }
-
-                  &.division-Division1 {
-                    background: #fd7e14;
-                  }
-
-                  &.division-Division2 {
-                    background: #ffc107;
-                    color: #000;
-                  }
-
-                  &.division-Division3 {
-                    background: #28a745;
-                  }
-
-                  &.division-Division4 {
-                    background: #17a2b8;
-                  }
-
-                  &.division-Youth {
-                    background: #6f42c1;
-                  }
-
-                  &.division-Junior {
-                    background: #e83e8c;
-                  }
-
-                  &.division-Veterans {
-                    background: #6c757d;
-                  }
-                }
-              }
-
-              .btn-sm {
-                padding: 0.375rem 0.75rem;
-                font-size: 0.8rem;
-                border-radius: 0.25rem;
-                min-width: 70px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.25rem;
-                margin-left: 0.5rem;
-                flex-shrink: 0;
-              }
-            }
+            background: $color-red-muted;
           }
         }
       }
@@ -460,13 +181,13 @@
 }
 
 // Responsive Design
-@media (max-width: 768px) {
+@media (max-width: map.get($breakpoints, 'tablet')) {
   .floorball-seasons-container {
-    padding: 1rem;
+    padding: map.get($spacing, 'base');
   }
 
   .modal-overlay {
-    padding: 0.5rem;
+    padding: map.get($spacing, 'xs');
 
     .modal-content {
       max-width: none;
@@ -483,4 +204,4 @@
 
 .fa-spinner {
   animation: spin 1s linear infinite;
-} 
+}

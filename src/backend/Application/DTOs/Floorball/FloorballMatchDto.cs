@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,6 +37,7 @@ namespace Application.DTOs.Floorball
     /// <param name="Officials">The IDs of the match officials (referees)</param>
     /// <param name="GoalEvents">The goals scored in the match</param>
     /// <param name="PenaltyEvents">The penalties given in the match</param>
+    /// <param name="MatchRules">The match rules configuration snapshot</param>
     public record FloorballMatchDto(
         Guid Id,
         Guid SeasonId,
@@ -60,5 +61,6 @@ namespace Application.DTOs.Floorball
         IReadOnlyCollection<Guid> Officials,
         IReadOnlyCollection<FloorballGoalEventDto> GoalEvents,
         IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents,
-        IReadOnlyCollection<FloorballSaveEventDto> SaveEvents);
+        IReadOnlyCollection<FloorballSaveEventDto> SaveEvents,
+        FloorballMatchRulesDto MatchRules);
 }

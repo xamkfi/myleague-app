@@ -123,7 +123,6 @@ const FloorballSeasonsPage = () => {
     <PageTemplate title={t('floorball.seasons.title', 'Manage Seasons')}>
       <div className="floorball-seasons-container">
 
-        <h2 className="floorball-seasons-title">{t('floorball.seasons.title', 'MANAGE SEASONS')}</h2>
         <SeasonsPageHeader
           seasonsCount={seasons.length}
           onCreateSeason={() => navigate('/admin/floorball/seasons/create')}

@@ -2,6 +2,7 @@ using Application.Commands.Floorball.Match;
 using Application.DTOs.Floorball;
 using Domain.Entities.Floorball;
 using Domain.Entities.Common;
+using Domain.ValueObjects.Floorball;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -101,6 +102,8 @@ public static class FloorballMatchMapper
         Uri? homeTeamLogo = match.HomeTeam.GetEffectiveLogoUrl(homeClub?.LogoUrl);
         Uri? awayTeamLogo = match.AwayTeam.GetEffectiveLogoUrl(awayClub?.LogoUrl);
 
+        FloorballMatchRulesDto matchRulesDto = MapMatchRules(match.MatchRules);
+
         return new FloorballMatchDto(
             match.Id,
             match.SeasonId,
@@ -124,7 +127,8 @@ public static class FloorballMatchMapper
             officials,
             goalEvents,
             penaltyEvents,
-            saveEvents);
+            saveEvents,
+            matchRulesDto);
     }
 
     /// <summary>
@@ -181,6 +185,8 @@ public static class FloorballMatchMapper
         Dictionary<int, PeriodScoreDto> periodScores = ConvertPeriodScores(match.PeriodScores);
         List<Guid> officials = ConvertOfficials(match.Officials);
 
+        FloorballMatchRulesDto matchRulesDto = MapMatchRules(match.MatchRules);
+
         return new FloorballMatchDto(
             match.Id,
             match.SeasonId,
@@ -204,7 +210,8 @@ public static class FloorballMatchMapper
             officials,
             new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed
             new List<FloorballPenaltyEventDto>(), // TODO: Map penalty events when needed
-            new List<FloorballSaveEventDto>()
+            new List<FloorballSaveEventDto>(),
+            matchRulesDto
         );
     }
 
@@ -302,6 +309,21 @@ public static class FloorballMatchMapper
     }
 
 
+
+    /// <summary>
+    /// Maps a FloorballMatchRules value object to a FloorballMatchRulesDto
+    /// </summary>
+    /// <param name="rules">The match rules value object</param>
+    /// <returns>The mapped DTO</returns>
+    private static FloorballMatchRulesDto MapMatchRules(FloorballMatchRules rules)
+    {
+        return new FloorballMatchRulesDto(
+            rules.NumberOfPeriods,
+            rules.PeriodDurationMinutes,
+            rules.AllowOvertime,
+            rules.OvertimeDurationMinutes,
+            rules.AllowShootout);
+    }
 
     /// <summary>
     /// Gets the player name from the person lookup dictionary

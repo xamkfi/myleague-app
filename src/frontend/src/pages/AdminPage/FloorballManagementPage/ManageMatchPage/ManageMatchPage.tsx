@@ -196,14 +196,15 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           
           startedPeriods.add(currentPeriod);
           
+          const maxPeriod = periodManagement.maxPeriodNumber;
           let nextPeriod = 1;
-          for (let i = 1; i <= 4; i++) {
+          for (let i = 1; i <= maxPeriod; i++) {
             if (!startedPeriods.has(i)) {
               nextPeriod = i;
               break;
             }
           }
-          if (nextPeriod > 4 || startedPeriods.has(4)) {
+          if (nextPeriod > maxPeriod || startedPeriods.has(maxPeriod)) {
             nextPeriod = 0;
           }
           
@@ -322,7 +323,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
   const handlePeriodControlClick = useCallback(() => {
     if (periodManagement.canEndPeriod()) {
-      if (timerContext.currentPeriod === 4) {
+      if (periodManagement.isInShootout() || timerContext.currentPeriod === periodManagement.maxPeriodNumber) {
         setShowEndMatchConfirmation(true);
         return;
       }
@@ -496,7 +497,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         onShootoutCancel={() => periodManagement.setShowShootoutConfirmation(false)}
         
         showEndMatchConfirmation={showEndMatchConfirmation}
-        isShootout={timerContext.currentPeriod === 4}
+        isShootout={periodManagement.isInShootout()}
         onEndMatchConfirm={async () => {
           await matchControls.handleCompleteLive();
           setShowEndMatchConfirmation(false);
@@ -528,6 +529,8 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             getPeriodControlButtonText={periodManagement.getPeriodControlButtonText}
             keybindsEnabled={keybindsEnabled}
             isStartMatchDisabled={!homeGoalieId || !awayGoalieId}
+            overtimePeriodNumber={periodManagement.overtimePeriodNumber}
+            shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
           />
 
           <LiveMatchQuickActions

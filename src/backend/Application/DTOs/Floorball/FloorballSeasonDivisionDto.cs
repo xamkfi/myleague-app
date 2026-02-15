@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Application.DTOs.Floorball;
 
@@ -7,7 +8,9 @@ namespace Application.DTOs.Floorball;
 /// </summary>
 /// <param name="DivisionId">The unique identifier of the division</param>
 /// <param name="TeamCount">The number of teams in this division for this season</param>
+/// <param name="TeamIds">The IDs of teams in this division for this season</param>
 public record FloorballSeasonDivisionDto(
     Guid DivisionId,
-    int TeamCount);
+    int TeamCount,
+    IReadOnlyCollection<Guid> TeamIds);
 

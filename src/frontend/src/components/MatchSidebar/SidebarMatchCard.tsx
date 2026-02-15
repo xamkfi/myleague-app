@@ -42,6 +42,9 @@ function SidebarMatchCard({ match }: SidebarMatchCardProps) {
 
   return (
     <div className="sidebar-match-card" onClick={handleClick}>
+      <div className="sidebar-match-card__season">
+        {match.seasonName || 'No season'}
+      </div>
       <div className="sidebar-match-card__header">
         {isLive && (
           <span className="sidebar-match-card__live-badge">
@@ -105,6 +108,37 @@ function SidebarMatchCard({ match }: SidebarMatchCardProps) {
           {match.venue}
         </div>
       )}
+
+      <div className="sidebar-match-card__debug">
+        <div className="sidebar-match-card__debug-title">DEBUG</div>
+        <div className="sidebar-match-card__debug-row">
+          <span>id:</span> <span>{match.id}</span>
+        </div>
+        <div className="sidebar-match-card__debug-row">
+          <span>seasonId:</span> <span>{match.seasonId}</span>
+        </div>
+        <div className="sidebar-match-card__debug-row">
+          <span>seasonName:</span> <span>"{match.seasonName}"</span>
+        </div>
+        <div className="sidebar-match-card__debug-row">
+          <span>status:</span> <span>{match.status}</span>
+        </div>
+        <div className="sidebar-match-card__debug-row">
+          <span>home:</span> <span>{match.homeTeamName} ({match.homeScore})</span>
+        </div>
+        <div className="sidebar-match-card__debug-row">
+          <span>away:</span> <span>{match.awayTeamName} ({match.awayScore})</span>
+        </div>
+        <div className="sidebar-match-card__debug-row">
+          <span>venue:</span> <span>{match.venue || 'null'}</span>
+        </div>
+        <div className="sidebar-match-card__debug-row">
+          <span>scheduled:</span> <span>{match.scheduledDateTime}</span>
+        </div>
+        <div className="sidebar-match-card__debug-row">
+          <span>rules:</span> <span>{match.matchRules ? `${match.matchRules.numberOfPeriods}x${match.matchRules.periodDurationMinutes}min` : 'null'}</span>
+        </div>
+      </div>
     </div>
   );
 }
