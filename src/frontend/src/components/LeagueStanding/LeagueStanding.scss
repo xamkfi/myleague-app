@@ -122,6 +122,14 @@
       background-color: rgba(0, 0, 0, 0.02);
     }
 
+    &.clickable-row {
+      cursor: pointer;
+
+      &:hover {
+        background-color: rgba($color-blue-background, 0.35);
+      }
+    }
+
     &:last-child {
       border-bottom: none;
     }

@@ -5,9 +5,12 @@ import type {
   FloorballSeasonStatisticsSummaryDto,
   FloorballTeamSeasonStatisticsDto
 } from '../../api/floorball/floorballStatistics';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { FloorballGameResult } from '../../api/floorball/floorballStatistics';
+import { useFloorballTeamsData } from '../../hooks/useTeamsData';
+import { createTeamSlug } from '../../utils/slugUtils';
 
 interface LeagueStandingProps {
   seasonSummary?: FloorballSeasonStatisticsSummaryDto | null;
@@ -17,7 +20,25 @@ interface LeagueStandingProps {
 
 export default function LeagueStanding({ seasonSummary, loading, error }: LeagueStandingProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { teams, refetch } = useFloorballTeamsData();
   const [activeView, setActiveView] = useState<'standings' | 'scorers' | 'assists' | 'goalies'>('standings');
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  const navigateToTeam = (teamId: string) => {
+    const team = teams?.find(t => t.id === teamId);
+    if (team) {
+      const slug = createTeamSlug(team, teams);
+      navigate(`/team/${slug}`);
+    }
+  };
+
+  const navigateToPlayer = (playerId: string) => {
+    navigate(`/floorballplayer/${playerId}`);
+  };
 
   // Show loading state
   if (loading) {
@@ -148,7 +169,11 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
             const rank = index + 1;
             
             return (
-              <tr key={team.id}>
+              <tr
+                key={team.id}
+                className="clickable-row"
+                onClick={() => navigateToTeam(team.teamId)}
+              >
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
@@ -228,7 +253,11 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
             const rank = index + 1;
             
             return (
-              <tr key={player.id}>
+              <tr
+                key={player.id}
+                className="clickable-row"
+                onClick={() => navigateToPlayer(player.playerId)}
+              >
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
@@ -280,7 +309,11 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
             const rank = index + 1;
             
             return (
-              <tr key={player.id}>
+              <tr
+                key={player.id}
+                className="clickable-row"
+                onClick={() => navigateToPlayer(player.playerId)}
+              >
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
@@ -335,7 +368,11 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
             const rank = index + 1;
 
             return (
-              <tr key={goalie.id}>
+              <tr
+                key={goalie.id}
+                className="clickable-row"
+                onClick={() => navigateToPlayer(goalie.playerId)}
+              >
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
