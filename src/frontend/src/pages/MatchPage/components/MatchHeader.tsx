@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { FloorballMatchStatus, type FloorballMatchDto } from '../../../types/floorball/floorballTypes';
 import { formatDate, getTeamInitials } from './matchUtils';
+import { slugify } from '../../../utils/slugUtils';
 import './MatchHeader.scss';
 
 interface MatchHeaderProps {
@@ -11,8 +12,8 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
   const navigate = useNavigate();
   const scheduled = formatDate(match.scheduledDateTime);
 
-  const handleTeamClick = (teamId: string) => {
-    navigate(`/floorballteam/${teamId}`);
+  const handleTeamClick = (teamName: string) => {
+    navigate(`/team/${slugify(teamName)}`);
   };
 
   return (
@@ -22,8 +23,8 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
           className="team-section home clickable"
           role="link"
           tabIndex={0}
-          onClick={() => handleTeamClick(match.homeTeamId)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleTeamClick(match.homeTeamId); }}
+          onClick={() => handleTeamClick(match.homeTeamName)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleTeamClick(match.homeTeamName); }}
         >
           <div className="team-crest">
             {getTeamInitials(match.homeTeamName)}
@@ -59,8 +60,8 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
           className="team-section away clickable"
           role="link"
           tabIndex={0}
-          onClick={() => handleTeamClick(match.awayTeamId)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleTeamClick(match.awayTeamId); }}
+          onClick={() => handleTeamClick(match.awayTeamName)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleTeamClick(match.awayTeamName); }}
         >
           <div className="team-crest">
             {getTeamInitials(match.awayTeamName)}
