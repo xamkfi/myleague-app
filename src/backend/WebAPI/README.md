@@ -8,7 +8,7 @@ The WebAPI layer serves as the presentation layer of the League Management Syste
 - **HTTP Request Handling** - Processing incoming HTTP requests and routing to appropriate handlers
 - **Response Formatting** - Standardizing API responses with consistent structure and error handling
 - **Input Validation** - Validating request models and handling validation errors
-- **Authentication & Authorization** - Managing API security (when implemented)
+- **Authentication & Authorization** - Passwordless email authentication with JWT and refresh tokens
 - **API Documentation** - Providing interactive documentation through Scalar/OpenAPI
 - **Cross-Cutting Concerns** - Implementing logging, CORS, exception handling, and health checks
 
@@ -49,6 +49,7 @@ The WebAPI layer serves as the presentation layer of the League Management Syste
 ### Key Packages
 - **MediatR 12.5** - Mediator pattern implementation for CQRS
 - **FluentValidation.AspNetCore 11.3** - Request validation and error handling
+- **Microsoft.AspNetCore.Authentication.JwtBearer 9.0** - JWT bearer token authentication
 - **Serilog.AspNetCore 9.0** - Structured logging with multiple sinks
 - **Scalar.AspNetCore 1.2** - Modern OpenAPI documentation interface
 - **Microsoft.AspNetCore.OpenApi 9.0** - OpenAPI specification generation
@@ -68,16 +69,22 @@ The WebAPI layer serves as the presentation layer of the League Management Syste
 ```
 WebAPI/
 ├── Controllers/              # API Controllers
+│   ├── Auth/                # Authentication controllers
+│   │   └── AuthController.cs
 │   └── Common/              # Common entity controllers
-│       └── ClubsController.cs
+│       ├── ClubsController.cs
+│       └── UsersController.cs
 ├── Extensions/              # Service configuration extensions
 │   └── ServiceCollectionExtensions.cs
 ├── Middlewares/            # Custom middleware components
 │   └── ExceptionHandlingMiddleware.cs
 ├── Models/                 # API-specific models and DTOs
+│   ├── Auth/               # Auth request models
+│   │   └── AuthRequests.cs
 │   └── Common/             # Common API models
 │       ├── ApiResponse.cs  # Standard response wrapper
-│       └── ClubRequest.cs  # Request models
+│       ├── ClubRequest.cs  # Request models
+│       └── UserRequest.cs  # User request models
 ├── Properties/             # Project properties and launch settings
 ├── appsettings*.json      # Configuration files for different environments
 ├── Program.cs             # Application entry point and configuration
@@ -141,6 +148,24 @@ app.MapScalarApiReference(options =>
 
 ## 🔌 API Endpoints
 
+### Authentication (`/api/auth`)
+| Method | Endpoint | Auth | Description | Response |
+|--------|----------|------|-------------|----------|
+| POST | `/api/auth/login` | No | Request login code (sent to email) | `ApiResponse` |
+| POST | `/api/auth/verify` | No | Verify login code, get tokens | `ApiResponse<AuthTokenDto>` |
+| POST | `/api/auth/refresh` | No | Refresh expired access token | `ApiResponse<AuthTokenDto>` |
+| POST | `/api/auth/logout` | No | Revoke refresh token | `ApiResponse` |
+| GET | `/api/auth/me` | Yes | Get current user info | `ApiResponse<UserDto>` |
+
+**Authentication flow:**
+1. `POST /api/auth/login` with `{ "email": "user@example.com" }` -- a 6-digit code is sent to the email (in development, the code is logged to the console)
+2. `POST /api/auth/verify` with `{ "email": "user@example.com", "code": "123456" }` -- returns `{ accessToken, refreshToken, expiresAt }`
+3. Include `Authorization: Bearer <accessToken>` header on protected endpoints
+4. When the access token expires, call `POST /api/auth/refresh` with `{ "refreshToken": "..." }` to get a new token pair
+5. To log out, call `POST /api/auth/logout` with `{ "refreshToken": "..." }`
+
+**Default development user:** `test@myleague.local` (created automatically on first startup)
+
 ### Club Management
 | Method | Endpoint | Description | Response |
 |--------|----------|-------------|----------|
@@ -149,6 +174,17 @@ app.MapScalarApiReference(options =>
 | POST | `/api/clubs` | Create new club | `ApiResponse<ClubDto>` |
 | PUT | `/api/clubs/{id}` | Update existing club | `ApiResponse<ClubDto>` |
 | DELETE | `/api/clubs/{id}` | Delete club | `ApiResponse` |
+
+### User Management (`/api/users`) -- Requires Authentication
+| Method | Endpoint | Description | Response |
+|--------|----------|-------------|----------|
+| GET | `/api/users` | Get all users | `ApiResponse<List<UserDto>>` |
+| GET | `/api/users/{id}` | Get user by ID | `ApiResponse<UserDto>` |
+| GET | `/api/users/by-email?email=` | Get user by email | `ApiResponse<UserDto>` |
+| GET | `/api/users/by-person/{personId}` | Get user by person ID | `ApiResponse<UserDto>` |
+| POST | `/api/users` | Create new user | `ApiResponse<UserDto>` |
+| PUT | `/api/users/{id}` | Update user | `ApiResponse<UserDto>` |
+| DELETE | `/api/users/{id}` | Delete user | `ApiResponse` |
 
 ### System Endpoints
 | Method | Endpoint | Description |
@@ -268,6 +304,21 @@ app.MapScalarApiReference(options =>
   "ConnectionStrings": {
     "DefaultConnection": "Host=localhost;Database=myleague;..."
   },
+  "Jwt": {
+    "Issuer": "MyLeague",
+    "Audience": "MyLeague",
+    "SecretKey": "<secret>",
+    "AccessTokenExpirationMinutes": 15,
+    "RefreshTokenExpirationDays": 7
+  },
+  "LoginCode": {
+    "ExpirationMinutes": 10,
+    "CodeLength": 6,
+    "MaxAttempts": 5
+  },
+  "Seed": {
+    "AdminEmail": ""
+  },
   "Serilog": {
     "MinimumLevel": "Information",
     "WriteTo": [
@@ -316,16 +367,65 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
 ```
 
-## 🔒 Security Considerations
+## 🔒 Security & Authentication
 
-### Current Security Features
+### Passwordless Email Authentication
+The API uses a passwordless authentication system. No passwords are stored in the database. Users log in with their email and a one-time code.
+
+**How it works:**
+1. User requests a login code by providing their email address
+2. A cryptographically secure 6-digit code is generated and sent to the email
+   - **Development**: Code is printed to the console (look for `[LOGIN CODE]` in output)
+   - **Production**: Code is sent via Azure Communication Services Email
+3. User submits the code; if valid, the API returns a JWT access token and refresh token
+4. Protected endpoints require the `Authorization: Bearer <accessToken>` header
+5. Tokens can be refreshed, and logout revokes the refresh token
+
+**Security measures:**
+- **Brute-force protection** -- After 5 failed code attempts, the code is locked; user must request a new one
+- **Short-lived codes** -- Login codes expire after 10 minutes (configurable)
+- **Refresh token rotation** -- Every refresh issues a new token and revokes the old; reusing a revoked token revokes all tokens for the user (theft detection)
+- **Hashed storage** -- Only SHA256 hashes of refresh tokens are stored
+- **Cryptographic generation** -- Codes and tokens are generated with `RandomNumberGenerator`
+
+### Configuration
+Authentication is configured in `appsettings.json` / `appsettings.Development.json`:
+
+```json
+{
+  "Jwt": {
+    "Issuer": "MyLeague",
+    "Audience": "MyLeague",
+    "SecretKey": "<your-secret-key>",
+    "AccessTokenExpirationMinutes": 15,
+    "RefreshTokenExpirationDays": 7
+  },
+  "LoginCode": {
+    "ExpirationMinutes": 10,
+    "CodeLength": 6,
+    "MaxAttempts": 5
+  },
+  "AzureCommunicationServices": {
+    "ConnectionString": "",
+    "SenderAddress": ""
+  },
+  "Seed": {
+    "AdminEmail": ""
+  }
+}
+```
+
+### Database Seeding
+- **Development**: A default test user (`test@myleague.local`, Admin role) is automatically created on startup if it does not exist. Use this email to request a login code and find it in the console output.
+- **Production**: Set `Seed__AdminEmail` as an environment variable to create an initial admin user on first deployment.
+
+### Other Security Features
 - **HTTPS Enforcement** - Automatic HTTPS redirection
 - **CORS Configuration** - Flexible cross-origin policy management
-- **Input Validation** - Comprehensive request validation
+- **Input Validation** - Comprehensive request validation with FluentValidation
 - **Error Handling** - Secure error information disclosure
 
-### Future Security Enhancements
-- **JWT Authentication** - Bearer token authentication (prepared)
+### Planned Enhancements
 - **Rate Limiting** - API throttling and abuse prevention
 - **API Versioning** - Backward compatibility management
 - **Input Sanitization** - XSS and injection prevention

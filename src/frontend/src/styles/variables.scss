@@ -43,6 +43,10 @@ $color-blue-background: #CFDAEF;
 
 $color-gradient-blue: linear-gradient(270deg, var(--Colour-Medium, #2A4A83) 0%, var(--Colour-Light, #4A679F) 100%);
 
+// Banner / section-header design tokens
+$color-banner-bg: $color-blue-darkest;
+$color-banner-text: $color-white;
+
 // Box Shadow
 $box-shadow-drop-1: 0 5px 25px 0 rgba(57, 62, 99, 0.15);
 

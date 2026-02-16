@@ -1,4 +1,4 @@
-﻿using Domain.Common;
+using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;

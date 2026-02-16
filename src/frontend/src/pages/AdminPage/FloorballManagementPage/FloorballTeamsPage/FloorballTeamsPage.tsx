@@ -21,6 +21,9 @@ const FloorballTeamsPage = () => {
   const [pageSize, setPageSize] = useState(50);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   // Fetch teams data
   const fetchTeams = async (page: number = 1, size: number = pageSize) => {
     try {
@@ -144,9 +147,14 @@ const FloorballTeamsPage = () => {
 
     try {
       await floorballTeamService.delete(teamId);
+      // Clear from selection if it was selected
+      setSelectedIds(prev => {
+        const updated = new Set(prev);
+        updated.delete(teamId);
+        return updated;
+      });
       // Refresh the teams list
       await fetchTeams(currentPage, pageSize);
-      // Show success message (you could add a toast notification here)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete team');
       console.error('Error deleting team:', err);
@@ -168,6 +176,50 @@ const FloorballTeamsPage = () => {
   // Handle create team
   const handleCreateTeam = () => {
     navigate('/admin/floorball/teams/new');
+  };
+
+  // ── Selection handlers ──
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const updated = new Set(prev);
+      if (updated.has(id)) {
+        updated.delete(id);
+      } else {
+        updated.add(id);
+      }
+      return updated;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedIds(new Set(filteredTeams.map(t => t.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    const confirmMessage = t('floorball.teams.confirmBulkDelete', {
+      count: selectedIds.size,
+      defaultValue: 'Are you sure you want to delete {{count}} teams?',
+    });
+
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      setError(null);
+      for (const id of selectedIds) {
+        await floorballTeamService.delete(id);
+      }
+      setSelectedIds(new Set());
+      await fetchTeams(currentPage, pageSize);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete teams');
+      console.error('Error bulk deleting teams:', err);
+    }
   };
 
   // Do not early-return on loading; instead show loading inside TeamsTable
@@ -213,6 +265,11 @@ const FloorballTeamsPage = () => {
           onEditRoster={handleEditRoster}
           onDelete={handleDelete}
           loading={loading}
+          selectedIds={selectedIds}
+          onToggleSelect={toggleSelect}
+          onSelectAll={selectAll}
+          onClearSelection={clearSelection}
+          onBulkDelete={handleBulkDelete}
           pagination={{
             currentPage,
             totalPages,
@@ -229,4 +286,4 @@ const FloorballTeamsPage = () => {
   );
 };
 
-export default FloorballTeamsPage; 
+export default FloorballTeamsPage;

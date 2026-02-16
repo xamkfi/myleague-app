@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Application.Commands.Floorball.Match;
 using Application.Common;
 using Application.DTOs.Floorball;
@@ -7,6 +7,7 @@ using Domain.Common;
 using Domain.Entities.Floorball;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
@@ -239,6 +240,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -281,6 +283,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPut("complete-match/{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -312,6 +315,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update match request</param>
         /// <returns>Updated match details</returns>
 		[HttpPut]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -359,6 +363,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Match ID</param>
         /// <returns>Started match details</returns>
         [HttpPut("start-match/{id:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -391,6 +396,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Goal recording request</param>
         /// <returns>Updated match details</returns>
         [HttpPost("record-goal")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -438,6 +444,7 @@ namespace WebAPI.Controllers.Floorball
         /// Records a penalty in a floorball match, with 1 second rate limit
         /// </summary>
         [HttpPost("record-penalty")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -483,6 +490,7 @@ namespace WebAPI.Controllers.Floorball
         /// Records a save in a floorball match, with 250ms rate limit
         /// </summary>
         [HttpPost("record-save")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -527,6 +535,7 @@ namespace WebAPI.Controllers.Floorball
         /// Starts a period in a floorball match
         /// </summary>
         [HttpPost("{matchId:guid}/period/{periodNumber:int}/start")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -556,6 +565,7 @@ namespace WebAPI.Controllers.Floorball
         /// Ends a period in a floorball match
         /// </summary>
         [HttpPost("{matchId:guid}/period/{periodNumber:int}/end")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -584,6 +594,7 @@ namespace WebAPI.Controllers.Floorball
         /// Deletes a goal event from a floorball match
         /// </summary>
         [HttpDelete("{matchId:guid}/goal/{goalEventId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -612,6 +623,7 @@ namespace WebAPI.Controllers.Floorball
         /// Deletes a penalty event from a floorball match
         /// </summary>
         [HttpDelete("{matchId:guid}/penalty/{penaltyEventId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -640,6 +652,7 @@ namespace WebAPI.Controllers.Floorball
         /// Deletes a save event from a floorball match
         /// </summary>
         [HttpDelete("{matchId:guid}/save/{saveEventId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -668,6 +681,7 @@ namespace WebAPI.Controllers.Floorball
         /// Records overtime for a floorball match
         /// </summary>
         [HttpPost("{matchId:guid}/overtime")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -696,6 +710,7 @@ namespace WebAPI.Controllers.Floorball
         /// Records shootout for a floorball match
         /// </summary>
         [HttpPost("{matchId:guid}/shootout")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -724,6 +739,7 @@ namespace WebAPI.Controllers.Floorball
         /// Postpones a floorball match
         /// </summary>
         [HttpPost("{matchId:guid}/postpone")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -752,6 +768,7 @@ namespace WebAPI.Controllers.Floorball
         /// Cancels a floorball match
         /// </summary>
         [HttpPost("{matchId:guid}/cancel")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -780,6 +797,7 @@ namespace WebAPI.Controllers.Floorball
         /// Adds an official (referee) to a floorball match (append semantics).
         /// </summary>
         [HttpPost("{matchId:guid}/officials")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -824,6 +842,7 @@ namespace WebAPI.Controllers.Floorball
         /// Replaces officials for a match (requires at least one).
         /// </summary>
         [HttpPut("{matchId:guid}/officials")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -852,6 +871,7 @@ namespace WebAPI.Controllers.Floorball
         /// Removes an official from a match (must leave at least one official).
         /// </summary>
         [HttpDelete("{matchId:guid}/officials/{refereeId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -880,6 +900,7 @@ namespace WebAPI.Controllers.Floorball
         /// Sets a single referee for the match (PUT semantic).
         /// </summary>
         [HttpPut("{matchId:guid}/referee/{refereeId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -912,6 +933,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="goalieId">The ID of the new goalie</param>
         /// <returns>Updated match details</returns>
         [HttpPut("{matchId:guid}/team/{teamId:guid}/goalie/{goalieId:guid}")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

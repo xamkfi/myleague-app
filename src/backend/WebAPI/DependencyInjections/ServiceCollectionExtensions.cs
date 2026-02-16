@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
@@ -41,7 +42,7 @@ public static class ServiceCollectionExtensions
                 return Task.CompletedTask;
             });
 
-            // Add security scheme for future JWT implementation
+            // Add JWT Bearer security scheme definition
             options.AddDocumentTransformer((document, context, cancellationToken) =>
             {
                 document.Components ??= new OpenApiComponents();
@@ -54,6 +55,43 @@ public static class ServiceCollectionExtensions
                     Scheme = "bearer",
                     BearerFormat = "JWT"
                 };
+                return Task.CompletedTask;
+            });
+
+            // Mark operations that require authentication based on [Authorize] attributes
+            options.AddOperationTransformer((operation, context, cancellationToken) =>
+            {
+                IList<object> metadata = context.Description.ActionDescriptor.EndpointMetadata;
+
+                bool hasAuthorize = metadata.OfType<AuthorizeAttribute>().Any();
+                bool hasAllowAnonymous = metadata.OfType<AllowAnonymousAttribute>().Any();
+
+                if (hasAuthorize && !hasAllowAnonymous)
+                {
+                    // Add security requirement referencing the Bearer scheme
+                    operation.Security ??= new List<OpenApiSecurityRequirement>();
+                    operation.Security.Add(new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
+
+                    // Add 401 Unauthorized response
+                    operation.Responses.TryAdd("401", new OpenApiResponse
+                    {
+                        Description = "Unauthorized — authentication required"
+                    });
+                }
+
                 return Task.CompletedTask;
             });
         });

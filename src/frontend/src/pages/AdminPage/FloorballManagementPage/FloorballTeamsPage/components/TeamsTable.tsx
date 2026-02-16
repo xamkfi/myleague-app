@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { FloorballTeam } from '../../../../../types/floorball/floorballTypes';
-import TeamPlayersRow from './TeamPlayersRow';
-import React from 'react';
 import type { DivisionType } from '../../../../../types/common/divisionType';
 import { divisionService } from '../../../../../api/common/divisionService';
+import TeamPlayersRow from './TeamPlayersRow';
 import Pagination from '../../../../../components/Pagination';
+import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
+import BulkActionsBar from '../../../../../components/BulkActionsBar/BulkActionsBar';
+import '../../../../../styles/AdminTable.scss';
 import './TeamsTable.scss';
 
 interface TeamsTableProps {
@@ -14,6 +16,11 @@ interface TeamsTableProps {
   onEdit: (teamId: string) => void;
   onEditRoster: (teamId: string) => void;
   onDelete: (teamId: string, teamName: string) => void;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
+  onSelectAll: () => void;
+  onClearSelection: () => void;
+  onBulkDelete: () => void;
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -24,15 +31,25 @@ interface TeamsTableProps {
   onPageSizeChange?: (pageSize: number) => void;
 }
 
-const TeamsTable = ({ teams, loading, onEdit, onEditRoster, onDelete, pagination, onPageChange, onPageSizeChange }: TeamsTableProps) => {
+const TeamsTable = ({
+  teams,
+  loading,
+  onEdit,
+  onEditRoster,
+  onDelete,
+  selectedIds,
+  onToggleSelect,
+  onSelectAll,
+  onClearSelection,
+  onBulkDelete,
+  pagination,
+  onPageChange,
+  onPageSizeChange,
+}: TeamsTableProps) => {
   const { t } = useTranslation();
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [closingTeams, setClosingTeams] = useState<Set<string>>(new Set());
-  const [divisions, setDivisions] = useState<DivisionType[]>([])
-  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [closingDropdown, setClosingDropdown] = useState<string | null>(null);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [divisions, setDivisions] = useState<DivisionType[]>([]);
 
   const animationDuration = 350;
 
@@ -61,57 +78,6 @@ const TeamsTable = ({ teams, loading, onEdit, onEditRoster, onDelete, pagination
     }
   };
 
-  // Handle edit team
-  const handleEditTeam = (teamId: string) => {
-    onEdit(teamId);
-  };
-
-  const cancelCloseTimer = () => {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  };
-
-  const startCloseTimer = () => {
-    cancelCloseTimer();
-    closeTimer.current = setTimeout(() => {
-      if (dropdownOpen) {
-        setClosingDropdown(dropdownOpen);
-        setDropdownOpen(null);
-        setTimeout(() => setClosingDropdown(null), 300); // Animation duration
-      }
-    }, 500);
-  };
-
-  // Handle dropdown toggle
-  const toggleDropdown = (teamId: string) => {
-    cancelCloseTimer();
-    if (dropdownOpen === teamId) {
-      startCloseTimer();
-    } else {
-      setDropdownOpen(teamId);
-    }
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    return () => {
-      cancelCloseTimer();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (dropdownOpen) {
-      const timer = setTimeout(() => {
-        setActiveDropdown(dropdownOpen);
-      }, 10);
-      return () => clearTimeout(timer);
-    } else {
-      setActiveDropdown(null);
-    }
-  }, [dropdownOpen]);
-  
   useEffect(() => {
     const fetchDivisions = async () => {
       const tempDivisions = await divisionService.getAll();
@@ -120,152 +86,151 @@ const TeamsTable = ({ teams, loading, onEdit, onEditRoster, onDelete, pagination
     fetchDivisions();
   }, []);
 
+  const totalColumns = 7; // checkbox + 5 data columns + actions
+
   return (
     <>
-      <div className={`teams-table-container ${dropdownOpen || closingDropdown ? 'dropdown-active' : ''}`}>
-        <div className={`teams-grid ${dropdownOpen || closingDropdown ? 'dropdown-active' : ''}`}>
-          {/* Header Row */}
-          <div className="teams-header">
-            {t('floorball.teams.table.name', 'Team Name')}
-          </div>
-          <div className="teams-header">
-            {t('floorball.teams.table.club', 'Club')}
-          </div>
-          <div className="teams-header">
-            {t('floorball.teams.table.division', 'Division')}
-          </div>
-          <div className="teams-header">
-            {t('floorball.teams.table.homeArena', 'Home Arena')}
-          </div>
-          <div className="teams-header">
-            {t('floorball.teams.table.activeMembers', 'Active Members')}
-          </div>
-          <div className="teams-header">
-            {t('floorball.teams.table.actions', 'Actions')}
-          </div>
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedCount={selectedIds.size}
+        totalCount={teams.length}
+        onSelectAll={onSelectAll}
+        onClearSelection={onClearSelection}
+        actions={[
+          {
+            label: t('common.bulk.delete', 'Delete ({{count}})', { count: selectedIds.size }),
+            onClick: onBulkDelete,
+            variant: 'danger',
+          },
+        ]}
+      />
 
-          {/* Teams Data */}
-          {loading ? (
-            <div className="teams-loading">
-              {t('common.loading', 'Loading...')}
-            </div>
-          ) : !teams || teams.length === 0 ? (
-            <div className="no-teams">
-              {t('floorball.teams.noTeams', 'No teams found')}
-            </div>
-          ) : (
-            teams.map((team) => (
-              <React.Fragment key={team.id}>
-                <div 
-                  className={`team-row ${expandedTeams.has(team.id) ? 'expanded' : ''} ${dropdownOpen === team.id ? 'dropdown-open' : ''}`}
-                  onClick={() => toggleTeamExpansion(team.id)}
-                >
-                  <div className="team-cell team-name-cell" data-label="Team Name">
-                    <div className="team-info">
-                      <div className="team-name-container">
-                        <span className="expand-icon">
-                          {expandedTeams.has(team.id) && !closingTeams.has(team.id) ? '▼' : '▶'}
-                        </span>
-                        <span className="name">{team.name}</span>
-                      </div>
-                      <div className="jersey-colors">
-                        <span 
-                          className="color-indicator primary" 
-                          style={{ backgroundColor: team.primaryJerseyColor }}
-                          title={`${t('floorball.teams.primary', 'Primary')}: ${team.primaryJerseyColor}`}
-                        ></span>
-                        {team.secondaryJerseyColor && (
-                          <span 
-                            className="color-indicator secondary" 
-                            style={{ backgroundColor: team.secondaryJerseyColor }}
-                            title={`${t('floorball.teams.secondary', 'Secondary')}: ${team.secondaryJerseyColor}`}
-                          ></span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="team-cell club-cell" data-label="Club">
-                    {team.club.name}
-                  </div>
-                  <div className="team-cell division-cell" data-label="Division">
-                    {divisions.find(d => d.id == team.divisionId)?.name}
-                  </div>
-                  <div className="team-cell home-arena-cell" data-label="Home Arena">
-                    {team.homeArena}
-                  </div>
-                  <div className="team-cell active-members-cell" data-label="Active Members">
-                    <span className={`active-status ${team.hasActiveMembers ? 'has-members' : 'no-members'}`}>
-                      {team.hasActiveMembers 
-                        ? t('floorball.teams.hasMembers', 'Yes') 
-                        : t('floorball.teams.noMembers', 'No')
+      <div className="admin-table__wrapper">
+        {loading ? (
+          <div className="admin-table__empty">
+            {t('common.loading', 'Loading...')}
+          </div>
+        ) : !teams || teams.length === 0 ? (
+          <div className="admin-table__empty">
+            {t('floorball.teams.noTeams', 'No teams found')}
+          </div>
+        ) : (
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th className="admin-table__checkbox-col">
+                  <input
+                    type="checkbox"
+                    checked={teams.length > 0 && teams.every(team => selectedIds.has(team.id))}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        onSelectAll();
+                      } else {
+                        onClearSelection();
                       }
-                    </span>
-                  </div>
-                  <div className="team-cell actions-cell" data-label="Actions" onClick={(e) => e.stopPropagation()}>
-                    <div 
-                      className="actions-dropdown"
-                      onMouseLeave={startCloseTimer}
-                      onMouseEnter={cancelCloseTimer}
-                    >
-                      <button
-                        className="actions-button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleDropdown(team.id);
-                        }}
-                        title={t('common.actions', 'Actions')}
-                      >
-                        ⋮
-                      </button>
-                      {(dropdownOpen === team.id || closingDropdown === team.id) && (
-                        <div className={`dropdown-menu ${activeDropdown === team.id ? 'open' : ''}`}>
-                          <button
-                            className="dropdown-item edit-item"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditTeam(team.id);
-                              setDropdownOpen(null);
-                            }}
-                          >
-                            ✏️ {t('floorball.teams.editTeamInfo', 'Edit Team Information')}
-                          </button>
-                          <button
-                            className="dropdown-item edit-item"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEditRoster(team.id);
-                              setDropdownOpen(null);
-                            }}
-                          >
-                            👥 {t('floorball.teams.editRoster', 'Edit Roster')}
-                          </button>
-                          <button
-                            className="dropdown-item delete-item"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDelete(team.id, team.name);
-                              setDropdownOpen(null);
-                            }}
-                          >
-                            🗑️ {t('common.delete', 'Delete')}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                {expandedTeams.has(team.id) && (
-                  <TeamPlayersRow 
-                    teamId={team.id}
-                    isExpanded={!closingTeams.has(team.id)}
-                    isClosing={closingTeams.has(team.id)}
-                    team={team}
+                    }}
+                    title={t('floorball.teams.selectAll', 'Select all teams')}
                   />
-                )}
-              </React.Fragment>
-            ))
-          )}
-        </div>
+                </th>
+                <th>{t('floorball.teams.table.name', 'Team Name')}</th>
+                <th>{t('floorball.teams.table.club', 'Club')}</th>
+                <th>{t('floorball.teams.table.division', 'Division')}</th>
+                <th>{t('floorball.teams.table.homeArena', 'Home Arena')}</th>
+                <th>{t('floorball.teams.table.activeMembers', 'Active Members')}</th>
+                <th className="admin-table__actions-col">{t('floorball.teams.table.actions', 'Actions')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teams.map((team) => (
+                <>
+                  <tr
+                    key={team.id}
+                    className={`admin-table__row--clickable${selectedIds.has(team.id) ? ' admin-table__row--selected' : ''}${expandedTeams.has(team.id) ? ' admin-table__row--expanded' : ''}`}
+                    onClick={() => toggleTeamExpansion(team.id)}
+                  >
+                    <td className="admin-table__checkbox-col">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(team.id)}
+                        onChange={() => onToggleSelect(team.id)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </td>
+                    <td>
+                      <div className="team-name-cell">
+                        <div className="team-info">
+                          <div className="team-name-container">
+                            <span className="expand-icon">
+                              {expandedTeams.has(team.id) && !closingTeams.has(team.id) ? '▼' : '▶'}
+                            </span>
+                            <span className="admin-table__name">{team.name}</span>
+                          </div>
+                          <div className="jersey-colors">
+                            <span
+                              className="color-indicator primary"
+                              style={{ backgroundColor: team.primaryJerseyColor }}
+                              title={`${t('floorball.teams.primary', 'Primary')}: ${team.primaryJerseyColor}`}
+                            ></span>
+                            {team.secondaryJerseyColor && (
+                              <span
+                                className="color-indicator secondary"
+                                style={{ backgroundColor: team.secondaryJerseyColor }}
+                                title={`${t('floorball.teams.secondary', 'Secondary')}: ${team.secondaryJerseyColor}`}
+                              ></span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{team.club.name}</td>
+                    <td>{divisions.find(d => d.id == team.divisionId)?.name}</td>
+                    <td>{team.homeArena}</td>
+                    <td>
+                      <span className={`admin-badge ${team.hasActiveMembers ? 'admin-badge--active' : 'admin-badge--inactive'}`}>
+                        {team.hasActiveMembers
+                          ? t('floorball.teams.hasMembers', 'Yes')
+                          : t('floorball.teams.noMembers', 'No')
+                        }
+                      </span>
+                    </td>
+                    <td className="admin-table__actions-col" onClick={(e) => e.stopPropagation()}>
+                      <ActionsDropdown
+                        actions={[
+                          {
+                            label: t('floorball.teams.editTeamInfo', 'Edit Team Information'),
+                            onClick: () => onEdit(team.id),
+                          },
+                          {
+                            label: t('floorball.teams.editRoster', 'Edit Roster'),
+                            onClick: () => onEditRoster(team.id),
+                          },
+                          {
+                            label: t('common.delete', 'Delete'),
+                            onClick: () => onDelete(team.id, team.name),
+                            variant: 'danger',
+                          },
+                        ]}
+                        ariaLabel={t('floorball.teams.actions.menu', 'Team actions menu')}
+                      />
+                    </td>
+                  </tr>
+                  {expandedTeams.has(team.id) && (
+                    <tr key={`${team.id}-expanded`} className="teams-table__expanded-row">
+                      <td colSpan={totalColumns} className="teams-table__expanded-cell">
+                        <TeamPlayersRow
+                          teamId={team.id}
+                          isExpanded={!closingTeams.has(team.id)}
+                          isClosing={closingTeams.has(team.id)}
+                          team={team}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </>
+              ))}
+            </tbody>
+          </table>
+        )}
 
         {pagination && (
           <div className="teams-pagination sticky-bottom">
@@ -285,4 +250,4 @@ const TeamsTable = ({ teams, loading, onEdit, onEditRoster, onDelete, pagination
   );
 };
 
-export default TeamsTable; 
+export default TeamsTable;

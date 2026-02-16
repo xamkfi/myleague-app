@@ -1,4 +1,5 @@
 using System;
+using Domain.Enums.Common;
 
 namespace Application.DTOs.Common;
 
@@ -7,6 +8,9 @@ namespace Application.DTOs.Common;
 /// </summary>
 public record UserDto(
     Guid Id,
-    string Username,
+    string Email,
     Guid PersonId,
-    PersonDto Person); 
+    UserRole Role,
+    bool IsActive,
+    DateTime? LastLoginAt,
+    PersonDto Person);

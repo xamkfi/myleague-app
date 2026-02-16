@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import './AdminNavBar.scss';
 import PersonsIcon from '../../assets/adminIcons/Persons.svg';
 import NewsIcon from '../../assets/adminIcons/News.svg';
@@ -16,8 +17,15 @@ import LeaguesIcon from '../../assets/adminIcons/Leagues.svg'
 function AdminNavBar() {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [floorballDropdownOpen, setFloorballDropdownOpen] = useState(true);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/admin/login', { replace: true });
+  };
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -68,6 +76,12 @@ function AdminNavBar() {
               <Link to="/admin/clubs">
                 <img src={ClubsIcon} alt="Clubs" className="icon" />
                 <span>{t('admin.actions.clubs', 'Clubs')}</span>
+              </Link>
+            </li>
+            <li className={`admin-navbar-item ${isActive('/admin/users') ? 'active' : ''}`}>
+              <Link to="/admin/users">
+                <img src={PersonsIcon} alt="Users" className="icon" />
+                <span>{t('admin.actions.users', 'System Users')}</span>
               </Link>
             </li>
           </ul>
@@ -140,11 +154,20 @@ function AdminNavBar() {
           onClick={() => setUserDropdownOpen(!userDropdownOpen)}
         >
           <div className="admin-navbar-user-info">
-            <span className="admin-navbar-user-name">MIKKO</span>
-            <span className="admin-navbar-user-role">Super Admin</span>
+            <span className="admin-navbar-user-name">
+              {user?.person?.fullName ?? user?.email ?? '—'}
+            </span>
+            <span className="admin-navbar-user-role">{user?.email ?? ''}</span>
           </div>
           <span className="admin-navbar-user-dropdown-icon">▼</span>
         </div>
+        {userDropdownOpen && (
+          <div className="admin-navbar-user-menu">
+            <button className="admin-navbar-user-menu-item" onClick={handleLogout}>
+              {t('auth.logout', 'Log out')}
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );

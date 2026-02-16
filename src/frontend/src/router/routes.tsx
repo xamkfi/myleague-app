@@ -50,30 +50,48 @@ import EditClubPage from '../pages/AdminPage/ClubPage/EditClubPage';
 import ClubDetailsPage from '../pages/AdminPage/ClubPage/ClubDetailsPage';
 import FloorballPage from '../pages/FloorballPage/FloorballPage';
 import ClubsPage from '../pages/ClubsPage/ClubsPage';
+import LoginPage from '../pages/AdminPage/LoginPage/LoginPage';
+import UsersPage from '../pages/AdminPage/UsersPage/UsersPage';
+import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
 
 export const routes: RouteObject[] = [
   {
     path: '/',
     element: <HomePage />
   },
+  // Admin login (public)
+  {
+    path: '/admin/login',
+    element: <LoginPage />
+  },
+  // Protected admin routes
   {
     path: '/admin/clubs',
     children: [
       {
         index: true,
-        element: <ClubsManagementPage />
+        element: <ProtectedRoute><ClubsManagementPage /></ProtectedRoute>
       },
       {
         path: 'create',
-        element: <CreateClubPage />
+        element: <ProtectedRoute><CreateClubPage /></ProtectedRoute>
       },
       {
         path: ':id',
-        element: <ClubDetailsPage />
+        element: <ProtectedRoute><ClubDetailsPage /></ProtectedRoute>
       },
       {
         path: ':id/edit',
-        element: <EditClubPage />
+        element: <ProtectedRoute><EditClubPage /></ProtectedRoute>
+      }
+    ]
+  },
+  {
+    path: '/admin/users',
+    children: [
+      {
+        index: true,
+        element: <ProtectedRoute><UsersPage /></ProtectedRoute>
       }
     ]
   },
@@ -135,22 +153,22 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/admin',
-    element: <AdminPage />
+    element: <ProtectedRoute><AdminPage /></ProtectedRoute>
   },
   {
     path: '/admin/persons',
     children: [
       {
         index: true,
-        element: <PersonsPage />
+        element: <ProtectedRoute><PersonsPage /></ProtectedRoute>
       },
       {
         path: 'new',
-        element: <PersonForm />
+        element: <ProtectedRoute><PersonForm /></ProtectedRoute>
       },
       {
         path: ':id/edit',
-        element: <PersonForm />
+        element: <ProtectedRoute><PersonForm /></ProtectedRoute>
       }
     ]
   },
@@ -159,15 +177,15 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <DivisionsPage />,
+        element: <ProtectedRoute><DivisionsPage /></ProtectedRoute>,
       },
       {
         path: 'create',
-        element: <DivisionFormPage />,
+        element: <ProtectedRoute><DivisionFormPage /></ProtectedRoute>,
       },
       {
         path: ':divisionId/edit',
-        element: <DivisionFormPage />,
+        element: <ProtectedRoute><DivisionFormPage /></ProtectedRoute>,
       },
     ],
   },
@@ -176,30 +194,30 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <FloorballManagementPage/>
+        element: <ProtectedRoute><FloorballManagementPage/></ProtectedRoute>
       },
       {
         path: 'teams',
         children: [
           {
             index: true,
-            element: <FloorballTeamsPage/>
+            element: <ProtectedRoute><FloorballTeamsPage/></ProtectedRoute>
           },
           {
             path: 'new',
-            element: <CreateTeamPage/>
+            element: <ProtectedRoute><CreateTeamPage/></ProtectedRoute>
           },
           {
             path: ':id/edit',
-            element: <EditTeamPage/>
+            element: <ProtectedRoute><EditTeamPage/></ProtectedRoute>
           },
           {
             path: ':id/roster',
-            element: <EditRosterPage/>
+            element: <ProtectedRoute><EditRosterPage/></ProtectedRoute>
           },
           {
             path: ':id/roster/add',
-            element: <AddPlayerToRosterPage/>
+            element: <ProtectedRoute><AddPlayerToRosterPage/></ProtectedRoute>
           }
         ]
       },
@@ -208,15 +226,15 @@ export const routes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <FloorballPlayersPage />
+            element: <ProtectedRoute><FloorballPlayersPage /></ProtectedRoute>
           },
           {
             path: 'create',
-            element: <CreatePlayerPage />
+            element: <ProtectedRoute><CreatePlayerPage /></ProtectedRoute>
           },
           {
             path: 'create-person',
-            element: <CreatePersonPage />
+            element: <ProtectedRoute><CreatePersonPage /></ProtectedRoute>
           }
         ]
       },
@@ -225,11 +243,11 @@ export const routes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <FloorballRefereesPage />
+            element: <ProtectedRoute><FloorballRefereesPage /></ProtectedRoute>
           },
           {
             path: 'create',
-            element: <CreateRefereePage />
+            element: <ProtectedRoute><CreateRefereePage /></ProtectedRoute>
           }
         ]
       },
@@ -238,29 +256,29 @@ export const routes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <FloorballSeasonsPage />
+            element: <ProtectedRoute><FloorballSeasonsPage /></ProtectedRoute>
           },
           {
             path: 'create',
-            element: <CreateSeasonPage />
+            element: <ProtectedRoute><CreateSeasonPage /></ProtectedRoute>
           },
           {
             path: ':seasonId/edit',
-            element: <EditSeasonPage />
+            element: <ProtectedRoute><EditSeasonPage /></ProtectedRoute>
           }
         ]
       },
       {
         path: 'matches',
         children: [
-          { index: true, element: <MatchOverviewPage /> },
-          { path: 'create', element: <CreateMatchPage /> },
-          { path: ':matchId/edit', element: <EditMatchPage /> },
-          { path: 'completed', element: <CompletedMatchesPage /> },
-          { path: 'scheduled', element: <ScheduledMatchesPage /> },
-          { path: 'in-progress', element: <InProgressMatchesPage /> },
-          { path: 'cancelled', element: <CancelledMatchesPage /> },
-          { path: 'manage/:matchId', element: <ManageMatchPage /> }
+          { index: true, element: <ProtectedRoute><MatchOverviewPage /></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><CreateMatchPage /></ProtectedRoute> },
+          { path: ':matchId/edit', element: <ProtectedRoute><EditMatchPage /></ProtectedRoute> },
+          { path: 'completed', element: <ProtectedRoute><CompletedMatchesPage /></ProtectedRoute> },
+          { path: 'scheduled', element: <ProtectedRoute><ScheduledMatchesPage /></ProtectedRoute> },
+          { path: 'in-progress', element: <ProtectedRoute><InProgressMatchesPage /></ProtectedRoute> },
+          { path: 'cancelled', element: <ProtectedRoute><CancelledMatchesPage /></ProtectedRoute> },
+          { path: 'manage/:matchId', element: <ProtectedRoute><ManageMatchPage /></ProtectedRoute> }
         ]
       }
     ]
@@ -278,15 +296,15 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <NewsManagementPage />
+        element: <ProtectedRoute><NewsManagementPage /></ProtectedRoute>
       },
       {
         path: 'create',
-        element: <NewsCreateEditPage />
+        element: <ProtectedRoute><NewsCreateEditPage /></ProtectedRoute>
       },
       {
         path: 'edit/:id',
-        element: <NewsCreateEditPage />
+        element: <ProtectedRoute><NewsCreateEditPage /></ProtectedRoute>
       }
     ]
   },
@@ -298,4 +316,4 @@ export const routes: RouteObject[] = [
     path: '/league/:id',
     element: <LeaguePage/>
   }
-]; 
+];

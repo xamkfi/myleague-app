@@ -21,11 +21,11 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
             <div className="summary-content">
               <div className="match-info">
                 {match.venue && (
-                  <p>📍 {t('matchPage.matchInfo.venue')}: {match.venue}</p>
+                  <p>{t('matchPage.matchInfo.venue')}: {match.venue}</p>
                 )}
                 <p>{t('matchPage.matchInfo.status')}: {t(`floorball.matches.status.${match.status}`)}</p>
-                {match.wentToOvertime && <p>⏱️ {t('matchPage.matchInfo.overtime')}</p>}
-                {match.wentToShootout && <p>🥅 {t('matchPage.matchInfo.shootout')}</p>}
+                {match.wentToOvertime && <p>{t('matchPage.matchInfo.overtime')}</p>}
+                {match.wentToShootout && <p>{t('matchPage.matchInfo.shootout')}</p>}
               </div>
               
               <MatchEvents match={match} />

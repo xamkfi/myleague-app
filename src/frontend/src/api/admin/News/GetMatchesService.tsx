@@ -1,3 +1,4 @@
+import { authFetch } from '../../utils/authFetch';
 import { API_URL } from '../../../constants/config';
 
 interface FloorballMatch {
@@ -69,7 +70,7 @@ export const getMatchesService = {
     if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
 
     const url = `${API_URL}/FloorballMatch${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-    const response = await fetch(url);
+    const response = await authFetch(url);
     
     if (!response.ok) {
       throw new Error('Failed to fetch matches');
@@ -84,7 +85,7 @@ export const getMatchesService = {
   },
 
   getById: async (id: string): Promise<FloorballMatch> => {
-    const response = await fetch(`${API_URL}/FloorballMatch/${id}`);
+    const response = await authFetch(`${API_URL}/FloorballMatch/${id}`);
     if (!response.ok) {
       throw new Error('Failed to fetch match');
     }
@@ -96,7 +97,7 @@ export const getMatchesService = {
   },
 
   create: async (data: Omit<FloorballMatch, 'id'>): Promise<FloorballMatch> => {
-    const response = await fetch(`${API_URL}/FloorballMatch`, {
+    const response = await authFetch(`${API_URL}/FloorballMatch`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -114,7 +115,7 @@ export const getMatchesService = {
   },
 
   update: async (id: string, data: Partial<FloorballMatch>): Promise<FloorballMatch> => {
-    const response = await fetch(`${API_URL}/FloorballMatch/${id}`, {
+    const response = await authFetch(`${API_URL}/FloorballMatch/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -132,7 +133,7 @@ export const getMatchesService = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/FloorballMatch/${id}`, {
+    const response = await authFetch(`${API_URL}/FloorballMatch/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {

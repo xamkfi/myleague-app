@@ -130,7 +130,61 @@
       "floorball": "Salibandy",
       "manageFloorball": "Hallitse salibandya",
       "clubs": "Seurat",
-      "manageClubs": "Hallitse seuroja"
+      "manageClubs": "Hallitse seuroja",
+      "users": "Järjestelmäkäyttäjät",
+      "manageUsers": "Hallitse järjestelmäkäyttäjiä"
+    },
+    "users": {
+      "title": "Järjestelmäkäyttäjät",
+      "subtitle": "Luo, muokkaa tai poista järjestelmän käyttäjätilejä.",
+      "searchPlaceholder": "Hae nimellä tai sähköpostilla...",
+      "addUser": "Lisää käyttäjä",
+      "noData": "Järjestelmäkäyttäjiä ei löytynyt.",
+      "noSearchResults": "Yksikään käyttäjä ei vastaa hakuasi.",
+      "table": {
+        "person": "Henkilö",
+        "email": "Sähköposti",
+        "role": "Rooli",
+        "status": "Tila",
+        "lastLogin": "Viimeisin kirjautuminen",
+        "never": "Ei koskaan"
+      },
+      "form": {
+        "createTitle": "Lisää käyttäjä",
+        "editTitle": "Muokkaa käyttäjää",
+        "email": "Sähköposti",
+        "emailPlaceholder": "käyttäjä@esimerkki.fi",
+        "emailRequired": "Sähköposti on pakollinen",
+        "emailInvalid": "Virheellinen sähköpostiosoite",
+        "selectPerson": "Henkilö",
+        "searchPerson": "Hae henkilöitä...",
+        "noPerson": "Vapaita henkilöitä ei löytynyt",
+        "personRequired": "Henkilö on pakollinen",
+        "role": "Rooli",
+        "hasAccount": "Käyttäjätili on jo olemassa",
+        "save": "Tallenna",
+        "saving": "Tallennetaan..."
+      },
+      "roles": {
+        "systemAdmin": "Järjestelmänvalvoja",
+        "clubAdmin": "Seuran ylläpitäjä"
+      },
+      "confirmDelete": {
+        "title": "Poista käyttäjä",
+        "message": "Haluatko varmasti poistaa käyttäjän \"{{userName}}\"? Tätä toimintoa ei voi kumota.",
+        "warning": "Henkilötietoja ei poisteta, ainoastaan käyttäjätili."
+      },
+      "errors": {
+        "load": "Käyttäjien lataaminen epäonnistui. Yritä uudelleen.",
+        "create": "Käyttäjän luominen epäonnistui. Yritä uudelleen.",
+        "update": "Käyttäjän päivittäminen epäonnistui. Yritä uudelleen.",
+        "delete": "Käyttäjän poistaminen epäonnistui. Yritä uudelleen."
+      },
+      "success": {
+        "create": "Käyttäjä luotu onnistuneesti.",
+        "update": "Käyttäjä päivitetty onnistuneesti.",
+        "delete": "Käyttäjä poistettu onnistuneesti."
+      }
     },
     "divisions": {
       "title": "Sarjojen hallinta",
@@ -924,21 +978,42 @@
     "defaultTitle": "Sarja",
     "tabs": {
       "summary": "Yhteenveto",
-      "standings": "Sarjataulukko",
+      "statistics": "Tilastot",
       "results": "Tulokset",
       "fixtures": "Otteluohjelma"
     },
     "summary": {
       "title": "Sarjan Yhteenveto",
       "leagueInformation": "Sarjan Tiedot",
-      "season": "Kausi:",
-      "teams": "Joukkueet:",
-      "matchesPlayed": "Pelatut ottelut:",
-      "goalsScored": "Tehdyt maalit:",
-      "avgGoalsPerGame": "Keskim. maalit/ottelu:",
+      "season": "Kausi",
+      "teams": "Joukkueet",
+      "matchesPlayed": "Pelatut ottelut",
+      "goalsScored": "Tehdyt maalit",
+      "avgGoalsPerGame": "Keskim. maalit/ottelu",
       "loading": "Ladataan yhteenvetoa...",
       "error": "Virhe: {{error}}",
-      "noData": "Tietoja ei saatavilla"
+      "noData": "Tietoja ei saatavilla",
+      "standingsPreview": "Sarjataulukko",
+      "viewFullStandings": "Katso koko taulukko"
+    },
+    "standings": {
+      "title": "Sarjataulukko",
+      "standings": "Sarjataulukko",
+      "topScorers": "Parhaat maalintekijät",
+      "topAssists": "Parhaat syöttäjät",
+      "emptyStandings": "Sarjataulukko ei ole vielä saatavilla",
+      "emptyStandingsDesc": "Sarjataulukko ilmestyy tähän, kun tietoja on saatavilla.",
+      "emptyScorers": "Maalintekijätilasto ei ole vielä saatavilla",
+      "emptyScorersDesc": "Pelaajien maalitilasto ilmestyy tähän, kun tietoja on saatavilla.",
+      "emptyAssists": "Syöttäjätilasto ei ole vielä saatavilla",
+      "emptyAssistsDesc": "Pelaajien syöttötilasto ilmestyy tähän, kun tietoja on saatavilla.",
+      "topGoalies": "Maalivahdit",
+      "emptyGoalies": "Maalivahtitilasto ei ole vielä saatavilla",
+      "emptyGoaliesDesc": "Maalivahtien tilasto ilmestyy tähän, kun tietoja on saatavilla.",
+      "goalieHeaders": {
+        "player": "PELAAJA",
+        "team": "JOUKKUE"
+      }
     },
     "errors": {
       "loadLeagueData": "Sarjan tietojen lataus epäonnistui",
@@ -954,5 +1029,22 @@
     "loading": "Ladataan seuroja...",
     "error": "Seurojen lataus epäonnistui",
     "totalClubs": "{{count}} seuraa"
+  },
+  "auth": {
+    "loginTitle": "Ylläpito - Kirjautuminen",
+    "loginSubtitle": "Syötä sähköpostiosoitteesi saadaksesi kirjautumiskoodin.",
+    "enterCode": "Syötä sähköpostiisi lähetetty 6-numeroinen koodi.",
+    "emailLabel": "Sähköposti",
+    "emailPlaceholder": "nimi@sähköposti.fi",
+    "sendCode": "Lähetä koodi",
+    "sending": "Lähetetään...",
+    "codeLabel": "Kirjautumiskoodi",
+    "codePlaceholder": "000000",
+    "verify": "Vahvista",
+    "verifying": "Vahvistetaan...",
+    "back": "Takaisin",
+    "codeSent": "Kirjautumiskoodi on lähetetty sähköpostiisi.",
+    "unexpectedError": "Odottamaton virhe tapahtui.",
+    "logout": "Kirjaudu ulos"
   }
 } 

@@ -6,6 +6,7 @@ import type {
   UpdateFloorballMatchRequest,
   GetFloorballMatchesRequest
 } from '../../types/floorball/floorballTypes';
+import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 
@@ -29,7 +30,7 @@ export const floorballMatchService = {
       const url = `${API_URL}/FloorballMatch?${searchParams.toString()}`;
       console.log('Fetching matches from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       const apiResponse: PaginatedApiResponse<FloorballMatchDto> = await response.json();
       
       if (!response.ok) {
@@ -56,7 +57,7 @@ export const floorballMatchService = {
   deleteGoal: async (matchId: string, goalEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     const url = `${API_URL}/FloorballMatch/${matchId}/goal/${goalEventId}`;
     console.log('DELETE goal URL:', url);
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'DELETE'
     });
 
@@ -75,7 +76,7 @@ export const floorballMatchService = {
   deletePenalty: async (matchId: string, penaltyEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     const url = `${API_URL}/FloorballMatch/${matchId}/penalty/${penaltyEventId}`;
     console.log('DELETE penalty URL:', url);
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'DELETE'
     });
     const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
@@ -92,7 +93,7 @@ export const floorballMatchService = {
   deleteSave: async (matchId: string, saveEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     const url = `${API_URL}/FloorballMatch/${matchId}/save/${saveEventId}`;
     console.log('DELETE save URL:', url);
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'DELETE'
     });
 
@@ -113,7 +114,7 @@ export const floorballMatchService = {
       const url = `${API_URL}/FloorballMatch/by-seasonId/${seasonId}`;
       console.log('Fetching matches by season from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       
       if (!response.ok) {
@@ -141,7 +142,7 @@ export const floorballMatchService = {
       const url = `${API_URL}/FloorballMatch/by-team/${teamId}`;
       console.log('Fetching matches by team from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       
       if (!response.ok) {
@@ -169,7 +170,7 @@ export const floorballMatchService = {
       const url = `${API_URL}/FloorballMatch/by-team/${teamId}/today`;
       console.log('Fetching today\'s matches by team from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       if (!response.ok) {
@@ -197,7 +198,7 @@ export const floorballMatchService = {
       const url = `${API_URL}/FloorballMatch/by-id/${id}`;
       console.log('Fetching match from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!response.ok) {
@@ -224,7 +225,7 @@ export const floorballMatchService = {
     try {
       console.log('Creating match:', data);
       
-      const response = await fetch(`${API_URL}/FloorballMatch`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,7 +262,7 @@ export const floorballMatchService = {
     try {
       console.log('Updating match:', data);
       
-      const response = await fetch(`${API_URL}/FloorballMatch`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -294,7 +295,7 @@ export const floorballMatchService = {
     try {
       console.log('Starting match with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballMatch/start-match/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/start-match/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -326,7 +327,7 @@ export const floorballMatchService = {
     try {
       console.log('Completing match with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballMatch/complete-match/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/complete-match/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -359,7 +360,7 @@ export const floorballMatchService = {
     try {
       console.log('Changing season for match with ID:', id, 'to season:', seasonId);
       
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/season`, {
+      const response = await authFetch(`${API_URL}/FloorballMatchEvent/match/${id}/season`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -392,7 +393,7 @@ export const floorballMatchService = {
     try {
       console.log('Changing teams for match with ID:', id, 'home:', homeTeamId, 'away:', awayTeamId);
       
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/teams`, {
+      const response = await authFetch(`${API_URL}/FloorballMatchEvent/match/${id}/teams`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -425,11 +426,11 @@ export const floorballMatchService = {
     try {
       console.log('Changing venue for match with ID:', id, 'to venue:', venue);
       // Fetch current match to preserve scheduledDateTime
-      const current = await (await fetch(`${API_URL}/FloorballMatch/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
+      const current = await (await authFetch(`${API_URL}/FloorballMatch/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
       if (!current.success || !current.data) {
         throw new Error(current.errors?.join(', ') || 'Failed to fetch current match');
       }
-      const response = await fetch(`${API_URL}/FloorballMatch`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -462,11 +463,11 @@ export const floorballMatchService = {
     try {
       console.log('Changing date/time for match with ID:', id, 'to:', scheduledDateTime);
       // Fetch current match to preserve venue
-      const current = await (await fetch(`${API_URL}/FloorballMatch/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
+      const current = await (await authFetch(`${API_URL}/FloorballMatch/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
       if (!current.success || !current.data) {
         throw new Error(current.errors?.join(', ') || 'Failed to fetch current match');
       }
-      const response = await fetch(`${API_URL}/FloorballMatch`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -497,7 +498,7 @@ export const floorballMatchService = {
    */
   changeGoalie: async (matchId: string, teamId: string, goalieId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/team/${teamId}/goalie/${goalieId}`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/team/${teamId}/goalie/${goalieId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -525,7 +526,7 @@ export const floorballMatchService = {
    */
   changeReferee: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/referee/${refereeId}`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/referee/${refereeId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -554,7 +555,7 @@ export const floorballMatchService = {
    */
   updateOfficials: async (matchId: string, officials: string[]): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/officials`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -584,7 +585,7 @@ export const floorballMatchService = {
    */
   addOfficial: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/officials`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -614,7 +615,7 @@ export const floorballMatchService = {
    */
   deleteOfficial: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials/${refereeId}`, {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/officials/${refereeId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

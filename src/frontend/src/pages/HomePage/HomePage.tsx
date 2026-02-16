@@ -1,43 +1,54 @@
 import { useState, useEffect } from 'react';
 import HomeNewsSection from '../../components/HomeNewsSection/HomeNewsSection';
-import MainNewsCard from '../../components/MainNewsCard/MainNewsCard';
+import NewsHeroCarousel from '../../components/NewsHeroCarousel/NewsHeroCarousel';
 import MatchSidebar from '../../components/MatchSidebar/MatchSidebar';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import { getMainNewsArticle, type NewsArticleDto } from '../../api/news/newsService';
+import { newsService, type NewsArticleDto, type PaginatedNewsResponse } from '../../api/news/newsService';
 import './HomePage.scss';
 
 function HomePage() {
-  const [mainNews, setMainNews] = useState<NewsArticleDto | null>(null);
-  const [isLoadingMainNews, setIsLoadingMainNews] = useState(true);
+  const [heroNews, setHeroNews] = useState<NewsArticleDto[]>([]);
+  const [isLoadingHeroNews, setIsLoadingHeroNews] = useState(true);
 
   useEffect(() => {
-    const fetchMainNews = async () => {
+    const fetchHeroNews = async () => {
       try {
-        const news = await getMainNewsArticle();
-        setMainNews(news);
+        const response = await newsService({
+          page: 1,
+          pageSize: 5,
+          includeArchived: false,
+        });
+
+        if (response && typeof response === 'object' && 'pagination' in response) {
+          const paginatedResponse = response as PaginatedNewsResponse;
+          setHeroNews(paginatedResponse.data);
+        } else {
+          const oldResponse = response as NewsArticleDto[];
+          setHeroNews(oldResponse.slice(0, 5));
+        }
       } catch (error) {
-        console.error('Failed to fetch main news:', error);
+        console.error('Failed to fetch hero news:', error);
       } finally {
-        setIsLoadingMainNews(false);
+        setIsLoadingHeroNews(false);
       }
     };
 
-    fetchMainNews();
+    fetchHeroNews();
   }, []);
 
   return (
     <div className="home-page-wrapper">
       <PageTemplate title="Home">
         <div className="home-page">
-          {/* Main News Hero Section */}
-          {!isLoadingMainNews && mainNews && (
+          {/* Main News Hero Carousel */}
+          {!isLoadingHeroNews && heroNews.length > 0 && (
             <div className="hero-news-container">
-              <MainNewsCard news={mainNews} />
+              <NewsHeroCarousel newsArticles={heroNews} />
             </div>
           )}
 
-          {/* Loading skeleton for main news */}
-          {isLoadingMainNews && (
+          {/* Loading skeleton for hero news */}
+          {isLoadingHeroNews && (
             <div className="hero-news-container hero-news-container--loading">
               <div className="main-news-skeleton">
                 <div className="skeleton-image" />

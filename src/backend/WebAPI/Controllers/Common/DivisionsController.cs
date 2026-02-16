@@ -1,5 +1,6 @@
 using System;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.Commands.Common;
 using Application.Queries.Common;
@@ -128,6 +129,7 @@ public class DivisionsController : ControllerBase
     /// <param name="request">Division creation request</param>
     /// <returns>Created division details</returns>
     [HttpPost]
+    [Authorize]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status500InternalServerError)]
@@ -173,6 +175,7 @@ public class DivisionsController : ControllerBase
     /// <param name="request">Division update request</param>
     /// <returns>Updated division details</returns>
     [HttpPut("{id:guid}")]
+    [Authorize]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status404NotFound)]
@@ -212,6 +215,7 @@ public class DivisionsController : ControllerBase
     /// <param name="id">Division ID</param>
     /// <returns>Success confirmation</returns>
     [HttpPatch("{id:guid}/activate")]
+    [Authorize]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -244,6 +248,7 @@ public class DivisionsController : ControllerBase
     /// <param name="id">Division ID</param>
     /// <returns>Success confirmation</returns>
     [HttpPatch("{id:guid}/deactivate")]
+    [Authorize]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -276,6 +281,7 @@ public class DivisionsController : ControllerBase
     /// <param name="id">Division ID</param>
     /// <returns>Success confirmation</returns>
     [HttpDelete("{id:guid}")]
+    [Authorize]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]

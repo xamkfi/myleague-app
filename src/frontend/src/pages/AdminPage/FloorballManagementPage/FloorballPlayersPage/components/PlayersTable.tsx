@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import CheckIcon from '../../../../../assets/basicIcons/check.svg';
 import CloseIcon from '../../../../../assets/basicIcons/close.svg';
-import PlayerActionsDropdown from './PlayerActionsDropdown';
+import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
 
 interface PlayersTableProps {
   players: FloorballPlayerDto[];
@@ -23,10 +23,10 @@ const PlayersTable = ({ players, onDelete, onStatusChange, onAssignToTeam, selec
   }
 
   return (
-    <table className="players-table">
+    <table className="admin-table">
       <thead>
-        <tr className="players-table-header">
-          <th className="select-column">
+        <tr>
+          <th className="admin-table__checkbox-col">
             <input
               type="checkbox"
               checked={players.length > 0 && players.every(player => selectedPlayers.has(player.id))}
@@ -40,21 +40,21 @@ const PlayersTable = ({ players, onDelete, onStatusChange, onAssignToTeam, selec
               title={t('floorball.players.selectAll', 'Select all players')}
             />
           </th>
-          <th className="name-column">{t('floorball.players.table.name', 'Name')}</th>
-          <th className="team-column">{t('floorball.players.table.team', 'Team')}</th>
-          <th className="position-column">{t('floorball.players.table.position', 'Position')}</th>
-          <th className="status-column">{t('floorball.players.table.status', 'Status')}</th>
-          <th className="actions-column">{t('floorball.players.table.actions', 'Actions')}</th>
+          <th>{t('floorball.players.table.name', 'Name')}</th>
+          <th>{t('floorball.players.table.team', 'Team')}</th>
+          <th>{t('floorball.players.table.position', 'Position')}</th>
+          <th>{t('floorball.players.table.status', 'Status')}</th>
+          <th className="admin-table__actions-col">{t('floorball.players.table.actions', 'Actions')}</th>
         </tr>
       </thead>
       <tbody>
         {players.map((player) => (
-          <tr 
-          key={player.id}
-          className={`clickable-row${selectedPlayers.has(player.id) ? ' selected' : ''}`}
-          onClick={() => onToggleSelection(player.id)}
+          <tr
+            key={player.id}
+            className={`admin-table__row--clickable${selectedPlayers.has(player.id) ? ' admin-table__row--selected' : ''}`}
+            onClick={() => onToggleSelection(player.id)}
           >
-            <td className="select-column">
+            <td className="admin-table__checkbox-col">
               <input
                 type="checkbox"
                 checked={selectedPlayers.has(player.id)}
@@ -62,18 +62,18 @@ const PlayersTable = ({ players, onDelete, onStatusChange, onAssignToTeam, selec
                 onClick={(e) => e.stopPropagation()}
               />
             </td>
-            <td className="name-column">
-                {player.person.fullName || `${player.person.firstName} ${player.person.lastName}`}
-              </td>
-            <td className="team-column">
+            <td className="admin-table__name">
+              {player.person.fullName || `${player.person.firstName} ${player.person.lastName}`}
+            </td>
+            <td>
               {player.team?.name || 'Not assigned'}
             </td>
-            <td className="position-column">
+            <td>
               {player.position ? t(`floorball.positions.${player.position.toLowerCase()}`, player.position) : 'None'}
             </td>
             <td>
-              <span 
-                className={`status-badge ${player.isActive ? 'active' : 'inactive'}`}
+              <span
+                className={`admin-badge ${player.isActive ? 'admin-badge--active' : 'admin-badge--inactive'}`}
                 aria-label={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
                 title={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
               >
@@ -84,13 +84,28 @@ const PlayersTable = ({ players, onDelete, onStatusChange, onAssignToTeam, selec
                 />
               </span>
             </td>
-            <td className="actions-column">
-                <PlayerActionsDropdown
-                  player={player}
-                  onDelete={onDelete}
-                  onStatusChange={onStatusChange}
-                  onAssignToTeam={onAssignToTeam}
-                />
+            <td className="admin-table__actions-col">
+              <ActionsDropdown
+                actions={[
+                  {
+                    label: t('floorball.teams.assignPlayerToTeam', 'Assign to Team'),
+                    onClick: () => onAssignToTeam(player.id),
+                  },
+                  {
+                    label: player.isActive
+                      ? t('floorball.players.actions.deactivate', 'Deactivate Player')
+                      : t('floorball.players.actions.activate', 'Activate Player'),
+                    onClick: () => onStatusChange(player.id, !player.isActive),
+                    variant: 'status',
+                  },
+                  {
+                    label: t('common.delete', 'Delete'),
+                    onClick: () => onDelete(player.id),
+                    variant: 'danger',
+                  },
+                ]}
+                ariaLabel={t('floorball.players.actions.menu', 'Player actions menu')}
+              />
             </td>
           </tr>
         ))}

@@ -1,5 +1,6 @@
 import { VITE_API_URL } from "../../constants/config";
 import { parseErrorResponse } from "../utils/ParseErrorResponse";
+import { authFetch } from '../utils/authFetch';
 
 export interface Club {
   id: string;
@@ -36,7 +37,7 @@ export const clubService = {
     let hasMorePages = true;
 
     while (hasMorePages) {
-      const response = await fetch(`${VITE_API_URL}/Clubs?page=${currentPage}&pageSize=${pageSize}`);
+      const response = await authFetch(`${VITE_API_URL}/Clubs?page=${currentPage}&pageSize=${pageSize}`);
       const data = await response.json();
       
       if (!response.ok) {
@@ -91,7 +92,7 @@ export const clubService = {
     const params = new URLSearchParams();
     params.append('page', String(page));
     params.append('pageSize', String(pageSize));
-    const response = await fetch(`${VITE_API_URL}/Clubs?${params.toString()}`);
+    const response = await authFetch(`${VITE_API_URL}/Clubs?${params.toString()}`);
     const data = await response.json();
     if (!response.ok || !data?.success) {
       const errorMessage = await parseErrorResponse(data, 'Failed to fetch clubs');
@@ -101,7 +102,7 @@ export const clubService = {
   },
 
   getById: async (id: string): Promise<Club> => {
-    const response = await fetch(`${VITE_API_URL}/Clubs/${id}`);
+    const response = await authFetch(`${VITE_API_URL}/Clubs/${id}`);
     const data = await response.json();
     if (!response.ok || !data?.success) {
       const errorMessage = await parseErrorResponse(data, 'Failed to fetch club');
@@ -111,7 +112,7 @@ export const clubService = {
   },
 
   create: async (payload: ClubRequest): Promise<Club> => {
-    const response = await fetch(`${VITE_API_URL}/Clubs`, {
+    const response = await authFetch(`${VITE_API_URL}/Clubs`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -127,7 +128,7 @@ export const clubService = {
   },
 
   update: async (id: string, payload: ClubRequest): Promise<Club> => {
-    const response = await fetch(`${VITE_API_URL}/Clubs/${id}`, {
+    const response = await authFetch(`${VITE_API_URL}/Clubs/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -143,7 +144,7 @@ export const clubService = {
   },
 
   remove: async (id: string): Promise<void> => {
-    const response = await fetch(`${VITE_API_URL}/Clubs/${id}`, {
+    const response = await authFetch(`${VITE_API_URL}/Clubs/${id}`, {
       method: 'DELETE'
     });
     const data = await response.json();
@@ -156,7 +157,7 @@ export const clubService = {
   searchByName: async (name: string): Promise<Club[]> => {
     const params = new URLSearchParams();
     params.append('name', name);
-    const response = await fetch(`${VITE_API_URL}/Clubs/search?${params.toString()}`);
+    const response = await authFetch(`${VITE_API_URL}/Clubs/search?${params.toString()}`);
     const data = await response.json();
     if (!response.ok || !data?.success) {
       // Handle 404 as empty results, not an error

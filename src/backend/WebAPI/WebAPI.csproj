@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5">
       <PrivateAssets>all</PrivateAssets>
@@ -39,4 +40,22 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
-</Project> 
+  <!-- Auto-generate version as yyyy-MM-dd.{git-short-sha} at build time.
+       GitCommitHash can be passed from outside (e.g. Docker ARG / -p:GitCommitHash=abc1234).
+       Falls back to "unknown" when git is unavailable (e.g. inside Docker). -->
+  <Target Name="SetBuildVersion" BeforeTargets="GetAssemblyVersion;GenerateNuspec">
+    <Exec Command="git rev-parse --short HEAD"
+          ConsoleToMsBuild="true"
+          StandardOutputImportance="low"
+          IgnoreExitCode="true"
+          Condition="'$(GitCommitHash)' == ''">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+      <Output TaskParameter="ExitCode" PropertyName="GitExitCode" />
+    </Exec>
+    <PropertyGroup>
+      <GitCommitHash Condition="'$(GitExitCode)' != '0' Or '$(GitCommitHash)' == ''">unknown</GitCommitHash>
+      <InformationalVersion>$([System.DateTime]::UtcNow.ToString("yyyy-MM-dd")).$(GitCommitHash)</InformationalVersion>
+    </PropertyGroup>
+  </Target>
+
+</Project>

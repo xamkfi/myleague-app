@@ -1,3 +1,4 @@
+import { authFetch } from '../../utils/authFetch';
 import { API_URL } from '../../../constants/config';
 
 interface ApiResponse<T> {
@@ -11,7 +12,7 @@ export async function handleImageDeleteService(imageUrl: string) {
 
   console.log("Deleting image:", imageUrl);
   try {
-    const response = await fetch(`${API_URL}/News/delete-image?url=${encodeURIComponent(imageUrl)}`, {
+    const response = await authFetch(`${API_URL}/News/delete-image?url=${encodeURIComponent(imageUrl)}`, {
       method: "DELETE",
     });
 

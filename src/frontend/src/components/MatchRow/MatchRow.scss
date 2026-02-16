@@ -16,8 +16,8 @@
   transition:
     background-color 0.25s ease,
     box-shadow 0.25s ease,
-    transform 0.25s ease;
-    border: 0.25s ease;
+    transform 0.25s ease,
+    border 0.25s ease;
 
     &:hover {
       cursor: pointer;
@@ -90,6 +90,11 @@
   }
 }
 
+// Winner highlight for team names
+.match-row-winner {
+  font-weight: map.get($font-weights, "bold");
+}
+
 .match-row-total-score-container {
   display: flex;
   flex-direction: column;
@@ -107,6 +112,11 @@
   grid-area: awayScore;
 }
 
+// Winner score highlight
+.match-row-score-winner {
+  color: $color-blue-deep;
+}
+
 .match-row-period-score-container {
   display: flex;
   flex-direction: row;
@@ -119,6 +129,15 @@
   flex-direction: column;
   align-items: center;
   margin: 0 map.get($spacing, "xs");
+}
+
+.match-row-period-header {
+  font-size: map.get($font-sizes, "xs");
+  font-weight: map.get($font-weights, "semibold");
+  color: $color-neutral-dark-grey;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 1px;
 }
 
 .match-row-home-period-score {
@@ -166,10 +185,14 @@
     gap: map.get($spacing, "md");
   }
 
+  .match-row-period-score-container {
+    display: none;
+  }
+
   .match-row-status {
     grid-area: status;
     border-left: none;
     border-top: 1px solid $color-neutral-medium-grey;
     padding-top: map.get($spacing, "xs");
   }
-} 
+}

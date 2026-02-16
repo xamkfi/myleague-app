@@ -130,7 +130,61 @@
       "floorball": "Floorball",
       "manageFloorball": "Manage floorball",
       "clubs": "Clubs",
-      "manageClubs": "Manage clubs"
+      "manageClubs": "Manage clubs",
+      "users": "System Users",
+      "manageUsers": "Manage system users"
+    },
+    "users": {
+      "title": "System Users",
+      "subtitle": "Create, edit or remove system user accounts.",
+      "searchPlaceholder": "Search by name or email...",
+      "addUser": "Add User",
+      "noData": "No system users found yet.",
+      "noSearchResults": "No users match your filters.",
+      "table": {
+        "person": "Person",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "lastLogin": "Last Login",
+        "never": "Never"
+      },
+      "form": {
+        "createTitle": "Add User",
+        "editTitle": "Edit User",
+        "email": "Email",
+        "emailPlaceholder": "user@example.com",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email format",
+        "selectPerson": "Person",
+        "searchPerson": "Search persons...",
+        "noPerson": "No available persons found",
+        "personRequired": "Person is required",
+        "role": "Role",
+        "hasAccount": "Already has an account",
+        "save": "Save",
+        "saving": "Saving..."
+      },
+      "roles": {
+        "systemAdmin": "System Admin",
+        "clubAdmin": "Club Admin"
+      },
+      "confirmDelete": {
+        "title": "Delete user",
+        "message": "Are you sure you want to delete user \"{{userName}}\"? This action cannot be undone.",
+        "warning": "The person record will not be deleted, only the user account."
+      },
+      "errors": {
+        "load": "Failed to load users. Please try again.",
+        "create": "Failed to create user. Please try again.",
+        "update": "Failed to update user. Please try again.",
+        "delete": "Failed to delete user. Please try again."
+      },
+      "success": {
+        "create": "User created successfully.",
+        "update": "User updated successfully.",
+        "delete": "User deleted successfully."
+      }
     },
     "divisions": {
       "title": "Manage Divisions",
@@ -951,21 +1005,42 @@
     "defaultTitle": "League",
     "tabs": {
       "summary": "Summary",
-      "standings": "Standings",
+      "statistics": "Statistics",
       "results": "Results",
       "fixtures": "Fixtures"
     },
     "summary": {
       "title": "League Summary",
       "leagueInformation": "League Information",
-      "season": "Season:",
-      "teams": "Teams:",
-      "matchesPlayed": "Matches Played:",
-      "goalsScored": "Goals Scored:",
-      "avgGoalsPerGame": "Avg Goals/Game:",
+      "season": "Season",
+      "teams": "Teams",
+      "matchesPlayed": "Matches Played",
+      "goalsScored": "Goals Scored",
+      "avgGoalsPerGame": "Avg Goals/Game",
       "loading": "Loading summary...",
       "error": "Error: {{error}}",
-      "noData": "No data available"
+      "noData": "No data available",
+      "standingsPreview": "Standings",
+      "viewFullStandings": "View Full Standings"
+    },
+    "standings": {
+      "title": "Standings",
+      "standings": "Standings",
+      "topScorers": "Top Scorers",
+      "topAssists": "Top Assists",
+      "emptyStandings": "Standings not available",
+      "emptyStandingsDesc": "League standings will appear here once data is available.",
+      "emptyScorers": "Top scorers not available",
+      "emptyScorersDesc": "Player scoring leaders will appear here once data is available.",
+      "emptyAssists": "Top assists not available",
+      "emptyAssistsDesc": "Player assist leaders will appear here once data is available.",
+      "topGoalies": "Goalies",
+      "emptyGoalies": "Goalie statistics not available",
+      "emptyGoaliesDesc": "Goalie statistics will appear here once data is available.",
+      "goalieHeaders": {
+        "player": "PLAYER",
+        "team": "TEAM"
+      }
     },
     "errors": {
       "loadLeagueData": "Failed to load league data",
@@ -1007,5 +1082,22 @@
     "loading": "Loading clubs...",
     "error": "Failed to load clubs",
     "totalClubs": "{{count}} clubs"
+  },
+  "auth": {
+    "loginTitle": "Admin Login",
+    "loginSubtitle": "Enter your email to receive a login code.",
+    "enterCode": "Enter the 6-digit code sent to your email.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "your@email.com",
+    "sendCode": "Send Code",
+    "sending": "Sending...",
+    "codeLabel": "Login Code",
+    "codePlaceholder": "000000",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "back": "Back",
+    "codeSent": "A login code has been sent to your email.",
+    "unexpectedError": "An unexpected error occurred.",
+    "logout": "Log out"
   }
 }

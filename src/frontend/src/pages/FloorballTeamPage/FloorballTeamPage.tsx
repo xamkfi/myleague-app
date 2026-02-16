@@ -227,7 +227,6 @@ function FloorballTeamPage() {
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
-    console.log('Active tab changed to:', tabId);
     
     // Fetch data for stats/standings tabs only when first accessed
     if ((tabId === 'stats' || tabId === 'standings') && !fetchedTabs.has(tabId)) {
@@ -382,13 +381,44 @@ function FloorballTeamPage() {
                 <div className="team-info-container">
                   <h1>{team.name}</h1>
                   <div className="team-meta">
-                    <span className="division-badge">
-                      {division?.name ? division.name : "Unknown"}
-                    </span>
+                    {division?.name && (
+                      <span className="division-badge">
+                        {division.name}
+                      </span>
+                    )}
                     <span className="club-badge">
                       {team.club.name}
                     </span>
-                    <span className="arena">{team.homeArena}</span>
+                    {team.homeArena && team.homeArena !== 'TBD' && (
+                      <span className="arena">🏟️ {team.homeArena}</span>
+                    )}
+                    {team.teamCategory && (
+                      <span className="category-badge">
+                        {team.teamCategory}
+                      </span>
+                    )}
+                  </div>
+                  {/* Jersey colors & roster info */}
+                  <div className="team-extra-info">
+                    <div className="jersey-colors">
+                      <span
+                        className="jersey-swatch"
+                        style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
+                        title={`Primary: ${team.primaryJerseyColor}`}
+                      />
+                      {team.secondaryJerseyColor && (
+                        <span
+                          className="jersey-swatch"
+                          style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
+                          title={`Secondary: ${team.secondaryJerseyColor}`}
+                        />
+                      )}
+                    </div>
+                    {team.hasActiveMembers && team.roster.length > 0 && (
+                      <span className="roster-count">
+                        👥 {team.roster.filter(p => p.isActive).length} players
+                      </span>
+                    )}
                   </div>
                 </div>
                   

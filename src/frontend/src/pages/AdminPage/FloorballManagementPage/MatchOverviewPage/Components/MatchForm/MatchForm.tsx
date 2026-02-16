@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import { useState, useEffect, useCallback } from 'react';
 import type { 
   CreateFloorballMatchRequest,
   FloorballMatchDto,
@@ -41,13 +39,12 @@ const MatchForm = ({
     scheduledDateTime: '',
     venue: ''
   });
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState('');
   const [hoursInput, setHoursInput] = useState('');
   const [minutesInput, setMinutesInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
-  const lastKeyIsBackspaceRef = useRef(false);
   
   // State for pre-loaded dropdown options
   const [initialSeasonOptions, setInitialSeasonOptions] = useState<Array<{id: string, name: string}>>([]);
@@ -138,6 +135,11 @@ const MatchForm = ({
       const matchDate = new Date(initialData.scheduledDateTime);
       const hoursStr = matchDate.getHours().toString().padStart(2, '0');
       const minutesStr = matchDate.getMinutes().toString().padStart(2, '0');
+      // Format as yyyy-mm-dd for the native date input
+      const year = matchDate.getFullYear();
+      const month = (matchDate.getMonth() + 1).toString().padStart(2, '0');
+      const day = matchDate.getDate().toString().padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
 
       setFormData({
         seasonId: initialData.seasonId,
@@ -147,7 +149,7 @@ const MatchForm = ({
         scheduledDateTime: initialData.scheduledDateTime,
         venue: initialData.venue || ''
       });
-      setSelectedDate(matchDate);
+      setSelectedDate(dateStr);
       setHoursInput(hoursStr);
       setMinutesInput(minutesStr);
       
@@ -166,7 +168,7 @@ const MatchForm = ({
         scheduledDateTime: '',
         venue: ''
       });
-      setSelectedDate(null);
+      setSelectedDate('');
       setHoursInput('');
       setMinutesInput('');
       
@@ -287,116 +289,25 @@ const MatchForm = ({
   }, [mode, initialAwayTeamOptions]);
 
   // Update scheduledDateTime when date or time changes
-  const updateScheduledDateTime = (date: Date | null, hours: string, minutes: string) => {
-    if (date && hours && minutes) {
-      // Create a new date object with the selected date and time
-      const localDateTime = new Date(date);
-      localDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+  const updateScheduledDateTime = (dateStr: string, hours: string, minutes: string) => {
+    if (dateStr && hours && minutes) {
+      // Parse the yyyy-mm-dd string from the native date input
+      const date = new Date(dateStr);
+      date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       
       // Convert to ISO string with timezone offset to ensure proper timezone handling
-      const isoDateTime = localDateTime.toISOString();
+      const isoDateTime = date.toISOString();
       setFormData(prev => ({ ...prev, scheduledDateTime: isoDateTime }));
     } else {
       setFormData(prev => ({ ...prev, scheduledDateTime: '' }));
     }
   };
 
-  const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
-    updateScheduledDateTime(date, hoursInput, minutesInput);
-    setDateError(null);
-  };
-
-  // TODO: If needed, extract date input logic into a reusable DateField utility to use elsewhere.
-
-  // Parse DD/MM/YYYY safely
-  const parseDdMmYyyy = (value: string): Date | null => {
-    const parts = value.split('/');
-    if (parts.length !== 3) return null;
-    const [ddStr, mmStr, yyyyStr] = parts;
-    const dd = parseInt(ddStr, 10);
-    const mm = parseInt(mmStr, 10);
-    const yyyy = parseInt(yyyyStr, 10);
-    if (!Number.isFinite(dd) || !Number.isFinite(mm) || !Number.isFinite(yyyy)) return null;
-    if (yyyyStr.length !== 4) return null;
-    if (dd < 1 || mm < 1 || mm > 12) return null;
-    const d = new Date(yyyy, mm - 1, dd);
-    if (d.getFullYear() !== yyyy || d.getMonth() !== mm - 1 || d.getDate() !== dd) return null;
-    return d;
-  };
-
-  const handleDateChangeRaw = (e: unknown) => {
-    // react-datepicker may call onChangeRaw with keyboard/mouse events or undefined during calendar selection
-    const inputEl = (e as React.ChangeEvent<HTMLInputElement>)?.target as HTMLInputElement | undefined;
-    if (!inputEl || typeof inputEl.value !== 'string') {
-      // Event did not originate from the text input (e.g., calendar click). Ignore.
-      return;
-    }
-    let value = inputEl.value.replace(/[^0-9/]/g, '');
-
-    // Auto-insert slashes exactly after DD and MM (only when typing forward)
-    if (!lastKeyIsBackspaceRef.current) {
-      if (value.length === 2 && value.indexOf('/') === -1) {
-        value = value + '/';
-      }
-      if (value.length === 5 && value[2] === '/' && value.lastIndexOf('/') === 2) {
-        value = value + '/';
-      }
-    }
-
-    // Limit to DD/MM/YYYY length
-    if (value.length > 10) {
-      value = value.slice(0, 10);
-    }
-
-    // Reflect possibly reformatted value back to the input
-    inputEl.value = value;
-
-    if (value === '') {
-      setSelectedDate(null);
-      updateScheduledDateTime(null, hoursInput, minutesInput);
-      setDateError(null);
-      return;
-    }
-    // Allow user to type; validate when pattern matches fully
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
-      const parsed = parseDdMmYyyy(value);
-      if (parsed) {
-        setSelectedDate(parsed);
-        updateScheduledDateTime(parsed, hoursInput, minutesInput);
-        setDateError(null);
-      } else {
-        setDateError('Invalid date. Use DD/MM/YYYY');
-      }
-    }
-  };
-
-  const handleDateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    lastKeyIsBackspaceRef.current = e.key === 'Backspace';
-    const input = e.currentTarget;
-    const { selectionStart, selectionEnd, value } = input;
-    if (e.key === 'Backspace' && selectionStart === selectionEnd && selectionStart && value[selectionStart - 1] === '/') {
-      // Remove the slash and move cursor one position left
-      e.preventDefault();
-      const newVal = value.slice(0, selectionStart - 1) + value.slice(selectionStart);
-      input.value = newVal;
-      // Move caret
-      requestAnimationFrame(() => {
-        input.setSelectionRange((selectionStart as number) - 1, (selectionStart as number) - 1);
-      });
-    }
-  };
-
-  const handleDateBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (value === '') {
-      setDateError(null);
-      return;
-    }
-    const parsed = parseDdMmYyyy(value);
-    if (!parsed) {
-      setDateError('Invalid date. Use DD/MM/YYYY');
-    }
+    setSelectedDate(value);
+    updateScheduledDateTime(value, hoursInput, minutesInput);
+    setDateError(null);
   };
 
   const handleHoursChange = (value: string) => {
@@ -457,7 +368,7 @@ const MatchForm = ({
           scheduledDateTime: '',
           venue: ''
         });
-        setSelectedDate(null);
+        setSelectedDate('');
         setHoursInput('');
         setMinutesInput('');
         // Clear initial options
@@ -478,7 +389,7 @@ const MatchForm = ({
       scheduledDateTime: '',
       venue: ''
     });
-    setSelectedDate(null);
+    setSelectedDate('');
     setHoursInput('');
     setMinutesInput('');
     setError(null);
@@ -586,18 +497,11 @@ const MatchForm = ({
           <div className="input-wrapper">
             <div className="datetime-input-group">
               <div className="date-input">
-                <DatePicker
-                  selected={selectedDate}
-                  onChange={(date) => handleDateChange(date)}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="DD/MM/YYYY"
-                  isClearable
-                  onChangeRaw={(e) => handleDateChangeRaw(e as unknown as React.ChangeEvent<HTMLInputElement>)}
-                  onBlur={handleDateBlur}
-                  onKeyDown={(e) => handleDateKeyDown(e as React.KeyboardEvent<HTMLInputElement>)}
-                  shouldCloseOnSelect
-                  autoComplete="off"
-                  className="date-picker-input"
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  required
                 />
               </div>
               {dateError && (

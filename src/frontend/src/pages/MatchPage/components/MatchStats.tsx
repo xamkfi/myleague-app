@@ -23,7 +23,6 @@ export default function MatchStats({ match }: MatchStatsProps) {
     try {
       const data = await floorballStatisticsService.getMatchStatistics(match.id);
       setStats(data);
-      console.log('Updated match statistics');
     } catch (err) {
       console.error('Error loading match statistics:', err);
       // On error, keep existing stats or show empty stats

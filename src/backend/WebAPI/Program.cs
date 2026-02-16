@@ -1,3 +1,4 @@
+using System.Text;
 using Application.Configuration;
 using Application.DependencyInjections;
 using MyLeague.Infrastructure.DependencyInjections;
@@ -9,6 +10,8 @@ using Scalar.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +59,45 @@ builder.Services.Configure<PaginationConfiguration>(
 builder.Services.Configure<PeriodDurationConfiguration>(
     builder.Configuration.GetSection(PeriodDurationConfiguration.SectionName));
 
+// Configure JWT options
+builder.Services.Configure<JwtConfiguration>(
+    builder.Configuration.GetSection(JwtConfiguration.SectionName));
+
+// Configure login code options
+builder.Services.Configure<LoginCodeConfiguration>(
+    builder.Configuration.GetSection(LoginCodeConfiguration.SectionName));
+
+// Configure Azure Communication Services options
+builder.Services.Configure<AzureCommunicationServicesConfiguration>(
+    builder.Configuration.GetSection(AzureCommunicationServicesConfiguration.SectionName));
+
+// Add JWT authentication
+JwtConfiguration jwtConfig = builder.Configuration
+    .GetSection(JwtConfiguration.SectionName)
+    .Get<JwtConfiguration>() ?? new JwtConfiguration();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtConfig.Issuer,
+        ValidAudience = jwtConfig.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey)),
+        ClockSkew = TimeSpan.FromMinutes(1)
+    };
+});
+
+builder.Services.AddAuthorization();
+
 // Register application services
 builder.Services.AddApplication();
 
@@ -95,6 +137,7 @@ if (app.Environment.IsDevelopment())
     app.UseCors("Development");
 }
 app.UseStaticFiles();
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Map controllers

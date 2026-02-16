@@ -89,26 +89,56 @@
           display: flex;
           flex-direction: row;
           gap: map.get($spacing, 'sm');
-          align-items: flex-start;
+          align-items: center;
+          flex-wrap: wrap;
           font-size: map.get($font-sizes, 'base');
           font-weight: map.get($font-weights, 'light');
 
-          .division-badge {
-            padding-right: map.get($spacing, 'sm');
+          .division-badge,
+          .club-badge,
+          .arena,
+          .category-badge {
+            color: $color-white;
+            padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
             display: inline-block;
+            background: rgba($color-white, 0.15);
+            border-radius: map.get($border-radius, 'sm');
+            backdrop-filter: blur(4px);
+            font-size: map.get($font-sizes, 'sm');
+          }
+
+          .division-badge {
             text-transform: capitalize;
           }
 
-          .club-badge {
-            color: $color-white;
-            padding: 0 map.get($spacing, 'sm');
-            display: inline-block;
+          .category-badge {
+            text-transform: capitalize;
+          }
+        }
+
+        .team-extra-info {
+          display: flex;
+          align-items: center;
+          gap: map.get($spacing, 'base');
+          flex-wrap: wrap;
+
+          .jersey-colors {
+            display: flex;
+            gap: map.get($spacing, 'xs');
+
+            .jersey-swatch {
+              width: 24px;
+              height: 24px;
+              border-radius: map.get($border-radius, 'full');
+              border: 2px solid $color-white;
+              box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            }
           }
 
-          .arena {
-            color: $color-white;
-            padding: 0 map.get($spacing, 'sm');
-            display: inline-block;
+          .roster-count {
+            color: rgba($color-white, 0.85);
+            font-size: map.get($font-sizes, 'sm');
+            font-weight: map.get($font-weights, 'medium');
           }
         }
       }
@@ -392,12 +422,17 @@
             
             .division-badge,
             .club-badge,
-            .arena {
+            .arena,
+            .category-badge {
               padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
               background: rgba(255, 255, 255, 0.1);
               border-radius: map.get($border-radius, 'sm');
               backdrop-filter: blur(4px);
             }
+          }
+
+          .team-extra-info {
+            justify-content: center;
           }
         }
 
@@ -486,8 +521,22 @@
             
             .division-badge,
             .club-badge,
-            .arena {
+            .arena,
+            .category-badge {
               padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+            }
+          }
+
+          .team-extra-info {
+            justify-content: center;
+
+            .jersey-swatch {
+              width: 20px;
+              height: 20px;
+            }
+
+            .roster-count {
+              font-size: map.get($font-sizes, 'xs');
             }
           }
         }

@@ -1,5 +1,6 @@
 import './SummarySection.scss';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { FloorballSeasonStatisticsSummaryDto } from '../../../api/floorball/floorballStatistics';
 
 interface SummarySectionProps {
@@ -8,13 +9,17 @@ interface SummarySectionProps {
   error: string | null;
 }
 
+const MAX_STANDINGS_PREVIEW = 8;
+
 export default function SummarySection({ seasonSummary, loading, error }: SummarySectionProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   if (loading) {
     return (
       <div className="summary-section">
-        <div className="loading">{t('leaguePage.summary.loading')}</div>
+        <div className="summary-section__loading">{t('leaguePage.summary.loading')}</div>
       </div>
     );
   }
@@ -22,7 +27,7 @@ export default function SummarySection({ seasonSummary, loading, error }: Summar
   if (error) {
     return (
       <div className="summary-section">
-        <div className="error">{t('leaguePage.summary.error', { error })}</div>
+        <div className="summary-section__error">{t('leaguePage.summary.error', { error })}</div>
       </div>
     );
   }
@@ -30,55 +35,110 @@ export default function SummarySection({ seasonSummary, loading, error }: Summar
   if (!seasonSummary) {
     return (
       <div className="summary-section">
-        <div className="no-data">{t('leaguePage.summary.noData')}</div>
+        <div className="summary-section__empty">{t('leaguePage.summary.noData')}</div>
       </div>
     );
   }
 
   const teamCount = seasonSummary.teamStandings?.length || 0;
+  const standings = seasonSummary.teamStandings?.slice(0, MAX_STANDINGS_PREVIEW) || [];
+
+  const handleViewFullStandings = () => {
+    const currentParams = new URLSearchParams(searchParams);
+    currentParams.set('tab', 'statistics');
+    navigate(`?${currentParams.toString()}`, { replace: true });
+  };
 
   return (
     <div className="summary-section">
-      <h2>{t('leaguePage.summary.title')}</h2>
-      <div className="summary-content">
-        <div className="league-overview">
-          <div className="overview-card">
-            <h3>{t('leaguePage.summary.leagueInformation')}</h3>
-            <div className="info-grid">
-              {seasonSummary.seasonName && (
-                <div className="info-item">
-                  <span className="label">{t('leaguePage.summary.season')}</span>
-                  <span className="value">{seasonSummary.seasonName}</span>
-                </div>
-              )}
-              {teamCount > 0 && (
-                <div className="info-item">
-                  <span className="label">{t('leaguePage.summary.teams')}</span>
-                  <span className="value">{teamCount}</span>
-                </div>
-              )}
-              {seasonSummary.totalGames !== undefined && (
-                <div className="info-item">
-                  <span className="label">{t('leaguePage.summary.matchesPlayed')}</span>
-                  <span className="value">{seasonSummary.totalGames}</span>
-                </div>
-              )}
-              {seasonSummary.totalGoals !== undefined && (
-                <div className="info-item">
-                  <span className="label">{t('leaguePage.summary.goalsScored')}</span>
-                  <span className="value">{seasonSummary.totalGoals}</span>
-                </div>
-              )}
-              {seasonSummary.averageGoalsPerGame !== undefined && (
-                <div className="info-item">
-                  <span className="label">{t('leaguePage.summary.avgGoalsPerGame')}</span>
-                  <span className="value">{seasonSummary.averageGoalsPerGame.toFixed(2)}</span>
-                </div>
-              )}
-            </div>
+      {/* Stat cards row */}
+      <div className="summary-section__stats">
+        {teamCount > 0 && (
+          <div className="summary-section__stat-card">
+            <span className="summary-section__stat-value">{teamCount}</span>
+            <span className="summary-section__stat-label">{t('leaguePage.summary.teams')}</span>
           </div>
-        </div>
+        )}
+        {seasonSummary.totalGames !== undefined && (
+          <div className="summary-section__stat-card">
+            <span className="summary-section__stat-value">{seasonSummary.totalGames}</span>
+            <span className="summary-section__stat-label">{t('leaguePage.summary.matchesPlayed')}</span>
+          </div>
+        )}
+        {seasonSummary.totalGoals !== undefined && (
+          <div className="summary-section__stat-card">
+            <span className="summary-section__stat-value">{seasonSummary.totalGoals}</span>
+            <span className="summary-section__stat-label">{t('leaguePage.summary.goalsScored')}</span>
+          </div>
+        )}
+        {seasonSummary.averageGoalsPerGame !== undefined && (
+          <div className="summary-section__stat-card">
+            <span className="summary-section__stat-value">{seasonSummary.averageGoalsPerGame.toFixed(1)}</span>
+            <span className="summary-section__stat-label">{t('leaguePage.summary.avgGoalsPerGame')}</span>
+          </div>
+        )}
       </div>
+
+      {/* Compact standings table */}
+      {standings.length > 0 && (
+        <div className="summary-section__standings">
+          <div className="summary-section__standings-header">
+            <h3 className="summary-section__standings-title">
+              {t('leaguePage.summary.standingsPreview')}
+            </h3>
+          </div>
+          <table className="summary-section__standings-table">
+            <thead>
+              <tr>
+                <th className="summary-section__col-rank">#</th>
+                <th className="summary-section__col-team">{t('floorballPage.team')}</th>
+                <th className="summary-section__col-gp">{t('floorballPage.gamesShort')}</th>
+                <th className="summary-section__col-w">W</th>
+                <th className="summary-section__col-d">D</th>
+                <th className="summary-section__col-l">L</th>
+                <th className="summary-section__col-pts">{t('floorballPage.pointsShort')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {standings.map((team, index) => (
+                <tr key={team.teamId}>
+                  <td className="summary-section__col-rank">{index + 1}</td>
+                  <td className="summary-section__col-team">
+                    <div className="summary-section__team-info">
+                      {team.teamLogo && team.teamLogo.trim() !== '' ? (
+                        <img
+                          className="summary-section__team-logo"
+                          src={team.teamLogo}
+                          alt={team.teamName}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="summary-section__team-logo-empty" />
+                      )}
+                      <span className="summary-section__team-name">{team.teamName}</span>
+                    </div>
+                  </td>
+                  <td className="summary-section__col-gp">{team.gamesPlayed}</td>
+                  <td className="summary-section__col-w">{team.wins}</td>
+                  <td className="summary-section__col-d">{team.ties}</td>
+                  <td className="summary-section__col-l">{team.losses}</td>
+                  <td className="summary-section__col-pts">{team.points}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button
+            type="button"
+            className="summary-section__view-full"
+            onClick={handleViewFullStandings}
+          >
+            {t('leaguePage.summary.viewFullStandings')} &rarr;
+          </button>
+        </div>
+      )}
     </div>
   );
 }

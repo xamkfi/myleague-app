@@ -75,7 +75,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               {season.name}
                            </div>
                            <div className="summary-season-container">
-                              {todaysSeasonMatches.map((match) => (
+                             {todaysSeasonMatches.map((match) => (
                                  <MatchRow
                                     key={match.id}
                                     id={match.id}
@@ -87,6 +87,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                                     homeScore={match.homeScore}
                                     awayScore={match.awayScore}
                                     periodCount={3}
+                                    periodScores={match.periodScores}
                                     onClick={() => handleMatchClick(match.id)}
                                  />
                               ))}
@@ -137,6 +138,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               homeScore={match.homeScore}
                               awayScore={match.awayScore}
                               periodCount={3}
+                              periodScores={match.periodScores}
                               onClick={() => handleMatchClick(match.id)}
                            />
                         ))}
@@ -171,6 +173,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               homeScore={match.homeScore}
                               awayScore={match.awayScore}
                               periodCount={3}
+                              periodScores={match.periodScores}
                               onClick={() => handleMatchClick(match.id)}
                            />
                         ))}

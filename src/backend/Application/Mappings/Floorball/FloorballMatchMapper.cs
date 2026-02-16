@@ -29,9 +29,11 @@ public static class FloorballMatchMapper
     /// </summary>
     /// <param name="match">The match entity to map</param>
     /// <param name="playerPersonLookup">Dictionary mapping player IDs to their person data</param>
+    /// <param name="homeClub">Optional club entity for the home team (used for logo fallback)</param>
+    /// <param name="awayClub">Optional club entity for the away team (used for logo fallback)</param>
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when match is null</exception>
-    public static FloorballMatchDto ToDto(FloorballMatch match, Dictionary<Guid, Person> playerPersonLookup)
+    public static FloorballMatchDto ToDto(FloorballMatch match, Dictionary<Guid, Person> playerPersonLookup, Club? homeClub = null, Club? awayClub = null)
     {
         if (match == null)
             throw new ArgumentNullException(nameof(match));
@@ -95,16 +97,20 @@ public static class FloorballMatchMapper
             })
             .ToList();
 
+        // Resolve logos with club fallback
+        Uri? homeTeamLogo = match.HomeTeam.GetEffectiveLogoUrl(homeClub?.LogoUrl);
+        Uri? awayTeamLogo = match.AwayTeam.GetEffectiveLogoUrl(awayClub?.LogoUrl);
+
         return new FloorballMatchDto(
             match.Id,
             match.SeasonId,
             match.Season.Name,
             match.HomeTeamId,
             match.HomeTeam.Name,
-            match.HomeTeam.LogoUrl,
+            homeTeamLogo,
             match.AwayTeamId,
             match.AwayTeam.Name,
-            match.AwayTeam.LogoUrl,
+            awayTeamLogo,
             match.ScheduledDateTime.ToUniversalTime(),
             match.Venue,
             match.Status,
@@ -151,20 +157,10 @@ public static class FloorballMatchMapper
 
         return matches.Select(match => 
         {
-            Club? homeClub = null;
-            Club? awayClub = null;
+            clubLookup.TryGetValue(match.HomeTeam.ClubId, out Club? homeClub);
+            clubLookup.TryGetValue(match.AwayTeam.ClubId, out Club? awayClub);
 
-            if (clubLookup.TryGetValue(match.HomeTeam.ClubId, out Club? home))
-            {
-                homeClub = home;
-            }
-
-            if (clubLookup.TryGetValue(match.AwayTeam.ClubId, out Club? away))
-            {
-                awayClub = away;
-            }
-
-            return ToDto(match);
+            return ToDto(match, new Dictionary<Guid, Person>(), homeClub, awayClub);
         });
     }
 

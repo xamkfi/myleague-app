@@ -1,3 +1,4 @@
+import { authFetch } from '../../utils/authFetch';
 import { API_URL } from '../../../constants/config';
 
 interface ApiResponse<T> {
@@ -13,7 +14,7 @@ export async function handleImageUploadService(file: File){
     formData.append("file", file);
   
     try {
-        const response = await fetch(`${API_URL}/News/upload-image`, { 
+        const response = await authFetch(`${API_URL}/News/upload-image`, { 
           method: "POST",
           body: formData,
         });
