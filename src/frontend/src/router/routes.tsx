@@ -1,68 +1,79 @@
+import { lazy, Suspense } from 'react';
 import type { RouteObject } from 'react-router-dom';
-import HomePage from '../pages/HomePage/HomePage';
-import NewsPage from '../pages/NewsPage/NewsPage';
-import RulesPage from '../pages/RulesPage/RulesPage';
-import MAHLPage from '../pages/MAHLPage/MAHLPage';
-import AgeGroupsPage from '../pages/AgeGroupsPage/AgeGroupsPage';
-import RegisterPage from '../pages/RegisterPage/RegisterPage';
-import TournamentsPage from '../pages/TournamentsPage/TournamentsPage';
-import SportsPage from '../pages/SportsPage/SportsPage';
-import ClubPage from '../pages/ClubPage/ClubPage';
-import PlayerPage from '../pages/PlayerPage/PlayerPage';
-import AdminPage from '../pages/AdminPage/AdminPage';
-import PersonsPage from '../pages/AdminPage/PersonsPage/PersonsPage';
-import PersonForm from '../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm';
-import PersonUserPage from '../pages/PersonUserPage/PersonUserPage';
-import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
-import NewsCreateEditPage from '../pages/AdminPage/NewsPage/NewsCreateEditPage';
-import DivisionsPage from '../pages/AdminPage/DivisionsPage/DivisionsPage';
-import DivisionFormPage from '../pages/AdminPage/DivisionsPage/DivisionFormPage';
-import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/FloorballManagementPage';
-import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
-import CreateTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/CreateTeamPage';
-import EditTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditTeamPage';
-import EditRosterPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditRosterPage';
-import AddPlayerToRosterPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/AddPlayerToRosterPage';
-import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage';
-import CreatePlayerPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePlayerPage/CreatePlayerPage';
-import CreatePersonPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePersonPage/CreatePersonPage';
-import FloorballRefereesPage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage';
-import CreateRefereePage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/CreateRefereePage/CreateRefereePage';
-import FloorballSeasonsPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage';
-import CreateSeasonPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/CreateSeasonPage/CreateSeasonPage';
-import EditSeasonPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/EditSeasonPage/EditSeasonPage';
-import MatchOverviewPage from '../pages/AdminPage/FloorballManagementPage/MatchOverviewPage/MatchOverviewPage';
-import CreateMatchPage from '../pages/AdminPage/FloorballManagementPage/CreateMatchPage/CreateMatchPage';
-import EditMatchPage from '../pages/AdminPage/FloorballManagementPage/EditMatchPage/EditMatchPage';
-import CompletedMatchesPage from '../pages/AdminPage/FloorballManagementPage/CompletedMatchesPage/CompletedMatchesPage';
-import ScheduledMatchesPage from '../pages/AdminPage/FloorballManagementPage/ScheduledMatchesPage/ScheduledMatchesPage';
-import InProgressMatchesPage from '../pages/AdminPage/FloorballManagementPage/InProgressMatchesPage/InProgressMatchesPage';
-import CancelledMatchesPage from '../pages/AdminPage/FloorballManagementPage/CancelledMatchesPage/CancelledMatchesPage';
-import ManageMatchPage from '../pages/AdminPage/FloorballManagementPage/ManageMatchPage/ManageMatchPage';
-import FloorballTeamPage from '../pages/FloorballTeamPage/FloorballTeamPage';
-import NewsManagementPage from '../pages/AdminPage/NewsPage/NewsManagementPage';
-import FloorballTeamPlayerUserPage from '../pages/FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage';
-import MatchPage from '../pages/MatchPage/MatchPage';
-import LeaguePage from '../pages/LeaguePage/LeaguePage';
-import ClubsManagementPage from '../pages/AdminPage/ClubPage/ClubsManagementPage';
-import CreateClubPage from '../pages/AdminPage/ClubPage/CreateClubPage';
-import EditClubPage from '../pages/AdminPage/ClubPage/EditClubPage';
-import ClubDetailsPage from '../pages/AdminPage/ClubPage/ClubDetailsPage';
-import FloorballPage from '../pages/FloorballPage/FloorballPage';
-import ClubsPage from '../pages/ClubsPage/ClubsPage';
-import LoginPage from '../pages/AdminPage/LoginPage/LoginPage';
-import UsersPage from '../pages/AdminPage/UsersPage/UsersPage';
 import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
+
+// Public pages
+const HomePage = lazy(() => import('../pages/HomePage/HomePage'));
+const NewsPage = lazy(() => import('../pages/NewsPage/NewsPage'));
+const RulesPage = lazy(() => import('../pages/RulesPage/RulesPage'));
+const MAHLPage = lazy(() => import('../pages/MAHLPage/MAHLPage'));
+const AgeGroupsPage = lazy(() => import('../pages/AgeGroupsPage/AgeGroupsPage'));
+const RegisterPage = lazy(() => import('../pages/RegisterPage/RegisterPage'));
+const TournamentsPage = lazy(() => import('../pages/TournamentsPage/TournamentsPage'));
+const SportsPage = lazy(() => import('../pages/SportsPage/SportsPage'));
+const ClubPage = lazy(() => import('../pages/ClubPage/ClubPage'));
+const PlayerPage = lazy(() => import('../pages/PlayerPage/PlayerPage'));
+const SingleNewsPage = lazy(() => import('../pages/SingleNewsPage/SingleNewsPage'));
+const PersonUserPage = lazy(() => import('../pages/PersonUserPage/PersonUserPage'));
+const FloorballTeamPage = lazy(() => import('../pages/FloorballTeamPage/FloorballTeamPage'));
+const FloorballTeamPlayerUserPage = lazy(() => import('../pages/FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage'));
+const MatchPage = lazy(() => import('../pages/MatchPage/MatchPage'));
+const LeaguePage = lazy(() => import('../pages/LeaguePage/LeaguePage'));
+const FloorballPage = lazy(() => import('../pages/FloorballPage/FloorballPage'));
+const ClubsPage = lazy(() => import('../pages/ClubsPage/ClubsPage'));
+
+// Admin pages
+const LoginPage = lazy(() => import('../pages/AdminPage/LoginPage/LoginPage'));
+const AdminPage = lazy(() => import('../pages/AdminPage/AdminPage'));
+const UsersPage = lazy(() => import('../pages/AdminPage/UsersPage/UsersPage'));
+const PersonsPage = lazy(() => import('../pages/AdminPage/PersonsPage/PersonsPage'));
+const PersonForm = lazy(() => import('../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm'));
+const NewsCreateEditPage = lazy(() => import('../pages/AdminPage/NewsPage/NewsCreateEditPage'));
+const NewsManagementPage = lazy(() => import('../pages/AdminPage/NewsPage/NewsManagementPage'));
+const DivisionsPage = lazy(() => import('../pages/AdminPage/DivisionsPage/DivisionsPage'));
+const DivisionFormPage = lazy(() => import('../pages/AdminPage/DivisionsPage/DivisionFormPage'));
+const ClubsManagementPage = lazy(() => import('../pages/AdminPage/ClubPage/ClubsManagementPage'));
+const CreateClubPage = lazy(() => import('../pages/AdminPage/ClubPage/CreateClubPage'));
+const EditClubPage = lazy(() => import('../pages/AdminPage/ClubPage/EditClubPage'));
+const ClubDetailsPage = lazy(() => import('../pages/AdminPage/ClubPage/ClubDetailsPage'));
+
+// Floorball management pages
+const FloorballManagementPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballManagementPage'));
+const FloorballTeamsPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage'));
+const CreateTeamPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/CreateTeamPage'));
+const EditTeamPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditTeamPage'));
+const EditRosterPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditRosterPage'));
+const AddPlayerToRosterPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/AddPlayerToRosterPage'));
+const FloorballPlayersPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage'));
+const CreatePlayerPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePlayerPage/CreatePlayerPage'));
+const CreatePersonPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePersonPage/CreatePersonPage'));
+const FloorballRefereesPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage'));
+const CreateRefereePage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/CreateRefereePage/CreateRefereePage'));
+const FloorballSeasonsPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage'));
+const CreateSeasonPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/CreateSeasonPage/CreateSeasonPage'));
+const EditSeasonPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/EditSeasonPage/EditSeasonPage'));
+const MatchOverviewPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/MatchOverviewPage/MatchOverviewPage'));
+const CreateMatchPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/CreateMatchPage/CreateMatchPage'));
+const EditMatchPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/EditMatchPage/EditMatchPage'));
+const CompletedMatchesPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/CompletedMatchesPage/CompletedMatchesPage'));
+const ScheduledMatchesPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/ScheduledMatchesPage/ScheduledMatchesPage'));
+const InProgressMatchesPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/InProgressMatchesPage/InProgressMatchesPage'));
+const CancelledMatchesPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/CancelledMatchesPage/CancelledMatchesPage'));
+const ManageMatchPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/ManageMatchPage/ManageMatchPage'));
+
+function SuspenseWrapper({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={null}>{children}</Suspense>;
+}
 
 export const routes: RouteObject[] = [
   {
     path: '/',
-    element: <HomePage />
+    element: <SuspenseWrapper><HomePage /></SuspenseWrapper>
   },
   // Admin login (public)
   {
     path: '/admin/login',
-    element: <LoginPage />
+    element: <SuspenseWrapper><LoginPage /></SuspenseWrapper>
   },
   // Protected admin routes
   {
@@ -70,19 +81,19 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <ProtectedRoute><ClubsManagementPage /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><ClubsManagementPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: 'create',
-        element: <ProtectedRoute><CreateClubPage /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><CreateClubPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: ':id',
-        element: <ProtectedRoute><ClubDetailsPage /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><ClubDetailsPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: ':id/edit',
-        element: <ProtectedRoute><EditClubPage /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><EditClubPage /></SuspenseWrapper></ProtectedRoute>
       }
     ]
   },
@@ -91,84 +102,84 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <ProtectedRoute><UsersPage /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><UsersPage /></SuspenseWrapper></ProtectedRoute>
       }
     ]
   },
   {
     path: '/uutiset',
-    element: <NewsPage />
+    element: <SuspenseWrapper><NewsPage /></SuspenseWrapper>
   },
   {
     path: '/uutiset/:id',
-    element: <SingleNewsPage />
+    element: <SuspenseWrapper><SingleNewsPage /></SuspenseWrapper>
   },
   {
     path: '/saannot',
-    element: <RulesPage />
+    element: <SuspenseWrapper><RulesPage /></SuspenseWrapper>
   },
   {
     path: '/mahl',
-    element: <MAHLPage />
+    element: <SuspenseWrapper><MAHLPage /></SuspenseWrapper>
   },
   {
     path: '/ikaryhmat',
-    element: <AgeGroupsPage />
+    element: <SuspenseWrapper><AgeGroupsPage /></SuspenseWrapper>
   },
   {
     path: '/ilmoittaudu',
-    element: <RegisterPage />
+    element: <SuspenseWrapper><RegisterPage /></SuspenseWrapper>
   },
   {
     path: '/turnaukset',
-    element: <TournamentsPage />
+    element: <SuspenseWrapper><TournamentsPage /></SuspenseWrapper>
   },
   {
     path: '/lajit',
-    element: <SportsPage />
+    element: <SuspenseWrapper><SportsPage /></SuspenseWrapper>
   },
   {
     path: '/sports',
-    element: <SportsPage />
+    element: <SuspenseWrapper><SportsPage /></SuspenseWrapper>
   },
   {
     path: '/sports/floorball',
-    element: <FloorballPage />
+    element: <SuspenseWrapper><FloorballPage /></SuspenseWrapper>
   },
   {
     path: '/clubs',
-    element: <ClubsPage />
+    element: <SuspenseWrapper><ClubsPage /></SuspenseWrapper>
   },
   {
     path: '/club/:slug',
-    element: <ClubPage />
+    element: <SuspenseWrapper><ClubPage /></SuspenseWrapper>
   },
   {
     path: '/team/:slug',
-    element: <FloorballTeamPage />
+    element: <SuspenseWrapper><FloorballTeamPage /></SuspenseWrapper>
   },
   {
     path: '/pelaaja/:id',
-    element: <PlayerPage />
+    element: <SuspenseWrapper><PlayerPage /></SuspenseWrapper>
   },
   {
     path: '/admin',
-    element: <ProtectedRoute><AdminPage /></ProtectedRoute>
+    element: <ProtectedRoute><SuspenseWrapper><AdminPage /></SuspenseWrapper></ProtectedRoute>
   },
   {
     path: '/admin/persons',
     children: [
       {
         index: true,
-        element: <ProtectedRoute><PersonsPage /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><PersonsPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: 'new',
-        element: <ProtectedRoute><PersonForm /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><PersonForm /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: ':id/edit',
-        element: <ProtectedRoute><PersonForm /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><PersonForm /></SuspenseWrapper></ProtectedRoute>
       }
     ]
   },
@@ -177,15 +188,15 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <ProtectedRoute><DivisionsPage /></ProtectedRoute>,
+        element: <ProtectedRoute><SuspenseWrapper><DivisionsPage /></SuspenseWrapper></ProtectedRoute>,
       },
       {
         path: 'create',
-        element: <ProtectedRoute><DivisionFormPage /></ProtectedRoute>,
+        element: <ProtectedRoute><SuspenseWrapper><DivisionFormPage /></SuspenseWrapper></ProtectedRoute>,
       },
       {
         path: ':divisionId/edit',
-        element: <ProtectedRoute><DivisionFormPage /></ProtectedRoute>,
+        element: <ProtectedRoute><SuspenseWrapper><DivisionFormPage /></SuspenseWrapper></ProtectedRoute>,
       },
     ],
   },
@@ -194,30 +205,30 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <ProtectedRoute><FloorballManagementPage/></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><FloorballManagementPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: 'teams',
         children: [
           {
             index: true,
-            element: <ProtectedRoute><FloorballTeamsPage/></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><FloorballTeamsPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: 'new',
-            element: <ProtectedRoute><CreateTeamPage/></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><CreateTeamPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: ':id/edit',
-            element: <ProtectedRoute><EditTeamPage/></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><EditTeamPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: ':id/roster',
-            element: <ProtectedRoute><EditRosterPage/></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><EditRosterPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: ':id/roster/add',
-            element: <ProtectedRoute><AddPlayerToRosterPage/></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><AddPlayerToRosterPage /></SuspenseWrapper></ProtectedRoute>
           }
         ]
       },
@@ -226,15 +237,15 @@ export const routes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <ProtectedRoute><FloorballPlayersPage /></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><FloorballPlayersPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: 'create',
-            element: <ProtectedRoute><CreatePlayerPage /></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><CreatePlayerPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: 'create-person',
-            element: <ProtectedRoute><CreatePersonPage /></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><CreatePersonPage /></SuspenseWrapper></ProtectedRoute>
           }
         ]
       },
@@ -243,11 +254,11 @@ export const routes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <ProtectedRoute><FloorballRefereesPage /></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><FloorballRefereesPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: 'create',
-            element: <ProtectedRoute><CreateRefereePage /></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><CreateRefereePage /></SuspenseWrapper></ProtectedRoute>
           }
         ]
       },
@@ -256,64 +267,64 @@ export const routes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <ProtectedRoute><FloorballSeasonsPage /></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><FloorballSeasonsPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: 'create',
-            element: <ProtectedRoute><CreateSeasonPage /></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><CreateSeasonPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: ':seasonId/edit',
-            element: <ProtectedRoute><EditSeasonPage /></ProtectedRoute>
+            element: <ProtectedRoute><SuspenseWrapper><EditSeasonPage /></SuspenseWrapper></ProtectedRoute>
           }
         ]
       },
       {
         path: 'matches',
         children: [
-          { index: true, element: <ProtectedRoute><MatchOverviewPage /></ProtectedRoute> },
-          { path: 'create', element: <ProtectedRoute><CreateMatchPage /></ProtectedRoute> },
-          { path: ':matchId/edit', element: <ProtectedRoute><EditMatchPage /></ProtectedRoute> },
-          { path: 'completed', element: <ProtectedRoute><CompletedMatchesPage /></ProtectedRoute> },
-          { path: 'scheduled', element: <ProtectedRoute><ScheduledMatchesPage /></ProtectedRoute> },
-          { path: 'in-progress', element: <ProtectedRoute><InProgressMatchesPage /></ProtectedRoute> },
-          { path: 'cancelled', element: <ProtectedRoute><CancelledMatchesPage /></ProtectedRoute> },
-          { path: 'manage/:matchId', element: <ProtectedRoute><ManageMatchPage /></ProtectedRoute> }
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><MatchOverviewPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':matchId/edit', element: <ProtectedRoute><SuspenseWrapper><EditMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'completed', element: <ProtectedRoute><SuspenseWrapper><CompletedMatchesPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'scheduled', element: <ProtectedRoute><SuspenseWrapper><ScheduledMatchesPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'in-progress', element: <ProtectedRoute><SuspenseWrapper><InProgressMatchesPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'cancelled', element: <ProtectedRoute><SuspenseWrapper><CancelledMatchesPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'manage/:matchId', element: <ProtectedRoute><SuspenseWrapper><ManageMatchPage /></SuspenseWrapper></ProtectedRoute> }
         ]
       }
     ]
   },
   {
     path: '/person/:id',
-    element: <PersonUserPage />
+    element: <SuspenseWrapper><PersonUserPage /></SuspenseWrapper>
   },
   {
     path: '/floorballplayer/:id',
-    element: <FloorballTeamPlayerUserPage />
+    element: <SuspenseWrapper><FloorballTeamPlayerUserPage /></SuspenseWrapper>
   },
   {
     path: '/admin/news',
     children: [
       {
         index: true,
-        element: <ProtectedRoute><NewsManagementPage /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><NewsManagementPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: 'create',
-        element: <ProtectedRoute><NewsCreateEditPage /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><NewsCreateEditPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: 'edit/:id',
-        element: <ProtectedRoute><NewsCreateEditPage /></ProtectedRoute>
+        element: <ProtectedRoute><SuspenseWrapper><NewsCreateEditPage /></SuspenseWrapper></ProtectedRoute>
       }
     ]
   },
   {
     path: '/match/:id',
-    element: <MatchPage/>
+    element: <SuspenseWrapper><MatchPage /></SuspenseWrapper>
   },
   {
     path: '/league/:id',
-    element: <LeaguePage/>
+    element: <SuspenseWrapper><LeaguePage /></SuspenseWrapper>
   }
 ];

@@ -1,694 +1,658 @@
-// Success toast (shared with CreateSeasonPage)
+@use "sass:map";
+@use '@variables' as *;
+
+// ══════════════════════════════════════
+// Success toast (shared)
+// ══════════════════════════════════════
 .success-toast {
   position: fixed;
-  top: 2rem;
+  top: map.get($spacing, 'lg');
   left: 50%;
   transform: translateX(-50%);
   z-index: 1002;
-  
-  padding: 1rem 1.5rem;
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  
+  padding: map.get($spacing, 'base') map.get($spacing, 'md');
+  background-color: $color-green-almost;
+  color: $color-green-muted;
+  border: 1px solid $color-green-pale;
+  border-radius: map.get($border-radius, 'sm');
+  box-shadow: $box-shadow-drop-1;
   animation: slideInDown 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
-  
-  p {
-    margin: 0;
-    font-weight: 500;
-    font-size: 0.95rem;
-    white-space: nowrap;
-  }
+
+  p { margin: 0; font-weight: map.get($font-weights, 'medium'); font-size: map.get($font-sizes, 'sm'); white-space: nowrap; }
 }
 
 @keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
-
 @keyframes fadeOut {
-  from {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
-  }
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
-// Page container
+// ══════════════════════════════════════
+// Page container & loading
+// ══════════════════════════════════════
 .edit-season-container {
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: map.get($spacing, 'lg');
 }
 
 .edit-season-loading,
 .edit-season-error {
   text-align: center;
-  padding: 3rem 2rem;
-  color: #6b7280;
+  padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+  color: $color-text-muted;
 }
 
+// ══════════════════════════════════════
 // Tab navigation
+// ══════════════════════════════════════
 .tab-navigation {
   display: flex;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: white;
-  border-radius: 0.75rem 0.75rem 0 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0;
+  border-bottom: 1px solid $color-border;
+  background: $color-white;
+  border-radius: $border-radius-default $border-radius-default 0 0;
+  box-shadow: $box-shadow-drop-1;
   overflow: hidden;
 }
 
 .tab-button {
   flex: 1;
-  padding: 1rem 1.5rem;
-  background: #f9fafb;
+  padding: map.get($spacing, 'base') map.get($spacing, 'md');
+  background: $color-neutral-light-grey;
   border: none;
   border-bottom: 3px solid transparent;
-  color: #6b7280;
-  font-weight: 500;
+  color: $color-text-muted;
+  font-weight: map.get($font-weights, 'medium');
+  font-size: map.get($font-sizes, 'sm');
   cursor: pointer;
-  transition: all 0.2s ease;
+  @include transition(all);
 
-  &:hover {
-    background: #f3f4f6;
-    color: #374151;
-  }
-
-  &.active {
-    background: white;
-    color: #3b82f6;
-    border-bottom-color: #3b82f6;
-  }
+  &:hover:not(:disabled) { background: $color-neutral-medium-grey-alpha; color: $color-text-primary; }
+  &.active { background: $color-white; color: $color-blue-light; border-bottom-color: $color-blue-light; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
+// ══════════════════════════════════════
 // Content container
+// ══════════════════════════════════════
 .edit-season-content {
-  background: white;
-  border-radius: 0 0 0.75rem 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: $color-white;
+  border-radius: 0 0 $border-radius-default $border-radius-default;
+  box-shadow: $box-shadow-drop-1;
   overflow: hidden;
 }
 
-// Season details form
+// ══════════════════════════════════════
+// Season Details form
+// ══════════════════════════════════════
 .edit-season-form {
-  padding: 2rem;
+  padding: map.get($spacing, 'lg');
+
+  .form-section {
+    margin-bottom: map.get($spacing, 'md');
+    &:last-of-type { margin-bottom: 0; }
+  }
+
+  .form-section__title {
+    display: flex; align-items: center; gap: map.get($spacing, 'xs');
+    margin: 0 0 map.get($spacing, 'base') 0;
+    padding-bottom: map.get($spacing, 'xs');
+    border-bottom: 2px solid $color-neutral-medium-grey;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-medium;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    i { font-size: map.get($font-sizes, 'sm'); opacity: 0.7; }
+  }
 
   .form-group {
-    margin-bottom: 1.5rem;
-
+    margin-bottom: map.get($spacing, 'md');
     label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #374151;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      display: block; margin-bottom: map.get($spacing, 'xs');
+      font-weight: map.get($font-weights, 'semibold');
+      color: $color-text-primary; font-size: map.get($font-sizes, 'sm');
     }
+    input[type="text"], input[type="date"], input[type="number"], select {
+      width: 100%; padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      border: 1px solid $color-border; border-radius: map.get($border-radius, 'sm');
+      background-color: $color-white; color: $color-text-primary;
+      font-size: map.get($font-sizes, 'base'); @include transition(border-color); box-sizing: border-box;
+      &:focus { outline: none; border-color: $color-blue-light; box-shadow: 0 0 0 3px rgba(74,103,159,0.1); }
+      &:disabled { background-color: $color-background-light; color: $color-text-muted; cursor: not-allowed; }
+    }
+    select { cursor: pointer; &:disabled { cursor: not-allowed; } }
+    &--indented { margin-left: map.get($spacing, 'md'); padding-left: map.get($spacing, 'base'); border-left: 2px solid $color-neutral-medium-grey; }
 
-    input, select {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.375rem;
-      background-color: white;
-      color: #374151;
-      font-size: 1rem;
-      transition: border-color 0.2s ease;
-      box-sizing: border-box;
-
-      &:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-      }
-
-      &:disabled {
-        background-color: #f9fafb;
-        color: #6b7280;
-        cursor: not-allowed;
+    .divisions-checkbox-list {
+      border: 1px solid $color-border; border-radius: map.get($border-radius, 'sm');
+      background-color: $color-white; padding: map.get($spacing, 'sm');
+      max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: map.get($spacing, 'xs');
+      .no-divisions { padding: map.get($spacing, 'sm'); color: $color-text-muted; text-align: center; margin: 0; font-size: map.get($font-sizes, 'sm'); }
+      .division-checkbox-item {
+        display: flex; align-items: center; gap: map.get($spacing, 'xs');
+        padding: map.get($spacing, 'xs'); border-radius: map.get($border-radius, 'sm');
+        cursor: pointer; @include transition(background-color);
+        &:hover { background-color: $color-neutral-light-grey; }
+        input[type="checkbox"] { width: auto; margin: 0; cursor: pointer; accent-color: $color-blue-light; }
+        .checkbox-label { flex: 1; font-size: map.get($font-sizes, 'base'); color: $color-text-primary; user-select: none; }
       }
     }
-
-    select {
-      cursor: pointer;
-      
-      &:disabled {
-        cursor: not-allowed;
-      }
-    }
+    .selected-count { margin-top: map.get($spacing, 'xs'); font-size: map.get($font-sizes, 'sm'); color: $color-text-muted; font-style: italic; }
   }
 
   .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
+    display: grid; grid-template-columns: 1fr 1fr; gap: map.get($spacing, 'md');
+    @media (max-width: map.get($breakpoints, 'tablet')) { grid-template-columns: 1fr; }
   }
 
-  .error-message {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #dc2626;
-    font-size: 0.875rem;
+  .toggle-container {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: map.get($spacing, 'base'); padding: map.get($spacing, 'sm') 0;
+    .toggle-label { font-weight: map.get($font-weights, 'semibold'); color: $color-text-primary; font-size: map.get($font-sizes, 'sm'); margin: 0; }
+  }
 
-    i {
-      color: #ef4444;
-      flex-shrink: 0;
+  .toggle-switch {
+    position: relative; width: 48px; height: 26px; border-radius: 13px;
+    border: none; background: $color-neutral-medium-grey; cursor: pointer; padding: 0;
+    @include transition(background-color); flex-shrink: 0;
+    .toggle-switch__slider {
+      position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+      border-radius: 50%; background: $color-white; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      @include transition(transform);
     }
+    &.active { background: $color-blue-light; .toggle-switch__slider { transform: translateX(22px); } }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    &:not(:disabled):hover { background: $color-neutral-dark-grey; }
+    &.active:not(:disabled):hover { background: $color-blue-medium; }
+  }
+
+  .info-message {
+    background: $color-blue-secondary-almost; border: 1px solid $color-blue-secondary-pale;
+    border-radius: map.get($border-radius, 'sm'); padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+    display: flex; align-items: center; gap: map.get($spacing, 'xs');
+    color: $color-blue-secondary-muted; font-size: map.get($font-sizes, 'sm');
+    i { color: $color-blue-secondary; flex-shrink: 0; }
   }
 
   .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e5e7eb;
-
+    display: flex; justify-content: flex-end; gap: map.get($spacing, 'base');
+    margin-top: map.get($spacing, 'lg'); padding-top: map.get($spacing, 'md'); border-top: 1px solid $color-border;
     .btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 0.375rem;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      min-width: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md'); border: none;
+      border-radius: map.get($border-radius, 'sm'); font-size: map.get($font-sizes, 'base');
+      font-weight: map.get($font-weights, 'medium'); cursor: pointer; @include transition(all);
+      min-width: 120px; display: flex; align-items: center; justify-content: center; gap: map.get($spacing, 'xs');
+      &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+      &.btn-secondary { background-color: $color-button-secondary; color: $color-white; &:hover:not(:disabled) { background-color: $color-primary-dark; } }
+      &.btn-primary { background-color: $color-blue-light; color: $color-white;
+        &:hover:not(:disabled) { background-color: $color-blue-medium; transform: translateY(-1px); box-shadow: $box-shadow-drop-1; }
+        &:active:not(:disabled) { transform: translateY(0); }
       }
-
-      &.btn-secondary {
-        background-color: #6b7280;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background-color: #4b5563;
-        }
-      }
-
-      &.btn-primary {
-        background-color: #3b82f6;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background-color: #2563eb;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-        }
-
-        &:active:not(:disabled) {
-          transform: translateY(0);
-        }
-      }
-
-      i.fa-spinner {
-        animation: spin 1s linear infinite;
-      }
+      i.fa-spinner { animation: spin 1s linear infinite; }
     }
   }
 }
 
-// Divisions management
+// ══════════════════════════════════════
+// Divisions management tab
+// ══════════════════════════════════════
 .divisions-management {
-  padding: 2rem;
+  padding: map.get($spacing, 'lg');
 
-  .current-divisions-section,
-  .available-divisions-section {
-    margin-bottom: 2rem;
-
+  .current-divisions-section, .available-divisions-section {
+    margin-bottom: map.get($spacing, 'lg');
     h4 {
-      margin: 0 0 1rem 0;
-      color: #374151;
-      font-weight: 600;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid #e5e7eb;
+      margin: 0 0 map.get($spacing, 'base') 0; color: $color-text-primary;
+      font-weight: map.get($font-weights, 'semibold'); font-size: map.get($font-sizes, 'sm');
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding-bottom: map.get($spacing, 'xs'); border-bottom: 2px solid $color-neutral-medium-grey;
     }
-
     .no-divisions {
-      color: #6b7280;
-      font-style: italic;
-      text-align: center;
-      padding: 2rem;
-      background: #f9fafb;
-      border-radius: 0.5rem;
-      border: 2px dashed #d1d5db;
+      color: $color-text-muted; font-style: italic; text-align: center;
+      padding: map.get($spacing, 'lg'); background: $color-neutral-light-grey;
+      border-radius: map.get($border-radius, 'sm'); border: 2px dashed $color-border;
     }
   }
 
   .divisions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    max-height: 400px;
-    overflow-y: auto;
-    padding: 0.5rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
+    display: flex; flex-direction: column; gap: map.get($spacing, 'sm');
+    max-height: 400px; overflow-y: auto; padding: map.get($spacing, 'xs');
+    background: $color-neutral-light-grey; border-radius: map.get($border-radius, 'sm');
   }
 
   .division-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.375rem;
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: #d1d5db;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
+    display: flex; justify-content: space-between; align-items: center;
+    padding: map.get($spacing, 'base'); background: $color-white;
+    border: 1px solid $color-border; border-radius: map.get($border-radius, 'sm');
+    @include transition(all);
+    &:hover { border-color: $color-neutral-dark-grey; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
   }
 
   .division-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    flex: 1; display: flex; flex-direction: column; gap: map.get($spacing, 'xxs');
+    .division-name { font-weight: map.get($font-weights, 'semibold'); color: $color-text-primary; }
+    .division-team-count { font-size: map.get($font-sizes, 'sm'); color: $color-text-muted; }
+  }
 
-    .division-name {
-      font-weight: 600;
-      color: #111827;
-    }
-
-    .division-team-count {
-      font-size: 0.875rem;
-      color: #6b7280;
-    }
+  .btn {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base'); border: none;
+    border-radius: map.get($border-radius, 'sm'); font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium'); cursor: pointer; @include transition(all);
+    display: flex; align-items: center; gap: map.get($spacing, 'xxs');
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+    &.btn-danger { background-color: $color-red-primary; color: $color-white; &:hover:not(:disabled) { background-color: $color-red-muted; } }
+    &.btn-primary { background-color: $color-blue-light; color: $color-white; &:hover:not(:disabled) { background-color: $color-blue-medium; } }
   }
 }
 
-// Teams management
+// ══════════════════════════════════════
+// Teams management tab (tm- prefix)
+// ══════════════════════════════════════
 .teams-management {
-  padding: 2rem;
+  padding: map.get($spacing, 'lg');
+}
 
-  .no-divisions-message {
-    text-align: center;
-    padding: 3rem 2rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
-    border: 2px dashed #d1d5db;
+// ── Empty state ──
+.tm-empty-state {
+  text-align: center;
+  padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+  background: $color-neutral-light-grey;
+  border-radius: map.get($border-radius, 'sm');
+  border: 2px dashed $color-border;
 
-    p {
-      color: #6b7280;
-      margin-bottom: 1rem;
-      font-size: 1rem;
-    }
+  > i { font-size: 2.5rem; color: $color-text-muted; margin-bottom: map.get($spacing, 'sm'); display: block; opacity: 0.4; }
+  h4 { margin: 0 0 map.get($spacing, 'xs'); color: $color-text-primary; font-size: map.get($font-sizes, 'base'); }
+  p { color: $color-text-muted; margin-bottom: map.get($spacing, 'md'); font-size: map.get($font-sizes, 'sm'); }
+  .btn-primary {
+    background-color: $color-blue-light; color: $color-white; border: none;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md'); border-radius: map.get($border-radius, 'sm');
+    cursor: pointer; font-size: map.get($font-sizes, 'base'); font-weight: map.get($font-weights, 'medium');
+    display: inline-flex; align-items: center; gap: map.get($spacing, 'xs'); @include transition(all);
+    &:hover { background-color: $color-blue-medium; transform: translateY(-1px); box-shadow: $box-shadow-drop-1; }
+  }
+}
+
+// ── Division selector ──
+.tm-division-selector {
+  margin-bottom: map.get($spacing, 'lg');
+  padding-bottom: map.get($spacing, 'md');
+  border-bottom: 1px solid $color-border;
+
+  &__label {
+    display: block;
+    margin-bottom: map.get($spacing, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
-  .division-selector {
-    margin-bottom: 2rem;
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #374151;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    select {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.375rem;
-      background-color: white;
-      color: #374151;
-      font-size: 1rem;
-      transition: border-color 0.2s ease;
-      box-sizing: border-box;
-
-      &:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-      }
-
-      &:disabled {
-        background-color: #f9fafb;
-        color: #6b7280;
-        cursor: not-allowed;
-      }
-    }
-  }
-
-  .error-message {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1.5rem;
+  &__options {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #dc2626;
-    font-size: 0.875rem;
+    gap: map.get($spacing, 'sm');
+    flex-wrap: wrap;
+  }
+}
 
-    i {
-      color: #ef4444;
-      flex-shrink: 0;
-    }
+.tm-division-pill {
+  display: inline-flex; align-items: center; gap: map.get($spacing, 'xs');
+  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+  border: 2px solid $color-border;
+  border-radius: 100px;
+  background: $color-white;
+  cursor: pointer;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'medium');
+  color: $color-text-primary;
+  @include transition(all);
+
+  &:hover { border-color: $color-blue-light; background: rgba(74,103,159,0.04); }
+
+  &.active {
+    border-color: $color-blue-light;
+    background: $color-blue-light;
+    color: $color-white;
   }
 
-  .teams-sections-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-bottom: 2rem;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
+  &__badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 22px; padding: 0 6px;
+    border-radius: 11px;
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'bold');
+    background: $color-neutral-medium-grey; color: $color-text-primary;
   }
 
-  .teams-section {
+  &.active &__badge {
+    background: rgba(255,255,255,0.25); color: $color-white;
+  }
+}
+
+// ── Section (current teams / add teams) ──
+.tm-section {
+  margin-bottom: map.get($spacing, 'lg');
+
+  &__header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: map.get($spacing, 'base');
+    padding-bottom: map.get($spacing, 'xs');
+    border-bottom: 2px solid $color-neutral-medium-grey;
+
     h4 {
-      margin: 0 0 1rem 0;
-      color: #374151;
-      font-weight: 600;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid #e5e7eb;
-    }
-
-    .teams-search-filters {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      align-items: center;
-
-      .search-input-wrapper {
-        flex: 1;
-        position: relative;
-
-        .teams-search-input {
-          width: 100%;
-          padding: 0.75rem 1rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.375rem;
-          background-color: white;
-          color: #374151;
-          font-size: 1rem;
-          transition: border-color 0.2s ease;
-          box-sizing: border-box;
-
-          &:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-          }
-
-          &::placeholder {
-            color: #9ca3af;
-          }
-        }
-      }
-
-      .team-category-select {
-        min-width: 180px;
-        padding: 0.75rem 1rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        background-color: white;
-        color: #374151;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: border-color 0.2s ease;
-        box-sizing: border-box;
-
-        &:focus {
-          outline: none;
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-      }
-
-      @media (max-width: 768px) {
-        flex-direction: column;
-        align-items: stretch;
-
-        .team-category-select {
-          width: 100%;
-          min-width: auto;
-        }
-      }
-    }
-
-    .no-teams {
-      color: #6b7280;
-      font-style: italic;
-      text-align: center;
-      padding: 2rem;
-      background: #f9fafb;
-      border-radius: 0.5rem;
-      border: 2px dashed #d1d5db;
-    }
-
-    .filter-info {
-      font-weight: normal;
-      font-size: 0.875rem;
-      color: #6b7280;
+      margin: 0; display: flex; align-items: center; gap: map.get($spacing, 'xs');
+      font-size: map.get($font-sizes, 'sm'); font-weight: map.get($font-weights, 'semibold');
+      color: $color-blue-medium; text-transform: uppercase; letter-spacing: 0.04em;
+      i { opacity: 0.7; }
     }
   }
 
-  .teams-list {
-    display: flex;
+  &__count {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__empty {
+    text-align: center;
+    padding: map.get($spacing, 'lg') map.get($spacing, 'md');
+    background: $color-neutral-light-grey;
+    border-radius: map.get($border-radius, 'sm');
+    border: 2px dashed $color-border;
+    p { margin: 0; color: $color-text-muted; font-size: map.get($font-sizes, 'sm'); }
+  }
+}
+
+// ── Team grid (chips for current teams in division) ──
+.tm-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: map.get($spacing, 'sm');
+}
+
+.tm-team-chip {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'sm');
+  @include transition(all);
+
+  &:hover {
+    border-color: $color-neutral-dark-grey;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  &__info {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: 1px;
+  }
+
+  &__name {
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-primary;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  &__club {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-text-muted;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  &__remove {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; border-radius: 50%;
+    background: transparent;
+    color: $color-text-muted;
+    cursor: pointer;
+    @include transition(all);
+    margin-left: map.get($spacing, 'sm');
+
+    &:hover:not(:disabled) { background: $color-red-primary; color: $color-white; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    i { font-size: map.get($font-sizes, 'xs'); }
+  }
+}
+
+// ── Filters row ──
+.tm-filters {
+  display: flex; gap: map.get($spacing, 'sm'); margin-bottom: map.get($spacing, 'base');
+
+  &__search {
+    flex: 1; position: relative;
+
+    > i {
+      position: absolute; left: map.get($spacing, 'sm'); top: 50%; transform: translateY(-50%);
+      color: $color-text-muted; font-size: map.get($font-sizes, 'sm'); pointer-events: none;
+    }
+
+    input {
+      width: 100%; padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      padding-left: map.get($spacing, 'xl');
+      border: 1px solid $color-border; border-radius: map.get($border-radius, 'sm');
+      background-color: $color-white; color: $color-text-primary; font-size: map.get($font-sizes, 'sm');
+      @include transition(border-color); box-sizing: border-box;
+      &:focus { outline: none; border-color: $color-blue-light; box-shadow: 0 0 0 2px rgba(74,103,159,0.1); }
+      &::placeholder { color: $color-placeholder; }
+    }
+  }
+
+  &__clear {
+    position: absolute; right: map.get($spacing, 'xs'); top: 50%; transform: translateY(-50%);
+    border: none; background: none; color: $color-text-muted; cursor: pointer;
+    padding: 4px; border-radius: 50%; font-size: map.get($font-sizes, 'xs');
+    @include transition(color);
+    &:hover { color: $color-text-primary; }
+  }
+
+  &__category {
+    min-width: 140px; padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+    border: 1px solid $color-border; border-radius: map.get($border-radius, 'sm');
+    background-color: $color-white; color: $color-text-primary; font-size: map.get($font-sizes, 'sm');
+    cursor: pointer; @include transition(border-color); box-sizing: border-box;
+    &:focus { outline: none; border-color: $color-blue-light; box-shadow: 0 0 0 2px rgba(74,103,159,0.1); }
+  }
+
+  @media (max-width: map.get($breakpoints, 'mobile')) {
     flex-direction: column;
-    gap: 0.75rem;
-    max-height: 400px;
-    overflow-y: auto;
-    padding: 0.5rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
+    &__category { min-width: auto; width: 100%; }
+  }
+}
+
+// ── Multi-select action bar ──
+.tm-action-bar {
+  display: flex; align-items: center; gap: map.get($spacing, 'base');
+  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+  background: $color-blue-background;
+  border: 1px solid rgba(74,103,159,0.2);
+  border-radius: map.get($border-radius, 'sm');
+  margin-bottom: map.get($spacing, 'base');
+
+  > span {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-deep;
   }
 
-  .team-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.375rem;
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: #d1d5db;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
+  .btn {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base'); border: none;
+    border-radius: map.get($border-radius, 'sm'); font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium'); cursor: pointer; @include transition(all);
+    display: inline-flex; align-items: center; gap: map.get($spacing, 'xxs');
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+    &.btn-primary { background-color: $color-blue-light; color: $color-white; &:hover:not(:disabled) { background-color: $color-blue-medium; } }
+    i.fa-spinner { animation: spin 1s linear infinite; }
   }
 
-  .team-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+  &__clear {
+    margin-left: auto;
+    border: none; background: none;
+    color: $color-text-muted; font-size: map.get($font-sizes, 'sm');
+    cursor: pointer; text-decoration: underline;
+    @include transition(color);
+    &:hover { color: $color-text-primary; }
+  }
+}
 
-    .team-name {
-      font-weight: 600;
-      color: #111827;
-    }
+// ── Loading ──
+.tm-loading {
+  text-align: center;
+  padding: map.get($spacing, 'xl') map.get($spacing, 'md');
+  color: $color-text-muted;
+  i { font-size: 1.25rem; margin-bottom: map.get($spacing, 'sm'); display: block; animation: spin 1s linear infinite; }
+  p { margin: 0; font-size: map.get($font-sizes, 'sm'); }
+}
 
-    .team-club {
-      font-size: 0.875rem;
-      color: #6b7280;
-    }
+// ── Teams table ──
+.tm-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'sm');
+}
 
-    .team-division {
-      font-size: 0.75rem;
-      font-weight: 500;
-      padding: 0.125rem 0.5rem;
-      border-radius: 0.25rem;
+.tm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: map.get($font-sizes, 'sm');
+
+  thead {
+    background: $color-neutral-light-grey;
+    th {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      text-align: left;
+      font-weight: map.get($font-weights, 'semibold');
+      color: $color-text-primary;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      width: fit-content;
-
-      &.division-1 {
-        background-color: #fef3c7;
-        color: #92400e;
-      }
-
-      &.division-2 {
-        background-color: #ddd6fe;
-        color: #6b21a8;
-      }
-
-      &.division-3 {
-        background-color: #d1fae5;
-        color: #065f46;
-      }
+      font-size: map.get($font-sizes, 'xs');
+      letter-spacing: 0.04em;
+      border-bottom: 2px solid $color-border;
+      white-space: nowrap;
     }
   }
 
-  .btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    min-width: auto;
+  tbody {
+    tr {
+      border-bottom: 1px solid $color-border;
+      @include transition(background-color);
 
-    &.btn-danger {
-      background-color: #dc2626;
-      color: white;
-
-      &:hover:not(:disabled) {
-        background-color: #b91c1c;
+      &:last-child { border-bottom: none; }
+      &:hover { background-color: $color-neutral-light-grey; }
+      &.selected { background-color: $color-blue-background; }
+      &.in-season {
+        background-color: $color-neutral-light-grey;
+        opacity: 0.7;
       }
     }
 
-    &.btn-primary {
-      background-color: #3b82f6;
-      color: white;
-
-      &:hover:not(:disabled) {
-        background-color: #2563eb;
-      }
+    td {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      color: $color-text-primary;
+      vertical-align: middle;
     }
   }
 
-  .teams-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e5e7eb;
-
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 0.375rem;
-      font-size: 1rem;
-      font-weight: 500;
+  &__checkbox {
+    width: 40px;
+    text-align: center !important;
+    input[type="checkbox"] {
+      width: 16px; height: 16px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      min-width: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-      }
-
-      &.btn-secondary {
-        background-color: #6b7280;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background-color: #4b5563;
-        }
-      }
-
-      &.btn-primary {
-        background-color: #10b981;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background-color: #059669;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
-        }
-
-        &:active:not(:disabled) {
-          transform: translateY(0);
-        }
-      }
-
-      i.fa-spinner {
-        animation: spin 1s linear infinite;
-      }
+      accent-color: $color-blue-light;
+      &:disabled { cursor: not-allowed; opacity: 0.4; }
     }
   }
-}
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-// Responsive styles
-@media (max-width: 768px) {
-  .edit-season-container {
-    padding: 1rem;
+  &__team-name {
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-primary;
   }
 
-  .edit-season-form {
-    padding: 1.5rem;
+  &__short-name {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-text-muted;
+    margin-left: map.get($spacing, 'xxs');
   }
 
-  .teams-management {
-    padding: 1.5rem;
+  &__club {
+    color: $color-text-muted;
   }
 
-  .form-actions,
-  .teams-actions {
-    flex-direction: column;
-    
+  &__status {
+    width: 100px;
+    text-align: center !important;
+  }
+
+  &__actions {
+    width: 80px;
+    text-align: right !important;
+
     .btn {
-      width: 100%;
-    }
-  }
-
-  .team-item {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-
-    .btn-sm {
-      width: 100%;
+      padding: map.get($spacing, 'xxs') map.get($spacing, 'sm'); border: none;
+      border-radius: map.get($border-radius, 'sm'); font-size: map.get($font-sizes, 'xs');
+      font-weight: map.get($font-weights, 'medium'); cursor: pointer; @include transition(all);
+      display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+      &.btn-primary { background-color: $color-blue-light; color: $color-white; &:hover:not(:disabled) { background-color: $color-blue-medium; } }
+      i.fa-spinner { animation: spin 1s linear infinite; }
     }
   }
 }
 
-@media (max-width: 480px) {
-  .edit-season-container {
-    padding: 0.5rem;
-  }
+// ── Category & status badges ──
+.tm-category-badge {
+  display: inline-block;
+  font-size: map.get($font-sizes, 'xs');
+  font-weight: map.get($font-weights, 'medium');
+  padding: 2px map.get($spacing, 'xs');
+  border-radius: map.get($border-radius, 'sm');
+  background-color: $color-neutral-light-grey;
+  color: $color-text-primary;
+  text-transform: capitalize;
+}
 
-  .tab-navigation {
-    border-radius: 0.5rem 0.5rem 0 0;
-  }
+.tm-status-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: map.get($font-sizes, 'xs');
+  font-weight: map.get($font-weights, 'medium');
+  padding: 2px map.get($spacing, 'xs');
+  border-radius: map.get($border-radius, 'sm');
 
-  .edit-season-content {
-    border-radius: 0 0 0.5rem 0.5rem;
+  &--added {
+    background-color: $color-green-almost;
+    color: $color-green-muted;
+    i { font-size: 10px; }
   }
+}
 
-  .edit-season-form,
-  .teams-management {
-    padding: 1rem;
-  }
+// ══════════════════════════════════════
+// Responsive
+// ══════════════════════════════════════
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .edit-season-container { padding: map.get($spacing, 'base'); }
+  .edit-season-form { padding: map.get($spacing, 'md'); }
+  .teams-management, .divisions-management { padding: map.get($spacing, 'md'); }
+  .edit-season-form .form-actions { flex-direction: column; .btn { width: 100%; } }
+  .tm-team-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: map.get($breakpoints, 'mobile')) {
+  .edit-season-container { padding: map.get($spacing, 'xs'); }
+  .tab-navigation { border-radius: map.get($border-radius, 'sm') map.get($border-radius, 'sm') 0 0; }
+  .edit-season-content { border-radius: 0 0 map.get($border-radius, 'sm') map.get($border-radius, 'sm'); }
+  .edit-season-form, .teams-management, .divisions-management { padding: map.get($spacing, 'base'); }
+  .tm-division-selector__options { flex-direction: column; }
+  .tm-action-bar { flex-wrap: wrap; }
 }

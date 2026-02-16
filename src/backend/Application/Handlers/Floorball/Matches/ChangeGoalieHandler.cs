@@ -69,19 +69,8 @@ public class ChangeGoalieHandler : IRequestHandler<ChangeGoalieCommand, Result<F
             _logger.LogInformation("Changing goalie in match {MatchId} for team {TeamId} to goalie {GoalieId}",
                 request.MatchId, request.TeamId, request.GoalieId);
 
-            // Change the active goalie based on which team it is
-            if (request.TeamId == match.HomeTeamId)
-            {
-                match.SetHomeActiveGoalie(request.GoalieId);
-            }
-            else if (request.TeamId == match.AwayTeamId)
-            {
-                match.SetAwayActiveGoalie(request.GoalieId);
-            }
-            else
-            {
-                return Result<FloorballMatchDto>.Failure($"Team with ID {request.TeamId} is not participating in this match.");
-            }
+            // Change the active goalie
+            match.SetActiveGoalie(request.TeamId, request.GoalieId);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

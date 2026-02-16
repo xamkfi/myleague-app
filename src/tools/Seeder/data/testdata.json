@@ -144,7 +144,17 @@
     ],
 
     "FloorballSeasons": [
-      { "Name": "2027 Championship Season", "StartDate": "2027-01-01", "EndDate": "2027-12-31", "DivisionName": "Championship Division" }
+      {
+        "Name": "2027 Championship Season",
+        "StartDate": "2027-01-01",
+        "EndDate": "2027-12-31",
+        "DivisionNames": ["Championship Division"],
+        "NumberOfPeriods": 3,
+        "PeriodDurationMinutes": 20,
+        "AllowOvertime": true,
+        "OvertimeDurationMinutes": 10,
+        "AllowShootout": true
+      }
     ],
 
     "FloorballTeams": [

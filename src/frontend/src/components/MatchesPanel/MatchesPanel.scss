@@ -1,0 +1,300 @@
+@use 'sass:map';
+@use 'sass:color';
+@use '@variables' as *;
+
+// =============================================
+// MATCHES PANEL - Sidebar component for HomePage
+// =============================================
+
+.matches-panel {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'sm');
+  padding: map.get($spacing, 'md');
+  background: $color-neutral-white;
+  border-radius: map.get($border-radius, 'lg');
+  height: 100%;
+  overflow-y: auto;
+
+  // --- States: loading / error ---
+  &__state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: map.get($spacing, 'xl') map.get($spacing, 'md');
+    text-align: center;
+    gap: map.get($spacing, 'sm');
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  &__retry-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
+    background: $color-blue-medium;
+    color: $color-white;
+    border: none;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    font-family: $font-family-body;
+    cursor: pointer;
+    transition: background $transition-default;
+
+    &:hover {
+      background: $color-blue-deep;
+    }
+  }
+
+  // --- Section ---
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__section-header {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    padding-bottom: map.get($spacing, 'xxs');
+    border-bottom: 2px solid $color-neutral-medium-grey;
+  }
+
+  &__section-header--live {
+    border-bottom-color: $color-red-primary;
+  }
+
+  &__section-title {
+    font-family: $font-family-display;
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+  }
+
+  &__section-count {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-text-muted;
+    font-weight: map.get($font-weights, 'regular');
+  }
+
+  &__empty-text {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-text-muted;
+    text-align: center;
+    padding: map.get($spacing, 'xs') 0;
+    font-style: italic;
+  }
+}
+
+// =============================================
+// LIVE PULSE DOT (reusable)
+// =============================================
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $color-red-primary;
+  animation: matchesPanelPulse 1.4s ease-in-out infinite;
+
+  &--sm {
+    width: 6px;
+    height: 6px;
+  }
+
+  &--white {
+    background: $color-white;
+  }
+}
+
+@keyframes matchesPanelPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(1.3);
+  }
+}
+
+// =============================================
+// MATCH PANEL CARD
+// =============================================
+.match-panel-card {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'xxs');
+  background: $color-blue-darkest;
+  color: $color-white;
+  border-radius: map.get($border-radius, 'lg');
+  padding: map.get($spacing, 'sm') map.get($spacing, 'sm');
+  cursor: pointer;
+  transition: background $transition-default, box-shadow $transition-default;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    background: color.adjust($color-blue-darkest, $lightness: -3%);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-blue-secondary;
+    outline-offset: 2px;
+  }
+
+  // --- Top row: season + date ---
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__season {
+    font-size: 0.65rem;
+    font-weight: map.get($font-weights, 'medium');
+    color: rgba($color-white, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  &__date {
+    font-size: 0.65rem;
+    color: rgba($color-white, 0.55);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  // --- Live badge ---
+  &__live-badge {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 4px;
+    padding: 2px map.get($spacing, 'xs');
+    background: $color-red-primary;
+    color: $color-white;
+    font-size: 0.6rem;
+    font-weight: map.get($font-weights, 'bold');
+    border-radius: map.get($border-radius, 'sm');
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    line-height: 1;
+  }
+
+  // --- Team row ---
+  &__team-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: map.get($spacing, 'xs');
+    min-height: 24px;
+  }
+
+  &__team-info {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__team-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 2px;
+  }
+
+  &__team-logo-fallback {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba($color-white, 0.12);
+    flex-shrink: 0;
+  }
+
+  &__team-name {
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__score {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-white;
+    min-width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  // --- Venue footer ---
+  &__venue {
+    font-size: 0.6rem;
+    color: rgba($color-white, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: map.get($spacing, 'xxs');
+  }
+}
+
+// =============================================
+// RESPONSIVE
+// =============================================
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .matches-panel {
+    padding: map.get($spacing, 'sm');
+    gap: map.get($spacing, 'xs');
+    border-radius: map.get($border-radius, 'sm');
+
+    &__section-title {
+      font-size: map.get($font-sizes, 'xs');
+    }
+  }
+
+  .match-panel-card {
+    padding: map.get($spacing, 'xs');
+
+    &__team-name {
+      font-size: 0.7rem;
+    }
+
+    &__score {
+      font-size: map.get($font-sizes, 'xs');
+    }
+
+    &__season,
+    &__date,
+    &__venue {
+      font-size: 0.55rem;
+    }
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'mobile')) {
+  .matches-panel {
+    &__state {
+      padding: map.get($spacing, 'md');
+      font-size: map.get($font-sizes, 'xs');
+    }
+  }
+}

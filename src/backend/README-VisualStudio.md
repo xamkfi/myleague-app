@@ -57,6 +57,16 @@ When you start with Docker Compose, Visual Studio will:
 5. **Attach the debugger** (if debugging)
 6. **Open browser** to http://localhost:8080
 
+### Seed Initial Data
+
+After the containers are running, open a terminal and seed the database with test data:
+
+```powershell
+dotnet run --project src/tools/Seeder/Seeder.csproj
+```
+
+This creates clubs, teams, players, referees, seasons, and matches. The seeder is idempotent and safe to run multiple times. See the [Seeder README](../../src/tools/Seeder/README.md) for details.
+
 ## Available Services
 
 | Service | URL | Description |

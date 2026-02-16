@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Domain.ValueObjects.Floorball;
 
 namespace Domain.Entities.Floorball;
 
@@ -47,6 +48,12 @@ public class FloorballSeason : BaseEntity
     private readonly List<FloorballMatch> _matches = new();
 
     /// <summary>
+    /// Gets the match rules configuration for this season.
+    /// Determines period count, duration, overtime and shootout rules.
+    /// </summary>
+    public FloorballMatchRules MatchRules { get; private set; }
+
+    /// <summary>
     /// Private constructor for EF Core
     /// </summary>
     private FloorballSeason()
@@ -57,6 +64,7 @@ public class FloorballSeason : BaseEntity
         EndDate = default; // Initialize to avoid CS8618
         IsActive = false;
         IsCompleted = false;
+        MatchRules = FloorballMatchRules.Default();
         _teams = new List<FloorballTeam>();
         _matches = new List<FloorballMatch>();
     }
@@ -67,8 +75,9 @@ public class FloorballSeason : BaseEntity
     /// <param name="name">The name of the season</param>
     /// <param name="startDate">The start date of the season</param>
     /// <param name="endDate">The end date of the season</param>
+    /// <param name="matchRules">Optional match rules configuration. If null, defaults are used.</param>
     /// <exception cref="ArgumentException">Thrown when input parameters are invalid</exception>
-    public FloorballSeason(string name, DateTime startDate, DateTime endDate)
+    public FloorballSeason(string name, DateTime startDate, DateTime endDate, FloorballMatchRules? matchRules = null)
     {
         ArgumentNullException.ThrowIfNull(name);
         if (string.IsNullOrWhiteSpace(name))
@@ -82,6 +91,7 @@ public class FloorballSeason : BaseEntity
         EndDate = endDate;
         IsActive = false;
         IsCompleted = false;
+        MatchRules = matchRules ?? FloorballMatchRules.Default();
         _teams = new List<FloorballTeam>();
         _matches = new List<FloorballMatch>();
         
@@ -129,6 +139,21 @@ public class FloorballSeason : BaseEntity
         
     }
 
+
+    /// <summary>
+    /// Updates the match rules configuration for this season.
+    /// </summary>
+    /// <param name="matchRules">The new match rules</param>
+    /// <exception cref="ArgumentNullException">Thrown when matchRules is null</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the season is completed</exception>
+    public void UpdateMatchRules(FloorballMatchRules matchRules)
+    {
+        ArgumentNullException.ThrowIfNull(matchRules);
+        if (IsCompleted)
+            throw new InvalidOperationException("Cannot update match rules for a completed season.");
+
+        MatchRules = matchRules;
+    }
 
     /// <summary>
     /// Activates the season

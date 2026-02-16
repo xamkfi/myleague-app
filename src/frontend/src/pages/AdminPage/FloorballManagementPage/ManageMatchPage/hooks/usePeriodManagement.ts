@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { floorballMatchEventService } from '../../../../../api/floorball/floorballMatchEventService';
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 import type { PeriodEventData } from '../components/types';
@@ -10,12 +10,34 @@ interface UsePeriodManagementProps {
   loadCurrentMatchStatus?: () => Promise<void>;
 }
 
+/**
+ * Default match rules used as fallback when matchRules is not present on the DTO
+ * (e.g., for matches created before the match rules feature was added).
+ */
+const DEFAULT_MATCH_RULES = {
+  numberOfPeriods: 2,
+  periodDurationMinutes: 15,
+  allowOvertime: true,
+  overtimeDurationMinutes: 5,
+  allowShootout: true,
+};
+
 export const usePeriodManagement = ({
   currentMatch,
   currentPeriod,
   setCurrentPeriod,
   loadCurrentMatchStatus,
 }: UsePeriodManagementProps) => {
+  // Derive dynamic period numbers from match rules
+  const rules = currentMatch.matchRules ?? DEFAULT_MATCH_RULES;
+  const overtimePeriodNumber = useMemo(() => rules.numberOfPeriods + 1, [rules.numberOfPeriods]);
+  const shootoutPeriodNumber = useMemo(() => rules.numberOfPeriods + 2, [rules.numberOfPeriods]);
+  const maxPeriodNumber = useMemo(() => {
+    if (rules.allowShootout) return shootoutPeriodNumber;
+    if (rules.allowOvertime) return overtimePeriodNumber;
+    return rules.numberOfPeriods;
+  }, [rules, overtimePeriodNumber, shootoutPeriodNumber]);
+
   // State for tracking which periods have been started and ended
   const [startedPeriods, setStartedPeriods] = useState<Set<number>>(new Set());
   const [endedPeriods, setEndedPeriods] = useState<Set<number>>(new Set());
@@ -39,7 +61,8 @@ export const usePeriodManagement = ({
   }, [currentMatch.id]);
 
   /**
-   * Ends the current period by sending API call
+   * Ends the current period by sending API call.
+   * Calculates the next period dynamically based on match rules.
    */
   const endPeriod = useCallback(async () => {
     try {
@@ -50,15 +73,24 @@ export const usePeriodManagement = ({
       // Mark this period as ended
       setEndedPeriods(prev => new Set([...prev, currentPeriod]));
       
-      // Calculate the next period to start
-      let nextPeriod = currentPeriod + 1;
+      // Calculate the next period to start based on match rules
+      let nextPeriod: number;
       
-      if (currentPeriod === 2) {
-        nextPeriod = 3; // Overtime
-      } else if (currentPeriod === 3) {
-        nextPeriod = 4; // Shootout
-      } else if (currentPeriod === 4) {
-        nextPeriod = 0; // No more periods
+      if (currentPeriod < rules.numberOfPeriods) {
+        // Still in regular periods, advance to next regular period
+        nextPeriod = currentPeriod + 1;
+      } else if (currentPeriod === rules.numberOfPeriods && rules.allowOvertime) {
+        // Last regular period ended, overtime is available
+        nextPeriod = overtimePeriodNumber;
+      } else if (currentPeriod === rules.numberOfPeriods && !rules.allowOvertime && rules.allowShootout) {
+        // Last regular period ended, no overtime but shootout is available
+        nextPeriod = shootoutPeriodNumber;
+      } else if (currentPeriod === overtimePeriodNumber && rules.allowShootout) {
+        // Overtime ended, shootout is available
+        nextPeriod = shootoutPeriodNumber;
+      } else {
+        // No more periods available (or shootout just ended)
+        nextPeriod = 0;
       }
       
       setNextPeriodToStart(nextPeriod);
@@ -74,24 +106,25 @@ export const usePeriodManagement = ({
     } finally {
       setPeriodLoading(prev => ({ ...prev, [currentPeriod]: false }));
     }
-  }, [currentPeriod, currentMatch.id, setCurrentPeriod]);
+  }, [currentPeriod, currentMatch.id, setCurrentPeriod, rules, overtimePeriodNumber, shootoutPeriodNumber]);
 
   /**
-   * Starts a new period
+   * Starts a new period.
+   * For overtime/shootout periods, also records the overtime/shootout on the match.
    */
   const startPeriod = useCallback(async () => {
     try {
       setPeriodLoading(prev => ({ ...prev, [nextPeriodToStart]: true }));
       
-      if (nextPeriodToStart === 3) {
+      if (nextPeriodToStart === overtimePeriodNumber) {
         await floorballMatchEventService.recordOvertime(currentMatch.id);
-        await floorballMatchEventService.startPeriod(currentMatch.id, 3);
+        await floorballMatchEventService.startPeriod(currentMatch.id, overtimePeriodNumber);
         if (loadCurrentMatchStatus) {
           await loadCurrentMatchStatus();
         }
-      } else if (nextPeriodToStart === 4) {
+      } else if (nextPeriodToStart === shootoutPeriodNumber) {
         await floorballMatchEventService.recordShootout(currentMatch.id);
-        await floorballMatchEventService.startPeriod(currentMatch.id, 4);
+        await floorballMatchEventService.startPeriod(currentMatch.id, shootoutPeriodNumber);
         if (loadCurrentMatchStatus) {
           await loadCurrentMatchStatus();
         }
@@ -104,8 +137,19 @@ export const usePeriodManagement = ({
       setCurrentPeriod(nextPeriodToStart);
       
       // Update next period to start
-      const upcoming = nextPeriodToStart + 1;
-      setNextPeriodToStart(upcoming <= 4 ? upcoming : 0);
+      let upcoming: number;
+      if (nextPeriodToStart < rules.numberOfPeriods) {
+        upcoming = nextPeriodToStart + 1;
+      } else if (nextPeriodToStart === rules.numberOfPeriods && rules.allowOvertime) {
+        upcoming = overtimePeriodNumber;
+      } else if (nextPeriodToStart === rules.numberOfPeriods && !rules.allowOvertime && rules.allowShootout) {
+        upcoming = shootoutPeriodNumber;
+      } else if (nextPeriodToStart === overtimePeriodNumber && rules.allowShootout) {
+        upcoming = shootoutPeriodNumber;
+      } else {
+        upcoming = 0;
+      }
+      setNextPeriodToStart(upcoming);
       
     } catch (error) {
       console.error('Error starting period:', error);
@@ -113,7 +157,7 @@ export const usePeriodManagement = ({
     } finally {
       setPeriodLoading(prev => ({ ...prev, [nextPeriodToStart]: false }));
     }
-  }, [nextPeriodToStart, currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus]);
+  }, [nextPeriodToStart, currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus, rules, overtimePeriodNumber, shootoutPeriodNumber]);
 
   /**
    * Records overtime for the current match
@@ -121,21 +165,21 @@ export const usePeriodManagement = ({
   const recordOvertime = useCallback(async () => {
     try {
       await floorballMatchEventService.recordOvertime(currentMatch.id);
-      await floorballMatchEventService.startPeriod(currentMatch.id, 3);
+      await floorballMatchEventService.startPeriod(currentMatch.id, overtimePeriodNumber);
       
       if (loadCurrentMatchStatus) {
         await loadCurrentMatchStatus();
       }
       
-      setStartedPeriods(prev => new Set([...prev, 3]));
-      setCurrentPeriod(3);
+      setStartedPeriods(prev => new Set([...prev, overtimePeriodNumber]));
+      setCurrentPeriod(overtimePeriodNumber);
       setShowOvertimeConfirmation(false);
       
     } catch (error) {
       console.error('Error recording overtime:', error);
       throw error;
     }
-  }, [currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus]);
+  }, [currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus, overtimePeriodNumber]);
 
   /**
    * Records shootout for the current match
@@ -143,41 +187,43 @@ export const usePeriodManagement = ({
   const recordShootout = useCallback(async () => {
     try {
       await floorballMatchEventService.recordShootout(currentMatch.id);
-      await floorballMatchEventService.startPeriod(currentMatch.id, 4);
+      await floorballMatchEventService.startPeriod(currentMatch.id, shootoutPeriodNumber);
       
       if (loadCurrentMatchStatus) {
         await loadCurrentMatchStatus();
       }
       
-      setStartedPeriods(prev => new Set([...prev, 4]));
-      setCurrentPeriod(4);
+      setStartedPeriods(prev => new Set([...prev, shootoutPeriodNumber]));
+      setCurrentPeriod(shootoutPeriodNumber);
       setShowShootoutConfirmation(false);
       
     } catch (error) {
       console.error('Error recording shootout:', error);
       throw error;
     }
-  }, [currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus]);
+  }, [currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus, shootoutPeriodNumber]);
 
   /**
    * Determines if we can end the current period
    */
   const canEndPeriod = useCallback(() => {
+    const isShootout = currentPeriod === shootoutPeriodNumber;
+    const isLastAllowedPeriod = currentPeriod === maxPeriodNumber;
+    
     const conditions = {
       matchInProgress: currentMatch.status === 'InProgress',
       notLoading: !periodLoading[currentPeriod],
       periodStarted: startedPeriods.has(currentPeriod),
       periodNotEnded: !endedPeriods.has(currentPeriod),
       hasNextPeriod: nextPeriodToStart > 0,
-      isShootout: currentPeriod === 4,
     };
     
     return conditions.matchInProgress && 
            conditions.notLoading &&
            conditions.periodStarted &&
            conditions.periodNotEnded &&
-           (conditions.hasNextPeriod || conditions.isShootout);
-  }, [currentMatch.status, periodLoading, currentPeriod, startedPeriods, endedPeriods, nextPeriodToStart]);
+           (conditions.hasNextPeriod || isShootout || isLastAllowedPeriod);
+  }, [currentMatch.status, periodLoading, currentPeriod, startedPeriods, endedPeriods, nextPeriodToStart, shootoutPeriodNumber, maxPeriodNumber]);
 
   /**
    * Gets the current period status for display
@@ -188,27 +234,30 @@ export const usePeriodManagement = ({
     }
     
     if (currentMatch.status === 'Completed') {
-      return '🔴 Completed';
+      return 'Completed';
     }
+    
+    const isOvertime = currentPeriod === overtimePeriodNumber;
+    const isShootout = currentPeriod === shootoutPeriodNumber;
     
     if (currentMatch.status === 'InProgress') {
       if (endedPeriods.has(currentPeriod)) {
-        if (currentPeriod === 3) return '🔴 Overtime Ended';
-        if (currentPeriod === 4) return '🔴 Shootout Ended';
-        return '🔴 Ended';
+        if (isOvertime) return 'Overtime Ended';
+        if (isShootout) return 'Shootout Ended';
+        return 'Ended';
       } else if (startedPeriods.has(currentPeriod)) {
-        if (currentPeriod === 3) return '🟢 Overtime Started';
-        if (currentPeriod === 4) return '🟢 Shootout Started';
-        return '🟢 Started';
+        if (isOvertime) return 'Overtime Started';
+        if (isShootout) return 'Shootout Started';
+        return 'Started';
       } else {
-        if (currentPeriod === 3) return '⏸️ Overtime Not Started';
-        if (currentPeriod === 4) return '⏸️ Shootout Not Started';
-        return '⏸️ Not Started';
+        if (isOvertime) return 'Overtime Not Started';
+        if (isShootout) return 'Shootout Not Started';
+        return 'Not Started';
       }
     }
     
-    return '⏸️ Not Started';
-  }, [periodLoading, currentPeriod, currentMatch.status, endedPeriods, startedPeriods]);
+    return 'Not Started';
+  }, [periodLoading, currentPeriod, currentMatch.status, endedPeriods, startedPeriods, overtimePeriodNumber, shootoutPeriodNumber]);
 
   /**
    * Gets the text for the period control button
@@ -216,19 +265,19 @@ export const usePeriodManagement = ({
   const getPeriodControlButtonText = useCallback(() => {
     if (canEndPeriod()) {
       if (periodLoading[currentPeriod]) return 'Ending...';
-      if (currentPeriod === 3) return '🔴 End Overtime';
-      if (currentPeriod === 4) return '🏁 End Shootout';
+      if (currentPeriod === overtimePeriodNumber) return 'End Overtime';
+      if (currentPeriod === shootoutPeriodNumber) return 'End Shootout';
       return 'End period';
     } else {
       if (periodLoading[nextPeriodToStart]) return 'Starting...';
-      if (nextPeriodToStart === 3) return '⏰ Start Overtime';
-      if (nextPeriodToStart === 4) return '🎯 Start Shootout';
+      if (nextPeriodToStart === overtimePeriodNumber) return 'Start Overtime';
+      if (nextPeriodToStart === shootoutPeriodNumber) return 'Start Shootout';
       return `Start period ${nextPeriodToStart}`;
     }
-  }, [canEndPeriod, periodLoading, currentPeriod, nextPeriodToStart]);
+  }, [canEndPeriod, periodLoading, currentPeriod, nextPeriodToStart, overtimePeriodNumber, shootoutPeriodNumber]);
 
-  const isInOvertime = useCallback(() => currentPeriod === 3, [currentPeriod]);
-  const isInShootout = useCallback(() => currentPeriod === 4, [currentPeriod]);
+  const isInOvertime = useCallback(() => currentPeriod === overtimePeriodNumber, [currentPeriod, overtimePeriodNumber]);
+  const isInShootout = useCallback(() => currentPeriod === shootoutPeriodNumber, [currentPeriod, shootoutPeriodNumber]);
 
   const confirmEndPeriod = useCallback(() => {
     if (pendingEndPeriodAction) {
@@ -252,6 +301,12 @@ export const usePeriodManagement = ({
     nextPeriodToStart,
     setNextPeriodToStart,
     periodLoading,
+    
+    // Dynamic period numbers derived from match rules
+    overtimePeriodNumber,
+    shootoutPeriodNumber,
+    maxPeriodNumber,
+    matchRules: rules,
     
     // Confirmation dialogs
     showEndPeriodConfirmation,

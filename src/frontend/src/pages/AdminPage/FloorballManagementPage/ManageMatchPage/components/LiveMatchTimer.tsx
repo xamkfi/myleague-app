@@ -21,6 +21,8 @@ interface LiveMatchTimerProps {
   getPeriodControlButtonText: () => string;
   keybindsEnabled: boolean;
   isStartMatchDisabled: boolean;
+  overtimePeriodNumber: number;
+  shootoutPeriodNumber: number;
 }
 
 const LiveMatchTimer = ({
@@ -37,6 +39,8 @@ const LiveMatchTimer = ({
   getPeriodControlButtonText,
   keybindsEnabled,
   isStartMatchDisabled,
+  overtimePeriodNumber,
+  shootoutPeriodNumber,
 }: LiveMatchTimerProps) => {
   const {
     currentPeriod,
@@ -51,27 +55,35 @@ const LiveMatchTimer = ({
     return 'upcoming';
   };
 
-  const periodLabels: Record<number, string> = {
-    1: 'Period 1',
-    2: 'Period 2',
-    3: 'Overtime',
-    4: 'Shootout',
-  };
+  const rules = currentMatch.matchRules;
+  const numberOfPeriods = rules?.numberOfPeriods ?? 2;
+  const periodDurationSeconds = (rules?.periodDurationMinutes ?? 15) * 60;
 
-  // Turn digits red at 15:00 (900s) and after, except during shootout
-  const isInShootout = currentPeriod === 4;
-  const shouldPeriodEnd = elapsedTimeSeconds >= 900 && !isInShootout;
+  // Build dynamic period labels
+  const periodLabels: Record<number, string> = {};
+  for (let i = 1; i <= numberOfPeriods; i++) {
+    periodLabels[i] = `Period ${i}`;
+  }
+  periodLabels[overtimePeriodNumber] = 'Overtime';
+  periodLabels[shootoutPeriodNumber] = 'Shootout';
+
+  // Turn digits red when elapsed time exceeds period duration, except during shootout
+  const isInShootout = currentPeriod === shootoutPeriodNumber;
+  const shouldPeriodEnd = elapsedTimeSeconds >= periodDurationSeconds && !isInShootout;
   
   // Timer controls enabled only if current period has started and not ended, and not in shootout
-  const controlsEnabled = startedPeriods.has(currentPeriod) && !endedPeriods.has(currentPeriod) && currentPeriod !== 4;
+  const controlsEnabled = startedPeriods.has(currentPeriod) && !endedPeriods.has(currentPeriod) && currentPeriod !== shootoutPeriodNumber;
 
   // Determine which periods to show
-  const periodsToShow = [1, 2];
+  const periodsToShow: number[] = [];
+  for (let i = 1; i <= numberOfPeriods; i++) {
+    periodsToShow.push(i);
+  }
   if (currentMatch.wentToOvertime) {
-    periodsToShow.push(3);
+    periodsToShow.push(overtimePeriodNumber);
   }
   if (currentMatch.wentToShootout) {
-    periodsToShow.push(4);
+    periodsToShow.push(shootoutPeriodNumber);
   }
 
   // Register timer callbacks when they're provided
@@ -104,8 +116,8 @@ const LiveMatchTimer = ({
         <div className="clock-inner">
           <div className="period-row">
           {periodsToShow.map((p) => (
-            <div key={p} className={`period-chip ${getChipStatus(p)} ${p > 2 ? 'period-chip--extra' : ''}`}>
-                {`${periodLabels[p]}: ${getChipStatus(p)}`}
+            <div key={p} className={`period-chip ${getChipStatus(p)} ${p > numberOfPeriods ? 'period-chip--extra' : ''}`}>
+                {`${periodLabels[p] ?? `Period ${p}`}: ${getChipStatus(p)}`}
               </div>
             ))}
           </div>

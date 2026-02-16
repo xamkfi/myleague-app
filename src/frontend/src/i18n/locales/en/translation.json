@@ -742,7 +742,11 @@
         "actions": "Actions"
       },
       "sections": {
-        "matches": "Matches"
+        "matches": "Matches",
+        "ongoing": "Ongoing Matches",
+        "scheduled": "Scheduled Matches",
+        "completed": "Completed Matches",
+        "cancelled": "Cancelled Matches"
       },
       "create": {
         "title": "Create New Match",
@@ -788,7 +792,9 @@
       },
       "filters": {
         "filterBySeason": "Filter by Season:",
-        "allSeasons": "All Seasons"
+        "allSeasons": "All Seasons",
+        "searchByTeam": "Search by Team:",
+        "searchPlaceholder": "Search for team names..."
       },
       "status": {
         "Scheduled": "Scheduled",
@@ -796,7 +802,31 @@
         "Completed": "Completed",
         "Cancelled": "Cancelled",
         "Postponed": "Postponed"
-      }
+      },
+      "actions": {
+        "manage": "Manage",
+        "live": "Live View",
+        "cancel": "Cancel Match",
+        "reactivate": "Reactivate Match",
+        "menu": "Match actions menu"
+      },
+      "confirmCancel": {
+        "title": "Cancel Match",
+        "message": "Are you sure you want to cancel this match? This will mark the match as cancelled.",
+        "confirm": "Yes, Cancel Match"
+      },
+      "confirmReactivate": {
+        "title": "Reactivate Match",
+        "message": "Are you sure you want to reactivate this match? This will set the match back to Scheduled status.",
+        "confirm": "Yes, Reactivate Match"
+      },
+      "cancelling": "Cancelling...",
+      "reactivating": "Reactivating...",
+      "creating": "Creating...",
+      "updating": "Updating...",
+      "createMatch": "Create Match",
+      "updateMatch": "Update Match",
+      "matchCount": "match(es)"
     }
   },
   "roster": {
@@ -870,7 +900,8 @@
       "football": "Football" 
     },
     "search": "Search",
-    "searchPlaceholder": "Search news..."
+    "searchPlaceholder": "Search news...",
+    "readMore": "Read more"
   },
   "teamUserPage": {
     "loadingInfo": "Loading team information…",

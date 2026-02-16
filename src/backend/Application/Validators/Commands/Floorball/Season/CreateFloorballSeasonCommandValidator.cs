@@ -30,6 +30,17 @@ public class CreateFloorballSeasonCommandValidator : AbstractValidator<CreateFlo
             .NotEmpty().WithMessage("End date is required")
             .Must(BeValidDate).WithMessage("End date must be a valid date")
             .GreaterThan(x => x.StartDate).WithMessage("End date must be after start date");
+
+        RuleFor(x => x.NumberOfPeriods)
+            .InclusiveBetween(1, 5).WithMessage("Number of periods must be between 1 and 5");
+
+        RuleFor(x => x.PeriodDurationMinutes)
+            .InclusiveBetween(1, 60).WithMessage("Period duration must be between 1 and 60 minutes");
+
+        RuleFor(x => x.OvertimeDurationMinutes)
+            .InclusiveBetween(1, 30).WithMessage("Overtime duration must be between 1 and 30 minutes")
+            .When(x => x.AllowOvertime);
+
     }
 
     private bool BeValidDate(DateTime date)

@@ -1,4 +1,5 @@
 using Domain.Entities.Floorball;
+using Domain.ValueObjects.Floorball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -32,6 +33,35 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
 
             builder.Property(s => s.IsCompleted)
                 .IsRequired();
+
+            // Configure MatchRules as an owned entity (stored as columns in the same table)
+            builder.OwnsOne(s => s.MatchRules, rules =>
+            {
+                rules.Property(r => r.NumberOfPeriods)
+                    .HasColumnName("MatchRules_NumberOfPeriods")
+                    .IsRequired()
+                    .HasDefaultValue(2);
+
+                rules.Property(r => r.PeriodDurationMinutes)
+                    .HasColumnName("MatchRules_PeriodDurationMinutes")
+                    .IsRequired()
+                    .HasDefaultValue(15);
+
+                rules.Property(r => r.AllowOvertime)
+                    .HasColumnName("MatchRules_AllowOvertime")
+                    .IsRequired()
+                    .HasDefaultValue(true);
+
+                rules.Property(r => r.OvertimeDurationMinutes)
+                    .HasColumnName("MatchRules_OvertimeDurationMinutes")
+                    .IsRequired()
+                    .HasDefaultValue(5);
+
+                rules.Property(r => r.AllowShootout)
+                    .HasColumnName("MatchRules_AllowShootout")
+                    .IsRequired()
+                    .HasDefaultValue(true);
+            });
 
             // Configure many-to-many relationship with FloorballTeam
             builder.HasMany(s => s.Teams)

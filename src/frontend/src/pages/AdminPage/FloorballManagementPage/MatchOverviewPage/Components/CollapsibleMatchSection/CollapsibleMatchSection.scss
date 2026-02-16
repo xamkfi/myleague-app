@@ -2,312 +2,124 @@
 @use '../../../../../../styles/variables' as *;
 
 .collapsible-match-section {
-  margin-bottom: 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: map.get($spacing, 'base');
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: $color-white;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
 
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    background: $color-neutral-light-grey;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    @include transition(background-color);
+
+    &:hover {
+      background: darken(#f1f2f7, 2%);
+    }
 
     .section-title {
       display: flex;
       align-items: center;
-      font-weight: 600;
-      font-size: 1rem;
-      color: #333;
+      gap: map.get($spacing, 'sm');
+      font-weight: map.get($font-weights, 'semibold');
+      font-size: map.get($font-sizes, 'sm');
+      color: $color-text-primary;
 
       .collapse-icon {
-        margin-right: 0.5rem;
-        font-size: 0.8rem;
-        color: #666;
-        transition: transform 0.2s ease;
+        font-size: map.get($font-sizes, 'xs');
+        color: $color-neutral-dark-grey;
+        width: 16px;
+        text-align: center;
       }
     }
-
   }
 
   .section-content {
-    padding: 0.75rem;
+    padding: 0;
+  }
 
-    .matches-table-container {
-      overflow-x: auto;
+  // Override admin-table wrapper inside collapsible sections
+  .cms-table-wrapper {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
 
-              .matches-table {
-          width: 100%;
-          border-collapse: collapse;
-          table-layout: fixed;
-          font-size: 0.85rem;
+  // Custom match table adjustments
+  .cms-table {
+    // Match teams column styling
+    .cms-match-teams {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, 'xs');
+      flex-wrap: wrap;
 
-          td.clickable-cell {
-            cursor: pointer;
-          }
-
-          th {
-            background: #f8f9fa;
-            padding: 0.5rem 0.75rem;
-            text-align: left;
-            font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #dee2e6;
-            font-size: 0.8rem;
-          }
-
-          td {
-            padding: 0.5rem 0.75rem;
-            border-bottom: 1px solid #dee2e6;
-            vertical-align: middle;
-          }
-
-          // Ensure consistent column widths across all sections
-          th:nth-child(1), td:nth-child(1) { width: 30%; }
-          th:nth-child(2), td:nth-child(2) { width: 18%; }
-          th:nth-child(3), td:nth-child(3) { width: 15%; }
-          th:nth-child(4), td:nth-child(4) { width: 12%; text-align: center; }
-          th:nth-child(5), td:nth-child(5) { width: 12%; }
-          th:nth-child(6), td:nth-child(6) { width: 13%; text-align: right; }
-
-        .match-cell {
-          .match-teams {
-            position: relative;
-            color: #333;
-          }
-
-          .team-names {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-          }
-
-          .team-name {
-            font-weight: 500;
-            color: #333;
-            line-height: 1.2;
-            font-size: map.get($font-sizes, 'sm');
-            word-break: break-word;
-          }
-
-          .vs-badge {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 1px;
-            font-weight: 700;
-            color: #0C1D3E;
-            font-family: 'REM', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-            letter-spacing: 0.05em;
-            white-space: nowrap; // prevent wrapping
-          }
-        }
-
-        .date-cell {
-          color: #666;
-          font-size: 0.85rem;
-        }
-
-        .venue-cell {
-          color: #666;
-          
-          .tbd {
-            color: #999;
-            font-style: italic;
-          }
-        }
-
-        .score-cell {
-          text-align: center;
-          font-weight: 600;
-          
-          .no-score {
-            color: #999;
-          }
-          
-          .score {
-            color: #333;
-          }
-        }
-
-        .status-cell {
-          .status-badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            
-            &.status-scheduled {
-              background: #e3f2fd;
-              color: #1976d2;
-            }
-            
-            &.status-progress {
-              background: #fff3e0;
-              color: #f57c00;
-            }
-            
-            &.status-completed {
-              background: #e8f5e8;
-              color: #388e3c;
-            }
-            
-            &.status-cancelled {
-              background: #ffebee;
-              color: #d32f2f;
-            }
-            
-            &.status-postponed {
-              background: #f3e5f5;
-              color: #7b1fa2;
-            }
-          }
-        }
-
-        .actions-cell {
-          display: table-cell !important;
-          vertical-align: middle;
-          
-          .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-            
-            button {
-              padding: 0.4rem 0.6rem;
-              border: none;
-              border-radius: 4px;
-              font-size: 0.75rem;
-              cursor: pointer;
-              transition: all 0.2s ease;
-              
-              &:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
-              }
-              
-              &.go-live-button {
-                background: #007bff;
-                color: white;
-                
-                &:hover:not(:disabled) {
-                  background: #0056b3;
-                }
-              }
-              
-              &.live-button {
-                background: #dc3545;
-                color: white;
-                
-                &:hover:not(:disabled) {
-                  background: #c82333;
-                }
-              }
-              
-              &.edit-button {
-                background: #6c757d;
-                color: white;
-                
-                &:hover:not(:disabled) {
-                  background: #545b62;
-                }
-              }
-            }
-          }
-        }
+      .admin-table__name {
+        white-space: nowrap;
       }
+    }
+
+    .cms-vs {
+      font-size: map.get($font-sizes, 'xs');
+      color: $color-neutral-dark-grey;
+      font-weight: map.get($font-weights, 'medium');
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .cms-tbd {
+      font-style: italic;
+    }
+
+    .cms-score-col {
+      text-align: center;
     }
   }
 
-  // Special styling for ongoing matches section (yellow)
+  // Section type coloring
   &.ongoing-section {
     .section-header {
       background: $color-yellow-pale;
-      color: $color-text-primary;
-      
-      .section-title {
-        color: $color-text-primary;
-        
-        .collapse-icon {
-          color: $color-text-primary;
-        }
-      }
-      
-      .section-count {
-        background: $color-neutral-light-grey;
-        color: $color-text-primary;
+
+      &:hover {
+        background: darken(#FFEFB8, 3%);
       }
     }
   }
 
-  // Special styling for scheduled matches section (blue)
   &.scheduled-section {
     .section-header {
       background: $color-blue-secondary-pale;
-      color: $color-text-primary;
-      
-      .section-title {
-        color: $color-text-primary;
-        
-        .collapse-icon {
-          color: $color-text-primary;
-        }
-      }
-      
-      .section-count {
-        background: $color-neutral-light-grey;
-        color: $color-text-primary;
+
+      &:hover {
+        background: darken(#BBCEF2, 3%);
       }
     }
   }
 
-  // Special styling for completed matches section (light green)
   &.completed-section {
     .section-header {
       background: $color-green-pale;
-      color: $color-text-primary;
-      
-      .section-title {
-        color: $color-text-primary;
-        
-        .collapse-icon {
-          color: $color-text-primary;
-        }
-      }
-      
-      .section-count {
-        background: $color-neutral-light-grey;
-        color: $color-text-primary;
+
+      &:hover {
+        background: darken(#A9E3C1, 3%);
       }
     }
   }
-  // Special styling for cancelled matches section (red)
+
   &.cancelled-section {
     .section-header {
       background: $color-red-pale;
-      color: $color-text-primary;
 
-      .section-title {
-        color: $color-text-primary;
-
-        .collapse-icon {
-          color: $color-text-primary;
-        }
-      }
-
-      .section-count {
-        background: $color-neutral-light-grey;
-        color: $color-text-primary;
+      &:hover {
+        background: darken(#F9BAB8, 3%);
       }
     }
   }
-} 
+}
