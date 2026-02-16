@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
 
 // Public pages
@@ -52,13 +53,9 @@ const CreateRefereePage = lazy(() => import('../pages/AdminPage/FloorballManagem
 const FloorballSeasonsPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage'));
 const CreateSeasonPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/CreateSeasonPage/CreateSeasonPage'));
 const EditSeasonPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/EditSeasonPage/EditSeasonPage'));
-const MatchOverviewPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/MatchOverviewPage/MatchOverviewPage'));
+const MatchManagementPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/MatchManagementPage/MatchManagementPage'));
 const CreateMatchPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/CreateMatchPage/CreateMatchPage'));
 const EditMatchPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/EditMatchPage/EditMatchPage'));
-const CompletedMatchesPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/CompletedMatchesPage/CompletedMatchesPage'));
-const ScheduledMatchesPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/ScheduledMatchesPage/ScheduledMatchesPage'));
-const InProgressMatchesPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/InProgressMatchesPage/InProgressMatchesPage'));
-const CancelledMatchesPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/CancelledMatchesPage/CancelledMatchesPage'));
 const ManageMatchPage = lazy(() => import('../pages/AdminPage/FloorballManagementPage/ManageMatchPage/ManageMatchPage'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
@@ -282,14 +279,14 @@ export const routes: RouteObject[] = [
       {
         path: 'matches',
         children: [
-          { index: true, element: <ProtectedRoute><SuspenseWrapper><MatchOverviewPage /></SuspenseWrapper></ProtectedRoute> },
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage /></SuspenseWrapper></ProtectedRoute> },
           { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage /></SuspenseWrapper></ProtectedRoute> },
           { path: ':matchId/edit', element: <ProtectedRoute><SuspenseWrapper><EditMatchPage /></SuspenseWrapper></ProtectedRoute> },
-          { path: 'completed', element: <ProtectedRoute><SuspenseWrapper><CompletedMatchesPage /></SuspenseWrapper></ProtectedRoute> },
-          { path: 'scheduled', element: <ProtectedRoute><SuspenseWrapper><ScheduledMatchesPage /></SuspenseWrapper></ProtectedRoute> },
-          { path: 'in-progress', element: <ProtectedRoute><SuspenseWrapper><InProgressMatchesPage /></SuspenseWrapper></ProtectedRoute> },
-          { path: 'cancelled', element: <ProtectedRoute><SuspenseWrapper><CancelledMatchesPage /></SuspenseWrapper></ProtectedRoute> },
-          { path: 'manage/:matchId', element: <ProtectedRoute><SuspenseWrapper><ManageMatchPage /></SuspenseWrapper></ProtectedRoute> }
+          { path: 'manage/:matchId', element: <ProtectedRoute><SuspenseWrapper><ManageMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'completed', element: <Navigate to="/admin/floorball/matches?tab=completed" replace /> },
+          { path: 'scheduled', element: <Navigate to="/admin/floorball/matches?tab=scheduled" replace /> },
+          { path: 'in-progress', element: <Navigate to="/admin/floorball/matches?tab=ongoing" replace /> },
+          { path: 'cancelled', element: <Navigate to="/admin/floorball/matches?tab=cancelled" replace /> },
         ]
       }
     ]

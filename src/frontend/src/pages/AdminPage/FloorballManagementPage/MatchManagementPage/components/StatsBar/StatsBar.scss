@@ -1,0 +1,66 @@
+@use 'sass:map';
+@use '../../../../../../styles/variables' as *;
+
+.stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map.get($spacing, 'sm');
+  margin-bottom: map.get($spacing, 'lg');
+}
+
+.stats-bar__item {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'xxs');
+  padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+  border-radius: 999px;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'medium');
+  border: 1px solid transparent;
+
+  &--total {
+    background-color: $color-neutral-light-grey;
+    color: $color-text-primary;
+    border-color: $color-neutral-medium-grey;
+  }
+
+  &--active {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #047857;
+  }
+
+  &--info {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+  }
+
+  &--completed {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #374151;
+  }
+
+  &--danger {
+    background-color: rgba(248, 113, 113, 0.1);
+    color: #b91c1c;
+  }
+}
+
+.stats-bar__value {
+  font-weight: map.get($font-weights, 'bold');
+}
+
+.stats-bar__label {
+  color: inherit;
+  opacity: 0.85;
+}
+
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .stats-bar {
+    gap: map.get($spacing, 'xs');
+  }
+
+  .stats-bar__item {
+    font-size: map.get($font-sizes, 'sm-xs');
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+  }
+}
