@@ -870,7 +870,8 @@
       "football": "Football" 
     },
     "search": "Search",
-    "searchPlaceholder": "Search news..."
+    "searchPlaceholder": "Search news...",
+    "readMore": "Read more"
   },
   "teamUserPage": {
     "loadingInfo": "Loading team information…",

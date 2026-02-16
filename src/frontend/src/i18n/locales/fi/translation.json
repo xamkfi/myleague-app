@@ -849,7 +849,8 @@
       "football": "Jalkapallo" 
     },
     "search": "Hae",
-    "searchPlaceholder": "Hae uutisia..."
+    "searchPlaceholder": "Hae uutisia...",
+    "readMore": "Lue lisää"
   },
   "teamUserPage": {
     "loadingInfo": "Ladataan joukkueen tietoja…",
