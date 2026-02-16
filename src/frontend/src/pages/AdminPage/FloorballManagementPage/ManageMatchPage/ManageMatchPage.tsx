@@ -245,12 +245,12 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           const maxPeriod = periodManagement.maxPeriodNumber;
           let nextPeriod = 1;
           for (let i = 1; i <= maxPeriod; i++) {
-            if (!startedPeriods.has(i)) {
+            if (!desiredStartedPeriods.has(i)) {
               nextPeriod = i;
               break;
             }
           }
-          if (nextPeriod > maxPeriod || startedPeriods.has(maxPeriod)) {
+          if (nextPeriod > maxPeriod || desiredStartedPeriods.has(maxPeriod)) {
             nextPeriod = 0;
           }
           
@@ -297,6 +297,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     match.id,
     matchData.currentMatch.status,
     matchData.currentMatch.periodScores,
+    periodManagement.maxPeriodNumber,
     setTimerCurrentPeriod,
     setStartedPeriods,
     setEndedPeriods,
