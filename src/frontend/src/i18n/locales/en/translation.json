@@ -741,12 +741,28 @@
         "status": "Status",
         "actions": "Actions"
       },
+      "columns": {
+        "match": "Match",
+        "season": "Season",
+        "dateTime": "Date & Time",
+        "venue": "Venue",
+        "score": "Score",
+        "status": "Status"
+      },
       "sections": {
         "matches": "Matches",
         "ongoing": "Ongoing Matches",
         "scheduled": "Scheduled Matches",
         "completed": "Completed Matches",
         "cancelled": "Cancelled Matches"
+      },
+      "tabs": {
+        "all": "All",
+        "ongoing": "Ongoing",
+        "scheduled": "Scheduled",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "ariaLabel": "Filter matches by status"
       },
       "create": {
         "title": "Create New Match",

@@ -741,12 +741,28 @@
         "status": "Tila",
         "actions": "Toiminnot"
       },
+      "columns": {
+        "match": "Ottelu",
+        "season": "Kausi",
+        "dateTime": "Päiväys & Aika",
+        "venue": "Paikka",
+        "score": "Tulos",
+        "status": "Tila"
+      },
       "sections": {
         "matches": "Ottelut",
         "ongoing": "Käynnissä olevat ottelut",
         "scheduled": "Aikataulutetut ottelut",
         "completed": "Päättyneet ottelut",
         "cancelled": "Peruutetut ottelut"
+      },
+      "tabs": {
+        "all": "Kaikki",
+        "ongoing": "Käynnissä",
+        "scheduled": "Tulevat",
+        "completed": "Päättyneet",
+        "cancelled": "Perutut",
+        "ariaLabel": "Suodata ottelut tilan mukaan"
       },
       "create": {
         "title": "Luo Uusi Ottelu",
@@ -806,6 +822,7 @@
       "actions": {
         "manage": "Hallitse",
         "live": "Live-näkymä",
+        "start": "Käynnistä ottelu",
         "cancel": "Peruuta ottelu",
         "reactivate": "Aktivoi ottelu uudelleen",
         "menu": "Ottelun toiminnot"
