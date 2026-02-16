@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import type { FloorballSeasonDto } from '../../../../../../api/floorball/floorballSeasonService';
 import { formatSeasonDisplayName } from '../../../ManageMatchPage/utils/matchFormatters';
+import SearchField from '../../../../../../components/SearchField/SearchField';
+import Button from '../../../../../../components/Button/Button';
+import AddIcon from '../../../../../../assets/basicIcons/add.svg';
 import './MatchFilters.scss';
 
 interface MatchFiltersProps {
@@ -12,19 +15,36 @@ interface MatchFiltersProps {
   onCreateNew?: () => void;
 }
 
-function MatchFilters(props: MatchFiltersProps) {
-  const { seasons, selectedSeasonId, onSeasonChange, searchQuery, onSearchChange, onCreateNew } = props;
+function MatchFilters({
+  seasons,
+  selectedSeasonId,
+  onSeasonChange,
+  searchQuery,
+  onSearchChange,
+  onCreateNew,
+}: MatchFiltersProps) {
   const { t } = useTranslation();
+
   return (
-    <div className="filter-section">
-      <div className="filter-left">
-        <div className="filter-item">
-          <label htmlFor="season-filter">{t('floorball.matches.filters.filterBySeason', 'Filter by Season:')}</label>
+    <div className="match-filters">
+      <div className="match-filters__inputs">
+        <SearchField
+          value={searchQuery}
+          onChange={onSearchChange}
+          placeholder={t('floorball.matches.filters.searchPlaceholder', 'Search for team names...')}
+          rounded="pill"
+          fullWidth
+        />
+
+        <div className="match-filters__select-group">
+          <label htmlFor="season-filter">
+            {t('floorball.matches.filters.filterBySeason', 'Filter by Season:')}
+          </label>
           <select
             id="season-filter"
             value={selectedSeasonId}
             onChange={(e) => onSeasonChange(e.target.value)}
-            className="season-filter"
+            className="match-filters__select"
           >
             <option value="">{t('floorball.matches.filters.allSeasons', 'All Seasons')}</option>
             {seasons.map(season => (
@@ -34,23 +54,17 @@ function MatchFilters(props: MatchFiltersProps) {
             ))}
           </select>
         </div>
-        <div className="filter-item">
-          <label htmlFor="search-filter">{t('floorball.matches.filters.searchByTeam', 'Search by Team:')}</label>
-          <input
-            id="search-filter"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t('floorball.matches.filters.searchPlaceholder', 'Search for team names...')}
-            className="search-filter"
-          />
-        </div>
       </div>
-      <button type="button" className="create-match-button" onClick={onCreateNew}>
-        + {t('floorball.matches.createNewMatch', 'Create new match')}
-      </button>
+
+      <Button
+        iconLeft={AddIcon}
+        rounded="pill"
+        onClick={onCreateNew}
+      >
+        {t('floorball.matches.createNewMatch', 'Create New Match')}
+      </Button>
     </div>
   );
 }
 
-export default MatchFilters; 
+export default MatchFilters;

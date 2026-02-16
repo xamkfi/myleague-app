@@ -794,6 +794,41 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Reactivates a cancelled floorball match back to Scheduled status
+        /// </summary>
+        [HttpPost("{matchId:guid}/reactivate")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> Reactivate(Guid matchId)
+        {
+            _logger.LogInformation("Reactivating match ID: {matchId}", matchId);
+
+            ReactivateMatchCommand command = new ReactivateMatchCommand(matchId);
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match reactivated successfully"));
+            }
+
+            string? errorMessage = result.Error ?? "Failed to reactivate match";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            if (errorMessage.Contains("Can only reactivate", StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Adds an official (referee) to a floorball match (append semantics).
         /// </summary>
         [HttpPost("{matchId:guid}/officials")]

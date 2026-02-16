@@ -63,6 +63,20 @@ const EditMatchPage = () => {
     }
   };
 
+  const handleReactivateMatch = async (matchId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await floorballMatchEventService.reactivateMatch(matchId);
+      navigate('/admin/floorball/matches');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred during reactivation';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUpdateMatch = async (updatedData: CreateFloorballMatchRequest) => {
     if (!matchData) {
       setError('Original match data is not available.');
@@ -154,6 +168,7 @@ const EditMatchPage = () => {
               onSubmit={handleFormSubmit}
               onCancel={handleCancel}
               onCancelMatch={handleCancelMatch}
+              onReactivateMatch={handleReactivateMatch}
               loading={loading}
             />
           ) : (

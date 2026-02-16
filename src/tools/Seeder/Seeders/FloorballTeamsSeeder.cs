@@ -72,14 +72,9 @@ public static class FloorballTeamsSeeder
             if (season == null) continue;
 
             HashSet<Guid> seasonDivisionIds = new HashSet<Guid>();
-            Guid primaryDivisionId = ResolveDivisionId(seasonSeed.DivisionName, divisions);
-            seasonDivisionIds.Add(primaryDivisionId);
-            if (seasonSeed.AdditionalDivisionNames != null)
+            foreach (string divisionName in seasonSeed.DivisionNames)
             {
-                foreach (string dn in seasonSeed.AdditionalDivisionNames)
-                {
-                    seasonDivisionIds.Add(ResolveDivisionId(dn, divisions));
-                }
+                seasonDivisionIds.Add(ResolveDivisionId(divisionName, divisions));
             }
 
             foreach (FloorballTeamSeed teamSeed in teamSeeds)

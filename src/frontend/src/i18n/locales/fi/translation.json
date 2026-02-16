@@ -742,7 +742,11 @@
         "actions": "Toiminnot"
       },
       "sections": {
-        "matches": "Ottelut"
+        "matches": "Ottelut",
+        "ongoing": "Käynnissä olevat ottelut",
+        "scheduled": "Aikataulutetut ottelut",
+        "completed": "Päättyneet ottelut",
+        "cancelled": "Peruutetut ottelut"
       },
       "create": {
         "title": "Luo Uusi Ottelu",
@@ -788,7 +792,9 @@
       },
       "filters": {
         "filterBySeason": "Suodata Kauden Mukaan:",
-        "allSeasons": "Kaikki Kaudet"
+        "allSeasons": "Kaikki Kaudet",
+        "searchByTeam": "Hae joukkueen mukaan:",
+        "searchPlaceholder": "Hae joukkueiden nimiä..."
       },
       "status": {
         "Scheduled": "Aikataulutettu",
@@ -796,7 +802,31 @@
         "Completed": "Päättynyt",
         "Cancelled": "Peruttu",
         "Postponed": "Lykätty"
-      }
+      },
+      "actions": {
+        "manage": "Hallitse",
+        "live": "Live-näkymä",
+        "cancel": "Peruuta ottelu",
+        "reactivate": "Aktivoi ottelu uudelleen",
+        "menu": "Ottelun toiminnot"
+      },
+      "confirmCancel": {
+        "title": "Peruuta ottelu",
+        "message": "Haluatko varmasti peruuttaa tämän ottelun? Ottelu merkitään peruutetuksi.",
+        "confirm": "Kyllä, peruuta ottelu"
+      },
+      "confirmReactivate": {
+        "title": "Aktivoi ottelu uudelleen",
+        "message": "Haluatko varmasti aktivoida tämän ottelun uudelleen? Ottelu palautetaan aikataulutetuksi.",
+        "confirm": "Kyllä, aktivoi uudelleen"
+      },
+      "cancelling": "Peruutetaan...",
+      "reactivating": "Aktivoidaan uudelleen...",
+      "creating": "Luodaan...",
+      "updating": "Päivitetään...",
+      "createMatch": "Luo ottelu",
+      "updateMatch": "Päivitä ottelu",
+      "matchCount": "ottelua"
     }
   },
   "common": {

@@ -270,6 +270,7 @@ export interface GetFloorballMatchesRequest {
   pageSize?: number;
   seasonId?: string;
   teamId?: string;
+  status?: FloorballMatchStatus;
   startDate?: string;
   endDate?: string;
   sortOrder?: string;

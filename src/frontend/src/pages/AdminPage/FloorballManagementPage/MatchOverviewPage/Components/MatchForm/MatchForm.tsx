@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { 
   CreateFloorballMatchRequest,
   FloorballMatchDto,
@@ -7,6 +8,7 @@ import SearchableInfiniteDropdown from '../../../../../../components/SearchableI
 import { floorballSeasonSearchService } from '../../../../../../api/floorball/floorballTeamSearchService';
 import { floorballTeamNameSearchService } from '../../../../../../api/floorball/floorballTeamNameSearchService';
 import { floorballRefereeSearchService } from '../../../../../../api/floorball/floorballRefereeSearchService';
+import ConfirmationDialog from '../../../ManageMatchPage/components/ConfirmationDialog';
 import './MatchForm.scss';
 import ErrorPopup from '../../../../../../components/ErrorPopup/ErrorPopup';
 
@@ -20,6 +22,7 @@ interface MatchFormProps {
   onSubmit: (matchData: CreateFloorballMatchRequest) => Promise<void>;
   onCancel: () => void;
   onCancelMatch?: (matchId: string) => Promise<void>;
+  onReactivateMatch?: (matchId: string) => Promise<void>;
   loading?: boolean;
 }
 
@@ -29,8 +32,10 @@ const MatchForm = ({
   onSubmit,
   onCancel,
   onCancelMatch,
+  onReactivateMatch,
   loading = false
 }: MatchFormProps) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateFloorballMatchRequest>({
     seasonId: undefined,
     homeTeamId: undefined,
@@ -44,7 +49,10 @@ const MatchForm = ({
   const [minutesInput, setMinutesInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [reactivateLoading, setReactivateLoading] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showReactivateConfirm, setShowReactivateConfirm] = useState(false);
   
   // State for pre-loaded dropdown options
   const [initialSeasonOptions, setInitialSeasonOptions] = useState<Array<{id: string, name: string}>>([]);
@@ -400,7 +408,7 @@ const MatchForm = ({
     onCancel();
   };
 
-  const handleCancelMatch = async () => {
+  const handleCancelMatchConfirm = async () => {
     if (!initialData || !onCancelMatch) return;
     
     try {
@@ -408,14 +416,33 @@ const MatchForm = ({
       setError(null);
       
       await onCancelMatch(initialData.id);
+      setShowCancelConfirm(false);
       
-      // Close the modal after successful cancellation
       handleCancel();
     } catch (error) {
       console.error('Error canceling match:', error);
       setError(error instanceof Error ? error.message : 'Failed to cancel match');
     } finally {
       setCancelLoading(false);
+    }
+  };
+
+  const handleReactivateMatchConfirm = async () => {
+    if (!initialData || !onReactivateMatch) return;
+    
+    try {
+      setReactivateLoading(true);
+      setError(null);
+      
+      await onReactivateMatch(initialData.id);
+      setShowReactivateConfirm(false);
+      
+      handleCancel();
+    } catch (error) {
+      console.error('Error reactivating match:', error);
+      setError(error instanceof Error ? error.message : 'Failed to reactivate match');
+    } finally {
+      setReactivateLoading(false);
     }
   };
 
@@ -548,23 +575,57 @@ const MatchForm = ({
         
         <div className="form-actions">
           <button type="button" onClick={handleCancel} className="cancel-button">
-            Cancel
+            {t('common.cancel', 'Cancel')}
           </button>
-          {mode === 'edit' && initialData && onCancelMatch && (
+          {mode === 'edit' && initialData && initialData.status === 'Cancelled' && onReactivateMatch && (
             <button 
               type="button" 
-              onClick={handleCancelMatch} 
-              disabled={cancelLoading || initialData.status === 'Cancelled' || initialData.status === 'Completed'}
+              onClick={() => setShowReactivateConfirm(true)} 
+              disabled={reactivateLoading}
+              className="reactivate-match-button"
+            >
+              {reactivateLoading ? t('floorball.matches.reactivating', 'Reactivating...') : t('floorball.matches.actions.reactivate', 'Reactivate Match')}
+            </button>
+          )}
+          {mode === 'edit' && initialData && onCancelMatch && initialData.status !== 'Cancelled' && initialData.status !== 'Completed' && (
+            <button 
+              type="button" 
+              onClick={() => setShowCancelConfirm(true)} 
+              disabled={cancelLoading}
               className="cancel-match-button"
             >
-              {cancelLoading ? 'Cancelling...' : 'Cancel Match'}
+              {cancelLoading ? t('floorball.matches.cancelling', 'Cancelling...') : t('floorball.matches.actions.cancel', 'Cancel Match')}
             </button>
           )}
           <button type="submit" disabled={loading} className="submit-button">
-            {loading ? (mode === 'create' ? 'Creating...' : 'Updating...') : (mode === 'create' ? 'Create Match' : 'Update Match')}
+            {loading ? (mode === 'create' ? t('floorball.matches.creating', 'Creating...') : t('floorball.matches.updating', 'Updating...')) : (mode === 'create' ? t('floorball.matches.createMatch', 'Create Match') : t('floorball.matches.updateMatch', 'Update Match'))}
           </button>
         </div>
       </form>
+
+      <ConfirmationDialog
+        isOpen={showCancelConfirm}
+        icon="⚠️"
+        title={t('floorball.matches.confirmCancel.title', 'Cancel Match')}
+        message={t('floorball.matches.confirmCancel.message', 'Are you sure you want to cancel this match? This will mark the match as cancelled.')}
+        confirmText={t('floorball.matches.confirmCancel.confirm', 'Yes, Cancel Match')}
+        cancelText={t('common.cancel', 'Cancel')}
+        isLoading={cancelLoading}
+        onConfirm={handleCancelMatchConfirm}
+        onCancel={() => setShowCancelConfirm(false)}
+      />
+
+      <ConfirmationDialog
+        isOpen={showReactivateConfirm}
+        icon="✅"
+        title={t('floorball.matches.confirmReactivate.title', 'Reactivate Match')}
+        message={t('floorball.matches.confirmReactivate.message', 'Are you sure you want to reactivate this match? This will set the match back to Scheduled status.')}
+        confirmText={t('floorball.matches.confirmReactivate.confirm', 'Yes, Reactivate Match')}
+        cancelText={t('common.cancel', 'Cancel')}
+        isLoading={reactivateLoading}
+        onConfirm={handleReactivateMatchConfirm}
+        onCancel={() => setShowReactivateConfirm(false)}
+      />
     </>
   );
 };

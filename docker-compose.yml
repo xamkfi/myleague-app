@@ -48,6 +48,8 @@ services:
       context: src/frontend
       dockerfile: Dockerfile
     container_name: myleague-frontend
+    environment:
+      - DOCKER=true
     volumes:
       - ./src/frontend:/app
       - /app/node_modules

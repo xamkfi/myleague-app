@@ -602,6 +602,18 @@ public class FloorballMatch : BaseEntity
     }
 
     /// <summary>
+    /// Reactivates a cancelled match back to Scheduled status
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not cancelled</exception>
+    public void Reactivate()
+    {
+        if (Status != FloorballMatchStatus.Cancelled)
+            throw new InvalidOperationException("Can only reactivate a cancelled match.");
+
+        Status = FloorballMatchStatus.Scheduled;
+    }
+
+    /// <summary>
     /// Deletes a goal event from the match
     /// </summary>
     /// <param name="goalEventId">The ID of the goal event to delete</param>

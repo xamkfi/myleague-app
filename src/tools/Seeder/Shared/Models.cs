@@ -54,9 +54,14 @@ public class FloorballSeasonSeed
 	public string Name { get; init; } = "2025 Regular Season";
 	public string StartDate { get; init; } = "2025-01-01";
 	public string EndDate { get; init; } = "2025-12-31";
-	public string DivisionName { get; init; } = string.Empty;
-    // Optional extra divisions this season should include
-    public List<string>? AdditionalDivisionNames { get; init; }
+	public List<string> DivisionNames { get; init; } = new List<string>();
+
+	// Match rules configuration
+	public int NumberOfPeriods { get; init; } = 2;
+	public int PeriodDurationMinutes { get; init; } = 15;
+	public bool AllowOvertime { get; init; } = true;
+	public int OvertimeDurationMinutes { get; init; } = 5;
+	public bool AllowShootout { get; init; } = true;
 }
 
 public class FloorballTeamSeed
@@ -86,6 +91,18 @@ public class FloorballMatchSeed
 	public string ScheduledDateTime { get; init; } = string.Empty;
 	public string? Venue { get; init; }
 	public string? RefereeEmail { get; init; }
+}
+
+public class LoginDevResponse
+{
+	public string? DevCode { get; set; }
+}
+
+public class AuthTokenResponse
+{
+	public string AccessToken { get; set; } = string.Empty;
+	public string RefreshToken { get; set; } = string.Empty;
+	public DateTime ExpiresAt { get; set; }
 }
 
 public static class SeederHttp

@@ -1,45 +1,84 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
+import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import { signalRService, type MatchEvent } from '../../../../services/signalRService';
 import MatchStatsCards from './Components/MatchStatsCards/MatchStatsCards';
 import MatchFilters from './Components/MatchFilters/MatchFilters';
 import CollapsibleMatchSection from './Components/CollapsibleMatchSection/CollapsibleMatchSection';
+import ConfirmationDialog from '../ManageMatchPage/components/ConfirmationDialog';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
+import { FloorballMatchStatus } from '../../../../types/floorball/floorballTypes';
 import './MatchOverviewPage.scss';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
-  
+
+interface MatchStats {
+  total: number;
+  completed: number;
+  scheduled: number;
+  inProgress: number;
+  cancelled: number;
+}
+
 const MatchOverviewPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  
-  // State management
+
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFiltering, setIsFiltering] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Collapsible sections state
+  const [matchStats, setMatchStats] = useState<MatchStats>({
+    total: 0, completed: 0, scheduled: 0, inProgress: 0, cancelled: 0,
+  });
+
   const [collapsedSections, setCollapsedSections] = useState({
     ongoing: false,
     scheduled: false,
     completed: false,
-    cancelled: false
+    cancelled: false,
   });
 
+  // Compute display-ready match groups (with limits for sections)
+  const displayMatches = useMemo(() => {
+    const now = new Date();
+    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  // Fetch all required data
+    const ongoing = matches
+      .filter(m => m.status === FloorballMatchStatus.InProgress);
+
+    const scheduled = matches
+      .filter(m => {
+        if (m.status !== FloorballMatchStatus.Scheduled) return false;
+        const matchDate = new Date(m.scheduledDateTime);
+        return matchDate <= oneWeekFromNow;
+      })
+      .sort((a, b) => new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime());
+
+    const completed = matches
+      .filter(m => m.status === FloorballMatchStatus.Completed)
+      .sort((a, b) => new Date(b.scheduledDateTime).getTime() - new Date(a.scheduledDateTime).getTime())
+      .slice(0, 10);
+
+    const cancelled = matches
+      .filter(m => m.status === FloorballMatchStatus.Cancelled)
+      .sort((a, b) => new Date(b.scheduledDateTime).getTime() - new Date(a.scheduledDateTime).getTime())
+      .slice(0, 10);
+
+    return { ongoing, scheduled, completed, cancelled };
+  }, [matches]);
+
   const fetchData = useCallback(async (isInitialLoad = false) => {
     try {
-      // Only show full loading on initial load
       if (isInitialLoad) {
         setLoading(true);
       } else {
@@ -47,13 +86,49 @@ const MatchOverviewPage = () => {
       }
       setError(null);
 
-      const [seasonsResponse, matchesResponse] = await Promise.all([
+      const seasonFilter = selectedSeasonId || undefined;
+      const searchFilter = searchQuery.trim() || undefined;
+
+      // Fetch display data (pageSize: 100) + lightweight per-status counts (pageSize: 1)
+      // Each status call returns pagination.totalCount for an accurate count
+      const [
+        seasonsResponse,
+        matchesResponse,
+        scheduledCountRes,
+        inProgressCountRes,
+        completedCountRes,
+        cancelledCountRes,
+      ] = await Promise.all([
         floorballSeasonService.getAll(),
-        floorballMatchService.getAll({ 
+        floorballMatchService.getAll({
           pageSize: 100,
-          seasonId: selectedSeasonId || undefined,
-          searchQuery: searchQuery.trim() || undefined
-        })
+          seasonId: seasonFilter,
+          searchQuery: searchFilter,
+        }),
+        floorballMatchService.getAll({
+          pageSize: 1,
+          seasonId: seasonFilter,
+          searchQuery: searchFilter,
+          status: FloorballMatchStatus.Scheduled,
+        }),
+        floorballMatchService.getAll({
+          pageSize: 1,
+          seasonId: seasonFilter,
+          searchQuery: searchFilter,
+          status: FloorballMatchStatus.InProgress,
+        }),
+        floorballMatchService.getAll({
+          pageSize: 1,
+          seasonId: seasonFilter,
+          searchQuery: searchFilter,
+          status: FloorballMatchStatus.Completed,
+        }),
+        floorballMatchService.getAll({
+          pageSize: 1,
+          seasonId: seasonFilter,
+          searchQuery: searchFilter,
+          status: FloorballMatchStatus.Cancelled,
+        }),
       ]);
 
       if (seasonsResponse.success && seasonsResponse.data) {
@@ -64,69 +139,30 @@ const MatchOverviewPage = () => {
         setMatches(matchesResponse.data);
       }
 
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch data');
+      // Use pagination.totalCount from each status-filtered call for accurate stats
+      setMatchStats({
+        total: matchesResponse.pagination?.totalCount ?? matchesResponse.data?.length ?? 0,
+        scheduled: scheduledCountRes.pagination?.totalCount ?? 0,
+        inProgress: inProgressCountRes.pagination?.totalCount ?? 0,
+        completed: completedCountRes.pagination?.totalCount ?? 0,
+        cancelled: cancelledCountRes.pagination?.totalCount ?? 0,
+      });
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
       setLoading(false);
       setIsFiltering(false);
     }
   }, [selectedSeasonId, searchQuery]);
 
-  // Filter and sort matches by status: ongoing, scheduled (next 7 days), completed (latest 10)
-  const filteredMatches = useMemo(() => {
-    const now = new Date();
-    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    
-    // Backend already filtered by season and search query
-    const filtered = matches;
-    
-    // Separate by status
-    const ongoingMatches = filtered.filter(match => match.status === 'InProgress');
-    
-    const scheduledMatches = filtered.filter(match => {
-      if (match.status !== 'Scheduled') return false;
-      const matchDate = new Date(match.scheduledDateTime);
-      return matchDate <= oneWeekFromNow;
-    }).sort((a, b) => {
-      const dateA = new Date(a.scheduledDateTime);
-      const dateB = new Date(b.scheduledDateTime);
-      return dateA.getTime() - dateB.getTime();
-    });
-    
-    const completedMatches = filtered
-      .filter(match => match.status === 'Completed')
-      .sort((a, b) => {
-        const dateA = new Date(a.scheduledDateTime);
-        const dateB = new Date(b.scheduledDateTime);
-        return dateB.getTime() - dateA.getTime();
-      })
-      .slice(0, 10); // Only show 10 most recent
-
-    const cancelledMatches = filtered
-      .filter(match => match.status === 'Cancelled')
-      .sort((a, b) => {
-        const dateA = new Date(a.scheduledDateTime);
-        const dateB = new Date(b.scheduledDateTime);
-        return dateB.getTime() - dateA.getTime();
-      }).slice(0, 10);
-
-    return {
-      ongoing: ongoingMatches,
-      scheduled: scheduledMatches,
-      completed: completedMatches,
-      cancelled: cancelledMatches
-    };
-  }, [matches]);
-
   // Initial load
   useEffect(() => {
     fetchData(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Debounced fetch for filters - wait 500ms after user stops typing
+  // Debounced fetch for filters
   useEffect(() => {
-    // Skip initial load
     if (loading) return;
 
     const timer = setTimeout(() => {
@@ -136,81 +172,55 @@ const MatchOverviewPage = () => {
     return () => clearTimeout(timer);
   }, [selectedSeasonId, searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // SignalR subscription management
+  // SignalR real-time updates
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
-    // Handle match status changes
-          const handleMatchStatusChange = (eventData: MatchEvent) => {
-        const { MatchId, NewStatus } = eventData.data as { MatchId: string; NewStatus: string };
-      
-              setMatches(prev => prev.map(match => {
-          if (match.id === MatchId) {
-            return { ...match, status: NewStatus as FloorballMatchDto['status'] };
-          }
-          return match;
-        }));
-      
-      console.log(`Match ${MatchId} status changed to ${NewStatus}`);
+    const handleMatchStatusChange = (eventData: MatchEvent) => {
+      const { MatchId, NewStatus } = eventData.data as { MatchId: string; NewStatus: string };
+
+      setMatches(prev => prev.map(match => {
+        if (match.id === MatchId) {
+          return { ...match, status: NewStatus as FloorballMatchDto['status'] };
+        }
+        return match;
+      }));
     };
 
-    // Handle real-time SignalR events
     const handleSignalREvent = (event: MatchEvent) => {
-      console.log('Received SignalR event in MatchOverviewPage:', event);
-      
-      switch (event.eventType) {
-        case 'FloorballMatchStatusChangedEvent':
-          handleMatchStatusChange(event);
-          break;
-        default:
-          // Ignore other event types
-          break;
+      if (event.eventType === 'FloorballMatchStatusChangedEvent') {
+        handleMatchStatusChange(event);
       }
     };
 
     const setupSignalR = async () => {
       try {
-        console.log('Setting up SignalR connection for MatchOverviewPage...');
-        
-        // Test backend accessibility first
         const isBackendAccessible = await signalRService.testBackendAccessibility();
-        if (!isBackendAccessible) {
-          console.warn('Backend is not accessible, skipping SignalR setup');
-          return;
-        }
-        
-        // Connect to SignalR
+        if (!isBackendAccessible) return;
+
         await signalRService.connect();
-        
-        if (!signalRService.isConnected) {
-          console.warn('SignalR connection failed, skipping subscriptions');
-          return;
-        }
-        
-        // Subscribe to match status change events
+        if (!signalRService.isConnected) return;
+
         await signalRService.subscribeToEventType('FloorballMatchStatusChangedEvent');
-        
-        // Set up event handler
         unsubscribe = signalRService.onMatchEvent(handleSignalREvent);
-        
-        console.log('SignalR subscriptions set up for MatchOverviewPage');
-      } catch (error) {
-        console.error('Error setting up SignalR subscriptions:', error);
+      } catch (err) {
+        console.error('Error setting up SignalR:', err);
       }
     };
 
-    setupSignalR().then(() => {
-      return () => {
-        // Cleanup SignalR subscriptions
-        if (unsubscribe) {
-          unsubscribe();
-        }
-        
-        // Unsubscribe from event types
-        signalRService.unsubscribeFromEventType('FloorballMatchStatusChangedEvent');
-      };
-    });
+    setupSignalR();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+      signalRService.unsubscribeFromEventType('FloorballMatchStatusChangedEvent');
+    };
   }, []);
+
+  const [confirmDialog, setConfirmDialog] = useState<{
+    type: 'cancel' | 'reactivate';
+    match: FloorballMatchDto;
+  } | null>(null);
+  const [dialogLoading, setDialogLoading] = useState(false);
 
   const handleLiveMatch = (match: FloorballMatchDto) => {
     navigate(`/admin/floorball/matches/manage/${match.id}`);
@@ -220,52 +230,84 @@ const MatchOverviewPage = () => {
     navigate(`/admin/floorball/matches/${match.id}/edit`);
   };
 
+  const handleCancelMatch = (match: FloorballMatchDto) => {
+    setConfirmDialog({ type: 'cancel', match });
+  };
+
+  const handleReactivateMatch = (match: FloorballMatchDto) => {
+    setConfirmDialog({ type: 'reactivate', match });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmDialog) return;
+    try {
+      setDialogLoading(true);
+      if (confirmDialog.type === 'cancel') {
+        await floorballMatchEventService.cancelMatch(confirmDialog.match.id);
+      } else {
+        await floorballMatchEventService.reactivateMatch(confirmDialog.match.id);
+      }
+      setConfirmDialog(null);
+      fetchData(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setDialogLoading(false);
+    }
+  };
+
   const toggleSection = (section: keyof typeof collapsedSections) => {
     setCollapsedSections(prev => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
+  const hasNoMatches =
+    displayMatches.ongoing.length === 0 &&
+    displayMatches.scheduled.length === 0 &&
+    displayMatches.completed.length === 0 &&
+    displayMatches.cancelled.length === 0;
+
   if (loading) {
     return (
-      <PageTemplate title={'Match Overview'}>
-      <div className="match-overview">
+      <PageTemplate title={t('floorball.matches.title', 'Match Management')}>
+        <div className="match-overview">
           <LoadingSpinner text={t('floorball.matches.loading', 'Loading matches...')} />
-      </div>
+        </div>
       </PageTemplate>
     );
   }
 
   return (
-    <PageTemplate title={'Match Overview'}>
-    <div className="match-overview">
-        {/* Header Section */}
-        <div className="page-header">
-          <div className="page-header__top">
-            
-          </div>
-          <div className="page-header__main">
-            <h1 className="page-title">{t('floorball.matches.title', 'Match Management')}</h1>
-            <p className="page-subtitle">{t('floorball.matches.subtitle', 'Manage your floorball matches, track live games, and organize your season')}</p>
+    <PageTemplate title={t('floorball.matches.title', 'Match Management')}>
+      <div className="match-overview">
+        {/* Header */}
+        <div className="match-overview__header">
+          <div>
+            <h2 className="match-overview__title">
+              {t('floorball.matches.title', 'Match Management')}
+            </h2>
+            <p className="match-overview__subtitle">
+              {t('floorball.matches.subtitle', 'Manage your floorball matches, track live games, and organize your season')}
+            </p>
           </div>
         </div>
 
-        {/* Error Message */}
         <ErrorPopup message={error} />
 
-        {/* Stats and Filter Section */}
-        <MatchStatsCards 
-          allMatches={matches}
-          filteredMatches={filteredMatches}
-          selectedSeasonId={selectedSeasonId}
+        {/* Stats Cards */}
+        <MatchStatsCards
+          stats={matchStats}
+          isSeasonFiltered={!!selectedSeasonId}
           onCompletedClick={() => navigate('/admin/floorball/matches/completed')}
           onScheduledClick={() => navigate('/admin/floorball/matches/scheduled')}
           onInProgressClick={() => navigate('/admin/floorball/matches/in-progress')}
           onCancelledClick={() => navigate('/admin/floorball/matches/cancelled')}
         />
 
-        <MatchFilters 
+        {/* Filters */}
+        <MatchFilters
           seasons={seasons}
           selectedSeasonId={selectedSeasonId}
           onSeasonChange={setSelectedSeasonId}
@@ -276,85 +318,107 @@ const MatchOverviewPage = () => {
 
         {/* Filtering indicator */}
         {isFiltering && (
-          <div style={{ 
-            padding: '12px', 
-            textAlign: 'center', 
-            background: '#f3f4f6', 
-            borderRadius: '8px',
-            marginBottom: '16px',
-            color: '#6b7280',
-            fontSize: '0.875rem'
-          }}>
-            <span style={{ marginRight: '8px' }}>🔍</span>
-            Searching...
+          <div className="match-overview__filtering">
+            {t('common.loading', 'Loading...')}
           </div>
         )}
 
-        {/* Matches Sections */}
-        <div className="matches-section" style={{ opacity: isFiltering ? 0.6 : 1, transition: 'opacity 0.2s' }}>
-          {/* Ongoing Matches Section */}
+        {/* Match Sections */}
+        <div
+          className="match-overview__sections"
+          style={{ opacity: isFiltering ? 0.6 : 1, transition: 'opacity 0.2s' }}
+        >
           <CollapsibleMatchSection
-            title={`Ongoing Matches (${filteredMatches.ongoing.length})`}
-            matches={filteredMatches.ongoing}
+            title={`${t('floorball.matches.sections.ongoing', 'Ongoing Matches')} (${displayMatches.ongoing.length})`}
+            matches={displayMatches.ongoing}
             isCollapsed={collapsedSections.ongoing}
             onToggleCollapse={() => toggleSection('ongoing')}
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
+            onCancelMatch={handleCancelMatch}
+            onReactivateMatch={handleReactivateMatch}
             sectionType="ongoing"
           />
 
-          {/* Scheduled Matches Section */}
           <CollapsibleMatchSection
-            title={`Scheduled Matches (${filteredMatches.scheduled.length})`}
-            matches={filteredMatches.scheduled}
+            title={`${t('floorball.matches.sections.scheduled', 'Scheduled Matches')} (${displayMatches.scheduled.length})`}
+            matches={displayMatches.scheduled}
             isCollapsed={collapsedSections.scheduled}
             onToggleCollapse={() => toggleSection('scheduled')}
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
+            onCancelMatch={handleCancelMatch}
+            onReactivateMatch={handleReactivateMatch}
             sectionType="scheduled"
           />
 
-          {/* Completed Matches Section */}
           <CollapsibleMatchSection
-            title={`Completed Matches (${filteredMatches.completed.length})`}
-            matches={filteredMatches.completed}
+            title={`${t('floorball.matches.sections.completed', 'Completed Matches')} (${displayMatches.completed.length})`}
+            matches={displayMatches.completed}
             isCollapsed={collapsedSections.completed}
             onToggleCollapse={() => toggleSection('completed')}
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
+            onCancelMatch={handleCancelMatch}
+            onReactivateMatch={handleReactivateMatch}
             sectionType="completed"
           />
 
-          {/* Cancelled Matches Section */}
           <CollapsibleMatchSection
-            title={`Cancelled Matches (${filteredMatches.cancelled.length})`}
-            matches={filteredMatches.cancelled}
+            title={`${t('floorball.matches.sections.cancelled', 'Cancelled Matches')} (${displayMatches.cancelled.length})`}
+            matches={displayMatches.cancelled}
             isCollapsed={collapsedSections.cancelled}
             onToggleCollapse={() => toggleSection('cancelled')}
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
+            onCancelMatch={handleCancelMatch}
+            onReactivateMatch={handleReactivateMatch}
             sectionType="cancelled"
           />
 
-          {/* Empty State - when no matches in any section */}
-          {filteredMatches.ongoing.length === 0 && 
-           filteredMatches.scheduled.length === 0 && 
-           filteredMatches.completed.length === 0 && 
-           filteredMatches.cancelled.length === 0 && (
-            <div className="empty-state">
-              <div className="empty-icon">📋</div>
-              <h3>No matches found</h3>
-              <p>{selectedSeasonId ? 'No matches found for the selected season' : 'Create your first match to get started'}</p>
-              <Link to="/admin/floorball/matches/create" className="create-button">
-                Create New Match
+          {hasNoMatches && (
+            <div className="match-overview__empty">
+              <h3>
+                {selectedSeasonId
+                  ? t('floorball.matches.noMatchesForSeason', 'No matches found for the selected season')
+                  : t('floorball.matches.noMatchesFound', 'No matches found')}
+              </h3>
+              <p>
+                {!selectedSeasonId && t('floorball.matches.createFirstMatch', 'Create your first match to get started')}
+              </p>
+              <Link to="/admin/floorball/matches/create" className="btn btn--primary btn--pill">
+                {t('floorball.matches.createNewMatch', 'Create New Match')}
               </Link>
             </div>
           )}
         </div>
 
-    </div>
+        <ConfirmationDialog
+          isOpen={confirmDialog !== null}
+          icon={confirmDialog?.type === 'cancel' ? '⚠️' : '✅'}
+          title={
+            confirmDialog?.type === 'cancel'
+              ? t('floorball.matches.confirmCancel.title', 'Cancel Match')
+              : t('floorball.matches.confirmReactivate.title', 'Reactivate Match')
+          }
+          message={
+            confirmDialog?.type === 'cancel'
+              ? t('floorball.matches.confirmCancel.message', 'Are you sure you want to cancel this match? This will mark the match as cancelled.')
+              : t('floorball.matches.confirmReactivate.message', 'Are you sure you want to reactivate this match? This will set the match back to Scheduled status.')
+          }
+          confirmText={
+            confirmDialog?.type === 'cancel'
+              ? t('floorball.matches.confirmCancel.confirm', 'Yes, Cancel Match')
+              : t('floorball.matches.confirmReactivate.confirm', 'Yes, Reactivate Match')
+          }
+          cancelText={t('common.cancel', 'Cancel')}
+          isLoading={dialogLoading}
+          onConfirm={handleConfirmAction}
+          onCancel={() => setConfirmDialog(null)}
+        />
+      </div>
     </PageTemplate>
   );
 };
 
-export default MatchOverviewPage; 
+export default MatchOverviewPage;

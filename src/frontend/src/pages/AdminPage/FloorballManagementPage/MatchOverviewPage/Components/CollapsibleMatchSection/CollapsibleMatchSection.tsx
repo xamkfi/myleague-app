@@ -12,6 +12,8 @@ interface CollapsibleMatchSectionProps {
   onToggleCollapse: () => void;
   onLiveMatch: (match: FloorballMatchDto) => void;
   onEditMatch: (match: FloorballMatchDto) => void;
+  onCancelMatch?: (match: FloorballMatchDto) => void;
+  onReactivateMatch?: (match: FloorballMatchDto) => void;
   sectionType?: 'ongoing' | 'scheduled' | 'completed' | 'cancelled';
 }
 
@@ -22,6 +24,8 @@ const CollapsibleMatchSection = ({
   onToggleCollapse,
   onLiveMatch,
   onEditMatch,
+  onCancelMatch,
+  onReactivateMatch,
   sectionType
 }: CollapsibleMatchSectionProps) => {
   const { t } = useTranslation();
@@ -50,19 +54,35 @@ const CollapsibleMatchSection = ({
         onClick: () => onLiveMatch(match),
         disabled: false,
       });
+      actions.push({
+        label: t('common.edit', 'Edit'),
+        onClick: () => onEditMatch(match),
+        disabled: false,
+      });
     } else {
       actions.push({
         label: t('floorball.matches.actions.manage', 'Manage'),
-        onClick: () => onLiveMatch(match),
+        onClick: () => onEditMatch(match),
         disabled: false,
       });
     }
 
-    actions.push({
-      label: t('common.edit', 'Edit'),
-      onClick: () => onEditMatch(match),
-      disabled: false,
-    });
+    if (match.status === 'Cancelled' && onReactivateMatch) {
+      actions.push({
+        label: t('floorball.matches.actions.reactivate', 'Reactivate Match'),
+        onClick: () => onReactivateMatch(match),
+        disabled: false,
+      });
+    }
+
+    if (match.status !== 'Cancelled' && match.status !== 'Completed' && onCancelMatch) {
+      actions.push({
+        label: t('floorball.matches.actions.cancel', 'Cancel Match'),
+        onClick: () => onCancelMatch(match),
+        variant: 'danger',
+        disabled: false,
+      });
+    }
 
     return actions;
   };
@@ -101,7 +121,7 @@ const CollapsibleMatchSection = ({
                   <tr
                     key={match.id}
                     className="admin-table__row--clickable"
-                    onClick={() => onLiveMatch(match)}
+                    onClick={() => match.status === 'InProgress' ? onLiveMatch(match) : onEditMatch(match)}
                   >
                     <td>
                       <div className="cms-match-teams">

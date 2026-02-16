@@ -2,11 +2,13 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
+import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import PaginationControls from '../FloorballPlayersPage/components/PaginationControls';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import MatchFilters from '../MatchOverviewPage/Components/MatchFilters/MatchFilters';
 import CollapsibleMatchSection from '../MatchOverviewPage/Components/CollapsibleMatchSection/CollapsibleMatchSection';
+import ConfirmationDialog from '../ManageMatchPage/components/ConfirmationDialog';
 import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
@@ -92,12 +94,44 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
     return () => clearTimeout(timer);
   }, [selectedSeasonId, searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [confirmDialog, setConfirmDialog] = useState<{
+    type: 'cancel' | 'reactivate';
+    match: FloorballMatchDto;
+  } | null>(null);
+  const [dialogLoading, setDialogLoading] = useState(false);
+
   const handleEditMatch = (match: FloorballMatchDto) => {
     navigate(`/admin/floorball/matches/${match.id}/edit`);
   };
 
   const handleLiveMatch = (match: FloorballMatchDto) => {
     navigate(`/admin/floorball/matches/manage/${match.id}`);
+  };
+
+  const handleCancelMatch = (match: FloorballMatchDto) => {
+    setConfirmDialog({ type: 'cancel', match });
+  };
+
+  const handleReactivateMatch = (match: FloorballMatchDto) => {
+    setConfirmDialog({ type: 'reactivate', match });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmDialog) return;
+    try {
+      setDialogLoading(true);
+      if (confirmDialog.type === 'cancel') {
+        await floorballMatchEventService.cancelMatch(confirmDialog.match.id);
+      } else {
+        await floorballMatchEventService.reactivateMatch(confirmDialog.match.id);
+      }
+      setConfirmDialog(null);
+      fetchData(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setDialogLoading(false);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -165,6 +199,8 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
               onToggleCollapse={() => setCollapsed((prev) => !prev)}
               onLiveMatch={handleLiveMatch}
               onEditMatch={handleEditMatch}
+              onCancelMatch={handleCancelMatch}
+              onReactivateMatch={handleReactivateMatch}
               sectionType={sectionType}
             />
             <PaginationControls
@@ -178,6 +214,30 @@ const MatchesByStatusPage = ({ status, title, sectionType }: MatchesByStatusPage
           </>
         )}
       </div>
+
+      <ConfirmationDialog
+        isOpen={confirmDialog !== null}
+        icon={confirmDialog?.type === 'cancel' ? '⚠️' : '✅'}
+        title={
+          confirmDialog?.type === 'cancel'
+            ? t('floorball.matches.confirmCancel.title', 'Cancel Match')
+            : t('floorball.matches.confirmReactivate.title', 'Reactivate Match')
+        }
+        message={
+          confirmDialog?.type === 'cancel'
+            ? t('floorball.matches.confirmCancel.message', 'Are you sure you want to cancel this match? This will mark the match as cancelled.')
+            : t('floorball.matches.confirmReactivate.message', 'Are you sure you want to reactivate this match? This will set the match back to Scheduled status.')
+        }
+        confirmText={
+          confirmDialog?.type === 'cancel'
+            ? t('floorball.matches.confirmCancel.confirm', 'Yes, Cancel Match')
+            : t('floorball.matches.confirmReactivate.confirm', 'Yes, Reactivate Match')
+        }
+        cancelText={t('common.cancel', 'Cancel')}
+        isLoading={dialogLoading}
+        onConfirm={handleConfirmAction}
+        onCancel={() => setConfirmDialog(null)}
+      />
     </div>
   );
 };

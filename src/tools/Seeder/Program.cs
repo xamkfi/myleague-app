@@ -1,13 +1,17 @@
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Application.DTOs.Common;
 using Application.DTOs.Floorball;
+using WebAPI.Models.Common;
 
 namespace Seeder;
 
 public static class Program
 {
+    private const string DefaultAuthEmail = "test@myleague.local";
+
     public static SeederConfiguration Configuration { get; private set; } = new SeederConfiguration();
 	public static async Task<int> Main(string[] args)
 	{
@@ -31,6 +35,8 @@ public static class Program
 
 		try
 		{
+			await AuthenticateAsync(http, jsonOptions);
+
 			List<PersonDto> basePersons = await PersonsSeeder.SeedAsync(http, jsonOptions, config);
 			List<ClubDto> clubResults = await ClubsSeeder.SeedAsync(http, jsonOptions, config);
 			List<DivisionDto> divisionResults = await DivisionsSeeder.SeedAsync(http, jsonOptions, config);
@@ -92,6 +98,42 @@ public static class Program
 			http.Dispose();
 			return 1;
 		}
+	}
+
+	private static async Task AuthenticateAsync(HttpClient http, JsonSerializerOptions jsonOptions)
+	{
+		Console.WriteLine("==========================================================");
+		Console.WriteLine("Authentication");
+		Console.WriteLine("==========================================================");
+		Console.WriteLine($"Requesting login code for {DefaultAuthEmail}...");
+
+		// Step 1: Request login code
+		HttpResponseMessage loginResp = await http.PostAsJsonAsync("api/auth/login", new { email = DefaultAuthEmail });
+		await SeederHttp.EnsureSuccessWithBody(loginResp, "Request login code");
+
+		ApiResponse<LoginDevResponse>? loginApi = await loginResp.Content.ReadFromJsonAsync<ApiResponse<LoginDevResponse>>(jsonOptions);
+		if (loginApi == null || !loginApi.Success || loginApi.Data == null || string.IsNullOrWhiteSpace(loginApi.Data.DevCode))
+		{
+			throw new InvalidOperationException("Failed to get dev login code. Make sure the API is running in Development mode.");
+		}
+
+		string code = loginApi.Data.DevCode;
+		Console.WriteLine($"Received dev code: {code}");
+
+		// Step 2: Verify code to get tokens
+		HttpResponseMessage verifyResp = await http.PostAsJsonAsync("api/auth/verify", new { email = DefaultAuthEmail, code });
+		await SeederHttp.EnsureSuccessWithBody(verifyResp, "Verify login code");
+
+		ApiResponse<AuthTokenResponse>? verifyApi = await verifyResp.Content.ReadFromJsonAsync<ApiResponse<AuthTokenResponse>>(jsonOptions);
+		if (verifyApi == null || !verifyApi.Success || verifyApi.Data == null || string.IsNullOrWhiteSpace(verifyApi.Data.AccessToken))
+		{
+			throw new InvalidOperationException("Failed to get access token from verify response.");
+		}
+
+		// Step 3: Set Bearer token on HttpClient for all subsequent requests
+		http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", verifyApi.Data.AccessToken);
+		Console.WriteLine($"Authenticated successfully. Token expires at {verifyApi.Data.ExpiresAt:u}");
+		Console.WriteLine("==========================================================\n");
 	}
 
 	private static string PromptForBaseUrl(string defaultUrl)
