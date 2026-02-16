@@ -261,7 +261,13 @@ MyLeague/
 
 3. **Access the Application**
    - **Frontend**: http://localhost:5173
-   - **API**: http://localhost:5000 (or https://localhost:5001)
+   - **API**: http://localhost:65533 (or https://localhost:65532)
+
+   > **Note:** When running the backend locally with `dotnet run`, the frontend's `VITE_API_URL` must match the backend port. Update `src/frontend/.env.development` if needed:
+   > ```
+   > VITE_API_URL=http://localhost:65533/api
+   > ```
+   > When using Docker, the default value (`http://localhost:8080/api`) works out of the box.
 
 ## 🔌 API Endpoints
 
@@ -443,7 +449,8 @@ MyLeague uses a passwordless login system -- no passwords are stored in the data
 - **Error handling** -- Secure error responses without sensitive data leakage
 
 ### Default Users & Seeding
-- **Development** -- A test user (`test@myleague.local`, role: Admin) is automatically created on first startup. Request a login code and find it in the dev console output.
+- **Local development (dotnet run)** -- A test user (`test@myleague.local`, role: Admin) is automatically created on first startup. Request a login code and find it in the console output.
+- **Docker development** -- The Docker Compose override sets `Seed__AdminEmail=test@myleague.fi`. Use this email to log in. Find the login code in the container logs: `docker-compose logs -f webapi`
 - **Production / Azure** -- Set the `Seed__AdminEmail` environment variable (e.g., `admin@yourdomain.com`) in Azure App Service. An admin user will be created on first startup if it does not already exist.
 
 ### Planned Enhancements
