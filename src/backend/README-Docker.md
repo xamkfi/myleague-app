@@ -19,9 +19,9 @@ The Docker setup includes:
 
 ### Running the Application
 
-1. **Navigate to the backend directory:**
+1. **Navigate to the project root directory:**
    ```bash
-   cd src/backend
+   cd MyLeague
    ```
 
 2. **Start all services:**
@@ -29,7 +29,15 @@ The Docker setup includes:
    docker-compose up -d
    ```
 
-3. **View logs (optional):**
+3. **Seed the database with test data:**
+
+   Once the services are running, populate the database with initial test data (clubs, teams, players, referees, seasons, matches):
+   ```bash
+   dotnet run --project src/tools/Seeder/Seeder.csproj
+   ```
+   The seeder is idempotent -- you can run it multiple times without creating duplicates. See the [Seeder README](../../src/tools/Seeder/README.md) for configuration details.
+
+4. **View logs (optional):**
    ```bash
    docker-compose logs -f api
    ```
