@@ -415,5 +415,24 @@ export const floorballMatchEventService = {
       console.error('Error canceling match:', error);
       throw error;
     }
+  },
+
+  /**
+   * Reactivate a cancelled floorball match back to Scheduled status
+   */
+  reactivateMatch: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      console.log('Reactivating match:', matchId);
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/reactivate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return await handleApiResponse<FloorballMatchDto>(response);
+    } catch (error) {
+      console.error('Error reactivating match:', error);
+      throw error;
+    }
   }
 }; 

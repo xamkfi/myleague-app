@@ -1,58 +1,389 @@
-.create-match-page {
-  .page-header {
+@use "sass:map";
+@use '@variables' as *;
+
+// ── Success toast ──
+.cm-success-toast {
+  position: fixed;
+  top: map.get($spacing, 'lg');
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1002;
+  padding: map.get($spacing, 'base') map.get($spacing, 'md');
+  background-color: $color-green-almost;
+  color: $color-green-muted;
+  border: 1px solid $color-green-pale;
+  border-radius: map.get($border-radius, 'sm');
+  box-shadow: $box-shadow-drop-1;
+  animation: cmSlideIn 0.3s ease-out;
+
+  p {
+    margin: 0;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: map.get($font-sizes, 'sm');
+    white-space: nowrap;
+  }
+}
+
+@keyframes cmSlideIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+// ── Container ──
+.cm-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: map.get($spacing, 'lg');
+}
+
+.cm-card {
+  background: $color-white;
+  border-radius: $border-radius-default;
+  box-shadow: $box-shadow-drop-1;
+  overflow: hidden;
+}
+
+// ── Form ──
+.cm-form {
+  padding: map.get($spacing, 'lg');
+}
+
+// ── Section ──
+.cm-section {
+  margin-bottom: map.get($spacing, 'lg');
+
+  &:last-of-type {
+    margin-bottom: map.get($spacing, 'md');
+  }
+
+  &__title {
     display: flex;
     align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #e5e7eb;
+    gap: map.get($spacing, 'xs');
+    margin: 0 0 map.get($spacing, 'base') 0;
+    padding-bottom: map.get($spacing, 'xs');
+    border-bottom: 2px solid $color-neutral-medium-grey;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-medium;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 
-    .header-left, .header-right {
-      flex: 1;
+    i {
+      font-size: map.get($font-sizes, 'sm');
+      opacity: 0.7;
+    }
+  }
+}
+
+// ── Field ──
+.cm-field {
+  margin-bottom: map.get($spacing, 'md');
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    margin-bottom: map.get($spacing, 'xs');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  select,
+  input[type="text"],
+  input[type="date"],
+  input[type="number"] {
+    width: 100%;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'sm');
+    background-color: $color-white;
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'base');
+    @include transition(border-color);
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-light;
+      box-shadow: 0 0 0 3px rgba(74, 103, 159, 0.1);
     }
 
-    .header-left {
-      display: flex;
+    &:disabled {
+      background-color: $color-background-light;
+      color: $color-text-muted;
+      cursor: not-allowed;
+    }
+
+    &::placeholder {
+      color: $color-placeholder;
+    }
+  }
+
+  select {
+    cursor: pointer;
+    &:disabled { cursor: not-allowed; }
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+
+    &--warning {
+      background: $color-yellow-almost;
+      border: 1px solid $color-yellow-pale;
+      color: $color-yellow-muted;
+
+      i {
+        color: $color-yellow-primary;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  &__auto-filled {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'sm');
+    padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+    border: 1px solid $color-green-pale;
+    background: $color-green-almost;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'base');
+    color: $color-text-primary;
+
+    i {
+      color: $color-green-muted;
+      flex-shrink: 0;
+    }
+
+    span:first-of-type {
+      font-weight: map.get($font-weights, 'semibold');
+    }
+  }
+
+  &__auto-tag {
+    margin-left: auto;
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-green-muted;
+    background: $color-green-pale;
+    padding: 2px map.get($spacing, 'xs');
+    border-radius: map.get($border-radius, 'sm');
+  }
+
+  &__hint {
+    margin: map.get($spacing, 'xs') 0 0;
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+
+    i {
+      font-size: map.get($font-sizes, 'xs');
+      opacity: 0.6;
+    }
+  }
+}
+
+// ── Optional label ──
+.cm-optional {
+  font-weight: map.get($font-weights, 'regular');
+  color: $color-text-muted;
+  font-size: map.get($font-sizes, 'xs');
+  margin-left: map.get($spacing, 'xxs');
+}
+
+// ── Field row (side-by-side, for teams) ──
+.cm-field-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: map.get($spacing, 'sm');
+  align-items: end;
+
+  &__vs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: map.get($spacing, 'xs');
+
+    span {
+      font-weight: map.get($font-weights, 'bold');
+      font-size: map.get($font-sizes, 'sm');
+      color: $color-text-muted;
+      background: $color-neutral-light-grey;
+      padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+      border-radius: map.get($border-radius, 'sm');
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    grid-template-columns: 1fr;
+
+    &__vs {
+      padding: 0;
+      span { margin: 0 auto; }
+    }
+  }
+}
+
+// ── Date/time group ──
+.cm-datetime {
+  display: flex;
+  gap: map.get($spacing, 'sm');
+  align-items: center;
+
+  &__date {
+    flex: 1;
+    min-width: 160px;
+  }
+
+  &__time {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  &__input {
+    width: 52px !important;
+    min-width: 52px;
+    text-align: center;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'xs') !important;
+
+    // Hide number spinners
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    &[type=number] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+  }
+
+  &__sep {
+    font-weight: map.get($font-weights, 'bold');
+    font-size: map.get($font-sizes, 'base');
+    color: $color-text-muted;
+    margin: 0 2px;
+    user-select: none;
+  }
+
+  @media (max-width: map.get($breakpoints, 'mobile')) {
+    flex-direction: column;
+    align-items: stretch;
+
+    &__date {
+      min-width: auto;
+    }
+
+    &__time {
       justify-content: flex-start;
     }
+  }
+}
 
-    .header-center {
-      flex: 2;
-      text-align: center;
+// ── Actions ──
+.cm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: map.get($spacing, 'base');
+  margin-top: map.get($spacing, 'lg');
+  padding-top: map.get($spacing, 'md');
+  border-top: 1px solid $color-border;
 
-      h1 {
-        font-size: 1.875rem;
-        font-weight: 700;
-        color: #111827;
-        margin: 0;
+  .btn {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    border: none;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'medium');
+    cursor: pointer;
+    @include transition(all);
+    min-width: 120px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: map.get($spacing, 'xs');
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    &.btn-secondary {
+      background-color: $color-button-secondary;
+      color: $color-white;
+
+      &:hover:not(:disabled) {
+        background-color: $color-primary-dark;
       }
     }
 
-    .back-button {
-      background: white;
-      color: #374151;
-      border: 1px solid #d1d5db;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
+    &.btn-primary {
+      background-color: $color-blue-light;
+      color: $color-white;
 
-      &:hover {
-        background: #f3f4f6;
+      &:hover:not(:disabled) {
+        background-color: $color-blue-medium;
+        transform: translateY(-1px);
+        box-shadow: $box-shadow-drop-1;
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
       }
     }
+
+    i.fa-spinner {
+      animation: cmSpin 1s linear infinite;
+    }
+  }
+}
+
+@keyframes cmSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// ── Responsive ──
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .cm-container {
+    padding: map.get($spacing, 'base');
   }
 
-  .error-alert.page-error {
-    margin-bottom: 20px;
+  .cm-form {
+    padding: map.get($spacing, 'md');
   }
 
-  .form-container {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    padding: 24px;
-    max-width: 1000px;
-    margin: 0 auto;
+  .cm-actions {
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'mobile')) {
+  .cm-container {
+    padding: map.get($spacing, 'xs');
+  }
+
+  .cm-form {
+    padding: map.get($spacing, 'base');
   }
 }

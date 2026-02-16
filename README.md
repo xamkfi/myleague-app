@@ -131,6 +131,10 @@ MyLeague/
 │   │       ├── Middlewares/        # Custom middleware
 │   │       └── Extensions/         # Service configuration
 │   │
+│   ├── tools/                      # Development tools
+│   │   ├── Seeder/                 # Database seeder for test data
+│   │   └── FloorballPlayerImporter/# Player import utility
+│   │
 │   └── frontend/                   # React Frontend Application
 │       ├── src/                    # Source code
 │       │   ├── components/         # React components
@@ -185,7 +189,15 @@ MyLeague/
    docker-compose up -d
    ```
 
-4. **Access the Application**
+4. **Seed Initial Data**
+
+   After the services are running, seed the database with test data (clubs, teams, players, seasons, matches, referees, etc.):
+   ```bash
+   dotnet run --project src/tools/Seeder/Seeder.csproj
+   ```
+   The seeder is idempotent and safe to run multiple times. See the [Seeder README](src/tools/Seeder/README.md) for details.
+
+5. **Access the Application**
    - **Frontend**: http://localhost:5173
    - **API Documentation**: http://localhost:8080/scalar/v1
    - **API Health Check**: http://localhost:8080/health
@@ -226,6 +238,14 @@ MyLeague/
    cd src/backend/WebAPI
    dotnet run
    ```
+
+5. **Seed Initial Data**
+
+   In a separate terminal, run the seeder to populate the database with test data:
+   ```bash
+   dotnet run --project src/tools/Seeder/Seeder.csproj
+   ```
+   This creates clubs, teams, players, referees, seasons, and matches. The seeder is idempotent and safe to run multiple times. See the [Seeder README](src/tools/Seeder/README.md) for details.
 
 #### Frontend Setup
 1. **Install Dependencies**

@@ -162,12 +162,18 @@ namespace MyLeague.Infrastructure.Services.Common
         }
 
         /// <summary>
-        /// Gets the duration limit in seconds for a given period
+        /// Gets the duration limit in seconds for a given period.
+        /// Currently uses the global PeriodDurationConfiguration as a fallback.
+        /// TODO: When re-enabled, look up per-match FloorballMatchRules from the match entity
+        /// to support dynamic period durations configured per season.
         /// </summary>
         /// <param name="periodNumber">The period number</param>
         /// <returns>Duration limit in seconds, or 0 if no limit</returns>
         private int GetPeriodDurationLimit(int? periodNumber)
         {
+            // Fallback to global configuration.
+            // Per-match rules (FloorballMatch.MatchRules) are the authoritative source
+            // and are used by the frontend and StartPeriodHandler.
             return periodNumber switch
             {
                 1 or 2 => _periodConfig.RegularPeriodSeconds,

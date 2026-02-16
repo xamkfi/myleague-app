@@ -40,6 +40,35 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(m => m.WentToShootout)
                 .IsRequired();
 
+            // Configure MatchRules as an owned entity (stored as columns in the same table)
+            builder.OwnsOne(m => m.MatchRules, rules =>
+            {
+                rules.Property(r => r.NumberOfPeriods)
+                    .HasColumnName("MatchRules_NumberOfPeriods")
+                    .IsRequired()
+                    .HasDefaultValue(2);
+
+                rules.Property(r => r.PeriodDurationMinutes)
+                    .HasColumnName("MatchRules_PeriodDurationMinutes")
+                    .IsRequired()
+                    .HasDefaultValue(15);
+
+                rules.Property(r => r.AllowOvertime)
+                    .HasColumnName("MatchRules_AllowOvertime")
+                    .IsRequired()
+                    .HasDefaultValue(true);
+
+                rules.Property(r => r.OvertimeDurationMinutes)
+                    .HasColumnName("MatchRules_OvertimeDurationMinutes")
+                    .IsRequired()
+                    .HasDefaultValue(5);
+
+                rules.Property(r => r.AllowShootout)
+                    .HasColumnName("MatchRules_AllowShootout")
+                    .IsRequired()
+                    .HasDefaultValue(true);
+            });
+
             // Configure foreign key relationships with navigation properties within the same context
             builder.Property(m => m.HomeTeamId)
                 .IsRequired();

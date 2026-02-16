@@ -2,6 +2,7 @@ using Application.Commands.Floorball.Season;
 using Application.DTOs.Floorball;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
+using Domain.ValueObjects.Floorball;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +28,10 @@ public static class FloorballSeasonMapper
         }
 
         return seasonDivisions
-            .Select(sd => new FloorballSeasonDivisionDto(sd.DivisionId, sd.Teams.Count))
+            .Select(sd => new FloorballSeasonDivisionDto(
+                sd.DivisionId,
+                sd.Teams.Count,
+                sd.Teams.Select(t => t.TeamId).ToList().AsReadOnly()))
             .ToList()
             .AsReadOnly();
     }
@@ -59,6 +63,13 @@ public static class FloorballSeasonMapper
 
         IEnumerable<FloorballTeam> teamsToMap = seasonTeams ?? season.Teams;
 
+        FloorballMatchRulesDto matchRulesDto = new FloorballMatchRulesDto(
+            season.MatchRules.NumberOfPeriods,
+            season.MatchRules.PeriodDurationMinutes,
+            season.MatchRules.AllowOvertime,
+            season.MatchRules.OvertimeDurationMinutes,
+            season.MatchRules.AllowShootout);
+
         return new FloorballSeasonDto(
             season.Id,
             season.Name,
@@ -68,7 +79,8 @@ public static class FloorballSeasonMapper
             season.IsCompleted,
             seasonDivisions,
             FloorballTeamMapper.ToDtos(teamsToMap, clubs, new Dictionary<Guid, Person>()).ToList().AsReadOnly(),
-            FloorballMatchMapper.ToDtos(season.Matches).ToList().AsReadOnly()
+            FloorballMatchMapper.ToDtos(season.Matches).ToList().AsReadOnly(),
+            matchRulesDto
         );
     }
 
@@ -101,10 +113,18 @@ public static class FloorballSeasonMapper
             _ => DateTime.SpecifyKind(command.EndDate, DateTimeKind.Utc)
         };
 
+        FloorballMatchRules matchRules = new FloorballMatchRules(
+            command.NumberOfPeriods,
+            command.PeriodDurationMinutes,
+            command.AllowOvertime,
+            command.OvertimeDurationMinutes,
+            command.AllowShootout);
+
         return new FloorballSeason(
          command.Name,
          startDateUtc,
-         endDateUtc
+         endDateUtc,
+         matchRules
      );
     }
 
@@ -144,5 +164,14 @@ public static class FloorballSeasonMapper
             startDateUtc,
             endDateUtc
         );
+
+        // Update match rules
+        FloorballMatchRules matchRules = new FloorballMatchRules(
+            command.NumberOfPeriods,
+            command.PeriodDurationMinutes,
+            command.AllowOvertime,
+            command.OvertimeDurationMinutes,
+            command.AllowShootout);
+        season.UpdateMatchRules(matchRules);
     }
 } 

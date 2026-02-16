@@ -61,16 +61,17 @@ namespace Application.Handlers.Floorball.Matches
                     return Result<FloorballMatchDto>.Failure($"Match must be in progress to start a period. Current status: {match.Status}");
                 }
 
-                // Validate period number
-                if (request.PeriodNumber < 1 || request.PeriodNumber > 4)
+                // Validate period number (max = shootout period number, which is numberOfPeriods + 2)
+                int maxPeriod = match.ShootoutPeriodNumber;
+                if (request.PeriodNumber < 1 || request.PeriodNumber > maxPeriod)
                 {
                     _logger.LogWarning("Invalid period number {PeriodNumber} for match {MatchId}", request.PeriodNumber, request.MatchId);
-                    return Result<FloorballMatchDto>.Failure($"Period number must be between 1 and 4. Received: {request.PeriodNumber}");
+                    return Result<FloorballMatchDto>.Failure($"Period number must be between 1 and {maxPeriod}. Received: {request.PeriodNumber}");
                 }
 
                 // Ensure period score exists for this period
-                // Periods 1 and 2 are created at match creation
-                // Periods 3 (OT) and 4 (Shootout) are created by RecordOvertime/RecordShootout
+                // Regular periods are created at match creation
+                // OT and Shootout periods are created by RecordOvertime/RecordShootout
                 if (!match.PeriodScores.Any(ps => ps.PeriodNumber == request.PeriodNumber))
                 {
                     _logger.LogWarning("Period score not initialized for period {PeriodNumber} in match {MatchId}", request.PeriodNumber, request.MatchId);
@@ -79,15 +80,15 @@ namespace Application.Handlers.Floorball.Matches
 
                 _logger.LogInformation("Starting period {PeriodNumber} for match {MatchId}", request.PeriodNumber, request.MatchId);
 
-                // Reset and start timer for new period (except shootout - period 4 has no timer)
+                // Reset and start timer for new period (except shootout which has no timer)
                 // The timer service will automatically reset if the period changed
-                if (request.PeriodNumber != 4)
+                if (request.PeriodNumber != match.ShootoutPeriodNumber)
                 {
                     await _timerService.StartTimerAsync(match.Id, request.PeriodNumber);
                 }
                 else
                 {
-                    _logger.LogInformation("Skipping timer start for shootout (period 4) in match {MatchId}", request.MatchId);
+                    _logger.LogInformation("Skipping timer start for shootout (period {Period}) in match {MatchId}", request.PeriodNumber, request.MatchId);
                 }
                 
                 _logger.LogInformation("Successfully started period {PeriodNumber} for match {MatchId}", request.PeriodNumber, request.MatchId);

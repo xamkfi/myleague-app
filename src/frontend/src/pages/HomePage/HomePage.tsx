@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import HomeNewsSection from '../../components/HomeNewsSection/HomeNewsSection';
 import NewsHeroCarousel from '../../components/NewsHeroCarousel/NewsHeroCarousel';
-import MatchSidebar from '../../components/MatchSidebar/MatchSidebar';
+import MatchesPanel from '../../components/MatchesPanel/MatchesPanel';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import { newsService, type NewsArticleDto, type PaginatedNewsResponse } from '../../api/news/newsService';
 import './HomePage.scss';
@@ -68,7 +68,7 @@ function HomePage() {
               <HomeNewsSection />
             </div>
             <div className="sidebar-container">
-              <MatchSidebar />
+              <MatchesPanel />
             </div>
           </div>
         </div>

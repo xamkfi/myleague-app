@@ -25,8 +25,8 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     watch: {
-      usePolling: true,  // Required for Docker volume mounts
-      interval: 100,
+      usePolling: !!process.env.DOCKER,  // Only use polling inside Docker
+      interval: 300,
     },
     proxy: {
       '/api': {

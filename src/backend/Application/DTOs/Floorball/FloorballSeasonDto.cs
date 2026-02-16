@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +19,7 @@ namespace Application.DTOs.Floorball
     /// <param name="SeasonDivisions">List of divisions associated with this season, including team counts</param>
     /// <param name="Teams">List of teams participating in this season</param>
     /// <param name="Matches">List of matches scheduled for this season</param>
+    /// <param name="MatchRules">Match rules configuration for this season</param>
     public record FloorballSeasonDto(
         Guid Id,
         string Name,
@@ -28,5 +29,6 @@ namespace Application.DTOs.Floorball
         bool IsCompleted,
         IReadOnlyCollection<FloorballSeasonDivisionDto> SeasonDivisions,
         IReadOnlyCollection<FloorballTeamDto> Teams,
-        IReadOnlyCollection<FloorballMatchDto> Matches);
+        IReadOnlyCollection<FloorballMatchDto> Matches,
+        FloorballMatchRulesDto MatchRules);
 }

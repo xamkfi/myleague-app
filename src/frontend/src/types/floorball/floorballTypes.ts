@@ -195,6 +195,14 @@ export interface FloorballSaveEventDto {
   playerName?: string;
 }
 
+export interface FloorballMatchRules {
+  numberOfPeriods: number;
+  periodDurationMinutes: number;
+  allowOvertime: boolean;
+  overtimeDurationMinutes: number;
+  allowShootout: boolean;
+}
+
 export interface FloorballMatchDto {
   id: string;
   seasonId: string;
@@ -220,6 +228,7 @@ export interface FloorballMatchDto {
   goalEvents: FloorballGoalEventDto[];
   penaltyEvents: FloorballPenaltyEventDto[];
   saveEvents: FloorballSaveEventDto[];
+  matchRules: FloorballMatchRules;
 }
 
 export interface CreateFloorballMatchRequest {
@@ -261,6 +270,7 @@ export interface GetFloorballMatchesRequest {
   pageSize?: number;
   seasonId?: string;
   teamId?: string;
+  status?: FloorballMatchStatus;
   startDate?: string;
   endDate?: string;
   sortOrder?: string;

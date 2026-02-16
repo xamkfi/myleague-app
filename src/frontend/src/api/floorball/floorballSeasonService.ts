@@ -1,6 +1,7 @@
 import type { 
   ApiResponse,
-  FloorballTeam
+  FloorballTeam,
+  FloorballMatchRules
 } from '../../types/floorball/floorballTypes';
 import { authFetch } from '../utils/authFetch';
 import { API_URL } from '../../constants/config';
@@ -40,6 +41,7 @@ const parseErrorResponse = async (response: Response, defaultMessage: string): P
 export interface FloorballSeasonDivisionDto {
   divisionId: string;
   teamCount: number;
+  teamIds: string[];
 }
 
 export interface FloorballSeasonDto {
@@ -52,6 +54,7 @@ export interface FloorballSeasonDto {
   seasonDivisions: FloorballSeasonDivisionDto[];
   teams: FloorballTeam[];
   matches: unknown[];
+  matchRules: FloorballMatchRules;
 } 
 
 export interface CreateFloorballSeasonRequest {
@@ -59,12 +62,22 @@ export interface CreateFloorballSeasonRequest {
   startDate: string;
   endDate: string;
   divisionIds: string[];
+  numberOfPeriods: number;
+  periodDurationMinutes: number;
+  allowOvertime: boolean;
+  overtimeDurationMinutes: number;
+  allowShootout: boolean;
 }
 
 export interface UpdateFloorballSeasonRequest {
   name: string;
   startDate: string;
   endDate: string;
+  numberOfPeriods: number;
+  periodDurationMinutes: number;
+  allowOvertime: boolean;
+  overtimeDurationMinutes: number;
+  allowShootout: boolean;
 }
 
 export const floorballSeasonService = {
