@@ -1,0 +1,314 @@
+using Application.DTOs.Common;
+using Application.DTOs.Floorball;
+using MahlImporter.Models;
+
+namespace MahlImporter.Import;
+
+public class EntityImporter
+{
+    private readonly ApiClient _api;
+
+    public EntityImporter(ApiClient api)
+    {
+        _api = api;
+    }
+
+    /// <summary>
+    /// Returns mapping: team name -> ClubDto
+    /// </summary>
+    public async Task<Dictionary<string, ClubDto>> ImportClubsAsync(List<ScrapedTeam> teams)
+    {
+        Console.WriteLine("--- Importing Clubs ---");
+        List<ClubDto> existing = await _api.GetClubsAsync();
+        Dictionary<string, ClubDto> map = new(StringComparer.OrdinalIgnoreCase);
+
+        foreach (ScrapedTeam team in teams)
+        {
+            ClubDto? club = existing.FirstOrDefault(c => string.Equals(c.Name, team.Name, StringComparison.OrdinalIgnoreCase));
+            if (club != null)
+            {
+                Console.WriteLine($"  Club '{team.Name}' already exists.");
+                map[team.Name] = club;
+                continue;
+            }
+
+            club = await _api.CreateClubAsync(team.Name);
+            if (club != null)
+            {
+                Console.WriteLine($"  Created club '{team.Name}'");
+                map[team.Name] = club;
+                existing.Add(club);
+            }
+            else
+            {
+                existing = await _api.GetClubsAsync();
+                club = existing.FirstOrDefault(c => c.Name.Contains(team.Name, StringComparison.OrdinalIgnoreCase) ||
+                                                    team.Name.Contains(c.Name, StringComparison.OrdinalIgnoreCase));
+                if (club != null)
+                {
+                    Console.WriteLine($"  Found existing club '{club.Name}' for team '{team.Name}'");
+                    map[team.Name] = club;
+                }
+            }
+        }
+
+        return map;
+    }
+
+    /// <summary>
+    /// Returns the LIIGA division, creating it if necessary.
+    /// </summary>
+    public async Task<DivisionDto> GetOrCreateLiigaDivisionAsync()
+    {
+        Console.WriteLine("--- Finding LIIGA Division ---");
+        List<DivisionDto> divisions = await _api.GetDivisionsAsync();
+        DivisionDto? liiga = divisions.FirstOrDefault(d => d.Name.Contains("LIIGA", StringComparison.OrdinalIgnoreCase));
+        if (liiga != null)
+        {
+            Console.WriteLine($"  Found division: {liiga.Name} ({liiga.Id})");
+            return liiga;
+        }
+
+        liiga = divisions.FirstOrDefault(d => d.Name.Contains("Liiga", StringComparison.OrdinalIgnoreCase));
+        if (liiga != null)
+        {
+            Console.WriteLine($"  Found division: {liiga.Name} ({liiga.Id})");
+            return liiga;
+        }
+
+        Console.WriteLine("  LIIGA division not found, creating it...");
+        liiga = await _api.CreateDivisionAsync("LIIGA", "MAHL LIIGA division", 1, "Floorball");
+        if (liiga == null)
+            throw new InvalidOperationException("Failed to create LIIGA division via API.");
+
+        Console.WriteLine($"  Created division: {liiga.Name} ({liiga.Id})");
+        return liiga;
+    }
+
+    /// <summary>
+    /// Creates persons and floorball players for all scraped players.
+    /// Returns mapping: "FirstName LastName" -> (PersonId, PlayerId)
+    /// </summary>
+    public async Task<Dictionary<string, (Guid PersonId, Guid PlayerId)>> ImportPlayersAsync(List<ScrapedTeam> teams)
+    {
+        Console.WriteLine("--- Importing Persons & Floorball Players ---");
+        Dictionary<string, (Guid PersonId, Guid PlayerId)> map = new(StringComparer.OrdinalIgnoreCase);
+
+        List<FloorballPlayerDto> existingPlayers = await _api.GetPlayersAsync();
+        Dictionary<Guid, FloorballPlayerDto> playerByPersonId = existingPlayers.ToDictionary(p => p.PersonId, p => p);
+
+        HashSet<string> allPlayerNames = [];
+        foreach (ScrapedTeam team in teams)
+        {
+            foreach (ScrapedPlayer sp in team.Players)
+            {
+                allPlayerNames.Add($"{sp.FirstName} {sp.LastName}");
+            }
+        }
+
+        int created = 0;
+        int skipped = 0;
+
+        foreach (string fullName in allPlayerNames)
+        {
+            string[] parts = fullName.Split(' ', 2);
+            string firstName = parts[0];
+            string lastName = parts.Length > 1 ? parts[1] : "";
+
+            if (string.IsNullOrWhiteSpace(lastName))
+            {
+                continue;
+            }
+
+            if (map.ContainsKey(fullName)) continue;
+
+            List<PersonDto> searchResults = await _api.SearchPersonsAsync(fullName);
+            PersonDto? person = searchResults.FirstOrDefault(p =>
+                string.Equals(p.FirstName, firstName, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(p.LastName, lastName, StringComparison.OrdinalIgnoreCase));
+
+            if (person == null)
+            {
+                person = await _api.CreatePersonAsync(firstName, lastName);
+                if (person == null)
+                {
+                    Console.WriteLine($"  FAIL: Could not create person '{fullName}'");
+                    continue;
+                }
+                created++;
+            }
+            else
+            {
+                skipped++;
+            }
+
+            FloorballPlayerDto? player = null;
+            if (playerByPersonId.TryGetValue(person.Id, out FloorballPlayerDto? existingPlayer))
+            {
+                player = existingPlayer;
+            }
+            else
+            {
+                player = await _api.CreatePlayerAsync(person.Id);
+                if (player == null)
+                {
+                    Console.WriteLine($"  FAIL: Could not create floorball player for '{fullName}'");
+                    continue;
+                }
+            }
+
+            map[fullName] = (person.Id, player.Id);
+        }
+
+        Console.WriteLine($"  Persons: {created} created, {skipped} already existed. Total players mapped: {map.Count}");
+        return map;
+    }
+
+    /// <summary>
+    /// Creates floorball teams and adds players. Returns mapping: team name -> FloorballTeamDto
+    /// </summary>
+    public async Task<Dictionary<string, FloorballTeamDto>> ImportTeamsAsync(
+        List<ScrapedTeam> scrapedTeams,
+        Dictionary<string, ClubDto> clubMap,
+        DivisionDto division,
+        Dictionary<string, (Guid PersonId, Guid PlayerId)> playerMap)
+    {
+        Console.WriteLine("--- Importing Teams ---");
+        List<FloorballTeamDto> existing = await _api.GetTeamsAsync();
+        Dictionary<string, FloorballTeamDto> map = new(StringComparer.OrdinalIgnoreCase);
+
+        foreach (ScrapedTeam st in scrapedTeams)
+        {
+            FloorballTeamDto? team = existing.FirstOrDefault(t =>
+                string.Equals(t.Name, st.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (team != null)
+            {
+                Console.WriteLine($"  Team '{st.Name}' already exists.");
+                map[st.Name] = team;
+            }
+            else
+            {
+                if (!clubMap.TryGetValue(st.Name, out ClubDto? club))
+                {
+                    Console.WriteLine($"  WARN: No club found for team '{st.Name}', skipping.");
+                    continue;
+                }
+
+                team = await _api.CreateTeamAsync(st.Name, club.Id, division.Id);
+                if (team == null)
+                {
+                    Console.WriteLine($"  FAIL: Could not create team '{st.Name}'");
+                    continue;
+                }
+                Console.WriteLine($"  Created team '{st.Name}'");
+                existing.Add(team);
+                map[st.Name] = team;
+            }
+
+            int added = 0;
+            foreach (ScrapedPlayer sp in st.Players)
+            {
+                string fullName = $"{sp.FirstName} {sp.LastName}";
+                if (!playerMap.TryGetValue(fullName, out (Guid PersonId, Guid PlayerId) ids))
+                {
+                    continue;
+                }
+
+                int position = sp.IsGoalkeeper ? 4 : 1; // 4=Goalkeeper, 1=Forward
+                bool ok = await _api.AddPlayerToTeamAsync(team.Id, ids.PlayerId, position, sp.JerseyNumber > 0 ? sp.JerseyNumber : null);
+                if (ok) added++;
+            }
+            Console.WriteLine($"    Added {added}/{st.Players.Count} players to '{st.Name}'");
+            if (!string.IsNullOrEmpty(st.LogoUrl))
+            {
+                bool logoOk = await _api.UpdateTeamLogoAsync(team.Id, st.LogoUrl);
+                Console.WriteLine(logoOk
+                    ? $"    Set logo: {st.LogoUrl}"
+                    : $"    WARN: Failed to set logo for '{st.Name}'");
+            }
+        }
+
+        return map;
+    }
+
+    /// <summary>
+    /// Creates (or finds) a referee to use for all matches.
+    /// </summary>
+    public async Task<Guid> GetOrCreateImportRefereeAsync(Dictionary<string, (Guid PersonId, Guid PlayerId)> playerMap)
+    {
+        Console.WriteLine("--- Setting up Import Referee ---");
+        List<FloorballRefereeDto> existing = await _api.GetRefereesAsync();
+        if (existing.Count > 0)
+        {
+            Console.WriteLine($"  Using existing referee: {existing[0].Id}");
+            return existing[0].Id;
+        }
+
+        PersonDto? refPerson = await _api.CreatePersonAsync("Import", "Referee");
+        if (refPerson == null)
+            throw new InvalidOperationException("Failed to create referee person.");
+
+        FloorballRefereeDto? referee = await _api.CreateRefereeAsync(refPerson.Id);
+        if (referee == null)
+            throw new InvalidOperationException("Failed to create referee.");
+
+        Console.WriteLine($"  Created import referee: {referee.Id}");
+        return referee.Id;
+    }
+
+    /// <summary>
+    /// Creates the season and adds all teams.
+    /// </summary>
+    public async Task<FloorballSeasonDto> ImportSeasonAsync(
+        string seasonName,
+        DivisionDto division,
+        Dictionary<string, FloorballTeamDto> teamMap,
+        int yearsToAdd)
+    {
+        Console.WriteLine("--- Importing Season ---");
+        List<FloorballSeasonDto> existing = await _api.GetSeasonsAsync();
+        FloorballSeasonDto? season = existing.FirstOrDefault(s =>
+            string.Equals(s.Name, seasonName, StringComparison.OrdinalIgnoreCase));
+
+        if (season != null)
+        {
+            Console.WriteLine($"  Season '{seasonName}' already exists: {season.Id}");
+        }
+        else
+        {
+            DateTime startDate = new DateTime(2025 + yearsToAdd, 9, 1);
+            DateTime endDate = new DateTime(2026 + yearsToAdd, 5, 31);
+
+            season = await _api.CreateSeasonAsync(seasonName, division.Id, startDate, endDate);
+            if (season == null)
+                throw new InvalidOperationException($"Failed to create season '{seasonName}'");
+
+            Console.WriteLine($"  Created season '{seasonName}': {season.Id}");
+        }
+
+        Console.Write("  Adding teams to season... ");
+        int added = 0;
+        foreach (FloorballTeamDto team in teamMap.Values)
+        {
+            bool ok = await _api.AddTeamToSeasonAsync(season.Id, team.Id);
+            if (ok) added++;
+        }
+        Console.WriteLine($"{added} teams added.");
+
+        Console.Write("  Adding teams to LIIGA division... ");
+        int divAdded = 0;
+        foreach (FloorballTeamDto team in teamMap.Values)
+        {
+            bool ok = await _api.AddTeamToSeasonDivisionAsync(season.Id, division.Id, team.Id);
+            if (ok) divAdded++;
+        }
+        Console.WriteLine($"{divAdded} teams added to division.");
+
+        Console.Write("  Activating season... ");
+        bool activated = await _api.ActivateSeasonAsync(season.Id);
+        Console.WriteLine(activated ? "OK" : "FAILED");
+
+        return season;
+    }
+}
