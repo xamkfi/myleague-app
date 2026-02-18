@@ -1078,6 +1078,24 @@
     "error": "Seurojen lataus epäonnistui",
     "totalClubs": "{{count}} seuraa"
   },
+  "clubPage": {
+    "loading": "Ladataan seuran tietoja...",
+    "errorTitle": "Virhe",
+    "errorMessage": "Seuran tietojen lataus epäonnistui. Yritä myöhemmin uudelleen.",
+    "notFoundTitle": "Seuraa ei löytynyt",
+    "notFoundMessage": "Etsimääsi seuraa ei ole olemassa.",
+    "backToClubs": "Kaikki seurat",
+    "teams": "Joukkueet",
+    "teamsLoading": "Ladataan joukkueita...",
+    "noTeams": "Tällä seuralla ei ole vielä salibandyjoukkueita.",
+    "website": "Verkkosivu",
+    "city": "Kaupunki",
+    "founded": "Perustettu",
+    "contact": "Yhteystiedot",
+    "activeRoster": "Aktiivinen kokoonpano",
+    "noActiveMembers": "Ei aktiivisia jäseniä",
+    "viewTeam": "Näytä joukkue"
+  },
   "auth": {
     "loginTitle": "Ylläpito - Kirjautuminen",
     "loginSubtitle": "Syötä sähköpostiosoitteesi saadaksesi kirjautumiskoodin.",

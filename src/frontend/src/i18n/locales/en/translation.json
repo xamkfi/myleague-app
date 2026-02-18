@@ -1130,6 +1130,24 @@
     "error": "Failed to load clubs",
     "totalClubs": "{{count}} clubs"
   },
+  "clubPage": {
+    "loading": "Loading club information...",
+    "errorTitle": "Error",
+    "errorMessage": "Failed to load club information. Please try again later.",
+    "notFoundTitle": "Club Not Found",
+    "notFoundMessage": "The club you are looking for does not exist.",
+    "backToClubs": "All clubs",
+    "teams": "Teams",
+    "teamsLoading": "Loading teams...",
+    "noTeams": "This club doesn't have any floorball teams yet.",
+    "website": "Website",
+    "city": "City",
+    "founded": "Founded",
+    "contact": "Contact",
+    "activeRoster": "Active roster",
+    "noActiveMembers": "No active members",
+    "viewTeam": "View team"
+  },
   "auth": {
     "loginTitle": "Admin Login",
     "loginSubtitle": "Enter your email to receive a login code.",
