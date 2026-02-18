@@ -117,9 +117,10 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
           <label htmlFor="club-logo">{t('clubs.form.logoUrl', 'Logo URL')}</label>
           <input
             id="club-logo"
-            value={values.logoUrl || ''}
+            type="url"
+            value={values.logoUrl ?? ''}
             onChange={(e) => handleChange('logoUrl', e.target.value)}
-            placeholder="https://example.com/logo.png"
+            placeholder={t('clubs.form.logoUrlPlaceholder', 'https://…')}
           />
         </div>
         <div className="form-group">

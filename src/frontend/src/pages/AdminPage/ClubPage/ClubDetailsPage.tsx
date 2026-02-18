@@ -108,7 +108,7 @@ function ClubDetailsPage() {
                 </div>
                 <div className="club-identity">
                   <h2 className="club-name">{club.name}</h2>
-                  <p className="club-location">{club.city}, {club.country}</p>
+                  <p className="club-location">{[club.city, club.country].filter(Boolean).join(', ') || '-'}</p>
                 </div>
                 <div className="club-actions">
                   <button className="btn btn-secondary" onClick={() => navigate(`/admin/clubs/${club.id}/edit`)}>

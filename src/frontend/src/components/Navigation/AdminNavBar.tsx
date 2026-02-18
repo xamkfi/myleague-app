@@ -12,9 +12,14 @@ import SeasonsIcon from '../../assets/adminIcons/Seasons.svg';
 import MatchesIcon from '../../assets/adminIcons/Matches.svg';
 import RefereesIcon from '../../assets/adminIcons/Referees.svg';
 import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
-import LeaguesIcon from '../../assets/adminIcons/Leagues.svg'
+import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
 
-function AdminNavBar() {
+interface AdminNavBarProps {
+  collapsed: boolean;
+  onToggleCollapse: () => void;
+}
+
+function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,81 +40,107 @@ function AdminNavBar() {
     return location.pathname.startsWith('/admin/floorball');
   };
 
+  const userInitial = (user?.person?.fullName ?? user?.email ?? '?')[0].toUpperCase();
+
   return (
-    <nav className="admin-navbar">
+    <nav className={`admin-navbar ${collapsed ? 'admin-navbar--collapsed' : ''}`}>
       <div className="admin-navbar-header">
-        <Link to="/admin" className="admin-navbar-brand">
-          <h1>MAHL</h1>
-        </Link>
-        <p className="admin-navbar-subtitle">{t('admin.view', 'Admin view')}</p>
+        <div className="admin-navbar-header-row">
+          <Link to="/admin" className="admin-navbar-brand">
+            <h1>{collapsed ? 'M' : 'MAHL'}</h1>
+          </Link>
+          <button
+            className="admin-navbar-toggle"
+            onClick={onToggleCollapse}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <span className={`admin-navbar-toggle-icon ${collapsed ? 'admin-navbar-toggle-icon--collapsed' : ''}`}>
+              ‹
+            </span>
+          </button>
+        </div>
+        {!collapsed && (
+          <p className="admin-navbar-subtitle">{t('admin.view', 'Admin view')}</p>
+        )}
       </div>
 
       <div className="admin-navbar-content">
         <div className="admin-navbar-section">
-          <h3 className="admin-navbar-section-title">{t('admin.database', 'Database')}</h3>
+          {!collapsed && (
+            <h3 className="admin-navbar-section-title">{t('admin.database', 'Database')}</h3>
+          )}
           <ul className="admin-navbar-menu">
             <li className={`admin-navbar-item ${isActive('/admin') ? 'active' : ''}`}>
-              <Link to="/admin">
+              <Link to="/admin" title={collapsed ? t('admin.actions.home', 'Home') : undefined}>
                 <img src={SportsIcon} alt="Home" className="icon" />
-                <span>{t('admin.actions.home', 'Home')}</span>
+                {!collapsed && <span>{t('admin.actions.home', 'Home')}</span>}
               </Link>
             </li>
             <li className={`admin-navbar-item ${isActive('/admin/persons') ? 'active' : ''}`}>
-              <Link to="/admin/persons">
+              <Link to="/admin/persons" title={collapsed ? t('admin.actions.persons', 'Persons') : undefined}>
                 <img src={PersonsIcon} alt="Persons" className="icon" />
-                <span>{t('admin.actions.persons', 'Persons')}</span>
+                {!collapsed && <span>{t('admin.actions.persons', 'Persons')}</span>}
               </Link>
             </li>
             <li className={`admin-navbar-item ${isActive('/admin/news') ? 'active' : ''}`}>
-              <Link to="/admin/news">
+              <Link to="/admin/news" title={collapsed ? t('admin.actions.news', 'News') : undefined}>
                 <img src={NewsIcon} alt="News" className="icon" />
-                <span>{t('admin.actions.news', 'News')}</span>
+                {!collapsed && <span>{t('admin.actions.news', 'News')}</span>}
               </Link>
             </li>
             <li className={`admin-navbar-item ${isActive('/admin/divisions') ? 'active' : ''}`}>
-              <Link to="/admin/divisions">
+              <Link to="/admin/divisions" title={collapsed ? t('admin.actions.divisions', 'Divisions') : undefined}>
                 <img src={LeaguesIcon} alt="Divisions" className="icon" />
-                <span>{t('admin.actions.divisions', 'Divisions')}</span>
+                {!collapsed && <span>{t('admin.actions.divisions', 'Divisions')}</span>}
               </Link>
             </li>
             <li className={`admin-navbar-item ${isActive('/admin/clubs') ? 'active' : ''}`}>
-              <Link to="/admin/clubs">
+              <Link to="/admin/clubs" title={collapsed ? t('admin.actions.clubs', 'Clubs') : undefined}>
                 <img src={ClubsIcon} alt="Clubs" className="icon" />
-                <span>{t('admin.actions.clubs', 'Clubs')}</span>
+                {!collapsed && <span>{t('admin.actions.clubs', 'Clubs')}</span>}
               </Link>
             </li>
             <li className={`admin-navbar-item ${isActive('/admin/users') ? 'active' : ''}`}>
-              <Link to="/admin/users">
+              <Link to="/admin/users" title={collapsed ? t('admin.actions.users', 'System Users') : undefined}>
                 <img src={PersonsIcon} alt="Users" className="icon" />
-                <span>{t('admin.actions.users', 'System Users')}</span>
+                {!collapsed && <span>{t('admin.actions.users', 'System Users')}</span>}
               </Link>
             </li>
           </ul>
         </div>
 
         <div className="admin-navbar-section">
-          <h3 className="admin-navbar-section-title">{t('admin.sportsTitle', 'Sports')}</h3>
+          {!collapsed && (
+            <h3 className="admin-navbar-section-title">{t('admin.sportsTitle', 'Sports')}</h3>
+          )}
           <ul className="admin-navbar-menu">
             <li className={`admin-navbar-item ${isFloorballActive() ? 'active' : ''}`}>
-              <div className="admin-navbar-dropdown-trigger">
-                <Link 
-                  to="/admin/floorball" 
-                  className="admin-navbar-dropdown-trigger-content"
-                >
+              {collapsed ? (
+                <Link to="/admin/floorball" title={t('admin.actions.floorball', 'Floorball')}>
                   <img src={SportsIcon} alt="Floorball" className="icon" />
-                  <span>{t('admin.actions.floorball', 'Floorball')}</span>
                 </Link>
-                <span 
-                  className={`admin-navbar-dropdown-arrow ${floorballDropdownOpen ? 'open' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setFloorballDropdownOpen(!floorballDropdownOpen);
-                  }}
-                >
-                  ▼
-                </span>
-              </div>
-              {floorballDropdownOpen && (
+              ) : (
+                <div className="admin-navbar-dropdown-trigger">
+                  <Link 
+                    to="/admin/floorball" 
+                    className="admin-navbar-dropdown-trigger-content"
+                  >
+                    <img src={SportsIcon} alt="Floorball" className="icon" />
+                    <span>{t('admin.actions.floorball', 'Floorball')}</span>
+                  </Link>
+                  <span 
+                    className={`admin-navbar-dropdown-arrow ${floorballDropdownOpen ? 'open' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFloorballDropdownOpen(!floorballDropdownOpen);
+                    }}
+                  >
+                    ▼
+                  </span>
+                </div>
+              )}
+              {!collapsed && floorballDropdownOpen && (
                 <ul className="admin-navbar-submenu">
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/teams') ? 'active' : ''}`}>
                     <Link to="/admin/floorball/teams">
@@ -149,18 +180,28 @@ function AdminNavBar() {
       </div>
 
       <div className="admin-navbar-footer">
-        <div 
-          className={`admin-navbar-user ${userDropdownOpen ? 'open' : ''}`}
-          onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-        >
-          <div className="admin-navbar-user-info">
-            <span className="admin-navbar-user-name">
-              {user?.person?.fullName ?? user?.email ?? '—'}
-            </span>
-            <span className="admin-navbar-user-role">{user?.email ?? ''}</span>
+        {collapsed ? (
+          <div
+            className="admin-navbar-user-avatar"
+            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+            title={user?.person?.fullName ?? user?.email ?? ''}
+          >
+            {userInitial}
           </div>
-          <span className="admin-navbar-user-dropdown-icon">▼</span>
-        </div>
+        ) : (
+          <div 
+            className={`admin-navbar-user ${userDropdownOpen ? 'open' : ''}`}
+            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+          >
+            <div className="admin-navbar-user-info">
+              <span className="admin-navbar-user-name">
+                {user?.person?.fullName ?? user?.email ?? '—'}
+              </span>
+              <span className="admin-navbar-user-role">{user?.email ?? ''}</span>
+            </div>
+            <span className="admin-navbar-user-dropdown-icon">▼</span>
+          </div>
+        )}
         {userDropdownOpen && (
           <div className="admin-navbar-user-menu">
             <button className="admin-navbar-user-menu-item" onClick={handleLogout}>

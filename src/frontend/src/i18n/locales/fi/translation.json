@@ -820,6 +820,7 @@
         "Postponed": "Lykätty"
       },
       "actions": {
+        "open": "Avaa ottelu",
         "manage": "Hallitse",
         "live": "Live-näkymä",
         "start": "Käynnistä ottelu",

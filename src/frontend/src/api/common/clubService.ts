@@ -5,12 +5,12 @@ import { authFetch } from '../utils/authFetch';
 export interface Club {
   id: string;
   name: string;
-  foundingDate: string;
-  city: string;
-  country: string;
-  websiteUrl: string;
-  logoUrl: string;
-  contactEmail: string;
+  foundingDate: string | null;
+  city: string | null;
+  country: string | null;
+  websiteUrl: string | null;
+  logoUrl: string | null;
+  contactEmail: string | null;
 }
 
 export interface ClubRequest {
@@ -21,6 +21,24 @@ export interface ClubRequest {
   websiteUrl?: string | null;
   logoUrl?: string | null;
   contactEmail?: string | null;
+}
+
+// Normalize raw API club object to Club type (handles both camelCase and PascalCase from API).
+function normalizeClub(raw: Record<string, unknown>): Club {
+  const str = (key: string) => {
+    const v = raw[key] ?? raw[key.charAt(0).toUpperCase() + key.slice(1)];
+    return v != null && typeof v === 'string' ? v : null;
+  };
+  return {
+    id: String(raw.id ?? raw.Id ?? ''),
+    name: String(raw.name ?? raw.Name ?? ''),
+    foundingDate: str('foundingDate'),
+    city: str('city'),
+    country: str('country'),
+    websiteUrl: str('websiteUrl'),
+    logoUrl: str('logoUrl'),
+    contactEmail: str('contactEmail'),
+  };
 }
 
 // Note: API response shapes may vary (ApiResponse or ProblemDetails). We parse dynamically.
@@ -108,7 +126,8 @@ export const clubService = {
       const errorMessage = await parseErrorResponse(data, 'Failed to fetch club');
       throw new Error(errorMessage || 'Failed to fetch club');
     }
-    return data.data;
+    const raw = data.data as Record<string, unknown>;
+    return raw && typeof raw === 'object' ? normalizeClub(raw) : (data.data as Club);
   },
 
   create: async (payload: ClubRequest): Promise<Club> => {

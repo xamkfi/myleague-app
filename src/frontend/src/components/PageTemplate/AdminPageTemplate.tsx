@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import AdminNavBar from '../Navigation/AdminNavBar';
 import './AdminPageTemplate.scss';
+
+const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
 
 interface AdminPageTemplateProps {
   title: string;
@@ -9,6 +11,22 @@ interface AdminPageTemplateProps {
 }
 
 function AdminPageTemplate({ title, children }: AdminPageTemplateProps) {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleSidebar = useCallback(() => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      try { localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next)); } catch { /* noop */ }
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     document.title = `${title} - MAHL Admin`;
     return () => {
@@ -17,8 +35,8 @@ function AdminPageTemplate({ title, children }: AdminPageTemplateProps) {
   }, [title]);
 
   return (
-    <div className="admin-page-container">
-      <AdminNavBar />
+    <div className={`admin-page-container ${sidebarCollapsed ? 'admin-page-container--collapsed' : ''}`}>
+      <AdminNavBar collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
       <div className="admin-page-content">
         <div className="admin-page-body">
           {children || (

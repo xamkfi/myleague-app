@@ -2,20 +2,30 @@
 @use '@variables' as *;
 @use '../../styles/common' as *;
 
+$sidebar-width: 250px;
+$sidebar-collapsed-width: 68px;
+
 .admin-page {
   &-container {
     display: flex;
     min-height: 100vh;
     background-color: $color-blue-darkest;
+
+    &--collapsed {
+      .admin-page-content {
+        margin-left: $sidebar-collapsed-width;
+      }
+    }
   }
   
   &-content {
     flex: 1;
-    margin-left: 250px; // Width of the admin navbar
+    margin-left: $sidebar-width;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    padding: map.get($spacing, 'xl'); // Padding around the white content
+    padding: map.get($spacing, 'xl');
+    transition: margin-left 0.25s ease;
   }
 
   &-body {
