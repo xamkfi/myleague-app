@@ -2,6 +2,7 @@ import type {
   ApiResponse
 } from '../../types/floorball/floorballTypes';
 import { API_URL } from '../../constants/config';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 
 // Statistics DTOs matching the backend
 export interface FloorballPlayerSeasonStatisticsDto {
@@ -139,38 +140,6 @@ export enum FloorballGameResult {
   Tie = 'Tie'
 }
 
-/**
- * Helper function to parse error responses properly
- */
-const parseErrorResponse = async (response: Response, defaultMessage: string): Promise<string> => {
-  try {
-    const responseText = await response.text();
-    console.error('API Error Response (raw):', responseText);
-    
-    if (responseText) {
-      try {
-        const errorResponse = JSON.parse(responseText);
-        console.error('API Error Response (parsed):', errorResponse);
-        
-        if (errorResponse.errors && Array.isArray(errorResponse.errors)) {
-          return errorResponse.errors.join(', ');
-        } else if (errorResponse.message) {
-          return errorResponse.message;
-        } else {
-          return responseText;
-        }
-      } catch {
-        // If JSON parsing fails, use the raw text
-        return responseText;
-      }
-    }
-  } catch (readError) {
-    console.error('Error reading response:', readError);
-  }
-  
-  return `HTTP ${response.status}: ${defaultMessage}`;
-};
-
 export const floorballStatisticsService = {
   /**
    * Get team statistics for a specific season
@@ -187,7 +156,7 @@ export const floorballStatisticsService = {
       const apiResponse: ApiResponse<FloorballTeamSeasonStatisticsDto> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch team statistics');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch team statistics'));
       }
       
       return apiResponse.data;
@@ -212,7 +181,7 @@ export const floorballStatisticsService = {
       const apiResponse: ApiResponse<FloorballPlayerSeasonStatisticsDto> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch player statistics');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch player statistics'));
       }
       
       return apiResponse.data;
@@ -237,7 +206,7 @@ export const floorballStatisticsService = {
       const apiResponse: ApiResponse<FloorballMatchTeamStatisticsDto[]> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch match statistics');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch match statistics'));
       }
       
       return apiResponse.data;
@@ -262,7 +231,7 @@ export const floorballStatisticsService = {
       const apiResponse: ApiResponse<FloorballPlayerSeasonStatisticsDto[]> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch top scorers');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch top scorers'));
       }
       
       return apiResponse.data;
@@ -287,7 +256,7 @@ export const floorballStatisticsService = {
       const apiResponse: ApiResponse<FloorballSeasonStatisticsSummaryDto> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch season statistics');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch season statistics'));
       }
       
       return apiResponse.data;
@@ -312,7 +281,7 @@ export const floorballStatisticsService = {
       const apiResponse: ApiResponse<FloorballTeamSeasonStatisticsDto[]> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch team standings');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch team standings'));
       }
       
       return apiResponse.data;

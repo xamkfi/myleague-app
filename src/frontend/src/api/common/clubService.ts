@@ -41,11 +41,7 @@ function normalizeClub(raw: Record<string, unknown>): Club {
   };
 }
 
-// Note: API response shapes may vary (ApiResponse or ProblemDetails). We parse dynamically.
-// TODO: Standardize all API services (news, matches, seasons, floorball, persons, etc.)
-//       to route errors through parseErrorResponse and surface them via ErrorPopup.
-//       Contract: thrown Error.message should be a JSON string of the form
-//       {"title": string, "errors": string[]} so the UI can render consistent messages.
+// Errors are parsed via parseErrorResponse; ErrorPopup can show { title, errors } when message is JSON.
 
 export const clubService = {
   getAll: async (): Promise<Club[]> => {
