@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AdminPageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
@@ -42,17 +42,21 @@ function EditClubPage() {
     load();
   }, [id]);
 
-  const initialValues: ClubRequest | undefined = club
-    ? {
-        name: club.name ?? '',
-        city: club.city ?? '',
-        country: club.country ?? '',
-        foundingDate: toDateInputValue(club.foundingDate),
-        websiteUrl: club.websiteUrl ?? '',
-        logoUrl: club.logoUrl ?? '',
-        contactEmail: club.contactEmail ?? '',
-      }
-    : undefined;
+  const initialValues = useMemo<ClubRequest | undefined>(
+    () =>
+      club
+        ? {
+            name: club.name ?? '',
+            city: club.city ?? '',
+            country: club.country ?? '',
+            foundingDate: toDateInputValue(club.foundingDate),
+            websiteUrl: club.websiteUrl ?? '',
+            logoUrl: club.logoUrl ?? '',
+            contactEmail: club.contactEmail ?? '',
+          }
+        : undefined,
+    [club]
+  );
 
   const handleSubmit = async (payload: ClubRequest) => {
     if (!id) return;
@@ -98,5 +102,3 @@ function EditClubPage() {
 }
 
 export default EditClubPage;
-
-

@@ -1,7 +1,7 @@
 @use '../../../styles/variables' as *;
 
 .club-form {
-  background: #fff;
+  background: $color-white;
   border: 1px solid $color-border;
   border-radius: 12px;
   padding: 1rem;
@@ -25,10 +25,23 @@
   gap: 0.375rem;
 }
 
+.form-group label {
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
 .form-group input {
   padding: 0.5rem 0.75rem;
   border: 1px solid $color-border;
-  border-radius: 8px;
+  border-radius: $border-radius-default;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: $color-blue-secondary;
+    box-shadow: 0 0 0 3px rgba($color-blue-secondary, 0.2);
+  }
 }
 
 .form-actions {
@@ -46,19 +59,149 @@
 
 .club-form .btn {
   padding: 0.5rem 0.75rem;
-  border-radius: 8px;
+  border-radius: $border-radius-default;
   border: none;
   cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
 }
 
 .club-form .btn-primary {
   background: $color-blue-secondary;
   color: $color-white;
+
+  &:hover {
+    background: $color-blue-secondary-muted;
+  }
+}
+
+.club-form .btn-secondary {
+  background: $color-neutral-light-grey;
+  color: $color-text-primary;
+
+  &:hover {
+    background: $color-neutral-medium-grey;
+  }
 }
 
 .club-form .btn-danger {
   background: $color-red-primary;
   color: $color-white;
+
+  &:hover {
+    background: $color-red-muted;
+  }
 }
 
+.club-form__logo-group {
+  grid-column: 1 / -1;
+}
+
+.club-form__logo-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: inherit;
+}
+
+.club-form__logo-preview {
+  margin-bottom: 0.5rem;
+}
+
+.club-form__logo-preview-inner {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid $color-border;
+  border-radius: 12px;
+  background: $color-neutral-light-grey;
+}
+
+.club-form__logo-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: $border-radius-default;
+  border: 1px solid $color-border;
+  background: $color-white;
+}
+
+.club-form__logo-preview-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.club-form__logo-file-input {
+  display: none;
+}
+
+.club-form__logo-btn {
+  cursor: pointer;
+}
+
+.club-form__logo-dropzone {
+  border: 2px dashed $color-border;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  background: $color-neutral-light-grey;
+
+  &:hover {
+    border-color: $color-neutral-dark-grey;
+    background: $color-neutral-white;
+  }
+
+  &--uploading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+.club-form__logo-dropzone-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.club-form__logo-dropzone-text {
+  font-size: 0.875rem;
+  color: $color-text-primary;
+  font-weight: 500;
+}
+
+.club-form__logo-dropzone-hint {
+  font-size: 0.75rem;
+  color: $color-neutral-dark-grey;
+}
+
+.club-form__logo-url-label {
+  display: block;
+  font-size: 0.875rem;
+  color: $color-neutral-dark-grey;
+  margin-bottom: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.club-form__logo-url-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-default;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: $color-blue-secondary;
+    box-shadow: 0 0 0 3px rgba($color-blue-secondary, 0.2);
+  }
+}
 

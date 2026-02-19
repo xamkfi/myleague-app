@@ -493,8 +493,19 @@
       "cityPlaceholder": "Enter city",
       "countryPlaceholder": "Enter country",
       "websiteUrl": "Website URL",
-      "logoUrl": "Logo URL",
-      "contactEmail": "Contact Email"
+      "logoUrl": "Club logo",
+      "logoUrlPlaceholder": "https://…",
+      "contactEmail": "Contact Email",
+      "uploadLogo": "Upload logo",
+      "removeLogo": "Remove logo",
+      "replaceLogo": "Replace",
+      "orPasteUrl": "Or paste URL",
+      "clickToUploadLogo": "Click to upload logo",
+      "uploadingLogo": "Uploading...",
+      "upTo": "up to",
+      "logoPreviewAlt": "Club logo",
+      "errorInvalidImage": "Please select a valid image file (PNG, JPG, GIF, WebP).",
+      "errorImageTooLarge": "Image must be less than 5MB."
     },
     "details": {
       "title": "Club Details",
@@ -503,6 +514,7 @@
       "noTeams": "No teams yet",
       "members": "Members"
     },
+    "deleteClubButton": "Delete club",
     "confirmDeleteTitle": "Delete club?",
     "confirmDelete": "Are you sure you want to delete this club?",
     "confirmDeleteWarning": "This action cannot be undone."

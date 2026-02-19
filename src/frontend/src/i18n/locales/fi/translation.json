@@ -493,8 +493,19 @@
       "cityPlaceholder": "Anna kaupunki",
       "countryPlaceholder": "Anna maa",
       "websiteUrl": "Verkkosivun URL",
-      "logoUrl": "Logon URL",
-      "contactEmail": "Yhteyssähköposti"
+      "logoUrl": "Seuran logo",
+      "logoUrlPlaceholder": "https://…",
+      "contactEmail": "Seuran yhteyshenkilön sähköposti",
+      "uploadLogo": "Lataa logo",
+      "removeLogo": "Poista logo",
+      "replaceLogo": "Vaihda",
+      "orPasteUrl": "Tai liitä URL-osoite",
+      "clickToUploadLogo": "Valitse logo ladattavaksi",
+      "uploadingLogo": "Ladataan...",
+      "upTo": "enintään",
+      "logoPreviewAlt": "Seuran logo",
+      "errorInvalidImage": "Valitse kelvollinen kuvatiedosto (PNG, JPG, GIF, WebP).",
+      "errorImageTooLarge": "Kuvan tulee olla alle 5 MB."
     },
     "details": {
       "title": "Seuran Tiedot",
@@ -503,6 +514,7 @@
       "noTeams": "Ei joukkueita vielä",
       "members": "Jäseniä"
     },
+    "deleteClubButton": "Poista seura",
     "confirmDeleteTitle": "Poista seura?",
     "confirmDelete": "Haluatko varmasti poistaa tämän seuran?",
     "confirmDeleteWarning": "Tätä toimintoa ei voi perua."

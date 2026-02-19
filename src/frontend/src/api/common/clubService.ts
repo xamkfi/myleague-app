@@ -183,6 +183,34 @@ export const clubService = {
       throw new Error(errorMessage || 'Failed to search clubs');
     }
     return data.data || [];
+  },
+
+  /** Upload a club logo image; returns the URL of the uploaded image in storage. */
+  uploadLogo: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await authFetch(`${VITE_API_URL}/Clubs/upload-image`, {
+      method: 'POST',
+      body: formData,
+    });
+    let data: unknown;
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(data, 'Image upload failed');
+      throw new Error(errorMessage || 'Image upload failed');
+    }
+    if (!data || typeof data !== 'object' || !('success' in data) || !(data as { success: boolean }).success) {
+      throw new Error('Invalid response from image upload');
+    }
+    const payload = data as { data?: string };
+    if (typeof payload?.data !== 'string') {
+      throw new Error('Invalid response from image upload');
+    }
+    return payload.data;
   }
 };
 
