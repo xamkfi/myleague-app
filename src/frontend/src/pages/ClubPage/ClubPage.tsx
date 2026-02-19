@@ -74,7 +74,7 @@ function ClubPage() {
     [divisions]
   );
 
-  const formatFoundingDate = (dateString?: string): string | null => {
+  const formatFoundingDate = (dateString?: string | null): string | null => {
     if (!dateString) return null;
     try {
       const date = new Date(dateString);

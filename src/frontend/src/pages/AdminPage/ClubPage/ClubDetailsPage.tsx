@@ -79,7 +79,7 @@ function ClubDetailsPage() {
   const getDivisionName = (divisionId?: string | null) =>
     divisionId ? divisions.find((d) => d.id === divisionId)?.name || '' : '';
 
-  const formatDmy = (iso?: string) => {
+  const formatDmy = (iso?: string | null) => {
     if (!iso) return '-';
     const dt = new Date(iso);
     if (Number.isNaN(dt.getTime())) return '-';

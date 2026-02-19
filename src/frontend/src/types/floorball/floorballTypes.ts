@@ -24,12 +24,12 @@ export enum FloorballMatchStatus {
 export interface Club {
   id: string;
   name: string;
-  foundingDate: string;
-  city: string;
-  country: string;
-  websiteUrl?: string;
-  logoUrl?: string;
-  contactEmail?: string;
+  foundingDate: string | null;
+  city: string | null;
+  country: string | null;
+  websiteUrl?: string | null;
+  logoUrl?: string | null;
+  contactEmail?: string | null;
 }
 
 export interface Person {
