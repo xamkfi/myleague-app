@@ -1,4 +1,4 @@
-using Application.Commands.Floorball;
+using Application.Features.Floorball.Seasons.Commands;
 using Application.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -6,10 +6,9 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Application.Commands.Floorball.Season;
 using System.Linq;
 
-namespace Application.Handlers.Floorball.Seasons;
+namespace Application.Features.Floorball.Seasons.Handlers;
 
 /// <summary>
 /// Handler for deleting a floorball season

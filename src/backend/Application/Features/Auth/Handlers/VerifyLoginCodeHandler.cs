@@ -1,7 +1,7 @@
-using Application.Commands.Auth;
 using Application.Common;
 using Application.Configuration;
-using Application.DTOs.Auth;
+using Application.Features.Auth.Commands;
+using Application.Features.Auth.DTOs;
 using Application.Interfaces.Auth;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
@@ -9,7 +9,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Application.Handlers.Auth;
+namespace Application.Features.Auth.Handlers;
 
 /// <summary>
 /// Handler for verifying a login code and issuing authentication tokens.

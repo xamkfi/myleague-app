@@ -1,6 +1,6 @@
-using Application.Queries.Floorball.Season;
-using Application.DTOs.Floorball;
-using Application.Mappings.Floorball;
+using Application.Features.Floorball.Seasons.Queries;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Seasons.Mappings;
 using Application.Common;
 using Domain.Entities.Floorball;
 using Domain.Entities.Common;
@@ -14,7 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Handlers.Floorball.Seasons;
+namespace Application.Features.Floorball.Seasons.Handlers;
 
 /// <summary>
 /// Handler for retrieving active floorball seasons

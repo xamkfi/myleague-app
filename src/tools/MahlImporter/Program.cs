@@ -1,5 +1,6 @@
 using Application.DTOs.Common;
 using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
 using MahlImporter.Import;
 using MahlImporter.Models;
 using MahlImporter.Scraping;

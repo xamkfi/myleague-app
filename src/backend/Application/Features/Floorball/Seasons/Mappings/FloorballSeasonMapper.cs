@@ -1,5 +1,7 @@
-using Application.Commands.Floorball.Season;
 using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.Commands;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Mappings.Floorball;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 using Domain.ValueObjects.Floorball;
@@ -7,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Application.Mappings.Floorball;
+namespace Application.Features.Floorball.Seasons.Mappings;
 
 /// <summary>
 /// Mapper for FloorballSeason entity

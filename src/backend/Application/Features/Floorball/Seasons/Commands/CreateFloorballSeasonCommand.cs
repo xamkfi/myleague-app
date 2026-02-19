@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Common;
-using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
 using Domain.Enums.Floorball;
 using MediatR;
 
-namespace Application.Commands.Floorball.Season
+namespace Application.Features.Floorball.Seasons.Commands
 {
     /// <summary>
     /// Command for creating a floorball season

@@ -1,10 +1,10 @@
-using Application.Commands.Floorball.Season;
+using Application.Features.Floorball.Seasons.Commands;
 using Domain.Enums.Floorball;
 using FluentValidation;
 using System;
 using System.Linq;
 
-namespace Application.Validators.Commands.Floorball.Season;
+namespace Application.Features.Floorball.Seasons.Validators;
 
 /// <summary>
 /// Validator for CreateFloorballSeasonCommand

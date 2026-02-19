@@ -1,4 +1,5 @@
 using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
 using MahlImporter.Models;
 
 namespace MahlImporter.Import;

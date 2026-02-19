@@ -1,15 +1,15 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Application.Commands.Floorball.Season;
+using Application.Features.Floorball.Seasons.Commands;
 using Application.Common;
-using Application.DTOs.Floorball;
-using Application.Mappings.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Seasons.Mappings;
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 
-namespace Application.Handlers.Floorball.Seasons;
+namespace Application.Features.Floorball.Seasons.Handlers;
 
 public class RemoveTeamFromSeasonHandler : IRequestHandler<RemoveTeamFromSeasonCommand, Result<FloorballSeasonDto>>
 {

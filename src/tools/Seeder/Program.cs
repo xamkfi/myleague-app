@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Application.DTOs.Common;
 using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
 using WebAPI.Models.Common;
 
 namespace Seeder;

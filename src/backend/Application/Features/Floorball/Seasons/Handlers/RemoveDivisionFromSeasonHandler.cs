@@ -1,10 +1,10 @@
-using Application.Commands.Floorball.Season;
+using Application.Features.Floorball.Seasons.Commands;
 using Application.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Floorball.Seasons;
+namespace Application.Features.Floorball.Seasons.Handlers;
 
 /// <summary>
 /// Handler to remove a division from a season

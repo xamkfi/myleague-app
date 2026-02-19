@@ -1,8 +1,8 @@
 using Application.Common;
-using Application.DTOs.Auth;
+using Application.Features.Auth.DTOs;
 using MediatR;
 
-namespace Application.Commands.Auth;
+namespace Application.Features.Auth.Commands;
 
 /// <summary>
 /// Command to verify a login code and obtain authentication tokens

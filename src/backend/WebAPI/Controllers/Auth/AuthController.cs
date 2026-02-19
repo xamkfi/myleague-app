@@ -1,7 +1,7 @@
-using Application.Commands.Auth;
 using Application.Common;
-using Application.DTOs.Auth;
 using Application.DTOs.Common;
+using Application.Features.Auth.Commands;
+using Application.Features.Auth.DTOs;
 using Application.Queries.Users;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

@@ -1,4 +1,4 @@
-namespace Application.DTOs.Auth;
+namespace Application.Features.Auth.DTOs;
 
 /// <summary>
 /// DTO containing authentication tokens returned after successful login verification or token refresh

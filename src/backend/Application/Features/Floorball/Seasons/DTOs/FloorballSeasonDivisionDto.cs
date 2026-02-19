@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Application.DTOs.Floorball;
+namespace Application.Features.Floorball.Seasons.DTOs;
 
 /// <summary>
 /// Data Transfer Object for a division within a floorball season

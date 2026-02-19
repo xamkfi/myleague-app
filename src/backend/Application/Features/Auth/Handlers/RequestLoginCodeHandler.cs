@@ -1,14 +1,14 @@
 using System.Security.Cryptography;
-using Application.Commands.Auth;
 using Application.Common;
 using Application.Configuration;
+using Application.Features.Auth.Commands;
 using Application.Interfaces.Auth;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Application.Handlers.Auth;
+namespace Application.Features.Auth.Handlers;
 
 /// <summary>
 /// Handler for requesting a login code. Generates a cryptographically random code,

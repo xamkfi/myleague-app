@@ -4,6 +4,7 @@ using Application.DTOs.Floorball;
 using Application.DTOs.Common;
 using WebAPI.Models.Floorball;
 using WebAPI.Models.Common;
+using Application.Features.Floorball.Seasons.DTOs;
 
 namespace Seeder;
 

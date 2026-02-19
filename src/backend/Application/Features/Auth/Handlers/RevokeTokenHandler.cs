@@ -1,12 +1,12 @@
-using Application.Commands.Auth;
 using Application.Common;
+using Application.Features.Auth.Commands;
 using Application.Interfaces.Auth;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Auth;
+namespace Application.Features.Auth.Handlers;
 
 /// <summary>
 /// Handler for revoking a refresh token (logout)

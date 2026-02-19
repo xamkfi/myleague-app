@@ -1,7 +1,7 @@
-using Application.Commands.Auth;
+using Application.Features.Auth.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Auth;
+namespace Application.Features.Auth.Validators;
 
 /// <summary>
 /// Validator for the VerifyLoginCodeCommand

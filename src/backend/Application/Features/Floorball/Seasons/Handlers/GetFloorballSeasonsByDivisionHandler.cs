@@ -1,6 +1,6 @@
-using Application.Queries.Floorball.Season;
-using Application.DTOs.Floorball;
-using Application.Mappings.Floorball;
+using Application.Features.Floorball.Seasons.Queries;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Seasons.Mappings;
 using Application.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
@@ -14,7 +14,7 @@ using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using System.Linq;
 
-namespace Application.Handlers.Floorball.Seasons;
+namespace Application.Features.Floorball.Seasons.Handlers;
 
 /// <summary>
 /// Handler for retrieving floorball seasons by division

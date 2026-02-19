@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Application.DTOs.Common;
 using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
 

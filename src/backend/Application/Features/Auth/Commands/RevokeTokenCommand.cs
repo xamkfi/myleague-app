@@ -1,7 +1,7 @@
 using Application.Common;
 using MediatR;
 
-namespace Application.Commands.Auth;
+namespace Application.Features.Auth.Commands;
 
 /// <summary>
 /// Command to revoke a refresh token (logout)

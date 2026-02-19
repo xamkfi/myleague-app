@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Enums.Floorball;
 
-namespace Application.DTOs.Floorball
+using Application.DTOs.Floorball;
+
+namespace Application.Features.Floorball.Seasons.DTOs
 {
     /// <summary>
     /// Data Transfer Object for FloorballSeason entity

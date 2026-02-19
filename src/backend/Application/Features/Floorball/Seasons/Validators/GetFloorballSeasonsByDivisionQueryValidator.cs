@@ -1,8 +1,8 @@
-using Application.Queries.Floorball.Season;
+using Application.Features.Floorball.Seasons.Queries;
 using Domain.Enums.Floorball;
 using FluentValidation;
 
-namespace Application.Validators.Queries.Floorball.Season;
+namespace Application.Features.Floorball.Seasons.Validators;
 
 /// <summary>
 /// Validator for GetFloorballSeasonsByDivisionQuery

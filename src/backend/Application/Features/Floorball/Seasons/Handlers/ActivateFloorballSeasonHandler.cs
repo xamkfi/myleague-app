@@ -1,6 +1,6 @@
-using Application.Commands.Floorball.Season;
-using Application.DTOs.Floorball;
-using Application.Mappings.Floorball;
+using Application.Features.Floorball.Seasons.Commands;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Seasons.Mappings;
 using Application.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
@@ -14,7 +14,7 @@ using Domain.Entities.Common;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Application.Handlers.Floorball.Seasons;
+namespace Application.Features.Floorball.Seasons.Handlers;
 
 /// <summary>
 /// Handler for activating a floorball season
