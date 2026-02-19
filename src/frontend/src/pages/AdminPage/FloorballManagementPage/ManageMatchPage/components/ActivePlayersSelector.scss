@@ -5,7 +5,7 @@
   grid-template-columns: 1fr 1fr;
   grid-template-areas:
     "title title"
-    "home away"
+    "left right"
     "goalie goalie";
   gap: 8px;
   margin-top: 6px;
@@ -29,8 +29,8 @@
     color: $color-neutral-black;
     height: 24px;
   }
-  .home-team-selects { grid-area: home; }
-  .away-team-selects { grid-area: away; }
+  .left-team-selects { grid-area: left; }
+  .right-team-selects { grid-area: right; }
   .goalkeeper-row { grid-area: goalie; }
 
   .team-name {

@@ -42,7 +42,7 @@ namespace WebAPI.Controllers.Floorball
 
 
         /// <summary>
-        /// Checks if the rate limit of 1 second has been exceeded for a given key
+        /// Checks if the provided rate-limit window has been exceeded for a given key
         /// </summary>
         /// <param name="key">The key to check</param>
         /// <param name="window">The window of time to check</param>
@@ -487,7 +487,7 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Records a save in a floorball match, with 1 second rate limit
+        /// Records a save in a floorball match, with 250ms rate limit
         /// </summary>
         [HttpPost("record-save")]
         [Authorize]
@@ -500,7 +500,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Recording save for match ID: {matchId}", request.MatchId);
 
             string rateKey = $"{request.MatchId}:save:{request.TeamId}:{request.PlayerId}";
-            if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(50)))
+            if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(250)))
             {
                 return StatusCode(StatusCodes.Status429TooManyRequests,
                     ApiResponse<FloorballMatchDto>.ErrorResponse("Too many save events; please wait a moment."));

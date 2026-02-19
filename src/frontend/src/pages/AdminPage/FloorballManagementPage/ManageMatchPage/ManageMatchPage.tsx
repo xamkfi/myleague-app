@@ -62,6 +62,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   const [eventToDelete, setEventToDelete] = useState<ProcessedEvent | null>(null);
   const [deleteEventLoading, setDeleteEventLoading] = useState(false);
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
+  const [isSidesSwapped, setIsSidesSwapped] = useState(false);
 
   // Sync goalie state with match prop
   useEffect(() => {
@@ -105,6 +106,14 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     setCurrentPeriod: timerContext.setCurrentPeriod,
     loadCurrentMatchStatus: matchData.loadCurrentMatchStatus,
   });
+  const {
+    startedPeriods,
+    endedPeriods,
+    nextPeriodToStart,
+    setStartedPeriods,
+    setEndedPeriods,
+    setNextPeriodToStart
+  } = periodManagement;
 
   const forms = useFormState({
     currentMatch: matchData.currentMatch,
@@ -130,11 +139,29 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   const awayTeamId = matchData.awayTeam?.id ?? '';
   const matchWentToOvertime = matchData.currentMatch.wentToOvertime;
   const matchWentToShootout = matchData.currentMatch.wentToShootout;
+  const toggleTimer = timerContext.callbacks.toggle;
+  const timerCurrentPeriod = timerContext.currentPeriod;
+  const setTimerCurrentPeriod = timerContext.setCurrentPeriod;
 
   const currentScore = useMemo(() => ({
     home: match?.homeScore ?? 0,
     away: match?.awayScore ?? 0,
   }), [match]);
+
+  const leftSideTeam: 'home' | 'away' = isSidesSwapped ? 'away' : 'home';
+  const rightSideTeam: 'home' | 'away' = isSidesSwapped ? 'home' : 'away';
+
+  const leftSideTeamData = leftSideTeam === 'home' ? matchData.homeTeam : matchData.awayTeam;
+  const rightSideTeamData = rightSideTeam === 'home' ? matchData.homeTeam : matchData.awayTeam;
+  const leftSideScore = leftSideTeam === 'home' ? currentScore.home : currentScore.away;
+  const rightSideScore = rightSideTeam === 'home' ? currentScore.home : currentScore.away;
+  const leftSideTeamId = leftSideTeam === 'home' ? homeTeamId : awayTeamId;
+  const rightSideTeamId = rightSideTeam === 'home' ? homeTeamId : awayTeamId;
+  const leftSidePlayers = leftSideTeam === 'home' ? matchData.homePlayers : matchData.awayPlayers;
+  const rightSidePlayers = rightSideTeam === 'home' ? matchData.homePlayers : matchData.awayPlayers;
+
+  const leftSideGoalieId = leftSideTeam === 'home' ? homeGoalieId : awayGoalieId;
+  const rightSideGoalieId = rightSideTeam === 'home' ? homeGoalieId : awayGoalieId;
 
   const isPeriodActive = periodManagement.startedPeriods.has(timerContext.currentPeriod) &&
     !periodManagement.endedPeriods.has(timerContext.currentPeriod);
@@ -143,6 +170,25 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     isPeriodActive &&
     !forms.showGoalForm &&
     !forms.showPenaltyForm;
+
+  const areNumberSetsEqual = useCallback((a: Set<number>, b: Set<number>) => {
+    if (a === b) return true;
+    if (a.size !== b.size) return false;
+    for (const value of a) {
+      if (!b.has(value)) return false;
+    }
+    return true;
+  }, []);
+
+  const startedPeriodsRef = useRef<Set<number>>(startedPeriods);
+  const endedPeriodsRef = useRef<Set<number>>(endedPeriods);
+  const nextPeriodToStartRef = useRef<number>(nextPeriodToStart);
+  const timerCurrentPeriodRef = useRef<number>(timerCurrentPeriod);
+
+  useEffect(() => { startedPeriodsRef.current = startedPeriods; }, [startedPeriods]);
+  useEffect(() => { endedPeriodsRef.current = endedPeriods; }, [endedPeriods]);
+  useEffect(() => { nextPeriodToStartRef.current = nextPeriodToStart; }, [nextPeriodToStart]);
+  useEffect(() => { timerCurrentPeriodRef.current = timerCurrentPeriod; }, [timerCurrentPeriod]);
 
   // Load officials - only runs once when match.id is available
   useEffect(() => {
@@ -180,53 +226,84 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           const timerStatus = await timerService.getTimerStatus(match.id);
           const currentPeriod = timerStatus.exists && timerStatus.periodNumber ? timerStatus.periodNumber : 1;
           
-          const startedPeriods = new Set<number>();
-          const endedPeriods = new Set<number>();
+          const desiredStartedPeriods = new Set<number>();
+          const desiredEndedPeriods = new Set<number>();
           const periodScores = matchData.currentMatch.periodScores || {};
           
           Object.entries(periodScores).forEach(([periodNum, scoreData]) => {
             const period = parseInt(periodNum);
             if (scoreData.isCompleted) {
-              startedPeriods.add(period);
-              endedPeriods.add(period);
+              desiredStartedPeriods.add(period);
+              desiredEndedPeriods.add(period);
             } else if (period === currentPeriod) {
-              startedPeriods.add(period);
+              desiredStartedPeriods.add(period);
           }
           });
           
-          startedPeriods.add(currentPeriod);
+          desiredStartedPeriods.add(currentPeriod);
           
           const maxPeriod = periodManagement.maxPeriodNumber;
           let nextPeriod = 1;
           for (let i = 1; i <= maxPeriod; i++) {
-            if (!startedPeriods.has(i)) {
+            if (!desiredStartedPeriods.has(i)) {
               nextPeriod = i;
               break;
             }
           }
-          if (nextPeriod > maxPeriod || startedPeriods.has(maxPeriod)) {
+          if (nextPeriod > maxPeriod || desiredStartedPeriods.has(maxPeriod)) {
             nextPeriod = 0;
           }
           
-          timerContext.setCurrentPeriod(currentPeriod);
-          periodManagement.setStartedPeriods(startedPeriods);
-          periodManagement.setEndedPeriods(endedPeriods);
-          periodManagement.setNextPeriodToStart(nextPeriod);
+          if (timerCurrentPeriodRef.current !== currentPeriod) {
+            setTimerCurrentPeriod(currentPeriod);
+          }
+          if (!areNumberSetsEqual(startedPeriodsRef.current, desiredStartedPeriods)) {
+            setStartedPeriods(desiredStartedPeriods);
+          }
+          if (!areNumberSetsEqual(endedPeriodsRef.current, desiredEndedPeriods)) {
+            setEndedPeriods(desiredEndedPeriods);
+          }
+          if (nextPeriodToStartRef.current !== nextPeriod) {
+            setNextPeriodToStart(nextPeriod);
+          }
         } else {
-          periodManagement.setStartedPeriods(new Set());
-          periodManagement.setEndedPeriods(new Set());
-          periodManagement.setNextPeriodToStart(1);
+          const desiredStartedPeriods = new Set<number>();
+          const desiredEndedPeriods = new Set<number>();
+          if (!areNumberSetsEqual(startedPeriodsRef.current, desiredStartedPeriods)) {
+            setStartedPeriods(desiredStartedPeriods);
+          }
+          if (!areNumberSetsEqual(endedPeriodsRef.current, desiredEndedPeriods)) {
+            setEndedPeriods(desiredEndedPeriods);
+          }
+          if (nextPeriodToStartRef.current !== 1) {
+            setNextPeriodToStart(1);
+          }
         }
       } catch (error) {
         console.warn('Failed to initialize period state:', error);
         if (matchData.currentMatch.status === 'InProgress') {
-          periodManagement.setStartedPeriods(new Set([1]));
-          periodManagement.setNextPeriodToStart(2);
+          const desiredStartedPeriods = new Set<number>([1]);
+          if (!areNumberSetsEqual(startedPeriodsRef.current, desiredStartedPeriods)) {
+            setStartedPeriods(desiredStartedPeriods);
+          }
+          if (nextPeriodToStartRef.current !== 2) {
+            setNextPeriodToStart(2);
+          }
         }
       }
     };
     initializePeriodState();
-  }, [matchData.currentMatch.status, match.id]);
+  }, [
+    match.id,
+    matchData.currentMatch.status,
+    matchData.currentMatch.periodScores,
+    periodManagement.maxPeriodNumber,
+    setTimerCurrentPeriod,
+    setStartedPeriods,
+    setEndedPeriods,
+    setNextPeriodToStart,
+    areNumberSetsEqual
+  ]);
 
   // Load initial data
   useEffect(() => {
@@ -243,42 +320,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
     if (match && (match.id !== matchData.currentMatch.id || match.status !== matchData.currentMatch.status)) {
       matchData.setCurrentMatch(match);
     }
-  }, [match]);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    if (!keybindsEnabled) return;
-    
-    const handler = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (['INPUT', 'TEXTAREA'].includes(target?.tagName) || target?.isContentEditable) return;
-      
-      const key = e.key.toLowerCase();
-      if (key === 'q' && homeGoalieId) {
-        handleRecordSave('home', homeGoalieId);
-        e.preventDefault();
-      }
-      if (key === 'r' && awayGoalieId) {
-        handleRecordSave('away', awayGoalieId);
-        e.preventDefault();
-      }
-      if (key === ' ' && timerContext.callbacks.toggle) {
-        timerContext.callbacks.toggle();
-        e.preventDefault();
-      }
-    };
-    
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [keybindsEnabled, homeGoalieId, awayGoalieId, timerContext.callbacks.toggle]);
-
-  // Trigger timer start after match starts
-  useEffect(() => {
-    if (shouldStartTimer && timerContext.callbacks.toggle) {
-      timerContext.callbacks.toggle();
-      setShouldStartTimer(false);
-    }
-  }, [shouldStartTimer, timerContext.callbacks.toggle]);
+  }, [match, matchData]);
 
   // Handlers
   const handleRecordSave = useCallback(async (team: 'home' | 'away', goalieId: string) => {
@@ -286,7 +328,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
     const key = `${match.id}:${team}:${goalieId}`;
     const now = Date.now();
-    if (lastSaveRef.current[key] && now - lastSaveRef.current[key] < 1000) return;
+    if (lastSaveRef.current[key] && now - lastSaveRef.current[key] < 250) return;
     lastSaveRef.current[key] = now;
 
     // Get the LIVE elapsed time from the timer callback, not the stale context state
@@ -315,6 +357,41 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
       setSaveLoading(false);
     }
   }, [match.id, homeTeamId, awayTeamId, matchWentToOvertime, matchWentToShootout, timerContext.currentPeriod, timerContext.elapsedTimeSeconds, timerContext.callbacks, matchEvents, matchData]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!keybindsEnabled) return;
+    
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA'].includes(target?.tagName) || target?.isContentEditable) return;
+      
+      const key = e.key.toLowerCase();
+      if (key === 'q' && leftSideGoalieId) {
+        handleRecordSave(leftSideTeam, leftSideGoalieId);
+        e.preventDefault();
+      }
+      if (key === 'r' && rightSideGoalieId) {
+        handleRecordSave(rightSideTeam, rightSideGoalieId);
+        e.preventDefault();
+      }
+      if (key === ' ' && toggleTimer) {
+        toggleTimer();
+        e.preventDefault();
+      }
+    };
+    
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [keybindsEnabled, leftSideGoalieId, rightSideGoalieId, leftSideTeam, rightSideTeam, toggleTimer, handleRecordSave]);
+
+  // Trigger timer start after match starts
+  useEffect(() => {
+    if (shouldStartTimer && toggleTimer) {
+      toggleTimer();
+      setShouldStartTimer(false);
+    }
+  }, [shouldStartTimer, toggleTimer]);
 
   const handleStartMatchAndTimer = useCallback(async () => {
     await matchControls.handleStartMatch();
@@ -456,6 +533,8 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         homeTeam={matchData.homeTeam}
         awayTeam={matchData.awayTeam}
         currentMatch={matchData.currentMatch}
+        isSidesSwapped={isSidesSwapped}
+        onToggleSides={() => setIsSidesSwapped(prev => !prev)}
         onClose={() => navigate('/admin/floorball/matches')}
         onCompleteLive={() => setShowEndMatchConfirmation(true)}
       />
@@ -536,26 +615,30 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           <LiveMatchQuickActions
             loading={forms.loading}
             currentMatch={matchData.currentMatch}
-            homeTeamId={matchData.homeTeam?.id}
-            awayTeamId={matchData.awayTeam?.id}
-            homeTeamName={matchData.homeTeam?.name}
-            awayTeamName={matchData.awayTeam?.name}
+            leftTeamId={leftSideTeamId}
+            rightTeamId={rightSideTeamId}
+            leftTeamName={leftSideTeamData?.name}
+            rightTeamName={rightSideTeamData?.name}
+            leftTeamSide={leftSideTeam}
+            rightTeamSide={rightSideTeam}
             onShowGoalForm={forms.openGoalFormForTeam}
             onShowPenaltyForm={forms.openPenaltyFormForTeam}
-            homeGoalieId={homeGoalieId}
-            awayGoalieId={awayGoalieId}
+            leftGoalieId={leftSideGoalieId}
+            rightGoalieId={rightSideGoalieId}
             onRecordSave={handleRecordSave}
             keybindsEnabled={keybindsEnabled}
             saveLoading={saveLoading}
           />
 
           <ActivePlayersSelector
-            homePlayers={matchData.homePlayers}
-            awayPlayers={matchData.awayPlayers}
-            homeTeamName={matchData.homeTeam?.name}
-            awayTeamName={matchData.awayTeam?.name}
-            homeGoalieId={homeGoalieId}
-            awayGoalieId={awayGoalieId}
+            leftPlayers={leftSidePlayers}
+            rightPlayers={rightSidePlayers}
+            leftTeamName={leftSideTeamData?.name}
+            rightTeamName={rightSideTeamData?.name}
+            leftTeamSide={leftSideTeam}
+            rightTeamSide={rightSideTeam}
+            leftGoalieId={leftSideGoalieId}
+            rightGoalieId={rightSideGoalieId}
             setHomeGoalieId={setHomeGoalieId}
             setAwayGoalieId={setAwayGoalieId}
             currentMatch={matchData.currentMatch}
@@ -603,9 +686,10 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         
         <div className="right-section">
           <LiveMatchScoreboard
-            homeTeam={matchData.homeTeam}
-            awayTeam={matchData.awayTeam}
-            currentScore={currentScore}
+            leftTeam={leftSideTeamData}
+            rightTeam={rightSideTeamData}
+            leftScore={leftSideScore}
+            rightScore={rightSideScore}
           />
 
           <LiveMatchEventsHistory
