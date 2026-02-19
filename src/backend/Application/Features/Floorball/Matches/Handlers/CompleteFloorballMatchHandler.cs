@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -89,6 +91,9 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
 
             // Update final team season statistics (wins/losses/ties)
             await UpdateFinalTeamSeasonStatistics(match, cancellationToken);
+
+            // Update GamesPlayed for all players who participated in this match
+            await UpdatePlayerGamesPlayed(match, cancellationToken);
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -159,5 +164,60 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             goalsAgainst: opponentScore);
 
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
+    }
+
+    /// <summary>
+    /// Collects all unique players from match events and goalies, then increments GamesPlayed
+    /// </summary>
+    private async Task UpdatePlayerGamesPlayed(FloorballMatch match, CancellationToken cancellationToken)
+    {
+        // (playerId, teamId) pairs to avoid double-counting a player
+        HashSet<(Guid PlayerId, Guid TeamId)> participants = new();
+
+        foreach (FloorballMatchEvent evt in match.Events)
+        {
+            switch (evt)
+            {
+                case FloorballGoal goal:
+                    if (goal.ScoringPlayerId.HasValue)
+                        participants.Add((goal.ScoringPlayerId.Value, goal.TeamId));
+                    if (goal.AssistingPlayerId.HasValue)
+                        participants.Add((goal.AssistingPlayerId.Value, goal.TeamId));
+                    if (goal.SecondaryAssistingPlayerId.HasValue)
+                        participants.Add((goal.SecondaryAssistingPlayerId.Value, goal.TeamId));
+                    break;
+
+                case FloorballPenalty penalty:
+                    if (penalty.PlayerId.HasValue)
+                        participants.Add((penalty.PlayerId.Value, penalty.TeamId));
+                    break;
+
+                case FloorballSave save:
+                    participants.Add((save.GoalieId, save.TeamId));
+                    break;
+            }
+        }
+
+        if (match.HomeActiveGoalieId.HasValue)
+            participants.Add((match.HomeActiveGoalieId.Value, match.HomeTeamId));
+        if (match.AwayActiveGoalieId.HasValue)
+            participants.Add((match.AwayActiveGoalieId.Value, match.AwayTeamId));
+
+        _logger.LogInformation("[CompleteMatch] Updating GamesPlayed for {Count} players. MatchId={MatchId}",
+            participants.Count, match.Id);
+
+        foreach ((Guid playerId, Guid teamId) in participants)
+        {
+            FloorballPlayerSeasonStatistics? playerStats =
+                await _statisticsRepository.GetPlayerSeasonStatisticsAsync(playerId, teamId, match.SeasonId, cancellationToken);
+
+            if (playerStats == null)
+            {
+                playerStats = new FloorballPlayerSeasonStatistics(playerId, teamId, match.SeasonId);
+            }
+
+            playerStats.RecordGamePlayed();
+            await _statisticsRepository.SavePlayerSeasonStatisticsAsync(playerStats, cancellationToken);
+        }
     }
 } 
