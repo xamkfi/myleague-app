@@ -985,6 +985,18 @@
     "loading": "Loading matches…",
     "noMatches": "No matches found."
   },
+  "fixtures": {
+    "title": "Match Schedule",
+    "filterAll": "All",
+    "filterUpcoming": "Upcoming",
+    "filterPast": "Completed",
+    "filterNext": "Next",
+    "noMatches": "No matches to display.",
+    "statusCompleted": "Completed",
+    "statusLive": "Live",
+    "statusCancelled": "Cancelled",
+    "statusPostponed": "Postponed"
+  },
   "results": {
     "title": "RESULTS",
     "loading": "Loading results…",

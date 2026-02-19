@@ -1,169 +1,141 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState, useMemo } from "react";
+import { useParams, Link } from "react-router-dom";
 import { FloorballPosition } from "../../types/floorball/floorballTypes";
-import { floorballPlayerService } from "../../api/floorball/floorballPlayerService";
-import { floorballStatisticsService, type FloorballPlayerSeasonStatisticsDto } from "../../api/floorball/floorballStatistics";
-import { floorballSeasonService } from "../../api/floorball/floorballSeasonService";
+import {
+  floorballPlayerService,
+  type FloorballPlayerWithMatchesDto,
+  type FloorballPlayerMatchDto,
+} from "../../api/floorball/floorballPlayerService";
+import {
+  floorballStatisticsService,
+  type FloorballPlayerProfileDto,
+  type FloorballPlayerSeasonStatisticsDto,
+} from "../../api/floorball/floorballStatistics";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
+import { slugify } from "../../utils/slugUtils";
 import './FloorballTeamPlayerUserPage.scss';
 
-interface TeamCareerStats {
-  teamId: string;
-  teamName: string;
-  seasonName: string;
-  stats: FloorballPlayerSeasonStatisticsDto;
-}
+const getPositionText = (position: FloorballPosition | string): string => {
+  switch (position) {
+    case FloorballPosition.Goalkeeper:
+    case 'Goalkeeper':
+      return 'Maalivahti';
+    case FloorballPosition.Defender:
+    case 'Defender':
+      return 'Puolustaja';
+    case FloorballPosition.Forward:
+    case 'Forward':
+      return 'Hyökkääjä';
+    default:
+      return 'Pelaaja';
+  }
+};
 
-interface MatchPlayerStats {
-  id: string;
-  matchId: string;
-  playerId: string;
-  teamId: string;
-  matchDate: string;
-  opponent: string;
-  competition: string;
-  minutesPlayed: number;
+const formatDate = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('fi-FI', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+  });
+};
+
+const calculateAge = (birthDate: string | null): number | null => {
+  if (!birthDate) return null;
+  const birth = new Date(birthDate);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
+
+const formatBirthDate = (birthDate: string | null): string => {
+  if (!birthDate) return '';
+  const date = new Date(birthDate);
+  return date.toLocaleDateString('fi-FI');
+};
+
+interface SeasonTotals {
+  gamesPlayed: number;
   goals: number;
   assists: number;
-  yellowCards: number;
-  redCards: number;
-  result: 'W' | 'L' | 'D';
-  homeScore: number;
-  awayScore: number;
+  points: number;
+  penaltyMinutes: number;
+  plusMinusRating: number;
+  powerPlayGoals: number;
+  powerPlayAssists: number;
+  shortHandedGoals: number;
+  shortHandedAssists: number;
 }
 
-interface PlayerWithMatches {
-  id: string;
-  playerName: string;
-  position: FloorballPosition;
-  jerseyNumber?: number;
-  teamName: string;
-  teamId: string;
-  isActive: boolean;
-  careerStats: TeamCareerStats[];
-  recentMatches: MatchPlayerStats[];
+const calculateSeasonTotals = (stats: FloorballPlayerSeasonStatisticsDto[]): SeasonTotals => {
+  return stats.reduce(
+    (total, s) => ({
+      gamesPlayed: total.gamesPlayed + s.gamesPlayed,
+      goals: total.goals + s.goals,
+      assists: total.assists + s.assists,
+      points: total.points + s.points,
+      penaltyMinutes: total.penaltyMinutes + s.penaltyMinutes,
+      plusMinusRating: total.plusMinusRating + s.plusMinusRating,
+      powerPlayGoals: total.powerPlayGoals + s.powerPlayGoals,
+      powerPlayAssists: total.powerPlayAssists + s.powerPlayAssists,
+      shortHandedGoals: total.shortHandedGoals + s.shortHandedGoals,
+      shortHandedAssists: total.shortHandedAssists + s.shortHandedAssists,
+    }),
+    {
+      gamesPlayed: 0, goals: 0, assists: 0, points: 0, penaltyMinutes: 0,
+      plusMinusRating: 0, powerPlayGoals: 0, powerPlayAssists: 0,
+      shortHandedGoals: 0, shortHandedAssists: 0,
+    }
+  );
+};
+
+interface MatchTotals {
+  goals: number;
+  assists: number;
+  penaltyMinutes: number;
 }
+
+const calculateMatchTotals = (matches: FloorballPlayerMatchDto[]): MatchTotals => {
+  return matches.reduce(
+    (total, m) => ({
+      goals: total.goals + (m.playerStats?.goals ?? 0),
+      assists: total.assists + (m.playerStats?.assists ?? 0),
+      penaltyMinutes: total.penaltyMinutes + (m.playerStats?.penaltyMinutes ?? 0),
+    }),
+    { goals: 0, assists: 0, penaltyMinutes: 0 }
+  );
+};
 
 const FloorballTeamPlayerUserPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [player, setPlayer] = useState<PlayerWithMatches | null>(null);
+  const [profile, setProfile] = useState<FloorballPlayerProfileDto | null>(null);
+  const [matchData, setMatchData] = useState<FloorballPlayerWithMatchesDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Helper function to calculate total career stats
-  const calculateTotalStats = (careerStats: TeamCareerStats[]): FloorballPlayerSeasonStatisticsDto => {
-    return careerStats.reduce(
-      (total, teamStats) => ({
-        ...total,
-        gamesPlayed: total.gamesPlayed + teamStats.stats.gamesPlayed,
-        goals: total.goals + teamStats.stats.goals,
-        assists: total.assists + teamStats.stats.assists,
-        points: total.points + teamStats.stats.points,
-        penaltyMinutes: total.penaltyMinutes + teamStats.stats.penaltyMinutes,
-        plusMinusRating: total.plusMinusRating + teamStats.stats.plusMinusRating,
-        shotsOnGoal: total.shotsOnGoal + teamStats.stats.shotsOnGoal,
-        shotPercentage: total.shotPercentage + teamStats.stats.shotPercentage,
-        powerPlayGoals: total.powerPlayGoals + teamStats.stats.powerPlayGoals,
-        powerPlayAssists: total.powerPlayAssists + teamStats.stats.powerPlayAssists,
-        shortHandedGoals: total.shortHandedGoals + teamStats.stats.shortHandedGoals,
-        shortHandedAssists: total.shortHandedAssists + teamStats.stats.shortHandedAssists,
-        gameWinningGoals: total.gameWinningGoals + teamStats.stats.gameWinningGoals,
-        overtimeGoals: total.overtimeGoals + teamStats.stats.overtimeGoals,
-        faceoffWins: total.faceoffWins + teamStats.stats.faceoffWins,
-        faceoffAttempts: total.faceoffAttempts + teamStats.stats.faceoffAttempts,
-        faceoffPercentage: total.faceoffPercentage + teamStats.stats.faceoffPercentage,
-      }),
-      {
-        id: "",
-        playerId: "",
-        teamId: "",
-        seasonId: "",
-        playerName: "",
-        teamName: "",
-        teamLogo: null,
-        seasonName: "",
-        gamesPlayed: 0,
-        goals: 0,
-        assists: 0,
-        points: 0,
-        penaltyMinutes: 0,
-        plusMinusRating: 0,
-        shotsOnGoal: 0,
-        shotPercentage: 0,
-        powerPlayGoals: 0,
-        powerPlayAssists: 0,
-        shortHandedGoals: 0,
-        shortHandedAssists: 0,
-        gameWinningGoals: 0,
-        overtimeGoals: 0,
-        faceoffWins: 0,
-        faceoffAttempts: 0,
-        faceoffPercentage: 0
-      }
-    );
-  };
 
   useEffect(() => {
     const loadPlayerData = async () => {
       if (!id) return;
-      
+
       try {
         setLoading(true);
         setError(null);
-        
-        // First, get the player information
-        const playerResponse = await floorballPlayerService.getById(id);
-        const playerData = playerResponse;
-        
-        // For now, we'll need to get team information differently since player doesn't have teamId
-        // This is a limitation of the current API structure
-        // We'll use the teamId from the statistics data instead
-        
-        // Get the current season - we'll need to get this from all active seasons
-        const activeSeasonsResponse = await floorballSeasonService.getActive();
-        const activeSeasons = activeSeasonsResponse.data || [];
-        
-        // For now, use the first active season as fallback
-        // In a real implementation, you'd need to determine which season/division the player belongs to
-        const currentSeasonData = activeSeasons.length > 0 ? activeSeasons[0] : null;
-        
-        if (!currentSeasonData) {
-          throw new Error('No active season found');
-        }
-        
-        // Fetch player statistics for the current season
-        const playerStats = await floorballStatisticsService.getPlayerStatistics(
-          currentSeasonData.id, 
-          id
-        );
-        
-        // Create career stats array (for now, just current season)
-        const careerStats: TeamCareerStats[] = [{
-          teamId: playerStats.teamId,
-          teamName: playerStats.teamName,
-          seasonName: playerStats.seasonName,
-          stats: playerStats
-        }];
-        
-        // For now, use empty array for recent matches since we don't have match-specific player stats API
-        const recentMatches: MatchPlayerStats[] = [];
-        
-        const transformedData: PlayerWithMatches = {
-          id: playerData.id,
-          playerName: playerStats.playerName,
-          position: playerData.position,
-          jerseyNumber: undefined, // Not available in current API
-          teamName: playerStats.teamName,
-          teamId: playerStats.teamId,
-          isActive: playerData.isActive,
-          careerStats,
-          recentMatches
-        };
-        
-        setPlayer(transformedData);
+
+        const [profileResult, matchesResult] = await Promise.all([
+          floorballStatisticsService.getPlayerProfile(id),
+          floorballPlayerService.getPlayerMatches(id, 50),
+        ]);
+
+        setProfile(profileResult);
+        setMatchData(matchesResult);
       } catch (err) {
         console.error('Error loading player data:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred while loading player data');
+        setError(err instanceof Error ? err.message : 'Virhe ladattaessa pelaajan tietoja');
       } finally {
         setLoading(false);
       }
@@ -172,235 +144,273 @@ const FloorballTeamPlayerUserPage = () => {
     loadPlayerData();
   }, [id]);
 
-  const getPositionText = (position: FloorballPosition) => {
-    switch (position) {
-      case FloorballPosition.Goalkeeper:
-        return 'Maalivahti';
-      case FloorballPosition.Defender:
-        return 'Puolustaja';
-      case FloorballPosition.Forward:
-        return 'Hyökkääjä';
-      default:
-        return 'Pelaaja';
-    }
-  };
+  const seasonStats = useMemo(() => profile?.seasonStatistics ?? [], [profile]);
+  const matches = useMemo(() => matchData?.recentMatches ?? [], [matchData]);
+  const totals = useMemo(() => calculateSeasonTotals(seasonStats), [seasonStats]);
+  const matchTotals = useMemo(() => calculateMatchTotals(matches), [matches]);
 
-  if (loading) return <PageTemplate title="Pelaaja"><div>Ladataan...</div></PageTemplate>;
-  if (error) return <PageTemplate title="Pelaaja"><div>Virhe: {error}</div></PageTemplate>;
-  if (!player) return <PageTemplate title="Pelaaja"><div>Pelaajaa ei löytynyt</div></PageTemplate>;
+  if (loading) return <PageTemplate title="Pelaaja"><div className="player-loading">Ladataan...</div></PageTemplate>;
+  if (error) return <PageTemplate title="Pelaaja"><div className="player-error">Virhe: {error}</div></PageTemplate>;
+  if (!profile) return <PageTemplate title="Pelaaja"><div className="player-error">Pelaajaa ei löytynyt</div></PageTemplate>;
 
-  const totalStats = calculateTotalStats(player.careerStats);
+  const { player } = profile;
+  const playerName = player.person.fullName;
+  const isCreator = playerName === 'Tuomas Reijonen';
+  const age = calculateAge(player.person.birthDate);
+  const teamName = matchData?.teamName ?? player.team?.name ?? '';
+  const position = matchData?.position ?? player.position;
+  const jerseyNumber = matchData?.jerseyNumber;
 
   return (
-    <PageTemplate title={player.playerName}>
-      <div>
-        {/* Player Header Section */}
+    <PageTemplate title={playerName}>
+      <div className="player-page">
+        {/* Player Header */}
         <div className="player-container">
           <div className="player-info-layout">
             <div className="player-info-box">
-              <div className={`player-avatar-large${player.playerName === 'Tuomas Reijonen' ? ' player-avatar--creator' : ''}`}>
-                {player.playerName === 'Tuomas Reijonen' ? (
+              <div className={`player-avatar-large${isCreator ? ' player-avatar--creator' : ''}`}>
+                {isCreator ? (
                   <img
                     className="creator-avatar-img"
                     src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExanpjZzBqNm1xYnp1d3Y5c2V5OWxoeTg2ZjV5dHpldHQ4anI0dDd5MSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/sPE5g5cHJ3dNm/giphy.gif"
                     alt="Creator avatar"
                   />
-                ) : player.careerStats[0]?.stats.teamLogo ? (
+                ) : seasonStats[0]?.teamLogo ? (
                   <img
                     className="team-logo-img"
-                    src={player.careerStats[0].stats.teamLogo}
-                    alt={player.teamName}
+                    src={seasonStats[0].teamLogo}
+                    alt={teamName}
                   />
                 ) : null}
               </div>
               <div className="player-details">
-                <div className={`player-name${player.playerName === 'Tuomas Reijonen' ? ' player-name--creator' : ''}`}>
-                  {player.playerName}
-                  {player.playerName === 'Tuomas Reijonen' && (
+                <div className={`player-name${isCreator ? ' player-name--creator' : ''}`}>
+                  {playerName}
+                  {isCreator && (
                     <span className="creator-title" title="System Creator">Macho King</span>
                   )}
                 </div>
                 <div className="player-details-row">
-                  <span className="player-team">{player.teamName !== 'Ei joukkuetta' ? player.teamName : 'Joukkuetieto ei saatavilla'}</span>
-                  <span className="player-position">{getPositionText(player.position)}</span>
-                  <span className="player-jersey">{player.jerseyNumber ? `#${player.jerseyNumber}` : ''}</span>
+                  {teamName && <span className="player-team">{teamName}</span>}
+                  <span className="player-position">{getPositionText(position)}</span>
+                  {jerseyNumber != null && <span className="player-jersey">#{jerseyNumber}</span>}
                 </div>
               </div>
             </div>
-            
+
             <div className="player-stats-box">
-              <div className="stat-item">
-                <span className="stat-label">Age:</span>
-                <span className="stat-value">22 (26/01/2003)</span>
-              </div>
+              {age !== null && (
+                <div className="stat-item">
+                  <span className="stat-label">Ikä:</span>
+                  <span className="stat-value">{age} ({formatBirthDate(player.person.birthDate)})</span>
+                </div>
+              )}
               <div className="stat-item">
                 <span className="stat-label">Status:</span>
                 <span className={`stat-value ${player.isActive ? 'active' : 'inactive'}`}>
-                  {player.isActive ? 'active' : 'inactive'}
+                  {player.isActive ? 'Aktiivinen' : 'Ei aktiivinen'}
                 </span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Joined:</span>
-                <span className="stat-value">07/07/2020</span>
+                <span className="stat-label">Pelipaikka:</span>
+                <span className="stat-value">{getPositionText(position)}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Career Statistics Section */}
+        {/* Career Summary Boxes */}
         <div className="player-container">
           <div className="career-stats-section">
             <h3>Urastatistiikka</h3>
-            
-            {/* Show aggregated totals */}
             <div className="stats-grid">
               <div className="stats-box">
-                <div className="stats-value">{totalStats.gamesPlayed}</div>
+                <div className="stats-value">{totals.gamesPlayed}</div>
                 <div className="stats-label">Ottelut</div>
               </div>
               <div className="stats-box">
-                <div className="stats-value">{totalStats.goals}</div>
+                <div className="stats-value">{totals.goals}</div>
                 <div className="stats-label">Maalit</div>
               </div>
               <div className="stats-box">
-                <div className="stats-value">{totalStats.assists}</div>
+                <div className="stats-value">{totals.assists}</div>
                 <div className="stats-label">Syötöt</div>
               </div>
               <div className="stats-box">
-                <div className="stats-value">{totalStats.points}</div>
+                <div className="stats-value">{totals.points}</div>
                 <div className="stats-label">Pisteet</div>
               </div>
               <div className="stats-box">
-                <div className="stats-value">{totalStats.penaltyMinutes}</div>
-                <div className="stats-label">Jäähy min</div>
+                <div className="stats-value">{totals.penaltyMinutes}</div>
+                <div className="stats-label">Jäähymin</div>
               </div>
             </div>
-
-            {/* Show team-specific breakdown if player has played for multiple teams */}
-            {player.careerStats.length > 1 && (
-              <div className="team-stats-breakdown">
-                <h4>Joukkuekohtaiset tilastot</h4>
-                {player.careerStats.map(teamStats => (
-                  <div key={teamStats.teamId} className="team-stats">
-                    <h5>{teamStats.teamName !== 'Ei joukkuetta' ? teamStats.teamName : 'Joukkuetieto ei saatavilla'}</h5>
-                    <div className="team-stats-grid">
-                      <span>{teamStats.stats.gamesPlayed} ottelua</span>
-                      <span>{teamStats.stats.goals} maalia</span>
-                      <span>{teamStats.stats.assists} syöttöä</span>
-                      <span>{teamStats.stats.points} pistettä</span>
-                      <span>{teamStats.stats.penaltyMinutes} jäähy min</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {/*Tilastot haetaan joukkueiden roster-tiedoista. Ottelukohtaiset pelaajatilastot eivät ole saatavilla nykyisen rajapinnan kautta.*/}
           </div>
         </div>
 
-        {/* Latest Matches Section */}
+        {/* Otteluhistoria (Match History) */}
         <div className="player-container">
-          <div className="latest-matches-section">
-            <h3>LATEST MATCHES</h3>
-            {player.recentMatches.length > 0 ? (
-              <div className="matches-table-container">
-                <div className="matches-table-header">
-                  <div className="header-item">DATE</div>
-                  <div className="header-item">COMPETITION</div>
-                  <div className="header-item">TEAMS</div>
-                  <div className="header-item">MIN</div>
-                  <div className="header-item">G</div>
-                  <div className="header-item">A</div>
-                  <div className="header-item">YC</div>
-                  <div className="header-item">RC</div>
-                  <div className="header-item">RESULT</div>
-                </div>
-                <div className="matches-table-body">
-                  {player.recentMatches.map(match => (
-                    <div key={match.id} className="match-row">
-                      <div className="match-cell">{match.matchDate}</div>
-                      <div className="match-cell">{match.competition}</div>
-                      <div className="match-cell teams-cell">
-                        <div className="match-row-home-team">
-                          <span className="team-name">FC Alapiha {match.homeScore}</span>
-                        </div>
-                        <div className="vs-separator">-</div>
-                        <div className="match-row-away-team">
-                          <span className="team-name">{match.opponent} {match.awayScore}</span>
-                        </div>
-                      </div>
-                      <div className="match-cell">{match.minutesPlayed}</div>
-                      <div className="match-cell">{match.goals}</div>
-                      <div className="match-cell">{match.assists}</div>
-                      <div className="match-cell">{match.yellowCards}</div>
-                      <div className="match-cell">{match.redCards}</div>
-                      <div className="match-cell">
-                        <div className={`result-indicator ${match.result.toLowerCase()}`}>
-                          {match.result}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          <div className="section-block">
+            <h3>Otteluhistoria</h3>
+            {matches.length > 0 ? (
+              <div className="stats-table-scroll">
+                <table className="stats-table">
+                  <thead>
+                    <tr>
+                      <th className="col-date">Päivä</th>
+                      <th className="col-team">Koti</th>
+                      <th className="col-score">Tulos</th>
+                      <th className="col-team">Vieras</th>
+                      <th className="col-num">M</th>
+                      <th className="col-num">S</th>
+                      <th className="col-num">P</th>
+                      <th className="col-num">JM</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {matches.map((match) => (
+                      <tr key={match.id}>
+                        <td className="col-date">{formatDate(match.scheduledDateTime)}</td>
+                        <td className="col-team">
+                          <Link to={`/team/${slugify(match.homeTeamName)}`} className="team-link">{match.homeTeamName}</Link>
+                        </td>
+                        <td className="col-score">{match.homeScore} - {match.awayScore}</td>
+                        <td className="col-team">
+                          <Link to={`/team/${slugify(match.awayTeamName)}`} className="team-link">{match.awayTeamName}</Link>
+                        </td>
+                        <td className="col-num">{match.playerStats?.goals ?? 0}</td>
+                        <td className="col-num">{match.playerStats?.assists ?? 0}</td>
+                        <td className="col-num">{(match.playerStats?.goals ?? 0) + (match.playerStats?.assists ?? 0)}</td>
+                        <td className="col-num">{match.playerStats?.penaltyMinutes ?? 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="totals-row">
+                      <td colSpan={4}>Ottelut yhteensä: {matches.length}</td>
+                      <td className="col-num">{matchTotals.goals}</td>
+                      <td className="col-num">{matchTotals.assists}</td>
+                      <td className="col-num">{matchTotals.goals + matchTotals.assists}</td>
+                      <td className="col-num">{matchTotals.penaltyMinutes}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
             ) : (
-              <div className="no-matches-message">
-                <p>No recent matches available for this player.</p>
-              </div>
+              <p className="no-data-message">Ei otteluhistoriaa saatavilla.</p>
             )}
           </div>
         </div>
 
-        {/* Career Section */}
+        {/* Henkilökohtaiset tilastot (Personal Season Statistics) */}
         <div className="player-container">
-          <div className="career-section">
-            <h3>CAREER</h3>
-            <div className="career-table-container">
-              <div className="career-table-header">
-                <div className="header-item">SEASON</div>
-                <div className="header-item">TEAM</div>
-                <div className="header-item">COMPETITION</div>
-                <div className="header-item">GP</div>
-                <div className="header-item">G</div>
-                <div className="header-item">A</div>
-                <div className="header-item">YC</div>
-                <div className="header-item">RC</div>
+          <div className="section-block">
+            <h3>Henkilökohtaiset tilastot</h3>
+            {seasonStats.length > 0 ? (
+              <div className="stats-table-scroll">
+                <table className="stats-table">
+                  <thead>
+                    <tr>
+                      <th className="col-season">Kausi</th>
+                      <th className="col-team">Joukkue</th>
+                      <th className="col-num">O</th>
+                      <th className="col-num">M</th>
+                      <th className="col-num">S</th>
+                      <th className="col-num">P</th>
+                      <th className="col-num">JM</th>
+                      <th className="col-num">+/-</th>
+                      <th className="col-num">YVM</th>
+                      <th className="col-num">YVS</th>
+                      <th className="col-num">AVM</th>
+                      <th className="col-num">AVS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {seasonStats.map((stat) => (
+                      <tr key={stat.id}>
+                        <td className="col-season">{stat.seasonName}</td>
+                        <td className="col-team">
+                          <div className="team-cell">
+                            {stat.teamLogo && (
+                              <img src={stat.teamLogo} alt={stat.teamName} className="team-logo-small" />
+                            )}
+                            <Link to={`/team/${slugify(stat.teamName)}`} className="team-link">{stat.teamName}</Link>
+                          </div>
+                        </td>
+                        <td className="col-num">{stat.gamesPlayed}</td>
+                        <td className="col-num">{stat.goals}</td>
+                        <td className="col-num">{stat.assists}</td>
+                        <td className="col-num">{stat.points}</td>
+                        <td className="col-num">{stat.penaltyMinutes}</td>
+                        <td className="col-num">{stat.plusMinusRating}</td>
+                        <td className="col-num">{stat.powerPlayGoals}</td>
+                        <td className="col-num">{stat.powerPlayAssists}</td>
+                        <td className="col-num">{stat.shortHandedGoals}</td>
+                        <td className="col-num">{stat.shortHandedAssists}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="totals-row">
+                      <td>Ura yhteensä</td>
+                      <td></td>
+                      <td className="col-num">{totals.gamesPlayed}</td>
+                      <td className="col-num">{totals.goals}</td>
+                      <td className="col-num">{totals.assists}</td>
+                      <td className="col-num">{totals.points}</td>
+                      <td className="col-num">{totals.penaltyMinutes}</td>
+                      <td className="col-num">{totals.plusMinusRating}</td>
+                      <td className="col-num">{totals.powerPlayGoals}</td>
+                      <td className="col-num">{totals.powerPlayAssists}</td>
+                      <td className="col-num">{totals.shortHandedGoals}</td>
+                      <td className="col-num">{totals.shortHandedAssists}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
-              <div className="career-table-body">
-                {player.careerStats.map(teamStats => (
-                  <div key={teamStats.teamId} className="career-row">
-                    <div className="career-cell">{teamStats.seasonName}</div>
-                    <div className="career-cell">
-                      <div className="match-row-home-team">
-                        {teamStats.stats.teamLogo && (
-                          <img
-                            src={teamStats.stats.teamLogo}
-                            alt={`${teamStats.teamName} logo`}
-                          />
-                        )}
-                        <span className="team-name">{teamStats.teamName}</span>
-                      </div>
-                    </div>
-                    <div className="career-cell">Rautaliiga</div>
-                    <div className="career-cell">{teamStats.stats.gamesPlayed}</div>
-                    <div className="career-cell">{teamStats.stats.goals}</div>
-                    <div className="career-cell">{teamStats.stats.assists}</div>
-                    <div className="career-cell">{teamStats.stats.penaltyMinutes}</div>
-                    <div className="career-cell">0</div>
-                  </div>
-                ))}
-                <div className="career-row total-row">
-                  <div className="career-cell">TOTAL</div>
-                  <div className="career-cell">-</div>
-                  <div className="career-cell">-</div>
-                  <div className="career-cell">{totalStats.gamesPlayed}</div>
-                  <div className="career-cell">{totalStats.goals}</div>
-                  <div className="career-cell">{totalStats.assists}</div>
-                  <div className="career-cell">{totalStats.penaltyMinutes}</div>
-                  <div className="career-cell">0</div>
-                </div>
+            ) : (
+              <p className="no-data-message">Ei kausitilastoja saatavilla.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Pelaajaura (Career Timeline) */}
+        <div className="player-container">
+          <div className="section-block">
+            <h3>Pelaajaura</h3>
+            {seasonStats.length > 0 ? (
+              <div className="stats-table-scroll">
+                <table className="stats-table career-timeline-table">
+                  <thead>
+                    <tr>
+                      <th className="col-season">Kausi</th>
+                      <th className="col-team">Joukkue</th>
+                      <th className="col-position">Pelipaikka</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {seasonStats.map((stat) => (
+                      <tr key={stat.id}>
+                        <td className="col-season">
+                          <Link to={`/league/${stat.seasonId}`} className="team-link">{stat.seasonName}</Link>
+                        </td>
+                        <td className="col-team">
+                          <div className="team-cell">
+                            {stat.teamLogo && (
+                              <img src={stat.teamLogo} alt={stat.teamName} className="team-logo-small" />
+                            )}
+                            <Link to={`/team/${slugify(stat.teamName)}`} className="team-link">{stat.teamName}</Link>
+                          </div>
+                        </td>
+                        <td className="col-position">{getPositionText(position)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
+            ) : (
+              <p className="no-data-message">Ei uratietoja saatavilla.</p>
+            )}
           </div>
         </div>
       </div>

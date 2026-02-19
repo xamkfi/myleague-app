@@ -965,6 +965,18 @@
     "loading": "Otteluita ladataan…",
     "noMatches": "Otteluita ei löytynyt."
   },
+  "fixtures": {
+    "title": "Otteluohjelma",
+    "filterAll": "Kaikki",
+    "filterUpcoming": "Tulevat",
+    "filterPast": "Pelatut",
+    "filterNext": "Seuraava",
+    "noMatches": "Ei otteluita näytettävänä.",
+    "statusCompleted": "Päättynyt",
+    "statusLive": "Käynnissä",
+    "statusCancelled": "Peruttu",
+    "statusPostponed": "Siirretty"
+  },
   "results": {
     "title": "Tulokset",
     "loading": "Tuloksia ladataan…",
