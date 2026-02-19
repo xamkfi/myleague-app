@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next';
 import type { 
   CreateFloorballMatchRequest,
   FloorballMatchDto,
-} from '../../../../../../types/floorball/floorballTypes';
-import SearchableInfiniteDropdown from '../../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
-import { floorballSeasonSearchService } from '../../../../../../api/floorball/floorballTeamSearchService';
-import { floorballTeamNameSearchService } from '../../../../../../api/floorball/floorballTeamNameSearchService';
-import { floorballRefereeSearchService } from '../../../../../../api/floorball/floorballRefereeSearchService';
-import ConfirmationDialog from '../../../ManageMatchPage/components/ConfirmationDialog';
+} from '../../../../../types/floorball/floorballTypes';
+import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
+import { floorballSeasonSearchService } from '../../../../../api/floorball/floorballTeamSearchService';
+import { floorballTeamNameSearchService } from '../../../../../api/floorball/floorballTeamNameSearchService';
+import { floorballRefereeSearchService } from '../../../../../api/floorball/floorballRefereeSearchService';
+import ConfirmationDialog from '../../ManageMatchPage/components/ConfirmationDialog';
 import './MatchForm.scss';
-import ErrorPopup from '../../../../../../components/ErrorPopup/ErrorPopup';
+import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
 const GUEST_REFEREE_NAME = 'GUEST REFEREE';
 
@@ -54,7 +54,6 @@ const MatchForm = ({
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showReactivateConfirm, setShowReactivateConfirm] = useState(false);
   
-  // State for pre-loaded dropdown options
   const [initialSeasonOptions, setInitialSeasonOptions] = useState<Array<{id: string, name: string}>>([]);
   const [initialHomeTeamOptions, setInitialHomeTeamOptions] = useState<Array<{id: string, name: string}>>([]);
   const [initialAwayTeamOptions, setInitialAwayTeamOptions] = useState<Array<{id: string, name: string}>>([]);
@@ -77,17 +76,14 @@ const MatchForm = ({
     };
   }, [promoteGuestReferee]);
 
-  // Create initial options from initialData for immediate display
   const createInitialOptions = useCallback(() => {
     if (mode === 'edit' && initialData) {
-      // Create season option from initialData (we'll update with real name later)
       const seasonOption = {
         id: initialData.seasonId,
-        name: `Season ${initialData.seasonId}` // Placeholder, will be updated by async function
+        name: `Season ${initialData.seasonId}`
       };
       setInitialSeasonOptions([seasonOption]);
 
-      // Create team options from initialData (we have the real names)
       const homeTeamOption = {
         id: initialData.homeTeamId,
         name: initialData.homeTeamName
@@ -100,32 +96,27 @@ const MatchForm = ({
       };
       setInitialAwayTeamOptions([awayTeamOption]);
     } else {
-      // Clear initial options for create mode
       setInitialSeasonOptions([]);
       setInitialHomeTeamOptions([]);
       setInitialAwayTeamOptions([]);
     }
   }, [mode, initialData]);
 
-  // Pre-load initial options for dropdowns when in edit mode (for better search results)
   const preloadInitialOptions = useCallback(async () => {
     if (mode === 'edit' && initialData) {
       try {
-        // Pre-load season options with real names
         const seasonResult = await floorballSeasonSearchService.searchSeasons('', 1);
         const matchingSeason = seasonResult.data.find(season => season.id === initialData.seasonId);
         if (matchingSeason) {
           setInitialSeasonOptions([matchingSeason]);
         }
 
-        // Pre-load home team options with real names
         const homeTeamResult = await floorballTeamNameSearchService.searchTeams('', 1);
         const matchingHomeTeam = homeTeamResult.data.find(team => team.id === initialData.homeTeamId);
         if (matchingHomeTeam) {
           setInitialHomeTeamOptions([matchingHomeTeam]);
         }
 
-        // Pre-load away team options with real names
         const awayTeamResult = await floorballTeamNameSearchService.searchTeams('', 1);
         const matchingAwayTeam = awayTeamResult.data.find(team => team.id === initialData.awayTeamId);
         if (matchingAwayTeam) {
@@ -137,13 +128,11 @@ const MatchForm = ({
     }
   }, [mode, initialData]);
 
-  // Initialize form with initial data when in edit mode
   useEffect(() => {
     if (mode === 'edit' && initialData) {
       const matchDate = new Date(initialData.scheduledDateTime);
       const hoursStr = matchDate.getHours().toString().padStart(2, '0');
       const minutesStr = matchDate.getMinutes().toString().padStart(2, '0');
-      // Format as yyyy-mm-dd for the native date input
       const year = matchDate.getFullYear();
       const month = (matchDate.getMonth() + 1).toString().padStart(2, '0');
       const day = matchDate.getDate().toString().padStart(2, '0');
@@ -161,13 +150,9 @@ const MatchForm = ({
       setHoursInput(hoursStr);
       setMinutesInput(minutesStr);
       
-      // Create initial options immediately for display
       createInitialOptions();
-      
-      // Pre-load better options asynchronously
       preloadInitialOptions();
     } else {
-      // Reset form for create mode
       setFormData({
         seasonId: undefined,
         homeTeamId: undefined,
@@ -179,13 +164,10 @@ const MatchForm = ({
       setSelectedDate('');
       setHoursInput('');
       setMinutesInput('');
-      
-      // Clear initial options
       createInitialOptions();
     }
   }, [mode, initialData, createInitialOptions, preloadInitialOptions]);
 
-  // Ensure referee dropdown defaults to guest when available
   useEffect(() => {
     const ensureGuestReferee = async () => {
       try {
@@ -206,19 +188,14 @@ const MatchForm = ({
     ensureGuestReferee();
   }, [promoteGuestReferee]);
 
-  // Custom search functions that include initial options
   const searchSeasonsWithInitial = useCallback(async (query: string, page: number) => {
-    // Get all seasons from the search service
     const result = await floorballSeasonSearchService.searchSeasons(query, page);
     
-    // If we're in edit mode and this is the first page, try to get the real season name
     if (mode === 'edit' && page === 1 && initialData) {
       try {
-        // Find the matching season in the search results to get the real name
         const matchingSeason = result.data.find(season => season.id === initialData.seasonId);
         
         if (matchingSeason) {
-          // Update the initial season option with the real name
           const updatedInitialOptions = [{
             id: initialData.seasonId,
             name: matchingSeason.name
@@ -240,7 +217,6 @@ const MatchForm = ({
       }
     }
     
-    // If we're in edit mode and this is the first page, include initial options
     if (mode === 'edit' && page === 1 && initialSeasonOptions.length > 0) {
       const filteredInitial = initialSeasonOptions.filter(option => 
         option.name.toLowerCase().includes(query.toLowerCase())
@@ -257,10 +233,8 @@ const MatchForm = ({
   }, [mode, initialData, initialSeasonOptions]);
 
   const searchHomeTeamsWithInitial = useCallback(async (query: string, page: number) => {
-    // Get all teams from the search service
     const result = await floorballTeamNameSearchService.searchTeams(query, page);
     
-    // If we're in edit mode and this is the first page, include initial options
     if (mode === 'edit' && page === 1 && initialHomeTeamOptions.length > 0) {
       const filteredInitial = initialHomeTeamOptions.filter(option => 
         option.name.toLowerCase().includes(query.toLowerCase())
@@ -277,10 +251,8 @@ const MatchForm = ({
   }, [mode, initialHomeTeamOptions]);
 
   const searchAwayTeamsWithInitial = useCallback(async (query: string, page: number) => {
-    // Get all teams from the search service
     const result = await floorballTeamNameSearchService.searchTeams(query, page);
     
-    // If we're in edit mode and this is the first page, include initial options
     if (mode === 'edit' && page === 1 && initialAwayTeamOptions.length > 0) {
       const filteredInitial = initialAwayTeamOptions.filter(option => 
         option.name.toLowerCase().includes(query.toLowerCase())
@@ -296,14 +268,10 @@ const MatchForm = ({
     return result;
   }, [mode, initialAwayTeamOptions]);
 
-  // Update scheduledDateTime when date or time changes
   const updateScheduledDateTime = (dateStr: string, hours: string, minutes: string) => {
     if (dateStr && hours && minutes) {
-      // Parse the yyyy-mm-dd string from the native date input
       const date = new Date(dateStr);
       date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-      
-      // Convert to ISO string with timezone offset to ensure proper timezone handling
       const isoDateTime = date.toISOString();
       setFormData(prev => ({ ...prev, scheduledDateTime: isoDateTime }));
     } else {
@@ -319,7 +287,6 @@ const MatchForm = ({
   };
 
   const handleHoursChange = (value: string) => {
-    // Validate hours (0-23)
     const numValue = parseInt(value);
     if (value === '' || (numValue >= 0 && numValue <= 23 && value.length <= 2)) {
       setHoursInput(value);
@@ -328,7 +295,6 @@ const MatchForm = ({
   };
 
   const handleMinutesChange = (value: string) => {
-    // Validate minutes (0-59)
     const numValue = parseInt(value);
     if (value === '' || (numValue >= 0 && numValue <= 59 && value.length <= 2)) {
       setMinutesInput(value);
@@ -347,27 +313,8 @@ const MatchForm = ({
         return;
       }
 
-      // if (mode === 'create') {
-      //   if (!formData.seasonId || !formData.homeTeamId || !formData.awayTeamId || !formData.scheduledDateTime) {
-      //     setError('Please fill in all required fields');
-      //     return;
-      //   }
-  
-      //   if (formData.homeTeamId === formData.awayTeamId) {
-      //     setError('Home team and away team cannot be the same');
-      //     return;
-      //   }
-  
-      //   // Validate time inputs
-      //   if (!selectedDate || !hoursInput || !minutesInput) {
-      //     setError('Please enter a valid date and time');
-      //     return;
-      //   }
-      // }
-
       await onSubmit(formData);
       if (mode === 'create') {
-        // Reset form on success
         setFormData({
           seasonId: undefined,
           homeTeamId: undefined,
@@ -379,7 +326,6 @@ const MatchForm = ({
         setSelectedDate('');
         setHoursInput('');
         setMinutesInput('');
-        // Clear initial options
         createInitialOptions();
       }
     } catch (error) {
@@ -401,10 +347,7 @@ const MatchForm = ({
     setHoursInput('');
     setMinutesInput('');
     setError(null);
-    
-    // Clear initial options
     createInitialOptions();
-    
     onCancel();
   };
 
@@ -414,10 +357,8 @@ const MatchForm = ({
     try {
       setCancelLoading(true);
       setError(null);
-      
       await onCancelMatch(initialData.id);
       setShowCancelConfirm(false);
-      
       handleCancel();
     } catch (error) {
       console.error('Error canceling match:', error);
@@ -433,10 +374,8 @@ const MatchForm = ({
     try {
       setReactivateLoading(true);
       setError(null);
-      
       await onReactivateMatch(initialData.id);
       setShowReactivateConfirm(false);
-      
       handleCancel();
     } catch (error) {
       console.error('Error reactivating match:', error);
@@ -450,12 +389,6 @@ const MatchForm = ({
     <>
       {error && (
         <ErrorPopup message={error} />
-
-        // <div className="error-alert">
-        //   <span className="error-icon">⚠️</span>
-        //   <span className="error-text">{error}</span>
-        //   <button onClick={() => setError(null)} className="error-close">×</button>
-        // </div>
       )}
       
       <form onSubmit={handleSubmit} className="modal-form">

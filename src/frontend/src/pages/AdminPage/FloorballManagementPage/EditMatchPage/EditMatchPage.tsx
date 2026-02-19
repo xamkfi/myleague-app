@@ -10,10 +10,9 @@ import type {
 } from '../../../../types/floorball/floorballTypes';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
-import MatchForm from '../MatchOverviewPage/Components/MatchForm/MatchForm';
+import MatchForm from '../Components/MatchForm/MatchForm';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import './EditMatchPage.scss';
-import '../MatchOverviewPage/MatchOverviewPage.scss';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 
 const EditMatchPage = () => {
