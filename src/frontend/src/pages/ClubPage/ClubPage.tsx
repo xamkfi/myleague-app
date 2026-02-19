@@ -9,6 +9,7 @@ import type { FloorballTeam } from '../../types/floorball/floorballTypes';
 import { findClubBySlug, getTeamSlug } from '../../utils/slugUtils';
 import { useDivisions } from '../../hooks/useDivisions';
 import { useFloorballTeamsData } from '../../hooks/useTeamsData';
+import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
 import './ClubPage.scss';
 
 function ClubPage() {
@@ -17,6 +18,7 @@ function ClubPage() {
   const { t } = useTranslation();
   const { divisions } = useDivisions();
   const [clubs, setClubs] = useState<Club[]>([]);
+  const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
   const {
     teams,
     setParams: setTeamParams,
@@ -29,8 +31,12 @@ function ClubPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const clubsData = await getClubs();
+        const [clubsData, seasonsResponse] = await Promise.all([
+          getClubs(),
+          floorballSeasonService.getAll(),
+        ]);
         setClubs(clubsData);
+        setSeasons(seasonsResponse.data || []);
 
         if (slug) {
           let foundClub = findClubBySlug(clubsData, slug);
@@ -72,6 +78,21 @@ function ClubPage() {
       return division?.name || 'Unknown';
     },
     [divisions]
+  );
+
+  const getTeamSeasons = useCallback(
+    (teamId: string): FloorballSeasonDto[] => {
+      return seasons
+        .filter((season) =>
+          season.seasonDivisions.some((sd) => sd.teamIds.includes(teamId))
+        )
+        .sort((a, b) => {
+          if (a.isActive && !b.isActive) return -1;
+          if (!a.isActive && b.isActive) return 1;
+          return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+        });
+    },
+    [seasons]
   );
 
   const formatFoundingDate = (dateString?: string | null): string | null => {
@@ -225,77 +246,81 @@ function ClubPage() {
             </div>
           ) : teams.length > 0 ? (
             <div className="club-page__teams-grid">
-              {teams.map((team) => (
-                <div
-                  key={team.id}
-                  className="team-card"
-                  onClick={() => handleTeamClick(team)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      handleTeamClick(team);
-                    }
-                  }}
-                >
-                  <div className="team-card__header">
-                    <h4 className="team-card__name">{team.name}</h4>
-                    <div className="team-card__colors">
-                      <span
-                        className="team-card__color"
-                        style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
-                        title={`Primary: ${team.primaryJerseyColor}`}
-                      />
-                      {team.secondaryJerseyColor && (
+              {teams.map((team) => {
+                const teamSeasons = getTeamSeasons(team.id);
+                return (
+                  <div
+                    key={team.id}
+                    className="team-card"
+                    onClick={() => handleTeamClick(team)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleTeamClick(team);
+                      }
+                    }}
+                  >
+                    <div className="team-card__header">
+                      <h4 className="team-card__name">{team.name}</h4>
+                      <div className="team-card__colors">
                         <span
                           className="team-card__color"
-                          style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
-                          title={`Secondary: ${team.secondaryJerseyColor}`}
+                          style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
+                          title={`Primary: ${team.primaryJerseyColor}`}
                         />
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="team-card__body">
-                    <span className="team-card__division">
-                      {getDivisionDisplayName(team.divisionId)}
-                    </span>
-
-                    {team.homeArena && (
-                      <div className="team-card__arena">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                          <circle cx="12" cy="10" r="3" />
-                        </svg>
-                        {team.homeArena}
+                        {team.secondaryJerseyColor && (
+                          <span
+                            className="team-card__color"
+                            style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
+                            title={`Secondary: ${team.secondaryJerseyColor}`}
+                          />
+                        )}
                       </div>
-                    )}
+                    </div>
 
-                    <div className="team-card__status">
-                      {team.hasActiveMembers ? (
-                        <span className="team-card__status--active">
-                          <span className="team-card__status-dot" />
-                          {t('clubPage.activeRoster')}
+                    <div className="team-card__body">
+                      <div className="team-card__tags">
+                        <span className="team-card__sport">
+                          {t('sports.floorball')}
                         </span>
-                      ) : (
-                        <span className="team-card__status--inactive">
-                          <span className="team-card__status-dot" />
-                          {t('clubPage.noActiveMembers')}
+                        <span className="team-card__division">
+                          {getDivisionDisplayName(team.divisionId)}
                         </span>
+                      </div>
+
+                      {teamSeasons.length > 0 && (
+                        <div className="team-card__seasons">
+                          {teamSeasons.map((season) => (
+                            <span
+                              key={season.id}
+                              className={`team-card__season ${season.isActive ? 'team-card__season--active' : ''}`}
+                            >
+                              {season.name}
+                              {season.isActive && (
+                                <span className="team-card__season-badge">
+                                  {t('floorballPage.active')}
+                                </span>
+                              )}
+                            </span>
+                          ))}
+                        </div>
                       )}
+
+                   
+                    </div>
+
+                    <div className="team-card__footer">
+                      <span className="team-card__view-link">
+                        {t('clubPage.viewTeam')}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </span>
                     </div>
                   </div>
-
-                  <div className="team-card__footer">
-                    <span className="team-card__view-link">
-                      {t('clubPage.viewTeam')}
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="club-page__no-teams">
