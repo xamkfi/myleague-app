@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Commands.Persons;
+using Application.Features.Common.Persons.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Person
+namespace Application.Features.Common.Persons.Validators
 {
     /// <summary>
     /// Validator for UpdatePersonContactInfoCommand

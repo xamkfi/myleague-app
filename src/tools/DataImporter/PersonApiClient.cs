@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.DTOs.Common;
+using Application.Features.Common.Persons.DTOs;
 using WebAPI.Models.Common;
 
 namespace DataImporter;

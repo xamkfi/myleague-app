@@ -1,7 +1,8 @@
 using System;
+using Application.Features.Common.Persons.DTOs;
 using Domain.Enums.Common;
 
-namespace Application.DTOs.Common;
+namespace Application.Features.Common.Users.DTOs;
 
 /// <summary>
 /// Data transfer object for user information

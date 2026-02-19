@@ -2,7 +2,7 @@ using System;
 using MediatR;
 using Application.Common;
 
-namespace Application.Commands.Common
+namespace Application.Features.Common.MatchTimer.Commands
 {
     /// <summary>
     /// Command for resetting the timer of a match

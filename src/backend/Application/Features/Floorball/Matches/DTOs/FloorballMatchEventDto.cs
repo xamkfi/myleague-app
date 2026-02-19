@@ -1,7 +1,7 @@
 using System;
 using Domain.Enums.Floorball;
 
-namespace Application.DTOs.Floorball
+namespace Application.Features.Floorball.Matches.DTOs
 {
     /// <summary>
     /// Data Transfer Object for a goal scored in a floorball match

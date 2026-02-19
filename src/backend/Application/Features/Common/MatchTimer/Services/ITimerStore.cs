@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Domain.Entities.Common;
 
-namespace Application.Services.Common
+namespace Application.Features.Common.MatchTimer.Services
 {
     /// <summary>
     /// Abstract store for active match timers

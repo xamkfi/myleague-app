@@ -6,7 +6,6 @@ using Application.Common;
 using Application.Features.Floorball.Seasons.Commands;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Seasons.Queries;
-using Application.DTOs.Floorball;
 using Domain.Enums.Floorball;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

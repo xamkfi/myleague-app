@@ -1,11 +1,18 @@
 using System;
 using System.Threading.Tasks;
-using Application.DTOs.Common;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Services.Common
+namespace Application.Features.Common.MatchTimer.Services
 {
     /// <summary>
     /// Persistent implementation of the match timer service with real-time updates

@@ -1,5 +1,5 @@
-﻿
-namespace Application.DTOs.Common
+
+namespace Application.Features.Common.Persons.DTOs
 {
     /// <summary>
     /// Data Transfer Object for public Person entity excluding sensitive data

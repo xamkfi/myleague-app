@@ -1,15 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Commands.Common;
+using Application.Features.Common.Divisions.Commands;
+using Application.Features.Common.MatchTimer.Commands;
+using Application.Features.Common.Images.Commands;
 using Application.Common;
 using Application.Interfaces.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Common
+namespace Application.Features.Common.Images.Handlers
 {
     public class UploadImageCommandHandler : IRequestHandler<UploadImageCommand, Result<Uri>>
     {

@@ -1,9 +1,24 @@
-using Application.Queries.Floorball.Team;
-using Application.DTOs.Floorball;
-using Application.Mappings.Floorball;
-using Application.Mappings.Common;
+using Application.Features.Floorball.Teams.Queries;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
+using Application.Features.Floorball.Seasons.Mappings;
+using Application.Features.Floorball.Matches.Mappings;
+using Application.Features.Floorball.Teams.Mappings;
+using Application.Features.Floorball.Players.Mappings;
+using Application.Features.Floorball.Referees.Mappings;
+using Application.Features.Floorball.TeamManagers.Mappings;
+using Application.Features.Floorball.Statistics.Mappings;
+using Application.Features.Common.Users.Mappings;
+using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Clubs.Mappings;
+using Application.Features.Common.Divisions.Mappings;
+using Application.Features.Common.News.Mappings;
 using Application.Common;
-using Application.Handlers.Common;
 using Application.Services.Common;
 using Domain.Common;
 using Domain.Entities.Floorball;
@@ -20,7 +35,7 @@ using Domain.Entities.Common;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Handlers.Floorball.Teams;
+namespace Application.Features.Floorball.Teams.Handlers;
 
 /// <summary>
 /// Handler for retrieving paginated floorball teams without roster with filtering support

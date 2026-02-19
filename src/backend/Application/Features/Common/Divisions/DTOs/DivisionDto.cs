@@ -1,7 +1,7 @@
 using System;
 using Domain.Enums.Common;
 
-namespace Application.DTOs.Common;
+namespace Application.Features.Common.Divisions.DTOs;
 
 /// <summary>
 /// Data Transfer Object for Division entity

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -7,10 +7,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Common;
-using Application.DTOs.Floorball;
-using Application.Handlers.Common;
-using Application.Mappings.Floorball;
-using Application.Queries.Floorball.Match;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
+using Application.Features.Floorball.Seasons.Mappings;
+using Application.Features.Floorball.Matches.Mappings;
+using Application.Features.Floorball.Teams.Mappings;
+using Application.Features.Floorball.Players.Mappings;
+using Application.Features.Floorball.Referees.Mappings;
+using Application.Features.Floorball.TeamManagers.Mappings;
+using Application.Features.Floorball.Statistics.Mappings;
+using Application.Features.Floorball.Matches.Queries;
 using Application.Services.Common;
 using Domain.Common;
 using Domain.Entities.Floorball;
@@ -18,7 +29,7 @@ using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Floorball.Matches
+namespace Application.Features.Floorball.Matches.Handlers
 {
     public class GetFloorballMatchesByTeamHandler : BasePagedQueryHandler<GetFloorballMatchesByTeamQuery, FloorballMatchDto>,
         IRequestHandler<GetFloorballMatchesByTeamQuery, Result<PagedResult<FloorballMatchDto>>>

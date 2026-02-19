@@ -1,6 +1,13 @@
 using Application.Common;
-using Application.DTOs.Common;
-using Application.Queries.Persons;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
+using Application.Features.Common.Persons.Queries;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
@@ -9,7 +16,7 @@ using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Persons;
+namespace Application.Features.Common.Persons.Handlers;
 
 /// <summary>
 /// Handler for GetPersonWithTeamsQuery

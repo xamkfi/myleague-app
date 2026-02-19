@@ -1,6 +1,6 @@
 using System;
 
-namespace Application.DTOs.Floorball
+namespace Application.Features.Floorball.Matches.DTOs
 {
     /// <summary>
     /// DTO for a floorball save event

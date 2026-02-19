@@ -1,6 +1,18 @@
-using Application.Queries.Floorball.Match;
-using Application.DTOs.Floorball;
-using Application.Mappings.Floorball;
+using Application.Features.Floorball.Matches.Queries;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
+using Application.Features.Floorball.Seasons.Mappings;
+using Application.Features.Floorball.Matches.Mappings;
+using Application.Features.Floorball.Teams.Mappings;
+using Application.Features.Floorball.Players.Mappings;
+using Application.Features.Floorball.Referees.Mappings;
+using Application.Features.Floorball.TeamManagers.Mappings;
+using Application.Features.Floorball.Statistics.Mappings;
 using Application.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
@@ -11,7 +23,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Handlers.Floorball.Matches;
+namespace Application.Features.Floorball.Matches.Handlers;
 
 /// <summary>
 /// Handler for retrieving floorball matches by season

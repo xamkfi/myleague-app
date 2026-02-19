@@ -2,7 +2,7 @@ using System;
 using MediatR;
 using Application.Common;
 
-namespace Application.Queries.Common
+namespace Application.Features.Common.MatchTimer.Queries
 {
     /// <summary>
     /// Query for getting the elapsed time of a match timer

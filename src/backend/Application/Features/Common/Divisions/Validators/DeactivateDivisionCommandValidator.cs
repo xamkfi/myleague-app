@@ -1,7 +1,9 @@
-using Application.Commands.Common;
+using Application.Features.Common.Divisions.Commands;
+using Application.Features.Common.MatchTimer.Commands;
+using Application.Features.Common.Images.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Common;
+namespace Application.Features.Common.Divisions.Validators;
 
 /// <summary>
 /// Validator for DeactivateDivisionCommand

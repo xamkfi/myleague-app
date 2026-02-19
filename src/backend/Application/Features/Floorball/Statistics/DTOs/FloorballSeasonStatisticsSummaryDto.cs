@@ -1,4 +1,6 @@
-namespace Application.DTOs.Floorball;
+using Application.Features.Floorball.Teams.DTOs;
+
+namespace Application.Features.Floorball.Statistics.DTOs;
 
 /// <summary>
 /// DTO for comprehensive season statistics summary

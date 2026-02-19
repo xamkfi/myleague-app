@@ -1,8 +1,8 @@
-using Application.Commands.NewsArticles;
+using Application.Features.Common.News.Commands;
 using Domain.Enums.Common;
 using FluentValidation;
 
-namespace Application.Validators.Commands.NewsArticles;
+namespace Application.Features.Common.News.Validators;
 
 /// <summary>
 /// Validator for UpdateNewsArticleCommand

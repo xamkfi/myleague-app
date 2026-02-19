@@ -1,8 +1,8 @@
-using Application.Queries.Floorball.Team;
+using Application.Features.Floorball.Teams.Queries;
 using Application.Services.Common;
 using FluentValidation;
 
-namespace Application.Validators.Queries.Floorball.Team;
+namespace Application.Features.Floorball.Teams.Validators;
 
 /// <summary>
 /// Validator for GetAllFloorballTeamsQuery

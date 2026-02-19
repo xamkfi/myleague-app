@@ -1,14 +1,25 @@
-﻿using System;
+using System;
 using Application.Common;
-using Application.DTOs.Common;
-using Application.Mappings.Common;
-using Application.Queries.Persons;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
+using Application.Features.Common.Users.Mappings;
+using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Clubs.Mappings;
+using Application.Features.Common.Divisions.Mappings;
+using Application.Features.Common.News.Mappings;
+using Application.Features.Common.Persons.Queries;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Persons
+namespace Application.Features.Common.Persons.Handlers
 {
     /// <summary>
     /// Handler for retrieving person by email

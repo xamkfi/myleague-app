@@ -1,9 +1,15 @@
 using MediatR;
-using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
 using System;
 using Application.Common;
 
-namespace Application.Commands.Floorball.MatchEvent
+namespace Application.Features.Floorball.Matches.Commands
 {
     /// <summary>
     /// Command to record a save event in an event-sourced floorball match

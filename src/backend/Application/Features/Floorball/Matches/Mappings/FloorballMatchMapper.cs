@@ -1,5 +1,11 @@
-using Application.Commands.Floorball.Match;
-using Application.DTOs.Floorball;
+using Application.Features.Floorball.Matches.Commands;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
 using Domain.Entities.Floorball;
 using Domain.Entities.Common;
 using Domain.ValueObjects.Floorball;
@@ -7,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Application.Mappings.Floorball;
+namespace Application.Features.Floorball.Matches.Mappings;
 
 /// <summary>
 /// Mapper for FloorballMatch entity

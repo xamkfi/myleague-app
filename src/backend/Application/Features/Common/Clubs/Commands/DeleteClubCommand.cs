@@ -2,7 +2,7 @@ using System;
 using MediatR;
 using Application.Common;
 
-namespace Application.Commands.Clubs;
+namespace Application.Features.Common.Clubs.Commands;
 
 /// <summary>
 /// Command for deleting a club

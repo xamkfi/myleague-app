@@ -2,7 +2,7 @@ using System;
 using Application.Common;
 using MediatR;
 
-namespace Application.Commands.Users;
+namespace Application.Features.Common.Users.Commands;
 
 /// <summary>
 /// Command for deleting a user

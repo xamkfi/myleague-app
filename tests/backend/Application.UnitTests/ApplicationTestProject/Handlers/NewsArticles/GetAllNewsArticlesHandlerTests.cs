@@ -1,7 +1,7 @@
-using Application.Queries.NewsArticles;
 using Application.Common;
-using Application.DTOs.Common;
-using Application.Handlers.NewsArticles;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.News.Handlers;
+using Application.Features.Common.News.Queries;
 using Application.Services.Common;
 using Domain.Common;
 using Domain.Entities.Common;

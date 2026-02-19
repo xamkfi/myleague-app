@@ -1,6 +1,6 @@
 using System;
 
-namespace Application.DTOs.Floorball;
+namespace Application.Features.Floorball.Statistics.DTOs;
 
 /// <summary>
 /// DTO for floorball goalie season statistics

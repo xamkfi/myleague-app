@@ -1,7 +1,14 @@
-﻿using System;
-using Application.DTOs.Common;
+using System;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
 
-namespace Application.DTOs.Floorball
+namespace Application.Features.Floorball.Referees.DTOs
 {
     /// <summary>
     /// Data Transfer Object for FloorballReferee entity

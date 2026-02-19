@@ -1,7 +1,7 @@
-using Application.Commands.Users;
 using Application.Common;
-using Application.DTOs.Common;
-using Application.Queries.Users;
+using Application.Features.Common.Users.Commands;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,4 +1,4 @@
-namespace Application.DTOs.Floorball;
+namespace Application.Features.Floorball.Matches.DTOs;
 
 /// <summary>
 /// DTO for floorball match team statistics

@@ -7,8 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Common;
-using Application.DTOs.Common;
-using Application.Queries.Common;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
+using Application.Features.Common.Divisions.Queries;
+using Application.Features.Common.Search.Queries;
+using Application.Features.Common.MatchTimer.Queries;
 using Application.Services.Common;
 using Domain.Common;
 using Domain.Entities.Floorball;
@@ -18,7 +27,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Domain.Entities.Common;
 
-namespace Application.Handlers.Common
+namespace Application.Features.Common.Search.Handlers
 {
     public class GlobalSearchQueryHandler : IRequestHandler<GlobalSearchQuery, Result<GlobalSearchResultDto>>
     {

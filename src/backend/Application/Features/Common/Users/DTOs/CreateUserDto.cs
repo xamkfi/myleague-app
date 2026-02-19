@@ -1,6 +1,6 @@
 using System;
 
-namespace Application.DTOs.Common;
+namespace Application.Features.Common.Users.DTOs;
 
 /// <summary>
 /// Data transfer object for creating a new user

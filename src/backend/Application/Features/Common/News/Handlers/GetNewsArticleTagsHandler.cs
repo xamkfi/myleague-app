@@ -1,4 +1,4 @@
-using Application.Queries.NewsArticles;
+using Application.Features.Common.News.Queries;
 using Application.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Handlers.NewsArticles;
+namespace Application.Features.Common.News.Handlers;
 
 /// <summary>
 /// Handler for retrieving all used tags in news articles

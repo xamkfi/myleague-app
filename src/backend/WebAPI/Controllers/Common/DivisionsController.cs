@@ -2,10 +2,10 @@ using System;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Application.Commands.Common;
-using Application.Queries.Common;
-using Application.DTOs.Common;
 using Application.Common;
+using Application.Features.Common.Divisions.Commands;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.Divisions.Queries;
 using Domain.Enums.Common;
 using WebAPI.Models.Common;
 

@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Commands.Clubs;
-using Application.Commands.Persons;
+using Application.Features.Common.Clubs.Commands;
+using Application.Features.Common.Persons.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Person
+namespace Application.Features.Common.Persons.Validators
 {
     /// <summary>
     /// Validator for DeletePersonCommand

@@ -1,13 +1,16 @@
-using Application.Queries.Common;
+using Application.Features.Common.Divisions.Queries;
+using Application.Features.Common.Search.Queries;
+using Application.Features.Common.MatchTimer.Queries;
 using Application.Services.Common;
 using Application.Common;
+using Application.Features.Common.MatchTimer.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Handlers.Common
+namespace Application.Features.Common.MatchTimer.Handlers
 {
     /// <summary>
     /// Handler for getting the elapsed time of a match timer

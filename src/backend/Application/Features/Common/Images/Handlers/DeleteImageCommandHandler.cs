@@ -1,15 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Commands.Common;
+using Application.Features.Common.Divisions.Commands;
+using Application.Features.Common.MatchTimer.Commands;
+using Application.Features.Common.Images.Commands;
 using Application.Common;
 using Application.Interfaces.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Common
+namespace Application.Features.Common.Images.Handlers
 {
     public class DeleteImageCommandHandler : IRequestHandler<DeleteImageCommand, Result<bool>>
     {
@@ -30,7 +32,7 @@ namespace Application.Handlers.Common
             {
                 _logger.LogInformation("Processing image deletion from: {FileUrl}", request.url);
 
-                bool delete = await _imageStorageService.DeleteImage(request.url);
+                bool delete = await _imageStorageService.DeleteImage(request.url, cancellationToken);
 
                 _logger.LogInformation("Image delete completed: {ImageUrl}", delete);
 

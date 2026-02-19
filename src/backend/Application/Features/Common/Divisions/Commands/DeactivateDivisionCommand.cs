@@ -2,7 +2,7 @@ using System;
 using MediatR;
 using Application.Common;
 
-namespace Application.Commands.Common;
+namespace Application.Features.Common.Divisions.Commands;
 
 /// <summary>
 /// Command for deactivating a division

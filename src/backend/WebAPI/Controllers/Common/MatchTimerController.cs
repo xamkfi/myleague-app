@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Application.Services.Common;
+using Application.Features.Common.MatchTimer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

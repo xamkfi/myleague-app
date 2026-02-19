@@ -1,4 +1,4 @@
-namespace Application.DTOs.Floorball
+namespace Application.Features.Floorball.Matches.DTOs
 {
     /// <summary>
     /// Data Transfer Object for match rules configuration.

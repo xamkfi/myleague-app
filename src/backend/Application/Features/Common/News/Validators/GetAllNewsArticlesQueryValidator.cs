@@ -1,9 +1,9 @@
-using Application.Queries.NewsArticles;
+using Application.Features.Common.News.Queries;
 using Application.Services.Common;
 using Domain.Enums.Common;
 using FluentValidation;
 
-namespace Application.Validators.Queries.NewsArticles;
+namespace Application.Features.Common.News.Validators;
 
 /// <summary>
 /// Validator for GetAllNewsArticlesQuery

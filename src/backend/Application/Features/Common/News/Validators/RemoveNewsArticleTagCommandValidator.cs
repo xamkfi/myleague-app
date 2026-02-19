@@ -1,7 +1,7 @@
-using Application.Commands.NewsArticles;
+using Application.Features.Common.News.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.NewsArticles;
+namespace Application.Features.Common.News.Validators;
 
 /// <summary>
 /// Validator for RemoveNewsArticleTagCommand

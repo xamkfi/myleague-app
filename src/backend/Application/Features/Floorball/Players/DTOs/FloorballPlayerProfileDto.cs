@@ -1,5 +1,6 @@
+using Application.Features.Floorball.Statistics.DTOs;
 
-namespace Application.DTOs.Floorball
+namespace Application.Features.Floorball.Players.DTOs
 {
     /// <summary>
     /// Represents a complete player profile with all season statistics

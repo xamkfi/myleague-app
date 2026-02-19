@@ -1,12 +1,19 @@
-using Application.Commands.NewsArticles;
-using Application.DTOs.Common;
+using Application.Features.Common.News.Commands;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
 using Domain.Entities.Common;
 using Domain.Enums.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Application.Mappings.Common;
+namespace Application.Features.Common.News.Mappings;
 
 /// <summary>
 /// Mapper class for NewsArticle entity and related DTOs

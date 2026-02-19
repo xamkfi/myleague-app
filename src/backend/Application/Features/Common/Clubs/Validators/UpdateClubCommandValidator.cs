@@ -1,7 +1,7 @@
-using Application.Commands.Clubs;
+using Application.Features.Common.Clubs.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Club;
+namespace Application.Features.Common.Clubs.Validators;
 
 /// <summary>
 /// Validator for UpdateClubCommand

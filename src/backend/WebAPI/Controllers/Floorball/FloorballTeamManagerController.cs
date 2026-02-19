@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using System.Linq;
-using Application.Commands.Floorball.TeamManager;
 using Application.Common;
-using Application.DTOs.Floorball;
+using Application.Features.Floorball.TeamManagers.Commands;
+using Application.Features.Floorball.TeamManagers.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

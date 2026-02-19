@@ -1,13 +1,16 @@
-using Application.Commands.Common;
+using Application.Features.Common.Divisions.Commands;
+using Application.Features.Common.MatchTimer.Commands;
+using Application.Features.Common.Images.Commands;
 using Application.Services.Common;
 using Application.Common;
+using Application.Features.Common.MatchTimer.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Handlers.Common
+namespace Application.Features.Common.MatchTimer.Handlers
 {
     /// <summary>
     /// Handler for resetting the timer of a match

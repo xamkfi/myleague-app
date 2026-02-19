@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.DTOs.Floorball;
+using Application.Features.Floorball.Referees.DTOs;
 using WebAPI.Models.Floorball;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;

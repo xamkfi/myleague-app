@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Application.DTOs.Common;
+namespace Application.Features.Common.News.DTOs;
 
 /// <summary>
 /// Data Transfer Object for updating existing news articles

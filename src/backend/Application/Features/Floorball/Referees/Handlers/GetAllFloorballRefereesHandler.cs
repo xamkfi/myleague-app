@@ -1,9 +1,21 @@
-using Application.Queries.Floorball.Referee;
-using Application.DTOs.Floorball;
-using Application.Mappings.Floorball;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Floorball.Referees.Queries;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
+using Application.Features.Floorball.Seasons.Mappings;
+using Application.Features.Floorball.Matches.Mappings;
+using Application.Features.Floorball.Teams.Mappings;
+using Application.Features.Floorball.Players.Mappings;
+using Application.Features.Floorball.Referees.Mappings;
+using Application.Features.Floorball.TeamManagers.Mappings;
+using Application.Features.Floorball.Statistics.Mappings;
 using Application.Common;
 using Domain.Common;
-using Application.Handlers.Common;
 using Application.Services.Common;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
@@ -15,9 +27,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Application.Mappings.Common;
+using Application.Features.Common.Users.Mappings;
+using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Clubs.Mappings;
+using Application.Features.Common.Divisions.Mappings;
+using Application.Features.Common.News.Mappings;
 
-namespace Application.Handlers.Floorball.Referees;
+namespace Application.Features.Floorball.Referees.Handlers;
 
 /// <summary>
 /// Handler for retrieving paginated floorball referees with filtering support
@@ -112,7 +128,7 @@ public class GetAllFloorballRefereesHandler : BasePagedQueryHandler<GetAllFloorb
                     _logger.LogWarning("Person with ID {PersonId} not found for referee {RefereeId}, using placeholder", referee.PersonId, referee.Id);
                     
                     // Create DTO with placeholder person data
-                    Application.DTOs.Common.PersonDto placeholderPerson = new Application.DTOs.Common.PersonDto(
+                    PersonDto placeholderPerson = new PersonDto(
                         referee.PersonId,
                         "Unknown",
                         "Person",

@@ -1,7 +1,7 @@
-using Application.Commands.Floorball.Team;
+using Application.Features.Floorball.Teams.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Floorball.Team;
+namespace Application.Features.Floorball.Teams.Validators;
 
 /// <summary>
 /// Validator for RemovePlayerFromTeamCommand

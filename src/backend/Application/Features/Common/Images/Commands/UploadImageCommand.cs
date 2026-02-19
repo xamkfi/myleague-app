@@ -1,8 +1,8 @@
-﻿
+
 using Application.Common;
 using MediatR;
 
-namespace Application.Commands.Common
+namespace Application.Features.Common.Images.Commands
 {
     /// <summary>
     /// Command for uploading an image.

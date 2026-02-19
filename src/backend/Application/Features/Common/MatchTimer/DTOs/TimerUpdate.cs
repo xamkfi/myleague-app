@@ -1,6 +1,6 @@
 using System;
 
-namespace Application.DTOs.Common
+namespace Application.Features.Common.MatchTimer.DTOs
 {
     /// <summary>
     /// Data transfer object for timer updates sent via SignalR

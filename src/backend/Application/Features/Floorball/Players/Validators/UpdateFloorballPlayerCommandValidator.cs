@@ -1,7 +1,7 @@
-using Application.Commands.Floorball.Player;
+using Application.Features.Floorball.Players.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Floorball.Player;
+namespace Application.Features.Floorball.Players.Validators;
 
 /// <summary>
 /// Validator for UpdateFloorballPlayerCommand

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Application.Services.Common
+namespace Application.Features.Common.MatchTimer.Services
 {
     /// <summary>
     /// Service interface for managing persistent match timers with real-time updates

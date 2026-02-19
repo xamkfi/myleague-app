@@ -2,7 +2,7 @@ using System;
 using MediatR;
 using Application.Common;
 
-namespace Application.Commands.Common
+namespace Application.Features.Common.MatchTimer.Commands
 {
     /// <summary>
     /// Command for starting the timer of a match

@@ -1,4 +1,4 @@
-using Application.Commands.Floorball.Player;
+using Application.Features.Floorball.Players.Commands;
 using Application.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Domain.Repositories.Common;
 using Domain.Entities.Floorball;
 
-namespace Application.Handlers.Floorball.Players;
+namespace Application.Features.Floorball.Players.Handlers;
 
 /// <summary>
 /// Handler for deleting a floorball player

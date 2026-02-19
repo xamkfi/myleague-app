@@ -1,16 +1,28 @@
-﻿
+
 using MediatR;
-using Application.Commands.Floorball.Team;
+using Application.Features.Floorball.Teams.Commands;
 using Application.Common;
-using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
 using Microsoft.Extensions.Logging;
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
 using Domain.Entities.Floorball;
 using Domain.Entities.Common;
-using Application.Mappings.Floorball;
+using Application.Features.Floorball.Seasons.Mappings;
+using Application.Features.Floorball.Matches.Mappings;
+using Application.Features.Floorball.Teams.Mappings;
+using Application.Features.Floorball.Players.Mappings;
+using Application.Features.Floorball.Referees.Mappings;
+using Application.Features.Floorball.TeamManagers.Mappings;
+using Application.Features.Floorball.Statistics.Mappings;
 
-namespace Application.Handlers.Floorball.Teams
+namespace Application.Features.Floorball.Teams.Handlers
 {
     /// <summary>
     /// Handler for updating a division of an existing team

@@ -1,4 +1,4 @@
-namespace Application.DTOs.Common;
+namespace Application.Features.Common.Persons.DTOs;
 
 /// <summary>
 /// DTO representing a person with their teams

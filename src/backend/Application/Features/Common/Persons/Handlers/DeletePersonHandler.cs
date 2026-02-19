@@ -1,11 +1,11 @@
-﻿using System;
-using Application.Commands.Persons;
+using System;
+using Application.Features.Common.Persons.Commands;
 using Application.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Persons
+namespace Application.Features.Common.Persons.Handlers
 {
     /// <summary>
     /// Handler for deleting a person

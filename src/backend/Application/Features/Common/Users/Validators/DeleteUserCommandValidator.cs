@@ -1,8 +1,8 @@
 using System;
-using Application.Commands.Users;
+using Application.Features.Common.Users.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Users
+namespace Application.Features.Common.Users.Validators
 {
     /// <summary>
     /// Validator for DeleteUserCommand

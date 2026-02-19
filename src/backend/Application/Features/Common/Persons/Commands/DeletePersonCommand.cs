@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using Application.Common;
 using MediatR;
 
-namespace Application.Commands.Persons;
+namespace Application.Features.Common.Persons.Commands;
 
 /// <summary>
 /// Command for deleting a Person

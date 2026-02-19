@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Application.DTOs.Common;
+namespace Application.Features.Common.Clubs.DTOs;
 
 /// <summary>
 /// Data Transfer Object for Club entity

@@ -1,8 +1,18 @@
-using Application.Queries.Clubs;
-using Application.DTOs.Common;
-using Application.Mappings.Common;
+using Application.Features.Common.Clubs.Queries;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
+using Application.Features.Common.Users.Mappings;
+using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Clubs.Mappings;
+using Application.Features.Common.Divisions.Mappings;
+using Application.Features.Common.News.Mappings;
 using Application.Common;
-using Application.Handlers.Common;
 using Application.Services.Common;
 using Domain.Common;
 using Domain.Repositories.Common;
@@ -10,7 +20,7 @@ using Microsoft.Extensions.Logging;
 using MediatR;
 using System.Linq;
 
-namespace Application.Handlers.Clubs;
+namespace Application.Features.Common.Clubs.Handlers;
 
 /// <summary>
 /// Handler for retrieving clubs with pagination support

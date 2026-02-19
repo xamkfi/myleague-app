@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Domain.Enums.Floorball;
 
-namespace Application.DTOs.Floorball
+namespace Application.Features.Floorball.Players.DTOs
 {
     /// <summary>
     /// Data Transfer Object for a floorball player with their match history and performance statistics

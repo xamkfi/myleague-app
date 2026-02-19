@@ -1,8 +1,15 @@
 using System;
-using Application.DTOs.Common;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
 using Domain.Enums.Common;
 
-namespace Application.DTOs.Floorball
+namespace Application.Features.Floorball.Teams.DTOs
 {
     /// <summary>
     /// Lightweight Data Transfer Object for FloorballTeam entity without roster

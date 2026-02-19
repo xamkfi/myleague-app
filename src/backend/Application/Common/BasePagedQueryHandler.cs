@@ -3,7 +3,7 @@ using Domain.Common;
 using Application.Services.Common;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Common;
+namespace Application.Common;
 
 /// <summary>
 /// Base class for paginated query handlers that provides common pagination validation and logic

@@ -1,8 +1,8 @@
 using System;
-using Application.Commands.Persons;
+using Application.Features.Common.Persons.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Person
+namespace Application.Features.Common.Persons.Validators
 {
     /// <summary>
     /// Validator for UpdatePersonCommand

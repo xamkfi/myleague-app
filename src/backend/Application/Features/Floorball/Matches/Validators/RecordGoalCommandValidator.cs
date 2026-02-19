@@ -1,7 +1,7 @@
-using Application.Commands.Floorball.Match;
+using Application.Features.Floorball.Matches.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Floorball.Match;
+namespace Application.Features.Floorball.Matches.Validators;
 
 /// <summary>
 /// Validator for RecordGoalCommand

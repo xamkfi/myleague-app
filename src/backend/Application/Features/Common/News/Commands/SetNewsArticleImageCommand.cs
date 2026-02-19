@@ -2,7 +2,7 @@ using System;
 using MediatR;
 using Application.Common;
 
-namespace Application.Commands.NewsArticles;
+namespace Application.Features.Common.News.Commands;
 
 /// <summary>
 /// Command for setting/updating an image for a news article

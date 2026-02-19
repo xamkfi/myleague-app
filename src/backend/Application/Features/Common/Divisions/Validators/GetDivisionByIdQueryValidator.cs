@@ -1,8 +1,10 @@
-using Application.Queries.Common;
+using Application.Features.Common.Divisions.Queries;
+using Application.Features.Common.Search.Queries;
+using Application.Features.Common.MatchTimer.Queries;
 using FluentValidation;
 using System;
 
-namespace Application.Validators.Queries.Common;
+namespace Application.Features.Common.Divisions.Validators;
 
 /// <summary>
 /// Validator for GetDivisionByIdQuery

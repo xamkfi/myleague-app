@@ -1,7 +1,8 @@
 using System;
+using Application.Features.Floorball.Players.DTOs;
 using Domain.Enums.Floorball;
 
-namespace Application.DTOs.Floorball
+namespace Application.Features.Floorball.Teams.DTOs
 {
     /// <summary>
     /// Data Transfer Object for FloorballTeamPlayer value object

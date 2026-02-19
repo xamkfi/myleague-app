@@ -1,9 +1,9 @@
-using Application.Queries.Floorball.Player;
+using Application.Features.Floorball.Players.Queries;
 using Application.Services.Common;
 using Domain.Enums.Floorball;
 using FluentValidation;
 
-namespace Application.Validators.Queries.Floorball.Player;
+namespace Application.Features.Floorball.Players.Validators;
 
 /// <summary>
 /// Validator for GetAllFloorballPlayersQuery

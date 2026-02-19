@@ -1,11 +1,18 @@
-using Application.Commands.Clubs;
-using Application.DTOs.Common;
+using Application.Features.Common.Clubs.Commands;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
 using Domain.Entities.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Application.Mappings.Common;
+namespace Application.Features.Common.Clubs.Mappings;
 
 /// <summary>
 /// Mapper class for Club entity and related DTOs

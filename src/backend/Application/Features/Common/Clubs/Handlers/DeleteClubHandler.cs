@@ -1,4 +1,4 @@
-using Application.Commands.Clubs;
+using Application.Features.Common.Clubs.Commands;
 using Application.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
@@ -7,7 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Handlers.Clubs;
+namespace Application.Features.Common.Clubs.Handlers;
 
 /// <summary>
 /// Handler for deleting a club

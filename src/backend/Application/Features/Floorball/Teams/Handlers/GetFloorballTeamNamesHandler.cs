@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -7,14 +7,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediatR;
-using Application.DTOs.Floorball;
-using Application.Queries.Floorball.Team;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
+using Application.Features.Floorball.Teams.Queries;
 using Domain.Repositories.Floorball;
 using Domain.Entities.Floorball;
 using Application.Common;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Floorball.Teams
+namespace Application.Features.Floorball.Teams.Handlers
 {
     /// <summary>
     /// Handler to retrieve floorball team names with optional filter

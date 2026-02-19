@@ -1,11 +1,28 @@
 using System.Collections.Immutable;
-using Application.DTOs.Common;
-using Application.DTOs.Floorball;
-using Application.Mappings.Common;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
+using Application.Features.Common.Users.Mappings;
+using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Clubs.Mappings;
+using Application.Features.Common.Divisions.Mappings;
+using Application.Features.Common.News.Mappings;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 
-namespace Application.Mappings.Floorball;
+namespace Application.Features.Floorball.Statistics.Mappings;
 
 /// <summary>
 /// Mapper for converting floorball statistics entities to DTOs

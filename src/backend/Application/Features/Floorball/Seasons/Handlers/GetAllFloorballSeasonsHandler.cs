@@ -1,4 +1,4 @@
-using Application.Queries.Floorball;
+using Application.Features.Floorball.Players.Queries;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Seasons.Mappings;
 using Application.Common;

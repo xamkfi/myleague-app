@@ -1,7 +1,7 @@
-using Application.Queries.Floorball.Team;
+using Application.Features.Floorball.Teams.Queries;
 using FluentValidation;
 
-namespace Application.Validators.Queries.Floorball.Team;
+namespace Application.Features.Floorball.Teams.Validators;
 
 /// <summary>
 /// Validator for GetFloorballTeamByIdQuery

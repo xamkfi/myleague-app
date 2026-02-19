@@ -1,7 +1,7 @@
-using Application.Queries.Clubs;
+using Application.Features.Common.Clubs.Queries;
 using FluentValidation;
 
-namespace Application.Validators.Queries.Club;
+namespace Application.Features.Common.Clubs.Validators;
 
 /// <summary>
 /// Validator for GetClubsByNameQuery

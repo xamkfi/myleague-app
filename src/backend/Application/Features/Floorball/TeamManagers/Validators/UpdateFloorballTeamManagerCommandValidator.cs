@@ -1,7 +1,7 @@
-using Application.Commands.Floorball.TeamManager;
+using Application.Features.Floorball.TeamManagers.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Floorball.TeamManager;
+namespace Application.Features.Floorball.TeamManagers.Validators;
 
 /// <summary>
 /// Validator for UpdateFloorballTeamManagerCommand

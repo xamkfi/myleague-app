@@ -1,4 +1,4 @@
-using Application.Commands.NewsArticles;
+using Application.Features.Common.News.Commands;
 using Application.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
@@ -8,7 +8,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Handlers.NewsArticles;
+namespace Application.Features.Common.News.Handlers;
 
 /// <summary>
 /// Handler for adding a tag to a news article

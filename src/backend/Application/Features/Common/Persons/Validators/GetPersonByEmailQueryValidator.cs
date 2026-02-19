@@ -1,7 +1,7 @@
-using Application.Queries.Persons;
+using Application.Features.Common.Persons.Queries;
 using FluentValidation;
 
-namespace Application.Validators.Queries.Person
+namespace Application.Features.Common.Persons.Validators
 {
     /// <summary>
     /// Validator for GetPersonByEmailQuery

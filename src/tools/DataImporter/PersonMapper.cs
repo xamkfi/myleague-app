@@ -1,4 +1,5 @@
-using Application.DTOs.Common;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Shared.DTOs;
 using DataImporter.Models;
 using WebAPI.Models.Common;
 

@@ -1,6 +1,17 @@
-using Application.Commands.Clubs;
-using Application.DTOs.Common;
-using Application.Mappings.Common;
+using Application.Features.Common.Clubs.Commands;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
+using Application.Features.Common.Users.Mappings;
+using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Clubs.Mappings;
+using Application.Features.Common.Divisions.Mappings;
+using Application.Features.Common.News.Mappings;
 using Application.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
@@ -10,7 +21,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Handlers.Clubs;
+namespace Application.Features.Common.Clubs.Handlers;
 
 /// <summary>
 /// Handler for creating a new club

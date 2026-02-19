@@ -1,6 +1,6 @@
 using Domain.Enums.Floorball;
 
-namespace Application.DTOs.Floorball;
+namespace Application.Features.Floorball.Teams.DTOs;
 
 /// <summary>
 /// DTO for floorball team season statistics

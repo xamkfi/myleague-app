@@ -1,11 +1,11 @@
 using System;
-using Application.Commands.Users;
+using Application.Features.Common.Users.Commands;
 using Application.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Users
+namespace Application.Features.Common.Users.Handlers
 {
     /// <summary>
     /// Handler for deleting a user

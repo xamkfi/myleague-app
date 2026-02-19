@@ -1,4 +1,4 @@
-using Application.Commands.Floorball.Team;
+using Application.Features.Floorball.Teams.Commands;
 using Application.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
 
-namespace Application.Handlers.Floorball.Teams;
+namespace Application.Features.Floorball.Teams.Handlers;
 
 /// <summary>
 /// Handler for deleting a floorball team

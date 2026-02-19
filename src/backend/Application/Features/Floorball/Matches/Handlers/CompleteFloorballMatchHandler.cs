@@ -2,12 +2,25 @@ using System;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Application.Commands.Floorball.Match;
+using Application.Features.Floorball.Matches.Commands;
 using Application.Common;
+using Application.Features.Common.MatchTimer.Services;
 using Application.Constants;
-using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
 using Application.Interfaces.Common;
-using Application.Mappings.Floorball;
+using Application.Features.Floorball.Seasons.Mappings;
+using Application.Features.Floorball.Matches.Mappings;
+using Application.Features.Floorball.Teams.Mappings;
+using Application.Features.Floorball.Players.Mappings;
+using Application.Features.Floorball.Referees.Mappings;
+using Application.Features.Floorball.TeamManagers.Mappings;
+using Application.Features.Floorball.Statistics.Mappings;
 using Application.Services.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
@@ -15,7 +28,7 @@ using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Handlers.Floorball.Matches;
+namespace Application.Features.Floorball.Matches.Handlers;
 
 /// <summary>
 /// Handler for completing a floorball match

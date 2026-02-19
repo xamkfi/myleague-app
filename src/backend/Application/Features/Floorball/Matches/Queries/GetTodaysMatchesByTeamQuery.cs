@@ -1,9 +1,15 @@
 using Application.Common;
-using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
 using Domain.Common;
 using MediatR;
 
-namespace Application.Queries.Floorball.Match;
+namespace Application.Features.Floorball.Matches.Queries;
 
 /// <summary>
 /// Query to get today's matches by team

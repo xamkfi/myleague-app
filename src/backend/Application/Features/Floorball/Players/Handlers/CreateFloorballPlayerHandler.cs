@@ -1,7 +1,23 @@
-using Application.Commands.Floorball.Player;
-using Application.DTOs.Floorball;
-using Application.Mappings.Floorball;
-using Application.Mappings.Common;
+using Application.Features.Floorball.Players.Commands;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
+using Application.Features.Floorball.Seasons.Mappings;
+using Application.Features.Floorball.Matches.Mappings;
+using Application.Features.Floorball.Teams.Mappings;
+using Application.Features.Floorball.Players.Mappings;
+using Application.Features.Floorball.Referees.Mappings;
+using Application.Features.Floorball.TeamManagers.Mappings;
+using Application.Features.Floorball.Statistics.Mappings;
+using Application.Features.Common.Users.Mappings;
+using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Clubs.Mappings;
+using Application.Features.Common.Divisions.Mappings;
+using Application.Features.Common.News.Mappings;
 using Application.Common;
 using Domain.Entities.Floorball;
 using Domain.Entities.Common;
@@ -13,7 +29,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Handlers.Floorball.Players;
+namespace Application.Features.Floorball.Players.Handlers;
 
 /// <summary>
 /// Handler for creating a new floorball player

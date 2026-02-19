@@ -1,7 +1,7 @@
-using Application.Commands.Floorball.Referee;
+using Application.Features.Floorball.Referees.Commands;
 using FluentValidation;
 
-namespace Application.Validators.Commands.Floorball.Referee;
+namespace Application.Features.Floorball.Referees.Validators;
 
 /// <summary>
 /// Validator for DeleteFloorballRefereeCommand

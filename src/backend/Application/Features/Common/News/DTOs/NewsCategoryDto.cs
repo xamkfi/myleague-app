@@ -1,4 +1,4 @@
-namespace Application.DTOs.Common;
+namespace Application.Features.Common.News.DTOs;
 
 /// <summary>
 /// Data Transfer Object for News Category enumeration with display information

@@ -1,7 +1,7 @@
-using Application.Queries.Floorball.Match;
+using Application.Features.Floorball.Matches.Queries;
 using FluentValidation;
 
-namespace Application.Validators.Queries.Floorball.Match;
+namespace Application.Features.Floorball.Matches.Validators;
 
 /// <summary>
 /// Validator for GetFloorballMatchesBySeasonQuery

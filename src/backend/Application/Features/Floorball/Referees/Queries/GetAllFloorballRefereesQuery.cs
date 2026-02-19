@@ -1,10 +1,16 @@
 using System;
 using Application.Common;
 using Domain.Common;
-using Application.DTOs.Floorball;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
 using MediatR;
 
-namespace Application.Queries.Floorball.Referee
+namespace Application.Features.Floorball.Referees.Queries
 {
     /// <summary>
     /// Query for retrieving floorball referees with pagination and filtering support

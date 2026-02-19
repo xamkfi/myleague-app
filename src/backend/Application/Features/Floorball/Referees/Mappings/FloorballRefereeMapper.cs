@@ -1,12 +1,22 @@
-using Application.Commands.Floorball.Referee;
-using Application.DTOs.Floorball;
-using Application.Mappings.Common;
+using Application.Features.Floorball.Referees.Commands;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Floorball.TeamManagers.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
+using Application.Features.Common.Users.Mappings;
+using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Clubs.Mappings;
+using Application.Features.Common.Divisions.Mappings;
+using Application.Features.Common.News.Mappings;
 using Domain.Entities.Floorball;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Application.Mappings.Floorball;
+namespace Application.Features.Floorball.Referees.Mappings;
 
 /// <summary>
 /// Mapper for FloorballReferee entity

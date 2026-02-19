@@ -1,4 +1,6 @@
-using Application.Commands.Common;
+using Application.Features.Common.Divisions.Commands;
+using Application.Features.Common.MatchTimer.Commands;
+using Application.Features.Common.Images.Commands;
 using Application.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
@@ -8,7 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Handlers.Common;
+namespace Application.Features.Common.Divisions.Handlers;
 
 /// <summary>
 /// Handler for deleting a division
