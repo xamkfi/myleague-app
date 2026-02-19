@@ -6,15 +6,16 @@ This is the **Application Layer** of the league management system, implementing 
 
 ## 🏗️ Architecture
 
-The Application layer follows **Clean Architecture** and **CQRS** principles:
+The Application layer follows **Clean Architecture**, **CQRS**, and **vertical slices (feature-based)** structure:
 
-- **Commands** - Handle write operations and business state changes
-- **Queries** - Handle read operations and data retrieval
-- **Handlers** - Process commands and queries with business logic
-- **Validators** - Ensure input data integrity using FluentValidation
-- **DTOs** - Data transfer objects for external communication
-- **Behaviors** - Cross-cutting concerns via MediatR pipeline behaviors
-- **Result Pattern** - Consistent error handling and response structure
+- **Features** – Each feature (Auth, Common/Clubs, Floorball/Teams, etc.) is a vertical slice containing Commands, Queries, Handlers, DTOs, Mappings, and Validators for that capability.
+- **Commands** – Write operations and business state changes (per feature).
+- **Queries** – Read operations and data retrieval (per feature).
+- **Handlers** – Process commands and queries with business logic.
+- **Validators** – Input validation using FluentValidation (per request type).
+- **DTOs** – Data transfer objects; feature-specific under `Features/`, shared under `Features/Common/Shared`.
+- **Behaviors** – Cross-cutting concerns via MediatR pipeline (validation, logging).
+- **Result Pattern** – Consistent error handling and response structure (`Result<T>`, `PagedResult<T>`).
 
 ## 🚀 Technology Stack
 
@@ -26,57 +27,62 @@ The Application layer follows **Clean Architecture** and **CQRS** principles:
 
 ## 📁 Project Structure
 
+The Application layer is organized by **features**: each feature is self-contained with its own Commands, Queries, Handlers, DTOs, Mappings, and Validators. Shared and cross-cutting pieces live at the project root.
+
 ```
 Application/
-├── Commands/                # Write operations (CQRS Commands)
-│   ├── Auth/               # Authentication commands
-│   │   ├── RequestLoginCodeCommand.cs
-│   │   ├── VerifyLoginCodeCommand.cs
-│   │   ├── RefreshTokenCommand.cs
-│   │   └── RevokeTokenCommand.cs
-│   ├── Users/              # User management commands
-│   ├── Person/             # Person-related commands
-│   ├── Clubs/              # Club-related commands
-│   └── [Sport]/            # Sport-specific commands
-├── Queries/                # Read operations (CQRS Queries)
-│   ├── Users/              # User-related queries
-│   ├── Clubs/              # Club-related queries
-│   └── [Sport]/            # Sport-specific queries
-├── Handlers/               # Command and Query handlers
-│   ├── Auth/               # Authentication handlers
-│   │   ├── RequestLoginCodeHandler.cs
-│   │   ├── VerifyLoginCodeHandler.cs
-│   │   ├── RefreshTokenHandler.cs
-│   │   └── RevokeTokenHandler.cs
-│   ├── Users/              # User command/query handlers
-│   ├── Clubs/              # Club command/query handlers
-│   └── [Sport]/            # Sport-specific handlers
-├── DTOs/                   # Data Transfer Objects
-│   ├── Auth/               # Auth DTOs (AuthTokenDto)
-│   ├── Common/             # Shared DTOs (UserDto, PersonDto)
-│   └── [Domain]/           # Domain-specific DTOs
-├── Interfaces/             # Service abstractions
-│   └── Auth/               # Auth service interfaces
-│       ├── IEmailService.cs
-│       └── IJwtTokenService.cs
-├── Configuration/          # Configuration classes
+├── Features/                           # Feature-based CQRS (primary structure)
+│   ├── Auth/                          # Passwordless auth (login code, JWT, refresh/revoke)
+│   │   ├── Commands/
+│   │   ├── DTOs/
+│   │   ├── Handlers/
+│   │   └── Validators/
+│   ├── Common/                        # Cross-domain features
+│   │   ├── Clubs/                     # Club CRUD and queries
+│   │   ├── Divisions/                 # Division CRUD and queries
+│   │   ├── Images/                    # Image deletion
+│   │   ├── MatchTimer/                # Match timer (start, stop, reset, elapsed)
+│   │   ├── News/                      # News articles and categories
+│   │   ├── Persons/                   # Person CRUD and search
+│   │   ├── Search/                    # Global search
+│   │   ├── Shared/                    # Shared DTOs (e.g. PagedResult)
+│   │   └── Users/                     # User CRUD and lookup
+│   └── Floorball/                     # Floorball sport domain
+│       ├── Constants/
+│       ├── Matches/                   # Matches, periods, start/complete
+│       ├── Players/                   # Floorball players
+│       ├── Referees/                  # Referee CRUD
+│       ├── Seasons/                   # Season mappings
+│       ├── Statistics/                # Match/season statistics
+│       ├── TeamManagers/              # Team manager CRUD
+│       └── Teams/                     # Teams, rosters, divisions
+│
+├── Behaviors/                         # MediatR pipeline (validation, logging)
+├── Common/                            # Shared application logic
+│   └── Result.cs                      # Result pattern
+├── Configuration/                     # App configuration classes
 │   ├── JwtConfiguration.cs
 │   ├── LoginCodeConfiguration.cs
 │   ├── AzureCommunicationServicesConfiguration.cs
 │   └── SeedConfiguration.cs
-├── Validators/             # FluentValidation validators
-│   ├── Auth/               # Auth command validators
-│   ├── Commands/           # Command validation rules
-│   └── Queries/            # Query validation rules
-├── Behaviors/              # MediatR pipeline behaviors
-│   └── ValidationBehaviors.cs  # Validation pipeline
-├── Mappings/               # Object mapping configurations
-├── Common/                 # Shared application logic
-│   └── Result.cs           # Result pattern implementation
-├── DependencyInjections/   # Service registration
-│   └── DependencyInjection.cs
-└── Application.csproj      # Project configuration
+├── DependencyInjections/              # Service registration
+├── Interfaces/                        # Service abstractions (e.g. Auth)
+│   └── Auth/
+│       ├── IEmailService.cs
+│       └── IJwtTokenService.cs
+└── Application.csproj
 ```
+
+**Per-feature layout** (e.g. `Features/Common/Clubs`, `Features/Floorball/Teams`):
+
+- **Commands/** – Write operations (`IRequest<Result<T>>`)
+- **Queries/** – Read operations (`IRequest<Result<T>>` or `IRequest<PagedResult<T>>`)
+- **Handlers/** – Command and query handlers
+- **DTOs/** – Data transfer objects for the feature
+- **Mappings/** – Entity ↔ DTO mapping (where used)
+- **Validators/** – FluentValidation validators for commands/queries
+
+Not every feature has every folder (e.g. Auth has no Queries; Search may have only Queries + Handler).
 
 ## 🎯 Core Components
 
@@ -353,7 +359,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 ## 🛡️ Security & Authentication
 
 ### Passwordless Authentication Commands
-The application layer defines the full authentication flow as CQRS commands:
+The authentication flow lives under **`Features/Auth/`** and is implemented as CQRS commands:
 
 | Command | Description |
 |---------|-------------|
@@ -413,12 +419,12 @@ The application layer defines the full authentication flow as CQRS commands:
 
 When contributing to the Application layer:
 
-1. Follow CQRS principles strictly
-2. Implement comprehensive validation rules
-3. Use the Result pattern consistently
-4. Write thorough unit tests
-5. Document all public APIs
-6. Consider performance implications
+1. **Use the feature structure** – Add or extend code under `Features/<Area>/<FeatureName>/` (Commands, Queries, Handlers, DTOs, Mappings, Validators as needed). Shared DTOs go in `Features/Common/Shared/DTOs`.
+2. Follow CQRS principles strictly within each feature.
+3. Implement comprehensive validation rules (FluentValidation per command/query).
+4. Use the Result pattern consistently (`Result<T>`, `PagedResult<T>`).
+5. Write thorough unit tests for handlers and validators.
+6. Document public APIs and consider performance implications.
 
 ## 📄 License
 
