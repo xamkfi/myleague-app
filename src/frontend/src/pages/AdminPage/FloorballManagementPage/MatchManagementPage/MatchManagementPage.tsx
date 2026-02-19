@@ -219,6 +219,10 @@ const MatchManagementPage = () => {
     navigate(`/admin/floorball/matches/${match.id}/edit`);
   };
 
+  const handleOpenMatch = (match: FloorballMatchDto) => {
+    navigate(`/admin/floorball/matches/manage/${match.id}`);
+  };
+
   const handleStartMatch = (match: FloorballMatchDto) => {
     navigate(`/admin/floorball/matches/manage/${match.id}`);
   };
@@ -345,6 +349,7 @@ const MatchManagementPage = () => {
             loading={tableLoading && matches.length === 0}
             onLiveMatch={handleLiveMatch}
             onEditMatch={handleEditMatch}
+            onOpenMatch={handleOpenMatch}
             onStartMatch={handleStartMatch}
             onCancelMatch={handleCancelMatch}
             onReactivateMatch={handleReactivateMatch}

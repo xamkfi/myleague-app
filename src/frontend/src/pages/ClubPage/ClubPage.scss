@@ -9,464 +9,508 @@
   position: relative;
   padding-bottom: map.get($spacing, 'lg');
 
-  // Hero Image Background
-  .hero-image-container {
+  // States (loading, error, not-found)
+  &__state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: $color-blue-medium;
-    background-blend-mode: multiply;
-    background-size: cover;
-    background-repeat: no-repeat;
+    text-align: center;
+    min-height: 300px;
+    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+    background: $color-white;
+    border-radius: map.get($border-radius, 'lg-plus');
+    box-shadow: $box-shadow-drop-1;
+    margin: map.get($spacing, 'lg') map.get($spacing, 'base');
+    color: $color-neutral-dark-grey;
+    gap: map.get($spacing, 'sm');
+
+    h2 {
+      color: $color-text-primary;
+      margin: 0;
+    }
+
+    p {
+      font-size: map.get($font-sizes, 'base');
+      line-height: $line-height-relaxed;
+      margin: 0;
+    }
+  }
+
+  &__back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    color: $color-blue-secondary;
+    text-decoration: none;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: map.get($font-sizes, 'sm');
+    margin-top: map.get($spacing, 'sm');
+    @include transition(color);
+
+    &:hover {
+      color: $color-blue-secondary-muted;
+    }
+  }
+
+  // Hero Section
+  &__hero {
     position: relative;
     left: 50%;
     transform: translateX(-50%);
     width: 100vw;
-    min-height: 1rem;
-    margin-bottom: map.get($spacing, 'lg');
+    background-color: $color-blue-medium;
+    background-blend-mode: multiply;
     overflow: hidden;
+    margin-bottom: map.get($spacing, 'lg');
+  }
 
-    .hero-image {
-      z-index: -1;
-      background-color: $color-blue-deep;
-      position: absolute;
-      top: 0;
-      left: 0;
+  &__hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba($color-blue-background, 0) 0%,
+      rgba($color-blue-deep, 0.8) 75%,
+      rgba($color-blue-darkest, 0.8) 100%
+    );
+    backdrop-filter: blur(4px);
+    z-index: 0;
+  }
+
+  &__hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: $max-width-page;
+    margin: 0 auto;
+    padding: map.get($spacing, 'md') map.get($spacing, 'md') map.get($spacing, 'lg');
+  }
+
+  &__breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    color: rgba($color-white, 0.7);
+    text-decoration: none;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+    margin-bottom: map.get($spacing, 'md');
+    @include transition(color);
+
+    &:hover {
+      color: $color-white;
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-end;
+    gap: map.get($spacing, 'lg');
+  }
+
+  &__logo {
+    flex-shrink: 0;
+    width: 160px;
+    height: 160px;
+
+    img {
       width: 100%;
       height: 100%;
-      background: linear-gradient(
-        180deg,
-        rgba($color-blue-background, 0) 0%,
-        rgba($color-blue-deep, 0.8) 75%,
-        rgba($color-blue-darkest, 0.8) 100%
-      ) center center;
-      backdrop-filter: blur(4px);
-      background-size: cover;
-    }
+      object-fit: contain;
+      border-radius: map.get($border-radius, 'lg-plus');
+      border: 2px solid rgba($color-white, 0.3);
+      background: rgba($color-white, 0.9);
+      padding: map.get($spacing, 'xs');
+      box-shadow: $box-shadow-drop-1;
+      @include transition(transform);
 
-    // Club Header inside hero container
-    .club-header {
-      display: flex;
-      z-index: 1;
-      margin: map.get($spacing, 'base') 0 0 0;
-      padding: 0;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      border: none !important;
-      max-width: $max-width-page;
-      width: 100%;
-
-      .header-content {
-        padding: map.get($spacing, 'md');
-        display: flex;
-        width: 100%;
-        color: $color-white;
-        justify-content: flex-start;
-        align-items: flex-end;
-        gap: map.get($spacing, 'lg');
-      }
-
-      .club-branding {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: map.get($spacing, 'base');
-        min-width: 192px;
-        min-height: 192px;
-
-        .club-logo {
-          flex-shrink: 0;
-          min-width: 192px;
-          min-height: 192px;
-
-          img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            border-radius: map.get($border-radius, 'lg-plus');
-            border: 2px solid rgba($color-white, 0.3);
-            background: rgba($color-white, 0.9);
-            padding: map.get($spacing, 'xs');
-            @include transition(transform);
-            box-shadow: $box-shadow-drop-1;
-
-            &:hover {
-              transform: scale(1.05);
-            }
-          }
-
-          .logo-placeholder {
-            width: 100%;
-            height: 100%;
-            background: rgba($color-white, 0.9);
-            border-radius: map.get($border-radius, 'lg-plus');
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: $color-blue-deep;
-            font-size: map.get($font-sizes, 'xxl');
-            text-align: center;
-            padding: map.get($spacing, 'xs');
-            font-weight: map.get($font-weights, 'bold');
-            border: 2px solid rgba($color-white, 0.3);
-            backdrop-filter: blur(10px);
-            box-shadow: $box-shadow-drop-1;
-          }
-        }
-      }
-
-      .club-info {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: map.get($spacing, 'base');
-        flex: 1;
-
-        .club-title {
-          font-size: map.get($font-sizes, 'xl');
-          font-weight: map.get($font-weights, 'bold');
-          margin: 0;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .club-details {
-          display: flex;
-          gap: map.get($spacing, 'md');
-          flex-wrap: wrap;
-
-          .detail-item {
-            display: flex;
-            align-items: center;
-            gap: map.get($spacing, 'xs');
-            font-size: map.get($font-sizes, 'base');
-            opacity: 0.9;
-
-            .detail-icon {
-              font-size: map.get($font-sizes, 'md');
-            }
-
-            a {
-              color: $color-white;
-              text-decoration: none;
-              @include transition(opacity);
-
-              &:hover {
-                opacity: 0.8;
-                text-decoration: underline;
-              }
-            }
-          }
-        }
+      &:hover {
+        transform: scale(1.05);
       }
     }
   }
 
-  // Teams Section
-  .club-content {
+  &__logo-placeholder {
+    width: 100%;
+    height: 100%;
+    background: rgba($color-white, 0.9);
+    border-radius: map.get($border-radius, 'lg-plus');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, 'xxl');
+    font-weight: map.get($font-weights, 'bold');
+    font-family: $font-family-display;
+    border: 2px solid rgba($color-white, 0.3);
+    box-shadow: $box-shadow-drop-1;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'sm');
+    flex: 1;
+    padding-bottom: map.get($spacing, 'xs');
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, 'xl');
+    font-weight: map.get($font-weights, 'bold');
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    line-height: 1.2;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'sm');
+  }
+
+  &__meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'sm');
+    color: rgba($color-white, 0.85);
+    background: rgba($color-white, 0.1);
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'xl');
+    border: 1px solid rgba($color-white, 0.15);
+    white-space: nowrap;
+
+    svg {
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+
+    &--link {
+      text-decoration: none;
+      color: rgba($color-white, 0.85);
+      @include transition(all);
+
+      &:hover {
+        background: rgba($color-white, 0.2);
+        border-color: rgba($color-white, 0.3);
+        color: $color-white;
+      }
+
+      .external-icon {
+        opacity: 0.5;
+        margin-left: map.get($spacing, 'xxs');
+      }
+    }
+  }
+
+  // Content Section
+  &__content {
     background: $color-white;
     border-radius: map.get($border-radius, 'lg-plus');
     padding: map.get($spacing, 'lg');
     box-shadow: $box-shadow-drop-1;
     margin: 0 map.get($spacing, 'base');
     color: $color-text-primary;
+  }
 
-    .section-title {
-      font-size: map.get($font-sizes, 'lg');
-      font-weight: map.get($font-weights, 'bold');
-      color: $color-text-primary;
-      margin: 0 0 map.get($spacing, 'md') 0;
-      padding-bottom: map.get($spacing, 'sm');
-      border-bottom: 2px solid $color-neutral-light-grey;
-    }
+  &__section-title {
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    margin: 0 0 map.get($spacing, 'md') 0;
+    padding-bottom: map.get($spacing, 'sm');
+    border-bottom: 2px solid $color-neutral-light-grey;
+  }
 
-    .teams-loading,
-    .no-teams {
-      text-align: center;
-      padding: map.get($spacing, 'lg') map.get($spacing, 'base');
-      color: $color-neutral-dark-grey;
+  &__teams-loading {
+    display: flex;
+    justify-content: center;
+    padding: map.get($spacing, 'lg') map.get($spacing, 'base');
+  }
 
-      p {
-        margin: 0;
-        font-size: map.get($font-sizes, 'base');
-        line-height: $line-height-relaxed;
-      }
-    }
+  &__no-teams {
+    text-align: center;
+    padding: map.get($spacing, 'lg') map.get($spacing, 'base');
 
-    .no-teams p {
+    p {
+      margin: 0;
       padding: map.get($spacing, 'md');
       background: $color-neutral-light-grey;
       border-radius: map.get($border-radius, 'lg');
       border: 2px dashed $color-neutral-medium-grey;
-    }
-
-    .teams-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: map.get($spacing, 'md');
-    }
-
-    .team-card {
-      background: $color-white;
-      border-radius: map.get($border-radius, 'lg');
-      padding: map.get($spacing, 'md');
-      box-shadow: $box-shadow-drop-1;
-      @include transition(all);
-      cursor: pointer;
-      border: 1px solid $color-neutral-light-grey;
-
-      &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        border-color: $color-blue-light;
-      }
-
-      .team-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: map.get($spacing, 'sm');
-        padding-bottom: map.get($spacing, 'sm');
-        border-bottom: 1px solid $color-neutral-light-grey;
-
-        h4 {
-          margin: 0;
-          color: $color-blue-deep;
-          font-size: map.get($font-sizes, 'md');
-          font-weight: map.get($font-weights, 'bold');
-          line-height: 1.3;
-          flex: 1;
-          padding-right: map.get($spacing, 'sm');
-        }
-
-        .jersey-colors {
-          display: flex;
-          gap: map.get($spacing, 'xs');
-          flex-shrink: 0;
-
-          .color-primary,
-          .color-secondary {
-            width: 24px;
-            height: 24px;
-            border-radius: map.get($border-radius, 'full');
-            border: 2px solid $color-neutral-medium-grey;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            @include transition(transform);
-
-            &:hover {
-              transform: scale(1.15);
-            }
-          }
-        }
-      }
-
-      .team-card-body {
-        .team-info {
-          margin-bottom: map.get($spacing, 'sm');
-
-          .division {
-            display: inline-flex;
-            align-items: center;
-            background: $color-blue-deep;
-            color: $color-white;
-            padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
-            border-radius: map.get($border-radius, 'xl');
-            font-size: map.get($font-sizes, 'sm-xs');
-            font-weight: map.get($font-weights, 'semibold');
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-          }
-        }
-
-        .home-arena {
-          margin-bottom: map.get($spacing, 'sm');
-          padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
-          background: $color-neutral-light-grey;
-          border-radius: map.get($border-radius, 'sm');
-          border-left: 3px solid $color-green-primary;
-
-          small {
-            color: $color-neutral-dark-grey;
-            font-size: map.get($font-sizes, 'sm');
-            font-weight: map.get($font-weights, 'medium');
-            display: flex;
-            align-items: center;
-            gap: map.get($spacing, 'xxs');
-          }
-        }
-
-        .team-status {
-          .active {
-            color: $color-green-muted;
-            font-weight: map.get($font-weights, 'semibold');
-            font-size: map.get($font-sizes, 'sm-xs');
-            display: flex;
-            align-items: center;
-            gap: map.get($spacing, 'xxs');
-          }
-
-          .inactive {
-            color: $color-yellow-muted;
-            font-weight: map.get($font-weights, 'semibold');
-            font-size: map.get($font-sizes, 'sm-xs');
-            display: flex;
-            align-items: center;
-            gap: map.get($spacing, 'xxs');
-          }
-        }
-      }
-    }
-  }
-
-  // Loading and Error States
-  .loading-state,
-  .error-state,
-  .not-found-state {
-    text-align: center;
-    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
-    color: $color-neutral-dark-grey;
-
-    h2 {
-      color: $color-text-primary;
-      margin-bottom: map.get($spacing, 'base');
-    }
-
-    p {
+      color: $color-neutral-dark-grey;
       font-size: map.get($font-sizes, 'base');
       line-height: $line-height-relaxed;
     }
   }
+
+  &__teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: map.get($spacing, 'md');
+  }
 }
 
-// Responsive Design - Tablet (768px)
-@media (max-width: map.get($breakpoints, 'tablet')) {
-  .club-page {
-    .hero-image-container {
-      .club-header {
-        .header-content {
-          flex-direction: column;
-          padding: map.get($spacing, 'base');
-          gap: map.get($spacing, 'base');
-          align-items: center;
-        }
+// Team Card
+.team-card {
+  background: $color-white;
+  border-radius: map.get($border-radius, 'lg');
+  padding: map.get($spacing, 'md');
+  box-shadow: $box-shadow-drop-1;
+  cursor: pointer;
+  border: 1px solid $color-neutral-light-grey;
+  display: flex;
+  flex-direction: column;
+  @include transition(all);
 
-        .club-branding {
-          align-self: center;
-          min-width: 120px;
-          min-height: 120px;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border-color: $color-blue-light;
+  }
 
-          .club-logo {
-            min-width: 120px;
-            min-height: 120px;
+  &:focus-visible {
+    outline: 2px solid $color-blue-secondary;
+    outline-offset: 2px;
+  }
 
-            img {
-              width: 120px;
-              height: 120px;
-              border-radius: map.get($border-radius, 'lg');
-            }
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: map.get($spacing, 'sm');
+    padding-bottom: map.get($spacing, 'sm');
+    border-bottom: 1px solid $color-neutral-light-grey;
+  }
 
-            .logo-placeholder {
-              width: 120px;
-              height: 120px;
-              font-size: map.get($font-sizes, 'lg');
-              border-radius: map.get($border-radius, 'lg');
-            }
-          }
-        }
+  &__name {
+    margin: 0;
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    line-height: 1.3;
+    flex: 1;
+    padding-right: map.get($spacing, 'sm');
+  }
 
-        .club-info {
-          align-items: center;
-          text-align: center;
+  &__colors {
+    display: flex;
+    gap: map.get($spacing, 'xxs');
+    flex-shrink: 0;
+  }
 
-          .club-title {
-            font-size: map.get($font-sizes, 'lg');
-          }
+  &__color {
+    width: 24px;
+    height: 24px;
+    border-radius: map.get($border-radius, 'full');
+    border: 2px solid $color-neutral-medium-grey;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    @include transition(transform);
 
-          .club-details {
-            justify-content: center;
-            gap: map.get($spacing, 'sm');
-          }
-        }
+    &:hover {
+      transform: scale(1.15);
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'sm');
+    flex: 1;
+  }
+
+  &__division {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    background: $color-blue-deep;
+    color: $color-white;
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'xl');
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'semibold');
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  &__arena {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    background: $color-neutral-light-grey;
+    border-radius: map.get($border-radius, 'sm');
+    border-left: 3px solid $color-green-primary;
+    color: $color-neutral-dark-grey;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+
+    svg {
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+  }
+
+  &__status {
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'semibold');
+
+    &--active {
+      color: $color-green-muted;
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, 'xs');
+
+      .team-card__status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: map.get($border-radius, 'full');
+        background: $color-green-primary;
+        flex-shrink: 0;
       }
     }
 
-    .club-content {
+    &--inactive {
+      color: $color-yellow-muted;
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, 'xs');
+
+      .team-card__status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: map.get($border-radius, 'full');
+        background: $color-yellow-primary;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  &__footer {
+    margin-top: map.get($spacing, 'sm');
+    padding-top: map.get($spacing, 'sm');
+    border-top: 1px solid $color-neutral-light-grey;
+  }
+
+  &__view-link {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    color: $color-blue-secondary;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+
+    svg {
+      @include transition(transform);
+    }
+  }
+
+  &:hover &__view-link svg {
+    transform: translateX(2px);
+  }
+}
+
+// Responsive - Tablet
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .club-page {
+    &__hero-inner {
+      padding: map.get($spacing, 'base');
+    }
+
+    &__header {
+      flex-direction: column;
+      align-items: center;
+      gap: map.get($spacing, 'base');
+    }
+
+    &__logo {
+      width: 120px;
+      height: 120px;
+
+      img {
+        border-radius: map.get($border-radius, 'lg');
+      }
+    }
+
+    &__logo-placeholder {
+      font-size: map.get($font-sizes, 'lg');
+      border-radius: map.get($border-radius, 'lg');
+    }
+
+    &__info {
+      align-items: center;
+      text-align: center;
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'lg');
+    }
+
+    &__meta {
+      justify-content: center;
+    }
+
+    &__content {
       margin: 0 map.get($spacing, 'xs');
       padding: map.get($spacing, 'base');
+    }
 
-      .teams-grid {
-        grid-template-columns: 1fr;
-        gap: map.get($spacing, 'base');
-      }
+    &__teams-grid {
+      grid-template-columns: 1fr;
+      gap: map.get($spacing, 'base');
     }
   }
 }
 
-// Responsive Design - Mobile (480px)
+// Responsive - Mobile
 @media (max-width: map.get($breakpoints, 'mobile')) {
   .club-page {
-    .hero-image-container {
-      .club-header {
-        .header-content {
-          padding: map.get($spacing, 'xs');
-          gap: map.get($spacing, 'sm');
-        }
-
-        .club-branding {
-          min-width: 100px;
-          min-height: 100px;
-
-          .club-logo {
-            min-width: 100px;
-            min-height: 100px;
-
-            img {
-              width: 100px;
-              height: 100px;
-            }
-
-            .logo-placeholder {
-              width: 100px;
-              height: 100px;
-              font-size: map.get($font-sizes, 'md');
-            }
-          }
-        }
-
-        .club-info {
-          .club-title {
-            font-size: map.get($font-sizes, 'md');
-          }
-
-          .club-details {
-            flex-direction: column;
-            align-items: center;
-            gap: map.get($spacing, 'xs');
-
-            .detail-item {
-              font-size: map.get($font-sizes, 'sm');
-            }
-          }
-        }
-      }
+    &__hero-inner {
+      padding: map.get($spacing, 'sm');
     }
 
-    .club-content {
+    &__header {
+      gap: map.get($spacing, 'sm');
+    }
+
+    &__logo {
+      width: 100px;
+      height: 100px;
+    }
+
+    &__logo-placeholder {
+      font-size: map.get($font-sizes, 'md');
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'md');
+    }
+
+    &__meta {
+      flex-direction: column;
+      align-items: center;
+      gap: map.get($spacing, 'xs');
+    }
+
+    &__meta-item {
+      font-size: map.get($font-sizes, 'sm-xs');
+    }
+
+    &__content {
       padding: map.get($spacing, 'sm');
       margin: 0 map.get($spacing, 'xxs');
+    }
 
-      .team-card {
-        padding: map.get($spacing, 'base');
+    .team-card {
+      padding: map.get($spacing, 'base');
 
-        .team-card-header {
-          flex-direction: column;
-          gap: map.get($spacing, 'xs');
+      &__header {
+        flex-direction: column;
+        gap: map.get($spacing, 'xs');
+      }
 
-          h4 {
-            padding-right: 0;
-          }
-        }
+      &__name {
+        padding-right: 0;
       }
     }
   }

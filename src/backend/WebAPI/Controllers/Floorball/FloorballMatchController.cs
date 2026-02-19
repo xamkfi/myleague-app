@@ -406,7 +406,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Recording goal for match ID: {matchId}", request.MatchId);
 
             string rateKey = $"{request.MatchId}:goal:{request.ScoringTeamId}:{request.ScoringPlayerId}";
-            if (IsRateLimited(rateKey, TimeSpan.FromSeconds(1)))
+            if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(50)))
             {
                 return StatusCode(StatusCodes.Status429TooManyRequests,
                     ApiResponse<FloorballMatchDto>.ErrorResponse("Too many goal events; please wait a moment."));
@@ -454,7 +454,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Recording penalty for match ID: {matchId}", request.MatchId);
 
             string rateKey = $"{request.MatchId}:penalty:{request.TeamId}:{request.PlayerId}";
-            if (IsRateLimited(rateKey, TimeSpan.FromSeconds(1)))
+            if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(50)))
             {
                 return StatusCode(StatusCodes.Status429TooManyRequests,
                     ApiResponse<FloorballMatchDto>.ErrorResponse("Too many penalty events; please wait a moment."));

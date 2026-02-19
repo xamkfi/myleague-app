@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.Commands.Clubs;
+using Application.Commands.Common;
 using Application.Queries.Clubs;
 using Application.DTOs.Common;
 using Application.Common;
@@ -122,6 +123,68 @@ public class ClubsController : ControllerBase
         List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
 
         return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage, errorList));
+    }
+
+    /// <summary>
+    /// Upload a club logo image and get its URL
+    /// </summary>
+    /// <param name="file">The image file to upload</param>
+    /// <returns>The URL of the uploaded image</returns>
+    [HttpPost("upload-image")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<string>>> UploadImage([FromForm] IFormFile file)
+    {
+        _logger.LogInformation("Uploading club logo: {FileName}", file?.FileName);
+
+        if (file == null || file.Length == 0)
+        {
+            _logger.LogWarning("Club logo upload failed: No file provided");
+            return BadRequest(ApiResponse<string>.ErrorResponse("No file provided"));
+        }
+
+        string[] allowedContentTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
+        if (!allowedContentTypes.Contains(file.ContentType.ToLower()))
+        {
+            _logger.LogWarning("Club logo upload failed: Invalid file type {ContentType}", file.ContentType);
+            return BadRequest(ApiResponse<string>.ErrorResponse($"Invalid file type. Allowed types: {string.Join(", ", allowedContentTypes)}"));
+        }
+
+        const long maxFileSize = 10 * 1024 * 1024; // 10MB
+        if (file.Length > maxFileSize)
+        {
+            _logger.LogWarning("Club logo upload failed: File too large {FileSize} bytes", file.Length);
+            return BadRequest(ApiResponse<string>.ErrorResponse($"File too large. Maximum size is {maxFileSize / (1024 * 1024)}MB"));
+        }
+
+        try
+        {
+            using Stream stream = file.OpenReadStream();
+
+            UploadImageCommand command = new UploadImageCommand(
+                stream,
+                file.FileName,
+                file.ContentType);
+
+            Result<Uri> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                _logger.LogInformation("Club logo uploaded successfully: {ImageUrl}", result.Data);
+                return Ok(ApiResponse<string>.SuccessResponse(result.Data.ToString(), "Image uploaded successfully"));
+            }
+
+            string errorMessage = result.Error ?? result.GetErrorsString();
+            _logger.LogError("Club logo upload failed: {Error}", errorMessage);
+            return StatusCode(500, ApiResponse<string>.ErrorResponse(errorMessage));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during club logo upload");
+            return StatusCode(500, ApiResponse<string>.ErrorResponse("An unexpected error occurred during image upload"));
+        }
     }
 
     /// <summary>

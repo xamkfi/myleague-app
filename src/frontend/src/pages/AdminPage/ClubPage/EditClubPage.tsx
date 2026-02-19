@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AdminPageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
@@ -6,13 +6,15 @@ import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import ClubForm from './ClubForm';
 import { clubService, type Club, type ClubRequest } from '../../../api/common/clubService';
 
-function toDmyFromIso(iso: string): string {
+function toDateInputValue(iso: string | null | undefined): string {
+  if (!iso) return '';
   const dt = new Date(iso);
   if (Number.isNaN(dt.getTime())) return '';
-  const dd = String(dt.getUTCDate()).padStart(2, '0');
-  const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
   const yyyy = dt.getUTCFullYear();
-  return `${dd}-${mm}-${yyyy}`;
+  if (yyyy <= 1) return '';
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(dt.getUTCDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 function EditClubPage() {
@@ -40,17 +42,21 @@ function EditClubPage() {
     load();
   }, [id]);
 
-  const initialValues: ClubRequest | undefined = club
-    ? {
-        name: club.name,
-        city: club.city,
-        country: club.country,
-        foundingDate: toDmyFromIso(club.foundingDate),
-        websiteUrl: club.websiteUrl,
-        logoUrl: club.logoUrl,
-        contactEmail: club.contactEmail
-      }
-    : undefined;
+  const initialValues = useMemo<ClubRequest | undefined>(
+    () =>
+      club
+        ? {
+            name: club.name ?? '',
+            city: club.city ?? '',
+            country: club.country ?? '',
+            foundingDate: toDateInputValue(club.foundingDate),
+            websiteUrl: club.websiteUrl ?? '',
+            logoUrl: club.logoUrl ?? '',
+            contactEmail: club.contactEmail ?? '',
+          }
+        : undefined,
+    [club]
+  );
 
   const handleSubmit = async (payload: ClubRequest) => {
     if (!id) return;
@@ -96,5 +102,3 @@ function EditClubPage() {
 }
 
 export default EditClubPage;
-
-

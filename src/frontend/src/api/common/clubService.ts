@@ -5,12 +5,12 @@ import { authFetch } from '../utils/authFetch';
 export interface Club {
   id: string;
   name: string;
-  foundingDate: string;
-  city: string;
-  country: string;
-  websiteUrl: string;
-  logoUrl: string;
-  contactEmail: string;
+  foundingDate: string | null;
+  city: string | null;
+  country: string | null;
+  websiteUrl: string | null;
+  logoUrl: string | null;
+  contactEmail: string | null;
 }
 
 export interface ClubRequest {
@@ -23,11 +23,25 @@ export interface ClubRequest {
   contactEmail?: string | null;
 }
 
-// Note: API response shapes may vary (ApiResponse or ProblemDetails). We parse dynamically.
-// TODO: Standardize all API services (news, matches, seasons, floorball, persons, etc.)
-//       to route errors through parseErrorResponse and surface them via ErrorPopup.
-//       Contract: thrown Error.message should be a JSON string of the form
-//       {"title": string, "errors": string[]} so the UI can render consistent messages.
+// Normalize raw API club object to Club type (handles both camelCase and PascalCase from API).
+function normalizeClub(raw: Record<string, unknown>): Club {
+  const str = (key: string) => {
+    const v = raw[key] ?? raw[key.charAt(0).toUpperCase() + key.slice(1)];
+    return v != null && typeof v === 'string' ? v : null;
+  };
+  return {
+    id: String(raw.id ?? raw.Id ?? ''),
+    name: String(raw.name ?? raw.Name ?? ''),
+    foundingDate: str('foundingDate'),
+    city: str('city'),
+    country: str('country'),
+    websiteUrl: str('websiteUrl'),
+    logoUrl: str('logoUrl'),
+    contactEmail: str('contactEmail'),
+  };
+}
+
+// Errors are parsed via parseErrorResponse; ErrorPopup can show { title, errors } when message is JSON.
 
 export const clubService = {
   getAll: async (): Promise<Club[]> => {
@@ -108,7 +122,8 @@ export const clubService = {
       const errorMessage = await parseErrorResponse(data, 'Failed to fetch club');
       throw new Error(errorMessage || 'Failed to fetch club');
     }
-    return data.data;
+    const raw = data.data as Record<string, unknown>;
+    return raw && typeof raw === 'object' ? normalizeClub(raw) : (data.data as Club);
   },
 
   create: async (payload: ClubRequest): Promise<Club> => {
@@ -168,6 +183,34 @@ export const clubService = {
       throw new Error(errorMessage || 'Failed to search clubs');
     }
     return data.data || [];
+  },
+
+  /** Upload a club logo image; returns the URL of the uploaded image in storage. */
+  uploadLogo: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await authFetch(`${VITE_API_URL}/Clubs/upload-image`, {
+      method: 'POST',
+      body: formData,
+    });
+    let data: unknown;
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(data, 'Image upload failed');
+      throw new Error(errorMessage || 'Image upload failed');
+    }
+    if (!data || typeof data !== 'object' || !('success' in data) || !(data as { success: boolean }).success) {
+      throw new Error('Invalid response from image upload');
+    }
+    const payload = data as { data?: string };
+    if (typeof payload?.data !== 'string') {
+      throw new Error('Invalid response from image upload');
+    }
+    return payload.data;
   }
 };
 

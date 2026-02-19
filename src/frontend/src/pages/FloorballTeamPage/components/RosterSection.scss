@@ -117,7 +117,36 @@
    min-width: 0;
    overflow: hidden;
    text-overflow: ellipsis;
-   
+}
+
+// Easter egg: system creator highlight
+.roster-player--creator {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.08) 0%, transparent 100%);
+
+  .roster-player-name {
+    background: linear-gradient(135deg, $color-blue-deep, #b8860b, $color-blue-deep);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: creator-shimmer 4s ease-in-out infinite;
+  }
+
+  &:hover .roster-player-name {
+    animation-duration: 1.5s;
+  }
+}
+
+.creator-badge {
+  -webkit-text-fill-color: #b8860b;
+  font-size: map.get($font-sizes, "sm-xs");
+  margin-left: map.get($spacing, "xxs");
+  filter: drop-shadow(0 0 2px rgba(184, 134, 11, 0.5));
+}
+
+@keyframes creator-shimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
 }
 
 .roster-age{

@@ -335,11 +335,13 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Adds a team to a floorball season
+        /// Adds a team to a floorball season without assigning it to a division.
+        /// Use POST {seasonId}/divisions/{divisionId}/teams/{teamId} instead to also assign the team to a division.
         /// </summary>
         /// <param name="seasonId">Season ID</param>
         /// <param name="teamId">Team ID</param>
         /// <returns>Updated season details</returns>
+        [Obsolete("Use AddTeamToSeasonDivision instead to assign teams to a specific division within the season.")]
         [HttpPost("{seasonId:guid}/teams/{teamId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]

@@ -1,5 +1,6 @@
 import { API_URL } from '../../constants/config';
 import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import type {
   CreateDivisionInput,
   DivisionType,
@@ -27,8 +28,7 @@ const parseApiResponse = async <T>(
   }
 
   if (!response.ok || !payload.success) {
-    const errorMessage =
-      payload.errors?.join(', ') || payload.message || defaultMessage;
+    const errorMessage = await parseErrorResponse(payload, defaultMessage);
     throw new Error(errorMessage);
   }
 

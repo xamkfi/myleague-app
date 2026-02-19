@@ -94,15 +94,15 @@ function ClubsManagementPage() {
       const dir = sortDir === 'asc' ? 1 : -1;
       switch (sortKey) {
         case 'name':
-          return a.name.localeCompare(b.name) * dir;
+          return (a.name ?? '').localeCompare(b.name ?? '') * dir;
         case 'city':
-          return a.city.localeCompare(b.city) * dir;
+          return (a.city ?? '').localeCompare(b.city ?? '') * dir;
         case 'country':
-          return a.country.localeCompare(b.country) * dir;
+          return (a.country ?? '').localeCompare(b.country ?? '') * dir;
         case 'foundingDate': {
-          const da = new Date(a.foundingDate).getTime();
-          const db = new Date(b.foundingDate).getTime();
-          return (da - db) * (sortDir === 'asc' ? 1 : -1);
+          const da = a.foundingDate ? new Date(a.foundingDate).getTime() : 0;
+          const db = b.foundingDate ? new Date(b.foundingDate).getTime() : 0;
+          return (da - db) * dir;
         }
       }
     };
@@ -118,8 +118,10 @@ function ClubsManagementPage() {
     }
   };
 
-  const formatDmy = (iso: string) => {
+  const formatDmy = (iso: string | null | undefined) => {
+    if (!iso) return '-';
     const dt = new Date(iso);
+    if (Number.isNaN(dt.getTime()) || dt.getUTCFullYear() <= 1) return '-';
     const dd = String(dt.getUTCDate()).padStart(2, '0');
     const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
     const yyyy = dt.getUTCFullYear();
@@ -248,8 +250,8 @@ function ClubsManagementPage() {
                     <input type="checkbox" checked={selectedIds.has(club.id)} onChange={() => handleToggleSelect(club.id)} />
                   </td>
                   <td className="admin-table__name">{club.name}</td>
-                  <td>{club.city}</td>
-                  <td>{club.country}</td>
+                  <td>{club.city || '-'}</td>
+                  <td>{club.country || '-'}</td>
                   <td>{formatDmy(club.foundingDate)}</td>
                   <td className="admin-table__actions-col" onClick={(e) => e.stopPropagation()}>
                     <ActionsDropdown

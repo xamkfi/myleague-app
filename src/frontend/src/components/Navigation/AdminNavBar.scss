@@ -2,10 +2,14 @@
 @use '@variables' as *;
 @use '../../styles/common' as *;
 
+$sidebar-width: 250px;
+$sidebar-collapsed-width: 68px;
+$sidebar-transition: width 0.25s ease, padding 0.25s ease;
+
 .admin-navbar {
   display: flex;
   flex-direction: column;
-  width: 250px;
+  width: $sidebar-width;
   min-height: 100vh;
   background-color: $color-blue-darkest;
   color: $color-white;
@@ -14,10 +18,62 @@
   top: 0;
   bottom: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  transition: $sidebar-transition;
+  z-index: 100;
+
+  &--collapsed {
+    width: $sidebar-collapsed-width;
+
+    .admin-navbar-header {
+      padding: map.get($spacing, 'lg') map.get($spacing, 'xs');
+
+      &-row {
+        flex-direction: column;
+        gap: map.get($spacing, 'sm');
+      }
+    }
+
+    .admin-navbar-brand {
+      text-align: center;
+
+      h1 {
+        font-size: 1.6rem;
+        letter-spacing: 0;
+      }
+    }
+
+    .admin-navbar-section {
+      &:not(:last-child)::after {
+        margin-left: map.get($spacing, 'sm');
+        margin-right: map.get($spacing, 'sm');
+      }
+    }
+
+    .admin-navbar-item {
+      margin: 0 map.get($spacing, 'xs');
+
+      a {
+        justify-content: center;
+        padding: 0.6rem map.get($spacing, 'xs');
+      }
+    }
+
+    .admin-navbar-footer {
+      padding: map.get($spacing, 'sm');
+    }
+  }
 
   &-header {
     padding: map.get($spacing, 'lg') map.get($spacing, 'lg');
     border-bottom: none;
+    transition: padding 0.25s ease;
+
+    &-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
   }
 
   &-brand {
@@ -29,6 +85,7 @@
       margin: 0;
       color: $color-white;
       letter-spacing: 0.1em;
+      transition: font-size 0.25s ease, letter-spacing 0.25s ease;
     }
   }
 
@@ -37,6 +94,37 @@
     font-weight: map.get($font-weights, 'normal');
     margin: 2px 0 0 0;
     color: rgba(255, 255, 255, 0.95);
+  }
+
+  &-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: $color-white;
+    }
+
+    &-icon {
+      font-size: 1.1rem;
+      line-height: 1;
+      transition: transform 0.25s ease;
+
+      &--collapsed {
+        transform: rotate(180deg);
+      }
+    }
   }
 
   &-content {
@@ -53,6 +141,7 @@
       height: 1px;
       background-color: rgba(255, 255, 255, 0.2);
       margin: map.get($spacing, 'base') map.get($spacing, 'lg') 0;
+      transition: margin 0.25s ease;
     }
     
     &-title {
@@ -75,6 +164,7 @@
   &-item {
     margin: 0 map.get($spacing, 'sm');
     border-radius: 8px;
+    transition: margin 0.25s ease;
 
     a {
       display: flex;
@@ -86,10 +176,13 @@
       transition: all 0.2s ease;
       border-radius: 8px;
       font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
       
       .icon {
         width: 20px;
         height: 20px;
+        min-width: 20px;
         filter: brightness(0) invert(1);
         opacity: 0.9;
         display: flex;
@@ -148,10 +241,13 @@
       transition: all 0.2s ease;
       border-radius: 8px 0 0 8px;
       font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
 
       .icon {
         width: 20px;
         height: 20px;
+        min-width: 20px;
         filter: brightness(0) invert(1);
         opacity: 0.9;
       }
@@ -202,10 +298,13 @@
         transition: all 0.2s ease;
         border-radius: 8px;
         font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
         
         .icon {
           width: 18px;
           height: 18px;
+          min-width: 18px;
           filter: brightness(0) invert(1);
           opacity: 0.8;
         }
@@ -238,6 +337,7 @@
     padding: map.get($spacing, 'base');
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     margin-top: auto;
+    transition: padding 0.25s ease;
   }
 
   &-user {
@@ -254,10 +354,31 @@
       background-color: rgba(255, 255, 255, 0.12);
     }
 
+    &-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.15);
+      color: $color-white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      font-weight: map.get($font-weights, 'semibold');
+      cursor: pointer;
+      margin: 0 auto;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+      }
+    }
+
     &-info {
       display: flex;
       flex-direction: column;
       gap: 3px;
+      overflow: hidden;
     }
 
     &-name {
@@ -265,17 +386,24 @@
       font-weight: map.get($font-weights, 'semibold');
       color: $color-white;
       letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     &-role {
       font-size: 0.8rem;
       color: rgba(255, 255, 255, 0.75);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     &-dropdown-icon {
       font-size: 0.7rem;
       color: rgba(255, 255, 255, 0.75);
       transition: transform 0.2s ease;
+      flex-shrink: 0;
     }
 
     &.open {
@@ -302,6 +430,7 @@
         cursor: pointer;
         text-align: left;
         transition: background-color 0.2s ease;
+        white-space: nowrap;
 
         &:hover {
           background-color: rgba(255, 255, 255, 0.1);
@@ -328,4 +457,3 @@
     }
   }
 }
-
