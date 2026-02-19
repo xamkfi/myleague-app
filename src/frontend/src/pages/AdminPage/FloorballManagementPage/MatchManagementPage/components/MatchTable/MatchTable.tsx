@@ -11,6 +11,7 @@ interface MatchTableProps {
   loading: boolean;
   onLiveMatch: (match: FloorballMatchDto) => void;
   onEditMatch: (match: FloorballMatchDto) => void;
+  onOpenMatch: (match: FloorballMatchDto) => void;
   onStartMatch: (match: FloorballMatchDto) => void;
   onCancelMatch: (match: FloorballMatchDto) => void;
   onReactivateMatch: (match: FloorballMatchDto) => void;
@@ -21,6 +22,7 @@ const MatchTable = ({
   loading,
   onLiveMatch,
   onEditMatch,
+  onOpenMatch,
   onStartMatch,
   onCancelMatch,
   onReactivateMatch,
@@ -40,6 +42,12 @@ const MatchTable = ({
 
   const getActions = (match: FloorballMatchDto) => {
     const actions: { label: string; onClick: () => void; variant?: 'default' | 'danger' | 'status'; disabled: boolean }[] = [];
+
+    actions.push({
+      label: t('floorball.matches.actions.open', 'Open Match'),
+      onClick: () => onOpenMatch(match),
+      disabled: false,
+    });
 
     if (match.status === 'InProgress') {
       actions.push({

@@ -50,9 +50,11 @@ export default function RosterSection({ team }: RosterSectionProps) {
               </div>
               {roster
                 .filter(player => player.position === pos)
-                .map((player) =>
+                .map((player) => {
+                  const isCreator = player.playerName === 'Tuomas Reijonen';
+                  return (
                   <div
-                    className="table roster-player"
+                    className={`table roster-player${isCreator ? ' roster-player--creator' : ''}`}
                     onClick={() => navigateToPlayerPage(player.playerId)}
                     key={player.playerId}
                   >
@@ -62,7 +64,9 @@ export default function RosterSection({ team }: RosterSectionProps) {
                     </div>
                     
                     <div className="roster-player-name">
-                      {player.playerName}
+                      {isCreator ? (
+                        <><span className="creator-badge" title="System Creator">💪</span> {player.playerName} <span className="creator-badge" title="System Creator">💪</span></>
+                      ) : player.playerName}
                     </div>
                     
                     <div className="roster-age">
@@ -82,7 +86,8 @@ export default function RosterSection({ team }: RosterSectionProps) {
                     </div>
                     
                   </div>
-                )}
+                  );
+                })}
             </div>
           </div>
         </div>

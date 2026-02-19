@@ -198,17 +198,28 @@ const FloorballTeamPlayerUserPage = () => {
         <div className="player-container">
           <div className="player-info-layout">
             <div className="player-info-box">
-              <div className="player-avatar-large">
-                {player.careerStats[0]?.stats.teamLogo && (
+              <div className={`player-avatar-large${player.playerName === 'Tuomas Reijonen' ? ' player-avatar--creator' : ''}`}>
+                {player.playerName === 'Tuomas Reijonen' ? (
+                  <img
+                    className="creator-avatar-img"
+                    src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExanpjZzBqNm1xYnp1d3Y5c2V5OWxoeTg2ZjV5dHpldHQ4anI0dDd5MSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/sPE5g5cHJ3dNm/giphy.gif"
+                    alt="Creator avatar"
+                  />
+                ) : player.careerStats[0]?.stats.teamLogo ? (
                   <img
                     className="team-logo-img"
                     src={player.careerStats[0].stats.teamLogo}
                     alt={player.teamName}
                   />
-                )}
+                ) : null}
               </div>
               <div className="player-details">
-                <div className="player-name">{player.playerName}</div>
+                <div className={`player-name${player.playerName === 'Tuomas Reijonen' ? ' player-name--creator' : ''}`}>
+                  {player.playerName}
+                  {player.playerName === 'Tuomas Reijonen' && (
+                    <span className="creator-title" title="System Creator">Macho King</span>
+                  )}
+                </div>
                 <div className="player-details-row">
                   <span className="player-team">{player.teamName !== 'Ei joukkuetta' ? player.teamName : 'Joukkuetieto ei saatavilla'}</span>
                   <span className="player-position">{getPositionText(player.position)}</span>

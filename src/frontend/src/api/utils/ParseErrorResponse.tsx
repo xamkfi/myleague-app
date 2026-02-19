@@ -1,17 +1,14 @@
 /**
- * Helper function to parse error responses properly
+ * Parses a response body (object or string) into a string suitable for ErrorPopup:
+ * either JSON { title, errors } or a plain message.
  */
-export async function parseErrorResponse(
-  response: unknown,
-  defaultMessage: string
-): Promise<string> {
+function parseErrorBody(body: unknown, defaultMessage: string): string {
   try {
-    // If we already have a string, just return it
-    if (typeof response === 'string') {
-      return response;
+    if (typeof body === 'string') {
+      return body;
     }
 
-    const obj = response as Record<string, unknown> | null | undefined;
+    const obj = body as Record<string, unknown> | null | undefined;
 
     if (obj && typeof obj === 'object') {
       const getString = (o: Record<string, unknown>, key: string): string | undefined => {
@@ -21,14 +18,12 @@ export async function parseErrorResponse(
 
       // ASP.NET Core ProblemDetails/ValidationProblemDetails
       if ('errors' in obj && obj.errors && typeof obj.errors === 'object') {
-        // errors can be: Record<string, string[]> or string[]
         const rawErrors = obj.errors as unknown;
         let aggregated: unknown[] = [];
 
         if (Array.isArray(rawErrors)) {
           aggregated = rawErrors as unknown[];
         } else {
-          // Flatten Record<string, string[]>
           aggregated = Object.values(rawErrors as Record<string, unknown[]>)
             .reduce<unknown[]>((acc, val) => acc.concat(val || []), []);
         }
@@ -49,12 +44,27 @@ export async function parseErrorResponse(
         return JSON.stringify(payload);
       }
 
-      // Fallback to raw object
       return JSON.stringify(obj);
     }
   } catch (readError) {
     console.error('Error parsing error response:', readError);
   }
 
-  return `${defaultMessage}`;
+  return defaultMessage;
+}
+
+/**
+ * Parses error responses for use with ErrorPopup.
+ * Accepts either a fetch Response (reads body once) or already-parsed body (object/string).
+ * Returns a string: JSON { title, errors } or a plain message.
+ */
+export async function parseErrorResponse(
+  responseOrBody: Response | unknown,
+  defaultMessage: string
+): Promise<string> {
+  if (responseOrBody instanceof Response) {
+    const body = await responseOrBody.json().catch(() => responseOrBody.text());
+    return parseErrorBody(body, defaultMessage);
+  }
+  return parseErrorBody(responseOrBody, defaultMessage);
 }

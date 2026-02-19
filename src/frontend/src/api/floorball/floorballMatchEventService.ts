@@ -3,6 +3,7 @@ import type {
   FloorballMatchDto
 } from '../../types/floorball/floorballTypes';
 import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 
 // Event DTOs
@@ -110,19 +111,17 @@ export interface FloorballSaveEventDto {
 /**
  * Helper function to handle API responses consistently
  */
-const handleApiResponse = async <T>(response: Response): Promise<ApiResponse<T>> => {
+const handleApiResponse = async <T>(response: Response, defaultMessage = 'API request failed'): Promise<ApiResponse<T>> => {
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error('API Error Response:', errorText);
-    throw new Error(`HTTP ${response.status}: ${errorText || 'API request failed'}`);
+    throw new Error(await parseErrorResponse(response, defaultMessage));
   }
-  
+
   const apiResponse: ApiResponse<T> = await response.json();
-  
+
   if (!apiResponse.success) {
-    throw new Error(apiResponse.errors?.join(', ') || 'API request failed');
+    throw new Error(await parseErrorResponse(apiResponse, defaultMessage));
   }
-  
+
   return apiResponse;
 };
 

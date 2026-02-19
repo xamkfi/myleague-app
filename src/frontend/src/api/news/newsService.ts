@@ -1,5 +1,6 @@
 import { API_URL } from '../../constants/config';
 import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 
 export interface NewsArticleDto {
   id: string;
@@ -58,9 +59,7 @@ export async function newsService(params?: Partial<NewsParameters>): Promise<Pag
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.log("Upload error response:", errorText);
-      throw new Error("Failed to fetch news.");
+      throw new Error(await parseErrorResponse(response, 'Failed to fetch news.'));
     }
 
     // The backend returns the data directly, not wrapped in ApiResponse
@@ -83,9 +82,7 @@ export async function archiveNewsService(id: string) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.log("Archive error response:", errorText);
-      throw new Error("Failed to archive news article.");
+      throw new Error(await parseErrorResponse(response, 'Failed to archive news article.'));
     }
 
     // The backend returns the data directly, not wrapped in ApiResponse
@@ -108,9 +105,7 @@ export async function restoreNewsService(id: string) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.log("Restore error response:", errorText);
-      throw new Error("Failed to restore news article.");
+      throw new Error(await parseErrorResponse(response, 'Failed to restore news article.'));
     }
 
     // The backend returns the data directly, not wrapped in ApiResponse
@@ -133,9 +128,7 @@ export async function deleteNewsService(id: string) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.log("Delete error response:", errorText);
-      throw new Error("Failed to delete news article.");
+      throw new Error(await parseErrorResponse(response, 'Failed to delete news article.'));
     }
 
     // The backend returns a boolean wrapped in ApiResponse

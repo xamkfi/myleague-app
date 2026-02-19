@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImporter", "src\tools\D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FloorballPlayerImporter", "src\tools\FloorballPlayerImporter\FloorballPlayerImporter.csproj", "{436FEA9C-BD67-476F-AFA1-918F470112DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MahlImporter", "src\tools\MahlImporter\MahlImporter.csproj", "{79231F03-5AAF-4CC8-9963-E7EE70E494C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -183,6 +185,18 @@ Global
 		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Release|x64.Build.0 = Release|Any CPU
 		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Release|x86.ActiveCfg = Release|Any CPU
 		{436FEA9C-BD67-476F-AFA1-918F470112DA}.Release|x86.Build.0 = Release|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Debug|x64.Build.0 = Debug|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Debug|x86.Build.0 = Debug|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Release|x64.ActiveCfg = Release|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Release|x64.Build.0 = Release|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Release|x86.ActiveCfg = Release|Any CPU
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -204,6 +218,7 @@ Global
 		{ACB1727F-F53F-4FC3-B1AA-B8389C04E2B2} = {DCB6FCB8-FF92-AC57-0842-1F72A354D6B1}
 		{09E576DB-86E2-1F75-3B95-4E297291CB06} = {DCB6FCB8-FF92-AC57-0842-1F72A354D6B1}
 		{436FEA9C-BD67-476F-AFA1-918F470112DA} = {DCB6FCB8-FF92-AC57-0842-1F72A354D6B1}
+		{79231F03-5AAF-4CC8-9963-E7EE70E494C6} = {DCB6FCB8-FF92-AC57-0842-1F72A354D6B1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9D660FA3-5546-4139-9D40-5ADC755D63C4}

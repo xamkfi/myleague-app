@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
-import type { ClubRequest } from '../../../api/common/clubService';
+import { clubService, type ClubRequest } from '../../../api/common/clubService';
 import './ClubForm.scss';
 import ConfirmationDialog from '../FloorballManagementPage/ManageMatchPage/components/ConfirmationDialog';
-
 
 interface ClubFormProps {
   initialValues?: ClubRequest;
@@ -17,6 +16,7 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
   const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [values, setValues] = useState<ClubRequest>({
     name: '',
     city: '',
@@ -29,6 +29,8 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
   });
   const [error, setError] = useState<string | null>(null);
 
+  // Sync from initialValues when parent passes new data (e.g. club loaded or changed).
+  // EditClubPage memoizes initialValues by [club] so this does not overwrite in-form edits.
   useEffect(() => {
     if (initialValues) {
       setValues((prev) => ({ ...prev, ...initialValues }));
@@ -37,6 +39,35 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
 
   const handleChange = (field: keyof ClubRequest, val: string) => {
     setValues((prev) => ({ ...prev, [field]: val }));
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError(t('clubs.form.errorInvalidImage'));
+      return;
+    }
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setError(t('clubs.form.errorImageTooLarge'));
+      return;
+    }
+    setError(null);
+    try {
+      setUploadingLogo(true);
+      const url = await clubService.uploadLogo(file);
+      handleChange('logoUrl', url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const removeLogo = () => {
+    handleChange('logoUrl', '');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,13 +144,81 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
             placeholder="https://example.com"
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="club-logo">{t('clubs.form.logoUrl', 'Logo URL')}</label>
+        <div className="form-group club-form__logo-group">
+          <label className="club-form__logo-label" id="club-logo-label">
+            {t('clubs.form.logoUrl')}
+          </label>
+          {values.logoUrl?.trim() ? (
+            <div className="club-form__logo-preview" aria-labelledby="club-logo-label">
+              <div className="club-form__logo-preview-inner">
+                <img
+                  key={values.logoUrl}
+                  src={values.logoUrl}
+                  alt={t('clubs.form.logoPreviewAlt')}
+                  className="club-form__logo-img"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+                <div className="club-form__logo-preview-actions">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="club-form__logo-file-input"
+                    id="club-logo-replace"
+                    disabled={uploadingLogo}
+                    aria-label={t('clubs.form.replaceLogo')}
+                  />
+                  <label htmlFor="club-logo-replace" className="btn btn-secondary club-form__logo-btn">
+                    {uploadingLogo ? t('common.loading') : t('clubs.form.replaceLogo')}
+                  </label>
+                  <button
+                    type="button"
+                    className="btn btn-danger club-form__logo-btn"
+                    onClick={removeLogo}
+                    title={t('clubs.form.removeLogo')}
+                  >
+                    {t('clubs.form.removeLogo')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              className={`club-form__logo-dropzone ${uploadingLogo ? 'club-form__logo-dropzone--uploading' : ''}`}
+              aria-labelledby="club-logo-label"
+            >
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="club-form__logo-file-input"
+                id="club-logo-upload"
+                disabled={uploadingLogo}
+                aria-label={t('clubs.form.uploadLogo')}
+              />
+              <label htmlFor="club-logo-upload" className="club-form__logo-dropzone-label">
+                <span className="club-form__logo-dropzone-text">
+                  {uploadingLogo ? t('clubs.form.uploadingLogo') : t('clubs.form.clickToUploadLogo')}
+                </span>
+                <span className="club-form__logo-dropzone-hint">
+                  PNG, JPG, GIF, WebP — {t('clubs.form.upTo')} 5MB
+                </span>
+              </label>
+            </div>
+          )}
+          <label htmlFor="club-logo-url" className="club-form__logo-url-label">
+            {t('clubs.form.orPasteUrl')}
+          </label>
           <input
-            id="club-logo"
-            value={values.logoUrl || ''}
+            id="club-logo-url"
+            type="url"
+            value={values.logoUrl ?? ''}
             onChange={(e) => handleChange('logoUrl', e.target.value)}
-            placeholder="https://example.com/logo.png"
+            placeholder={t('clubs.form.logoUrlPlaceholder')}
+            className="club-form__logo-url-input"
           />
         </div>
         <div className="form-group">
@@ -135,7 +234,8 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
       <div className="form-actions">
         <div className="left-actions">
           {onDelete && (
-            <button type="button" className="btn btn-danger" onClick={() => setConfirmOpen(true)}> Delete Club
+            <button type="button" className="btn btn-danger" onClick={() => setConfirmOpen(true)}>
+              {t('clubs.deleteClubButton')}
             </button>
           )}
         </div>
@@ -173,5 +273,3 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
 }
 
 export default ClubForm;
-
-
