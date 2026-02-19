@@ -106,6 +106,7 @@
     "noLiveMatches": "Ei käynnissä olevia otteluita",
     "noUpcomingMatches": "Ei tulevia otteluita",
     "noCompletedMatches": "Ei päättyneitä otteluita",
+    "allMatches": "Kaikki ottelut",
     "loading": "Ladataan...",
     "error": "Otteluiden lataus epäonnistui"
   },
