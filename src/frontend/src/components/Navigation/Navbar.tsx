@@ -96,9 +96,9 @@ function Navbar() {
         <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
       </button>
       
-      {/* Desktop search bar */}
+      {/* Desktop search bar - single instance to avoid duplicate Clubs API calls */}
       <div className="navbar-search desktop-only">
-        <SearchBar />
+        {!isMobile && <SearchBar />}
       </div>
       
       {/* Desktop menu */}
@@ -169,9 +169,9 @@ function Navbar() {
       {/* Mobile menu overlay */}
       <div className={`navbar-mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="mobile-menu-content">
-          {/* Mobile search bar */}
+          {/* Mobile search bar - same component instance as desktop (only one SearchBar mounts) */}
           <div className="mobile-search">
-            <SearchBar />
+            {isMobile && <SearchBar />}
           </div>
           
           {/* Mobile menu items */}
