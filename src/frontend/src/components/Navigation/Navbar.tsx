@@ -108,6 +108,9 @@ function Navbar() {
             <Link to="/uutiset">{t('nav.news')}</Link>
           </li>
           <li className="navbar-item">
+            <Link to="/tapahtumakalenteri">{t('nav.eventCalendar')}</Link>
+          </li>
+          <li className="navbar-item">
             <Link to="/saannot">{t('nav.rules')}</Link>
           </li>
           <li className="navbar-item dropdown">
@@ -175,6 +178,9 @@ function Navbar() {
           <ul className="mobile-navbar-items">
             <li className="mobile-navbar-item">
               <Link to="/uutiset" onClick={closeMobileMenu}>{t('nav.news')}</Link>
+            </li>
+            <li className="mobile-navbar-item">
+              <Link to="/tapahtumakalenteri" onClick={closeMobileMenu}>{t('nav.eventCalendar')}</Link>
             </li>
             <li className="mobile-navbar-item">
               <Link to="/saannot" onClick={closeMobileMenu}>{t('nav.rules')}</Link>

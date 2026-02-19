@@ -1,0 +1,169 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.mini-calendar {
+  background: $color-neutral-white;
+  border-radius: map.get($border-radius, 'lg');
+  box-shadow: $box-shadow-drop-1;
+  padding: map.get($spacing, 'md');
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  &__nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: transparent;
+    color: $color-text-primary;
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'md');
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background $transition-default, border-color $transition-default;
+
+    &:hover {
+      background: $color-neutral-light-grey;
+      border-color: $color-blue-medium;
+      color: $color-blue-medium;
+    }
+  }
+
+  &__month-title {
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    text-transform: capitalize;
+  }
+
+  &__weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: map.get($spacing, 'xxs');
+  }
+
+  &__weekday {
+    text-align: center;
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-muted;
+    text-transform: uppercase;
+    padding: map.get($spacing, 'xxs') 0;
+    letter-spacing: 0.5px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  &__cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1;
+    border: none;
+    border-radius: map.get($border-radius, 'md');
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+    transition: background $transition-default;
+
+    &:hover:not(&--empty) {
+      background: $color-neutral-light-grey;
+    }
+
+    &--empty {
+      cursor: default;
+    }
+
+    &--today {
+      .mini-calendar__day-num {
+        color: $color-blue-medium;
+        font-weight: map.get($font-weights, 'bold');
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 2px;
+        border: 2px solid $color-blue-medium;
+        border-radius: map.get($border-radius, 'md');
+        pointer-events: none;
+      }
+    }
+
+    &--selected {
+      background: $color-blue-medium;
+
+      .mini-calendar__day-num {
+        color: $color-white;
+        font-weight: map.get($font-weights, 'bold');
+      }
+
+      .mini-calendar__dot {
+        background: $color-white;
+      }
+
+      &:hover {
+        background: $color-blue-deep;
+      }
+
+      &.mini-calendar__cell--today::after {
+        border-color: transparent;
+      }
+    }
+
+    &--has-events:not(&--selected) {
+      .mini-calendar__day-num {
+        font-weight: map.get($font-weights, 'semibold');
+      }
+    }
+  }
+
+  &__day-num {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-primary;
+    line-height: 1;
+  }
+
+  &__dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: $color-blue-medium;
+    margin-top: 2px;
+  }
+
+  &__today-btn {
+    display: block;
+    width: 100%;
+    margin-top: map.get($spacing, 'sm');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    background: transparent;
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'md');
+    color: $color-blue-medium;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    cursor: pointer;
+    transition: background $transition-default, border-color $transition-default;
+
+    &:hover {
+      background: $color-neutral-light-grey;
+      border-color: $color-blue-medium;
+    }
+  }
+}

@@ -1,0 +1,82 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.event-calendar-page {
+  max-width: $max-width-page;
+  margin: 0 auto;
+  padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'lg');
+
+  &__header {
+    text-align: center;
+    background: linear-gradient(135deg, $color-blue-deep 0%, $color-blue-darkest 100%);
+    border-radius: map.get($border-radius, 'lg');
+    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+    margin-bottom: map.get($spacing, 'lg');
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, 'xxl');
+    font-weight: map.get($font-weights, 'extrabold');
+    color: $color-white;
+    margin: 0;
+    font-family: $font-family-display;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  &__layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: map.get($spacing, 'lg');
+    align-items: start;
+  }
+
+  &__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'md');
+    position: sticky;
+    top: calc(#{$navbar-height} + #{map.get($spacing, 'md')});
+  }
+
+  &__content {
+    min-width: 0;
+    min-height: 300px;
+  }
+
+  &__state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: map.get($spacing, 'xl');
+    color: $color-text-muted;
+
+    &--error {
+      color: $color-red-primary;
+    }
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .event-calendar-page {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'sm') map.get($spacing, 'md');
+
+    &__header {
+      padding: map.get($spacing, 'lg') map.get($spacing, 'md');
+      margin-bottom: map.get($spacing, 'md');
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'xl');
+    }
+
+    &__layout {
+      grid-template-columns: 1fr;
+      gap: map.get($spacing, 'md');
+    }
+
+    &__sidebar {
+      position: static;
+    }
+  }
+}

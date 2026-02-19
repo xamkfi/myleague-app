@@ -73,6 +73,7 @@
   },
   "nav": {
     "news": "Uutiset",
+    "eventCalendar": "Tapahtumakalenteri",
     "rules": "Säännöt",
     "mahl": "MAHL",
     "ageGroups": "Ikäryhmät",
@@ -94,6 +95,34 @@
       "loading": "Ladataan uutisia...",
       "error": "Uutisten lataaminen epäonnistui",
       "retry": "Yritä uudelleen"
+    }
+  },
+  "eventCalendarPage": {
+    "title": "Tapahtumakalenteri",
+    "noEvents": "Ei tapahtumia",
+    "prevMonth": "Edellinen kuukausi",
+    "nextMonth": "Seuraava kuukausi",
+    "loading": "Ladataan tapahtumia...",
+    "error": "Tapahtumien lataus epäonnistui",
+    "today": "Tänään",
+    "upcoming": "Tuleva",
+    "noEventsMonth": "Ei tapahtumia tässä kuussa",
+    "noEventsDay": "Ei tapahtumia päivänä {{day}}",
+    "eventSingular": "tapahtuma",
+    "eventPlural": "tapahtumaa",
+    "status": {
+      "scheduled": "Tuleva",
+      "live": "Käynnissä",
+      "completed": "Päättynyt"
+    },
+    "filters": {
+      "showFilters": "Suodattimet",
+      "status": "Tila",
+      "season": "Kausi",
+      "allSeasons": "Kaikki kaudet",
+      "team": "Joukkue",
+      "teamPlaceholder": "Hae joukkueen nimellä...",
+      "clear": "Tyhjennä suodattimet"
     }
   },
   "sidebar": {

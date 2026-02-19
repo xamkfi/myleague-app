@@ -88,6 +88,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             string? searchQuery = null,
             CancellationToken cancellationToken = default)
         {
+            DateTime? startDateUtc = startDate.HasValue
+                ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc)
+                : null;
+            DateTime? endDateUtc = endDate.HasValue
+                ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc)
+                : null;
+
             IQueryable<FloorballMatch> query = _entities
                 .Include(m => m.Season)
                 .Include(m => m.HomeTeam)
@@ -107,14 +114,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 query = query.Where(m => m.HomeTeamId == teamId.Value || m.AwayTeamId == teamId.Value);
             }
 
-            if (startDate.HasValue)
+            if (startDateUtc.HasValue)
             {
-                query = query.Where(m => m.ScheduledDateTime >= startDate.Value);
+                query = query.Where(m => m.ScheduledDateTime >= startDateUtc.Value);
             }
 
-            if (endDate.HasValue)
+            if (endDateUtc.HasValue)
             {
-                query = query.Where(m => m.ScheduledDateTime <= endDate.Value);
+                query = query.Where(m => m.ScheduledDateTime <= endDateUtc.Value);
             }
 
             if (status.HasValue)
@@ -173,6 +180,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             FloorballMatchStatus? status = null,
             CancellationToken cancellationToken = default)
         {
+            DateTime? startDateUtc = startDate.HasValue
+                ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc)
+                : null;
+            DateTime? endDateUtc = endDate.HasValue
+                ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc)
+                : null;
+
             IQueryable<FloorballMatch> query = _entities.AsQueryable();
 
             // Apply filters
@@ -186,14 +200,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 query = query.Where(m => m.HomeTeamId == teamId.Value || m.AwayTeamId == teamId.Value);
             }
 
-            if (startDate.HasValue)
+            if (startDateUtc.HasValue)
             {
-                query = query.Where(m => m.ScheduledDateTime >= startDate.Value);
+                query = query.Where(m => m.ScheduledDateTime >= startDateUtc.Value);
             }
 
-            if (endDate.HasValue)
+            if (endDateUtc.HasValue)
             {
-                query = query.Where(m => m.ScheduledDateTime <= endDate.Value);
+                query = query.Where(m => m.ScheduledDateTime <= endDateUtc.Value);
             }
 
             if (status.HasValue)
@@ -320,11 +334,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <returns>A collection of matches scheduled in the date range</returns>
         public async Task<IEnumerable<FloorballMatch>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
+            DateTime startUtc = DateTime.SpecifyKind(startDate, DateTimeKind.Utc);
+            DateTime endUtc = DateTime.SpecifyKind(endDate, DateTimeKind.Utc);
+
             return await _entities
                 .Include(m => m.Season)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
-                .Where(m => m.ScheduledDateTime >= startDate && m.ScheduledDateTime <= endDate)
+                .Where(m => m.ScheduledDateTime >= startUtc && m.ScheduledDateTime <= endUtc)
                 .OrderBy(m => m.ScheduledDateTime)
                 .ToListAsync();
         }
