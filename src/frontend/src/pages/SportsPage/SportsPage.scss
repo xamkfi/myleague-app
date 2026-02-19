@@ -2,28 +2,60 @@
 @use '@variables' as *;
 
 .sports-page {
-  max-width: 1200px;
+  max-width: $max-width-page;
   margin: 0 auto;
-  padding: map.get($spacing, 'lg');
+  padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'lg');
 
   &__header {
     text-align: center;
+    background: linear-gradient(135deg, $color-blue-deep 0%, $color-blue-darkest 100%);
+    border-radius: map.get($border-radius, 'lg');
+    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
     margin-bottom: map.get($spacing, 'xl');
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      left: -15%;
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba($color-blue-secondary, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -40%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba($color-blue-light, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
   }
 
   &__title {
     font-size: map.get($font-sizes, 'xxl');
-    font-weight: map.get($font-weights, 'bold');
+    font-weight: map.get($font-weights, 'extrabold');
     color: $color-white;
-    margin-bottom: map.get($spacing, 'md');
+    margin-bottom: map.get($spacing, 'sm');
+    font-family: $font-family-display;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
   }
 
   &__description {
-    font-size: map.get($font-sizes, 'lg');
-    color: rgba($color-white, 0.8);
-    max-width: 800px;
+    font-size: map.get($font-sizes, 'md');
+    color: rgba($color-white, 0.75);
+    max-width: 600px;
     margin: 0 auto;
     line-height: 1.6;
+    position: relative;
   }
 
   &__grid {
@@ -40,19 +72,29 @@
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: 1px solid rgba($color-white, 0.1);
+  display: flex;
+  flex-direction: column;
 
   &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    border-color: rgba($color-blue-secondary, 0.3);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-blue-secondary;
+    outline-offset: 2px;
   }
 
   &--disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    background: linear-gradient(145deg, $color-neutral-dark-grey 0%, darken($color-neutral-dark-grey, 5%) 100%);
 
     &:hover {
       transform: none;
       box-shadow: none;
+      border-color: rgba($color-white, 0.1);
     }
   }
 
@@ -65,6 +107,9 @@
 
   &__content {
     padding: map.get($spacing, 'lg');
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   &__title {
@@ -77,9 +122,9 @@
   &__description {
     font-size: map.get($font-sizes, 'base');
     color: rgba($color-white, 0.7);
-    line-height: 1.5;
+    line-height: 1.6;
     margin-bottom: map.get($spacing, 'md');
-    min-height: 60px;
+    flex: 1;
   }
 
   &__link {
@@ -87,9 +132,9 @@
     color: $color-blue-secondary;
     font-weight: map.get($font-weights, 'semibold');
     font-size: map.get($font-sizes, 'sm');
-    transition: color 0.2s ease;
+    @include transition(color);
 
-    &:hover {
+    .sport-card:hover & {
       color: $color-blue-secondary-light;
     }
   }
@@ -105,13 +150,13 @@
   }
 }
 
-// Responsive
-@media (max-width: 768px) {
+@media (max-width: map.get($breakpoints, 'tablet')) {
   .sports-page {
     padding: map.get($spacing, 'md');
 
     &__header {
-      margin-bottom: map.get($spacing, 'xl');
+      padding: map.get($spacing, 'lg') map.get($spacing, 'md');
+      margin-bottom: map.get($spacing, 'lg');
     }
 
     &__title {
@@ -136,10 +181,6 @@
 
     &__content {
       padding: map.get($spacing, 'md');
-    }
-
-    &__description {
-      min-height: auto;
     }
   }
 }

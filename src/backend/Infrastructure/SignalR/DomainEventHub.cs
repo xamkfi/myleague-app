@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using Application.Services.Common;
+using Application.Features.Common.MatchTimer.Services;
 
 namespace MyLeague.Infrastructure.SignalR
 {

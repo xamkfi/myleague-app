@@ -16,7 +16,7 @@ using MyLeague.Infrastructure.HealthChecks;
 using Application.Interfaces.Common;
 using Application.Interfaces.Auth;
 using Application.Configuration;
-using Application.Services.Common;
+using Application.Features.Common.MatchTimer.Services;
 using MyLeague.Infrastructure.Services.ImageStorage;
 using MyLeague.Infrastructure.Services.Common;
 using MyLeague.Infrastructure.Services.Auth;

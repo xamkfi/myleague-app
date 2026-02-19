@@ -96,9 +96,9 @@ function Navbar() {
         <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
       </button>
       
-      {/* Desktop search bar */}
+      {/* Desktop search bar - single instance to avoid duplicate Clubs API calls */}
       <div className="navbar-search desktop-only">
-        <SearchBar />
+        {!isMobile && <SearchBar />}
       </div>
       
       {/* Desktop menu */}
@@ -106,6 +106,9 @@ function Navbar() {
         <ul className="navbar-items">
           <li className="navbar-item">
             <Link to="/uutiset">{t('nav.news')}</Link>
+          </li>
+          <li className="navbar-item">
+            <Link to="/tapahtumakalenteri">{t('nav.eventCalendar')}</Link>
           </li>
           <li className="navbar-item">
             <Link to="/saannot">{t('nav.rules')}</Link>
@@ -166,15 +169,18 @@ function Navbar() {
       {/* Mobile menu overlay */}
       <div className={`navbar-mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="mobile-menu-content">
-          {/* Mobile search bar */}
+          {/* Mobile search bar - same component instance as desktop (only one SearchBar mounts) */}
           <div className="mobile-search">
-            <SearchBar />
+            {isMobile && <SearchBar />}
           </div>
           
           {/* Mobile menu items */}
           <ul className="mobile-navbar-items">
             <li className="mobile-navbar-item">
               <Link to="/uutiset" onClick={closeMobileMenu}>{t('nav.news')}</Link>
+            </li>
+            <li className="mobile-navbar-item">
+              <Link to="/tapahtumakalenteri" onClick={closeMobileMenu}>{t('nav.eventCalendar')}</Link>
             </li>
             <li className="mobile-navbar-item">
               <Link to="/saannot" onClick={closeMobileMenu}>{t('nav.rules')}</Link>

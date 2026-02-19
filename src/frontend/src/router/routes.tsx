@@ -22,6 +22,7 @@ const MatchPage = lazy(() => import('../pages/MatchPage/MatchPage'));
 const LeaguePage = lazy(() => import('../pages/LeaguePage/LeaguePage'));
 const FloorballPage = lazy(() => import('../pages/FloorballPage/FloorballPage'));
 const ClubsPage = lazy(() => import('../pages/ClubsPage/ClubsPage'));
+const EventCalendarPage = lazy(() => import('../pages/EventCalendarPage/EventCalendarPage'));
 
 // Admin pages
 const LoginPage = lazy(() => import('../pages/AdminPage/LoginPage/LoginPage'));
@@ -106,6 +107,10 @@ export const routes: RouteObject[] = [
   {
     path: '/uutiset',
     element: <SuspenseWrapper><NewsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/tapahtumakalenteri',
+    element: <SuspenseWrapper><EventCalendarPage /></SuspenseWrapper>
   },
   {
     path: '/uutiset/:id',

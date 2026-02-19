@@ -140,6 +140,32 @@ export enum FloorballGameResult {
   Tie = 'Tie'
 }
 
+export interface PersonPublicDto {
+  id: string | null;
+  firstName: string;
+  lastName: string;
+  birthDate: string | null;
+  fullName: string;
+  isRegistered: boolean | null;
+}
+
+export interface FloorballPlayerPublicDto {
+  id: string;
+  personId: string;
+  person: PersonPublicDto;
+  isActive: boolean;
+  position: string;
+  careerGoals: number;
+  careerAssists: number;
+  team: { id: string; name: string } | null;
+}
+
+export interface FloorballPlayerProfileDto {
+  player: FloorballPlayerPublicDto;
+  seasonStatistics: FloorballPlayerSeasonStatisticsDto[] | null;
+  seasonStatisticsForGoalie: FloorballGoalieSeasonStatisticsDto[] | null;
+}
+
 export const floorballStatisticsService = {
   /**
    * Get team statistics for a specific season
@@ -262,6 +288,31 @@ export const floorballStatisticsService = {
       return apiResponse.data;
     } catch (error) {
       console.error('Error fetching season statistics:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get full player profile with all season statistics
+   */
+  getPlayerProfile: async (playerId: string): Promise<FloorballPlayerProfileDto> => {
+    try {
+      const response = await fetch(`${API_URL}/floorball/statistics/playerprofile/${playerId}`);
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch player profile');
+        throw new Error(errorMessage);
+      }
+
+      const apiResponse: ApiResponse<FloorballPlayerProfileDto> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch player profile'));
+      }
+
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching player profile:', error);
       throw error;
     }
   },

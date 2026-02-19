@@ -1,10 +1,10 @@
-using Application.Commands.Clubs;
-using Application.Commands.Persons;
 using Application.Common;
-using Application.DTOs.Common;
-using Application.Handlers.Common;
-using Application.Mappings.Common;
-using Application.Queries.Persons;
+using Application.Features.Common.Clubs.Commands;
+using Application.Features.Common.Persons.Commands;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Persons.Queries;
+using Application.Features.Common.Shared.DTOs;
 using Domain.Common;
 using Domain.ValueObjects.Common;
 using MediatR;

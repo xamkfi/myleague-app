@@ -1,4 +1,6 @@
-using Application.DTOs.Floorball;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
 using MahlImporter.Models;
 
 namespace MahlImporter.Import;

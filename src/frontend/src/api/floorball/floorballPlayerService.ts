@@ -50,6 +50,57 @@ export interface CreateFloorballPlayerRequest {
   personId: string;
 }
 
+export interface FloorballPlayerMatchStatsDto {
+  goals: number;
+  assists: number;
+  penaltyMinutes: number;
+  playedMinutes: number;
+}
+
+export interface FloorballPlayerMatchDto {
+  id: string;
+  seasonId: string;
+  homeTeamId: string;
+  homeTeamName: string;
+  awayTeamId: string;
+  awayTeamName: string;
+  scheduledDateTime: string;
+  venue: string | null;
+  status: string;
+  homeScore: number;
+  awayScore: number;
+  wentToOvertime: boolean;
+  wentToShootout: boolean;
+  periodScores: Record<string, { homeScore: number; awayScore: number }>;
+  playerStats: FloorballPlayerMatchStatsDto | null;
+}
+
+export interface FloorballPlayerStatsDto {
+  gamesPlayed: number;
+  goals: number;
+  assists: number;
+  points: number;
+  penaltyMinutes: number;
+}
+
+export interface FloorballPlayerTeamCareerStatsDto {
+  teamId: string;
+  teamName: string;
+  stats: FloorballPlayerStatsDto;
+}
+
+export interface FloorballPlayerWithMatchesDto {
+  id: string;
+  playerName: string;
+  position: FloorballPosition;
+  jerseyNumber: number | null;
+  teamName: string;
+  teamId: string;
+  isActive: boolean;
+  careerStats: FloorballPlayerTeamCareerStatsDto[];
+  recentMatches: FloorballPlayerMatchDto[];
+}
+
 export const floorballPlayerService = {
   /**
    * Get all floorball players with pagination and filtering
@@ -215,6 +266,32 @@ export const floorballPlayerService = {
       return apiResponse.data;
     } catch (error) {
       console.error('Error in floorballPlayerService.create:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get a floorball player's match history with performance statistics
+   */
+  getPlayerMatches: async (id: string, limit: number = 50): Promise<FloorballPlayerWithMatchesDto> => {
+    try {
+      const url = `${API_URL}/FloorballPlayer/${id}/matches?limit=${limit}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to fetch player matches'}`);
+      }
+
+      const apiResponse: ApiResponse<FloorballPlayerWithMatchesDto> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch player matches');
+      }
+
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error in floorballPlayerService.getPlayerMatches:', error);
       throw error;
     }
   },

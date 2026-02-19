@@ -1,8 +1,9 @@
 using System.Globalization;
-using Application.Commands.Floorball.Match;
 using Application.Common;
-using Application.DTOs.Floorball;
-using Application.Queries.Floorball.Match;
+using Application.Features.Floorball.Matches.Commands;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Matches.Queries;
+using Application.Features.Floorball.Teams.DTOs;
 using Domain.Common;
 using Domain.Entities.Floorball;
 using MediatR;

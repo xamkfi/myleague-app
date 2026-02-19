@@ -1,6 +1,6 @@
-using Application.Commands.Clubs;
-using Application.DTOs.Common;
-using Application.Mappings.Common;
+using Application.Features.Common.Clubs.Commands;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Clubs.Mappings;
 using Domain.Entities.Common;
 using System;
 using System.Collections.Generic;

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Application.DTOs.Common;
-using Application.Services.Common;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.MatchTimer.Services;
 using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.SignalR;
 

@@ -1,6 +1,6 @@
-using Application.Queries.NewsArticles;
+using Application.Features.Common.News.Queries;
+using Application.Features.Common.News.Validators;
 using Application.Services.Common;
-using Application.Validators.Queries.NewsArticles;
 using FluentValidation.TestHelper;
 using Moq;
 using Xunit;

@@ -1,6 +1,7 @@
 {
   "nav": {
     "news": "News",
+    "eventCalendar": "Event calendar",
     "rules": "Rules",
     "mahl": "MAHL",
     "ageGroups": "Age Groups",
@@ -24,6 +25,34 @@
       "retry": "Try again"
     }
   },
+  "eventCalendarPage": {
+    "title": "Event calendar",
+    "noEvents": "No events",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "loading": "Loading events...",
+    "error": "Failed to load events",
+    "today": "Today",
+    "upcoming": "Upcoming",
+    "noEventsMonth": "No events this month",
+    "noEventsDay": "No events on {{day}}",
+    "eventSingular": "event",
+    "eventPlural": "events",
+    "status": {
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "completed": "Completed"
+    },
+    "filters": {
+      "showFilters": "Filters",
+      "status": "Status",
+      "season": "Season",
+      "allSeasons": "All seasons",
+      "team": "Team",
+      "teamPlaceholder": "Search by team name...",
+      "clear": "Clear filters"
+    }
+  },
   "sidebar": {
     "nextMatch": "NEXT MATCH",
     "standings": "STANDINGS",
@@ -34,6 +63,7 @@
     "noLiveMatches": "No live matches",
     "noUpcomingMatches": "No upcoming matches",
     "noCompletedMatches": "No completed matches",
+    "allMatches": "All matches",
     "loading": "Loading...",
     "error": "Failed to load matches"
   },
@@ -984,6 +1014,18 @@
   "matches": {
     "loading": "Loading matches…",
     "noMatches": "No matches found."
+  },
+  "fixtures": {
+    "title": "Match Schedule",
+    "filterAll": "All",
+    "filterUpcoming": "Upcoming",
+    "filterPast": "Completed",
+    "filterNext": "Next",
+    "noMatches": "No matches to display.",
+    "statusCompleted": "Completed",
+    "statusLive": "Live",
+    "statusCancelled": "Cancelled",
+    "statusPostponed": "Postponed"
   },
   "results": {
     "title": "RESULTS",

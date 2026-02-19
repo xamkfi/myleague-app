@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Configuration;
-using Application.DTOs.Common;
-using Application.Services.Common;
+using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.MatchTimer.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,8 +95,7 @@ namespace MyLeague.Infrastructure.Services.Common
         private async Task SendPeriodicTimerUpdatesAsync()
         {
             // TODO: Re-enable periodic timer updates when needed
-            return;
-            
+#if false
             try
             {
                 _logger.LogDebug("TimerBackgroundService: Starting periodic update cycle");
@@ -159,6 +158,7 @@ namespace MyLeague.Infrastructure.Services.Common
             {
                 _logger.LogError(ex, "TimerBackgroundService: Error getting running timers for periodic updates");
             }
+#endif
         }
 
         /// <summary>

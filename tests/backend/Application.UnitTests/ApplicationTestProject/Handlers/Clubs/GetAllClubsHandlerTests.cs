@@ -1,7 +1,7 @@
 using Application.Common;
-using Application.DTOs.Common;
-using Application.Handlers.Clubs;
-using Application.Queries.Clubs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Clubs.Handlers;
+using Application.Features.Common.Clubs.Queries;
 using Application.Services.Common;
 using Domain.Common;
 using Domain.Entities.Common;
@@ -308,8 +308,8 @@ public class GetAllClubsHandlerTests
         // Arrange
         GetAllClubsQuery query = new GetAllClubsQuery(Page: 1, PageSize: 50);
 
-        List<Club> clubs = new List<Club>
-        {
+        List<Club> clubs =
+        [
             // Club with full data
             new Club(
                 "Full Data Club",
@@ -337,7 +337,7 @@ public class GetAllClubsHandlerTests
                 null,
                 "partial@club.com"
             )
-        };
+        ];
 
         PagedResult<Club> pagedClubs = PagedResult.Create(clubs, 3, 1, 50);
 
@@ -352,7 +352,7 @@ public class GetAllClubsHandlerTests
         result.Data.Should().NotBeNull();
         result.Data!.Items.Should().HaveCount(3);
 
-        List<ClubDto> clubDtos = result.Data!.Items.ToList();
+        List<ClubDto> clubDtos = [.. result.Data!.Items];
 
         // Full data club
         clubDtos[0].Name.Should().Be("Full Data Club");

@@ -1,6 +1,6 @@
 using Application.Common;
-using Application.DTOs.Common;
-using Application.Queries.Common;
+using Application.Features.Common.Search.DTOs;
+using Application.Features.Common.Search.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;

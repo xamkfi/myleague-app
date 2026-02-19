@@ -369,3 +369,6 @@ FodyWeavers.xsd
 /src/tools/DataImporter/DataFiles
 src/backend/WebAPI/wwwroot/uploads/
 src/backend/WebAPI/app.zip
+src/backend/Application/refactor-namespaces.ps1
+.gitignore
+src/backend/Application/fix-usings.ps1

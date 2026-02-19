@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
@@ -8,24 +8,32 @@ import FixturesSection from './components/FixturesSection';
 import SummarySection from './components/SummarySection';
 import { floorballStatisticsService, type FloorballSeasonStatisticsSummaryDto } from '../../api/floorball/floorballStatistics';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
-import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
+import { type FloorballMatchDto, FloorballMatchStatus } from '../../types/floorball/floorballTypes';
 import './LeaguePage.scss';
 
 type TabType = 'summary' | 'news' | 'results' | 'fixtures' | 'statistics';
+
+const VALID_TABS: TabType[] = ['summary', 'news', 'results', 'fixtures', 'statistics'];
+
+function getStatusForTab(tab: TabType): FloorballMatchStatus | undefined {
+  if (tab === 'results') return FloorballMatchStatus.Completed;
+  return undefined;
+}
+
+function getSortOrderForTab(tab: TabType): string {
+  return tab === 'results' ? 'desc' : 'asc';
+}
 
 export default function LeaguePage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Get initial tab from URL params or default to 'summary'
   const getInitialTab = (): TabType => {
     const tabParam = searchParams.get('tab');
-    const validTabs: TabType[] = ['summary', 'news', 'results', 'fixtures', 'statistics'];
-    if (tabParam && validTabs.includes(tabParam as TabType)) {
+    if (tabParam && VALID_TABS.includes(tabParam as TabType)) {
       return tabParam as TabType;
     }
-    // Support legacy 'standings' URL param by redirecting to 'statistics'
     if (tabParam === 'standings') {
       return 'statistics';
     }
@@ -34,19 +42,17 @@ export default function LeaguePage() {
   
   const [activeTab, setActiveTab] = useState<TabType>(getInitialTab);
   
-  // Update tab when URL params change
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    const validTabs: TabType[] = ['summary', 'news', 'results', 'fixtures', 'statistics'];
-    if (tabParam && validTabs.includes(tabParam as TabType)) {
+    if (tabParam && VALID_TABS.includes(tabParam as TabType)) {
       setActiveTab(tabParam as TabType);
     }
   }, [searchParams]);
   
-  // Update URL when tab changes
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     setSearchParams({ tab });
+    setCurrentPage(1);
   };
   
   // State for season statistics data
@@ -69,12 +75,7 @@ export default function LeaguePage() {
       try {
         setLoading(true);
         setError(null);
-        
-        // Use the league ID from the URL as the season ID
-        // The league ID (e.g., 63ed4ed5-1c56-47ce-8047-1e8f595575dc) will be used to fetch season data
-        const seasonId = id;
-        
-        const data = await floorballStatisticsService.getSeasonStatistics(seasonId);
+        const data = await floorballStatisticsService.getSeasonStatistics(id);
         setSeasonSummary(data);
       } catch (err) {
         console.error('Failed to fetch season statistics:', err);
@@ -87,22 +88,24 @@ export default function LeaguePage() {
     fetchSeasonData();
   }, [id, t]);
 
-  // Fetch matches data
+  // Fetch matches data - filtered by tab status
   useEffect(() => {
     const fetchMatchesData = async () => {
       if (!id) return;
+      if (activeTab !== 'fixtures' && activeTab !== 'results') return;
       
       try {
         setMatchesLoading(true);
         setMatchesError(null);
         
-        // Use the same API call pattern as FloorballTeamPage
-        // For league page, we'll fetch all matches for the season/league
+        const pageSize = activeTab === 'fixtures' ? 20 : 10;
+        
         const response = await floorballMatchService.getAll({
-          seasonId: id, // Use league ID as season ID
+          seasonId: id,
           page: currentPage,
-          pageSize: 10,
-          sortOrder: 'asc'
+          pageSize,
+          sortOrder: getSortOrderForTab(activeTab),
+          status: getStatusForTab(activeTab),
         });
 
         setMatches(response.data || []);
@@ -116,11 +119,11 @@ export default function LeaguePage() {
     };
 
     fetchMatchesData();
-  }, [id, currentPage, t]);
+  }, [id, currentPage, activeTab, t]);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-  };
+  }, []);
 
   const tabs: { key: TabType; label: string }[] = [
     { key: 'summary', label: t('leaguePage.tabs.summary') },

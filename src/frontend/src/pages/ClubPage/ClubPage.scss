@@ -319,6 +319,26 @@
     flex: 1;
   }
 
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__sport {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    background: $color-blue-medium;
+    color: $color-white;
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'xl');
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'semibold');
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
   &__division {
     display: inline-flex;
     align-items: center;
@@ -333,22 +353,36 @@
     text-transform: uppercase;
   }
 
-  &__arena {
+  &__seasons {
     display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xxs');
+  }
+
+  &__season {
+    display: inline-flex;
     align-items: center;
     gap: map.get($spacing, 'xs');
-    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
-    background: $color-neutral-light-grey;
-    border-radius: map.get($border-radius, 'sm');
-    border-left: 3px solid $color-green-primary;
-    color: $color-neutral-dark-grey;
     font-size: map.get($font-sizes, 'sm');
+    color: $color-neutral-dark-grey;
     font-weight: map.get($font-weights, 'medium');
 
-    svg {
-      flex-shrink: 0;
-      opacity: 0.6;
+    &--active {
+      color: $color-text-primary;
+      font-weight: map.get($font-weights, 'semibold');
     }
+  }
+
+  &__season-badge {
+    font-size: map.get($font-sizes, 'xs');
+    background: $color-green-primary;
+    color: $color-white;
+    padding: 1px map.get($spacing, 'xs');
+    border-radius: map.get($border-radius, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.4;
   }
 
   &__status {

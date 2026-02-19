@@ -19,7 +19,7 @@ const SPORTS: SportItem[] = [
     descriptionKey: 'sportsPage.floorballDescription',
     icon: '🏑',
     path: '/sports/floorball',
-    enabled: true
+    enabled: true,
   },
   {
     id: 'icehockey',
@@ -27,8 +27,8 @@ const SPORTS: SportItem[] = [
     descriptionKey: 'sportsPage.iceHockeyDescription',
     icon: '🏒',
     path: '/sports/icehockey',
-    enabled: false
-  }
+    enabled: false,
+  },
 ];
 
 function SportsPage() {
@@ -37,6 +37,13 @@ function SportsPage() {
 
   const handleSportClick = (sport: SportItem) => {
     if (sport.enabled) {
+      navigate(sport.path);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, sport: SportItem) => {
+    if ((e.key === 'Enter' || e.key === ' ') && sport.enabled) {
+      e.preventDefault();
       navigate(sport.path);
     }
   };
@@ -57,6 +64,10 @@ function SportsPage() {
               key={sport.id}
               className={`sport-card ${!sport.enabled ? 'sport-card--disabled' : ''}`}
               onClick={() => handleSportClick(sport)}
+              onKeyDown={(e) => handleKeyDown(e, sport)}
+              role="button"
+              tabIndex={sport.enabled ? 0 : -1}
+              aria-disabled={!sport.enabled}
             >
               <div className="sport-card__icon">{sport.icon}</div>
               <div className="sport-card__content">
@@ -64,7 +75,7 @@ function SportsPage() {
                 <p className="sport-card__description">{t(sport.descriptionKey)}</p>
                 {sport.enabled ? (
                   <span className="sport-card__link">
-                    {t('sportsPage.viewLeagues')} →
+                    {t('sportsPage.viewLeagues')} &rarr;
                   </span>
                 ) : (
                   <span className="sport-card__coming-soon">

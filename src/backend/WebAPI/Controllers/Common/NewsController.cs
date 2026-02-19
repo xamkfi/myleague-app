@@ -1,14 +1,14 @@
 using Application.Common;
 using Domain.Common;
-using Application.DTOs.Common;
-using Application.Commands.NewsArticles;
-using Application.Queries.NewsArticles;
+using Application.Features.Common.Images.Commands;
+using Application.Features.Common.News.Commands;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.News.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
-using Application.Commands.Common;
 
 namespace WebAPI.Controllers.Common
 {

@@ -3,8 +3,8 @@
 
 .footer {
   width: 100%;
-  background: #1a237e;
-  color: #fff;
+  background: $color-banner-bg;
+  color: $color-banner-text;
   padding: map.get($spacing, 'xl') 0 map.get($spacing, 'lg') 0;
   min-height: 120px;
   display: flex;

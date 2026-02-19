@@ -1,10 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using Application.Handlers.Clubs;
-using Application.Commands.Clubs;
-using Application.Queries.Clubs;
-using Application.DTOs.Common;
 using Application.Behaviors;
+using Application.Features.Common.MatchTimer.Services;
 using Application.Services.Common;
 using MediatR;
 using FluentValidation;

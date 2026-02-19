@@ -1,7 +1,11 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.DTOs.Floorball;
-using Application.DTOs.Common;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
 using WebAPI.Models.Floorball;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;

@@ -1,6 +1,6 @@
-using Application.Commands.Clubs;
 using Application.Common;
-using Application.Handlers.Clubs;
+using Application.Features.Common.Clubs.Commands;
+using Application.Features.Common.Clubs.Handlers;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
 using Moq;

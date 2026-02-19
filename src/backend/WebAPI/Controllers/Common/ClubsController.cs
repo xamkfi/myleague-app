@@ -1,11 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Application.Commands.Clubs;
-using Application.Commands.Common;
-using Application.Queries.Clubs;
-using Application.DTOs.Common;
 using Application.Common;
+using Application.Features.Common.Clubs.Commands;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Clubs.Queries;
+using Application.Features.Common.Images.Commands;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
 using Domain.Common;

@@ -1,0 +1,18 @@
+using Application.Features.Common.Users.Queries;
+using FluentValidation;
+
+namespace Application.Features.Common.Users.Validators;
+
+/// <summary>
+/// Validator for GetUserByEmailQuery
+/// </summary>
+public class GetUserByEmailQueryValidator : AbstractValidator<GetUserByEmailQuery>
+{
+    public GetUserByEmailQueryValidator()
+    {
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email is required")
+            .EmailAddress().WithMessage("A valid email address is required")
+            .MaximumLength(256).WithMessage("Email cannot exceed 256 characters");
+    }
+}

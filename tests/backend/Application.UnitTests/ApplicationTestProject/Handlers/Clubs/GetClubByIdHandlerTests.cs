@@ -1,7 +1,7 @@
 using Application.Common;
-using Application.DTOs.Common;
-using Application.Handlers.Clubs;
-using Application.Queries.Clubs;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Clubs.Handlers;
+using Application.Features.Common.Clubs.Queries;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
