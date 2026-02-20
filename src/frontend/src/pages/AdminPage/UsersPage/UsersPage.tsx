@@ -35,6 +35,9 @@ const UsersPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Resend invitation state
+  const [resendSuccess, setResendSuccess] = useState<string | null>(null);
+
   const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
@@ -159,6 +162,26 @@ const UsersPage = () => {
     }
   };
 
+  // --- Resend invitation handler ---
+
+  const handleResendInvitation = useCallback(async (user: SystemUser) => {
+    try {
+      setError(null);
+      setResendSuccess(null);
+      await userService.resendInvitation(user.id);
+      setResendSuccess(
+        t('admin.users.invitationResent', 'Invitation email resent to {{email}}.', { email: user.email })
+      );
+      setTimeout(() => setResendSuccess(null), 5000);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('admin.users.errors.resend', 'Failed to resend invitation. Please try again.'),
+      );
+    }
+  }, [t]);
+
   // --- Selection handlers ---
 
   const handleToggleSelect = useCallback((id: string) => {
@@ -269,10 +292,17 @@ const UsersPage = () => {
 
         <ErrorPopup message={error} />
 
+        {resendSuccess && (
+          <div className="users-page__success-notice">
+            {resendSuccess}
+          </div>
+        )}
+
         <UsersTable
           users={filteredUsers}
           onEdit={openEditModal}
           onDelete={openDeleteModal}
+          onResendInvitation={handleResendInvitation}
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}
           onSelectAll={handleSelectAll}
@@ -300,6 +330,7 @@ const UsersPage = () => {
         existingPersonIds={existingPersonIds}
         onSave={handleSaveUser}
         onCancel={closeFormModal}
+        onResendInvitation={handleResendInvitation}
       />
 
       <ConfirmDeleteModal

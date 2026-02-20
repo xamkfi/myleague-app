@@ -87,4 +87,17 @@ export const userService = {
       throw new Error(errorMessage || 'Failed to delete user');
     }
   },
+
+  resendInvitation: async (id: string): Promise<void> => {
+    const response = await authFetch(`${API_URL}/Users/${id}/resend-invitation`, {
+      method: 'POST',
+    });
+
+    const apiResponse: ApiResponse<null> = await response.json();
+
+    if (!response.ok || !apiResponse.success) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to resend invitation');
+      throw new Error(errorMessage || 'Failed to resend invitation');
+    }
+  },
 };

@@ -14,6 +14,7 @@ export interface SystemUser {
   personId: string;
   role: UserRole;
   isActive: boolean;
+  isEmailVerified: boolean;
   lastLoginAt: string | null;
   person: SystemUserPerson;
 }
