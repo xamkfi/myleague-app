@@ -53,6 +53,9 @@ param acsSenderAddress string = ''
 @description('The admin email for database seeding')
 param seedAdminEmail string = ''
 
+@description('The base URL of the frontend application (e.g. https://myleague.fi)')
+param frontendBaseUrl string = ''
+
 resource appService 'Microsoft.Web/sites@2023-12-01' = {
   name: name
   location: location
@@ -109,6 +112,10 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'Seed__AdminEmail'
           value: seedAdminEmail
+        }
+        {
+          name: 'Frontend__BaseUrl'
+          value: frontendBaseUrl
         }
       ]
       connectionStrings: [
