@@ -1,7 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, memo, useImperativeHandle, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Person, PaginatedApiResponse } from '../../../../../types/admin/personTypes';
-import { PersonRole } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
 import PaginationControls from '../PaginationControls/PaginationControls';
 import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
@@ -86,7 +85,6 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   const [paginationLoading, setPaginationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingRegistration, setUpdatingRegistration] = useState<string | null>(null);
-  const [updatingRole, setUpdatingRole] = useState<string | null>(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -261,33 +259,6 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         setError(t('admin.persons.errors.updateRegistrationFailed', 'Failed to update registration status'));
       } finally {
         setUpdatingRegistration(null);
-      }
-    }
-  };
-
-  const handleRoleChange = async (id: string, newRole: PersonRole) => {
-    console.log('Role change requested:', { id, newRole, type: typeof newRole }); // Debug log
-    const roleText = t(`admin.persons.roles.${newRole.toLowerCase()}`, newRole);
-    const confirmMessage = t('admin.persons.confirmRoleChange', 'Are you sure you want to change this person\'s role to {{role}}?', { role: roleText });
-    
-    if (window.confirm(confirmMessage)) {
-      setUpdatingRole(id);
-      try {
-        const updatedPerson = await personApi.updateRole(id, newRole);
-        console.log('Updated person received:', updatedPerson); // Debug log
-        setPersons(persons.map(person => 
-          person.id === id ? updatedPerson : person
-        ));
-        setError(null);
-        
-        // Show success message
-        const successMessage = t('admin.persons.success.roleUpdated', 'Person role updated successfully');
-        console.log(successMessage); // You can replace this with a toast notification system
-      } catch (error) {
-        console.error('Failed to update person role:', error);
-        setError(t('admin.persons.errors.updateRoleFailed', 'Failed to update person role'));
-      } finally {
-        setUpdatingRole(null);
       }
     }
   };
