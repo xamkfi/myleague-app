@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { ComponentType } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
@@ -16,7 +17,9 @@ const TournamentsPage = lazyWithRetry(() => import('../pages/TournamentsPage/Tou
 const SportsPage = lazyWithRetry(() => import('../pages/SportsPage/SportsPage'));
 const ClubPage = lazyWithRetry(() => import('../pages/ClubPage/ClubPage'));
 const PlayerPage = lazyWithRetry(() => import('../pages/PlayerPage/PlayerPage'));
-const SingleNewsPage = lazyWithRetry(() => import('../pages/SingleNewsPage/SingleNewsPage'));
+const SingleNewsPage = lazyWithRetry(() =>
+  import('../pages/SingleNewsPage/SingleNewsPage').then((m) => ({ default: m.default as ComponentType<unknown> }))
+);
 const PersonUserPage = lazyWithRetry(() => import('../pages/PersonUserPage/PersonUserPage'));
 const FloorballTeamPage = lazyWithRetry(() => import('../pages/FloorballTeamPage/FloorballTeamPage'));
 const FloorballTeamPlayerUserPage = lazyWithRetry(() => import('../pages/FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage'));
@@ -32,7 +35,9 @@ const VerifyEmailPage = lazyWithRetry(() => import('../pages/AdminPage/VerifyEma
 const AdminPage = lazyWithRetry(() => import('../pages/AdminPage/AdminPage'));
 const UsersPage = lazyWithRetry(() => import('../pages/AdminPage/UsersPage/UsersPage'));
 const PersonsPage = lazyWithRetry(() => import('../pages/AdminPage/PersonsPage/PersonsPage'));
-const PersonForm = lazyWithRetry(() => import('../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm'));
+const PersonForm = lazyWithRetry(() =>
+  import('../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm').then((m) => ({ default: m.default as ComponentType<unknown> }))
+);
 const NewsCreateEditPage = lazyWithRetry(() => import('../pages/AdminPage/NewsPage/NewsCreateEditPage'));
 const NewsManagementPage = lazyWithRetry(() => import('../pages/AdminPage/NewsPage/NewsManagementPage'));
 const DivisionsPage = lazyWithRetry(() => import('../pages/AdminPage/DivisionsPage/DivisionsPage'));
