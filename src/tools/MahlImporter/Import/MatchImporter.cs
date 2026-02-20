@@ -9,13 +9,11 @@ public class MatchImporter
 {
     private readonly ApiClient _api;
     private readonly ImportLogger _log;
-    private readonly int _yearsToAdd;
 
-    public MatchImporter(ApiClient api, ImportLogger log, int yearsToAdd)
+    public MatchImporter(ApiClient api, ImportLogger log)
     {
         _api = api;
         _log = log;
-        _yearsToAdd = yearsToAdd;
     }
 
     public async Task ImportAllMatchesAsync(
@@ -77,11 +75,9 @@ public class MatchImporter
             return false;
         }
 
-        DateTime scheduledDate = AdjustDate(sm.OriginalDate);
-        if (scheduledDate <= DateTime.UtcNow)
-        {
-            scheduledDate = DateTime.UtcNow.AddDays(30 + (teamMap.Count * 10));
-        }
+        DateTime scheduledDate = sm.OriginalDate == default
+            ? DateTime.UtcNow.AddMonths(3)
+            : sm.OriginalDate;
 
         // Step 1: Create match
         FloorballMatchDto? match = await _api.CreateMatchAsync(season.Id, homeTeam.Id, awayTeam.Id, scheduledDate, sm.Venue);
@@ -130,6 +126,7 @@ public class MatchImporter
         if (!p1) Console.WriteLine("  WARN: StartPeriod 1 failed.");
         await RecordGoalsAsync(match.Id, period1Goals, 1, sm, teamMap, playerMap);
         await RecordPenaltiesAsync(match.Id, period1Penalties, 1, sm, teamMap, playerMap);
+        int saves1 = await RecordSimulatedSavesAsync(match.Id, period1Goals, 1, sm, teamMap, homeTeam, awayTeam, homeGoalieId, awayGoalieId);
         await _api.EndPeriodAsync(match.Id, 1);
 
         // Period 2
@@ -137,11 +134,12 @@ public class MatchImporter
         if (!p2) Console.WriteLine("  WARN: StartPeriod 2 failed.");
         await RecordGoalsAsync(match.Id, period2Goals, 2, sm, teamMap, playerMap);
         await RecordPenaltiesAsync(match.Id, period2Penalties, 2, sm, teamMap, playerMap);
+        int saves2 = await RecordSimulatedSavesAsync(match.Id, period2Goals, 2, sm, teamMap, homeTeam, awayTeam, homeGoalieId, awayGoalieId);
         await _api.EndPeriodAsync(match.Id, 2);
 
         // Step 11: Complete match
         await _api.CompleteMatchAsync(match.Id);
-        Console.WriteLine($"  Completed. Goals: {sm.Goals.Count}, Penalties: {sm.Penalties.Count}");
+        Console.WriteLine($"  Completed. Goals: {sm.Goals.Count}, Penalties: {sm.Penalties.Count}, Simulated saves: {saves1 + saves2}");
 
         return true;
     }
@@ -292,12 +290,58 @@ public class MatchImporter
         return teamMap.Values.First();
     }
 
-    private DateTime AdjustDate(DateTime original)
+    private async Task<int> RecordSimulatedSavesAsync(
+        Guid matchId,
+        List<ScrapedGoal> periodGoals,
+        int periodNumber,
+        ScrapedMatch sm,
+        Dictionary<string, FloorballTeamDto> teamMap,
+        FloorballTeamDto homeTeam,
+        FloorballTeamDto awayTeam,
+        Guid homeGoalieId,
+        Guid awayGoalieId)
     {
-        if (original == default)
-            return DateTime.UtcNow.AddMonths(3);
+        int seed = HashCode.Combine(sm.MahlMatchId, periodNumber, sm.HomeScore, sm.AwayScore);
+        Random rng = new(seed);
 
-        return original.AddYears(_yearsToAdd);
+        int goalsAgainstHome = periodGoals.Count(g =>
+        {
+            string teamName = !string.IsNullOrEmpty(g.TeamName) ? g.TeamName : sm.HomeTeamName;
+            FloorballTeamDto scoringTeam = ResolveTeam(teamName, sm, teamMap);
+            return scoringTeam.Id == awayTeam.Id;
+        });
+
+        int goalsAgainstAway = periodGoals.Count(g =>
+        {
+            string teamName = !string.IsNullOrEmpty(g.TeamName) ? g.TeamName : sm.HomeTeamName;
+            FloorballTeamDto scoringTeam = ResolveTeam(teamName, sm, teamMap);
+            return scoringTeam.Id == homeTeam.Id;
+        });
+
+        int homeSaves = goalsAgainstHome > 0
+            ? goalsAgainstHome * rng.Next(2, 5)
+            : rng.Next(1, 4);
+        int awaySaves = goalsAgainstAway > 0
+            ? goalsAgainstAway * rng.Next(2, 5)
+            : rng.Next(1, 4);
+
+        int totalSaves = 0;
+
+        for (int i = 0; i < homeSaves; i++)
+        {
+            int timeInSeconds = rng.Next(0, 901);
+            bool ok = await _api.RecordSaveAsync(matchId, homeTeam.Id, homeGoalieId, periodNumber, timeInSeconds);
+            if (ok) totalSaves++;
+        }
+
+        for (int i = 0; i < awaySaves; i++)
+        {
+            int timeInSeconds = rng.Next(0, 901);
+            bool ok = await _api.RecordSaveAsync(matchId, awayTeam.Id, awayGoalieId, periodNumber, timeInSeconds);
+            if (ok) totalSaves++;
+        }
+
+        return totalSaves;
     }
 
     private static double TotalMinutes(int minutes, int seconds) => minutes + seconds / 60.0;

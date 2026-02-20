@@ -94,6 +94,9 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
 
             // Update GamesPlayed for all players who participated in this match
             await UpdatePlayerGamesPlayed(match, cancellationToken);
+
+            // Update GamesPlayed for active goalies on their goalie season statistics
+            await UpdateGoalieGamesPlayed(match, cancellationToken);
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -219,5 +222,66 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             playerStats.RecordGamePlayed();
             await _statisticsRepository.SavePlayerSeasonStatisticsAsync(playerStats, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Updates goalie-specific season statistics (GamesPlayed, wins/losses) for active goalies
+    /// </summary>
+    private async Task UpdateGoalieGamesPlayed(FloorballMatch match, CancellationToken cancellationToken)
+    {
+        FloorballGameResult homeResult;
+        FloorballGameResult awayResult;
+
+        if (match.HomeScore > match.AwayScore)
+        {
+            homeResult = FloorballGameResult.Win;
+            awayResult = FloorballGameResult.Loss;
+        }
+        else if (match.HomeScore < match.AwayScore)
+        {
+            homeResult = FloorballGameResult.Loss;
+            awayResult = FloorballGameResult.Win;
+        }
+        else
+        {
+            homeResult = FloorballGameResult.Tie;
+            awayResult = FloorballGameResult.Tie;
+        }
+
+        int matchDurationMinutes = match.MatchRules.PeriodDurationMinutes * match.MatchRules.NumberOfPeriods;
+
+        bool homeGoalieShutout = match.AwayScore == 0;
+        bool awayGoalieShutout = match.HomeScore == 0;
+
+        if (match.HomeActiveGoalieId.HasValue)
+        {
+            await UpdateSingleGoalieGamePlayed(
+                match.HomeActiveGoalieId.Value, match.HomeTeamId, match.SeasonId,
+                homeResult, matchDurationMinutes, homeGoalieShutout, cancellationToken);
+        }
+
+        if (match.AwayActiveGoalieId.HasValue)
+        {
+            await UpdateSingleGoalieGamePlayed(
+                match.AwayActiveGoalieId.Value, match.AwayTeamId, match.SeasonId,
+                awayResult, matchDurationMinutes, awayGoalieShutout, cancellationToken);
+        }
+    }
+
+    private async Task UpdateSingleGoalieGamePlayed(
+        Guid goalieId, Guid teamId, Guid seasonId,
+        FloorballGameResult result, int minutesPlayed, bool wasShutout,
+        CancellationToken cancellationToken)
+    {
+        FloorballGoalieSeasonStatistics? goalieStats =
+            await _statisticsRepository.GetGoalieSeasonStatisticsAsync(goalieId, teamId, seasonId, cancellationToken);
+
+        if (goalieStats == null)
+        {
+            goalieStats = new FloorballGoalieSeasonStatistics(goalieId, teamId, seasonId);
+        }
+
+        goalieStats.RecordGamePlayed(wasStarter: true, result, minutesPlayed, wasShutout);
+        await _statisticsRepository.SaveGoalieSeasonStatisticsAsync(goalieStats, cancellationToken);
     }
 } 

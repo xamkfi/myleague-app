@@ -31,13 +31,37 @@ function MatchesPanel() {
       setIsLoading(true);
       setError(null);
 
-      const response = await floorballMatchService.getAll({
-        pageSize: 20,
-        sortOrder: 'asc',
-      });
+      // Fetch live + upcoming (asc = soonest first) and 5 most recent completed (desc, status filter)
+      const [mainResponse, completedResponse] = await Promise.all([
+        floorballMatchService.getAll({
+          pageSize: 20,
+          sortOrder: 'asc',
+        }),
+        floorballMatchService.getAll({
+          status: FloorballMatchStatus.Completed,
+          sortOrder: 'desc',
+          pageSize: MAX_PER_SECTION,
+        }),
+      ]);
 
-      if (response.success && response.data) {
-        setMatches(response.data);
+      if (mainResponse.success && mainResponse.data && completedResponse.success && completedResponse.data) {
+        const liveAndUpcoming = mainResponse.data.filter(
+          (m) =>
+            m.status === FloorballMatchStatus.InProgress ||
+            m.status === FloorballMatchStatus.Scheduled,
+        );
+        const completed = completedResponse.data.slice(0, MAX_PER_SECTION);
+        setMatches([...liveAndUpcoming, ...completed]);
+      } else if (mainResponse.success && mainResponse.data) {
+        const liveAndUpcoming = mainResponse.data.filter(
+          (m) =>
+            m.status === FloorballMatchStatus.InProgress ||
+            m.status === FloorballMatchStatus.Scheduled,
+        );
+        const completed = completedResponse.success && completedResponse.data
+          ? completedResponse.data.slice(0, MAX_PER_SECTION)
+          : [];
+        setMatches([...liveAndUpcoming, ...completed]);
       } else {
         setMatches([]);
       }

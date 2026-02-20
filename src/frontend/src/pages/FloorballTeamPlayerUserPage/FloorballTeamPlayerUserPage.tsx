@@ -10,6 +10,7 @@ import {
   floorballStatisticsService,
   type FloorballPlayerProfileDto,
   type FloorballPlayerSeasonStatisticsDto,
+  type FloorballGoalieSeasonStatisticsDto,
 } from "../../api/floorball/floorballStatistics";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
 import { slugify } from "../../utils/slugUtils";
@@ -111,6 +112,42 @@ const calculateMatchTotals = (matches: FloorballPlayerMatchDto[]): MatchTotals =
   );
 };
 
+interface GoalieTotals {
+  gamesPlayed: number;
+  wins: number;
+  losses: number;
+  ties: number;
+  saves: number;
+  shotsAgainst: number;
+  goalsAgainst: number;
+  shutouts: number;
+  minutesPlayed: number;
+}
+
+const calculateGoalieTotals = (stats: FloorballGoalieSeasonStatisticsDto[]): GoalieTotals => {
+  return stats.reduce(
+    (total, s) => ({
+      gamesPlayed: total.gamesPlayed + s.gamesPlayed,
+      wins: total.wins + s.wins,
+      losses: total.losses + s.losses,
+      ties: total.ties + s.ties,
+      saves: total.saves + s.saves,
+      shotsAgainst: total.shotsAgainst + s.shotsAgainst,
+      goalsAgainst: total.goalsAgainst + s.goalsAgainst,
+      shutouts: total.shutouts + s.shutouts,
+      minutesPlayed: total.minutesPlayed + s.minutesPlayed,
+    }),
+    {
+      gamesPlayed: 0, wins: 0, losses: 0, ties: 0, saves: 0,
+      shotsAgainst: 0, goalsAgainst: 0, shutouts: 0, minutesPlayed: 0,
+    }
+  );
+};
+
+const calculateOverallSavePercentage = (totals: GoalieTotals): number => {
+  return totals.shotsAgainst > 0 ? (totals.saves / totals.shotsAgainst) * 100 : 0;
+};
+
 const FloorballTeamPlayerUserPage = () => {
   const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<FloorballPlayerProfileDto | null>(null);
@@ -145,8 +182,10 @@ const FloorballTeamPlayerUserPage = () => {
   }, [id]);
 
   const seasonStats = useMemo(() => profile?.seasonStatistics ?? [], [profile]);
+  const goalieStats = useMemo(() => profile?.seasonStatisticsForGoalie ?? [], [profile]);
   const matches = useMemo(() => matchData?.recentMatches ?? [], [matchData]);
   const totals = useMemo(() => calculateSeasonTotals(seasonStats), [seasonStats]);
+  const goalieTotals = useMemo(() => calculateGoalieTotals(goalieStats), [goalieStats]);
   const matchTotals = useMemo(() => calculateMatchTotals(matches), [matches]);
 
   if (loading) return <PageTemplate title="Pelaaja"><div className="player-loading">Ladataan...</div></PageTemplate>;
@@ -248,6 +287,37 @@ const FloorballTeamPlayerUserPage = () => {
           </div>
         </div>
 
+        {/* Goalie Career Summary - shown only if player has goalie stats */}
+        {goalieStats.length > 0 && (
+          <div className="player-container">
+            <div className="career-stats-section">
+              <h3>Maalivahtitilastot (ura)</h3>
+              <div className="stats-grid">
+                <div className="stats-box">
+                  <div className="stats-value">{goalieTotals.gamesPlayed}</div>
+                  <div className="stats-label">Ottelut</div>
+                </div>
+                <div className="stats-box">
+                  <div className="stats-value">{goalieTotals.wins}</div>
+                  <div className="stats-label">Voitot</div>
+                </div>
+                <div className="stats-box">
+                  <div className="stats-value">{goalieTotals.losses}</div>
+                  <div className="stats-label">Tappiot</div>
+                </div>
+                <div className="stats-box">
+                  <div className="stats-value">{calculateOverallSavePercentage(goalieTotals).toFixed(1)}%</div>
+                  <div className="stats-label">Torjunta-%</div>
+                </div>
+                <div className="stats-box">
+                  <div className="stats-value">{goalieTotals.shutouts}</div>
+                  <div className="stats-label">Nollapelit</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Otteluhistoria (Match History) */}
         <div className="player-container">
           <div className="section-block">
@@ -261,10 +331,10 @@ const FloorballTeamPlayerUserPage = () => {
                       <th className="col-team">Koti</th>
                       <th className="col-score">Tulos</th>
                       <th className="col-team">Vieras</th>
-                      <th className="col-num">M</th>
-                      <th className="col-num">S</th>
-                      <th className="col-num">P</th>
-                      <th className="col-num">JM</th>
+                      <th className="col-num" title="Maalit (Goals)">M</th>
+                      <th className="col-num" title="Syötöt (Assists)">S</th>
+                      <th className="col-num" title="Pisteet (Points)">P</th>
+                      <th className="col-num" title="Jäähyminuutit (Penalty Minutes)">JM</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -313,16 +383,16 @@ const FloorballTeamPlayerUserPage = () => {
                     <tr>
                       <th className="col-season">Kausi</th>
                       <th className="col-team">Joukkue</th>
-                      <th className="col-num">O</th>
-                      <th className="col-num">M</th>
-                      <th className="col-num">S</th>
-                      <th className="col-num">P</th>
-                      <th className="col-num">JM</th>
-                      <th className="col-num">+/-</th>
-                      <th className="col-num">YVM</th>
-                      <th className="col-num">YVS</th>
-                      <th className="col-num">AVM</th>
-                      <th className="col-num">AVS</th>
+                      <th className="col-num" title="Pelatut ottelut (Games Played)">O</th>
+                      <th className="col-num" title="Maalit (Goals)">M</th>
+                      <th className="col-num" title="Syötöt (Assists)">S</th>
+                      <th className="col-num" title="Pisteet (Points)">P</th>
+                      <th className="col-num" title="Jäähyminuutit (Penalty Minutes)">JM</th>
+                      <th className="col-num" title="Plus/miinus-tilasto (+/-)">+/-</th>
+                      <th className="col-num" title="Ylivoimamaalit (Power Play Goals)">YVM</th>
+                      <th className="col-num" title="Ylivoimasyötöt (Power Play Assists)">YVS</th>
+                      <th className="col-num" title="Alivoimamaalit (Shorthanded Goals)">AVM</th>
+                      <th className="col-num" title="Alivoimasyötöt (Shorthanded Assists)">AVS</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -373,6 +443,73 @@ const FloorballTeamPlayerUserPage = () => {
             )}
           </div>
         </div>
+
+        {/* Maalivahtitilastot kausittain (Goalie Season Statistics) */}
+        {goalieStats.length > 0 && (
+          <div className="player-container">
+            <div className="section-block">
+              <h3>Maalivahtitilastot kausittain</h3>
+              <div className="stats-table-scroll">
+                <table className="stats-table">
+                  <thead>
+                    <tr>
+                      <th className="col-season">Kausi</th>
+                      <th className="col-team">Joukkue</th>
+                      <th className="col-num" title="Pelatut ottelut (Games Played)">O</th>
+                      <th className="col-num" title="Voitot (Wins)">V</th>
+                      <th className="col-num" title="Tappiot (Losses)">H</th>
+                      <th className="col-num" title="Tasapelit (Ties)">T</th>
+                      <th className="col-num" title="Torjunnat (Saves)">TO</th>
+                      <th className="col-num" title="Laukauksia vastaan (Shots Against)">LA</th>
+                      <th className="col-num" title="Torjuntaprosentti (Save Percentage)">TO%</th>
+                      <th className="col-num" title="Päästetyt maalit (Goals Against)">PM</th>
+                      <th className="col-num" title="Nollapelit (Shutouts)">NP</th>
+                      <th className="col-num" title="Peliminuutit (Minutes Played)">MIN</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {goalieStats.map((stat) => (
+                      <tr key={stat.id}>
+                        <td className="col-season">{stat.seasonName}</td>
+                        <td className="col-team">
+                          <div className="team-cell">
+                            <Link to={`/team/${slugify(stat.teamName)}`} className="team-link">{stat.teamName}</Link>
+                          </div>
+                        </td>
+                        <td className="col-num">{stat.gamesPlayed}</td>
+                        <td className="col-num">{stat.wins}</td>
+                        <td className="col-num">{stat.losses}</td>
+                        <td className="col-num">{stat.ties}</td>
+                        <td className="col-num">{stat.saves}</td>
+                        <td className="col-num">{stat.shotsAgainst}</td>
+                        <td className="col-num">{stat.savePercentage.toFixed(1)}%</td>
+                        <td className="col-num">{stat.goalsAgainst}</td>
+                        <td className="col-num">{stat.shutouts}</td>
+                        <td className="col-num">{stat.minutesPlayed}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="totals-row">
+                      <td>Ura yhteensä</td>
+                      <td></td>
+                      <td className="col-num">{goalieTotals.gamesPlayed}</td>
+                      <td className="col-num">{goalieTotals.wins}</td>
+                      <td className="col-num">{goalieTotals.losses}</td>
+                      <td className="col-num">{goalieTotals.ties}</td>
+                      <td className="col-num">{goalieTotals.saves}</td>
+                      <td className="col-num">{goalieTotals.shotsAgainst}</td>
+                      <td className="col-num">{calculateOverallSavePercentage(goalieTotals).toFixed(1)}%</td>
+                      <td className="col-num">{goalieTotals.goalsAgainst}</td>
+                      <td className="col-num">{goalieTotals.shutouts}</td>
+                      <td className="col-num">{goalieTotals.minutesPlayed}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Pelaajaura (Career Timeline) */}
         <div className="player-container">

@@ -56,6 +56,18 @@ public class EntityImporter
                     map[team.Name] = club;
                 }
             }
+
+            if (club != null && !string.IsNullOrEmpty(team.LogoUrl))
+            {
+                string? hostedUrl = await _api.UploadClubImageAsync(team.LogoUrl);
+                if (hostedUrl != null)
+                {
+                    bool logoOk = await _api.UpdateClubLogoAsync(club.Id, hostedUrl);
+                    Console.WriteLine(logoOk
+                        ? $"    Set club logo: {hostedUrl}"
+                        : $"    WARN: Failed to set club logo for '{team.Name}'");
+                }
+            }
         }
 
         return map;
@@ -270,7 +282,7 @@ public class EntityImporter
         string seasonName,
         DivisionDto division,
         Dictionary<string, FloorballTeamDto> teamMap,
-        int yearsToAdd)
+        List<ScrapedMatch> matches)
     {
         Console.WriteLine("--- Importing Season ---");
         List<FloorballSeasonDto> existing = await _api.GetSeasonsAsync();
@@ -283,14 +295,23 @@ public class EntityImporter
         }
         else
         {
-            DateTime startDate = new DateTime(2025 + yearsToAdd, 9, 1);
-            DateTime endDate = new DateTime(2026 + yearsToAdd, 5, 31);
+            List<DateTime> matchDates = matches
+                .Where(m => m.OriginalDate != default)
+                .Select(m => m.OriginalDate)
+                .ToList();
+
+            DateTime startDate = matchDates.Count > 0
+                ? matchDates.Min().AddMonths(-1)
+                : DateTime.UtcNow.AddMonths(-1);
+            DateTime endDate = matchDates.Count > 0
+                ? matchDates.Max().AddMonths(1)
+                : DateTime.UtcNow.AddMonths(6);
 
             season = await _api.CreateSeasonAsync(seasonName, division.Id, startDate, endDate);
             if (season == null)
                 throw new InvalidOperationException($"Failed to create season '{seasonName}'");
 
-            Console.WriteLine($"  Created season '{seasonName}': {season.Id}");
+            Console.WriteLine($"  Created season '{seasonName}': {season.Id} ({startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd})");
         }
 
         Console.Write("  Adding teams to season... ");

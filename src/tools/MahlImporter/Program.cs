@@ -31,7 +31,6 @@ public static class Program
         string apiBaseUrl = config["MahlImporter:ApiBaseUrl"] ?? "http://localhost:8080/";
         string mahlBaseUrl = config["MahlImporter:MahlBaseUrl"] ?? "http://mahl.fi/";
         string scheduleUrl = config["MahlImporter:ScheduleUrl"] ?? "index.php?option=com_joomleague&view=teamplan&p=219&Itemid=103";
-        int yearsToAdd = int.TryParse(config["MahlImporter:YearsToAdd"], out int y) ? y : 2;
 
         apiBaseUrl = PromptForUrl("API Base URL", apiBaseUrl);
         string scrapedDataDir = FindScrapedDataDir();
@@ -64,14 +63,14 @@ public static class Program
             Dictionary<string, (Guid PersonId, Guid PlayerId)> playerMap = await entityImporter.ImportPlayersAsync(season.Teams);
             Dictionary<string, FloorballTeamDto> teamMap = await entityImporter.ImportTeamsAsync(season.Teams, clubMap, division, playerMap);
             Guid refereeId = await entityImporter.GetOrCreateImportRefereeAsync(playerMap);
-            FloorballSeasonDto newSeason = await entityImporter.ImportSeasonAsync(season.Name, division, teamMap, yearsToAdd);
+            FloorballSeasonDto newSeason = await entityImporter.ImportSeasonAsync(season.Name, division, teamMap, season.Matches);
 
             // ── Phase 3: Import matches ──────────────────────────────────
             Console.WriteLine("\n=== Phase 3: Importing Matches ===");
 
             string logDir = Path.Combine(scrapedDataDir, "..", "Logs");
             using ImportLogger importLog = new(logDir);
-            MatchImporter matchImporter = new(api, importLog, yearsToAdd);
+            MatchImporter matchImporter = new(api, importLog);
             await matchImporter.ImportAllMatchesAsync(season.Matches, newSeason, teamMap, playerMap, season.Teams, refereeId);
 
             Console.WriteLine("\n==========================================================");

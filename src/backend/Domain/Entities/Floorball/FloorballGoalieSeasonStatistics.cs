@@ -185,7 +185,8 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
     /// <param name="wasStarter">Whether the goalie started the game</param>
     /// <param name="gameResult">Result of the game</param>
     /// <param name="minutesPlayed">Minutes played in the game</param>
-    public void RecordGamePlayed(bool wasStarter, FloorballGameResult gameResult, int minutesPlayed)
+    /// <param name="wasShutout">Whether the goalie kept a clean sheet (no goals allowed)</param>
+    public void RecordGamePlayed(bool wasStarter, FloorballGameResult gameResult, int minutesPlayed, bool wasShutout = false)
     {
         if (minutesPlayed < 0)
             throw new ArgumentException("Minutes played cannot be negative.", nameof(minutesPlayed));
@@ -208,6 +209,8 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
                 throw new ArgumentException($"Invalid game result: {gameResult}", nameof(gameResult));
         }
 
+        if (wasShutout) Shutouts++;
+
         MinutesPlayed += minutesPlayed;
         UpdateGoalsAgainstAverage();
     }
@@ -228,24 +231,12 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
         ShotsAgainst += shotsAgainst;
         GoalsAgainst += goalsAllowed;
 
-        // Ensure non-negative values for calculated fields
         Saves = Math.Max(0, Saves);
         ShotsAgainst = Math.Max(0, ShotsAgainst);
         GoalsAgainst = Math.Max(0, GoalsAgainst);
 
         UpdateSavePercentage();
         UpdateGoalsAgainstAverage();
-
-        // Handle shutout logic - only increment if we're adding positive values
-        if (goalsAllowed > 0 && shotsAgainst > 0)
-        {
-            Shutouts++;
-        }
-        else if (goalsAllowed < 0 || shotsAgainst < 0)
-        {
-            // Decrement shutout if we're removing goals/shots
-            Shutouts = Math.Max(0, Shutouts - 1);
-        }
     }
 
     /// <summary>

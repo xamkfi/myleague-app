@@ -165,6 +165,9 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     public async Task<List<FloorballGoalieSeasonStatistics>> GetTopGoaliesAsync(Guid seasonId, int topN, int minimumGames, CancellationToken cancellationToken = default)
     {
         return await _context.FloorballGoalieSeasonStatistics
+            .Include(x => x.Player)
+            .Include(x => x.Team)
+            .Include(x => x.Season)
             .Where(s => s.SeasonId == seasonId && s.GamesPlayed >= minimumGames)
             .OrderByDescending(s => s.SavePercentage)
             .ThenBy(s => s.GoalsAgainstAverage)
