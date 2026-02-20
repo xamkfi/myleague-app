@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Mappings\**" />
+    <Compile Remove="Validators\**" />
+    <EmbeddedResource Remove="Mappings\**" />
+    <EmbeddedResource Remove="Validators\**" />
+    <None Remove="Mappings\**" />
+    <None Remove="Validators\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
   </ItemGroup>
 
@@ -18,12 +27,6 @@
     <PackageReference Include="FluentValidation" Version="12.0.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Mappings\Floorball\" />
-    <Folder Include="Validators\Commands\Floorball\" />
-    <Folder Include="Validators\Queries\Floorball\" />
   </ItemGroup>
 
 </Project> 

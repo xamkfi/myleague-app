@@ -42,6 +42,7 @@ namespace Application.Features.Floorball.Players.DTOs
     public record FloorballPlayerMatchDto(
         Guid Id,
         Guid SeasonId,
+        string SeasonName,
         Guid HomeTeamId,
         string HomeTeamName,
         Guid AwayTeamId,

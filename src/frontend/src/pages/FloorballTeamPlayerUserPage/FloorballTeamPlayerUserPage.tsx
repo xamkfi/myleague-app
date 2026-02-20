@@ -148,12 +148,15 @@ const calculateOverallSavePercentage = (totals: GoalieTotals): number => {
   return totals.shotsAgainst > 0 ? (totals.saves / totals.shotsAgainst) * 100 : 0;
 };
 
+const MATCHES_PER_PAGE = 20;
+
 const FloorballTeamPlayerUserPage = () => {
   const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<FloorballPlayerProfileDto | null>(null);
   const [matchData, setMatchData] = useState<FloorballPlayerWithMatchesDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [matchPage, setMatchPage] = useState(1);
 
   useEffect(() => {
     const loadPlayerData = async () => {
@@ -187,6 +190,11 @@ const FloorballTeamPlayerUserPage = () => {
   const totals = useMemo(() => calculateSeasonTotals(seasonStats), [seasonStats]);
   const goalieTotals = useMemo(() => calculateGoalieTotals(goalieStats), [goalieStats]);
   const matchTotals = useMemo(() => calculateMatchTotals(matches), [matches]);
+  const totalMatchPages = Math.max(1, Math.ceil(matches.length / MATCHES_PER_PAGE));
+  const paginatedMatches = useMemo(
+    () => matches.slice((matchPage - 1) * MATCHES_PER_PAGE, matchPage * MATCHES_PER_PAGE),
+    [matches, matchPage]
+  );
 
   if (loading) return <PageTemplate title="Pelaaja"><div className="player-loading">Ladataan...</div></PageTemplate>;
   if (error) return <PageTemplate title="Pelaaja"><div className="player-error">Virhe: {error}</div></PageTemplate>;
@@ -323,49 +331,94 @@ const FloorballTeamPlayerUserPage = () => {
           <div className="section-block">
             <h3>Otteluhistoria</h3>
             {matches.length > 0 ? (
-              <div className="stats-table-scroll">
-                <table className="stats-table">
-                  <thead>
-                    <tr>
-                      <th className="col-date">Päivä</th>
-                      <th className="col-team">Koti</th>
-                      <th className="col-score">Tulos</th>
-                      <th className="col-team">Vieras</th>
-                      <th className="col-num" title="Maalit (Goals)">M</th>
-                      <th className="col-num" title="Syötöt (Assists)">S</th>
-                      <th className="col-num" title="Pisteet (Points)">P</th>
-                      <th className="col-num" title="Jäähyminuutit (Penalty Minutes)">JM</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {matches.map((match) => (
-                      <tr key={match.id}>
-                        <td className="col-date">{formatDate(match.scheduledDateTime)}</td>
-                        <td className="col-team">
-                          <Link to={`/team/${slugify(match.homeTeamName)}`} className="team-link">{match.homeTeamName}</Link>
-                        </td>
-                        <td className="col-score">{match.homeScore} - {match.awayScore}</td>
-                        <td className="col-team">
-                          <Link to={`/team/${slugify(match.awayTeamName)}`} className="team-link">{match.awayTeamName}</Link>
-                        </td>
-                        <td className="col-num">{match.playerStats?.goals ?? 0}</td>
-                        <td className="col-num">{match.playerStats?.assists ?? 0}</td>
-                        <td className="col-num">{(match.playerStats?.goals ?? 0) + (match.playerStats?.assists ?? 0)}</td>
-                        <td className="col-num">{match.playerStats?.penaltyMinutes ?? 0}</td>
+              <>
+                <div className="stats-table-scroll">
+                  <table className="stats-table">
+                    <thead>
+                      <tr>
+                        <th className="col-date">Päivä</th>
+                        <th className="col-league">Liiga</th>
+                        <th className="col-team">Koti</th>
+                        <th className="col-score">Tulos</th>
+                        <th className="col-team">Vieras</th>
+                        <th className="col-num" title="Maalit (Goals)">M</th>
+                        <th className="col-num" title="Syötöt (Assists)">S</th>
+                        <th className="col-num" title="Pisteet (Points)">P</th>
+                        <th className="col-num" title="Jäähyminuutit (Penalty Minutes)">JM</th>
                       </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="totals-row">
-                      <td colSpan={4}>Ottelut yhteensä: {matches.length}</td>
-                      <td className="col-num">{matchTotals.goals}</td>
-                      <td className="col-num">{matchTotals.assists}</td>
-                      <td className="col-num">{matchTotals.goals + matchTotals.assists}</td>
-                      <td className="col-num">{matchTotals.penaltyMinutes}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {paginatedMatches.map((match) => (
+                        <tr key={match.id}>
+                          <td className="col-date">{formatDate(match.scheduledDateTime)}</td>
+                          <td className="col-league">
+                            <Link to={`/league/${match.seasonId}`} className="team-link">{match.seasonName}</Link>
+                          </td>
+                          <td className="col-team">
+                            <Link to={`/team/${slugify(match.homeTeamName)}`} className="team-link">{match.homeTeamName}</Link>
+                          </td>
+                          <td className="col-score">{match.homeScore} - {match.awayScore}</td>
+                          <td className="col-team">
+                            <Link to={`/team/${slugify(match.awayTeamName)}`} className="team-link">{match.awayTeamName}</Link>
+                          </td>
+                          <td className="col-num">{match.playerStats?.goals ?? 0}</td>
+                          <td className="col-num">{match.playerStats?.assists ?? 0}</td>
+                          <td className="col-num">{(match.playerStats?.goals ?? 0) + (match.playerStats?.assists ?? 0)}</td>
+                          <td className="col-num">{match.playerStats?.penaltyMinutes ?? 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="totals-row">
+                        <td colSpan={5}>Ottelut yhteensä: {matches.length}</td>
+                        <td className="col-num">{matchTotals.goals}</td>
+                        <td className="col-num">{matchTotals.assists}</td>
+                        <td className="col-num">{matchTotals.goals + matchTotals.assists}</td>
+                        <td className="col-num">{matchTotals.penaltyMinutes}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+                {totalMatchPages > 1 && (
+                  <div className="pagination">
+                    <button
+                      className="pagination-btn"
+                      disabled={matchPage === 1}
+                      onClick={() => setMatchPage(1)}
+                      title="Ensimmäinen sivu"
+                    >
+                      &laquo;
+                    </button>
+                    <button
+                      className="pagination-btn"
+                      disabled={matchPage === 1}
+                      onClick={() => setMatchPage((p) => p - 1)}
+                      title="Edellinen sivu"
+                    >
+                      &lsaquo;
+                    </button>
+                    <span className="pagination-info">
+                      Sivu {matchPage} / {totalMatchPages}
+                    </span>
+                    <button
+                      className="pagination-btn"
+                      disabled={matchPage === totalMatchPages}
+                      onClick={() => setMatchPage((p) => p + 1)}
+                      title="Seuraava sivu"
+                    >
+                      &rsaquo;
+                    </button>
+                    <button
+                      className="pagination-btn"
+                      disabled={matchPage === totalMatchPages}
+                      onClick={() => setMatchPage(totalMatchPages)}
+                      title="Viimeinen sivu"
+                    >
+                      &raquo;
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <p className="no-data-message">Ei otteluhistoriaa saatavilla.</p>
             )}
