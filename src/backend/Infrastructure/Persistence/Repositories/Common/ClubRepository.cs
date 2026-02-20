@@ -36,8 +36,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
 
         public async Task<Dictionary<Guid, Club>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
         {
+            List<Guid> idList = ids?.ToList() ?? new List<Guid>();
+            if (idList.Count == 0)
+            {
+                return new Dictionary<Guid, Club>();
+            }
+
             return await _entities
-                .Where(c => ids.Contains(c.Id))
+                .Where(c => idList.Contains(c.Id))
                 .ToDictionaryAsync(c => c.Id, c => c, cancellationToken);
         }
 
