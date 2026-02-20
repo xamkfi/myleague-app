@@ -49,6 +49,7 @@ const UsersTable = ({
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      hour12: false, // <-- forces 24h
     });
   };
 
@@ -135,13 +136,11 @@ const UsersTable = ({
                           ? t('common.active', 'Active')
                           : t('common.inactive', 'Inactive')}
                       </span>
-                      <span
-                        className={`admin-badge admin-badge--sm ${user.isEmailVerified ? 'admin-badge--active' : 'admin-badge--pending'}`}
-                      >
-                        {user.isEmailVerified
-                          ? t('admin.users.table.verified', 'Verified')
-                          : t('admin.users.table.pending', 'Pending')}
-                      </span>
+                      {!user.isEmailVerified && (
+                        <span className="admin-badge admin-badge--sm admin-badge--pending">
+                          {t('admin.users.table.emailPending', 'Email unverified')}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="admin-table__muted">{formatDate(user.lastLoginAt)}</td>

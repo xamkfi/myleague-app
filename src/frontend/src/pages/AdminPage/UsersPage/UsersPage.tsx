@@ -102,18 +102,16 @@ const UsersPage = () => {
     setEditingUser(null);
   };
 
-  const handleSaveUser = async (email: string, personId: string, role: UserRole) => {
+  const handleSaveUser = async (email: string, personId: string, role: UserRole, isActive: boolean) => {
     try {
       setError(null);
 
       if (editingUser) {
-        // Update
-        const updated = await userService.update(editingUser.id, { email, role });
+        const updated = await userService.update(editingUser.id, { email, role, isActive });
         setUsers((prev) =>
           prev.map((u) => (u.id === updated.id ? updated : u)),
         );
       } else {
-        // Create
         const created = await userService.create({ email, personId, role });
         setUsers((prev) => [...prev, created]);
       }
@@ -128,7 +126,7 @@ const UsersPage = () => {
             ? t('admin.users.errors.update', 'Failed to update user. Please try again.')
             : t('admin.users.errors.create', 'Failed to create user. Please try again.'),
       );
-      throw err; // Re-throw so the modal knows saving failed
+      throw err;
     }
   };
 

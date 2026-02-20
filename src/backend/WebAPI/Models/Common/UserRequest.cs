@@ -46,4 +46,9 @@ public record UpdateUserRequest
     /// </summary>
     [Required(ErrorMessage = "Role is required")]
     public UserRole Role { get; init; }
+
+    /// <summary>
+    /// Gets whether the user account is active
+    /// </summary>
+    public bool IsActive { get; init; }
 }

@@ -76,5 +76,6 @@ public static class UserMapper
 
         user.Email = command.Email;
         user.Role = command.Role;
+        user.IsActive = command.IsActive;
     }
 }
