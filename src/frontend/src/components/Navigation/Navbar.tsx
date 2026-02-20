@@ -34,6 +34,7 @@ function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const sportsDropdownRef = useRef<HTMLLIElement>(null);
+  const mahlDropdownRef = useRef<HTMLLIElement>(null);
   const isMobile = useIsMobile();
   
   // Add hamburger menu toggle
@@ -57,11 +58,11 @@ function Navbar() {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
       
-      // Check if click is inside sports dropdown
+      // Check if click is inside sports or MAHL dropdown
       const isInsideSports = sportsDropdownRef.current?.contains(target);
-      
-      // Close dropdown if click is outside
-      if (!isInsideSports) {
+      const isInsideMahl = mahlDropdownRef.current?.contains(target);
+
+      if (!isInsideSports && !isInsideMahl) {
         setActiveDropdown(null);
       }
     }
@@ -110,19 +111,28 @@ function Navbar() {
           <li className="navbar-item">
             <Link to="/tapahtumakalenteri">{t('nav.eventCalendar')}</Link>
           </li>
-          <li className="navbar-item">
-            <Link to="/saannot">{t('nav.rules')}</Link>
-          </li>
-          <li className="navbar-item dropdown">
-            <Link to="/mahl">{t('nav.mahl')}</Link>
-            <span className="dropdown-icon">▼</span>
+          <li
+            ref={mahlDropdownRef}
+            className={`navbar-item dropdown ${activeDropdown === 'mahl' ? 'active' : ''}`}
+          >
+            <div className="dropdown-trigger" onClick={() => handleDropdownClick('mahl')}>
+              <span className="dropdown-label">{t('nav.mahl')}</span>
+              <span className="dropdown-icon">▼</span>
+            </div>
+            {activeDropdown === 'mahl' && (
+              <ul className="dropdown-menu">
+                <li>
+                  <Link to="/mahl" onClick={() => setActiveDropdown(null)}>{t('nav.mahl')}</Link>
+                </li>
+                <li>
+                  <Link to="/saannot" onClick={() => setActiveDropdown(null)}>{t('nav.rules')}</Link>
+                </li>
+              </ul>
+            )}
           </li>
           <li className="navbar-item dropdown">
             <Link to="/ikaryhmat">{t('nav.ageGroups')}</Link>
             <span className="dropdown-icon">▼</span>
-          </li>
-          <li className="navbar-item">
-            <Link to="/ilmoittaudu">{t('nav.register')}</Link>
           </li>
           <li className="navbar-item dropdown">
             <Link to="/turnaukset">{t('nav.tournaments')}</Link>
@@ -183,16 +193,18 @@ function Navbar() {
               <Link to="/tapahtumakalenteri" onClick={closeMobileMenu}>{t('nav.eventCalendar')}</Link>
             </li>
             <li className="mobile-navbar-item">
-              <Link to="/saannot" onClick={closeMobileMenu}>{t('nav.rules')}</Link>
-            </li>
-            <li className="mobile-navbar-item">
-              <Link to="/mahl" onClick={closeMobileMenu}>{t('nav.mahl')}</Link>
+              <span className="mobile-dropdown-label">{t('nav.mahl')}</span>
+              <ul className="mobile-sports-list">
+                <li>
+                  <Link to="/mahl" onClick={closeMobileMenu}>{t('nav.mahl')}</Link>
+                </li>
+                <li>
+                  <Link to="/saannot" onClick={closeMobileMenu}>{t('nav.rules')}</Link>
+                </li>
+              </ul>
             </li>
             <li className="mobile-navbar-item">
               <Link to="/ikaryhmat" onClick={closeMobileMenu}>{t('nav.ageGroups')}</Link>
-            </li>
-            <li className="mobile-navbar-item">
-              <Link to="/ilmoittaudu" onClick={closeMobileMenu}>{t('nav.register')}</Link>
             </li>
             <li className="mobile-navbar-item">
               <Link to="/turnaukset" onClick={closeMobileMenu}>{t('nav.tournaments')}</Link>

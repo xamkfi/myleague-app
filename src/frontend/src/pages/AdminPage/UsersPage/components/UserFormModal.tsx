@@ -15,6 +15,7 @@ interface UserFormModalProps {
   onSave: (email: string, personId: string, role: UserRole) => Promise<void>;
   onCancel: () => void;
   onResendInvitation?: (user: SystemUser) => void;
+  isResendingInvitation?: boolean;
 }
 
 const UserFormModal = ({
@@ -24,6 +25,7 @@ const UserFormModal = ({
   onSave,
   onCancel,
   onResendInvitation,
+  isResendingInvitation = false,
 }: UserFormModalProps) => {
   const { t } = useTranslation();
   const isEditMode = user !== null;
@@ -256,8 +258,11 @@ const UserFormModal = ({
                       type="button"
                       className="user-form-resend-btn"
                       onClick={() => onResendInvitation(user)}
+                      disabled={isResendingInvitation}
                     >
-                      {t('admin.users.actions.resendInvitation', 'Resend Invitation')}
+                      {isResendingInvitation
+                        ? t('admin.users.actions.sendingInvitation', 'Sending...')
+                        : t('admin.users.actions.resendInvitation', 'Resend Invitation')}
                     </button>
                   )}
                 </div>

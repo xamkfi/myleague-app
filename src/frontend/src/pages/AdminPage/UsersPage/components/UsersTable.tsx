@@ -9,6 +9,7 @@ interface UsersTableProps {
   onEdit: (user: SystemUser) => void;
   onDelete: (user: SystemUser) => void;
   onResendInvitation: (user: SystemUser) => void;
+  resendingUserId: string | null;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onSelectAll: () => void;
@@ -21,6 +22,7 @@ const UsersTable = ({
   onEdit,
   onDelete,
   onResendInvitation,
+  resendingUserId,
   selectedIds,
   onToggleSelect,
   onSelectAll,
@@ -152,8 +154,11 @@ const UsersTable = ({
                         { label: t('common.edit', 'Edit'), onClick: () => onEdit(user) },
                         ...(!user.isEmailVerified
                           ? [{
-                              label: t('admin.users.actions.resendInvitation', 'Resend Invitation'),
+                              label: resendingUserId === user.id
+                                ? t('admin.users.actions.sendingInvitation', 'Sending...')
+                                : t('admin.users.actions.resendInvitation', 'Resend Invitation'),
                               onClick: () => onResendInvitation(user),
+                              disabled: resendingUserId === user.id,
                             }]
                           : []),
                         { label: t('common.delete', 'Delete'), onClick: () => onDelete(user), variant: 'danger' as const },

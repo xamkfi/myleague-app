@@ -36,6 +36,7 @@ const UsersPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Resend invitation state
+  const [resendingUserId, setResendingUserId] = useState<string | null>(null);
   const [resendSuccess, setResendSuccess] = useState<string | null>(null);
 
   const loadUsers = useCallback(async () => {
@@ -168,6 +169,7 @@ const UsersPage = () => {
     try {
       setError(null);
       setResendSuccess(null);
+      setResendingUserId(user.id);
       await userService.resendInvitation(user.id);
       setResendSuccess(
         t('admin.users.invitationResent', 'Invitation email resent to {{email}}.', { email: user.email })
@@ -179,6 +181,8 @@ const UsersPage = () => {
           ? err.message
           : t('admin.users.errors.resend', 'Failed to resend invitation. Please try again.'),
       );
+    } finally {
+      setResendingUserId(null);
     }
   }, [t]);
 
@@ -303,6 +307,7 @@ const UsersPage = () => {
           onEdit={openEditModal}
           onDelete={openDeleteModal}
           onResendInvitation={handleResendInvitation}
+          resendingUserId={resendingUserId}
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}
           onSelectAll={handleSelectAll}
@@ -331,6 +336,7 @@ const UsersPage = () => {
         onSave={handleSaveUser}
         onCancel={closeFormModal}
         onResendInvitation={handleResendInvitation}
+        isResendingInvitation={resendingUserId !== null}
       />
 
       <ConfirmDeleteModal
