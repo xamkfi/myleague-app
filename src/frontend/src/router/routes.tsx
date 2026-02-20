@@ -26,6 +26,7 @@ const EventCalendarPage = lazy(() => import('../pages/EventCalendarPage/EventCal
 
 // Admin pages
 const LoginPage = lazy(() => import('../pages/AdminPage/LoginPage/LoginPage'));
+const VerifyEmailPage = lazy(() => import('../pages/AdminPage/VerifyEmailPage/VerifyEmailPage'));
 const AdminPage = lazy(() => import('../pages/AdminPage/AdminPage'));
 const UsersPage = lazy(() => import('../pages/AdminPage/UsersPage/UsersPage'));
 const PersonsPage = lazy(() => import('../pages/AdminPage/PersonsPage/PersonsPage'));
@@ -72,6 +73,11 @@ export const routes: RouteObject[] = [
   {
     path: '/admin/login',
     element: <SuspenseWrapper><LoginPage /></SuspenseWrapper>
+  },
+  // Admin email verification (public – linked from invitation email)
+  {
+    path: '/admin/verify-email',
+    element: <SuspenseWrapper><VerifyEmailPage /></SuspenseWrapper>
   },
   // Protected admin routes
   {

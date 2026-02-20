@@ -71,6 +71,10 @@ builder.Services.Configure<LoginCodeConfiguration>(
 builder.Services.Configure<AzureCommunicationServicesConfiguration>(
     builder.Configuration.GetSection(AzureCommunicationServicesConfiguration.SectionName));
 
+// Configure Frontend options
+builder.Services.Configure<FrontendConfiguration>(
+    builder.Configuration.GetSection(FrontendConfiguration.SectionName));
+
 // Add JWT authentication
 JwtConfiguration jwtConfig = builder.Configuration
     .GetSection(JwtConfiguration.SectionName)

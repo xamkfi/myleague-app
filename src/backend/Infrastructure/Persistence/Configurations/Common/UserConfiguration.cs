@@ -46,6 +46,16 @@ public class UserConfiguration : BaseEntityConfiguration<User>
             .IsRequired()
             .HasDefaultValue(0);
 
+        builder.Property(u => u.IsEmailVerified)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(u => u.EmailVerificationToken)
+            .HasMaxLength(128);
+
+        builder.Property(u => u.EmailVerificationTokenExpiresAt)
+            .HasColumnType("timestamp with time zone");
+
         // Configure relationship with Person
         builder.HasOne(u => u.Person)
             .WithMany()

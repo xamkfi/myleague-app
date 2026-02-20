@@ -54,6 +54,21 @@ namespace Domain.Entities.Common
         public int LoginCodeAttempts { get; set; }
 
         /// <summary>
+        /// Whether the user has verified their email address
+        /// </summary>
+        public bool IsEmailVerified { get; set; }
+
+        /// <summary>
+        /// Secure token used for email verification, null when not pending
+        /// </summary>
+        public string? EmailVerificationToken { get; set; }
+
+        /// <summary>
+        /// UTC expiration time of the email verification token
+        /// </summary>
+        public DateTime? EmailVerificationTokenExpiresAt { get; set; }
+
+        /// <summary>
         /// Navigation property to refresh tokens
         /// </summary>
         public ICollection<RefreshToken> RefreshTokens { get; } = new List<RefreshToken>();
@@ -122,6 +137,29 @@ namespace Domain.Entities.Common
         {
             LastLoginAt = DateTime.UtcNow;
             ClearLoginCode();
+        }
+
+        /// <summary>
+        /// Sets a new email verification token with expiration
+        /// </summary>
+        /// <param name="token">The URL-safe verification token</param>
+        /// <param name="expiresAt">The UTC expiration time</param>
+        public void SetEmailVerificationToken(string token, DateTime expiresAt)
+        {
+            EmailVerificationToken = token;
+            EmailVerificationTokenExpiresAt = expiresAt;
+            IsEmailVerified = false;
+        }
+
+        /// <summary>
+        /// Completes email verification, activates the account and clears the token
+        /// </summary>
+        public void VerifyEmail()
+        {
+            IsEmailVerified = true;
+            IsActive = true;
+            EmailVerificationToken = null;
+            EmailVerificationTokenExpiresAt = null;
         }
     }
 }

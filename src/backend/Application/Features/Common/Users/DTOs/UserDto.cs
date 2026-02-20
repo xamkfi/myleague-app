@@ -13,5 +13,6 @@ public record UserDto(
     Guid PersonId,
     UserRole Role,
     bool IsActive,
+    bool IsEmailVerified,
     DateTime? LastLoginAt,
     PersonDto Person);

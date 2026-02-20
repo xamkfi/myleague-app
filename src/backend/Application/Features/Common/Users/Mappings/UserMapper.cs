@@ -32,6 +32,7 @@ public static class UserMapper
             user.PersonId,
             user.Role,
             user.IsActive,
+            user.IsEmailVerified,
             user.LastLoginAt,
             user.Person != null ? PersonMapper.ToDto(user.Person) :
                 new PersonDto(user.PersonId, "Unknown", "User", DateTime.MinValue, "Unknown User",

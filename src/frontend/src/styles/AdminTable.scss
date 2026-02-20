@@ -149,7 +149,11 @@
     color: $color-blue-secondary-muted;
   }
 
-  // Warning / Pending → yellow palette
+  &--pending {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+  }
+
   &--warning {
     background-color: $color-yellow-almost;
     color: $color-yellow-muted;
