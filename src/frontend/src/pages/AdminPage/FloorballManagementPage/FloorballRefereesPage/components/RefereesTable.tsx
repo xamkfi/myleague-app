@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import type { FloorballRefereeDto } from '../../../../../api/floorball/floorballRefereeService';
 import CheckIcon from '../../../../../assets/basicIcons/check.svg';
 import CloseIcon from '../../../../../assets/basicIcons/close.svg';
@@ -23,6 +24,7 @@ const RefereesTable = ({
   onClearSelection,
 }: RefereesTableProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // Defensive programming: ensure referees is always an array
   const safeReferees = Array.isArray(referees) ? referees : [];
@@ -137,6 +139,10 @@ const RefereesTable = ({
               <td className="admin-table__actions-col">
                 <ActionsDropdown
                   actions={[
+                    {
+                      label: t('common.edit', 'Edit'),
+                      onClick: () => navigate(`/admin/floorball/referees/${referee.id}/edit`),
+                    },
                     {
                       label: t('common.delete', 'Delete'),
                       onClick: () => onDelete(referee.id),
