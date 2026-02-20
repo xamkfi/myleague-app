@@ -448,7 +448,6 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
             <th>{t('admin.persons.table.birthDate', 'Birth Date')}</th>
             <th>{t('admin.persons.table.email', 'Email')}</th>
             <th>{t('admin.persons.table.registered', 'Registered')}</th>
-            <th>{t('admin.persons.table.role', 'Role')}</th>
             <th className="admin-table__actions-col">{t('admin.persons.table.actions', 'Actions')}</th>
           </tr>
               </thead>
@@ -497,28 +496,6 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
                     </>
                   )}
                 </button>
-              </td>
-              <td className="role-cell">
-                <select
-                  className={`role-selector ${updatingRole === person.id ? 'updating' : ''}`}
-                  value={person.role}
-                  onChange={(e) => handleRoleChange(person.id, e.target.value as PersonRole)}
-                  disabled={updatingRole === person.id}
-                  title={t('admin.persons.actions.updateRole', 'Update Role')}
-                >
-                  <option value={PersonRole.User}>
-                    {t('admin.persons.roles.user', 'User')}
-                  </option>
-                  <option value={PersonRole.Admin}>
-                    {t('admin.persons.roles.admin', 'Admin')}
-                  </option>
-                  <option value={PersonRole.SuperAdmin}>
-                    {t('admin.persons.roles.superAdmin', 'Super Admin')}
-                  </option>
-                </select>
-                {updatingRole === person.id && (
-                  <span className="loading-spinner">⏳</span>
-                )}
               </td>
               <td className="admin-table__actions-col">
                 <ActionsDropdown
