@@ -14,6 +14,7 @@ interface UserFormModalProps {
   existingPersonIds: string[];
   onSave: (email: string, personId: string, role: UserRole) => Promise<void>;
   onCancel: () => void;
+  onResendInvitation?: (user: SystemUser) => void;
 }
 
 const UserFormModal = ({
@@ -22,6 +23,7 @@ const UserFormModal = ({
   existingPersonIds,
   onSave,
   onCancel,
+  onResendInvitation,
 }: UserFormModalProps) => {
   const { t } = useTranslation();
   const isEditMode = user !== null;
@@ -235,6 +237,29 @@ const UserFormModal = ({
                 <label>{t('admin.users.form.selectPerson', 'Person')}</label>
                 <div className="user-form-readonly">
                   {user.person?.fullName ?? '—'}
+                </div>
+              </div>
+            )}
+
+            {/* Email verification status in edit mode */}
+            {isEditMode && user && (
+              <div className="user-form-group">
+                <label>{t('admin.users.form.emailVerified', 'Email Verified')}</label>
+                <div className="user-form-verification-row">
+                  <span className={`user-form-verification-badge ${user.isEmailVerified ? 'user-form-verification-badge--verified' : 'user-form-verification-badge--pending'}`}>
+                    {user.isEmailVerified
+                      ? t('admin.users.table.verified', 'Verified')
+                      : t('admin.users.table.pending', 'Pending')}
+                  </span>
+                  {!user.isEmailVerified && onResendInvitation && (
+                    <button
+                      type="button"
+                      className="user-form-resend-btn"
+                      onClick={() => onResendInvitation(user)}
+                    >
+                      {t('admin.users.actions.resendInvitation', 'Resend Invitation')}
+                    </button>
+                  )}
                 </div>
               </div>
             )}

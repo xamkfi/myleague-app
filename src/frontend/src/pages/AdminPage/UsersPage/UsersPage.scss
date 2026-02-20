@@ -79,6 +79,19 @@
   }
 }
 
+.users-page__success-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
 .users-page__empty-state {
   margin-top: 1.5rem;
   padding: 1.25rem;
@@ -365,6 +378,50 @@
   margin-top: 0.35rem;
   font-size: 0.8rem;
   color: #dc2626;
+}
+
+.user-form-verification-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.user-form-verification-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+
+  &--verified {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #047857;
+  }
+
+  &--pending {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+  }
+}
+
+.user-form-resend-btn {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+  }
 }
 
 /* ============================================================================

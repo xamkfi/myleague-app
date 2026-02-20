@@ -6,6 +6,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
+using Microsoft.AspNetCore.Http;
 
 namespace WebAPI.Controllers.Common;
 
@@ -218,6 +219,39 @@ public class UsersController : ControllerBase
         }
 
         return BadRequest(ApiResponse<UserDto>.ErrorResponse(errorMessage));
+    }
+
+    /// <summary>
+    /// Resend the admin invitation email to a user who has not yet verified their email.
+    /// Generates a fresh 48-hour verification token and sends a new invitation.
+    /// </summary>
+    /// <param name="id">The user ID</param>
+    /// <returns>Success status</returns>
+    [HttpPost("{id:guid}/resend-invitation")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse>> ResendInvitation(Guid id)
+    {
+        _logger.LogInformation("Resending admin invitation for user: {Id}", id);
+
+        ResendAdminInvitationCommand command = new(id);
+        Result<bool> result = await _mediator.Send(command);
+
+        if (result.IsSuccess)
+        {
+            return Ok(ApiResponse.SuccessResponse("Invitation email resent successfully."));
+        }
+
+        string errorMessage = result.Error ?? result.GetErrorsString();
+
+        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+        {
+            return NotFound(ApiResponse.ErrorResponse(errorMessage));
+        }
+
+        return BadRequest(ApiResponse.ErrorResponse(errorMessage));
     }
 
     /// <summary>

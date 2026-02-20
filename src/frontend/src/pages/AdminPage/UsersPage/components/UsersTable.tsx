@@ -8,6 +8,7 @@ interface UsersTableProps {
   users: SystemUser[];
   onEdit: (user: SystemUser) => void;
   onDelete: (user: SystemUser) => void;
+  onResendInvitation: (user: SystemUser) => void;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onSelectAll: () => void;
@@ -19,6 +20,7 @@ const UsersTable = ({
   users,
   onEdit,
   onDelete,
+  onResendInvitation,
   selectedIds,
   onToggleSelect,
   onSelectAll,
@@ -91,6 +93,7 @@ const UsersTable = ({
               <th>{t('admin.users.table.email', 'Email')}</th>
               <th>{t('admin.users.table.role', 'Role')}</th>
               <th>{t('admin.users.table.status', 'Status')}</th>
+              <th>{t('admin.users.table.emailVerified', 'Email Verified')}</th>
               <th>{t('admin.users.table.lastLogin', 'Last Login')}</th>
               <th className="admin-table__actions-col">
                 {t('common.actions', 'Actions')}
@@ -132,13 +135,28 @@ const UsersTable = ({
                         : t('common.inactive', 'Inactive')}
                     </span>
                   </td>
+                  <td>
+                    <span
+                      className={`admin-badge ${user.isEmailVerified ? 'admin-badge--active' : 'admin-badge--pending'}`}
+                    >
+                      {user.isEmailVerified
+                        ? t('admin.users.table.verified', 'Verified')
+                        : t('admin.users.table.pending', 'Pending')}
+                    </span>
+                  </td>
                   <td className="admin-table__muted">{formatDate(user.lastLoginAt)}</td>
                   <td className="admin-table__actions-col">
                     <ActionsDropdown
                       ariaLabel={t('admin.users.actions.menu', 'User actions menu')}
                       actions={[
                         { label: t('common.edit', 'Edit'), onClick: () => onEdit(user) },
-                        { label: t('common.delete', 'Delete'), onClick: () => onDelete(user), variant: 'danger' },
+                        ...(!user.isEmailVerified
+                          ? [{
+                              label: t('admin.users.actions.resendInvitation', 'Resend Invitation'),
+                              onClick: () => onResendInvitation(user),
+                            }]
+                          : []),
+                        { label: t('common.delete', 'Delete'), onClick: () => onDelete(user), variant: 'danger' as const },
                       ]}
                     />
                   </td>
