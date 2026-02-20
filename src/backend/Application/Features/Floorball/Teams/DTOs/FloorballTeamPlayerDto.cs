@@ -18,6 +18,7 @@ namespace Application.Features.Floorball.Teams.DTOs
     /// <param name="Goals">Number of goals scored for this team</param>
     /// <param name="Assists">Number of assists made for this team</param>
     /// <param name="PenaltyMinutes">Number of penalty minutes for this team</param>
+    /// <param name="Age">The player's age (null if birth date is unknown)</param>
     public record FloorballTeamPlayerDto(
         Guid TeamId,
         Guid PlayerId,
@@ -29,5 +30,6 @@ namespace Application.Features.Floorball.Teams.DTOs
         int GamesPlayed = 0,
         int Goals = 0,
         int Assists = 0,
-        int PenaltyMinutes = 0);
+        int PenaltyMinutes = 0,
+        int? Age = null);
 } 

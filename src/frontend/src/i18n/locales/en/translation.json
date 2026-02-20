@@ -1004,7 +1004,16 @@
       "home": "Home",
       "away": "Away",
       "winPercentage": "Win %",
-      "perGame": "per game"
+      "perGame": "per game",
+      "playerStats": "Player Statistics",
+      "playerName": "Player",
+      "position": "Pos",
+      "gp": "GP",
+      "g": "G",
+      "a": "A",
+      "pts": "PTS",
+      "pim": "PIM",
+      "noRosterData": "No roster data available."
     },
     "standings": "Standings",
     "todaysMatches": "TODAY'S MATCHES",

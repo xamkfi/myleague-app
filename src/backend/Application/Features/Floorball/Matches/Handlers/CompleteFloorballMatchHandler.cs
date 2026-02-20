@@ -159,12 +159,13 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
         else if (teamScore < opponentScore) gameResult = FloorballGameResult.Loss;
         else gameResult = FloorballGameResult.Tie;
 
-        // Update team statistics with match result
+        // Goals are already tracked incrementally via RecordGoalHandler (IncrementGoalsFor/IncrementGoalsAgainst),
+        // so pass 0 here to avoid double-counting.
         teamStats.UpdateAfterMatch(
             gameResult: gameResult,
             isHomeGame: isHomeGame,
-            goalsFor: teamScore,
-            goalsAgainst: opponentScore);
+            goalsFor: 0,
+            goalsAgainst: 0);
 
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
     }

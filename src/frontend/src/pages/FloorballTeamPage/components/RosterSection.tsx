@@ -70,7 +70,7 @@ export default function RosterSection({ team }: RosterSectionProps) {
                     </div>
                     
                     <div className="roster-age">
-                      {player.age ?? 99}
+                      {player.age && player.age !== 99 ? player.age : "-"}
                     </div>
                     
                     <div className="roster-games-played">
