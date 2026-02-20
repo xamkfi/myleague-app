@@ -86,6 +86,24 @@ export const authService = {
   },
 
   /**
+   * Verify a new admin's email address using the token from the invitation email.
+   * On success the account is activated and a welcome email with login instructions is sent.
+   */
+  verifyAdminEmail: async (token: string): Promise<void> => {
+    const response = await fetch(`${BASE_URL}/verify-admin-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    const data = await response.json();
+
+    if (!response.ok || !data?.success) {
+      const errorMessage = await parseErrorResponse(data, 'Email verification failed');
+      throw new Error(errorMessage || 'Email verification failed');
+    }
+  },
+
+  /**
    * Get the current authenticated user's information.
    */
   getMe: async (accessToken: string): Promise<AuthUser> => {

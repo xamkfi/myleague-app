@@ -76,4 +76,11 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
     {
         return await _entities.AnyAsync(u => u.PersonId == personId);
     }
+
+    public async Task<User?> GetByEmailVerificationTokenAsync(string token)
+    {
+        return await _entities
+            .Include(u => u.Person)
+            .FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
+    }
 }

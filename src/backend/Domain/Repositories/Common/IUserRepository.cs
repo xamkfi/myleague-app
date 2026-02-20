@@ -72,4 +72,11 @@ public interface IUserRepository
     /// <param name="personId">The person ID</param>
     /// <returns>True if a user with the person ID exists, false otherwise</returns>
     Task<bool> ExistsByPersonIdAsync(Guid personId);
+
+    /// <summary>
+    /// Gets a user by their email verification token
+    /// </summary>
+    /// <param name="token">The email verification token</param>
+    /// <returns>The user if found, null otherwise</returns>
+    Task<User?> GetByEmailVerificationTokenAsync(string token);
 }

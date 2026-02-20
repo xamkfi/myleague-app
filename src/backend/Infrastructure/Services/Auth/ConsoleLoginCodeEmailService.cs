@@ -26,4 +26,30 @@ public class ConsoleLoginCodeEmailService : IEmailService
 
         return Task.CompletedTask;
     }
+
+    public Task SendAdminInvitationAsync(string email, string firstName, string verificationUrl, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "========================================\n" +
+            "  ADMIN INVITATION for {Email}\n" +
+            "  Name: {FirstName}\n" +
+            "  Verification URL: {VerificationUrl}\n" +
+            "========================================",
+            email, firstName, verificationUrl);
+
+        return Task.CompletedTask;
+    }
+
+    public Task SendAdminVerificationSuccessAsync(string email, string firstName, string loginUrl, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "========================================\n" +
+            "  ADMIN VERIFIED for {Email}\n" +
+            "  Name: {FirstName}\n" +
+            "  Login URL: {LoginUrl}\n" +
+            "========================================",
+            email, firstName, loginUrl);
+
+        return Task.CompletedTask;
+    }
 }

@@ -35,6 +35,19 @@ public class EntityImporter
             {
                 Console.WriteLine($"  Club '{team.Name}' already exists.");
                 map[team.Name] = club;
+
+                if (!string.IsNullOrEmpty(team.LogoUrl) && NeedsLogoUpload(club.LogoUrl))
+                {
+                    string? hostedUrl = await _api.UploadClubImageAsync(team.LogoUrl);
+                    if (hostedUrl != null)
+                    {
+                        bool logoOk = await _api.UpdateClubLogoAsync(club.Id, hostedUrl);
+                        Console.WriteLine(logoOk
+                            ? $"    Updated missing club logo: {hostedUrl}"
+                            : $"    WARN: Failed to set club logo for '{team.Name}'");
+                    }
+                }
+
                 continue;
             }
 
@@ -238,12 +251,20 @@ public class EntityImporter
                 if (ok) added++;
             }
             Console.WriteLine($"    Added {added}/{st.Players.Count} players to '{st.Name}'");
-            if (!string.IsNullOrEmpty(st.LogoUrl))
+            if (!string.IsNullOrEmpty(st.LogoUrl) && NeedsLogoUpload(team.LogoUrl))
             {
-                bool logoOk = await _api.UpdateTeamLogoAsync(team.Id, st.LogoUrl);
-                Console.WriteLine(logoOk
-                    ? $"    Set logo: {st.LogoUrl}"
-                    : $"    WARN: Failed to set logo for '{st.Name}'");
+                string? hostedUrl = await _api.UploadClubImageAsync(st.LogoUrl);
+                if (hostedUrl != null)
+                {
+                    bool logoOk = await _api.UpdateTeamLogoAsync(team.Id, hostedUrl);
+                    Console.WriteLine(logoOk
+                        ? $"    Set team logo: {hostedUrl}"
+                        : $"    WARN: Failed to set team logo for '{st.Name}'");
+                }
+                else
+                {
+                    Console.WriteLine($"    WARN: Could not upload team logo for '{st.Name}' from '{st.LogoUrl}'");
+                }
             }
         }
 
@@ -337,5 +358,99 @@ public class EntityImporter
         Console.WriteLine(activated ? "OK" : "FAILED");
 
         return season;
+    }
+
+    /// <summary>
+    /// Fetches all existing clubs and teams from the API and re-uploads any logos
+    /// that are missing or still pointing to an external source (mahl.fi).
+    /// Uses the scraped team data as a fallback source for clubs/teams with no logo at all.
+    /// </summary>
+    public async Task UpdateLogosAsync(List<ScrapedTeam> scrapedTeams)
+    {
+        Dictionary<string, string> scrapedLogoByName = scrapedTeams
+            .Where(t => !string.IsNullOrEmpty(t.LogoUrl))
+            .ToDictionary(t => t.Name, t => t.LogoUrl!, StringComparer.OrdinalIgnoreCase);
+
+        // ── Clubs ────────────────────────────────────────────────────
+        Console.WriteLine("--- Updating Club Logos ---");
+        List<ClubDto> clubs = await _api.GetClubsAsync();
+        int clubsUpdated = 0;
+        int clubsSkipped = 0;
+
+        foreach (ClubDto club in clubs)
+        {
+            string? sourceUrl = NeedsLogoUpload(club.LogoUrl)
+                ? (string.IsNullOrEmpty(club.LogoUrl)
+                    ? scrapedLogoByName.GetValueOrDefault(club.Name)
+                    : club.LogoUrl)
+                : null;
+
+            if (sourceUrl == null)
+            {
+                clubsSkipped++;
+                continue;
+            }
+
+            Console.Write($"  Club '{club.Name}'... ");
+            string? hostedUrl = await _api.UploadClubImageAsync(sourceUrl);
+            if (hostedUrl != null)
+            {
+                bool ok = await _api.UpdateClubLogoAsync(club.Id, hostedUrl);
+                Console.WriteLine(ok ? $"OK -> {hostedUrl}" : "WARN: update failed");
+                if (ok) clubsUpdated++;
+            }
+            else
+            {
+                Console.WriteLine("WARN: upload failed");
+            }
+        }
+
+        Console.WriteLine($"  Clubs: {clubsUpdated} updated, {clubsSkipped} already hosted.\n");
+
+        // ── Teams ────────────────────────────────────────────────────
+        Console.WriteLine("--- Updating Team Logos ---");
+        List<FloorballTeamDto> teams = await _api.GetTeamsAsync();
+        int teamsUpdated = 0;
+        int teamsSkipped = 0;
+
+        foreach (FloorballTeamDto team in teams)
+        {
+            string? sourceUrl = NeedsLogoUpload(team.LogoUrl)
+                ? (string.IsNullOrEmpty(team.LogoUrl)
+                    ? scrapedLogoByName.GetValueOrDefault(team.Name)
+                    : team.LogoUrl)
+                : null;
+
+            if (sourceUrl == null)
+            {
+                teamsSkipped++;
+                continue;
+            }
+
+            Console.Write($"  Team '{team.Name}'... ");
+            string? hostedUrl = await _api.UploadClubImageAsync(sourceUrl);
+            if (hostedUrl != null)
+            {
+                bool ok = await _api.UpdateTeamLogoAsync(team.Id, hostedUrl);
+                Console.WriteLine(ok ? $"OK -> {hostedUrl}" : "WARN: update failed");
+                if (ok) teamsUpdated++;
+            }
+            else
+            {
+                Console.WriteLine("WARN: upload failed");
+            }
+        }
+
+        Console.WriteLine($"  Teams: {teamsUpdated} updated, {teamsSkipped} already hosted.");
+    }
+
+    /// <summary>
+    /// Returns true when the stored logo URL is missing or still points to an external source
+    /// (e.g. mahl.fi) that won't be reachable from the hosted environment.
+    /// </summary>
+    private static bool NeedsLogoUpload(string? currentLogoUrl)
+    {
+        if (string.IsNullOrEmpty(currentLogoUrl)) return true;
+        return currentLogoUrl.Contains("mahl.fi", StringComparison.OrdinalIgnoreCase);
     }
 }

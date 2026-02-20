@@ -103,23 +103,26 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Load clubs for logo resolution (cross-context); skip when no matches to avoid empty IN clause
+            // Normalize matches to a non-null sequence and load clubs for logo resolution (skip when no matches)
+            IEnumerable<FloorballMatch> matches = pagedMatches.Items ?? Enumerable.Empty<FloorballMatch>();
+
             Dictionary<Guid, Club> clubLookup;
-            if (pagedMatches.Items == null || !pagedMatches.Items.Any())
+            if (!matches.Any())
             {
                 clubLookup = new Dictionary<Guid, Club>();
             }
             else
             {
-                List<Guid> clubIds = pagedMatches.Items
+                List<Guid> clubIds = matches
                     .SelectMany(m => new[] { m.HomeTeam.ClubId, m.AwayTeam.ClubId })
                     .Distinct()
                     .ToList();
+
                 clubLookup = await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
             }
 
             // Map to DTOs with club data
-            IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(pagedMatches.Items, clubLookup);
+            IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(matches, clubLookup);
             
             // Create the final paged result with DTOs
             PagedResult<FloorballMatchDto> pagedResult = CreatePagedResult(
