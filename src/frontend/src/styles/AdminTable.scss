@@ -8,16 +8,19 @@
 
 // ── Wrapper ──
 .admin-table__wrapper {
-  border: 1px solid #e5e7eb;
+  border: 1px solid $color-neutral-medium-grey;
   border-radius: 16px;
   padding: 1rem 1.5rem;
   background-color: $color-white;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 3px rgba(12, 29, 62, 0.06);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 // ── Table base ──
 .admin-table {
   width: 100%;
+  min-width: 600px;
   border-collapse: collapse;
 
   th {
@@ -25,17 +28,17 @@
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.08em;
-    color: #6b7280;
+    color: $color-neutral-dark-grey;
     padding: 0.75rem 1rem;
     white-space: nowrap;
   }
 
   td {
     padding: 1rem;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid $color-neutral-light-grey;
     font-size: 0.95rem;
     vertical-align: middle;
-    color: #111827;
+    color: $color-neutral-black;
   }
 
   tbody tr:first-of-type td {
@@ -48,16 +51,16 @@
     transition: background-color 0.15s ease;
 
     &:hover {
-      background-color: #f9fafb;
+      background-color: $color-neutral-light-grey;
     }
   }
 
   // Selected rows
   tbody tr.admin-table__row--selected {
-    background-color: rgba(67, 56, 202, 0.06);
+    background-color: rgba($color-blue-light, 0.08);
 
     &:hover {
-      background-color: rgba(67, 56, 202, 0.1);
+      background-color: rgba($color-blue-light, 0.14);
     }
   }
 }
@@ -71,7 +74,7 @@
     width: 16px;
     height: 16px;
     cursor: pointer;
-    accent-color: #4f46e5;
+    accent-color: $color-blue-light;
   }
 }
 
@@ -84,17 +87,17 @@
 // ── Primary name cell ──
 .admin-table__name {
   font-weight: 600;
-  color: #111827;
+  color: $color-neutral-black;
 }
 
 .admin-table__subtitle {
   margin-top: 0.25rem;
-  color: #6b7280;
+  color: $color-neutral-dark-grey;
   font-size: 0.85rem;
 }
 
 .admin-table__muted {
-  color: #6b7280;
+  color: $color-neutral-dark-grey;
   font-size: 0.9rem;
 }
 
@@ -110,33 +113,40 @@
   min-width: 80px;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
 
+  // Active → green palette from design system
   &--active {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: #047857;
+    background-color: $color-green-almost;
+    color: $color-green-muted;
   }
 
+  // Inactive → red palette from design system
   &--inactive {
-    background-color: rgba(248, 113, 113, 0.15);
-    color: #b91c1c;
+    background-color: $color-red-almost;
+    color: $color-red-muted;
   }
 
+  // SystemAdmin → navy-blue palette (darkest shade)
   &--system {
-    background-color: rgba(168, 85, 247, 0.15);
-    color: #7c3aed;
+    background-color: $color-blue-background;
+    color: $color-blue-deep;
   }
 
+  // ClubAdmin → secondary blue palette
   &--club {
-    background-color: rgba(59, 130, 246, 0.15);
-    color: #2563eb;
+    background-color: $color-blue-secondary-almost;
+    color: $color-blue-secondary-muted;
   }
 
+  // Informational → secondary blue palette
   &--info {
-    background-color: rgba(59, 130, 246, 0.15);
-    color: #2563eb;
+    background-color: $color-blue-secondary-almost;
+    color: $color-blue-secondary-muted;
   }
 
   &--pending {
@@ -145,18 +155,20 @@
   }
 
   &--warning {
-    background-color: rgba(245, 158, 11, 0.15);
-    color: #b45309;
+    background-color: $color-yellow-almost;
+    color: $color-yellow-muted;
   }
 
+  // Danger / error → red palette
   &--danger {
-    background-color: rgba(248, 113, 113, 0.15);
-    color: #b91c1c;
+    background-color: $color-red-almost;
+    color: $color-red-muted;
   }
 
+  // Completed / neutral → light grey
   &--completed {
-    background-color: rgba(107, 114, 128, 0.15);
-    color: #374151;
+    background-color: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
   }
 }
 
@@ -179,13 +191,13 @@
   }
 
   &--on {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: #047857;
+    background-color: $color-green-almost;
+    color: $color-green-muted;
   }
 
   &--off {
-    background-color: rgba(107, 114, 128, 0.15);
-    color: #6b7280;
+    background-color: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
   }
 }
 
@@ -198,13 +210,13 @@
   font-weight: 600;
 
   &--blue {
-    background-color: rgba(59, 130, 246, 0.12);
-    color: #2563eb;
+    background-color: $color-blue-secondary-almost;
+    color: $color-blue-secondary-muted;
   }
 
   &--purple {
-    background-color: rgba(139, 92, 246, 0.12);
-    color: #7c3aed;
+    background-color: $color-blue-background;
+    color: $color-blue-deep;
   }
 }
 
@@ -212,11 +224,11 @@
 .admin-table__empty {
   padding: 2rem;
   text-align: center;
-  color: #6b7280;
+  color: $color-neutral-dark-grey;
   font-size: 1rem;
-  border: 1px dashed #d1d5db;
+  border: 1px dashed $color-neutral-medium-grey;
   border-radius: 12px;
-  background-color: #f9fafb;
+  background-color: $color-neutral-light-grey;
 }
 
 // ── Sort header ──
@@ -225,7 +237,7 @@
   user-select: none;
 
   &:hover {
-    color: #374151;
+    color: $color-blue-medium;
   }
 }
 
@@ -237,7 +249,7 @@
 // ── Responsive ──
 @media (max-width: 900px) {
   .admin-table__wrapper {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 12px;
   }
 
@@ -251,5 +263,14 @@
       padding: 0.75rem;
       font-size: 0.9rem;
     }
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-table__wrapper {
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
   }
 }
