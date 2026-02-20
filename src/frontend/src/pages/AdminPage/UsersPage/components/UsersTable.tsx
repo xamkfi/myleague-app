@@ -93,9 +93,7 @@ const UsersTable = ({
               </th>
               <th>{t('admin.users.table.person', 'Person')}</th>
               <th>{t('admin.users.table.email', 'Email')}</th>
-              <th>{t('admin.users.table.role', 'Role')}</th>
               <th>{t('admin.users.table.status', 'Status')}</th>
-              <th>{t('admin.users.table.emailVerified', 'Email Verified')}</th>
               <th>{t('admin.users.table.lastLogin', 'Last Login')}</th>
               <th className="admin-table__actions-col">
                 {t('common.actions', 'Actions')}
@@ -121,30 +119,30 @@ const UsersTable = ({
                     <div className="admin-table__name">
                       {user.person?.fullName ?? '—'}
                     </div>
+                    <div className="admin-table__subtitle">
+                      <span className={`admin-badge admin-badge--sm ${getRoleBadgeClass(user.role)}`}>
+                        {getRoleLabel(user.role)}
+                      </span>
+                    </div>
                   </td>
                   <td>{user.email}</td>
                   <td>
-                    <span className={`admin-badge ${getRoleBadgeClass(user.role)}`}>
-                      {getRoleLabel(user.role)}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`admin-badge ${user.isActive ? 'admin-badge--active' : 'admin-badge--inactive'}`}
-                    >
-                      {user.isActive
-                        ? t('common.active', 'Active')
-                        : t('common.inactive', 'Inactive')}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`admin-badge ${user.isEmailVerified ? 'admin-badge--active' : 'admin-badge--pending'}`}
-                    >
-                      {user.isEmailVerified
-                        ? t('admin.users.table.verified', 'Verified')
-                        : t('admin.users.table.pending', 'Pending')}
-                    </span>
+                    <div className="users-table__status-cell">
+                      <span
+                        className={`admin-badge admin-badge--sm ${user.isActive ? 'admin-badge--active' : 'admin-badge--inactive'}`}
+                      >
+                        {user.isActive
+                          ? t('common.active', 'Active')
+                          : t('common.inactive', 'Inactive')}
+                      </span>
+                      <span
+                        className={`admin-badge admin-badge--sm ${user.isEmailVerified ? 'admin-badge--active' : 'admin-badge--pending'}`}
+                      >
+                        {user.isEmailVerified
+                          ? t('admin.users.table.verified', 'Verified')
+                          : t('admin.users.table.pending', 'Pending')}
+                      </span>
+                    </div>
                   </td>
                   <td className="admin-table__muted">{formatDate(user.lastLoginAt)}</td>
                   <td className="admin-table__actions-col">

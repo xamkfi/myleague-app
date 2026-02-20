@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
 import SearchField from '../../../components/SearchField';
@@ -38,6 +38,7 @@ const UsersPage = () => {
   // Resend invitation state
   const [resendingUserId, setResendingUserId] = useState<string | null>(null);
   const [resendSuccess, setResendSuccess] = useState<string | null>(null);
+  const resendTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -63,13 +64,14 @@ const UsersPage = () => {
   }, [loadUsers]);
 
   const filteredUsers = useMemo(() => {
+    const term = searchTerm.toLowerCase();
     return users.filter((user) => {
       const matchesSearch =
-        !searchTerm ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.person?.fullName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.person?.firstName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.person?.lastName ?? '').toLowerCase().includes(searchTerm.toLowerCase());
+        !term ||
+        user.email.toLowerCase().includes(term) ||
+        (user.person?.fullName ?? '').toLowerCase().includes(term) ||
+        (user.person?.firstName ?? '').toLowerCase().includes(term) ||
+        (user.person?.lastName ?? '').toLowerCase().includes(term);
 
       const matchesStatus =
         statusFilter === 'all' ||
@@ -169,12 +171,13 @@ const UsersPage = () => {
     try {
       setError(null);
       setResendSuccess(null);
+      if (resendTimerRef.current) clearTimeout(resendTimerRef.current);
       setResendingUserId(user.id);
       await userService.resendInvitation(user.id);
       setResendSuccess(
         t('admin.users.invitationResent', 'Invitation email resent to {{email}}.', { email: user.email })
       );
-      setTimeout(() => setResendSuccess(null), 5000);
+      resendTimerRef.current = setTimeout(() => setResendSuccess(null), 5000);
     } catch (err) {
       setError(
         err instanceof Error
@@ -185,6 +188,12 @@ const UsersPage = () => {
       setResendingUserId(null);
     }
   }, [t]);
+
+  useEffect(() => {
+    return () => {
+      if (resendTimerRef.current) clearTimeout(resendTimerRef.current);
+    };
+  }, []);
 
   // --- Selection handlers ---
 
@@ -245,7 +254,9 @@ const UsersPage = () => {
       <div className="users-page">
         <div className="users-page__header">
           <div>
-            <h2>{t('admin.users.title', 'System Users')}</h2>
+            <h2 className="page-title-compact font-title">
+              {t('admin.users.title', 'System Users')}
+            </h2>
             <p className="users-page__subtitle">
               {t(
                 'admin.users.subtitle',

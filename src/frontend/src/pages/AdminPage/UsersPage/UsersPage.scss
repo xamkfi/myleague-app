@@ -14,32 +14,61 @@
 }
 
 .users-page {
-  width: 100%;
-  max-width: 100%;
-  padding: 0 0 2.5rem;
-  background-color: $color-white;
-  overflow: hidden;
+  padding: 1rem 1.25rem;
+
+  .admin-table__wrapper {
+    padding: 0.5rem 1rem;
+  }
+
+  .admin-table {
+    th {
+      padding: 0.5rem 0.65rem;
+    }
+
+    td {
+      padding: 0.6rem 0.65rem;
+      font-size: 0.875rem;
+    }
+  }
+
+  .admin-table__checkbox-col {
+    width: 40px;
+  }
+
+  .admin-table__actions-col {
+    width: 60px;
+  }
+}
+
+.users-table__status-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-badge--sm {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  min-width: auto;
 }
 
 .users-page__header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 
   h2 {
     margin: 0;
-    font-size: 1.75rem;
-    color: $color-neutral-black;
+    padding: 0;
   }
 }
 
 .users-page__subtitle {
-  margin-top: 0.4rem;
+  margin-top: 0.25rem;
   margin-bottom: 0;
   color: $color-neutral-dark-grey;
-  font-size: 0.9rem;
 }
 
 .users-page__create-button {
@@ -52,9 +81,8 @@
   flex-wrap: wrap;
   gap: 1rem;
   align-items: flex-end;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 
-  // Search takes remaining space, min 200px
   > *:first-child {
     flex: 1 1 200px;
     min-width: 0;
@@ -98,13 +126,14 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(16, 185, 129, 0.1);
-  color: #047857;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: $color-green-almost;
+  color: $color-green-muted;
+  border: 1px solid $color-green-pale;
   border-radius: 8px;
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .users-page__empty-state {
@@ -434,30 +463,35 @@
   text-transform: uppercase;
 
   &--verified {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: #047857;
+    background-color: $color-green-almost;
+    color: $color-green-muted;
   }
 
   &--pending {
-    background-color: rgba(245, 158, 11, 0.15);
-    color: #b45309;
+    background-color: $color-yellow-almost;
+    color: $color-yellow-muted;
   }
 }
 
 .user-form-resend-btn {
-  border: 1px solid #d1d5db;
+  border: 1px solid $color-neutral-medium-grey;
   border-radius: 6px;
-  background: #fff;
-  color: #374151;
+  background: $color-white;
+  color: $color-neutral-black;
   padding: 0.3rem 0.8rem;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 
-  &:hover {
-    background-color: #f3f4f6;
-    border-color: #9ca3af;
+  &:hover:not(:disabled) {
+    background-color: $color-neutral-light-grey;
+    border-color: $color-neutral-dark-grey;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }
 
@@ -466,18 +500,10 @@
    ============================================================================ */
 
 @media (max-width: 900px) {
-  .users-page {
-    padding: 0 0 2rem;
-  }
-
   .users-page__header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
-
-    h2 {
-      font-size: 1.5rem;
-    }
   }
 
   .users-page__create-button {
@@ -496,20 +522,21 @@
     }
   }
 
+  // Columns: checkbox(1), person(2), email(3), status(4), lastLogin(5), actions(6)
   .admin-table {
-    // Columns: checkbox(1), person(2), email(3), role(4), status(5), lastLogin(6), actions(7)
-    // Hide Role and Last Login on narrow screens
-    th:nth-child(4),
-    td:nth-child(4),
-    th:nth-child(6),
-    td:nth-child(6) {
+    th:nth-child(5),
+    td:nth-child(5) {
       display: none;
     }
   }
 }
 
-@media (max-width: 480px) {
-  .users-page__header h2 {
-    font-size: 1.35rem;
+@media (max-width: 600px) {
+  // Also hide status on very narrow screens
+  .admin-table {
+    th:nth-child(4),
+    td:nth-child(4) {
+      display: none;
+    }
   }
 }

@@ -77,6 +77,8 @@ public class DatabaseSeeder
             contactInfo: new ContactInfo(email));
 
         User user = new(email, person.Id, UserRole.SystemAdmin);
+        user.IsActive = true;
+        user.IsEmailVerified = true;
 
         dbContext.Persons.Add(person);
         dbContext.Users.Add(user);
