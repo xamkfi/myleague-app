@@ -38,18 +38,20 @@ public class ApiClient : IDisposable
         _json.Converters.Add(new JsonStringEnumConverter());
     }
 
-    public async Task AuthenticateAsync()
+    /// <param name="email">Email to use for login. If null, uses default (test@myleague.local).</param>
+    public async Task AuthenticateAsync(string? email = null)
     {
-        Console.WriteLine($"Authenticating as {DefaultAuthEmail}...");
+        string loginEmail = string.IsNullOrWhiteSpace(email) ? DefaultAuthEmail : email.Trim();
+        Console.WriteLine($"Authenticating as {loginEmail}...");
 
-        HttpResponseMessage loginResp = await _http.PostAsJsonAsync("api/auth/login", new { email = DefaultAuthEmail });
+        HttpResponseMessage loginResp = await _http.PostAsJsonAsync("api/auth/login", new { email = loginEmail });
         await EnsureSuccess(loginResp, "Login");
 
         ApiResponse<LoginDevResponse>? loginApi = await loginResp.Content.ReadFromJsonAsync<ApiResponse<LoginDevResponse>>(_json);
         if (loginApi?.Data?.DevCode == null)
             throw new InvalidOperationException("Failed to get dev login code. Is the API running in Development mode?");
 
-        HttpResponseMessage verifyResp = await _http.PostAsJsonAsync("api/auth/verify", new { email = DefaultAuthEmail, code = loginApi.Data.DevCode });
+        HttpResponseMessage verifyResp = await _http.PostAsJsonAsync("api/auth/verify", new { email = loginEmail, code = loginApi.Data.DevCode });
         await EnsureSuccess(verifyResp, "Verify");
 
         ApiResponse<AuthTokenResponse>? verifyApi = await verifyResp.Content.ReadFromJsonAsync<ApiResponse<AuthTokenResponse>>(_json);

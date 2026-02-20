@@ -32,13 +32,14 @@ public static class Program
         string scheduleUrl = config["MahlImporter:ScheduleUrl"] ?? "index.php?option=com_joomleague&view=teamplan&p=219&Itemid=103";
 
         string apiBaseUrl = PromptForApiUrl();
+        string loginEmail = ResolveLoginEmail(config);
         int operation = PromptForOperation();
         string scrapedDataDir = FindScrapedDataDir();
 
         try
         {
             using ApiClient api = new(apiBaseUrl);
-            await api.AuthenticateAsync();
+            await api.AuthenticateAsync(loginEmail);
 
             EntityImporter entityImporter = new(api);
 
@@ -165,6 +166,20 @@ public static class Program
         if (!input.EndsWith('/'))
             input += "/";
 
+        return input;
+    }
+
+    private static string ResolveLoginEmail(IConfiguration config)
+    {
+        const string defaultEmail = "test@myleague.local";
+        string? configEmail = config["MahlImporter:LoginEmail"]?.Trim();
+        string promptDefault = string.IsNullOrWhiteSpace(configEmail) ? defaultEmail : configEmail;
+
+        Console.Write($"Login email (press Enter for default) [{promptDefault}]: ");
+        string? input = Console.ReadLine()?.Trim();
+
+        if (string.IsNullOrWhiteSpace(input))
+            return promptDefault;
         return input;
     }
 

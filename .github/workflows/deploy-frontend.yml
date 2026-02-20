@@ -1,10 +1,8 @@
 name: Deploy Frontend to Azure
 
 on:
-  # Manual trigger
   workflow_dispatch:
 
-  # Auto deploy after Frontend CI passes
   workflow_run:
     workflows: ["Frontend CI"]
     types:
@@ -12,15 +10,18 @@ on:
     branches:
       - development
 
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
+
 env:
-  NODE_VERSION: '20.x'
+  NODE_VERSION: '22'
   FRONTEND_PATH: 'src/frontend'
 
 jobs:
   build-and-deploy:
     name: Build and Deploy to Azure Static Web App
     runs-on: ubuntu-latest
-    # Only run if triggered manually OR if CI workflow succeeded
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
@@ -40,7 +41,7 @@ jobs:
           cache-dependency-path: ${{ env.FRONTEND_PATH }}/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ env.FRONTEND_PATH }}
 
       - name: Create production environment file

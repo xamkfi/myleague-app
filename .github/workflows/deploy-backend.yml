@@ -1,7 +1,6 @@
 name: Deploy Backend to Azure
 
 on:
-  # Manual trigger
   workflow_dispatch:
     inputs:
       environment:
@@ -14,7 +13,6 @@ on:
           - staging
           - prod
 
-  # Auto deploy after Backend CI passes
   workflow_run:
     workflows: ["Backend CI"]
     types:
@@ -22,20 +20,29 @@ on:
     branches:
       - development
 
+concurrency:
+  group: deploy-backend-${{ inputs.environment || 'dev' }}
+  cancel-in-progress: false
+
 env:
   DOTNET_VERSION: '9.0.x'
-  AZURE_WEBAPP_NAME: myleague-dev-api
-  AZURE_RESOURCE_GROUP: myleague-dev-rg
   WORKING_DIRECTORY: src/backend/WebAPI
 
 jobs:
   deploy:
-    name: Deploy to Azure
+    name: Deploy to Azure (${{ inputs.environment || 'dev' }})
     runs-on: ubuntu-latest
-    # Only run if triggered manually OR if CI workflow succeeded
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
-    
+    environment: ${{ inputs.environment || 'dev' }}
+
     steps:
+      - name: Set deployment targets
+        run: |
+          ENV="${{ inputs.environment || 'dev' }}"
+          echo "AZURE_WEBAPP_NAME=myleague-${ENV}-api" >> $GITHUB_ENV
+          echo "AZURE_RESOURCE_GROUP=myleague-${ENV}-rg" >> $GITHUB_ENV
+          echo "Deploying to: myleague-${ENV}-api (rg: myleague-${ENV}-rg)"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
