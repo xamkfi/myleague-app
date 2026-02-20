@@ -68,6 +68,9 @@ param jwtSecretKey string
 @description('The admin email for database seeding (optional)')
 param seedAdminEmail string = ''
 
+@description('The base URL of the frontend application (e.g. https://calm-tree-06b4ac003.2.azurestaticapps.net)')
+param frontendBaseUrl string = ''
+
 // ============================================================================
 // Variables
 // ============================================================================
@@ -160,6 +163,7 @@ module appService 'modules/app-service.bicep' = {
     acsConnectionString: communicationServices.outputs.connectionString
     acsSenderAddress: communicationServices.outputs.senderAddress
     seedAdminEmail: seedAdminEmail
+    frontendBaseUrl: frontendBaseUrl
     tags: tags
   }
 }

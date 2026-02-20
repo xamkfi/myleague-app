@@ -76,9 +76,21 @@ builder.Services.Configure<FrontendConfiguration>(
     builder.Configuration.GetSection(FrontendConfiguration.SectionName));
 
 // Add JWT authentication
+const string JwtSecretFallback = "development-secret-key-that-is-at-least-32-characters-long!!";
+builder.Services.PostConfigure<JwtConfiguration>(options =>
+{
+    if (string.IsNullOrWhiteSpace(options.SecretKey))
+    {
+        options.SecretKey = JwtSecretFallback;
+        Log.Warning("JWT SecretKey is not set; using fallback. Set Jwt:SecretKey or Jwt__SecretKey for production.");
+    }
+});
+
 JwtConfiguration jwtConfig = builder.Configuration
     .GetSection(JwtConfiguration.SectionName)
     .Get<JwtConfiguration>() ?? new JwtConfiguration();
+if (string.IsNullOrWhiteSpace(jwtConfig.SecretKey))
+    jwtConfig.SecretKey = JwtSecretFallback;
 
 builder.Services.AddAuthentication(options =>
 {
