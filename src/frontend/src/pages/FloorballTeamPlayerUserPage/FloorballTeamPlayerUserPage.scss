@@ -319,6 +319,11 @@
     text-align: left;
     min-width: 100px;
   }
+
+  .col-league {
+    text-align: left;
+    min-width: 100px;
+  }
 }
 
 .team-cell {
@@ -350,6 +355,46 @@
   tbody td {
     padding: map.get($spacing, 'sm') map.get($spacing, 'xs');
   }
+}
+
+// ── Pagination ──
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: map.get($spacing, 'xs');
+  margin-top: map.get($spacing, 'md');
+}
+
+.pagination-btn {
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'sm');
+  padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-blue-deep;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  min-width: 32px;
+  text-align: center;
+
+  &:hover:not(:disabled) {
+    background-color: $color-blue-deep;
+    color: $color-white;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.pagination-info {
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-text-muted;
+  padding: 0 map.get($spacing, 'sm');
+  white-space: nowrap;
 }
 
 // ── No Data Message ──

@@ -60,6 +60,7 @@ export interface FloorballPlayerMatchStatsDto {
 export interface FloorballPlayerMatchDto {
   id: string;
   seasonId: string;
+  seasonName: string;
   homeTeamId: string;
   homeTeamName: string;
   awayTeamId: string;

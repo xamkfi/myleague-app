@@ -1,17 +1,26 @@
 import './Statistics.scss';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import type { FloorballTeamSeasonStatisticsDto } from '../../../api/floorball/floorballStatistics';
+import type { FloorballTeamPlayer } from '../../../types/floorball/floorballTypes';
+
+type SortField = 'pts' | 'g' | 'a' | 'gp' | 'pim' | 'playerName';
 
 interface StatisticsProps {
   teamStatistics?: FloorballTeamSeasonStatisticsDto | null;
+  roster?: FloorballTeamPlayer[];
   loading?: boolean;
   error?: string | null;
   seasonName?: string;
 }
 
-export default function Statistics({ teamStatistics, loading, error, seasonName }: StatisticsProps) {
+export default function Statistics({ teamStatistics, roster = [], loading, error, seasonName }: StatisticsProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [sortField, setSortField] = useState<SortField>('pts');
+  const [sortAsc, setSortAsc] = useState(false);
 
   if (loading) {
     return (
@@ -61,6 +70,43 @@ export default function Statistics({ teamStatistics, loading, error, seasonName 
   const formatDiff = (value: number): string => {
     return value > 0 ? `+${value}` : `${value}`;
   };
+
+  const positionAbbrev = (pos: string): string => {
+    const map: Record<string, string> = {
+      Goalkeeper: 'MV',
+      Defender: 'P',
+      Center: 'KH',
+      Forward: 'H',
+    };
+    return map[pos] ?? pos.charAt(0).toUpperCase();
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortAsc(prev => !prev);
+    } else {
+      setSortField(field);
+      setSortAsc(field === 'playerName');
+    }
+  };
+
+  const activePlayers = roster.filter(p => p.isActive);
+
+  const sortedPlayers = [...activePlayers].sort((a, b) => {
+    const dir = sortAsc ? 1 : -1;
+    switch (sortField) {
+      case 'pts': {
+        const diff = (a.goals + a.assists) - (b.goals + b.assists);
+        return diff !== 0 ? diff * dir : (a.goals - b.goals) * dir;
+      }
+      case 'g': return (a.goals - b.goals) * dir;
+      case 'a': return (a.assists - b.assists) * dir;
+      case 'gp': return (a.gamesPlayed - b.gamesPlayed) * dir;
+      case 'pim': return (a.penaltyMinutes - b.penaltyMinutes) * dir;
+      case 'playerName': return a.playerName.localeCompare(b.playerName) * dir;
+      default: return 0;
+    }
+  });
 
   return (
     <div className="statistics-container">
@@ -204,6 +250,87 @@ export default function Statistics({ teamStatistics, loading, error, seasonName 
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Player Statistics */}
+      <div className="statistics-block">
+        <div className="statistics-block-title">
+          {t('teamUserPage.stats.playerStats')}
+        </div>
+        {roster.length > 0 ? (
+          <div className="statistics-table-wrap">
+            <table className="player-stats-table">
+              <thead>
+                <tr>
+                  <th className="ps-col-rank">#</th>
+                  <th
+                    className={`ps-col-name sortable ${sortField === 'playerName' ? 'sorted' : ''}`}
+                    onClick={() => handleSort('playerName')}
+                  >
+                    {t('teamUserPage.stats.playerName')}
+                    {sortField === 'playerName' && <span className="sort-arrow">{sortAsc ? '▲' : '▼'}</span>}
+                  </th>
+                  <th className="ps-col-pos">{t('teamUserPage.stats.position')}</th>
+                  <th
+                    className={`ps-col-num sortable ${sortField === 'gp' ? 'sorted' : ''}`}
+                    onClick={() => handleSort('gp')}
+                  >
+                    {t('teamUserPage.stats.gp')}
+                    {sortField === 'gp' && <span className="sort-arrow">{sortAsc ? '▲' : '▼'}</span>}
+                  </th>
+                  <th
+                    className={`ps-col-num sortable ${sortField === 'g' ? 'sorted' : ''}`}
+                    onClick={() => handleSort('g')}
+                  >
+                    {t('teamUserPage.stats.g')}
+                    {sortField === 'g' && <span className="sort-arrow">{sortAsc ? '▲' : '▼'}</span>}
+                  </th>
+                  <th
+                    className={`ps-col-num sortable ${sortField === 'a' ? 'sorted' : ''}`}
+                    onClick={() => handleSort('a')}
+                  >
+                    {t('teamUserPage.stats.a')}
+                    {sortField === 'a' && <span className="sort-arrow">{sortAsc ? '▲' : '▼'}</span>}
+                  </th>
+                  <th
+                    className={`ps-col-num ps-col-pts sortable ${sortField === 'pts' ? 'sorted' : ''}`}
+                    onClick={() => handleSort('pts')}
+                  >
+                    {t('teamUserPage.stats.pts')}
+                    {sortField === 'pts' && <span className="sort-arrow">{sortAsc ? '▲' : '▼'}</span>}
+                  </th>
+                  <th
+                    className={`ps-col-num sortable ${sortField === 'pim' ? 'sorted' : ''}`}
+                    onClick={() => handleSort('pim')}
+                  >
+                    {t('teamUserPage.stats.pim')}
+                    {sortField === 'pim' && <span className="sort-arrow">{sortAsc ? '▲' : '▼'}</span>}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedPlayers.map((player, idx) => (
+                  <tr
+                    key={player.playerId}
+                    className="ps-row"
+                    onClick={() => navigate(`/floorballplayer/${player.playerId}`)}
+                  >
+                    <td className="ps-col-rank">{idx + 1}</td>
+                    <td className="ps-col-name">{player.playerName}</td>
+                    <td className="ps-col-pos">{positionAbbrev(player.position)}</td>
+                    <td className="ps-col-num">{player.gamesPlayed}</td>
+                    <td className="ps-col-num">{player.goals}</td>
+                    <td className="ps-col-num">{player.assists}</td>
+                    <td className="ps-col-num ps-col-pts-value">{player.goals + player.assists}</td>
+                    <td className="ps-col-num">{player.penaltyMinutes}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="ps-no-data">{t('teamUserPage.stats.noRosterData')}</p>
+        )}
       </div>
     </div>
   );

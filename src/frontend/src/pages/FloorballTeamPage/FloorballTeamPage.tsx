@@ -275,6 +275,7 @@ function FloorballTeamPage() {
         return (
           <Statistics 
             teamStatistics={teamStatistics}
+            roster={team.roster}
             loading={statisticsLoading}
             error={statisticsError}
             seasonName={currentSeason?.name}

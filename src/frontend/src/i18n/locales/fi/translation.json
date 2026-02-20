@@ -984,7 +984,16 @@
       "home": "Koti",
       "away": "Vieras",
       "winPercentage": "Voittoprosentti",
-      "perGame": "per ottelu"
+      "perGame": "per ottelu",
+      "playerStats": "Pistepörssi",
+      "playerName": "Pelaaja",
+      "position": "Pos",
+      "gp": "O",
+      "g": "M",
+      "a": "S",
+      "pts": "P",
+      "pim": "JM",
+      "noRosterData": "Kokoonpanotietoja ei ole saatavilla."
     },
     "standings": "Sarjataulukko",
     "todaysMatches": "TÄNÄÄN",

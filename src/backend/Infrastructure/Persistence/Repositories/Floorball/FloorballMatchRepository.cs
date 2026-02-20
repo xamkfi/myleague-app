@@ -247,6 +247,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
                 .Include(m => m.PeriodScores)
+                .Include(m => m.Events)
                 .Where(m => m.HomeTeamId == teamId || m.AwayTeamId == teamId)
                 .ToListAsync();
         }

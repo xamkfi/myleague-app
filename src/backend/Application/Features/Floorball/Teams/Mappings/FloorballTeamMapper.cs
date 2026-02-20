@@ -62,18 +62,31 @@ public static class FloorballTeamMapper
             team.Roster.Select(p => 
             {
                 string playerName = "Unknown Player";
+                int? age = null;
                 if (playerPersons != null && playerPersons.TryGetValue(p.PlayerId, out Person? person))
                 {
                     playerName = person.FullName;
+                    if (person.BirthDate.HasValue)
+                    {
+                        DateTime today = DateTime.UtcNow;
+                        age = today.Year - person.BirthDate.Value.Year;
+                        if (person.BirthDate.Value.Date > today.AddYears(-age.Value))
+                            age--;
+                    }
                 }
                 
                 return new FloorballTeamPlayerDto(
-                team.Id,
-                p.PlayerId,
+                    team.Id,
+                    p.PlayerId,
                     playerName,
-                p.Position,
-                p.JerseyNumber,
-                p.IsActive
+                    p.Position,
+                    p.JerseyNumber,
+                    p.IsActive,
+                    GamesPlayed: p.GamesPlayed,
+                    Goals: p.Goals,
+                    Assists: p.Assists,
+                    PenaltyMinutes: p.PenaltyMinutes,
+                    Age: age
                 );
             }).ToList().AsReadOnly()
         );
