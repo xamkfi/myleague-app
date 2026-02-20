@@ -202,7 +202,7 @@ public class UsersController : ControllerBase
     {
         _logger.LogInformation("Updating user: {Id}", id);
 
-        UpdateUserCommand command = new(id, request.Email, request.Role);
+        UpdateUserCommand command = new(id, request.Email, request.Role, request.IsActive);
         Result<UserDto> result = await _mediator.Send(command);
 
         if (result.IsSuccess && result.Data != null)

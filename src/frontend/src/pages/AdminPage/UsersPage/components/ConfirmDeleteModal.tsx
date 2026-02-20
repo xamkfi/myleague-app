@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SystemUser } from '../../../../types/admin/userTypes';
 
@@ -17,6 +18,32 @@ const ConfirmDeleteModal = ({
   isDeleting,
 }: ConfirmDeleteModalProps) => {
   const { t } = useTranslation();
+  const cancelBtnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      cancelBtnRef.current?.focus();
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onCancel]);
 
   if (!isOpen || !user) {
     return null;
@@ -80,6 +107,7 @@ const ConfirmDeleteModal = ({
 
         <footer className="user-modal__footer">
           <button
+            ref={cancelBtnRef}
             type="button"
             className="modal-btn modal-btn--secondary"
             onClick={onCancel}

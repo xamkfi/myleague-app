@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
 import SearchField from '../../../components/SearchField';
@@ -36,7 +36,9 @@ const UsersPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Resend invitation state
+  const [resendingUserId, setResendingUserId] = useState<string | null>(null);
   const [resendSuccess, setResendSuccess] = useState<string | null>(null);
+  const resendTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -62,13 +64,14 @@ const UsersPage = () => {
   }, [loadUsers]);
 
   const filteredUsers = useMemo(() => {
+    const term = searchTerm.toLowerCase();
     return users.filter((user) => {
       const matchesSearch =
-        !searchTerm ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.person?.fullName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.person?.firstName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.person?.lastName ?? '').toLowerCase().includes(searchTerm.toLowerCase());
+        !term ||
+        user.email.toLowerCase().includes(term) ||
+        (user.person?.fullName ?? '').toLowerCase().includes(term) ||
+        (user.person?.firstName ?? '').toLowerCase().includes(term) ||
+        (user.person?.lastName ?? '').toLowerCase().includes(term);
 
       const matchesStatus =
         statusFilter === 'all' ||
@@ -99,18 +102,16 @@ const UsersPage = () => {
     setEditingUser(null);
   };
 
-  const handleSaveUser = async (email: string, personId: string, role: UserRole) => {
+  const handleSaveUser = async (email: string, personId: string, role: UserRole, isActive: boolean) => {
     try {
       setError(null);
 
       if (editingUser) {
-        // Update
-        const updated = await userService.update(editingUser.id, { email, role });
+        const updated = await userService.update(editingUser.id, { email, role, isActive });
         setUsers((prev) =>
           prev.map((u) => (u.id === updated.id ? updated : u)),
         );
       } else {
-        // Create
         const created = await userService.create({ email, personId, role });
         setUsers((prev) => [...prev, created]);
       }
@@ -125,7 +126,7 @@ const UsersPage = () => {
             ? t('admin.users.errors.update', 'Failed to update user. Please try again.')
             : t('admin.users.errors.create', 'Failed to create user. Please try again.'),
       );
-      throw err; // Re-throw so the modal knows saving failed
+      throw err;
     }
   };
 
@@ -168,19 +169,29 @@ const UsersPage = () => {
     try {
       setError(null);
       setResendSuccess(null);
+      if (resendTimerRef.current) clearTimeout(resendTimerRef.current);
+      setResendingUserId(user.id);
       await userService.resendInvitation(user.id);
       setResendSuccess(
         t('admin.users.invitationResent', 'Invitation email resent to {{email}}.', { email: user.email })
       );
-      setTimeout(() => setResendSuccess(null), 5000);
+      resendTimerRef.current = setTimeout(() => setResendSuccess(null), 5000);
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
           : t('admin.users.errors.resend', 'Failed to resend invitation. Please try again.'),
       );
+    } finally {
+      setResendingUserId(null);
     }
   }, [t]);
+
+  useEffect(() => {
+    return () => {
+      if (resendTimerRef.current) clearTimeout(resendTimerRef.current);
+    };
+  }, []);
 
   // --- Selection handlers ---
 
@@ -241,7 +252,9 @@ const UsersPage = () => {
       <div className="users-page">
         <div className="users-page__header">
           <div>
-            <h2>{t('admin.users.title', 'System Users')}</h2>
+            <h2 className="page-title-compact font-title">
+              {t('admin.users.title', 'System Users')}
+            </h2>
             <p className="users-page__subtitle">
               {t(
                 'admin.users.subtitle',
@@ -303,6 +316,7 @@ const UsersPage = () => {
           onEdit={openEditModal}
           onDelete={openDeleteModal}
           onResendInvitation={handleResendInvitation}
+          resendingUserId={resendingUserId}
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}
           onSelectAll={handleSelectAll}
@@ -331,6 +345,7 @@ const UsersPage = () => {
         onSave={handleSaveUser}
         onCancel={closeFormModal}
         onResendInvitation={handleResendInvitation}
+        isResendingInvitation={resendingUserId !== null}
       />
 
       <ConfirmDeleteModal

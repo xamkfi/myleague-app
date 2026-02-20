@@ -8,13 +8,12 @@ const MAX_PAGE_SIZE = 50;
 
 interface UserFormModalProps {
   isOpen: boolean;
-  /** When set, the modal is in edit mode for this user */
   user: SystemUser | null;
-  /** IDs of persons that already have a user account (to show badge / disable) */
   existingPersonIds: string[];
-  onSave: (email: string, personId: string, role: UserRole) => Promise<void>;
+  onSave: (email: string, personId: string, role: UserRole, isActive: boolean) => Promise<void>;
   onCancel: () => void;
   onResendInvitation?: (user: SystemUser) => void;
+  isResendingInvitation?: boolean;
 }
 
 const UserFormModal = ({
@@ -24,45 +23,84 @@ const UserFormModal = ({
   onSave,
   onCancel,
   onResendInvitation,
+  isResendingInvitation = false,
 }: UserFormModalProps) => {
   const { t } = useTranslation();
   const isEditMode = user !== null;
 
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<UserRole>('ClubAdmin');
+  const [isActive, setIsActive] = useState(true);
   const [selectedPersonId, setSelectedPersonId] = useState('');
+  const [selectedPersonName, setSelectedPersonName] = useState('');
   const [personSearch, setPersonSearch] = useState('');
   const [persons, setPersons] = useState<Person[]>([]);
   const [loadingPersons, setLoadingPersons] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; person?: string }>({});
 
   const debounceTimerRef = useRef<number | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
-  // Reset form state when the modal opens / user changes
   useEffect(() => {
     if (isOpen) {
       setEmail(user?.email ?? '');
       setRole(user?.role ?? 'ClubAdmin');
+      setIsActive(user?.isActive ?? true);
       setSelectedPersonId(user?.personId ?? '');
+      setSelectedPersonName(user?.person?.fullName ?? '');
       setPersonSearch('');
+      setPersons([]);
+      setIsDropdownOpen(false);
       setErrors({});
       setSaving(false);
 
-      // Load persons for the selector (only in create mode)
-      if (!user) {
-        fetchPersons('');
-      }
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
 
     return () => {
+      document.body.style.overflow = '';
       if (debounceTimerRef.current !== null) {
         clearTimeout(debounceTimerRef.current);
       }
     };
   }, [isOpen, user]);
 
-  // Fetch persons from backend — uses search API when a term is provided, getAll otherwise
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isDropdownOpen) {
+          setIsDropdownOpen(false);
+        } else {
+          onCancel();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isDropdownOpen, onCancel]);
+
+  useEffect(() => {
+    if (!isOpen || !isDropdownOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, isDropdownOpen]);
+
   const fetchPersons = useCallback(async (searchTerm: string) => {
     try {
       setLoadingPersons(true);
@@ -71,11 +109,9 @@ const UserFormModal = ({
       let allPersons: Person[] = [];
 
       if (trimmed.length >= 2) {
-        // Use server-side search
         const response = await personApi.search(trimmed, 1, MAX_PAGE_SIZE);
         allPersons = response.data ?? [];
       } else {
-        // Load first page; if more pages exist, fetch them in parallel
         const firstPage = await personApi.getAll(1, MAX_PAGE_SIZE);
         allPersons = firstPage.data ?? [];
 
@@ -100,7 +136,6 @@ const UserFormModal = ({
     }
   }, []);
 
-  // Handle search input — debounce and call server-side search
   const handleSearchChange = (value: string) => {
     setPersonSearch(value);
 
@@ -111,6 +146,30 @@ const UserFormModal = ({
     debounceTimerRef.current = window.setTimeout(() => {
       fetchPersons(value);
     }, 300);
+  };
+
+  const handleSearchFocus = () => {
+    setIsDropdownOpen(true);
+    if (persons.length === 0 && !loadingPersons) {
+      fetchPersons(personSearch);
+    }
+  };
+
+  const handleSelectPerson = (person: Person) => {
+    setSelectedPersonId(person.id);
+    setSelectedPersonName(`${person.firstName} ${person.lastName}`);
+    setPersonSearch('');
+    setIsDropdownOpen(false);
+    if (errors.person) {
+      setErrors((prev) => ({ ...prev, person: undefined }));
+    }
+  };
+
+  const handleClearPerson = () => {
+    setSelectedPersonId('');
+    setSelectedPersonName('');
+    setPersonSearch('');
+    setPersons([]);
   };
 
   const existingSet = useMemo(() => new Set(existingPersonIds), [existingPersonIds]);
@@ -138,7 +197,7 @@ const UserFormModal = ({
 
     try {
       setSaving(true);
-      await onSave(email.trim(), selectedPersonId, role);
+      await onSave(email.trim(), selectedPersonId, role, isActive);
     } catch {
       // Parent handles the error
     } finally {
@@ -153,6 +212,7 @@ const UserFormModal = ({
   return (
     <div className="user-modal__overlay" onClick={onCancel} role="presentation">
       <div
+        ref={modalRef}
         className="user-modal user-modal--form"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
@@ -168,63 +228,87 @@ const UserFormModal = ({
 
         <form onSubmit={handleSubmit}>
           <section className="user-modal__body">
-            {/* Person selector (create mode only) */}
+            {/* Person selector (create mode only) — dropdown combobox */}
             {!isEditMode && (
               <div className="user-form-group">
-                <label htmlFor="personSelect">
+                <label>
                   {t('admin.users.form.selectPerson', 'Person')} *
                 </label>
-                <input
-                  type="text"
-                  className="user-form-search"
-                  placeholder={t(
-                    'admin.users.form.searchPerson',
-                    'Search persons...',
-                  )}
-                  value={personSearch}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                />
-                <div className="user-form-person-list">
-                  {loadingPersons && (
-                    <div className="user-form-person-list__loading">
-                      {t('common.loading', 'Loading...')}
-                    </div>
-                  )}
-                  {!loadingPersons && persons.length === 0 && (
-                    <div className="user-form-person-list__empty">
-                      {t(
-                        'admin.users.form.noPerson',
-                        'No available persons found',
+
+                {selectedPersonId ? (
+                  <div className="user-form-person-selected">
+                    <span className="user-form-person-selected__name">{selectedPersonName}</span>
+                    <button
+                      type="button"
+                      className="user-form-person-selected__clear"
+                      onClick={handleClearPerson}
+                      aria-label={t('common.clear', 'Clear')}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ) : (
+                  <div className="user-form-person-picker" ref={dropdownRef}>
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      className={`user-form-search ${errors.person ? 'user-form-input--error' : ''}`}
+                      placeholder={t(
+                        'admin.users.form.searchPerson',
+                        'Search persons...',
                       )}
-                    </div>
-                  )}
-                  {!loadingPersons &&
-                    persons.map((person) => {
-                      const hasAccount = existingSet.has(person.id);
-                      return (
-                        <button
-                          key={person.id}
-                          type="button"
-                          className={`user-form-person-item ${selectedPersonId === person.id ? 'selected' : ''} ${hasAccount ? 'disabled' : ''}`}
-                          onClick={() => {
-                            if (!hasAccount) {
-                              setSelectedPersonId(person.id);
-                            }
-                          }}
-                          disabled={hasAccount}
-                        >
-                          <span className="person-item-name">
-                            {person.firstName} {person.lastName}
-                          </span>
-                          {hasAccount && (
-                            <span className="person-item-badge">
-                              {t('admin.users.form.hasAccount', 'Already has an account')}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                </div>
+                      value={personSearch}
+                      onChange={(e) => handleSearchChange(e.target.value)}
+                      onFocus={handleSearchFocus}
+                      autoFocus
+                    />
+
+                    {isDropdownOpen && (
+                      <div className="user-form-person-dropdown">
+                        {loadingPersons && (
+                          <div className="user-form-person-list__loading">
+                            {t('common.loading', 'Loading...')}
+                          </div>
+                        )}
+                        {!loadingPersons && persons.length === 0 && (
+                          <div className="user-form-person-list__empty">
+                            {t(
+                              'admin.users.form.noPerson',
+                              'No available persons found',
+                            )}
+                          </div>
+                        )}
+                        {!loadingPersons &&
+                          persons.map((person) => {
+                            const hasAccount = existingSet.has(person.id);
+                            return (
+                              <button
+                                key={person.id}
+                                type="button"
+                                className={`user-form-person-item ${hasAccount ? 'disabled' : ''}`}
+                                onClick={() => {
+                                  if (!hasAccount) {
+                                    handleSelectPerson(person);
+                                  }
+                                }}
+                                disabled={hasAccount}
+                              >
+                                <span className="person-item-name">
+                                  {person.firstName} {person.lastName}
+                                </span>
+                                {hasAccount && (
+                                  <span className="person-item-badge">
+                                    {t('admin.users.form.hasAccount', 'Already has an account')}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {errors.person && (
                   <span className="user-form-error">{errors.person}</span>
                 )}
@@ -256,8 +340,11 @@ const UserFormModal = ({
                       type="button"
                       className="user-form-resend-btn"
                       onClick={() => onResendInvitation(user)}
+                      disabled={isResendingInvitation}
                     >
-                      {t('admin.users.actions.resendInvitation', 'Resend Invitation')}
+                      {isResendingInvitation
+                        ? t('admin.users.actions.sendingInvitation', 'Sending...')
+                        : t('admin.users.actions.resendInvitation', 'Resend Invitation')}
                     </button>
                   )}
                 </div>
@@ -309,6 +396,33 @@ const UserFormModal = ({
                   {t('admin.users.roles.systemAdmin', 'System Admin')}
                 </option>
               </select>
+            </div>
+
+            {/* IsActive toggle */}
+            <div className="user-form-group">
+              <label>{t('admin.users.form.status', 'Status')}</label>
+              {isEditMode ? (
+                <label className="user-form-toggle">
+                  <input
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                  />
+                  <span className="user-form-toggle__track" />
+                  <span className="user-form-toggle__label">
+                    {isActive
+                      ? t('common.active', 'Active')
+                      : t('common.inactive', 'Inactive')}
+                  </span>
+                </label>
+              ) : (
+                <div className="user-form-status-info">
+                  {t(
+                    'admin.users.form.statusCreateInfo',
+                    'New users are inactive until they verify their email.',
+                  )}
+                </div>
+              )}
             </div>
           </section>
 

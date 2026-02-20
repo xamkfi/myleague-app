@@ -28,4 +28,5 @@ export interface CreateUserPayload {
 export interface UpdateUserPayload {
   email: string;
   role: UserRole;
+  isActive: boolean;
 }

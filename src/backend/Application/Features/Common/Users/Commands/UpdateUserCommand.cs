@@ -18,4 +18,5 @@ namespace Application.Features.Common.Users.Commands;
 public record UpdateUserCommand(
     Guid Id,
     string Email,
-    UserRole Role) : IRequest<Result<UserDto>>;
+    UserRole Role,
+    bool IsActive) : IRequest<Result<UserDto>>;
