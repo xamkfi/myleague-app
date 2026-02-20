@@ -73,6 +73,52 @@ public class ApiClient : IDisposable
         return await ReadDataOrNull<ClubDto>(resp, $"Create club '{name}'");
     }
 
+    public async Task<string?> UploadClubImageAsync(string externalImageUrl)
+    {
+        try
+        {
+            using HttpClient downloader = new();
+            byte[] imageBytes = await downloader.GetByteArrayAsync(externalImageUrl);
+
+            string fileName = Path.GetFileName(new Uri(externalImageUrl).AbsolutePath);
+            if (string.IsNullOrWhiteSpace(fileName)) fileName = "logo.png";
+
+            using MultipartFormDataContent form = new();
+            ByteArrayContent fileContent = new(imageBytes);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(
+                fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" : "image/jpeg");
+            form.Add(fileContent, "file", fileName);
+
+            HttpResponseMessage resp = await _http.PostAsync("api/clubs/upload-image", form);
+            if (!resp.IsSuccessStatusCode)
+            {
+                string body = await resp.Content.ReadAsStringAsync();
+                Console.WriteLine($"  WARN: UploadClubImage failed ({(int)resp.StatusCode}): {body}");
+                return null;
+            }
+
+            ApiResponse<string>? api = await resp.Content.ReadFromJsonAsync<ApiResponse<string>>(_json);
+            return api?.Data;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"  WARN: Could not download/upload club image from '{externalImageUrl}': {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<bool> UpdateClubLogoAsync(Guid clubId, string logoUrl)
+    {
+        HttpResponseMessage resp = await _http.PatchAsync($"api/clubs/{clubId}/logo",
+            JsonContent.Create(logoUrl, mediaType: new MediaTypeHeaderValue("application/json")));
+        if (!resp.IsSuccessStatusCode)
+        {
+            string body = await resp.Content.ReadAsStringAsync();
+            Console.WriteLine($"  WARN: UpdateClubLogo failed: {body}");
+        }
+        return resp.IsSuccessStatusCode;
+    }
+
     // ── Divisions ─────────────────────────────────────────
 
     public async Task<List<DivisionDto>> GetDivisionsAsync()
@@ -334,6 +380,22 @@ public class ApiClient : IDisposable
         };
 
         return await PostWithRetryAsync("api/floorballmatch/record-penalty", request, "RecordPenalty");
+    }
+
+    public async Task<bool> RecordSaveAsync(Guid matchId, Guid teamId, Guid goaliePlayerId, int periodNumber, int timeInSeconds)
+    {
+        object request = new
+        {
+            matchId,
+            teamId,
+            playerId = goaliePlayerId,
+            periodNumber,
+            timeInSeconds,
+            wasInOvertime = false,
+            wasInShootout = false,
+        };
+
+        return await PostWithRetryAsync("api/floorballmatch/record-save", request, "RecordSave");
     }
 
     private async Task<bool> PostWithRetryAsync(string url, object payload, string operationName, int maxRetries = 3)

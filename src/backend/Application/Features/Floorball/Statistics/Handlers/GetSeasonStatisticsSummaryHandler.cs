@@ -115,9 +115,10 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             // Retrieve player names from person repository for top scorers and assists
             Dictionary<Guid, Person> playerPersonLookup = new Dictionary<Guid, Person>();
             
-            // Get all unique player IDs from top scorers and assists
+            // Get all unique player IDs from top scorers, assists, and goalies
             IEnumerable<Guid> playerIds = topScorers.Select(ps => ps.PlayerId)
                 .Concat(topAssists.Select(ps => ps.PlayerId))
+                .Concat(topGoalies.Select(gs => gs.PlayerId))
                 .Distinct()
                 .ToList();
 

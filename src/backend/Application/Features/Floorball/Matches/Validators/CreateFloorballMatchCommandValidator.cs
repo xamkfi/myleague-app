@@ -23,9 +23,10 @@ public class CreateFloorballMatchCommandValidator : AbstractValidator<CreateFloo
             .NotEqual(Guid.Empty).WithMessage("Away team ID cannot be empty")
             .NotEqual(x => x.HomeTeamId).WithMessage("Away team must be different from home team");
 
-        RuleFor(x => x.ScheduledDateTime)
-            .NotEmpty().WithMessage("Scheduled date and time is required")
-            .GreaterThan(DateTime.UtcNow).WithMessage("Scheduled date and time must be in the future");
+        //TODO: Temporary disable for old data import
+        //RuleFor(x => x.ScheduledDateTime)
+        //    .NotEmpty().WithMessage("Scheduled date and time is required")
+        //    .GreaterThan(DateTime.UtcNow).WithMessage("Scheduled date and time must be in the future");
 
         RuleFor(x => x.Venue)
             .MaximumLength(100).WithMessage("Venue name cannot exceed 100 characters")

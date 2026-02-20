@@ -42,8 +42,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>A collection of persons found with the specified IDs</returns>
         public async Task<IEnumerable<Person>> GetByIdsAsync(IEnumerable<Guid> ids)
         {
+            List<Guid>? idList = ids?.ToList();
+            if (idList == null || idList.Count == 0)
+            {
+                return new List<Person>();
+            }
+
             return await _entities
-                .Where(p => ids.Contains(p.Id))
+                .Where(p => idList.Contains(p.Id))
                 .ToListAsync();
         }
 

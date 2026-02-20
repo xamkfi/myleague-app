@@ -71,14 +71,14 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
             <th className="rank-col">#</th>
             <th className="team-col">TEAM</th>
             <th className="spacer-col"></th>
-            <th className="stats-col">MP</th>
-            <th className="stats-col">W</th>
-            <th className="stats-col">D</th>
-            <th className="stats-col">L</th>
-            <th className="goals-col">G</th>
-            <th className="stats-col">GD</th>
-            <th className="points-col">PTS</th>
-            <th className="form-col">FORM</th>
+            <th className="stats-col" title="Pelatut ottelut (Matches Played)">MP</th>
+            <th className="stats-col" title="Voitot (Wins)">W</th>
+            <th className="stats-col" title="Tasapelit (Draws)">D</th>
+            <th className="stats-col" title="Tappiot (Losses)">L</th>
+            <th className="goals-col" title="Tehdyt : Päästetyt maalit (Goals)">G</th>
+            <th className="stats-col" title="Maaliero (Goal Difference)">GD</th>
+            <th className="points-col" title="Pisteet (Points)">PTS</th>
+            <th className="form-col" title="Viimeisimmät ottelut (Form)">FORM</th>
           </tr>
         </thead>
       );
@@ -92,8 +92,8 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
             <th className="team-col">PLAYER</th>
             <th className="spacer-col">TEAM</th>
             <th className="stats-col"></th>
-            <th className="stats-col">G</th>
-            <th className="stats-col">A</th>
+            <th className="stats-col" title="Maalit (Goals)">G</th>
+            <th className="stats-col" title="Syötöt (Assists)">A</th>
           </tr>
         </thead>
       );
@@ -106,12 +106,12 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
             <th className="rank-col">#</th>
             <th className="team-col">{t('leaguePage.standings.goalieHeaders.player')}</th>
             <th className="spacer-col">{t('leaguePage.standings.goalieHeaders.team')}</th>
-            <th className="stats-col">GP</th>
-            <th className="stats-col">W</th>
-            <th className="stats-col">L</th>
-            <th className="stats-col">GA</th>
-            <th className="stats-col">SV%</th>
-            <th className="stats-col">SO</th>
+            <th className="stats-col" title="Pelatut ottelut (Games Played)">GP</th>
+            <th className="stats-col" title="Voitot (Wins)">W</th>
+            <th className="stats-col" title="Tappiot (Losses)">L</th>
+            <th className="stats-col" title="Päästetyt maalit (Goals Against)">GA</th>
+            <th className="stats-col" title="Torjuntaprosentti (Save Percentage)">SV%</th>
+            <th className="stats-col" title="Nollapelit (Shutouts)">SO</th>
           </tr>
         </thead>
       );
@@ -125,8 +125,8 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
           <th className="team-col">PLAYER</th>
           <th className="spacer-col">TEAM</th>
           <th className="stats-col"></th>
-          <th className="stats-col">A</th>
-          <th className="stats-col">G</th>
+          <th className="stats-col" title="Syötöt (Assists)">A</th>
+          <th className="stats-col" title="Maalit (Goals)">G</th>
         </tr>
       </thead>
     );
@@ -388,7 +388,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
                 <td className="stats-col">{goalie.wins}</td>
                 <td className="stats-col">{goalie.losses}</td>
                 <td className="stats-col">{goalie.goalsAgainst}</td>
-                <td className="points-col">{(goalie.savePercentage * 100).toFixed(1)}%</td>
+                <td className="points-col">{goalie.savePercentage.toFixed(1)}%</td>
                 <td className="stats-col">{goalie.shutouts}</td>
               </tr>
             );
