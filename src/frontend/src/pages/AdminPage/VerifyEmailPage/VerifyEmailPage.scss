@@ -1,0 +1,177 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.verify-email-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: $color-blue-darkest;
+  padding: map.get($spacing, 'lg');
+}
+
+.verify-email-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+}
+
+.verify-email-top {
+  text-align: center;
+  margin-bottom: map.get($spacing, 'lg');
+}
+
+.verify-email-brand {
+  font-size: 2.5rem;
+  font-weight: map.get($font-weights, 'bold');
+  color: $color-white;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+.verify-email-brand-sub {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 4px 0 0 0;
+}
+
+.verify-email-card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.verify-email-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.verify-email-title {
+  font-family: $font-family-body;
+  font-size: 1.5rem;
+  font-weight: map.get($font-weights, 'semibold');
+  color: #1e3a5f;
+  margin: 0 0 0.75rem;
+}
+
+.verify-email-message {
+  font-family: $font-family-body;
+  font-size: map.get($font-sizes, 'base');
+  color: #4b5563;
+  margin: 0 0 1.5rem;
+  line-height: $line-height-relaxed;
+}
+
+.verify-email-instructions {
+  background: #f0f4f8;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.75rem;
+  text-align: left;
+
+  h4 {
+    font-family: $font-family-body;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: #1e3a5f;
+    margin: 0 0 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  ol {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  li {
+    font-family: $font-family-body;
+    font-size: map.get($font-sizes, 'sm');
+    color: #4b5563;
+    line-height: $line-height-relaxed;
+    margin-bottom: 0.4rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.verify-email-button {
+  font-family: $font-family-body;
+  font-size: map.get($font-sizes, 'base');
+  font-weight: map.get($font-weights, 'semibold');
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: $border-radius-default;
+  background: #1e3a5f;
+  color: $color-white;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  display: inline-block;
+  width: 100%;
+
+  &:hover {
+    background: $color-blue-darkest;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.verify-email-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: $color-red-almost;
+  color: $color-red-muted;
+  border: 1px solid $color-red-pale;
+  border-radius: $border-radius-default;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+
+  span {
+    font-family: $font-family-body;
+    font-size: map.get($font-sizes, 'sm');
+    line-height: $line-height-relaxed;
+  }
+}
+
+.verify-email-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+
+  p {
+    font-family: $font-family-body;
+    font-size: map.get($font-sizes, 'base');
+    color: #6b7684;
+    margin: 0;
+  }
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e0e4e9;
+  border-top-color: #1e3a5f;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

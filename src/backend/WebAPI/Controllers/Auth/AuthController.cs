@@ -138,6 +138,33 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Verify a new admin's email address using the token from the invitation email.
+    /// This endpoint is public – no authentication required.
+    /// On success the account is activated and a welcome email with login instructions is sent.
+    /// </summary>
+    /// <param name="request">The request containing the verification token</param>
+    /// <returns>Success or error response</returns>
+    [AllowAnonymous]
+    [HttpPost("verify-admin-email")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse>> VerifyAdminEmail([FromBody] VerifyAdminEmailRequest request)
+    {
+        _logger.LogInformation("Admin email verification attempted");
+
+        VerifyAdminEmailCommand command = new(request.Token);
+        Result<bool> result = await _mediator.Send(command);
+
+        if (result.IsSuccess)
+        {
+            return Ok(ApiResponse.SuccessResponse("Email verified successfully. Your account is now active."));
+        }
+
+        string errorMessage = result.Error ?? result.GetErrorsString();
+        return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+    }
+
+    /// <summary>
     /// Get the current authenticated user's information
     /// </summary>
     /// <returns>The current user's information</returns>

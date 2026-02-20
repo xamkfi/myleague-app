@@ -59,3 +59,15 @@ public record LogoutRequest
     [Required(ErrorMessage = "Refresh token is required")]
     public string RefreshToken { get; init; } = string.Empty;
 }
+
+/// <summary>
+/// Request model for verifying a new admin's email address
+/// </summary>
+public record VerifyAdminEmailRequest
+{
+    /// <summary>
+    /// The verification token from the invitation email
+    /// </summary>
+    [Required(ErrorMessage = "Token is required")]
+    public string Token { get; init; } = string.Empty;
+}
