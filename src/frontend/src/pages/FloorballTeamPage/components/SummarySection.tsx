@@ -82,8 +82,8 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                                     scheduledDateTime={match.scheduledDateTime}
                                     homeTeamName={match.homeTeamName}
                                     awayTeamName={match.awayTeamName}
-                                    homeTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/myry21_1683621904.jpg"
-                                    awayTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/knp_21_1715843664.jpg"
+                                    homeTeamLogo={match.homeTeamLogo || undefined}
+                                    awayTeamLogo={match.awayTeamLogo || undefined}
                                     homeScore={match.homeScore}
                                     awayScore={match.awayScore}
                                     periodCount={3}
@@ -133,8 +133,8 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               scheduledDateTime={match.scheduledDateTime}
                               homeTeamName={match.homeTeamName}
                               awayTeamName={match.awayTeamName}
-                              homeTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/myry21_1683621904.jpg"
-                              awayTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/knp_21_1715843664.jpg"
+                              homeTeamLogo={match.homeTeamLogo || undefined}
+                              awayTeamLogo={match.awayTeamLogo || undefined}
                               homeScore={match.homeScore}
                               awayScore={match.awayScore}
                               periodCount={3}
@@ -168,8 +168,8 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               scheduledDateTime={match.scheduledDateTime}
                               homeTeamName={match.homeTeamName}
                               awayTeamName={match.awayTeamName}
-                              homeTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/myry21_1683621904.jpg"
-                              awayTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/knp_21_1715843664.jpg"
+                              homeTeamLogo={match.homeTeamLogo || undefined}
+                              awayTeamLogo={match.awayTeamLogo || undefined}
                               homeScore={match.homeScore}
                               awayScore={match.awayScore}
                               periodCount={3}

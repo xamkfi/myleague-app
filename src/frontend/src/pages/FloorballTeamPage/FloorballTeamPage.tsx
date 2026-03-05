@@ -9,7 +9,7 @@ import './FloorballTeamPage.scss';
 import { divisionService } from '../../api/common/divisionService';
 import type { DivisionType } from '../../types/common/divisionType';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
-import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto, type FloorballSeasonStatisticsSummaryDto } from '../../api/floorball/floorballStatistics';
+import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto, type FloorballSeasonStatisticsSummaryDto, type FloorballPlayerSeasonStatisticsDto } from '../../api/floorball/floorballStatistics';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
 import TeamNavbar from './components/TeamNavbar';
 import ResultsSection from './components/ResultsSection';
@@ -36,6 +36,7 @@ function FloorballTeamPage() {
   const [activeTab, setActiveTab] = useState<string>('summary');
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [matchesError, setMatchesError] = useState<string | null>(null);
+  const [playerStatistics, setPlayerStatistics] = useState<FloorballPlayerSeasonStatisticsDto[] | null>(null);
   const [statisticsLoading, setStatisticsLoading] = useState(false);
   const [statisticsError, setStatisticsError] = useState<string | null>(null);
   const [seasonSummaryLoading, setSeasonSummaryLoading] = useState(false);
@@ -148,8 +149,12 @@ function FloorballTeamPage() {
       if (tabId === 'stats') {
         setStatisticsLoading(true);
         setStatisticsError(null);
-        const teamStats = await floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id);
+        const [teamStats, playerStats] = await Promise.all([
+          floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id),
+          floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id)
+        ]);
         setTeamStatistics(teamStats);
+        setPlayerStatistics(playerStats);
         
       } else if (tabId === 'standings') {
         setSeasonSummaryLoading(true);
@@ -275,6 +280,7 @@ function FloorballTeamPage() {
         return (
           <Statistics 
             teamStatistics={teamStatistics}
+            playerStatistics={playerStatistics}
             roster={team.roster}
             loading={statisticsLoading}
             error={statisticsError}
@@ -422,10 +428,6 @@ function FloorballTeamPage() {
                     )}
                   </div>
                 </div>
-                  
-                <div className="header-navigation">
-                  <TeamNavbar currentTab={activeTab} onTabChange={handleTabChange} />
-                </div>
 
               </div>
               
@@ -433,6 +435,9 @@ function FloorballTeamPage() {
 
           </div>
         </div>
+
+        {/* Tab Navigation */}
+        <TeamNavbar currentTab={activeTab} onTabChange={handleTabChange} />
 
         {/* Tab Content */}
         <div className="tab-content-container">

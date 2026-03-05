@@ -68,6 +68,37 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Gets all player statistics for a specific team in a season
+        /// </summary>
+        /// <param name="seasonId">The season ID</param>
+        /// <param name="teamId">The team ID</param>
+        /// <returns>List of player season statistics for the team</returns>
+        [HttpGet("team-players/{seasonId:guid}/{teamId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>>> GetTeamPlayerStatistics(Guid seasonId, Guid teamId)
+        {
+            _logger.LogInformation("Getting player statistics for Team: {TeamId} in Season: {SeasonId}", teamId, seasonId);
+
+            GetTeamPlayerStatisticsQuery query = new GetTeamPlayerStatisticsQuery(seasonId, teamId);
+            Result<List<FloorballPlayerSeasonStatisticsDto>> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.SuccessResponse(result.Data, "Team player statistics retrieved successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to retrieve team player statistics";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
+            }
+
+            return StatusCode(500, ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Gets player statistics for a specific season
         /// </summary>
         /// <param name="seasonId">The season ID</param>

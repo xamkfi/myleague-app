@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import './TeamNavbar.scss'
 import { useTranslation } from 'react-i18next';
 
@@ -8,7 +7,6 @@ interface TeamNavbarProps {
 }
 
 export default function TeamNavbar({ currentTab, onTabChange }: TeamNavbarProps) {
-   const [activeTab, setActiveTab] = useState<string>(currentTab);
    const { t } = useTranslation();
 
    const tabs = [
@@ -19,21 +17,20 @@ export default function TeamNavbar({ currentTab, onTabChange }: TeamNavbarProps)
       { id: 'standings', label: t('teamUserPage.standings') }
    ];
 
-   const handleTabClick = (tabId: string) => {
-      setActiveTab(tabId);
-      onTabChange?.(tabId);
-   };
-
    return (
-      <div className='team-navbar'>
+      <div className="team-navigation-tabs" role="tablist" aria-label="Team navigation tabs">
          {tabs.map((tab) => (
-            <div 
+            <button
                key={tab.id}
-               className={`team-navbar-btn ${activeTab === tab.id ? 'active' : ''}`}
-               onClick={() => handleTabClick(tab.id)}
+               className={`team-nav-tab ${currentTab === tab.id ? 'active' : ''}`}
+               onClick={() => onTabChange?.(tab.id)}
+               role="tab"
+               aria-selected={currentTab === tab.id}
+               aria-controls={`tabpanel-${tab.id}`}
+               id={`tab-${tab.id}`}
             >
-               <span>{tab.label}</span>
-            </div>
+               {tab.label}
+            </button>
          ))}
       </div>
    )
