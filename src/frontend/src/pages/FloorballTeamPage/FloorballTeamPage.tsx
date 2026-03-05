@@ -6,8 +6,6 @@ import { floorballTeamNameSearchService } from '../../api/floorball/floorballTea
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
 import './FloorballTeamPage.scss';
-import { divisionService } from '../../api/common/divisionService';
-import type { DivisionType } from '../../types/common/divisionType';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto, type FloorballSeasonStatisticsSummaryDto, type FloorballPlayerSeasonStatisticsDto } from '../../api/floorball/floorballStatistics';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
@@ -25,7 +23,6 @@ function FloorballTeamPage() {
   const { t } = useTranslation();
 
   const [team, setTeam] = useState<FloorballTeam | null>(null);
-  const [division, setDivision] = useState<DivisionType | null>(null)
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null)
   const [teamStatistics, setTeamStatistics] = useState<FloorballTeamSeasonStatisticsDto | null>(null);
   const [seasonSummary, setSeasonSummary] = useState<FloorballSeasonStatisticsSummaryDto | null>(null);
@@ -84,15 +81,7 @@ function FloorballTeamPage() {
           const teamResponse = await floorballTeamService.getById(foundTeam.id);
           setTeam(teamResponse);
 
-          // Fetch division the team is in (division is optional)
-          if (teamResponse.divisionId) {
-            const divisionResponse = await divisionService.getById(teamResponse.divisionId);
-            setDivision(divisionResponse.data);
-          } else {
-            setDivision(null);
-          }
-
-          // Fetch current season for this division (division is optional)
+          // Fetch current season for this team's division
           if (teamResponse.divisionId) {
             const currentSeasonData = await getCurrentSeason(teamResponse.divisionId);
             setCurrentSeason(currentSeasonData);
