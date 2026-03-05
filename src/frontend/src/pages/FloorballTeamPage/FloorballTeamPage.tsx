@@ -6,10 +6,8 @@ import { floorballTeamNameSearchService } from '../../api/floorball/floorballTea
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
 import './FloorballTeamPage.scss';
-import { divisionService } from '../../api/common/divisionService';
-import type { DivisionType } from '../../types/common/divisionType';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
-import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto, type FloorballSeasonStatisticsSummaryDto } from '../../api/floorball/floorballStatistics';
+import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto, type FloorballSeasonStatisticsSummaryDto, type FloorballPlayerSeasonStatisticsDto } from '../../api/floorball/floorballStatistics';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
 import TeamNavbar from './components/TeamNavbar';
 import ResultsSection from './components/ResultsSection';
@@ -25,7 +23,6 @@ function FloorballTeamPage() {
   const { t } = useTranslation();
 
   const [team, setTeam] = useState<FloorballTeam | null>(null);
-  const [division, setDivision] = useState<DivisionType | null>(null)
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null)
   const [teamStatistics, setTeamStatistics] = useState<FloorballTeamSeasonStatisticsDto | null>(null);
   const [seasonSummary, setSeasonSummary] = useState<FloorballSeasonStatisticsSummaryDto | null>(null);
@@ -36,6 +33,7 @@ function FloorballTeamPage() {
   const [activeTab, setActiveTab] = useState<string>('summary');
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [matchesError, setMatchesError] = useState<string | null>(null);
+  const [playerStatistics, setPlayerStatistics] = useState<FloorballPlayerSeasonStatisticsDto[] | null>(null);
   const [statisticsLoading, setStatisticsLoading] = useState(false);
   const [statisticsError, setStatisticsError] = useState<string | null>(null);
   const [seasonSummaryLoading, setSeasonSummaryLoading] = useState(false);
@@ -83,15 +81,7 @@ function FloorballTeamPage() {
           const teamResponse = await floorballTeamService.getById(foundTeam.id);
           setTeam(teamResponse);
 
-          // Fetch division the team is in (division is optional)
-          if (teamResponse.divisionId) {
-            const divisionResponse = await divisionService.getById(teamResponse.divisionId);
-            setDivision(divisionResponse.data);
-          } else {
-            setDivision(null);
-          }
-
-          // Fetch current season for this division (division is optional)
+          // Fetch current season for this team's division
           if (teamResponse.divisionId) {
             const currentSeasonData = await getCurrentSeason(teamResponse.divisionId);
             setCurrentSeason(currentSeasonData);
@@ -148,8 +138,12 @@ function FloorballTeamPage() {
       if (tabId === 'stats') {
         setStatisticsLoading(true);
         setStatisticsError(null);
-        const teamStats = await floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id);
+        const [teamStats, playerStats] = await Promise.all([
+          floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id),
+          floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id)
+        ]);
         setTeamStatistics(teamStats);
+        setPlayerStatistics(playerStats);
         
       } else if (tabId === 'standings') {
         setSeasonSummaryLoading(true);
@@ -275,6 +269,7 @@ function FloorballTeamPage() {
         return (
           <Statistics 
             teamStatistics={teamStatistics}
+            playerStatistics={playerStatistics}
             roster={team.roster}
             loading={statisticsLoading}
             error={statisticsError}
@@ -314,22 +309,14 @@ function FloorballTeamPage() {
           <div className="team-header">
 
 
-            {/* Left-aligned navigation container */}
+            {/* Breadcrumb Navigation */}
             <div className="left-navigation-container">
-              {/* Breadcrumb Navigation */}
               <div className="breadcrumb">
                 <button onClick={handleBackToClub} className="club-link">
                   {team.club.name}
                 </button>
                 <span className="separator">›</span>
                 <span className="current">{team.name}</span>
-              </div>
-
-              {/* Navigation */}
-              <div className="team-navigation">
-                <button onClick={handleBackToClub} className="back-button">
-                  ← {team.club.name}
-                </button>
               </div>
             </div>
             
@@ -378,61 +365,26 @@ function FloorballTeamPage() {
               </div>
 
               <div className="team-info">
-                {/* Team Info */}
                 <div className="team-info-container">
                   <h1>{team.name}</h1>
-                  <div className="team-meta">
-                    {division?.name && (
-                      <span className="division-badge">
-                        {division.name}
-                      </span>
-                    )}
-                    <span className="club-badge">
-                      {team.club.name}
-                    </span>
-                    {team.homeArena && team.homeArena !== 'TBD' && (
-                      <span className="arena">🏟️ {team.homeArena}</span>
-                    )}
-                    {team.teamCategory && (
-                      <span className="category-badge">
-                        {team.teamCategory}
-                      </span>
-                    )}
-                  </div>
-                  {/* Jersey colors & roster info */}
-                  <div className="team-extra-info">
-                    <div className="jersey-colors">
-                      <span
-                        className="jersey-swatch"
-                        style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
-                        title={`Primary: ${team.primaryJerseyColor}`}
-                      />
-                      {team.secondaryJerseyColor && (
-                        <span
-                          className="jersey-swatch"
-                          style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
-                          title={`Secondary: ${team.secondaryJerseyColor}`}
-                        />
-                      )}
-                    </div>
-                    {team.hasActiveMembers && team.roster.length > 0 && (
-                      <span className="roster-count">
-                        👥 {team.roster.filter(p => p.isActive).length} players
-                      </span>
-                    )}
-                  </div>
+                  {currentSeason && (
+                    <button
+                      className="division-link"
+                      onClick={() => navigate(`/league/${currentSeason.id}`)}
+                    >
+                      {currentSeason.name}
+                    </button>
+                  )}
                 </div>
-                  
-                <div className="header-navigation">
-                  <TeamNavbar currentTab={activeTab} onTabChange={handleTabChange} />
-                </div>
-
               </div>
               
             </div>
 
           </div>
         </div>
+
+        {/* Tab Navigation */}
+        <TeamNavbar currentTab={activeTab} onTabChange={handleTabChange} />
 
         {/* Tab Content */}
         <div className="tab-content-container">

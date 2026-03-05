@@ -2,111 +2,87 @@
 @use '@variables' as *;
 @use '../../../styles/common' as *;
 
-.team-navbar {
-   display: flex;
-   overflow: hidden;
-   width: 100%;
-   justify-content: space-between;
-   gap: map.get($spacing, 'xxs');
-   padding: map.get($spacing, 'xs');
-   background: rgba(255, 255, 255, 0.05);
-   border-radius: map.get($border-radius, 'lg');
-   backdrop-filter: blur(8px);
+.team-navigation-tabs {
+  background-color: $color-neutral-white;
+  border-bottom: 2px solid $color-neutral-light-grey;
+  display: flex;
+  justify-content: center;
+  padding: 0 1.25rem;
+  gap: 0.25rem;
 }
 
-.team-navbar-btn {
-   flex: 1 1 1;
-   padding: map.get($spacing, 'sm') map.get($spacing, 'xs');
-   text-align: center;
-   cursor: pointer;
-   color: $color-neutral-white;
-   transition: all 0.2s ease;
-   position: relative;
-   overflow: hidden;
-   border-radius: map.get($border-radius, 'md');
-   min-height: 44px; // Touch target size
-   display: flex;
-   align-items: center;
-   justify-content: center;
+.team-nav-tab {
+  background: none;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $color-neutral-dark-grey;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.75px;
 
-   &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: $color-neutral-white;
-   }
+  &:hover {
+    color: $color-blue-secondary;
+  }
 
-   &.active {
-      border-radius: map.get($border-radius, 'md');
-      background: $color-neutral-white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      
-      span {
-         color: $color-neutral-black;
-      }
-   }
+  &.active {
+    color: $color-blue-secondary;
 
-   &:last-child {
-      border-right: none;
-   }
-
-   span {
-      font-weight: map.get($font-weights, "bold");
-      font-size: map.get($font-sizes, "sm");
-      transition: all 0.2s ease;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-   }
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: $color-blue-secondary;
+      border-radius: 3px 3px 0 0;
+    }
+  }
 }
 
 // ===== MOBILE RESPONSIVE STYLES =====
 
 // Tablet and smaller (768px and below)
 @media (max-width: 768px) {
-  .team-navbar {
-    gap: map.get($spacing, 'xxs');
-    padding: map.get($spacing, 'xs');
-    
-    .team-navbar-btn {
-      padding: map.get($spacing, 'sm') map.get($spacing, 'xxs');
-      min-height: 48px;
-      
-      span {
-        font-size: map.get($font-sizes, 'xs');
-      }
+  .team-navigation-tabs {
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 0 map.get($spacing, 'sm');
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+
+    .team-nav-tab {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+      font-size: 0.75rem;
+      white-space: nowrap;
+      min-width: 80px;
+      text-align: center;
     }
   }
 }
 
 // Mobile phones (480px and below)
 @media (max-width: 480px) {
-  .team-navbar {
-    flex-wrap: wrap;
-    gap: map.get($spacing, 'xxs');
-    padding: map.get($spacing, 'xs');
-    
-    .team-navbar-btn {
-      flex: 1 1 calc(50% - #{map.get($spacing, 'xxs')});
-      padding: map.get($spacing, 'sm') map.get($spacing, 'xxs');
-      min-height: 44px;
-      
-      span {
-        font-size: map.get($font-sizes, 'xs');
-      }
+  .team-navigation-tabs {
+    padding: 0 map.get($spacing, 'xs');
+
+    .team-nav-tab {
+      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+      font-size: 0.6875rem;
+      min-width: 70px;
     }
   }
 }
 
 // Very small screens (360px and below)
 @media (max-width: 360px) {
-  .team-navbar {
-    .team-navbar-btn {
-      flex: 1 1 calc(33.333% - #{map.get($spacing, 'xxs')});
-      padding: map.get($spacing, 'sm') map.get($spacing, 'xxs');
-      min-height: 40px;
-      
-      span {
-        font-size: map.get($font-sizes, 'xs');
-      }
-    }
+  .team-navigation-tabs .team-nav-tab {
+    padding: map.get($spacing, 'xs');
+    font-size: 0.6rem;
+    min-width: 60px;
   }
 }

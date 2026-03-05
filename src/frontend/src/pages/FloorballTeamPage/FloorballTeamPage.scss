@@ -66,17 +66,11 @@
         gap: map.get($spacing, 'lg');
       }
 
-      .header-navigation {
-        width: 100%;
-        color: $color-neutral-white;
-        margin-top: auto;
-      }
-
       .team-info {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: map.get($spacing, 'base');
+        gap: map.get($spacing, 'sm');
 
         h1 {
           font-size: map.get($font-sizes, 'xl');
@@ -85,60 +79,21 @@
           text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        .team-meta {
-          display: flex;
-          flex-direction: row;
-          gap: map.get($spacing, 'sm');
-          align-items: center;
-          flex-wrap: wrap;
-          font-size: map.get($font-sizes, 'base');
-          font-weight: map.get($font-weights, 'light');
+        .division-link {
+          background: rgba($color-white, 0.15);
+          color: $color-white;
+          border: none;
+          padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+          border-radius: map.get($border-radius, 'sm');
+          backdrop-filter: blur(4px);
+          font-size: map.get($font-sizes, 'sm');
+          font-weight: map.get($font-weights, 'medium');
+          cursor: pointer;
+          transition: background 0.2s ease;
+          text-transform: capitalize;
 
-          .division-badge,
-          .club-badge,
-          .arena,
-          .category-badge {
-            color: $color-white;
-            padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
-            display: inline-block;
-            background: rgba($color-white, 0.15);
-            border-radius: map.get($border-radius, 'sm');
-            backdrop-filter: blur(4px);
-            font-size: map.get($font-sizes, 'sm');
-          }
-
-          .division-badge {
-            text-transform: capitalize;
-          }
-
-          .category-badge {
-            text-transform: capitalize;
-          }
-        }
-
-        .team-extra-info {
-          display: flex;
-          align-items: center;
-          gap: map.get($spacing, 'base');
-          flex-wrap: wrap;
-
-          .jersey-colors {
-            display: flex;
-            gap: map.get($spacing, 'xs');
-
-            .jersey-swatch {
-              width: 24px;
-              height: 24px;
-              border-radius: map.get($border-radius, 'full');
-              border: 2px solid $color-white;
-              box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-            }
-          }
-
-          .roster-count {
-            color: rgba($color-white, 0.85);
-            font-size: map.get($font-sizes, 'sm');
-            font-weight: map.get($font-weights, 'medium');
+          &:hover {
+            background: rgba($color-white, 0.3);
           }
         }
       }
@@ -239,7 +194,7 @@
 
   // Breadcrumb Navigation
   .breadcrumb {
-    margin-bottom: map.get($spacing, 'lg');
+    margin-bottom: map.get($spacing, 'sm');
     display: flex;
     align-items: center;
     gap: map.get($spacing, 'xs');
@@ -316,27 +271,6 @@
     }
   }
 
-  // Navigation
-  .team-navigation {
-    text-align: left;
-    margin-bottom: map.get($spacing, 'lg');
-
-    .back-button {
-      padding: map.get($spacing, 'xxs') map.get($spacing, 'base');
-      background: $color-button-secondary;
-      color: $color-white;
-      border: none;
-      border-radius: map.get($border-radius, 'sm');
-      cursor: pointer;
-      font-size: map.get($font-sizes, 'sm');
-      @include transition(background-color);
-
-      &:hover {
-        background: $color-primary-dark;
-      }
-    }
-  }
-
   // Responsive Design
 }
 
@@ -362,15 +296,6 @@
           .breadcrumb {
             margin-bottom: map.get($spacing, 'sm');
             font-size: map.get($font-sizes, 'xs');
-          }
-          
-          .team-navigation {
-            margin-bottom: map.get($spacing, 'sm');
-            
-            .back-button {
-              padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
-              font-size: map.get($font-sizes, 'xs');
-            }
           }
         }
         
@@ -411,35 +336,9 @@
           
           h1 { 
             font-size: map.get($font-sizes, 'lg');
-            margin-bottom: map.get($spacing, 'sm');
-          }
-          
-          .team-meta {
-            flex-direction: column;
-            gap: map.get($spacing, 'xs');
-            align-items: center;
-            font-size: map.get($font-sizes, 'sm');
-            
-            .division-badge,
-            .club-badge,
-            .arena,
-            .category-badge {
-              padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
-              background: rgba(255, 255, 255, 0.1);
-              border-radius: map.get($border-radius, 'sm');
-              backdrop-filter: blur(4px);
-            }
-          }
-
-          .team-extra-info {
-            justify-content: center;
           }
         }
 
-        .header-navigation {
-          width: 100%;
-          margin-top: map.get($spacing, 'md');
-        }
       }
     }
 
@@ -474,15 +373,6 @@
             font-size: map.get($font-sizes, 'xs');
             margin-bottom: map.get($spacing, 'xs');
           }
-          
-          .team-navigation {
-            margin-bottom: map.get($spacing, 'xs');
-            
-            .back-button {
-              padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
-              font-size: map.get($font-sizes, 'xs');
-            }
-          }
         }
         
         .header-content {
@@ -514,30 +404,6 @@
         .team-info {
           h1 { 
             font-size: map.get($font-sizes, 'md');
-          }
-          
-          .team-meta {
-            font-size: map.get($font-sizes, 'xs');
-            
-            .division-badge,
-            .club-badge,
-            .arena,
-            .category-badge {
-              padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
-            }
-          }
-
-          .team-extra-info {
-            justify-content: center;
-
-            .jersey-swatch {
-              width: 20px;
-              height: 20px;
-            }
-
-            .roster-count {
-              font-size: map.get($font-sizes, 'xs');
-            }
           }
         }
       }

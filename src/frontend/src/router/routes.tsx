@@ -59,6 +59,7 @@ const CreatePlayerPage = lazyWithRetry(() => import('../pages/AdminPage/Floorbal
 const CreatePersonPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePersonPage/CreatePersonPage'));
 const FloorballRefereesPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage'));
 const CreateRefereePage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/CreateRefereePage/CreateRefereePage'));
+const EditRefereePage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/EditRefereePage/EditRefereePage'));
 const FloorballSeasonsPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage'));
 const CreateSeasonPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/CreateSeasonPage/CreateSeasonPage'));
 const EditSeasonPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/EditSeasonPage/EditSeasonPage'));
@@ -277,6 +278,10 @@ export const routes: RouteObject[] = [
           {
             path: 'create',
             element: <ProtectedRoute><SuspenseWrapper><CreateRefereePage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':refereeId/edit',
+            element: <ProtectedRoute><SuspenseWrapper><EditRefereePage /></SuspenseWrapper></ProtectedRoute>
           }
         ]
       },

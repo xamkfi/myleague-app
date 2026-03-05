@@ -91,6 +91,21 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
+    public async Task<List<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsByTeamAndSeasonAsync(Guid teamId, Guid seasonId, CancellationToken cancellationToken = default)
+    {
+        return await _context.FloorballPlayerSeasonStatistics
+            .Include(x => x.Player)
+            .Include(x => x.Team)
+            .Include(x => x.Season)
+            .Where(s => s.TeamId == teamId && s.SeasonId == seasonId)
+            .OrderByDescending(s => s.Points)
+            .ThenByDescending(s => s.Goals)
+            .ThenByDescending(s => s.Assists)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<List<FloorballPlayerSeasonStatistics>> GetTopScorersAsync(Guid seasonId, int topN, CancellationToken cancellationToken = default)
     {
         return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
