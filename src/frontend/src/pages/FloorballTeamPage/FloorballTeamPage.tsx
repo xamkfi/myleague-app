@@ -320,22 +320,14 @@ function FloorballTeamPage() {
           <div className="team-header">
 
 
-            {/* Left-aligned navigation container */}
+            {/* Breadcrumb Navigation */}
             <div className="left-navigation-container">
-              {/* Breadcrumb Navigation */}
               <div className="breadcrumb">
                 <button onClick={handleBackToClub} className="club-link">
                   {team.club.name}
                 </button>
                 <span className="separator">›</span>
                 <span className="current">{team.name}</span>
-              </div>
-
-              {/* Navigation */}
-              <div className="team-navigation">
-                <button onClick={handleBackToClub} className="back-button">
-                  ← {team.club.name}
-                </button>
               </div>
             </div>
             
@@ -384,51 +376,17 @@ function FloorballTeamPage() {
               </div>
 
               <div className="team-info">
-                {/* Team Info */}
                 <div className="team-info-container">
                   <h1>{team.name}</h1>
-                  <div className="team-meta">
-                    {division?.name && (
-                      <span className="division-badge">
-                        {division.name}
-                      </span>
-                    )}
-                    <span className="club-badge">
-                      {team.club.name}
-                    </span>
-                    {team.homeArena && team.homeArena !== 'TBD' && (
-                      <span className="arena">🏟️ {team.homeArena}</span>
-                    )}
-                    {team.teamCategory && (
-                      <span className="category-badge">
-                        {team.teamCategory}
-                      </span>
-                    )}
-                  </div>
-                  {/* Jersey colors & roster info */}
-                  <div className="team-extra-info">
-                    <div className="jersey-colors">
-                      <span
-                        className="jersey-swatch"
-                        style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
-                        title={`Primary: ${team.primaryJerseyColor}`}
-                      />
-                      {team.secondaryJerseyColor && (
-                        <span
-                          className="jersey-swatch"
-                          style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
-                          title={`Secondary: ${team.secondaryJerseyColor}`}
-                        />
-                      )}
-                    </div>
-                    {team.hasActiveMembers && team.roster.length > 0 && (
-                      <span className="roster-count">
-                        👥 {team.roster.filter(p => p.isActive).length} players
-                      </span>
-                    )}
-                  </div>
+                  {currentSeason && (
+                    <button
+                      className="division-link"
+                      onClick={() => navigate(`/league/${currentSeason.id}`)}
+                    >
+                      {currentSeason.name}
+                    </button>
+                  )}
                 </div>
-
               </div>
               
             </div>
