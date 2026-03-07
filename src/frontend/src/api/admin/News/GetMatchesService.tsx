@@ -6,8 +6,10 @@ interface FloorballMatch {
   seasonId: string;
   homeTeamId: string;
   homeTeamName: string;
+  homeTeamLogo: string | null;
   awayTeamId: string;
   awayTeamName: string;
+  awayTeamLogo: string | null;
   scheduledDateTime: string;
   venue?: string;
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
