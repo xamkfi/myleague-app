@@ -82,7 +82,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
 
             // Get top goalies (minimum 5 games played)
             List<Domain.Entities.Floorball.FloorballGoalieSeasonStatistics> topGoalies = 
-                (await _statisticsRepository.GetTopGoaliesAsync(request.SeasonId, 10, 5, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTopGoaliesAsync(request.SeasonId, 10, 1, cancellationToken)).ToList();
 
             if (teamStats.Count == 0)
             {
