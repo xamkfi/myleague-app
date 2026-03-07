@@ -41,26 +41,23 @@ export class MatchResultTableBlot extends BlockEmbed {
     const { matches } = value;
 
     const matchRows = matches.map(match => {
-      const homeTeamImage = match.homeTeamImage ? `<img src="${match.homeTeamImage}" alt="${match.homeTeam}" class="team-image home-team-image" />` : '';
-      const awayTeamImage = match.awayTeamImage ? `<img src="${match.awayTeamImage}" alt="${match.awayTeam}" class="team-image away-team-image" />` : '';
-      
-      let teamsHtml;
-      if (match.status && match.status.toLowerCase() === 'completed') {
-        teamsHtml = `${homeTeamImage} ${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam} ${awayTeamImage}`;
-      } else {
-        teamsHtml = `${homeTeamImage} ${match.homeTeam} vs ${match.awayTeam} ${awayTeamImage}`;
-      }
+      const homeTeamImg = match.homeTeamImage ? `<img src="${match.homeTeamImage}" alt="${match.homeTeam}" class="mr-team-logo" />` : '<span class="mr-team-logo-placeholder"></span>';
+      const awayTeamImg = match.awayTeamImage ? `<img src="${match.awayTeamImage}" alt="${match.awayTeam}" class="mr-team-logo" />` : '<span class="mr-team-logo-placeholder"></span>';
 
-      return `<div class="match-result-row">
-        <span class="match-result-date">${new Date(match.date).toLocaleString("fi-FI", {year: "numeric", month: "numeric", day: 'numeric', hour: '2-digit', minute: '2-digit'})}</span>
-        <span class="match-result-teams">${teamsHtml}</span>
-        <span class="match-result-status"><span class="status-badge status-${match.status}">${match.status}</span></span>
-        <span class="match-result-link"><a href="/match/${match.link}" target="_blank" rel="noopener noreferrer">View Details</a></span>
-      </div>`;
+      const isCompleted = match.status && match.status.toLowerCase() === 'completed';
+      const homeScore = isCompleted ? match.homeScore : '-';
+      const awayScore = isCompleted ? match.awayScore : '-';
+      const homeWon = isCompleted && Number(match.homeScore) > Number(match.awayScore);
+      const awayWon = isCompleted && Number(match.awayScore) > Number(match.homeScore);
+
+      const dateStr = new Date(match.date).toLocaleDateString("fi-FI", { day: 'numeric', month: 'numeric' });
+      const timeStr = new Date(match.date).toLocaleTimeString("fi-FI", { hour: '2-digit', minute: '2-digit' });
+
+      const statusClass = match.status ? `mr-status-dot--${match.status.toLowerCase()}` : '';
+
+      return `<a href="/match/${match.link}" class="match-result-row" target="_blank" rel="noopener noreferrer"><span class="mr-date"><span class="mr-date-day">${dateStr}</span><span class="mr-date-time">${timeStr}</span></span><span class="mr-teams"><span class="mr-team-line${homeWon ? ' mr-winner' : ''}">${homeTeamImg}<span class="mr-team-name">${match.homeTeam}</span></span><span class="mr-team-line${awayWon ? ' mr-winner' : ''}">${awayTeamImg}<span class="mr-team-name">${match.awayTeam}</span></span></span><span class="mr-scores"><span class="mr-score${homeWon ? ' mr-score--winner' : ''}">${homeScore}</span><span class="mr-score${awayWon ? ' mr-score--winner' : ''}">${awayScore}</span></span><span class="mr-status"><span class="mr-status-dot ${statusClass}"></span></span></a>`;
     }).join('');
-    node.innerHTML = `<div class="match-result-list">
-        ${matchRows}
-      </div><script type="application/json" class="match-result-data" style="display: none;">${JSON.stringify({ matches })}</script>`;
+    node.innerHTML = `<div class="match-result-list">${matchRows}</div><script type="application/json" class="match-result-data" style="display: none;">${JSON.stringify({ matches })}</script>`;
     node.setAttribute('contenteditable', 'false');
     return node;
   }
@@ -269,10 +266,8 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
                 date: match.scheduledDateTime,
                 status: match.status,
                 link: match.id,
-                // Note: homeTeamImage and awayTeamImage would need to be added to the FloorballMatch interface
-                // For now, we'll use undefined as these properties don't exist in the current interface
-                homeTeamImage: undefined,
-                awayTeamImage: undefined
+                homeTeamImage: match.homeTeamLogo ?? undefined,
+                awayTeamImage: match.awayTeamLogo ?? undefined
             }));
 
             editor.insertEmbed(range.index, 'matchResultTable', {
