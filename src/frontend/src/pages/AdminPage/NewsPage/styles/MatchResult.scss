@@ -21,18 +21,18 @@
 
 a.match-result-row {
   display: grid;
-  grid-template-columns: 80px 1fr 48px 32px;
+  grid-template-columns: 80px 1fr 40px auto;
   align-items: center;
-  gap: map.get($spacing, 'sm');
-  padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
-  border-bottom: 1px solid $color-neutral-medium-grey;
+  gap: map.get($spacing, 'xs');
+  padding: 4px map.get($spacing, 'sm');
+  border-bottom: 1px solid $color-neutral-light-grey;
   text-decoration: none;
   color: $color-neutral-black;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.15s ease;
 
-  &:first-child {
-    border-top: 1px solid $color-neutral-medium-grey;
+  &:last-child {
+    border-bottom: none;
   }
 
   &:hover {
@@ -60,16 +60,16 @@ a.match-result-row {
 .mr-teams {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
   min-width: 0;
 }
 
 .mr-team-line {
   display: flex;
   align-items: center;
-  gap: map.get($spacing, 'xs');
+  gap: map.get($spacing, 'xxs');
   font-size: map.get($font-sizes, 'sm');
-  line-height: 1.4;
+  line-height: 1.6;
 }
 
 .mr-winner {
@@ -77,8 +77,8 @@ a.match-result-row {
 }
 
 .mr-team-logo {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
   border-radius: 50%;
   flex-shrink: 0;
@@ -86,8 +86,8 @@ a.match-result-row {
 
 .mr-team-logo-placeholder {
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 
@@ -101,15 +101,15 @@ a.match-result-row {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 1px;
+  gap: 0;
 }
 
 .mr-score {
   font-size: map.get($font-sizes, 'sm');
   font-weight: map.get($font-weights, 'bold');
   color: $color-neutral-dark-grey;
-  line-height: 1.4;
-  min-width: 16px;
+  line-height: 1.6;
+  min-width: 18px;
   text-align: right;
 }
 
@@ -117,12 +117,55 @@ a.match-result-row {
   color: $color-blue-deep;
 }
 
+.mr-score-separator {
+  display: none;
+}
+
+.mr-score-pending {
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-neutral-medium-grey;
+  font-weight: map.get($font-weights, 'medium');
+  text-transform: uppercase;
+}
+
 .mr-status {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
+.mr-status-badge {
+  font-size: map.get($font-sizes, 'xs');
+  font-weight: map.get($font-weights, 'semibold');
+  padding: 2px map.get($spacing, 'xs');
+  border-radius: map.get($border-radius, 'sm');
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.mr-status-badge--completed {
+  background: $color-neutral-light-grey;
+  color: $color-neutral-dark-grey;
+}
+
+.mr-status-badge--scheduled {
+  background: $color-blue-secondary-almost;
+  color: $color-blue-secondary-muted;
+}
+
+.mr-status-badge--in_progress {
+  background: $color-red-primary;
+  color: $color-white;
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+.mr-status-badge--cancelled {
+  background: $color-red-pale;
+  color: $color-red-muted;
+}
+
+// Legacy dot support for old articles
 .mr-status-dot {
   width: 8px;
   height: 8px;
@@ -151,6 +194,11 @@ a.match-result-row {
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 // ── Legacy row support (old HTML with div.match-result-row) ─────────────
@@ -243,23 +291,25 @@ div.match-result-row {
 
 @media (max-width: 600px) {
   a.match-result-row {
-    grid-template-columns: 60px 1fr 36px 24px;
-    gap: map.get($spacing, 'xs');
-    padding: map.get($spacing, 'xs');
+    grid-template-columns: 55px 1fr 28px 24px;
+    gap: map.get($spacing, 'xxs');
+    padding: 3px map.get($spacing, 'xs');
   }
 
   .mr-date {
     flex-direction: column;
     gap: 0;
-    font-size: map.get($font-sizes, 'sm-xs');
+    font-size: map.get($font-sizes, 'xs');
   }
 
-  .mr-team-line {
-    font-size: map.get($font-sizes, 'sm-xs');
+  .mr-team-logo {
+    width: 14px;
+    height: 14px;
   }
 
-  .mr-score {
-    font-size: map.get($font-sizes, 'sm-xs');
+  .mr-team-logo-placeholder {
+    width: 14px;
+    height: 14px;
   }
 
   div.match-result-row {

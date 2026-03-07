@@ -40,22 +40,37 @@ export class MatchResultTableBlot extends BlockEmbed {
     const node = super.create();
     const { matches } = value;
 
+    const statusLabels: Record<string, string> = {
+      completed: 'PÄÄTTYNYT',
+      in_progress: 'KÄYNNISSÄ',
+      cancelled: 'PERUTTU',
+      postponed: 'SIIRRETTY',
+    };
+
     const matchRows = matches.map(match => {
       const homeTeamImg = match.homeTeamImage ? `<img src="${match.homeTeamImage}" alt="${match.homeTeam}" class="mr-team-logo" />` : '<span class="mr-team-logo-placeholder"></span>';
       const awayTeamImg = match.awayTeamImage ? `<img src="${match.awayTeamImage}" alt="${match.awayTeam}" class="mr-team-logo" />` : '<span class="mr-team-logo-placeholder"></span>';
 
       const isCompleted = match.status && match.status.toLowerCase() === 'completed';
-      const homeScore = isCompleted ? match.homeScore : '-';
-      const awayScore = isCompleted ? match.awayScore : '-';
+      const isLive = match.status && match.status.toLowerCase() === 'in_progress';
+      const homeScore = (isCompleted || isLive) ? match.homeScore : '-';
+      const awayScore = (isCompleted || isLive) ? match.awayScore : '-';
       const homeWon = isCompleted && Number(match.homeScore) > Number(match.awayScore);
       const awayWon = isCompleted && Number(match.awayScore) > Number(match.homeScore);
 
       const dateStr = new Date(match.date).toLocaleDateString("fi-FI", { day: 'numeric', month: 'numeric' });
       const timeStr = new Date(match.date).toLocaleTimeString("fi-FI", { hour: '2-digit', minute: '2-digit' });
 
-      const statusClass = match.status ? `mr-status-dot--${match.status.toLowerCase()}` : '';
+      const statusKey = match.status ? match.status.toLowerCase() : '';
+      const statusLabel = statusLabels[statusKey] || '';
+      const statusBadgeClass = statusKey ? `mr-status-badge--${statusKey}` : '';
+      const statusHtml = statusLabel
+        ? `<span class="mr-status"><span class="mr-status-badge ${statusBadgeClass}">${statusLabel}</span></span>`
+        : '';
 
-      return `<a href="/match/${match.link}" class="match-result-row" target="_blank" rel="noopener noreferrer"><span class="mr-date"><span class="mr-date-day">${dateStr}</span><span class="mr-date-time">${timeStr}</span></span><span class="mr-teams"><span class="mr-team-line${homeWon ? ' mr-winner' : ''}">${homeTeamImg}<span class="mr-team-name">${match.homeTeam}</span></span><span class="mr-team-line${awayWon ? ' mr-winner' : ''}">${awayTeamImg}<span class="mr-team-name">${match.awayTeam}</span></span></span><span class="mr-scores"><span class="mr-score${homeWon ? ' mr-score--winner' : ''}">${homeScore}</span><span class="mr-score${awayWon ? ' mr-score--winner' : ''}">${awayScore}</span></span><span class="mr-status"><span class="mr-status-dot ${statusClass}"></span></span></a>`;
+      const scoreHtml = `<span class="mr-scores"><span class="mr-score${homeWon ? ' mr-score--winner' : ''}">${homeScore}</span><span class="mr-score${awayWon ? ' mr-score--winner' : ''}">${awayScore}</span></span>`;
+
+      return `<a href="/match/${match.link}" class="match-result-row" target="_blank" rel="noopener noreferrer"><span class="mr-date"><span class="mr-date-day">${dateStr}</span><span class="mr-date-time">${timeStr}</span></span><span class="mr-teams"><span class="mr-team-line${homeWon ? ' mr-winner' : ''}">${homeTeamImg}<span class="mr-team-name">${match.homeTeam}</span></span><span class="mr-team-line${awayWon ? ' mr-winner' : ''}">${awayTeamImg}<span class="mr-team-name">${match.awayTeam}</span></span></span>${scoreHtml}${statusHtml}</a>`;
     }).join('');
     node.innerHTML = `<div class="match-result-list">${matchRows}</div><script type="application/json" class="match-result-data" style="display: none;">${JSON.stringify({ matches })}</script>`;
     node.setAttribute('contenteditable', 'false');
