@@ -106,9 +106,9 @@ public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<Floor
             await RemovePlayerSeasonStatistics(deletedGoal, match, cancellationToken);
 
             // Decrement team season statistics (decrement goals for scoring team, goals against for opposing team)
-            await RemoveTeamSeasonGoalStatistics(deletedGoal.TeamId, match.SeasonId, true, cancellationToken);
+            await RemoveTeamSeasonGoalStatistics(deletedGoal.TeamId, match.SeasonId!.Value, true, cancellationToken);
             Guid opposingTeamId = deletedGoal.TeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
-            await RemoveTeamSeasonGoalStatistics(opposingTeamId, match.SeasonId, false, cancellationToken);
+            await RemoveTeamSeasonGoalStatistics(opposingTeamId, match.SeasonId!.Value, false, cancellationToken);
 
             // Decrement match team statistics
             await RemoveMatchTeamStatistics(match.Id, deletedGoal.TeamId, cancellationToken);
@@ -137,7 +137,7 @@ public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<Floor
         if (goal.ScoringPlayerId.HasValue)
         {
             FloorballPlayerSeasonStatistics? playerStats = await _statisticsRepository.GetPlayerSeasonStatisticsAsync(
-                goal.ScoringPlayerId.Value, goal.TeamId, match.SeasonId, cancellationToken);
+                goal.ScoringPlayerId.Value, goal.TeamId, match.SeasonId!.Value, cancellationToken);
             if (playerStats != null)
             {
                 // Determine goal type flags (simplified - could be enhanced based on goal type)
@@ -155,7 +155,7 @@ public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<Floor
         if (goal.AssistingPlayerId.HasValue)
         {
             FloorballPlayerSeasonStatistics? assistStats = await _statisticsRepository.GetPlayerSeasonStatisticsAsync(
-                goal.AssistingPlayerId.Value, goal.TeamId, match.SeasonId, cancellationToken);
+                goal.AssistingPlayerId.Value, goal.TeamId, match.SeasonId!.Value, cancellationToken);
             if (assistStats != null)
             {
                 // Determine assist type flags (simplified)
@@ -171,7 +171,7 @@ public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<Floor
         if (goal.SecondaryAssistingPlayerId.HasValue)
         {
             FloorballPlayerSeasonStatistics? secondaryAssistStats = await _statisticsRepository.GetPlayerSeasonStatisticsAsync(
-                goal.SecondaryAssistingPlayerId.Value, goal.TeamId, match.SeasonId, cancellationToken);
+                goal.SecondaryAssistingPlayerId.Value, goal.TeamId, match.SeasonId!.Value, cancellationToken);
             if (secondaryAssistStats != null)
             {
                 // Determine assist type flags (simplified)
@@ -242,7 +242,7 @@ public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<Floor
         if (activeGoalieId.HasValue)
         {
             FloorballGoalieSeasonStatistics? goalieStats = await _statisticsRepository.GetGoalieSeasonStatisticsAsync(
-                activeGoalieId.Value, opposingTeamId, match.SeasonId, cancellationToken);
+                activeGoalieId.Value, opposingTeamId, match.SeasonId!.Value, cancellationToken);
 
             if (goalieStats != null)
             {

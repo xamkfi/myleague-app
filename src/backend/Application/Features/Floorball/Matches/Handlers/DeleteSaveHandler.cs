@@ -63,7 +63,7 @@ public class DeleteSaveHandler : IRequestHandler<DeleteSaveCommand, Result<Floor
             FloorballSave deletedSave = match.DeleteSaveEvent(request.SaveEventId);
 
             // Update goalie season statistics: decrement saves and shots against
-            await RemoveGoalieSeasonStatistics(deletedSave.GoalieId, deletedSave.TeamId, match.SeasonId, 1, 1, cancellationToken);
+            await RemoveGoalieSeasonStatistics(deletedSave.GoalieId, deletedSave.TeamId, match.SeasonId!.Value, 1, 1, cancellationToken);
 
             // Update match team statistics: decrement shots against
             await RemoveMatchTeamStatistics(match.Id, deletedSave.TeamId, 1, cancellationToken);

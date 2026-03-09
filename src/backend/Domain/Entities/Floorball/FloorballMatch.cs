@@ -1,5 +1,7 @@
 using Domain.Enums;
 using Domain.Enums.Floorball;
+using Domain.Enums.Floorball.Tournament;
+using Domain.Entities.Floorball.Tournament;
 using Domain.ValueObjects.Floorball;
 using System.Collections.Generic;
 
@@ -11,14 +13,49 @@ namespace Domain.Entities.Floorball;
 public class FloorballMatch : BaseEntity
 {
     /// <summary>
-    /// Gets the season this match belongs to
+    /// Gets the season this match belongs to (null for tournament matches)
     /// </summary>
-    public FloorballSeason Season { get; private set; }
+    public FloorballSeason? Season { get; private set; }
 
     /// <summary>
-    /// Gets or sets the ID of the season
+    /// Gets the ID of the season (null for tournament matches)
     /// </summary>
-    public Guid SeasonId { get; private set; }
+    public Guid? SeasonId { get; private set; }
+
+    /// <summary>
+    /// Gets the tournament this match belongs to (null for season matches)
+    /// </summary>
+    public FloorballTournament? Tournament { get; private set; }
+
+    /// <summary>
+    /// Gets the ID of the tournament (null for season matches)
+    /// </summary>
+    public Guid? TournamentId { get; private set; }
+
+    /// <summary>
+    /// Gets the tournament group this match belongs to (null for bracket/season matches)
+    /// </summary>
+    public FloorballTournamentGroup? TournamentGroup { get; private set; }
+
+    /// <summary>
+    /// Gets the ID of the tournament group (null for bracket/season matches)
+    /// </summary>
+    public Guid? TournamentGroupId { get; private set; }
+
+    /// <summary>
+    /// Gets the tournament round for bracket matches (null for group/season matches)
+    /// </summary>
+    public FloorballTournamentRound? TournamentRound { get; private set; }
+
+    /// <summary>
+    /// Whether this match belongs to a tournament rather than a season
+    /// </summary>
+    public bool IsTournamentMatch => TournamentId.HasValue;
+
+    /// <summary>
+    /// Whether this match belongs to a season rather than a tournament
+    /// </summary>
+    public bool IsSeasonMatch => SeasonId.HasValue;
 
     /// <summary>
     /// Gets the home team
@@ -143,7 +180,13 @@ public class FloorballMatch : BaseEntity
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
-        Season = null!; // EF Core will set this
+        Season = null;
+        SeasonId = null;
+        Tournament = null;
+        TournamentId = null;
+        TournamentGroup = null;
+        TournamentGroupId = null;
+        TournamentRound = null;
         HomeTeam = null!;
         AwayTeam = null!;
         Venue = string.Empty;
@@ -229,7 +272,69 @@ public class FloorballMatch : BaseEntity
     }
 
     /// <summary>
-    /// Changes the season for this match
+    /// Initializes a new FloorballMatch for a tournament (group-stage or bracket match)
+    /// </summary>
+    /// <param name="tournament">The tournament this match belongs to</param>
+    /// <param name="homeTeam">The home team</param>
+    /// <param name="awayTeam">The away team</param>
+    /// <param name="scheduledDateTime">The scheduled date and time</param>
+    /// <param name="venue">The venue (optional)</param>
+    /// <param name="group">The tournament group (null for bracket matches)</param>
+    /// <param name="round">The tournament round (null for group matches)</param>
+    public FloorballMatch(
+        FloorballTournament tournament,
+        FloorballTeam homeTeam,
+        FloorballTeam awayTeam,
+        DateTime scheduledDateTime,
+        string? venue,
+        FloorballTournamentGroup? group = null,
+        FloorballTournamentRound? round = null)
+    {
+        ArgumentNullException.ThrowIfNull(tournament);
+        ArgumentNullException.ThrowIfNull(homeTeam);
+        ArgumentNullException.ThrowIfNull(awayTeam);
+
+        if (homeTeam == awayTeam)
+            throw new ArgumentException("Home team and away team cannot be the same team.");
+
+        Id = Guid.NewGuid();
+        Season = null;
+        SeasonId = null;
+        Tournament = tournament;
+        TournamentId = tournament.Id;
+        TournamentGroup = group;
+        TournamentGroupId = group?.Id;
+        TournamentRound = round;
+        HomeTeam = homeTeam;
+        HomeTeamId = homeTeam.Id;
+        AwayTeam = awayTeam;
+        AwayTeamId = awayTeam.Id;
+        ScheduledDateTime = scheduledDateTime;
+        Venue = venue;
+        Status = FloorballMatchStatus.Scheduled;
+        HomeScore = 0;
+        AwayScore = 0;
+        WentToOvertime = false;
+        WentToShootout = false;
+        MatchRules = new FloorballMatchRules(
+            tournament.MatchRules.NumberOfPeriods,
+            tournament.MatchRules.PeriodDurationMinutes,
+            tournament.MatchRules.AllowOvertime,
+            tournament.MatchRules.OvertimeDurationMinutes,
+            tournament.MatchRules.AllowShootout);
+        HomeActiveGoalieId = null;
+        AwayActiveGoalieId = null;
+        _events = new List<FloorballMatchEvent>();
+        _officials = new List<FloorballReferee>();
+        _periodScores = new List<FloorballPeriodScore>();
+        for (int i = 1; i <= MatchRules.NumberOfPeriods; i++)
+        {
+            _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
+        }
+    }
+
+    /// <summary>
+    /// Changes the season for this match (clears tournament association)
     /// </summary>
     /// <param name="season">The new season</param>
     /// <exception cref="ArgumentNullException">Thrown when season is null</exception>
@@ -238,6 +343,42 @@ public class FloorballMatch : BaseEntity
         ArgumentNullException.ThrowIfNull(season);
         Season = season;
         SeasonId = season.Id;
+        Tournament = null;
+        TournamentId = null;
+        TournamentGroup = null;
+        TournamentGroupId = null;
+        TournamentRound = null;
+    }
+
+    /// <summary>
+    /// Changes the tournament for this match (clears season association)
+    /// </summary>
+    public void ChangeTournament(
+        FloorballTournament tournament,
+        FloorballTournamentGroup? group = null,
+        FloorballTournamentRound? round = null)
+    {
+        ArgumentNullException.ThrowIfNull(tournament);
+        Tournament = tournament;
+        TournamentId = tournament.Id;
+        TournamentGroup = group;
+        TournamentGroupId = group?.Id;
+        TournamentRound = round;
+        Season = null;
+        SeasonId = null;
+    }
+
+    /// <summary>
+    /// Updates the tournament group and/or round for a tournament match
+    /// </summary>
+    public void UpdateTournamentPlacement(FloorballTournamentGroup? group, FloorballTournamentRound? round)
+    {
+        if (!IsTournamentMatch)
+            throw new InvalidOperationException("Cannot set tournament placement on a season match.");
+
+        TournamentGroup = group;
+        TournamentGroupId = group?.Id;
+        TournamentRound = round;
     }
 
     /// <summary>

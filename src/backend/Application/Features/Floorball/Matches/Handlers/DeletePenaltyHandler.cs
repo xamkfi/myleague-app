@@ -81,7 +81,7 @@ public class DeletePenaltyHandler : IRequestHandler<DeletePenaltyCommand, Result
             // Decrement season statistics for penalty minutes
             if (deletedPenalty.PlayerId.HasValue)
             {
-                await RemovePlayerSeasonPenaltyStatistics(deletedPenalty.PlayerId.Value, deletedPenalty.TeamId, match.SeasonId, deletedPenalty.DurationInMinutes, cancellationToken);
+                await RemovePlayerSeasonPenaltyStatistics(deletedPenalty.PlayerId.Value, deletedPenalty.TeamId, match.SeasonId!.Value, deletedPenalty.DurationInMinutes, cancellationToken);
             }
 
             // Decrement match team statistics for penalty minutes

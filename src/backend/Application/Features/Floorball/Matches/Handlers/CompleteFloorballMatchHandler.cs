@@ -136,10 +136,10 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
     private async Task UpdateFinalTeamSeasonStatistics(FloorballMatch match, CancellationToken cancellationToken)
     {
         // Update home team statistics
-        await UpdateTeamMatchResult(match.HomeTeamId, match.SeasonId, match.HomeScore, match.AwayScore, true, match, cancellationToken);
+        await UpdateTeamMatchResult(match.HomeTeamId, match.SeasonId!.Value, match.HomeScore, match.AwayScore, true, match, cancellationToken);
         
         // Update away team statistics  
-        await UpdateTeamMatchResult(match.AwayTeamId, match.SeasonId, match.AwayScore, match.HomeScore, false, match, cancellationToken);
+        await UpdateTeamMatchResult(match.AwayTeamId, match.SeasonId!.Value, match.AwayScore, match.HomeScore, false, match, cancellationToken);
     }
 
     /// <summary>
@@ -213,11 +213,11 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
         foreach ((Guid playerId, Guid teamId) in participants)
         {
             FloorballPlayerSeasonStatistics? playerStats =
-                await _statisticsRepository.GetPlayerSeasonStatisticsAsync(playerId, teamId, match.SeasonId, cancellationToken);
+                await _statisticsRepository.GetPlayerSeasonStatisticsAsync(playerId, teamId, match.SeasonId!.Value, cancellationToken);
 
             if (playerStats == null)
             {
-                playerStats = new FloorballPlayerSeasonStatistics(playerId, teamId, match.SeasonId);
+                playerStats = new FloorballPlayerSeasonStatistics(playerId, teamId, match.SeasonId!.Value);
             }
 
             playerStats.RecordGamePlayed();
@@ -257,14 +257,14 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
         if (match.HomeActiveGoalieId.HasValue)
         {
             await UpdateSingleGoalieGamePlayed(
-                match.HomeActiveGoalieId.Value, match.HomeTeamId, match.SeasonId,
+                match.HomeActiveGoalieId.Value, match.HomeTeamId, match.SeasonId!.Value,
                 homeResult, matchDurationMinutes, homeGoalieShutout, cancellationToken);
         }
 
         if (match.AwayActiveGoalieId.HasValue)
         {
             await UpdateSingleGoalieGamePlayed(
-                match.AwayActiveGoalieId.Value, match.AwayTeamId, match.SeasonId,
+                match.AwayActiveGoalieId.Value, match.AwayTeamId, match.SeasonId!.Value,
                 awayResult, matchDurationMinutes, awayGoalieShutout, cancellationToken);
         }
     }

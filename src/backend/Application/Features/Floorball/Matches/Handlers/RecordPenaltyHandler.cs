@@ -99,7 +99,7 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
             // Update player season statistics for penalty minutes
             if (player != null)
             {
-                await UpdatePlayerSeasonPenaltyStatistics(player.Id, request.TeamId, match.SeasonId, request.Minutes, cancellationToken);
+                await UpdatePlayerSeasonPenaltyStatistics(player.Id, request.TeamId, match.SeasonId!.Value, request.Minutes, cancellationToken);
             }
 
             // Update match team statistics for penalty minutes
