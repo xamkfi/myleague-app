@@ -30,8 +30,9 @@ namespace Domain.Entities.Common
         /// <param name="title">The title of the page, displayed to users and used in navigation. Cannot be null.</param>
         /// <param name="contentHtml">The HTML content to render for the page. Cannot be null.</param>
         /// <param name="lastModifiedBy">The username of the individual who last modified the page content, or null if not applicable.</param>
-        public PageContent(string pageSlug, string title, string contentHtml, string? lastModifiedBy)
+        public PageContent(Guid id, string pageSlug, string title, string contentHtml, string? lastModifiedBy)
         {
+            Id = id;
             PageSlug = pageSlug;
             Title = ValidateTitle(title);
             ContentHtml = ValidateContent(contentHtml);

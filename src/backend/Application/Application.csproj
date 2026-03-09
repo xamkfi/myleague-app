@@ -29,4 +29,9 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Common\PageContent\Handlers\" />
+    <Folder Include="Features\Common\PageContent\Mappings\" />
+  </ItemGroup>
+
 </Project> 
