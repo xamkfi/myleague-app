@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Tournament;
 using MyLeague.Infrastructure.Persistence.Extensions;
 using MyLeague.Infrastructure.Persistence.Configurations.Floorball;
 using System.Reflection;
@@ -119,6 +120,21 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballSeasonDivisionTeam> FloorballSeasonDivisionTeams { get; set; }
 
         /// <summary>
+        /// Gets or sets the FloorballTournaments DbSet.
+        /// </summary>
+        public DbSet<FloorballTournament> FloorballTournaments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballTournamentGroups DbSet.
+        /// </summary>
+        public DbSet<FloorballTournamentGroup> FloorballTournamentGroups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballTournamentGroupTeams DbSet.
+        /// </summary>
+        public DbSet<FloorballTournamentGroupTeam> FloorballTournamentGroupTeams { get; set; }
+
+        /// <summary>
         /// Saves changes to the database with domain event dispatching.
         /// </summary>
         /// <returns>The number of state entries written to the database.</returns>
@@ -184,6 +200,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballStatisticsCacheConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballSeasonDivisionConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballSeasonDivisionTeamConfiguration());
+
+            // Apply tournament configurations
+            modelBuilder.ApplyConfiguration(new FloorballTournamentConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballTournamentGroupConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballTournamentGroupTeamConfiguration());
         }
     }
 }

@@ -1,4 +1,5 @@
 using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Tournament;
 using Domain.ValueObjects.Floorball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -76,14 +77,46 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(m => m.AwayTeamId)
                 .IsRequired();
 
+            // SeasonId is nullable (null for tournament matches)
             builder.Property(m => m.SeasonId)
-                .IsRequired();
+                .IsRequired(false);
 
-            // Configure relationships within FloorballDbContext
+            // TournamentId is nullable (null for season matches)
+            builder.Property(m => m.TournamentId)
+                .IsRequired(false);
+
+            builder.Property(m => m.TournamentGroupId)
+                .IsRequired(false);
+
+            builder.Property(m => m.TournamentRound)
+                .IsRequired(false)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            // Ignore computed convenience properties
+            builder.Ignore(m => m.IsTournamentMatch);
+            builder.Ignore(m => m.IsSeasonMatch);
+
+            // Season relationship (optional for tournament matches)
             builder.HasOne(m => m.Season)
                 .WithMany(s => s.Matches)
                 .HasForeignKey(m => m.SeasonId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Tournament relationship (optional for season matches)
+            builder.HasOne(m => m.Tournament)
+                .WithMany(t => t.Matches)
+                .HasForeignKey(m => m.TournamentId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Tournament group relationship (optional)
+            builder.HasOne(m => m.TournamentGroup)
+                .WithMany()
+                .HasForeignKey(m => m.TournamentGroupId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasOne(m => m.HomeTeam)
                 .WithMany()
@@ -94,6 +127,11 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .WithMany()
                 .HasForeignKey(m => m.AwayTeamId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Check constraint: match must belong to either a season or a tournament
+            builder.ToTable(t => t.HasCheckConstraint(
+                "CK_FloorballMatches_SeasonOrTournament",
+                "\"SeasonId\" IS NOT NULL OR \"TournamentId\" IS NOT NULL"));
 
             // Configure the relationship with referees using a simple many-to-many join table
             builder.HasMany(m => m.Officials)
