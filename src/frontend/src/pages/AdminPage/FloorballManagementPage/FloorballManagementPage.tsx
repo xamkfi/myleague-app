@@ -73,6 +73,17 @@ const FloorballManagementPage = () => {
             </div>
             <img src={RefereesIcon} alt="Referees" className="button-icon" />
           </button>
+          
+          <button
+            className="floorball-action-button"
+            onClick={() => navigate('/admin/floorball/tournaments')}
+          >
+            <div className="button-text">
+              <span className="button-title">{t('floorball.management.actions.tournaments', 'Tournaments')}</span>
+              <span className="button-subtitle">{t('floorball.management.actions.manageTournaments', 'Manage tournaments')}</span>
+            </div>
+            <img src={SeasonsIcon} alt="Tournaments" className="button-icon" />
+          </button>
         </div>
       
       </div>

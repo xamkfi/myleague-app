@@ -205,8 +205,12 @@ export interface FloorballMatchRules {
 
 export interface FloorballMatchDto {
   id: string;
-  seasonId: string;
-  seasonName: string;
+  seasonId?: string | null;
+  seasonName?: string | null;
+  tournamentId?: string | null;
+  tournamentName?: string | null;
+  tournamentGroupId?: string | null;
+  tournamentRound?: string | null;
   homeTeamId: string;
   homeTeamName: string;
   homeTeamLogo: string | null;
@@ -275,4 +279,135 @@ export interface GetFloorballMatchesRequest {
   endDate?: string;
   sortOrder?: string;
   searchQuery?: string;
-} 
+}
+
+// Tournament types
+export enum FloorballTournamentStatus {
+  Draft = 'Draft',
+  Active = 'Active',
+  InProgress = 'InProgress',
+  Completed = 'Completed',
+  Cancelled = 'Cancelled'
+}
+
+export enum FloorballTournamentPlayoffFormat {
+  None = 'None',
+  SingleElimination = 'SingleElimination',
+  FinalGroup = 'FinalGroup'
+}
+
+export enum FloorballTournamentGroupPhase {
+  GroupStage = 'GroupStage',
+  Playoff = 'Playoff'
+}
+
+export interface FloorballTournamentGroupTeamDto {
+  id: string;
+  groupId: string;
+  teamId: string;
+  teamName: string;
+  tournamentId: string;
+}
+
+export interface FloorballTournamentGroupDto {
+  id: string;
+  tournamentId: string;
+  name: string;
+  phase: string;
+  sortOrder: number;
+  teams: FloorballTournamentGroupTeamDto[];
+}
+
+export interface FloorballTournamentDto {
+  id: string;
+  name: string;
+  descriptionHtml?: string | null;
+  startDate: string;
+  endDate: string;
+  location?: string | null;
+  status: string;
+  playoffFormat: string;
+  groupStageAdvancingCount: number;
+  imageUrls: string[];
+  matchRules: FloorballMatchRules;
+  groups: FloorballTournamentGroupDto[];
+  matches: FloorballMatchDto[];
+}
+
+export interface FloorballTournamentSummaryDto {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  location?: string | null;
+  status: string;
+  playoffFormat: string;
+  groupCount: number;
+  teamCount: number;
+}
+
+export interface FloorballTournamentGroupStandingEntryDto {
+  rank: number;
+  teamId: string;
+  teamName: string;
+  gamesPlayed: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+}
+
+export interface FloorballTournamentGroupStandingsDto {
+  groupId: string;
+  groupName: string;
+  entries: FloorballTournamentGroupStandingEntryDto[];
+}
+
+export interface CreateFloorballTournamentRequest {
+  name: string;
+  startDate: string;
+  endDate: string;
+  location?: string;
+  descriptionHtml?: string;
+  numberOfPeriods?: number;
+  periodDurationMinutes?: number;
+  allowOvertime?: boolean;
+  overtimeDurationMinutes?: number;
+  allowShootout?: boolean;
+  playoffFormat?: string;
+  groupStageAdvancingCount?: number;
+}
+
+export interface UpdateFloorballTournamentRequest {
+  name: string;
+  startDate: string;
+  endDate: string;
+  location?: string;
+  descriptionHtml?: string;
+  numberOfPeriods?: number;
+  periodDurationMinutes?: number;
+  allowOvertime?: boolean;
+  overtimeDurationMinutes?: number;
+  allowShootout?: boolean;
+  playoffFormat?: string;
+  groupStageAdvancingCount?: number;
+}
+
+export interface AddGroupToTournamentRequest {
+  name: string;
+  phase?: string;
+  sortOrder?: number;
+}
+
+export interface CreateTournamentMatchRequest {
+  homeTeamId: string;
+  awayTeamId: string;
+  scheduledDateTime: string;
+  venue?: string;
+  groupId?: string;
+  tournamentRound?: string;
+  refereeId?: string;
+}

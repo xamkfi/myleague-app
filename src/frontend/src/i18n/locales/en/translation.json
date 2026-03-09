@@ -570,7 +570,8 @@
         "referees": "Manage Referees",
         "matches": "Manage Matches",
         "matchEvents": "Manage Match Events",
-        "seasons": "Manage Seasons"
+        "seasons": "Manage Seasons",
+        "tournaments": "Manage Tournaments"
       }
     },
     "teams": {
@@ -1228,5 +1229,112 @@
     "codeSent": "A login code has been sent to your email.",
     "unexpectedError": "An unexpected error occurred.",
     "logout": "Log out"
+  },
+  "tournament": {
+    "adminTitle": "Manage Tournaments",
+    "title": "Tournaments",
+    "create": "New Tournament",
+    "edit": "Edit Tournament",
+    "details": "Tournament Details",
+    "count": "tournaments",
+    "allStatuses": "All",
+    "noTournaments": "No tournaments found",
+    "confirmDelete": "Are you sure you want to delete this tournament?",
+    "confirmDeleteGroup": "Are you sure you want to delete this group?",
+    "updated": "Tournament updated successfully",
+    "manageMatches": "Matches",
+    "manageGroups": "Groups & Teams",
+    "manageTeamsFor": "Manage teams for:",
+    "saveFirst": "Save tournament first",
+    "activate": "Activate",
+    "start": "Start",
+    "complete": "Complete",
+    "cancel": "Cancel",
+    "addGroup": "Add Group",
+    "currentGroups": "Groups",
+    "noGroups": "No groups yet. Add a group above.",
+    "groupAdded": "Group added",
+    "groupRemoved": "Group removed",
+    "teamAdded": "Team added to group",
+    "teamRemoved": "Team removed from group",
+    "teamsLabel": "teams",
+    "teamsInGroup": "Teams in {{group}}",
+    "noTeamsInGroup": "No teams in this group yet.",
+    "availableTeams": "Available Teams",
+    "allTeamsAssigned": "All teams are already in a group.",
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "fields": {
+      "name": "Name",
+      "startDate": "Start",
+      "endDate": "End",
+      "location": "Location",
+      "groups": "Groups",
+      "teams": "Teams",
+      "status": "Status",
+      "groupName": "Group Name",
+      "groupPhase": "Phase",
+      "teamName": "Team",
+      "club": "Club",
+      "numberOfPeriods": "Periods",
+      "periodDuration": "Period Duration (min)",
+      "allowOvertime": "Allow Overtime",
+      "overtimeDuration": "Overtime Duration (min)",
+      "allowShootout": "Allow Shootout",
+      "playoffFormat": "Playoff Format",
+      "advancingCount": "Teams Advancing per Group"
+    },
+    "sections": {
+      "basicInfo": "Basic Information",
+      "schedule": "Schedule",
+      "description": "Description",
+      "matchRules": "Match Rules",
+      "playoffSettings": "Playoff Settings"
+    },
+    "placeholders": {
+      "name": "e.g. Duuniturnaus 2026",
+      "location": "e.g. Sports Hall",
+      "groupName": "e.g. Group A"
+    },
+    "playoffFormat": {
+      "none": "None",
+      "singleElimination": "Single Elimination",
+      "finalGroup": "Final Group"
+    },
+    "phase": {
+      "groupStage": "Group Stage",
+      "playoff": "Playoff"
+    },
+    "validation": {
+      "nameRequired": "Tournament name is required",
+      "datesRequired": "Start and end dates are required",
+      "endAfterStart": "End date must be after start date"
+    },
+    "errors": {
+      "loadFailed": "Failed to load tournament"
+    },
+    "publicPage": {
+      "overview": "Overview",
+      "schedule": "Schedule",
+      "standings": "Standings",
+      "statistics": "Statistics",
+      "tournamentInfo": "Tournament Info",
+      "noDescription": "No description available.",
+      "noMatches": "No matches.",
+      "noStandings": "No standings available.",
+      "loading": "Loading tournament...",
+      "notFound": "Tournament not found",
+      "groupsAndTeams": "Groups & Teams",
+      "matchSchedule": "Match Schedule",
+      "vs": "vs"
+    },
+    "actions": {
+      "menu": "Tournament actions"
+    }
   }
 }

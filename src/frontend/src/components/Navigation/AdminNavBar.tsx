@@ -172,6 +172,12 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                       <span>{t('floorball.management.actions.referees', 'Referees')}</span>
                     </Link>
                   </li>
+                  <li className={`admin-navbar-submenu-item ${location.pathname.startsWith('/admin/floorball/tournaments') ? 'active' : ''}`}>
+                    <Link to="/admin/floorball/tournaments">
+                      <img src={SeasonsIcon} alt="Tournaments" className="icon" />
+                      <span>{t('floorball.management.actions.tournaments', 'Tournaments')}</span>
+                    </Link>
+                  </li>
                 </ul>
               )}
             </li>

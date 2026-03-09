@@ -1,9 +1,9 @@
-import { Suspense } from 'react';
 import type { ComponentType } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
 import RouteErrorBoundary from '../components/RouteErrorBoundary/RouteErrorBoundary';
+import SuspenseWrapper from './SuspenseWrapper';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 // Public pages
@@ -67,10 +67,10 @@ const MatchManagementPage = lazyWithRetry(() => import('../pages/AdminPage/Floor
 const CreateMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/CreateMatchPage/CreateMatchPage'));
 const EditMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/EditMatchPage/EditMatchPage'));
 const ManageMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/ManageMatchPage/ManageMatchPage'));
-
-function SuspenseWrapper({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={null}>{children}</Suspense>;
-}
+const FloorballTournamentsPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTournamentsPage/FloorballTournamentsPage'));
+const CreateTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTournamentsPage/CreateTournamentPage/CreateTournamentPage'));
+const EditTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTournamentsPage/EditTournamentPage/EditTournamentPage'));
+const SingleTournamentPage = lazyWithRetry(() => import('../pages/SingleTournamentPage/SingleTournamentPage'));
 
 export const routes: RouteObject[] = [
   {
@@ -152,6 +152,10 @@ export const routes: RouteObject[] = [
   {
     path: '/turnaukset',
     element: <SuspenseWrapper><TournamentsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/turnaukset/:id',
+    element: <SuspenseWrapper><SingleTournamentPage /></SuspenseWrapper>
   },
   {
     path: '/lajit',
@@ -313,6 +317,14 @@ export const routes: RouteObject[] = [
           { path: 'scheduled', element: <Navigate to="/admin/floorball/matches?tab=scheduled" replace /> },
           { path: 'in-progress', element: <Navigate to="/admin/floorball/matches?tab=ongoing" replace /> },
           { path: 'cancelled', element: <Navigate to="/admin/floorball/matches?tab=cancelled" replace /> },
+        ]
+      },
+      {
+        path: 'tournaments',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><FloorballTournamentsPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateTournamentPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':tournamentId/edit', element: <ProtectedRoute><SuspenseWrapper><EditTournamentPage /></SuspenseWrapper></ProtectedRoute> },
         ]
       }
     ]

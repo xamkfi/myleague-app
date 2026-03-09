@@ -1,0 +1,252 @@
+.single-tournament {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem;
+
+  &__header {
+    margin-bottom: 1.5rem;
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    gap: 0.5rem;
+    color: var(--text-secondary, #666);
+    font-size: 0.95rem;
+  }
+
+  &__tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 2px solid var(--border-color, #e0e0e0);
+    margin-bottom: 1.5rem;
+  }
+
+  &__tab {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    background: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-secondary, #666);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+
+    &:hover {
+      color: var(--text-primary, #222);
+    }
+
+    &--active {
+      color: var(--primary-color, #1a73e8);
+      border-bottom-color: var(--primary-color, #1a73e8);
+    }
+  }
+
+  &__content {
+    min-height: 200px;
+  }
+
+  &__empty {
+    color: var(--text-secondary, #888);
+    font-style: italic;
+  }
+
+  &__description {
+    line-height: 1.7;
+    margin-bottom: 2rem;
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
+  }
+
+  &__groups-overview {
+    margin-top: 2rem;
+
+    h3 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  &__groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  &__group-card {
+    background: var(--card-bg, #f8f9fa);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--border-color, #e0e0e0);
+
+    h4 {
+      font-size: 1rem;
+      margin: 0 0 0.75rem;
+      color: var(--primary-color, #1a73e8);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        padding: 0.35rem 0;
+        border-bottom: 1px solid var(--border-color, #eee);
+        font-size: 0.9rem;
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+
+  // Schedule
+  &__schedule h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  &__matches {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__match-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--card-bg, #f8f9fa);
+    border-radius: 6px;
+    border: 1px solid var(--border-color, #e0e0e0);
+    font-size: 0.9rem;
+  }
+
+  &__match-time {
+    min-width: 140px;
+    color: var(--text-secondary, #666);
+    font-size: 0.85rem;
+  }
+
+  &__match-teams {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  &__team-home {
+    text-align: right;
+    flex: 1;
+    font-weight: 500;
+  }
+
+  &__match-score {
+    min-width: 50px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--primary-color, #1a73e8);
+  }
+
+  &__team-away {
+    text-align: left;
+    flex: 1;
+    font-weight: 500;
+  }
+
+  &__match-venue {
+    color: var(--text-secondary, #888);
+    font-size: 0.85rem;
+    min-width: 100px;
+    text-align: right;
+  }
+
+  // Standings
+  &__standings-group {
+    margin-bottom: 2rem;
+
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
+  }
+
+  &__standings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+
+    th,
+    td {
+      padding: 0.5rem 0.75rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color, #e0e0e0);
+    }
+
+    th {
+      background: var(--card-bg, #f8f9fa);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: var(--text-secondary, #666);
+    }
+
+    td:first-child,
+    th:first-child {
+      width: 2.5rem;
+    }
+  }
+
+  &__standings-team {
+    text-align: left !important;
+    font-weight: 500;
+  }
+
+  &__standings-points {
+    font-weight: 700;
+    color: var(--primary-color, #1a73e8);
+  }
+}
+
+@media (max-width: 768px) {
+  .single-tournament {
+    padding: 1rem;
+
+    &__match-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+
+    &__match-teams {
+      width: 100%;
+    }
+
+    &__match-venue {
+      text-align: left;
+    }
+
+    &__standings-table {
+      font-size: 0.8rem;
+
+      th,
+      td {
+        padding: 0.35rem 0.4rem;
+      }
+    }
+  }
+}

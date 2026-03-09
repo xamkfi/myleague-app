@@ -570,7 +570,8 @@
         "referees": "Hallitse Tuomareita",
         "matches": "Hallitse Otteluita",
         "matchEvents": "Hallitse Ottelutapahtumia",
-        "seasons": "Hallitse Kausia"
+        "seasons": "Hallitse Kausia",
+        "tournaments": "Hallitse Turnauksia"
       }
     },
     "teams": {
@@ -1176,5 +1177,112 @@
     "codeSent": "Kirjautumiskoodi on lähetetty sähköpostiisi.",
     "unexpectedError": "Odottamaton virhe tapahtui.",
     "logout": "Kirjaudu ulos"
+  },
+  "tournament": {
+    "adminTitle": "Hallitse turnauksia",
+    "title": "Turnaukset",
+    "create": "Uusi turnaus",
+    "edit": "Muokkaa turnausta",
+    "details": "Turnauksen tiedot",
+    "count": "turnausta",
+    "allStatuses": "Kaikki",
+    "noTournaments": "Ei turnauksia",
+    "confirmDelete": "Haluatko varmasti poistaa tämän turnauksen?",
+    "confirmDeleteGroup": "Haluatko varmasti poistaa tämän lohkon?",
+    "updated": "Turnaus päivitetty onnistuneesti",
+    "manageMatches": "Ottelut",
+    "manageGroups": "Lohkot ja joukkueet",
+    "manageTeamsFor": "Hallitse joukkueita:",
+    "saveFirst": "Tallenna turnaus ensin",
+    "activate": "Aktivoi",
+    "start": "Aloita",
+    "complete": "Päätä",
+    "cancel": "Peru",
+    "addGroup": "Lisää lohko",
+    "currentGroups": "Lohkot",
+    "noGroups": "Ei lohkoja. Lisää lohko yllä.",
+    "groupAdded": "Lohko lisätty",
+    "groupRemoved": "Lohko poistettu",
+    "teamAdded": "Joukkue lisätty lohkoon",
+    "teamRemoved": "Joukkue poistettu lohkosta",
+    "teamsLabel": "joukkuetta",
+    "teamsInGroup": "Joukkueet lohkossa {{group}}",
+    "noTeamsInGroup": "Ei joukkueita tässä lohkossa.",
+    "availableTeams": "Saatavilla olevat joukkueet",
+    "allTeamsAssigned": "Kaikki joukkueet on jo lisätty lohkoon.",
+    "status": {
+      "draft": "Luonnos",
+      "active": "Aktiivinen",
+      "inProgress": "Käynnissä",
+      "completed": "Päättynyt",
+      "cancelled": "Peruttu"
+    },
+    "fields": {
+      "name": "Nimi",
+      "startDate": "Alkaa",
+      "endDate": "Päättyy",
+      "location": "Sijainti",
+      "groups": "Lohkot",
+      "teams": "Joukkueet",
+      "status": "Tila",
+      "groupName": "Lohkon nimi",
+      "groupPhase": "Vaihe",
+      "teamName": "Joukkue",
+      "club": "Seura",
+      "numberOfPeriods": "Erät",
+      "periodDuration": "Erän kesto (min)",
+      "allowOvertime": "Salli jatkoaika",
+      "overtimeDuration": "Jatkoajan kesto (min)",
+      "allowShootout": "Salli voittomaalikilpailu",
+      "playoffFormat": "Pudotuspelien muoto",
+      "advancingCount": "Jatkoon pääsevät joukkueet/lohko"
+    },
+    "sections": {
+      "basicInfo": "Perustiedot",
+      "schedule": "Aikataulu",
+      "description": "Kuvaus",
+      "matchRules": "Ottelusäännöt",
+      "playoffSettings": "Pudotuspeliasetukset"
+    },
+    "placeholders": {
+      "name": "esim. Duuniturnaus 2026",
+      "location": "esim. Liikuntahalli",
+      "groupName": "esim. A-lohko"
+    },
+    "playoffFormat": {
+      "none": "Ei pudotuspelejä",
+      "singleElimination": "Pudotuspelit",
+      "finalGroup": "Loppulohko"
+    },
+    "phase": {
+      "groupStage": "Lohkovaihe",
+      "playoff": "Pudotuspelit"
+    },
+    "validation": {
+      "nameRequired": "Turnauksen nimi on pakollinen",
+      "datesRequired": "Alku- ja loppupäivämäärä vaaditaan",
+      "endAfterStart": "Loppupäivämäärän tulee olla alkupäivämäärän jälkeen"
+    },
+    "errors": {
+      "loadFailed": "Turnauksen lataaminen epäonnistui"
+    },
+    "publicPage": {
+      "overview": "Yleiskatsaus",
+      "schedule": "Otteluohjelma",
+      "standings": "Sarjataulukko",
+      "statistics": "Tilastot",
+      "tournamentInfo": "Turnauksen tiedot",
+      "noDescription": "Ei kuvausta saatavilla.",
+      "noMatches": "Ei otteluita.",
+      "noStandings": "Ei sarjataulukkoa saatavilla.",
+      "loading": "Ladataan turnausta...",
+      "notFound": "Turnausta ei löytynyt",
+      "groupsAndTeams": "Lohkot ja joukkueet",
+      "matchSchedule": "Otteluohjelma",
+      "vs": "vs"
+    },
+    "actions": {
+      "menu": "Turnauksen toiminnot"
+    }
   }
-} 
+}
