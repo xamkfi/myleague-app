@@ -112,8 +112,12 @@ public static class FloorballMatchMapper
 
         return new FloorballMatchDto(
             match.Id,
-            match.SeasonId!.Value,
-            match.Season!.Name,
+            match.SeasonId,
+            match.Season?.Name,
+            match.TournamentId,
+            match.Tournament?.Name,
+            match.TournamentGroupId,
+            match.TournamentRound?.ToString(),
             match.HomeTeamId,
             match.HomeTeam.Name,
             homeTeamLogo,
@@ -195,8 +199,12 @@ public static class FloorballMatchMapper
 
         return new FloorballMatchDto(
             match.Id,
-            match.SeasonId!.Value,
-            "default",
+            match.SeasonId,
+            match.Season?.Name ?? "default",
+            match.TournamentId,
+            match.Tournament?.Name,
+            match.TournamentGroupId,
+            match.TournamentRound?.ToString(),
             match.HomeTeamId,
             homeTeamName,
             null,
@@ -210,12 +218,12 @@ public static class FloorballMatchMapper
             match.AwayScore,
             match.WentToOvertime,
             match.WentToShootout,
-            null, // EventSourcedFloorballMatch does not have HomeActiveGoalieId
-            null, // EventSourcedFloorballMatch does not have AwayActiveGoalieId
+            null,
+            null,
             periodScores,
             officials,
-            new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed
-            new List<FloorballPenaltyEventDto>(), // TODO: Map penalty events when needed
+            new List<FloorballGoalEventDto>(),
+            new List<FloorballPenaltyEventDto>(),
             new List<FloorballSaveEventDto>(),
             matchRulesDto
         );

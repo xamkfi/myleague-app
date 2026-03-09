@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyLeague Database ERD</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f1117;
+      color: #e1e4e8;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1a1d28 0%, #252838 100%);
+      border-bottom: 1px solid #30363d;
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      background: linear-gradient(90deg, #58a6ff, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle { font-size: 0.85rem; color: #8b949e; }
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .controls button {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .controls button:hover {
+      background: #30363d;
+      border-color: #58a6ff;
+      color: #58a6ff;
+    }
+    .tab-bar {
+      display: flex;
+      gap: 0.3rem;
+      padding: 0 2rem;
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+    }
+    .tab-bar button {
+      background: transparent;
+      color: #8b949e;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 0.7rem 1.2rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-bar button:hover { color: #c9d1d9; }
+    .tab-bar button.active {
+      color: #58a6ff;
+      border-bottom-color: #58a6ff;
+    }
+    .diagram-container {
+      display: none;
+      padding: 2rem;
+      overflow: auto;
+      max-height: calc(100vh - 140px);
+    }
+    .diagram-container.active { display: block; }
+    .diagram-container .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+    .diagram-container .mermaid svg {
+      max-width: none;
+    }
+    .legend {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      font-size: 0.75rem;
+      z-index: 10;
+      line-height: 1.6;
+    }
+    .legend strong { color: #58a6ff; }
+    .legend span.pk { color: #f0883e; }
+    .legend span.fk { color: #a78bfa; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>MyLeague &mdash; Database Entity Relationship Diagram</h1>
+      <div class="subtitle">PostgreSQL &bull; Schemas: <strong>common</strong>, <strong>floorball</strong> &bull; Provider: Npgsql</div>
+    </div>
+    <div class="controls">
+      <button onclick="zoomIn()">Zoom +</button>
+      <button onclick="zoomOut()">Zoom &minus;</button>
+      <button onclick="resetZoom()">Reset</button>
+    </div>
+  </header>
+
+  <div class="tab-bar">
+    <button class="active" onclick="showTab('full', this)">Full Schema</button>
+    <button onclick="showTab('common', this)">Common Schema</button>
+    <button onclick="showTab('floorball-core', this)">Floorball Core</button>
+    <button onclick="showTab('floorball-match', this)">Match &amp; Events</button>
+    <button onclick="showTab('floorball-stats', this)">Statistics</button>
+    <button onclick="showTab('floorball-tournament', this)">Tournaments</button>
+  </div>
+
+  <!-- ══════════════ FULL SCHEMA ══════════════ -->
+  <div id="tab-full" class="diagram-container active">
+    <pre class="mermaid">
+erDiagram
+    %% ═══════════════════════════════════════════
+    %% COMMON SCHEMA
+    %% ═══════════════════════════════════════════
+
+    Person {
+        guid Id PK
+        string FirstName
+        string LastName
+        enum PersonRole
+        datetime BirthDate
+        string Address_Street
+        string Address_City
+        string Address_PostalCode
+        string ContactInfo_Email
+        string ContactInfo_Phone
+        bool IsRegistered
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    User {
+        guid Id PK
+        string Email
+        guid PersonId FK
+        enum UserRole
+        bool IsActive
+        datetime LastLoginAt
+        string LoginCode
+        datetime LoginCodeExpiresAt
+        int LoginCodeAttempts
+        bool IsEmailVerified
+        string EmailVerificationToken
+        datetime EmailVerificationTokenExpiresAt
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    RefreshToken {
+        guid Id PK
+        guid UserId FK
+        string TokenHash
+        datetime ExpiresAt
+        datetime RevokedAt
+        guid ReplacedByTokenId
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    Club {
+        guid Id PK
+        string Name
+        datetime FoundingDate
+        string City
+        string Country
+        uri WebsiteUrl
+        uri LogoUrl
+        string ContactEmail
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    Division {
+        guid Id PK
+        string Name
+        string Description
+        int Level
+        enum SportType
+        bool IsActive
+        datetime CreatedDate
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    NewsArticle {
+        guid Id PK
+        string Title
+        uri MainImage
+        string ContentHtml
+        string Summary
+        string Author
+        enum NewsCategory
+        enum SportsCategory
+        json Tags
+        json ImageUrls
+        bool IsArchived
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    TimerState {
+        guid MatchId PK
+        int PeriodNumber
+        datetime StartedAt
+        datetime LastResumedAt
+        datetime PausedAt
+        timespan TotalPausedDuration
+        bool IsRunning
+        datetime LastUpdated
+    }
+
+    %% ═══════════════════════════════════════════
+    %% FLOORBALL SCHEMA - CORE
+    %% ═══════════════════════════════════════════
+
+    FloorballPlayer {
+        guid Id PK
+        guid PersonId FK
+        enum Position
+        bool IsActive
+        int CareerGoals
+        int CareerAssists
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTeam {
+        guid Id PK
+        string Name
+        string ShortName
+        guid ClubId FK
+        guid DivisionId FK
+        enum TeamCategory
+        string HomeArena
+        string PrimaryJerseyColor
+        string SecondaryJerseyColor
+        uri LogoUrl
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTeamPlayer {
+        guid Id PK
+        guid TeamId FK
+        guid PlayerId FK
+        enum Position
+        bool IsActive
+        int JerseyNumber
+        int GamesPlayed
+        int Goals
+        int Assists
+        int PenaltyMinutes
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTeamManager {
+        guid Id PK
+        guid PersonId FK
+        guid TeamId FK
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballReferee {
+        guid Id PK
+        guid PersonId FK
+        bool IsActive
+        datetime LicenseIssueDate
+        datetime LicenseExpiryDate
+        int MatchesOfficiated
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballSeason {
+        guid Id PK
+        string Name
+        datetime StartDate
+        datetime EndDate
+        bool IsActive
+        bool IsCompleted
+        int MatchRules_NumberOfPeriods
+        int MatchRules_PeriodDurationMinutes
+        bool MatchRules_AllowOvertime
+        int MatchRules_OvertimeDurationMinutes
+        bool MatchRules_AllowShootout
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    %% ═══════════════════════════════════════════
+    %% FLOORBALL SCHEMA - MATCH & EVENTS
+    %% ═══════════════════════════════════════════
+
+    FloorballMatch {
+        guid Id PK
+        guid SeasonId FK
+        guid TournamentId FK
+        guid TournamentGroupId FK
+        enum TournamentRound
+        guid HomeTeamId FK
+        guid AwayTeamId FK
+        datetime ScheduledDateTime
+        string Venue
+        enum Status
+        int HomeScore
+        int AwayScore
+        bool WentToOvertime
+        bool WentToShootout
+        int MatchRules_NumberOfPeriods
+        int MatchRules_PeriodDurationMinutes
+        bool MatchRules_AllowOvertime
+        guid HomeActiveGoalieId
+        guid AwayActiveGoalieId
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballMatchOfficial {
+        guid MatchId FK
+        guid RefereeId FK
+    }
+
+    FloorballPeriodScore {
+        guid Id PK
+        guid MatchId FK
+        int PeriodNumber
+        guid HomeTeamId
+        guid AwayTeamId
+        int HomeScore
+        int AwayScore
+        bool IsCompleted
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballMatchEvent {
+        guid Id PK
+        guid MatchId FK
+        guid TeamId FK
+        int PeriodNumber
+        int TimeInSeconds
+        string Description
+        string Discriminator
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballGoal {
+        guid Id PK
+        guid ScoringPlayerId FK
+        guid AssistingPlayerId FK
+        guid SecondaryAssistingPlayerId FK
+        enum GoalType
+    }
+
+    FloorballPenalty {
+        guid Id PK
+        guid PlayerId FK
+        enum PenaltyType
+        int DurationInMinutes
+    }
+
+    FloorballSave {
+        guid Id PK
+        guid GoalieId FK
+        bool WasInOvertime
+        bool WasInShootout
+    }
+
+    %% ═══════════════════════════════════════════
+    %% FLOORBALL SCHEMA - SEASON DIVISIONS
+    %% ═══════════════════════════════════════════
+
+    FloorballSeasonDivision {
+        guid Id PK
+        guid SeasonId FK
+        guid DivisionId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballSeasonDivisionTeam {
+        guid Id PK
+        guid SeasonId FK
+        guid SeasonDivisionId FK
+        guid TeamId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    %% ═══════════════════════════════════════════
+    %% FLOORBALL SCHEMA - TOURNAMENTS
+    %% ═══════════════════════════════════════════
+
+    FloorballTournament {
+        guid Id PK
+        string Name
+        string DescriptionHtml
+        datetime StartDate
+        datetime EndDate
+        string Location
+        enum Status
+        int MatchRules_NumberOfPeriods
+        int MatchRules_PeriodDurationMinutes
+        bool MatchRules_AllowOvertime
+        enum PlayoffFormat
+        int GroupStageAdvancingCount
+        json ImageUrls
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTournamentGroup {
+        guid Id PK
+        guid TournamentId FK
+        string Name
+        enum Phase
+        int SortOrder
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTournamentGroupTeam {
+        guid Id PK
+        guid GroupId FK
+        guid TeamId FK
+        guid TournamentId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    %% ═══════════════════════════════════════════
+    %% FLOORBALL SCHEMA - STATISTICS
+    %% ═══════════════════════════════════════════
+
+    FloorballTeamSeasonStatistics {
+        guid Id PK
+        guid TeamId FK
+        guid SeasonId FK
+        int GamesPlayed
+        int Wins
+        int Losses
+        int Ties
+        int Points
+        int GoalsFor
+        int GoalsAgainst
+        int GoalDifference
+        int PenaltyMinutes
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballPlayerSeasonStatistics {
+        guid Id PK
+        guid PlayerId FK
+        guid TeamId FK
+        guid SeasonId FK
+        int GamesPlayed
+        int Goals
+        int Assists
+        int Points
+        int PenaltyMinutes
+        int PlusMinusRating
+        int ShotsOnGoal
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballGoalieSeasonStatistics {
+        guid Id PK
+        guid PlayerId FK
+        guid TeamId FK
+        guid SeasonId FK
+        int GamesPlayed
+        int GamesStarted
+        int Wins
+        int Losses
+        int Saves
+        int ShotsAgainst
+        decimal SavePercentage
+        int GoalsAgainst
+        decimal GoalsAgainstAverage
+        int Shutouts
+        int MinutesPlayed
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballMatchTeamStatistics {
+        guid Id PK
+        guid MatchId FK
+        guid TeamId FK
+        int ShotsOnGoal
+        int ShotsTotal
+        int FaceoffWins
+        int PowerPlayGoals
+        int PenaltyMinutes
+        int Hits
+        int BlockedShots
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballStatisticsCache {
+        guid Id PK
+        string CacheKey
+        guid SeasonId FK
+        string JsonData
+        datetime LastUpdated
+        datetime ExpiresAt
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    %% ═══════════════════════════════════════════
+    %% RELATIONSHIPS
+    %% ═══════════════════════════════════════════
+
+    User ||--|| Person : "PersonId"
+    User ||--o{ RefreshToken : "has"
+
+    FloorballPlayer }o--|| Person : "PersonId"
+    FloorballReferee }o--|| Person : "PersonId"
+    FloorballTeamManager }o--|| Person : "PersonId"
+
+    FloorballTeam }o--|| Club : "ClubId"
+    FloorballTeam }o--o| Division : "DivisionId"
+
+    FloorballTeam ||--o{ FloorballTeamPlayer : "TeamId"
+    FloorballPlayer ||--o{ FloorballTeamPlayer : "PlayerId"
+
+    FloorballTeam ||--o{ FloorballTeamManager : "TeamId"
+
+    FloorballSeason ||--o{ FloorballMatch : "SeasonId"
+    FloorballMatch }o--|| FloorballTeam : "HomeTeamId"
+    FloorballMatch }o--|| FloorballTeam : "AwayTeamId"
+    FloorballMatch ||--o{ FloorballPeriodScore : "MatchId"
+    FloorballMatch ||--o{ FloorballMatchEvent : "MatchId"
+    FloorballMatch }o--o{ FloorballReferee : "FloorballMatchOfficial"
+
+    FloorballMatchEvent ||--o| FloorballGoal : "TPH inheritance"
+    FloorballMatchEvent ||--o| FloorballPenalty : "TPH inheritance"
+    FloorballMatchEvent ||--o| FloorballSave : "TPH inheritance"
+
+    FloorballSeason ||--o{ FloorballSeasonDivision : "SeasonId"
+    FloorballSeasonDivision ||--o{ FloorballSeasonDivisionTeam : "SeasonDivisionId"
+    FloorballSeasonDivisionTeam }o--|| FloorballTeam : "TeamId"
+
+    FloorballTournament ||--o{ FloorballTournamentGroup : "TournamentId"
+    FloorballTournament ||--o{ FloorballMatch : "TournamentId"
+    FloorballTournamentGroup ||--o{ FloorballTournamentGroupTeam : "GroupId"
+    FloorballTournamentGroupTeam }o--|| FloorballTeam : "TeamId"
+    FloorballMatch }o--o| FloorballTournamentGroup : "TournamentGroupId"
+
+    FloorballTeamSeasonStatistics }o--|| FloorballTeam : "TeamId"
+    FloorballTeamSeasonStatistics }o--|| FloorballSeason : "SeasonId"
+    FloorballPlayerSeasonStatistics }o--|| FloorballPlayer : "PlayerId"
+    FloorballPlayerSeasonStatistics }o--|| FloorballTeam : "TeamId"
+    FloorballPlayerSeasonStatistics }o--|| FloorballSeason : "SeasonId"
+    FloorballGoalieSeasonStatistics }o--|| FloorballPlayer : "PlayerId"
+    FloorballGoalieSeasonStatistics }o--|| FloorballTeam : "TeamId"
+    FloorballGoalieSeasonStatistics }o--|| FloorballSeason : "SeasonId"
+    FloorballMatchTeamStatistics }o--|| FloorballMatch : "MatchId"
+    FloorballMatchTeamStatistics }o--|| FloorballTeam : "TeamId"
+    FloorballStatisticsCache }o--o| FloorballSeason : "SeasonId"
+
+    TimerState }o--|| FloorballMatch : "MatchId"
+    </pre>
+  </div>
+
+  <!-- ══════════════ COMMON SCHEMA ══════════════ -->
+  <div id="tab-common" class="diagram-container">
+    <pre class="mermaid">
+erDiagram
+    Person {
+        guid Id PK
+        string FirstName
+        string LastName
+        enum PersonRole
+        datetime BirthDate
+        string Address_Street
+        string Address_City
+        string Address_PostalCode
+        string ContactInfo_Email
+        string ContactInfo_Phone
+        bool IsRegistered
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    User {
+        guid Id PK
+        string Email
+        guid PersonId FK
+        enum UserRole
+        bool IsActive
+        datetime LastLoginAt
+        string LoginCode
+        datetime LoginCodeExpiresAt
+        int LoginCodeAttempts
+        bool IsEmailVerified
+        string EmailVerificationToken
+        datetime EmailVerificationTokenExpiresAt
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    RefreshToken {
+        guid Id PK
+        guid UserId FK
+        string TokenHash
+        datetime ExpiresAt
+        datetime RevokedAt
+        guid ReplacedByTokenId
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    Club {
+        guid Id PK
+        string Name
+        datetime FoundingDate
+        string City
+        string Country
+        uri WebsiteUrl
+        uri LogoUrl
+        string ContactEmail
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    Division {
+        guid Id PK
+        string Name
+        string Description
+        int Level
+        enum SportType
+        bool IsActive
+        datetime CreatedDate
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    NewsArticle {
+        guid Id PK
+        string Title
+        uri MainImage
+        string ContentHtml
+        string Summary
+        string Author
+        enum NewsCategory
+        enum SportsCategory
+        json Tags
+        json ImageUrls
+        bool IsArchived
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    TimerState {
+        guid MatchId PK
+        int PeriodNumber
+        datetime StartedAt
+        datetime LastResumedAt
+        datetime PausedAt
+        timespan TotalPausedDuration
+        bool IsRunning
+        datetime LastUpdated
+    }
+
+    User ||--|| Person : "PersonId (1-to-1)"
+    User ||--o{ RefreshToken : "has many"
+    </pre>
+  </div>
+
+  <!-- ══════════════ FLOORBALL CORE ══════════════ -->
+  <div id="tab-floorball-core" class="diagram-container">
+    <pre class="mermaid">
+erDiagram
+    Person {
+        guid Id PK
+        string FirstName
+        string LastName
+    }
+
+    Club {
+        guid Id PK
+        string Name
+        string City
+        string Country
+    }
+
+    Division {
+        guid Id PK
+        string Name
+        int Level
+        enum SportType
+    }
+
+    FloorballPlayer {
+        guid Id PK
+        guid PersonId FK
+        enum Position
+        bool IsActive
+        int CareerGoals
+        int CareerAssists
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTeam {
+        guid Id PK
+        string Name
+        string ShortName
+        guid ClubId FK
+        guid DivisionId FK
+        enum TeamCategory
+        string HomeArena
+        string PrimaryJerseyColor
+        string SecondaryJerseyColor
+        uri LogoUrl
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTeamPlayer {
+        guid Id PK
+        guid TeamId FK
+        guid PlayerId FK
+        enum Position
+        bool IsActive
+        int JerseyNumber
+        int GamesPlayed
+        int Goals
+        int Assists
+        int PenaltyMinutes
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTeamManager {
+        guid Id PK
+        guid PersonId FK
+        guid TeamId FK
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballReferee {
+        guid Id PK
+        guid PersonId FK
+        bool IsActive
+        datetime LicenseIssueDate
+        datetime LicenseExpiryDate
+        int MatchesOfficiated
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballSeason {
+        guid Id PK
+        string Name
+        datetime StartDate
+        datetime EndDate
+        bool IsActive
+        bool IsCompleted
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballSeasonDivision {
+        guid Id PK
+        guid SeasonId FK
+        guid DivisionId FK
+    }
+
+    FloorballSeasonDivisionTeam {
+        guid Id PK
+        guid SeasonDivisionId FK
+        guid TeamId FK
+        guid SeasonId FK
+    }
+
+    FloorballPlayer }o--|| Person : "PersonId"
+    FloorballReferee }o--|| Person : "PersonId"
+    FloorballTeamManager }o--|| Person : "PersonId"
+
+    FloorballTeam }o--|| Club : "ClubId"
+    FloorballTeam }o--o| Division : "DivisionId"
+
+    FloorballTeam ||--o{ FloorballTeamPlayer : "TeamId"
+    FloorballPlayer ||--o{ FloorballTeamPlayer : "PlayerId"
+    FloorballTeam ||--o{ FloorballTeamManager : "TeamId"
+
+    FloorballSeason ||--o{ FloorballSeasonDivision : "SeasonId"
+    FloorballSeasonDivision ||--o{ FloorballSeasonDivisionTeam : "SeasonDivisionId"
+    FloorballSeasonDivisionTeam }o--|| FloorballTeam : "TeamId"
+    </pre>
+  </div>
+
+  <!-- ══════════════ MATCH & EVENTS ══════════════ -->
+  <div id="tab-floorball-match" class="diagram-container">
+    <pre class="mermaid">
+erDiagram
+    FloorballSeason {
+        guid Id PK
+        string Name
+    }
+
+    FloorballTeam {
+        guid Id PK
+        string Name
+    }
+
+    FloorballReferee {
+        guid Id PK
+        guid PersonId FK
+    }
+
+    FloorballTournament {
+        guid Id PK
+        string Name
+    }
+
+    FloorballTournamentGroup {
+        guid Id PK
+        string Name
+    }
+
+    FloorballMatch {
+        guid Id PK
+        guid SeasonId FK
+        guid TournamentId FK
+        guid TournamentGroupId FK
+        enum TournamentRound
+        guid HomeTeamId FK
+        guid AwayTeamId FK
+        datetime ScheduledDateTime
+        string Venue
+        enum Status
+        int HomeScore
+        int AwayScore
+        bool WentToOvertime
+        bool WentToShootout
+        int MatchRules_NumberOfPeriods
+        int MatchRules_PeriodDurationMinutes
+        bool MatchRules_AllowOvertime
+        int MatchRules_OvertimeDurationMinutes
+        bool MatchRules_AllowShootout
+        guid HomeActiveGoalieId
+        guid AwayActiveGoalieId
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballMatchOfficial {
+        guid MatchId FK
+        guid RefereeId FK
+    }
+
+    FloorballPeriodScore {
+        guid Id PK
+        guid MatchId FK
+        int PeriodNumber
+        guid HomeTeamId
+        guid AwayTeamId
+        int HomeScore
+        int AwayScore
+        bool IsCompleted
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballMatchEvent {
+        guid Id PK
+        guid MatchId FK
+        guid TeamId FK
+        int PeriodNumber
+        int TimeInSeconds
+        string Description
+        string Discriminator
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballGoal {
+        guid Id PK
+        guid ScoringPlayerId FK
+        guid AssistingPlayerId FK
+        guid SecondaryAssistingPlayerId FK
+        enum GoalType
+    }
+
+    FloorballPenalty {
+        guid Id PK
+        guid PlayerId FK
+        enum PenaltyType
+        int DurationInMinutes
+    }
+
+    FloorballSave {
+        guid Id PK
+        guid GoalieId FK
+        bool WasInOvertime
+        bool WasInShootout
+    }
+
+    TimerState {
+        guid MatchId PK
+        int PeriodNumber
+        datetime StartedAt
+        datetime PausedAt
+        bool IsRunning
+    }
+
+    FloorballSeason ||--o{ FloorballMatch : "SeasonId"
+    FloorballTournament ||--o{ FloorballMatch : "TournamentId"
+    FloorballMatch }o--|| FloorballTeam : "HomeTeamId"
+    FloorballMatch }o--|| FloorballTeam : "AwayTeamId"
+    FloorballMatch }o--o| FloorballTournamentGroup : "TournamentGroupId"
+    FloorballMatch ||--o{ FloorballPeriodScore : "MatchId"
+    FloorballMatch ||--o{ FloorballMatchEvent : "MatchId"
+    FloorballMatch }o--o{ FloorballReferee : "FloorballMatchOfficial"
+
+    FloorballMatchEvent ||--o| FloorballGoal : "TPH"
+    FloorballMatchEvent ||--o| FloorballPenalty : "TPH"
+    FloorballMatchEvent ||--o| FloorballSave : "TPH"
+
+    TimerState }o--|| FloorballMatch : "MatchId"
+    </pre>
+  </div>
+
+  <!-- ══════════════ STATISTICS ══════════════ -->
+  <div id="tab-floorball-stats" class="diagram-container">
+    <pre class="mermaid">
+erDiagram
+    FloorballTeam {
+        guid Id PK
+        string Name
+    }
+
+    FloorballPlayer {
+        guid Id PK
+        guid PersonId FK
+    }
+
+    FloorballSeason {
+        guid Id PK
+        string Name
+    }
+
+    FloorballMatch {
+        guid Id PK
+        guid SeasonId FK
+    }
+
+    FloorballTeamSeasonStatistics {
+        guid Id PK
+        guid TeamId FK
+        guid SeasonId FK
+        int GamesPlayed
+        int Wins
+        int Losses
+        int Ties
+        int Points
+        int GoalsFor
+        int GoalsAgainst
+        int GoalDifference
+        int ShotsFor
+        int ShotsAgainst
+        decimal ShotPercentage
+        int PowerPlayGoals
+        int PowerPlayOpportunities
+        decimal PowerPlayPercentage
+        int ShortHandedGoals
+        int PenaltyMinutes
+        int HomeWins
+        int HomeLosses
+        int AwayWins
+        int AwayLosses
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballPlayerSeasonStatistics {
+        guid Id PK
+        guid PlayerId FK
+        guid TeamId FK
+        guid SeasonId FK
+        int GamesPlayed
+        int Goals
+        int Assists
+        int Points
+        int PenaltyMinutes
+        int PlusMinusRating
+        int ShotsOnGoal
+        decimal ShotPercentage
+        int PowerPlayGoals
+        int PowerPlayAssists
+        int ShortHandedGoals
+        int ShortHandedAssists
+        int GameWinningGoals
+        int OvertimeGoals
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballGoalieSeasonStatistics {
+        guid Id PK
+        guid PlayerId FK
+        guid TeamId FK
+        guid SeasonId FK
+        int GamesPlayed
+        int GamesStarted
+        int Wins
+        int Losses
+        int Ties
+        int Saves
+        int ShotsAgainst
+        decimal SavePercentage
+        int GoalsAgainst
+        decimal GoalsAgainstAverage
+        int Shutouts
+        int MinutesPlayed
+        int PowerPlaySaves
+        int PowerPlayShotsAgainst
+        decimal PowerPlaySavePercentage
+        int ShortHandedSaves
+        int ShortHandedShotsAgainst
+        decimal ShortHandedSavePercentage
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballMatchTeamStatistics {
+        guid Id PK
+        guid MatchId FK
+        guid TeamId FK
+        int ShotsOnGoal
+        int ShotsTotal
+        decimal ShotPercentage
+        int FaceoffWins
+        int FaceoffAttempts
+        decimal FaceoffPercentage
+        int PowerPlayOpportunities
+        int PowerPlayGoals
+        int PowerPlayMinutes
+        int PenaltyKillOpportunities
+        int PenaltyKillSuccess
+        int ShortHandedGoals
+        int PenaltyMinutes
+        int Hits
+        int BlockedShots
+        int Takeaways
+        int Giveaways
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballStatisticsCache {
+        guid Id PK
+        string CacheKey
+        guid SeasonId FK
+        string JsonData
+        datetime LastUpdated
+        datetime ExpiresAt
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTeamSeasonStatistics }o--|| FloorballTeam : "TeamId"
+    FloorballTeamSeasonStatistics }o--|| FloorballSeason : "SeasonId"
+    FloorballPlayerSeasonStatistics }o--|| FloorballPlayer : "PlayerId"
+    FloorballPlayerSeasonStatistics }o--|| FloorballTeam : "TeamId"
+    FloorballPlayerSeasonStatistics }o--|| FloorballSeason : "SeasonId"
+    FloorballGoalieSeasonStatistics }o--|| FloorballPlayer : "PlayerId"
+    FloorballGoalieSeasonStatistics }o--|| FloorballTeam : "TeamId"
+    FloorballGoalieSeasonStatistics }o--|| FloorballSeason : "SeasonId"
+    FloorballMatchTeamStatistics }o--|| FloorballMatch : "MatchId"
+    FloorballMatchTeamStatistics }o--|| FloorballTeam : "TeamId"
+    FloorballStatisticsCache }o--o| FloorballSeason : "SeasonId"
+    </pre>
+  </div>
+
+  <!-- ══════════════ TOURNAMENTS ══════════════ -->
+  <div id="tab-floorball-tournament" class="diagram-container">
+    <pre class="mermaid">
+erDiagram
+    FloorballTeam {
+        guid Id PK
+        string Name
+    }
+
+    FloorballMatch {
+        guid Id PK
+        guid TournamentId FK
+        guid TournamentGroupId FK
+        enum TournamentRound
+        guid HomeTeamId FK
+        guid AwayTeamId FK
+    }
+
+    FloorballTournament {
+        guid Id PK
+        string Name
+        string DescriptionHtml
+        datetime StartDate
+        datetime EndDate
+        string Location
+        enum Status
+        int MatchRules_NumberOfPeriods
+        int MatchRules_PeriodDurationMinutes
+        bool MatchRules_AllowOvertime
+        int MatchRules_OvertimeDurationMinutes
+        bool MatchRules_AllowShootout
+        enum PlayoffFormat
+        int GroupStageAdvancingCount
+        json ImageUrls
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTournamentGroup {
+        guid Id PK
+        guid TournamentId FK
+        string Name
+        enum Phase
+        int SortOrder
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTournamentGroupTeam {
+        guid Id PK
+        guid GroupId FK
+        guid TeamId FK
+        guid TournamentId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    FloorballTournament ||--o{ FloorballTournamentGroup : "TournamentId"
+    FloorballTournament ||--o{ FloorballMatch : "TournamentId"
+    FloorballTournamentGroup ||--o{ FloorballTournamentGroupTeam : "GroupId"
+    FloorballTournamentGroupTeam }o--|| FloorballTeam : "TeamId"
+    FloorballMatch }o--o| FloorballTournamentGroup : "TournamentGroupId"
+    FloorballMatch }o--|| FloorballTeam : "HomeTeamId"
+    FloorballMatch }o--|| FloorballTeam : "AwayTeamId"
+    </pre>
+  </div>
+
+  <div class="legend">
+    <strong>Relationship Notation</strong><br>
+    <code>||--||</code> one-to-one &nbsp;
+    <code>||--o{</code> one-to-many &nbsp;
+    <code>}o--o{</code> many-to-many<br>
+    <span class="pk">PK</span> = Primary Key &nbsp;
+    <span class="fk">FK</span> = Foreign Key &nbsp;
+    TPH = Table-Per-Hierarchy
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      er: {
+        diagramPadding: 20,
+        layoutDirection: 'TB',
+        minEntityWidth: 100,
+        minEntityHeight: 75,
+        entityPadding: 15,
+        useMaxWidth: false
+      },
+      themeVariables: {
+        primaryColor: '#21262d',
+        primaryTextColor: '#c9d1d9',
+        primaryBorderColor: '#30363d',
+        lineColor: '#58a6ff',
+        secondaryColor: '#161b22',
+        tertiaryColor: '#0d1117'
+      }
+    });
+
+    let currentScale = 1;
+
+    function showTab(tabId, btn) {
+      document.querySelectorAll('.diagram-container').forEach(d => d.classList.remove('active'));
+      document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      btn.classList.add('active');
+      currentScale = 1;
+      applyZoom();
+    }
+
+    function applyZoom() {
+      const active = document.querySelector('.diagram-container.active svg');
+      if (active) {
+        active.style.transform = `scale(${currentScale})`;
+        active.style.transformOrigin = 'top center';
+      }
+    }
+
+    function zoomIn() {
+      currentScale = Math.min(currentScale + 0.15, 3);
+      applyZoom();
+    }
+
+    function zoomOut() {
+      currentScale = Math.max(currentScale - 0.15, 0.3);
+      applyZoom();
+    }
+
+    function resetZoom() {
+      currentScale = 1;
+      applyZoom();
+    }
+  </script>
+</body>
+</html>
