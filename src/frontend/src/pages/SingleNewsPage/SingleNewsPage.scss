@@ -1,5 +1,6 @@
 @use 'sass:map';
 @use '@variables' as *;
+@use '../AdminPage/NewsPage/styles/MatchResult';
 
 .single-news-page-container {
   margin-top: map.get($spacing, 'md');
@@ -189,12 +190,18 @@
     font-size: 1.125rem;
     text-align: left;
 
-    // Reset any inherited text alignment
     * {
       text-align: left;
       word-break: break-word;
       overflow-wrap: break-word;
       white-space: pre-wrap;
+    }
+
+    .match-result-table-container,
+    .match-result-table-container * {
+      white-space: normal;
+      word-break: normal;
+      overflow-wrap: normal;
     }
 
     // Enhanced styling for HTML content

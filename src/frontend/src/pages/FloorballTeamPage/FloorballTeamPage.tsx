@@ -135,16 +135,28 @@ function FloorballTeamPage() {
     if (!team || !currentSeason) return;
 
     try {
-      if (tabId === 'stats') {
-        setStatisticsLoading(true);
-        setStatisticsError(null);
-        const [teamStats, playerStats] = await Promise.all([
-          floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id),
-          floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id)
-        ]);
-        setTeamStatistics(teamStats);
-        setPlayerStatistics(playerStats);
-        
+      if (tabId === 'stats' || tabId === 'roster') {
+        if (tabId === 'stats') {
+          setStatisticsLoading(true);
+          setStatisticsError(null);
+        }
+        const fetchTeamStats = tabId === 'stats' && !teamStatistics;
+        const fetchPlayerStats = !playerStatistics;
+
+        if (fetchTeamStats && fetchPlayerStats) {
+          const [teamStats, playerStats] = await Promise.all([
+            floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id),
+            floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id)
+          ]);
+          setTeamStatistics(teamStats);
+          setPlayerStatistics(playerStats);
+        } else if (fetchTeamStats) {
+          const teamStats = await floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id);
+          setTeamStatistics(teamStats);
+        } else if (fetchPlayerStats) {
+          const playerStats = await floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id);
+          setPlayerStatistics(playerStats);
+        }
       } else if (tabId === 'standings') {
         setSeasonSummaryLoading(true);
         setSeasonSummaryError(null);
@@ -156,7 +168,7 @@ function FloorballTeamPage() {
       
     } catch (error) {
       console.error(`Failed to fetch ${tabId} data:`, error);
-      if (tabId === 'stats') {
+      if (tabId === 'stats' || tabId === 'roster') {
         setStatisticsError('Failed to load team statistics');
       } else if (tabId === 'standings') {
         setSeasonSummaryError('Failed to load season summary');
@@ -222,8 +234,7 @@ function FloorballTeamPage() {
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
     
-    // Fetch data for stats/standings tabs only when first accessed
-    if ((tabId === 'stats' || tabId === 'standings') && !fetchedTabs.has(tabId)) {
+    if ((tabId === 'stats' || tabId === 'standings' || tabId === 'roster') && !fetchedTabs.has(tabId)) {
       fetchTabData(tabId);
       setFetchedTabs(prev => new Set([...prev, tabId]));
     }
@@ -261,7 +272,8 @@ function FloorballTeamPage() {
           <div className="roster-section">
             <RosterSection
               team={team}
-            ></RosterSection>
+              playerStatistics={playerStatistics}
+            />
           </div>
         );
 

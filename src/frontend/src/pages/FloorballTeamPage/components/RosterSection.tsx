@@ -2,13 +2,15 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import './RosterSection.scss'
 import type { FloorballTeam, FloorballTeamPlayer } from "../../../types/floorball/floorballTypes"
+import type { FloorballPlayerSeasonStatisticsDto } from "../../../api/floorball/floorballStatistics"
 import { useNavigate } from "react-router-dom"
 
 interface RosterSectionProps {
-  team: FloorballTeam
+  team: FloorballTeam;
+  playerStatistics?: FloorballPlayerSeasonStatisticsDto[] | null;
 }
 
-export default function RosterSection({ team }: RosterSectionProps) {
+export default function RosterSection({ team, playerStatistics }: RosterSectionProps) {
   const [roster, setRoster] = useState<FloorballTeamPlayer[]>([])
   const navigate = useNavigate()
   const { t } = useTranslation()
@@ -23,7 +25,10 @@ export default function RosterSection({ team }: RosterSectionProps) {
     }
   }, [team.roster])
 
-  // Get unique positions and sort them in the correct order
+  const statsLookup = new Map(
+    (playerStatistics ?? []).map(ps => [ps.playerId, ps])
+  );
+
   const positionOrder = ['Goalkeeper', 'Defender', 'Center', 'Forward']
   const playerPositions = [...new Set(roster.map(p => p.position))]
     .sort((a, b) => positionOrder.indexOf(a) - positionOrder.indexOf(b))
@@ -52,6 +57,7 @@ export default function RosterSection({ team }: RosterSectionProps) {
                 .filter(player => player.position === pos)
                 .map((player) => {
                   const isCreator = player.playerName === 'Tuomas Reijonen';
+                  const seasonStats = statsLookup.get(player.playerId);
                   return (
                   <div
                     className={`table roster-player${isCreator ? ' roster-player--creator' : ''}`}
@@ -74,15 +80,15 @@ export default function RosterSection({ team }: RosterSectionProps) {
                     </div>
                     
                     <div className="roster-games-played">
-                      {player.gamesPlayed}
+                      {seasonStats?.gamesPlayed ?? player.gamesPlayed}
                     </div>
                     
                     <div className="roster-goals">
-                      {player.goals ?? "-"}
+                      {seasonStats?.goals ?? player.goals ?? "-"}
                     </div>
                     
                     <div className="roster-assists">
-                      {player.assists ?? "-"}
+                      {seasonStats?.assists ?? player.assists ?? "-"}
                     </div>
                     
                   </div>
