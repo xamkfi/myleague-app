@@ -17,7 +17,7 @@ namespace WebAPI.Controllers.Common
     /// Controller for managing page content
     /// </summary>
     [ApiController]
-    [Route("api/common/page-content")]
+    [Route("api/page-content")]
     [Produces("application/json")]
     public class PageContentController : ControllerBase
     {
@@ -73,7 +73,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="dto">The page content update data</param>
         /// <returns>The updated page content</returns>
         [HttpPut("{slug}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         [ProducesResponseType(typeof(ApiResponse<PageContentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PageContentDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PageContentDto>), StatusCodes.Status401Unauthorized)]
