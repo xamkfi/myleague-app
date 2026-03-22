@@ -40,8 +40,7 @@ namespace WebAPI.Controllers.Common
         /// </summary>
         /// <param name="slug">The slug of the page</param>
         /// <returns>The page content</returns>
-        [HttpGet("{slug}")]
-        [AllowAnonymous]
+        [HttpGet("{slug}")]      
         [ProducesResponseType(typeof(ApiResponse<PageContentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PageContentDto>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<PageContentDto>), StatusCodes.Status500InternalServerError)]

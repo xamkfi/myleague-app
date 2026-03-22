@@ -7,6 +7,7 @@ import NewsIcon from '../../assets/adminIcons/News.svg';
 import SportsIcon from '../../assets/adminIcons/Sports.svg';
 import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
 import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
+import EventsIcon from '../../assets/adminIcons/Events.svg';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -69,6 +70,17 @@ const AdminPage = () => {
               <span className="button-subtitle">{t('admin.actions.manageUsers', 'Manage system users')}</span>
             </div>
             <img src={PersonIcon} alt="System Users" className="button-icon" />
+          </button>
+
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/rules')}
+          >
+            <div className="button-text">
+              <span className="button-title">{t('admin.actions.rules', 'Rules')}</span>
+              <span className="button-subtitle">{t('admin.actions.manageRules', 'Manage rules content')}</span>
+            </div>
+            <img src={EventsIcon} alt="Rules" className="button-icon" />
           </button>
           
         </div>

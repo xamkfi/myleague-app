@@ -89,6 +89,12 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                 {!collapsed && <span>{t('admin.actions.news', 'News')}</span>}
               </Link>
             </li>
+            <li className={`admin-navbar-item ${isActive('/admin/rules') ? 'active' : ''}`}>
+              <Link to="/admin/rules" title={collapsed ? 'Säännöt' : undefined}>
+                <img src={NewsIcon} alt="Rules" className="icon" />
+                {!collapsed && <span>Säännöt</span>}
+              </Link>
+            </li>
             <li className={`admin-navbar-item ${isActive('/admin/divisions') ? 'active' : ''}`}>
               <Link to="/admin/divisions" title={collapsed ? t('admin.actions.divisions', 'Divisions') : undefined}>
                 <img src={LeaguesIcon} alt="Divisions" className="icon" />

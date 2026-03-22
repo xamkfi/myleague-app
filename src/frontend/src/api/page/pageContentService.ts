@@ -1,4 +1,5 @@
 import { API_URL } from '../../constants/config';
+import { authFetch } from '../utils/authFetch';
 
 export interface PageContentResponse {
     id: string;
@@ -23,7 +24,7 @@ interface ApiResponse<T> {
 // GET /api/page-content/:slug
 export async function getPageContent(slug: string): Promise<PageContentResponse> {
     try {
-        const response = await fetch(`${API_URL}/page-content/${slug}`, {
+        const response = await authFetch(`${API_URL}/page-content/${slug}`, {
             method: "GET"
         });
 
@@ -45,7 +46,7 @@ export async function getPageContent(slug: string): Promise<PageContentResponse>
 // PUT /api/page-content/:slug (admin)
 export async function updatePageContent(slug: string, data: PageContentUpdateRequest): Promise<PageContentResponse> {
     try {
-        const response = await fetch(`${API_URL}/page-content/${slug}`, {
+        const response = await authFetch(`${API_URL}/page-content/${slug}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
