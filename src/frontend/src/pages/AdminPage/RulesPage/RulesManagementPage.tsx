@@ -1,22 +1,19 @@
 import { useState, useEffect } from "react";
-import AdminPageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
-import QuillEditor from "../NewsPage/components/QuillEditor";
+import PageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
+import QuillEditor from "../../../components/QuillEditor/QuillEditor";
 import { getPageContent, updatePageContent } from "../../../api/page/pageContentService";
-import DOMPurify from 'dompurify';
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import { useTranslation } from "react-i18next";
-import "../NewsPage/NewsCreateEditPage.scss"; // Use same styles for buttons etc or reuse Tailwind classes
+import RulesPreview from "./components/RulesPreview.tsx";
+import "./styles/RulesManagementPage.scss";
 
 export default function RulesManagementPage() {
-  const { t } = useTranslation();
   const [value, setValue] = useState("");
-  const [title, setTitle] = useState(""); // Title input
+  const [title, setTitle] = useState("");
   const [preview, setPreview] = useState(false);
   const [loadingAnimation, setLoadingAnimation] = useState(false);
   const [isLoadingContent, setIsLoadingContent] = useState(true);
   const [metadata, setMetadata] = useState<{ lastModifiedBy: string | null; updatedAt: string } | null>(null);
 
-  // Load existing article data
   useEffect(() => {
     const fetchRulesContent = async () => {
       try {
@@ -67,23 +64,23 @@ export default function RulesManagementPage() {
 
   if (isLoadingContent) {
     return (
-      <AdminPageTemplate title="Ladataan...">
+      <PageTemplate title="Ladataan...">
         <div className="flex justify-center items-center min-h-screen">
           <LoadingSpinner text="Ladataan sisältöä..." />
         </div>
-      </AdminPageTemplate>
+      </PageTemplate>
     );
   }
 
   if (preview) {
     return (
-      <AdminPageTemplate title="Sääntöjen hallinta (Esikatselu)">
-        <div className="min-h-screen pb-10">
+      <PageTemplate title="Sääntöjen hallinta (Esikatselu)">
+        <div className="rules-management-page min-h-screen pb-10">
           <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
             <div className="max-w-6xl mx-auto px-4 py-3">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                  <span className="rules-preview-badge text-sm font-medium px-3 py-1 rounded-full">
                     Esikatselutila
                   </span>
                 </div>
@@ -99,25 +96,15 @@ export default function RulesManagementPage() {
               </div>
             </div>
           </div>
-          <div className="max-w-4xl mx-auto mt-8 px-4">
-            <div className="rules-container bg-white p-8 rounded-lg shadow-sm w-full">
-               <h1 className="rules-title m-0 mb-6 text-3xl font-bold">{title}</h1>
-               <div
-                   className="rules-html-content prose max-w-none"
-                   dangerouslySetInnerHTML={{
-                       __html: DOMPurify.sanitize(value)
-                   }}
-               />
-            </div>
-          </div>
+          <RulesPreview title={title} value={value} />
         </div>
-      </AdminPageTemplate>
+      </PageTemplate>
     );
   }
 
   return (
-    <AdminPageTemplate title="Sääntöjen hallinta">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <PageTemplate title="Sääntöjen hallinta">
+      <div className="rules-management-page max-w-6xl mx-auto space-y-8">
         <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-6xl mx-auto px-4 py-3">
             <div className="flex justify-between items-center flex-wrap gap-4">
@@ -126,7 +113,7 @@ export default function RulesManagementPage() {
                   Muokkaa MAHL-sääntösivun sisältöä
                 </span>
                 {metadata && (
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  <span className="rules-meta text-xs text-gray-500 px-2 py-1 rounded">
                     Viimeksi muokannut: {metadata.lastModifiedBy || 'Nimetön'} ({new Date(metadata.updatedAt).toLocaleString('fi-FI')})
                   </span>
                 )}
@@ -154,7 +141,7 @@ export default function RulesManagementPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8 mt-4">
+        <div className="rules-editor-card bg-white rounded-xl shadow-sm p-6 mb-8 mt-4">
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Otsikko</label>
             <input
@@ -172,10 +159,11 @@ export default function RulesManagementPage() {
               value={value}
               setValue={setValue}
               setLoading={setLoadingAnimation}
+              showMatchSelection={false}
             />
           </div>
         </div>
       </div>
-    </AdminPageTemplate>
+    </PageTemplate>
   );
 }

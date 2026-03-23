@@ -1,19 +1,19 @@
 import ReactQuill, {Quill} from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import "../styles/QuillEditor.scss";
-import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
+import '../../pages/AdminPage/NewsPage/styles/QuillEditor.scss';
+import { handleImageUploadService } from '../../api/admin/News/handleImageUploadService';
 import { useEffect, useMemo, useRef, useCallback } from "react";
-import { handleImageDeleteService } from '../../../../api/admin/News/handleImageDeleteService';
-import MatchSelectionHeader from './MatchSelectionHeader';
-import type { FloorballMatch } from '../../../../api/admin/News/GetMatchesService';
-import "../styles/MatchResult.scss";
-
+import { handleImageDeleteService } from '../../api/admin/News/handleImageDeleteService';
+import MatchSelectionHeader from '../../pages/AdminPage/NewsPage/components/MatchSelectionHeader';
+import type { FloorballMatch } from '../../api/admin/News/GetMatchesService';
+import '../../pages/AdminPage/NewsPage/styles/MatchResult.scss';
 
 interface Values{
     value: string,
     setValue: (val: string)=>void,
     setLoading: (val: boolean)=>void,
-    isClearing?: boolean
+    isClearing?: boolean,
+    showMatchSelection?: boolean
 }
 
 export interface MatchResultValue {
@@ -86,14 +86,20 @@ export class MatchResultTableBlot extends BlockEmbed {
         console.error('Error parsing match result data:', e);
       }
     }
-    
+
     return { matches: [], title: '' };
   }
 }
 
 Quill.register(MatchResultTableBlot);
 
-export default function QuillEditor({value, setValue, setLoading, isClearing = false}: Values) {
+export default function QuillEditor({
+  value,
+  setValue,
+  setLoading,
+  isClearing = false,
+  showMatchSelection = true,
+}: Values) {
     const quillRef = useRef<ReactQuill | null>(null);
     const previousImagesRef = useRef<string[]>([]);
     const previousMatchResultsRef = useRef<MatchResultValue[]>([]);
@@ -295,8 +301,7 @@ export default function QuillEditor({value, setValue, setLoading, isClearing = f
 
     return (
         <>
-
-          <MatchSelectionHeader onInsertMatches={handleInsertMatches} />
+          {showMatchSelection && <MatchSelectionHeader onInsertMatches={handleInsertMatches} />}
             <ReactQuill
                 ref={(element =>{
                     if(element != null){
