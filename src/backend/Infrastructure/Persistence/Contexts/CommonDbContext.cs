@@ -55,6 +55,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<TimerState> TimerStates { get; set; }
         
         /// <summary>
+        /// Gets or sets the PageContents DbSet.
+        /// </summary>
+        public DbSet<PageContent> PageContents { get; set; }
+
+        /// <summary>
         /// Saves changes to the database with domain event dispatching.
         /// </summary>
         /// <returns>The number of state entries written to the database.</returns>
@@ -106,6 +111,8 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new DivisionConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             modelBuilder.ApplyConfiguration(new TimerStateConfiguration());
+
+            modelBuilder.ApplyConfiguration(new PageContentConfiguration());
         }
     }
 } 

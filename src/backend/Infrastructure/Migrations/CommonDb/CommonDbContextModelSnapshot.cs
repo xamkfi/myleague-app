@@ -132,6 +132,38 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.ToTable("Divisions", "common");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Common.SiteSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("ValueJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("SiteSettings", "common");
+                });
+
             modelBuilder.Entity("Domain.Entities.Common.NewsArticle", b =>
                 {
                     b.Property<Guid>("Id")
