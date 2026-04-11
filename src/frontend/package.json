@@ -12,6 +12,7 @@
   "dependencies": {
     "@microsoft/signalr": "^8.0.7",
     "@tailwindcss/vite": "^4.1.7",
+    "dompurify": "^3.3.3",
     "i18next": "^25.2.0",
     "i18next-browser-languagedetector": "^8.1.0",
     "quill": "^2.0.3",

@@ -1,27 +1,28 @@
-using Domain.Repositories.Floorball;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Application.Configuration;
+using Application.Features.Common.MatchTimer.Services;
+using Application.Interfaces.Auth;
+using Application.Interfaces.Common;
 using Domain.Repositories.Common;
-using Domain.Services.Floorball;
+using Domain.Repositories.Floorball;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using MyLeague.Infrastructure.Persistence;
-using MyLeague.Infrastructure.Persistence.Contexts;
-using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
-using MyLeague.Infrastructure.Persistence.Repositories.Common;
-using MyLeague.Infrastructure.Persistence.UnitOfWork;
-using MyLeague.Infrastructure.HealthChecks;
-using Application.Interfaces.Common;
-using Application.Interfaces.Auth;
-using Application.Configuration;
-using Application.Features.Common.MatchTimer.Services;
-using MyLeague.Infrastructure.Services.ImageStorage;
-using MyLeague.Infrastructure.Services.Common;
-using MyLeague.Infrastructure.Services.Auth;
-using MyLeague.Infrastructure.Services.Seeding;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using MyLeague.Infrastructure.HealthChecks;
+using MyLeague.Infrastructure.Persistence.Contexts;
+using MyLeague.Infrastructure.Persistence.Repositories.Common;
+using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
+using MyLeague.Infrastructure.Persistence.UnitOfWork;
+using MyLeague.Infrastructure.Services.Auth;
+using MyLeague.Infrastructure.Services.Common;
+using MyLeague.Infrastructure.Services.ImageStorage;
+using MyLeague.Infrastructure.Services.Seeding;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -47,6 +48,9 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     connectionString,
                     b => b.MigrationsAssembly(typeof(CommonDbContext).Assembly.FullName)));
 
+            services.AddScoped<ICommonDbContext>(sp =>
+                sp.GetRequiredService<CommonDbContext>());
+
             services.AddDbContext<FloorballDbContext>(options =>
                 options.UseNpgsql(
                     connectionString,
@@ -60,8 +64,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     CommonDbContext commonDbContext = scope.ServiceProvider.GetRequiredService<CommonDbContext>();
                     commonDbContext.Database.Migrate();
 
-                    FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
-                    floorballDbContext.Database.Migrate();
+                    // FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
+                    // floorballDbContext.Database.Migrate();
 
                     // Seed default users after migrations
                     DatabaseSeeder seeder = new();
@@ -130,15 +134,15 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AzureCommunicationServicesConfiguration>>(),
                     sp.GetRequiredService<ILogger<AzureCommunicationEmailService>>());
             });
-            
+
             // Add timer services
             services.AddScoped<ITimerRepository, TimerRepository>();
             services.AddScoped<ITimerNotificationService, TimerNotificationService>();
             services.AddSingleton<ITimerStore, InMemoryTimerStore>();
-            
+
             // Register timer background service
             // No need for it now so disabled by default
-           // services.AddHostedService<TimerBackgroundService>();
+            // services.AddHostedService<TimerBackgroundService>();
 
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
