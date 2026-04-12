@@ -178,7 +178,7 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
 
             await _notificationSenderService.SendNotificationAsync(
                 FloorballNotificationEvents.GoalScored,
-                new { MatchId = match.Id });
+                new MatchNotificationPayload(match.Id));
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             _logger.LogInformation("Successfully recorded goal in match {MatchId} by player {PlayerId}", request.MatchId, request.ScoringPlayerId);

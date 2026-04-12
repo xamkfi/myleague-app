@@ -99,7 +99,7 @@ public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCom
 
             await _notificationSenderService.SendNotificationAsync(
                 FloorballNotificationEvents.MatchStarted,
-                 new { MatchId = match.Id });
+                new MatchNotificationPayload(match.Id));
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             _logger.LogInformation("Successfully started floorball match: {MatchId}", request.Id);

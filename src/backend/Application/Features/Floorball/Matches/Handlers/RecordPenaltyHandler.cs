@@ -111,7 +111,7 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
 
             await _notificationSenderService.SendNotificationAsync(
                 FloorballNotificationEvents.PenaltyAssigned,
-                 new { MatchId = match.Id });
+                new MatchNotificationPayload(match.Id));
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             return Result<FloorballMatchDto>.Success(matchDto);

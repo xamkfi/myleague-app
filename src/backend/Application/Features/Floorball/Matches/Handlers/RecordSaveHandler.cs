@@ -116,7 +116,7 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
 
             await _notificationSenderService.SendNotificationAsync(
                 FloorballNotificationEvents.SaveRecorded,
-                new { MatchId = match.Id });
+                new MatchNotificationPayload(match.Id));
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             return Result<FloorballMatchDto>.Success(matchDto);

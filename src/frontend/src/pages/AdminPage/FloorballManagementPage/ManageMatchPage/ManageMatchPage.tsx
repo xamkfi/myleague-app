@@ -127,7 +127,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
   const signalR = useSignalR({
     matchId: match?.id,
-    isOpen: true,
     onPeriodStarted: periodManagement.handlePeriodStarted,
     onGoalScored: matchEvents.handleGoalScored,
     onPenaltyAssigned: matchEvents.handlePenaltyAssigned,

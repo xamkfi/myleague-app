@@ -116,7 +116,7 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
 
             await _notificationSenderService.SendNotificationAsync(
                 FloorballNotificationEvents.MatchCompleted,
-                new { MatchId = match.Id });
+                new MatchNotificationPayload(match.Id));
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             _logger.LogInformation("Successfully completed floorball match: {MatchId}", request.Id);

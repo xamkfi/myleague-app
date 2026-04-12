@@ -45,13 +45,6 @@ export default function MatchPage() {
     const setupMatchSignalR = async () => {
       try {
         await signalRService.connect();
-
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        if (!signalRService.isConnected) {
-          throw new Error('SignalR connection not established');
-        }
-
         await signalRService.subscribeToMatch(id);
 
         unsubscribeCallback = signalRService.onMatchEvent((evt: MatchEvent) => {

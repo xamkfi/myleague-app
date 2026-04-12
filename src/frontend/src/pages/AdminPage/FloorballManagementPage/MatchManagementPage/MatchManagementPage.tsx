@@ -189,9 +189,6 @@ const MatchManagementPage = () => {
 
     const setupSignalR = async () => {
       try {
-        const isBackendAccessible = await signalRService.testBackendAccessibility();
-        if (!isBackendAccessible) return;
-
         await signalRService.connect();
         if (!signalRService.isConnected) return;
 
