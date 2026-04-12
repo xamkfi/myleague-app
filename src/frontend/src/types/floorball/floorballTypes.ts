@@ -205,7 +205,7 @@ export interface FloorballMatchRules {
 
 export interface FloorballMatchDto {
   id: string;
-  seasonId: string;
+  competitionId: string;
   seasonName: string;
   homeTeamId: string;
   homeTeamName: string;
@@ -232,7 +232,7 @@ export interface FloorballMatchDto {
 }
 
 export interface CreateFloorballMatchRequest {
-  seasonId?: string;
+  competitionId?: string;
   homeTeamId?: string;
   awayTeamId?: string;
   refereeId?: string;
@@ -249,7 +249,7 @@ export interface UpdateFloorballMatchRequest {
 
 // New types for edit match functionality
 export interface ChangeMatchSeasonRequest {
-  seasonId: string;
+  competitionId: string;
 }
 
 export interface ChangeMatchTeamsRequest {
@@ -268,7 +268,7 @@ export interface ChangeMatchDateTimeRequest {
 export interface GetFloorballMatchesRequest {
   page?: number;
   pageSize?: number;
-  seasonId?: string;
+  competitionId?: string;
   teamId?: string;
   status?: FloorballMatchStatus;
   startDate?: string;

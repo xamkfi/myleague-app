@@ -3,9 +3,9 @@ using System;
 namespace MyLeague.Infrastructure.DTOs.Notifications
 {
     /// <summary>
-    /// DTO for the FloorballMatchAddedToSeason notification
+    /// DTO for the FloorballMatchAddedToCompetition notification
     /// </summary>
-    public record FloorballMatchAddedToSeasonNotification
+    public record FloorballMatchAddedToCompetitionNotification
     {
         /// <summary>
         /// Gets the ID of the match
@@ -13,14 +13,14 @@ namespace MyLeague.Infrastructure.DTOs.Notifications
         public Guid MatchId { get; init; }
 
         /// <summary>
-        /// Gets the ID of the season
+        /// Gets the ID of the competition
         /// </summary>
-        public Guid SeasonId { get; init; }
+        public Guid CompetitionId { get; init; }
 
         /// <summary>
-        /// Gets the name of the season
+        /// Gets the name of the competition
         /// </summary>
-        public string SeasonName { get; init; } = string.Empty;
+        public string CompetitionName { get; init; } = string.Empty;
 
         /// <summary>
         /// Gets the scheduled date and time of the match
@@ -38,8 +38,8 @@ namespace MyLeague.Infrastructure.DTOs.Notifications
         public TeamInfo AwayTeam { get; init; } = new TeamInfo();
 
         /// <summary>
-        /// Gets the date and time when the match was added to the season
+        /// Gets the date and time when the match was added to the competition
         /// </summary>
         public DateTime AddedOn { get; init; }
     }
-} 
+}

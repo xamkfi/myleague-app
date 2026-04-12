@@ -1,9 +1,9 @@
-import { Suspense } from 'react';
 import type { ComponentType } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
 import RouteErrorBoundary from '../components/RouteErrorBoundary/RouteErrorBoundary';
+import SuspenseWrapper from './SuspenseWrapper';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 // Public pages
@@ -67,10 +67,6 @@ const MatchManagementPage = lazyWithRetry(() => import('../pages/AdminPage/Floor
 const CreateMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/CreateMatchPage/CreateMatchPage'));
 const EditMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/EditMatchPage/EditMatchPage'));
 const ManageMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/ManageMatchPage/ManageMatchPage'));
-
-function SuspenseWrapper({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={null}>{children}</Suspense>;
-}
 
 export const routes: RouteObject[] = [
   {
@@ -297,7 +293,7 @@ export const routes: RouteObject[] = [
             element: <ProtectedRoute><SuspenseWrapper><CreateSeasonPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
-            path: ':seasonId/edit',
+            path: ':competitionId/edit',
             element: <ProtectedRoute><SuspenseWrapper><EditSeasonPage /></SuspenseWrapper></ProtectedRoute>
           }
         ]

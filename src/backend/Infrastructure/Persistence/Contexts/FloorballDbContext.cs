@@ -43,7 +43,12 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballMatch> FloorballMatches { get; set; }
 
         /// <summary>
-        /// Gets or sets the FloorballSeasons DbSet.
+        /// Gets or sets the FloorballCompetitions DbSet (base type for TPH).
+        /// </summary>
+        public DbSet<FloorballCompetition> FloorballCompetitions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballSeasons DbSet (TPH convenience accessor).
         /// </summary>
         public DbSet<FloorballSeason> FloorballSeasons { get; set; }
 
@@ -109,14 +114,14 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballStatisticsCache> FloorballStatisticsCache { get; set; }
 
         /// <summary>
-        /// Gets or sets the FloorballSeasonDivisions DbSet.
+        /// Gets or sets the FloorballCompetitionDivisions DbSet.
         /// </summary>
-        public DbSet<FloorballSeasonDivision> FloorballSeasonDivisions { get; set; }
+        public DbSet<FloorballCompetitionDivision> FloorballCompetitionDivisions { get; set; }
 
         /// <summary>
-        /// Gets or sets the FloorballSeasonDivisionTeams DbSet.
+        /// Gets or sets the FloorballCompetitionDivisionTeams DbSet.
         /// </summary>
-        public DbSet<FloorballSeasonDivisionTeam> FloorballSeasonDivisionTeams { get; set; }
+        public DbSet<FloorballCompetitionDivisionTeam> FloorballCompetitionDivisionTeams { get; set; }
 
         /// <summary>
         /// Saves changes to the database with domain event dispatching.
@@ -167,7 +172,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballTeamConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchConfiguration());
-            modelBuilder.ApplyConfiguration(new FloorballSeasonConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballCompetitionConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballRefereeConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchEventConfiguration());
@@ -182,8 +187,8 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballGoalieSeasonStatisticsConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchTeamStatisticsConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballStatisticsCacheConfiguration());
-            modelBuilder.ApplyConfiguration(new FloorballSeasonDivisionConfiguration());
-            modelBuilder.ApplyConfiguration(new FloorballSeasonDivisionTeamConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballCompetitionDivisionConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballCompetitionDivisionTeamConfiguration());
         }
     }
 }

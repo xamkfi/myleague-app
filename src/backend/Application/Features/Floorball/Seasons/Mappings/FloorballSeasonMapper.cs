@@ -33,7 +33,7 @@ public static class FloorballSeasonMapper
     /// <param name="seasonDivisions">The season divisions to map</param>
     /// <returns>The mapped season division DTOs</returns>
     /// <exception cref="ArgumentNullException">Thrown when seasonDivisions is null</exception>
-    public static IReadOnlyCollection<FloorballSeasonDivisionDto> ToDivisionDtos(IEnumerable<FloorballSeasonDivision> seasonDivisions)
+    public static IReadOnlyCollection<FloorballSeasonDivisionDto> ToDivisionDtos(IEnumerable<FloorballCompetitionDivision> seasonDivisions)
     {
         if (seasonDivisions == null)
         {
@@ -59,7 +59,7 @@ public static class FloorballSeasonMapper
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when season or seasonDivisions is null</exception>
     public static FloorballSeasonDto ToDto(
-        FloorballSeason season,
+        FloorballCompetition season,
         IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisions,
         Dictionary<Guid, Club>? clubs = null,
         IEnumerable<FloorballTeam>? seasonTeams = null)
@@ -147,7 +147,7 @@ public static class FloorballSeasonMapper
     /// <param name="season">The season entity to update</param>
     /// <param name="command">The update command</param>
     /// <exception cref="ArgumentNullException">Thrown when season or command is null</exception>
-    public static void UpdateFromCommand(FloorballSeason season, UpdateFloorballSeasonCommand command)
+    public static void UpdateFromCommand(FloorballCompetition season, UpdateFloorballSeasonCommand command)
     {
         if (season == null)
             throw new ArgumentNullException(nameof(season));

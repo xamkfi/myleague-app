@@ -52,7 +52,7 @@ public static class FloorballMatchesSeeder
 
             CreateFloorballMatchRequest request = new CreateFloorballMatchRequest
             {
-                SeasonId = seasonId,
+                CompetitionId = seasonId,
                 HomeTeamId = homeTeamId,
                 AwayTeamId = awayTeamId,
                 RefereeId = refereeId,

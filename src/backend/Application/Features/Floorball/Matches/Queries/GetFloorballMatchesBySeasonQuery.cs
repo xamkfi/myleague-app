@@ -19,5 +19,5 @@ namespace Application.Features.Floorball.Matches.Queries
     /// Query for retrieving all floorball matches in a season
     /// </summary>
     /// <param name="SeasonId"></param>
-    public record GetFloorballMatchesBySeasonQuery(Guid SeasonId) : IRequest<Result<IEnumerable<FloorballMatchDto>>>;
+    public record GetFloorballMatchesBySeasonQuery(Guid CompetitionId) : IRequest<Result<IEnumerable<FloorballMatchDto>>>;
 }

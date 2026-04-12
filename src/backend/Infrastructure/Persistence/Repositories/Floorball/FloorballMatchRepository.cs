@@ -29,7 +29,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public override async Task<FloorballMatch?> GetByIdAsync(Guid id)
         {
             return await _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
@@ -54,7 +54,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public override async Task<IEnumerable<FloorballMatch>> GetAllAsync()
         {
             return await _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
@@ -67,7 +67,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// </summary>
         /// <param name="page">Page number (1-based)</param>
         /// <param name="pageSize">Number of items per page</param>
-        /// <param name="seasonId">Optional season ID filter</param>
+        /// <param name="competitionId">Optional competition ID filter</param>
         /// <param name="teamId">Optional team ID filter (home or away)</param>
         /// <param name="startDate">Optional start date filter</param>
         /// <param name="endDate">Optional end date filter</param>
@@ -79,7 +79,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<PagedResult<FloorballMatch>> GetPagedAsync(
             int page, 
             int pageSize, 
-            Guid? seasonId = null,
+            Guid? competitionId = null,
             Guid? teamId = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
@@ -96,7 +96,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 : null;
 
             IQueryable<FloorballMatch> query = _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
@@ -104,9 +104,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .AsQueryable();
 
             // Apply filters
-            if (seasonId.HasValue)
+            if (competitionId.HasValue)
             {
-                query = query.Where(m => m.SeasonId == seasonId.Value);
+                query = query.Where(m => m.CompetitionId == competitionId.Value);
             }
 
             if (teamId.HasValue)
@@ -165,7 +165,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <summary>
         /// Gets the total count of floorball matches with filtering
         /// </summary>
-        /// <param name="seasonId">Optional season ID filter</param>
+        /// <param name="competitionId">Optional competition ID filter</param>
         /// <param name="teamId">Optional team ID filter (home or away)</param>
         /// <param name="startDate">Optional start date filter</param>
         /// <param name="endDate">Optional end date filter</param>
@@ -173,7 +173,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Total count of matching floorball matches</returns>
         public async Task<int> GetCountAsync(
-            Guid? seasonId = null,
+            Guid? competitionId = null,
             Guid? teamId = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
@@ -190,9 +190,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             IQueryable<FloorballMatch> query = _entities.AsQueryable();
 
             // Apply filters
-            if (seasonId.HasValue)
+            if (competitionId.HasValue)
             {
-                query = query.Where(m => m.SeasonId == seasonId.Value);
+                query = query.Where(m => m.CompetitionId == competitionId.Value);
             }
 
             if (teamId.HasValue)
@@ -219,18 +219,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
-        /// Gets matches for a specified season
+        /// Gets matches for a specified competition
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
-        /// <returns>A collection of matches in the season</returns>
-        public async Task<IEnumerable<FloorballMatch>> GetBySeasonIdAsync(Guid seasonId)
+        /// <param name="competitionId">The competition ID</param>
+        /// <returns>A collection of matches in the competition</returns>
+        public async Task<IEnumerable<FloorballMatch>> GetByCompetitionIdAsync(Guid competitionId)
         {
             return await _entities
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
                 .Include(m => m.PeriodScores)
-                .Where(m => m.SeasonId == seasonId)
+                .Where(m => m.CompetitionId == competitionId)
                 .ToListAsync();
         }
 
@@ -242,7 +242,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<IEnumerable<FloorballMatch>> GetByTeamIdAsync(Guid teamId)
         {
             return await _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
@@ -263,7 +263,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             DateTime now = DateTime.UtcNow;
             
             return await _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Where(m => (m.HomeTeamId == teamId || m.AwayTeamId == teamId) &&
@@ -285,7 +285,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             DateTime now = DateTime.UtcNow;
             
             return await _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Where(m => (m.HomeTeamId == teamId || m.AwayTeamId == teamId) &&
@@ -303,7 +303,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<IEnumerable<FloorballMatch>> GetByStatusAsync(FloorballMatchStatus status)
         {
             return await _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Where(m => m.Status == status)
@@ -317,7 +317,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<IEnumerable<FloorballMatch>> GetMatchesNeedingOfficialsAsync()
         {
             return await _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
@@ -339,7 +339,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             DateTime endUtc = DateTime.SpecifyKind(endDate, DateTimeKind.Utc);
 
             return await _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Where(m => m.ScheduledDateTime >= startUtc && m.ScheduledDateTime <= endUtc)
@@ -355,7 +355,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<IEnumerable<FloorballMatch>> GetByVenueAsync(string venue)
         {
             return await _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Where(m => m.Venue!.Contains(venue))
@@ -417,7 +417,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             DateTime tomorrow = today.AddDays(1);
 
             return await _entities
-                .Include(m => m.Season)
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Where(m => (m.HomeTeamId == teamId || m.AwayTeamId == teamId) &&
@@ -430,17 +430,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// Retrieve last 5 completed matches
         /// </summary>
         /// <param name="teamId"></param>
-        /// <param name="seasonId"></param>
+        /// <param name="competitionId"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<FloorballMatch>> GetLastCompletedByTeamAsync(Guid teamId, Guid? seasonId = null, int count = 5)
+        public async Task<IEnumerable<FloorballMatch>> GetLastCompletedByTeamAsync(Guid teamId, Guid? competitionId = null, int count = 5)
         {
             return await _entities
                 .AsNoTracking()
                 .Where(m =>
                     (m.HomeTeamId == teamId || m.AwayTeamId == teamId) &&
                     m.Status == FloorballMatchStatus.Completed &&
-                    (!seasonId.HasValue || m.SeasonId == seasonId.Value))
+                    (!competitionId.HasValue || m.CompetitionId == competitionId.Value))
                 .OrderByDescending(m => m.ScheduledDateTime)
                 .Take(count)
                 .ToListAsync();

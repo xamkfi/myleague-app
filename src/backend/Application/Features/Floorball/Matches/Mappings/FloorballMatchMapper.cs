@@ -112,8 +112,8 @@ public static class FloorballMatchMapper
 
         return new FloorballMatchDto(
             match.Id,
-            match.SeasonId,
-            match.Season.Name,
+            match.CompetitionId,
+            match.Competition.Name,
             match.HomeTeamId,
             match.HomeTeam.Name,
             homeTeamLogo,
@@ -195,7 +195,7 @@ public static class FloorballMatchMapper
 
         return new FloorballMatchDto(
             match.Id,
-            match.SeasonId,
+            match.CompetitionId,
             "default",
             match.HomeTeamId,
             homeTeamName,
@@ -232,7 +232,7 @@ public static class FloorballMatchMapper
     /// <returns>The new match entity</returns>
     /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
     /// <exception cref="NotSupportedException">Thrown because FloorballMatch creation requires loaded entities</exception>
-    public static FloorballMatch ToEntity(CreateFloorballMatchCommand command, FloorballSeason season, FloorballTeam homeTeam, FloorballTeam awayTeam, FloorballReferee? referee = null)
+    public static FloorballMatch ToEntity(CreateFloorballMatchCommand command, FloorballCompetition competition, FloorballTeam homeTeam, FloorballTeam awayTeam, FloorballReferee? referee = null)
     {
         if (command == null)
             throw new ArgumentNullException(nameof(command));
@@ -247,7 +247,7 @@ public static class FloorballMatchMapper
         };
 
         FloorballMatch match = new FloorballMatch(
-            season,
+            competition,
             homeTeam,
             awayTeam,
             scheduledDateTimeUtc,

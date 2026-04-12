@@ -37,7 +37,7 @@ const MatchForm = ({
 }: MatchFormProps) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateFloorballMatchRequest>({
-    seasonId: undefined,
+    competitionId: undefined,
     homeTeamId: undefined,
     awayTeamId: undefined,
     refereeId: undefined,
@@ -79,8 +79,8 @@ const MatchForm = ({
   const createInitialOptions = useCallback(() => {
     if (mode === 'edit' && initialData) {
       const seasonOption = {
-        id: initialData.seasonId,
-        name: `Season ${initialData.seasonId}`
+        id: initialData.competitionId,
+        name: `Season ${initialData.competitionId}`
       };
       setInitialSeasonOptions([seasonOption]);
 
@@ -106,7 +106,7 @@ const MatchForm = ({
     if (mode === 'edit' && initialData) {
       try {
         const seasonResult = await floorballSeasonSearchService.searchSeasons('', 1);
-        const matchingSeason = seasonResult.data.find(season => season.id === initialData.seasonId);
+        const matchingSeason = seasonResult.data.find(season => season.id === initialData.competitionId);
         if (matchingSeason) {
           setInitialSeasonOptions([matchingSeason]);
         }
@@ -139,7 +139,7 @@ const MatchForm = ({
       const dateStr = `${year}-${month}-${day}`;
 
       setFormData({
-        seasonId: initialData.seasonId,
+        competitionId: initialData.competitionId,
         homeTeamId: initialData.homeTeamId,
         awayTeamId: initialData.awayTeamId,
         refereeId: initialData.refereeId,
@@ -154,7 +154,7 @@ const MatchForm = ({
       preloadInitialOptions();
     } else {
       setFormData({
-        seasonId: undefined,
+        competitionId: undefined,
         homeTeamId: undefined,
         awayTeamId: undefined,
         refereeId: undefined,
@@ -193,11 +193,11 @@ const MatchForm = ({
     
     if (mode === 'edit' && page === 1 && initialData) {
       try {
-        const matchingSeason = result.data.find(season => season.id === initialData.seasonId);
+        const matchingSeason = result.data.find(season => season.id === initialData.competitionId);
         
         if (matchingSeason) {
           const updatedInitialOptions = [{
-            id: initialData.seasonId,
+            id: initialData.competitionId,
             name: matchingSeason.name
           }];
           
@@ -316,7 +316,7 @@ const MatchForm = ({
       await onSubmit(formData);
       if (mode === 'create') {
         setFormData({
-          seasonId: undefined,
+          competitionId: undefined,
           homeTeamId: undefined,
           awayTeamId: undefined,
           refereeId: undefined,
@@ -336,7 +336,7 @@ const MatchForm = ({
 
   const handleCancel = () => {
     setFormData({
-      seasonId: '',
+      competitionId: '',
       homeTeamId: '',
       awayTeamId: '',
       refereeId: undefined,
@@ -397,8 +397,8 @@ const MatchForm = ({
           <div className="input-wrapper">
             <SearchableInfiniteDropdown
               placeholder="Select Season"
-              value={formData.seasonId}
-              onChange={(value) => setFormData(prev => ({ ...prev, seasonId: value }))}
+              value={formData.competitionId}
+              onChange={(value) => setFormData(prev => ({ ...prev, competitionId: value }))}
               onSearch={searchSeasonsWithInitial}
               searchPlaceholder="Search seasons..."
               emptyMessage="No seasons found"

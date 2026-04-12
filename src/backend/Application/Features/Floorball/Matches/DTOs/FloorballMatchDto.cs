@@ -21,7 +21,7 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// Data Transfer Object for FloorballMatch entity
     /// </summary>
     /// <param name="Id">The unique identifier of the match</param>
-    /// <param name="SeasonId">The ID of the season this match belongs to</param>
+    /// <param name="CompetitionId">The ID of the competition this match belongs to</param>
     /// <param name="HomeTeamId">The ID of the home team</param>
     /// <param name="HomeTeamName">The name of the home team</param>
     /// <param name="AwayTeamId">The ID of the away team</param>
@@ -40,8 +40,8 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// <param name="MatchRules">The match rules configuration snapshot</param>
     public record FloorballMatchDto(
         Guid Id,
-        Guid SeasonId,
-        string SeasonName,
+        Guid CompetitionId,
+        string CompetitionName,
         Guid HomeTeamId,
         string HomeTeamName,
         Uri? HomeTeamLogo,

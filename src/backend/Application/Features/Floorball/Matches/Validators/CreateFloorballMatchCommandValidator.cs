@@ -10,9 +10,9 @@ public class CreateFloorballMatchCommandValidator : AbstractValidator<CreateFloo
 {
     public CreateFloorballMatchCommandValidator()
     {
-        RuleFor(x => x.SeasonId)
-            .NotEmpty().WithMessage("Season ID is required")
-            .NotEqual(Guid.Empty).WithMessage("Season ID cannot be empty");
+        RuleFor(x => x.CompetitionId)
+            .NotEmpty().WithMessage("Competition ID is required")
+            .NotEqual(Guid.Empty).WithMessage("Competition ID cannot be empty");
 
         RuleFor(x => x.HomeTeamId)
             .NotEmpty().WithMessage("Home team ID is required")

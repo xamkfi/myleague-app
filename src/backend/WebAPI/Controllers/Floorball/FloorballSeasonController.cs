@@ -336,23 +336,23 @@ namespace WebAPI.Controllers.Floorball
 
         /// <summary>
         /// Adds a team to a floorball season without assigning it to a division.
-        /// Use POST {seasonId}/divisions/{divisionId}/teams/{teamId} instead to also assign the team to a division.
+        /// Use POST {competitionId}/divisions/{divisionId}/teams/{teamId} instead to also assign the team to a division.
         /// </summary>
-        /// <param name="seasonId">Season ID</param>
+        /// <param name="competitionId">Season ID</param>
         /// <param name="teamId">Team ID</param>
         /// <returns>Updated season details</returns>
         [Obsolete("Use AddTeamToSeasonDivision instead to assign teams to a specific division within the season.")]
-        [HttpPost("{seasonId:guid}/teams/{teamId:guid}")]
+        [HttpPost("{competitionId:guid}/teams/{teamId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballSeasonDto>>> AddTeamToSeason(Guid seasonId, Guid teamId)
+        public async Task<ActionResult<ApiResponse<FloorballSeasonDto>>> AddTeamToSeason(Guid competitionId, Guid teamId)
         {
-            _logger.LogInformation("Adding team {teamId} to floorball season with ID: {id}", teamId, seasonId);
+            _logger.LogInformation("Adding team {teamId} to floorball season with ID: {id}", teamId, competitionId);
 
-            AddTeamToSeasonCommand command = new AddTeamToSeasonCommand(seasonId, teamId);
+            AddTeamToSeasonCommand command = new AddTeamToSeasonCommand(competitionId, teamId);
             Result<FloorballSeasonDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
@@ -374,20 +374,20 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Removes a team from a floorball season
         /// </summary>
-        /// <param name="seasonId">Season ID</param>
+        /// <param name="competitionId">Season ID</param>
         /// <param name="teamId">Team ID</param>
         /// <returns>Updated season details</returns>
-        [HttpDelete("{seasonId:guid}/teams/{teamId:guid}")]
+        [HttpDelete("{competitionId:guid}/teams/{teamId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballSeasonDto>>> RemoveTeamFromSeason(Guid seasonId, Guid teamId)
+        public async Task<ActionResult<ApiResponse<FloorballSeasonDto>>> RemoveTeamFromSeason(Guid competitionId, Guid teamId)
         {
-            _logger.LogInformation("Removing team {teamId} from floorball season with ID: {id}", teamId, seasonId);
+            _logger.LogInformation("Removing team {teamId} from floorball season with ID: {id}", teamId, competitionId);
 
-            RemoveTeamFromSeasonCommand command = new RemoveTeamFromSeasonCommand(seasonId, teamId);
+            RemoveTeamFromSeasonCommand command = new RemoveTeamFromSeasonCommand(competitionId, teamId);
             Result<FloorballSeasonDto> result = await _mediator.Send(command);
 
             if (result.IsSuccess && result.Data != null)
@@ -409,16 +409,16 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Adds a division to a floorball season
         /// </summary>
-        /// <param name="seasonId">Season ID</param>
+        /// <param name="competitionId">Season ID</param>
         /// <param name="divisionId">Division ID</param>
-        [HttpPost("{seasonId:guid}/divisions/{divisionId:guid}")]
+        [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApiResponse>> AddDivisionToSeason(Guid seasonId, Guid divisionId)
+        public async Task<ActionResult<ApiResponse>> AddDivisionToSeason(Guid competitionId, Guid divisionId)
         {
-            _logger.LogInformation("Adding division {divisionId} to floorball season with ID: {id}", divisionId, seasonId);
-            AddDivisionToSeasonCommand command = new AddDivisionToSeasonCommand(seasonId, divisionId);
+            _logger.LogInformation("Adding division {divisionId} to floorball season with ID: {id}", divisionId, competitionId);
+            AddDivisionToSeasonCommand command = new AddDivisionToSeasonCommand(competitionId, divisionId);
             Result result = await _mediator.Send(command);
             if (result.IsSuccess)
             {
@@ -430,16 +430,16 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Removes a division from a floorball season
         /// </summary>
-        /// <param name="seasonId">Season ID</param>
+        /// <param name="competitionId">Season ID</param>
         /// <param name="divisionId">Division ID</param>
-        [HttpDelete("{seasonId:guid}/divisions/{divisionId:guid}")]
+        [HttpDelete("{competitionId:guid}/divisions/{divisionId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApiResponse>> RemoveDivisionFromSeason(Guid seasonId, Guid divisionId)
+        public async Task<ActionResult<ApiResponse>> RemoveDivisionFromSeason(Guid competitionId, Guid divisionId)
         {
-            _logger.LogInformation("Removing division {divisionId} from floorball season with ID: {id}", divisionId, seasonId);
-            RemoveDivisionFromSeasonCommand command = new RemoveDivisionFromSeasonCommand(seasonId, divisionId);
+            _logger.LogInformation("Removing division {divisionId} from floorball season with ID: {id}", divisionId, competitionId);
+            RemoveDivisionFromSeasonCommand command = new RemoveDivisionFromSeasonCommand(competitionId, divisionId);
             Result result = await _mediator.Send(command);
             if (result.IsSuccess)
             {
@@ -451,17 +451,17 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Adds a team to a specific division of a floorball season
         /// </summary>
-        /// <param name="seasonId">Season ID</param>
+        /// <param name="competitionId">Season ID</param>
         /// <param name="divisionId">Division ID</param>
         /// <param name="teamId">Team ID</param>
-        [HttpPost("{seasonId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
+        [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApiResponse>> AddTeamToSeasonDivision(Guid seasonId, Guid divisionId, Guid teamId)
+        public async Task<ActionResult<ApiResponse>> AddTeamToSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
         {
-            _logger.LogInformation("Adding team {teamId} to season {id} division {divisionId}", teamId, seasonId, divisionId);
-            AddTeamToSeasonDivisionCommand command = new AddTeamToSeasonDivisionCommand(seasonId, divisionId, teamId);
+            _logger.LogInformation("Adding team {teamId} to season {id} division {divisionId}", teamId, competitionId, divisionId);
+            AddTeamToSeasonDivisionCommand command = new AddTeamToSeasonDivisionCommand(competitionId, divisionId, teamId);
             Result result = await _mediator.Send(command);
             if (result.IsSuccess)
             {
@@ -473,17 +473,17 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Removes a team from a specific division of a floorball season
         /// </summary>
-        /// <param name="seasonId">Season ID</param>
+        /// <param name="competitionId">Season ID</param>
         /// <param name="divisionId">Division ID</param>
         /// <param name="teamId">Team ID</param>
-        [HttpDelete("{seasonId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
+        [HttpDelete("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApiResponse>> RemoveTeamFromSeasonDivision(Guid seasonId, Guid divisionId, Guid teamId)
+        public async Task<ActionResult<ApiResponse>> RemoveTeamFromSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
         {
-            _logger.LogInformation("Removing team {teamId} from season {id} division {divisionId}", teamId, seasonId, divisionId);
-            RemoveTeamFromSeasonDivisionCommand command = new RemoveTeamFromSeasonDivisionCommand(seasonId, divisionId, teamId);
+            _logger.LogInformation("Removing team {teamId} from season {id} division {divisionId}", teamId, competitionId, divisionId);
+            RemoveTeamFromSeasonDivisionCommand command = new RemoveTeamFromSeasonDivisionCommand(competitionId, divisionId, teamId);
             Result result = await _mediator.Send(command);
             if (result.IsSuccess)
             {

@@ -24,7 +24,7 @@ const CreateMatchPage = () => {
   const [loadingReferees, setLoadingReferees] = useState(true);
 
   // Form state
-  const [selectedSeasonId, setSelectedSeasonId] = useState('');
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState('');
   const [selectedDivisionId, setSelectedDivisionId] = useState('');
   const [homeTeamId, setHomeTeamId] = useState('');
   const [awayTeamId, setAwayTeamId] = useState('');
@@ -77,7 +77,7 @@ const CreateMatchPage = () => {
 
   // Load full season details when season is selected
   useEffect(() => {
-    if (!selectedSeasonId) {
+    if (!selectedCompetitionId) {
       setSelectedSeason(null);
       return;
     }
@@ -85,7 +85,7 @@ const CreateMatchPage = () => {
     const loadSeasonDetails = async () => {
       try {
         setLoadingSeasonDetails(true);
-        const response = await floorballSeasonService.getById(selectedSeasonId);
+        const response = await floorballSeasonService.getById(selectedCompetitionId);
         if (response.success && response.data) {
           setSelectedSeason(response.data);
         }
@@ -97,7 +97,7 @@ const CreateMatchPage = () => {
       }
     };
     loadSeasonDetails();
-  }, [selectedSeasonId]);
+  }, [selectedCompetitionId]);
 
   // Divisions in the selected season
   const seasonDivisions = useMemo(() => {
@@ -115,8 +115,8 @@ const CreateMatchPage = () => {
   }, [seasonDivisions]);
 
   // Reset downstream when season changes
-  const handleSeasonChange = useCallback((seasonId: string) => {
-    setSelectedSeasonId(seasonId);
+  const handleSeasonChange = useCallback((competitionId: string) => {
+    setSelectedCompetitionId(competitionId);
     setSelectedDivisionId('');
     setHomeTeamId('');
     setAwayTeamId('');
@@ -176,7 +176,7 @@ const CreateMatchPage = () => {
     setError(null);
 
     // Validation
-    if (!selectedSeasonId) {
+    if (!selectedCompetitionId) {
       setError(t('floorball.matches.validation.seasonRequired', 'Please select a season.'));
       return;
     }
@@ -210,7 +210,7 @@ const CreateMatchPage = () => {
     setLoading(true);
     try {
       const matchData: CreateFloorballMatchRequest = {
-        seasonId: selectedSeasonId,
+        competitionId: selectedCompetitionId,
         homeTeamId,
         awayTeamId,
         refereeId: refereeId || undefined,
@@ -257,7 +257,7 @@ const CreateMatchPage = () => {
                 </label>
                 <select
                   id="cm-season"
-                  value={selectedSeasonId}
+                  value={selectedCompetitionId}
                   onChange={(e) => handleSeasonChange(e.target.value)}
                   required
                   disabled={loading || loadingSeasons}
@@ -272,7 +272,7 @@ const CreateMatchPage = () => {
               </div>
 
               {/* Division - only show when season selected */}
-              {selectedSeasonId && loadingSeasonDetails && (
+              {selectedCompetitionId && loadingSeasonDetails && (
                 <div className="cm-field">
                   <label>{t('floorball.matches.fields.division', 'Division')} *</label>
                   <div className="cm-field__info">
@@ -281,7 +281,7 @@ const CreateMatchPage = () => {
                   </div>
                 </div>
               )}
-              {selectedSeasonId && !loadingSeasonDetails && (
+              {selectedCompetitionId && !loadingSeasonDetails && (
                 <div className="cm-field">
                   <label htmlFor="cm-division">
                     {t('floorball.matches.fields.division', 'Division')} *
@@ -483,7 +483,7 @@ const CreateMatchPage = () => {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={loading || !selectedSeasonId || !selectedDivisionId || !homeTeamId || !awayTeamId}
+                disabled={loading || !selectedCompetitionId || !selectedDivisionId || !homeTeamId || !awayTeamId}
               >
                 {loading ? (
                   <><i className="fas fa-spinner fa-spin"></i> {t('common.creating', 'Creating...')}</>

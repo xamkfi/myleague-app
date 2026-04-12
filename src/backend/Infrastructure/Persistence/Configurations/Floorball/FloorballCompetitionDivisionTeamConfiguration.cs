@@ -5,28 +5,28 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
 {
     /// <summary>
-    /// EF Core configuration for FloorballSeasonDivisionTeam
+    /// EF Core configuration for FloorballCompetitionDivisionTeam
     /// </summary>
-    public class FloorballSeasonDivisionTeamConfiguration : IEntityTypeConfiguration<FloorballSeasonDivisionTeam>
+    public class FloorballCompetitionDivisionTeamConfiguration : IEntityTypeConfiguration<FloorballCompetitionDivisionTeam>
     {
-        public void Configure(EntityTypeBuilder<FloorballSeasonDivisionTeam> builder)
+        public void Configure(EntityTypeBuilder<FloorballCompetitionDivisionTeam> builder)
         {
             builder.ToTable("FloorballSeasonDivisionTeams", "floorball");
 
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.SeasonDivisionId)
+            builder.Property(x => x.CompetitionDivisionId)
                 .IsRequired();
 
             builder.Property(x => x.TeamId)
                 .IsRequired();
 
-            builder.Property(x => x.SeasonId)
+            builder.Property(x => x.CompetitionId)
                 .IsRequired();
 
-            builder.HasOne(x => x.SeasonDivision)
+            builder.HasOne(x => x.CompetitionDivision)
                 .WithMany(sd => sd.Teams)
-                .HasForeignKey(x => x.SeasonDivisionId)
+                .HasForeignKey(x => x.CompetitionDivisionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(x => x.Team)
@@ -34,16 +34,13 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .HasForeignKey(x => x.TeamId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasIndex(x => new { x.SeasonDivisionId, x.TeamId })
+            builder.HasIndex(x => new { x.CompetitionDivisionId, x.TeamId })
                 .IsUnique()
                 .HasDatabaseName("IX_FloorballSeasonDivisionTeams_SeasonDivision_Team");
 
-            // Enforce one division per team per season by unique composite index
-            builder.HasIndex(x => new { x.SeasonId, x.TeamId })
+            builder.HasIndex(x => new { x.CompetitionId, x.TeamId })
                 .IsUnique()
                 .HasDatabaseName("IX_FloorballSeasonDivisionTeams_Season_Team");
         }
     }
 }
-
-

@@ -118,7 +118,7 @@ export default function MatchPage() {
         <div className="match-page">
           <MatchBreadcrumb 
             seasonName={match.seasonName}
-            seasonId={match.seasonId}
+            competitionId={match.competitionId}
           />
           <MatchHeader match={match} />
           <MatchNavigation activeTab={activeTab} onTabChange={setActiveTab} />

@@ -11,15 +11,15 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 /// </summary>
 public class AddTeamToSeasonDivisionHandler : IRequestHandler<AddTeamToSeasonDivisionCommand, Result>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
     private readonly IFloorballTeamRepository _teamRepository;
-    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
+    private readonly IFloorballCompetitionDivisionRepository _seasonDivisionRepository;
     private readonly ILogger<AddTeamToSeasonDivisionHandler> _logger;
 
     public AddTeamToSeasonDivisionHandler(
-        IFloorballSeasonRepository seasonRepository,
+        IFloorballCompetitionRepository seasonRepository,
         IFloorballTeamRepository teamRepository,
-        IFloorballSeasonDivisionRepository seasonDivisionRepository,
+        IFloorballCompetitionDivisionRepository seasonDivisionRepository,
         ILogger<AddTeamToSeasonDivisionHandler> logger)
     {
         _seasonRepository = seasonRepository;
@@ -32,22 +32,22 @@ public class AddTeamToSeasonDivisionHandler : IRequestHandler<AddTeamToSeasonDiv
     {
         try
         {
-            if (!await _seasonRepository.ExistsAsync(request.SeasonId))
+            if (!await _seasonRepository.ExistsAsync(request.CompetitionId))
             {
-                return Result.NotFound("FloorballSeason", request.SeasonId);
+                return Result.NotFound("FloorballSeason", request.CompetitionId);
             }
             if (!await _teamRepository.ExistsAsync(request.TeamId))
             {
                 return Result.NotFound("FloorballTeam", request.TeamId);
             }
 
-            _logger.LogInformation("Adding team {TeamId} to season {SeasonId} division {DivisionId}", request.TeamId, request.SeasonId, request.DivisionId);
-            await _seasonDivisionRepository.AddTeamToSeasonDivisionAsync(request.SeasonId, request.DivisionId, request.TeamId);
+            _logger.LogInformation("Adding team {TeamId} to season {SeasonId} division {DivisionId}", request.TeamId, request.CompetitionId, request.DivisionId);
+            await _seasonDivisionRepository.AddTeamToCompetitionDivisionAsync(request.CompetitionId, request.DivisionId, request.TeamId);
             return Result.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding team {TeamId} to season {SeasonId} division {DivisionId}", request.TeamId, request.SeasonId, request.DivisionId);
+            _logger.LogError(ex, "Error adding team {TeamId} to season {SeasonId} division {DivisionId}", request.TeamId, request.CompetitionId, request.DivisionId);
             return Result.Failure("Failed to add team to season division.");
         }
     }

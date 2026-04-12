@@ -12,7 +12,7 @@ public record GetFloorballMatchesRequest : PagedRequestBase
     /// <summary>
     /// Gets the season ID filter
     /// </summary>
-    public Guid? SeasonId { get; init; }
+    public Guid? CompetitionId { get; init; }
 
     /// <summary>
     /// Gets the team ID filter (matches where this team played)
@@ -70,7 +70,7 @@ public record CreateFloorballMatchRequest
     /// Gets the season ID
     /// </summary>
     [Required(ErrorMessage = "Season ID is required")]
-    public Guid? SeasonId { get; init; }
+    public Guid? CompetitionId { get; init; }
 
     /// <summary>
     /// Gets the home team ID

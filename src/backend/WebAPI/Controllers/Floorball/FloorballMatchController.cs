@@ -90,7 +90,7 @@ namespace WebAPI.Controllers.Floorball
             GetAllFloorballMatchesQuery query = new GetAllFloorballMatchesQuery(
                 request.Page,
                 request.PageSize,
-                request.SeasonId,
+                request.CompetitionId,
                 request.TeamId,
                 request.StartDate,
                 request.EndDate,
@@ -144,17 +144,17 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Get floorball matches with season ID
         /// </summary>
-        /// <param name="seasonId">Season ID</param>
+        /// <param name="competitionId">Season ID</param>
         /// <returns></returns>
-        [HttpGet("by-seasonId/{seasonId:guid}")]
+        [HttpGet("by-competitionId/{competitionId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetMatchBySeason(Guid seasonId)
+        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetMatchBySeason(Guid competitionId)
         {
-            _logger.LogInformation("Getting floorball matches with season ID of: {seasonId}", seasonId);
+            _logger.LogInformation("Getting floorball matches with season ID of: {competitionId}", competitionId);
 
-            GetFloorballMatchesBySeasonQuery query = new GetFloorballMatchesBySeasonQuery(seasonId);
+            GetFloorballMatchesBySeasonQuery query = new GetFloorballMatchesBySeasonQuery(competitionId);
 
             Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(query);
 
@@ -253,7 +253,7 @@ namespace WebAPI.Controllers.Floorball
                 return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse("Invalid scheduled date and time format"));
 
             CreateFloorballMatchCommand command = new CreateFloorballMatchCommand(
-                request.SeasonId,
+                request.CompetitionId,
                 request.HomeTeamId,
                 request.AwayTeamId,
                 request.RefereeId,

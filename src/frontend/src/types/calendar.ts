@@ -19,7 +19,7 @@ export interface CalendarEvent {
 export interface CalendarFilters {
   sports: string[];
   statuses: string[];
-  seasonId: string | null;
+  competitionId: string | null;
   teamSearch: string;
   selectedDay: number | null;
 }
@@ -31,7 +31,7 @@ export const CALENDAR_STATUSES = ['scheduled', 'live', 'completed'] as const;
 export const DEFAULT_CALENDAR_FILTERS: CalendarFilters = {
   sports: [],
   statuses: [],
-  seasonId: null,
+  competitionId: null,
   teamSearch: '',
   selectedDay: null,
 };

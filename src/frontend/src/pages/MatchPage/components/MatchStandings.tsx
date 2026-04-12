@@ -17,7 +17,7 @@ export default function MatchStandings({ match }: MatchStandingsProps) {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await floorballStatisticsService.getSeasonStatistics(match.seasonId);
+        const data = await floorballStatisticsService.getSeasonStatistics(match.competitionId);
         setSeasonStats(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load season statistics');
@@ -27,7 +27,7 @@ export default function MatchStandings({ match }: MatchStandingsProps) {
     };
 
     fetchSeasonStats();
-  }, [match.seasonId]);
+  }, [match.competitionId]);
 
   return (
     <div className="match-standings">

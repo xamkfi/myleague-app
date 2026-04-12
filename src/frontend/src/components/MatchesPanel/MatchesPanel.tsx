@@ -154,13 +154,13 @@ function MatchesPanel() {
     );
   }
 
-  // Link to season schedule: use first completed match's seasonId, then any match, otherwise sports/floorball
+  // Link to season schedule: use first completed match's competitionId, then any match, otherwise sports/floorball
   const completedSection = sections.find((s) => s.key === 'completed');
   const firstCompletedMatch = completedSection?.matches[0];
   const anyMatch = matches[0];
-  const seasonId = firstCompletedMatch?.seasonId ?? anyMatch?.seasonId;
-  const fixturesPath = seasonId
-    ? `/league/${seasonId}?tab=fixtures`
+  const competitionId = firstCompletedMatch?.competitionId ?? anyMatch?.competitionId;
+  const fixturesPath = competitionId
+    ? `/league/${competitionId}?tab=fixtures`
     : '/sports/floorball';
 
   // --- Content ---

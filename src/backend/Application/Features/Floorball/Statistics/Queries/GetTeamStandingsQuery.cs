@@ -14,4 +14,4 @@ namespace Application.Features.Floorball.Statistics.Queries;
 /// Query for retrieving team standings for a specific season
 /// </summary>
 /// <param name="SeasonId">The season ID</param>
-public record GetTeamStandingsQuery(Guid SeasonId) : IRequest<Result<List<FloorballTeamSeasonStatisticsDto>>>;
+public record GetTeamStandingsQuery(Guid CompetitionId) : IRequest<Result<List<FloorballTeamSeasonStatisticsDto>>>;

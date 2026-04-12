@@ -73,7 +73,7 @@ export default function MatchesList({
     if (!seasons || !matches) return [] as Array<{ season: FloorballSeasonDto, matches: FloorballMatchDto[] }>;
     return seasons.map(season => {
       const filtered = matches.filter(m => {
-        const sameSeason = m.seasonId === season.id;
+        const sameSeason = m.competitionId === season.id;
         if (!sameSeason) return false;
         return isResults ? m.status === 'Completed' : m.status !== 'Completed';
       });

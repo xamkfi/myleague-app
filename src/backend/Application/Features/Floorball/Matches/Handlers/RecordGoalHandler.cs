@@ -140,25 +140,25 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
 
             // Update season statistics immediately
             _logger.LogInformation("[RecordGoal] UpdatePlayerSeasonStatistics scorer: PlayerId={PlayerId}, TeamId={TeamId}, SeasonId={SeasonId}",
-                scoringPlayer.Id, request.ScoringTeamId, match.SeasonId);
-            await UpdatePlayerSeasonStatistics(scoringPlayer.Id, request.ScoringTeamId, match.SeasonId, true, false, cancellationToken);
+                scoringPlayer.Id, request.ScoringTeamId, match.CompetitionId);
+            await UpdatePlayerSeasonStatistics(scoringPlayer.Id, request.ScoringTeamId, match.CompetitionId, true, false, cancellationToken);
             if (assistingPlayer != null)
             {
                 _logger.LogInformation("[RecordGoal] UpdatePlayerSeasonStatistics assister: PlayerId={PlayerId}, TeamId={TeamId}, SeasonId={SeasonId}",
-                    assistingPlayer.Id, request.ScoringTeamId, match.SeasonId);
-                await UpdatePlayerSeasonStatistics(assistingPlayer.Id, request.ScoringTeamId, match.SeasonId, false, true, cancellationToken);
+                    assistingPlayer.Id, request.ScoringTeamId, match.CompetitionId);
+                await UpdatePlayerSeasonStatistics(assistingPlayer.Id, request.ScoringTeamId, match.CompetitionId, false, true, cancellationToken);
             }
             if (secondAssistingPlayer != null)
             {
                 _logger.LogInformation("[RecordGoal] UpdatePlayerSeasonStatistics secondAssister: PlayerId={PlayerId}, TeamId={TeamId}, SeasonId={SeasonId}",
-                    secondAssistingPlayer.Id, request.ScoringTeamId, match.SeasonId);
-                await UpdatePlayerSeasonStatistics(secondAssistingPlayer.Id, request.ScoringTeamId, match.SeasonId, false, true, cancellationToken);
+                    secondAssistingPlayer.Id, request.ScoringTeamId, match.CompetitionId);
+                await UpdatePlayerSeasonStatistics(secondAssistingPlayer.Id, request.ScoringTeamId, match.CompetitionId, false, true, cancellationToken);
             }
 
             // Update team season statistics (increment goals for scoring team, goals against for opposing team)
-            await UpdateTeamSeasonGoalStatistics(request.ScoringTeamId, match.SeasonId, true, cancellationToken);
+            await UpdateTeamSeasonGoalStatistics(request.ScoringTeamId, match.CompetitionId, true, cancellationToken);
             Guid opposingTeamId = request.ScoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
-            await UpdateTeamSeasonGoalStatistics(opposingTeamId, match.SeasonId, false, cancellationToken);
+            await UpdateTeamSeasonGoalStatistics(opposingTeamId, match.CompetitionId, false, cancellationToken);
 
             // Update match team statistics
             await UpdateMatchTeamStatistics(match.Id, request.ScoringTeamId, cancellationToken);
@@ -266,11 +266,11 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
         if (activeGoalieId.HasValue)
         {
             FloorballGoalieSeasonStatistics? goalieStats = await _statisticsRepository.GetGoalieSeasonStatisticsAsync(
-                activeGoalieId.Value, opposingTeamId, match.SeasonId, cancellationToken);
+                activeGoalieId.Value, opposingTeamId, match.CompetitionId, cancellationToken);
 
             if (goalieStats == null)
             {
-                goalieStats = new FloorballGoalieSeasonStatistics(activeGoalieId.Value, opposingTeamId, match.SeasonId);
+                goalieStats = new FloorballGoalieSeasonStatistics(activeGoalieId.Value, opposingTeamId, match.CompetitionId);
             }
 
             // Goal allowed: 1 shot against, 1 goal allowed, 0 saves

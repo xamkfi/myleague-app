@@ -57,7 +57,7 @@ const MatchManagementPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Filter state
-  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Pagination state
@@ -79,16 +79,16 @@ const MatchManagementPage = () => {
 
   // Fetch status counts (lightweight queries)
   const fetchStatusCounts = useCallback(async () => {
-    const seasonFilter = selectedSeasonId || undefined;
+    const seasonFilter = selectedCompetitionId || undefined;
     const searchFilter = searchQuery.trim() || undefined;
 
     try {
       const [totalRes, scheduledRes, inProgressRes, completedRes, cancelledRes] = await Promise.all([
-        floorballMatchService.getAll({ pageSize: 1, seasonId: seasonFilter, searchQuery: searchFilter }),
-        floorballMatchService.getAll({ pageSize: 1, seasonId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.Scheduled }),
-        floorballMatchService.getAll({ pageSize: 1, seasonId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.InProgress }),
-        floorballMatchService.getAll({ pageSize: 1, seasonId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.Completed }),
-        floorballMatchService.getAll({ pageSize: 1, seasonId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.Cancelled }),
+        floorballMatchService.getAll({ pageSize: 1, competitionId: seasonFilter, searchQuery: searchFilter }),
+        floorballMatchService.getAll({ pageSize: 1, competitionId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.Scheduled }),
+        floorballMatchService.getAll({ pageSize: 1, competitionId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.InProgress }),
+        floorballMatchService.getAll({ pageSize: 1, competitionId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.Completed }),
+        floorballMatchService.getAll({ pageSize: 1, competitionId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.Cancelled }),
       ]);
 
       setStatusCounts({
@@ -101,7 +101,7 @@ const MatchManagementPage = () => {
     } catch (err) {
       console.error('Error fetching status counts:', err);
     }
-  }, [selectedSeasonId, searchQuery]);
+  }, [selectedCompetitionId, searchQuery]);
 
   // Fetch matches for the current tab
   const fetchMatches = useCallback(async (isInitial = false) => {
@@ -113,7 +113,7 @@ const MatchManagementPage = () => {
       }
       setError(null);
 
-      const seasonFilter = selectedSeasonId || undefined;
+      const seasonFilter = selectedCompetitionId || undefined;
       const searchFilter = searchQuery.trim() || undefined;
       const statusFilter = TAB_TO_STATUS[activeTab];
 
@@ -122,7 +122,7 @@ const MatchManagementPage = () => {
         floorballMatchService.getAll({
           page: currentPage,
           pageSize,
-          seasonId: seasonFilter,
+          competitionId: seasonFilter,
           searchQuery: searchFilter,
           status: statusFilter,
         }),
@@ -143,7 +143,7 @@ const MatchManagementPage = () => {
       setInitialLoading(false);
       setTableLoading(false);
     }
-  }, [activeTab, currentPage, pageSize, selectedSeasonId, searchQuery]);
+  }, [activeTab, currentPage, pageSize, selectedCompetitionId, searchQuery]);
 
   // Initial load: fetch matches + seasons + counts
   useEffect(() => {
@@ -161,7 +161,7 @@ const MatchManagementPage = () => {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [activeTab, currentPage, pageSize, selectedSeasonId, searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeTab, currentPage, pageSize, selectedCompetitionId, searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // SignalR real-time updates
   useEffect(() => {
@@ -295,7 +295,7 @@ const MatchManagementPage = () => {
         {/* Stats bar */}
         <StatsBar
           stats={statusCounts}
-          isSeasonFiltered={!!selectedSeasonId}
+          isSeasonFiltered={!!selectedCompetitionId}
         />
 
         {/* Filter toolbar */}
@@ -313,8 +313,8 @@ const MatchManagementPage = () => {
             </label>
             <select
               id="season-filter"
-              value={selectedSeasonId}
-              onChange={(e) => { setSelectedSeasonId(e.target.value); setCurrentPage(1); }}
+              value={selectedCompetitionId}
+              onChange={(e) => { setSelectedCompetitionId(e.target.value); setCurrentPage(1); }}
               className="match-mgmt__select"
             >
               <option value="">{t('floorball.matches.filters.allSeasons', 'All Seasons')}</option>

@@ -18,8 +18,8 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 /// </summary>
 public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeasonCommand, Result<FloorballSeasonDto>>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
-    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
+    private readonly IFloorballCompetitionDivisionRepository _seasonDivisionRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateFloorballSeasonHandler> _logger;
 
@@ -31,8 +31,8 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
     /// <param name="unitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public UpdateFloorballSeasonHandler(
-        IFloorballSeasonRepository seasonRepository,
-        IFloorballSeasonDivisionRepository seasonDivisionRepository,
+        IFloorballCompetitionRepository seasonRepository,
+        IFloorballCompetitionDivisionRepository seasonDivisionRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<UpdateFloorballSeasonHandler> logger)
     {
@@ -53,7 +53,7 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
         try
         {
             // Find the existing season
-            FloorballSeason? existingSeason = await _seasonRepository.GetByIdAsync(request.Id);
+            FloorballCompetition? existingSeason = await _seasonRepository.GetByIdAsync(request.Id);
             if (existingSeason == null)
             {
                 _logger.LogWarning("Attempt to update non-existent floorball season with ID: {SeasonId}", request.Id);
@@ -69,7 +69,7 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(existingSeason.Id);
+            IEnumerable<FloorballCompetitionDivision> seasonDivisions = await _seasonDivisionRepository.GetCompetitionDivisionsAsync(existingSeason.Id);
             IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
 
             FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(existingSeason, seasonDivisionDtos);

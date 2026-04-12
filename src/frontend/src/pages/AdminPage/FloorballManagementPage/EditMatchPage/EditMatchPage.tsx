@@ -88,8 +88,8 @@ const EditMatchPage = () => {
 
       const changes: Promise<unknown>[] = [];
 
-      if (updatedData.seasonId && updatedData.seasonId !== matchData.seasonId) {
-        changes.push(floorballMatchService.changeSeason(matchData.id, updatedData.seasonId));
+      if (updatedData.competitionId && updatedData.competitionId !== matchData.competitionId) {
+        changes.push(floorballMatchService.changeCompetition(matchData.id, updatedData.competitionId));
       }
       
       if (

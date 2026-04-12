@@ -20,7 +20,7 @@ export const floorballMatchService = {
       
       if (params?.page) searchParams.append('page', params.page.toString());
       if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
-      if (params?.seasonId) searchParams.append('seasonId', params.seasonId);
+      if (params?.competitionId) searchParams.append('competitionId', params.competitionId);
       if (params?.teamId) searchParams.append('teamId', params.teamId);
       if (params?.startDate) searchParams.append('startDate', params.startDate);
       if (params?.endDate) searchParams.append('endDate', params.endDate);
@@ -110,9 +110,9 @@ export const floorballMatchService = {
   /**
    * Get matches by season ID
    */
-  getBySeason: async (seasonId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {
+  getBySeason: async (competitionId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {
     try {
-      const url = `${API_URL}/FloorballMatch/by-seasonId/${seasonId}`;
+      const url = `${API_URL}/FloorballMatch/by-competitionId/${competitionId}`;
       console.log('Fetching matches by season from URL:', url);
       
       const response = await authFetch(url);
@@ -357,16 +357,16 @@ export const floorballMatchService = {
   /**
    * Change match season
    */
-  changeSeason: async (id: string, seasonId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+  changeCompetition: async (id: string, competitionId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      console.log('Changing season for match with ID:', id, 'to season:', seasonId);
+      console.log('Changing season for match with ID:', id, 'to season:', competitionId);
       
       const response = await authFetch(`${API_URL}/FloorballMatchEvent/match/${id}/season`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ newSeasonId: seasonId }),
+        body: JSON.stringify({ newCompetitionId: competitionId }),
       });
       
       const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
@@ -382,7 +382,7 @@ export const floorballMatchService = {
       
       return apiResponse;
     } catch (error) {
-      console.error('Error in floorballMatchService.changeSeason:', error);
+      console.error('Error in floorballMatchService.changeCompetition:', error);
       throw error;
     }
   },

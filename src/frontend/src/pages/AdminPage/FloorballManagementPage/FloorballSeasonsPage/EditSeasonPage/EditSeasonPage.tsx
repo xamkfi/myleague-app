@@ -18,7 +18,7 @@ import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 const EditSeasonPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { seasonId } = useParams<{ seasonId: string }>();
+  const { competitionId } = useParams<{ competitionId: string }>();
   const { divisions } = useDivisions();
   
   const [season, setSeason] = useState<FloorballSeasonDto | null>(null);
@@ -68,10 +68,10 @@ const EditSeasonPage = () => {
 
   // ── Load season ──
   const loadSeason = useCallback(async () => {
-    if (!seasonId) return;
+    if (!competitionId) return;
     try {
       setLoadingSeason(true);
-      const seasonData = await floorballSeasonService.getById(seasonId);
+      const seasonData = await floorballSeasonService.getById(competitionId);
       setSeason(seasonData.data);
       setFormData({
         name: seasonData.data.name,
@@ -88,13 +88,13 @@ const EditSeasonPage = () => {
     } finally {
       setLoadingSeason(false);
     }
-  }, [seasonId, t]);
+  }, [competitionId, t]);
 
   useEffect(() => {
-    if (seasonId) {
+    if (competitionId) {
       loadSeason();
     }
-  }, [seasonId, loadSeason]);
+  }, [competitionId, loadSeason]);
 
   // Auto-select first division when season loads
   useEffect(() => {
@@ -201,7 +201,7 @@ const EditSeasonPage = () => {
   // ── Season Details submit ──
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!seasonId) return;
+    if (!competitionId) return;
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
@@ -217,7 +217,7 @@ const EditSeasonPage = () => {
       const maxDuration = 2 * 365 * 24 * 60 * 60 * 1000;
       if (endDate.getTime() - startDate.getTime() > maxDuration) throw new Error(t('floorball.seasons.validation.seasonTooLong', 'Season duration cannot exceed 2 years'));
 
-      await floorballSeasonService.update(seasonId, formData);
+      await floorballSeasonService.update(competitionId, formData);
       showSuccess(t('floorball.seasons.seasonUpdated', 'Season "{{seasonName}}" has been updated successfully!', { seasonName: formData.name }), true);
       await loadSeason();
     } catch (err) {
@@ -229,11 +229,11 @@ const EditSeasonPage = () => {
 
   // ── Division Management ──
   const handleAddDivision = async (divisionId: string) => {
-    if (!seasonId) return;
+    if (!competitionId) return;
     setAddingDivision(true);
     setError(null);
     try {
-      await floorballSeasonService.addDivisionToSeason(seasonId, divisionId);
+      await floorballSeasonService.addDivisionToSeason(competitionId, divisionId);
       await loadSeason();
       showSuccess(t('floorball.seasons.divisionAdded', 'Division added successfully!'));
     } catch (err) { setError(parseApiError(err)); }
@@ -241,11 +241,11 @@ const EditSeasonPage = () => {
   };
 
   const handleRemoveDivision = async (divisionId: string) => {
-    if (!seasonId) return;
+    if (!competitionId) return;
     setRemovingDivision(divisionId);
     setError(null);
     try {
-      await floorballSeasonService.removeDivisionFromSeason(seasonId, divisionId);
+      await floorballSeasonService.removeDivisionFromSeason(competitionId, divisionId);
       if (selectedDivisionId === divisionId) setSelectedDivisionId(null);
       await loadSeason();
       showSuccess(t('floorball.seasons.divisionRemoved', 'Division removed successfully!'));
@@ -273,14 +273,14 @@ const EditSeasonPage = () => {
   };
 
   const handleAddSelectedTeams = async () => {
-    if (!seasonId || !selectedDivisionId || selectedTeamIds.size === 0) return;
+    if (!competitionId || !selectedDivisionId || selectedTeamIds.size === 0) return;
     setTeamOperationLoading(true);
     setError(null);
     let successCount = 0;
     let failCount = 0;
     for (const teamId of selectedTeamIds) {
       try {
-        await floorballSeasonService.addTeamToSeasonDivision(seasonId, selectedDivisionId, teamId);
+        await floorballSeasonService.addTeamToSeasonDivision(competitionId, selectedDivisionId, teamId);
         successCount++;
       } catch {
         failCount++;
@@ -298,11 +298,11 @@ const EditSeasonPage = () => {
   };
 
   const handleAddSingleTeam = async (teamId: string) => {
-    if (!seasonId || !selectedDivisionId) return;
+    if (!competitionId || !selectedDivisionId) return;
     setTeamOperationLoading(true);
     setError(null);
     try {
-      await floorballSeasonService.addTeamToSeasonDivision(seasonId, selectedDivisionId, teamId);
+      await floorballSeasonService.addTeamToSeasonDivision(competitionId, selectedDivisionId, teamId);
       await loadSeason();
       await loadAvailableTeams();
       showSuccess(t('floorball.seasons.teamAdded', 'Team added successfully!'));
@@ -311,11 +311,11 @@ const EditSeasonPage = () => {
   };
 
   const handleRemoveTeam = async (teamId: string) => {
-    if (!seasonId || !selectedDivisionId) return;
+    if (!competitionId || !selectedDivisionId) return;
     setTeamOperationLoading(true);
     setError(null);
     try {
-      await floorballSeasonService.removeTeamFromSeasonDivision(seasonId, selectedDivisionId, teamId);
+      await floorballSeasonService.removeTeamFromSeasonDivision(competitionId, selectedDivisionId, teamId);
       await loadSeason();
       showSuccess(t('floorball.seasons.teamRemoved', 'Team removed successfully!'));
     } catch (err) { setError(parseApiError(err)); }

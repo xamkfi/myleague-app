@@ -66,28 +66,28 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
     {
         try
         {
-            _logger.LogInformation("Getting season statistics summary for Season: {SeasonId}", request.SeasonId);
+            _logger.LogInformation("Getting season statistics summary for Season: {SeasonId}", request.CompetitionId);
 
             // Get team standings
             List<Domain.Entities.Floorball.FloorballTeamSeasonStatistics> teamStats = 
-                (await _statisticsRepository.GetTeamStandingsAsync(request.SeasonId, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTeamStandingsAsync(request.CompetitionId, cancellationToken)).ToList();
 
             // Get top scorers
             List<Domain.Entities.Floorball.FloorballPlayerSeasonStatistics> topScorers = 
-                (await _statisticsRepository.GetTopScorersAsync(request.SeasonId, 10, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTopScorersAsync(request.CompetitionId, 10, cancellationToken)).ToList();
 
             // Get top assist leaders
             List<Domain.Entities.Floorball.FloorballPlayerSeasonStatistics> topAssists = 
-                (await _statisticsRepository.GetTopAssistsAsync(request.SeasonId, 10, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTopAssistsAsync(request.CompetitionId, 10, cancellationToken)).ToList();
 
             // Get top goalies (minimum 5 games played)
             List<Domain.Entities.Floorball.FloorballGoalieSeasonStatistics> topGoalies = 
-                (await _statisticsRepository.GetTopGoaliesAsync(request.SeasonId, 10, 1, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTopGoaliesAsync(request.CompetitionId, 10, 1, cancellationToken)).ToList();
 
             if (teamStats.Count == 0)
             {
-                _logger.LogWarning("Season statistics not found for Season: {SeasonId}", request.SeasonId);
-                return Result<FloorballSeasonStatisticsSummaryDto>.NotFound("Season statistics", request.SeasonId.ToString());
+                _logger.LogWarning("Season statistics not found for Season: {SeasonId}", request.CompetitionId);
+                return Result<FloorballSeasonStatisticsSummaryDto>.NotFound("Season statistics", request.CompetitionId.ToString());
             }
 
             // Build last-5 form per team
@@ -95,7 +95,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             foreach (Domain.Entities.Floorball.FloorballTeamSeasonStatistics ts in teamStats)
             {
                 IEnumerable<Domain.Entities.Floorball.FloorballMatch> matches =
-                    await _floorballMatchRepository.GetLastCompletedByTeamAsync(ts.TeamId, request.SeasonId, 5);
+                    await _floorballMatchRepository.GetLastCompletedByTeamAsync(ts.TeamId, request.CompetitionId, 5);
 
                 FloorballGameResult[] form = matches.Select(m =>
                 {
@@ -110,7 +110,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
 
             // Create lookups for team names and season names from team standings
             Dictionary<Guid, string> teamNameLookup = teamStats.ToDictionary(ts => ts.TeamId, ts => ts.Team.Name ?? string.Empty);
-            string seasonName = teamStats.FirstOrDefault()?.Season.Name ?? string.Empty;
+            string seasonName = teamStats.FirstOrDefault()?.Competition.Name ?? string.Empty;
 
             // Retrieve player names from person repository for top scorers and assists
             Dictionary<Guid, Person> playerPersonLookup = new Dictionary<Guid, Person>();
@@ -162,7 +162,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
 
             FloorballSeasonStatisticsSummaryDto summaryDto = new FloorballSeasonStatisticsSummaryDto
             {
-                SeasonId = request.SeasonId,
+                CompetitionId = request.CompetitionId,
                 SeasonName = seasonName,
                 TeamStandings = teamStats.Select(ts => FloorballStatisticsMapper.ToDto(ts)).ToList(),
                 TopScorers = topScorers.Select(ps =>
@@ -202,12 +202,12 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
                 }
             }
 
-            _logger.LogInformation("Successfully retrieved season statistics summary for Season: {SeasonId}", request.SeasonId);
+            _logger.LogInformation("Successfully retrieved season statistics summary for Season: {SeasonId}", request.CompetitionId);
             return Result<FloorballSeasonStatisticsSummaryDto>.Success(summaryDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while getting season statistics summary for Season: {SeasonId}", request.SeasonId);
+            _logger.LogError(ex, "Error occurred while getting season statistics summary for Season: {SeasonId}", request.CompetitionId);
             return Result<FloorballSeasonStatisticsSummaryDto>.Failure("An error occurred while retrieving season statistics summary.");
         }
     }

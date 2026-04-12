@@ -21,8 +21,8 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 /// </summary>
 public class GetActiveFloorballSeasonsHandler : IRequestHandler<GetActiveFloorballSeasonsQuery, Result<IEnumerable<FloorballSeasonDto>>>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
-    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
+    private readonly IFloorballCompetitionDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetActiveFloorballSeasonsHandler> _logger;
 
@@ -32,8 +32,8 @@ public class GetActiveFloorballSeasonsHandler : IRequestHandler<GetActiveFloorba
     /// <param name="seasonRepository">The floorball season repository</param>
     /// <param name="logger">The logger</param>
     public GetActiveFloorballSeasonsHandler(
-        IFloorballSeasonRepository seasonRepository,
-        IFloorballSeasonDivisionRepository seasonDivisionRepository,
+        IFloorballCompetitionRepository seasonRepository,
+        IFloorballCompetitionDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         ILogger<GetActiveFloorballSeasonsHandler> logger)
     {
@@ -55,8 +55,8 @@ public class GetActiveFloorballSeasonsHandler : IRequestHandler<GetActiveFloorba
         {
             _logger.LogInformation("Retrieving active floorball seasons");
             
-            IEnumerable<FloorballSeason> seasons = await _seasonRepository.GetActiveAsync();
-            List<FloorballSeason> seasonList = seasons.ToList();
+            IEnumerable<FloorballCompetition> seasons = await _seasonRepository.GetActiveAsync();
+            List<FloorballCompetition> seasonList = seasons.ToList();
 
             // Load clubs for all teams across all seasons
             Dictionary<Guid, Club> clubsDict = new Dictionary<Guid, Club>();
@@ -68,9 +68,9 @@ public class GetActiveFloorballSeasonsHandler : IRequestHandler<GetActiveFloorba
 
             // Include clubs for teams linked via season divisions
             Dictionary<Guid, List<FloorballTeam>> seasonTeamsBySeason = new Dictionary<Guid, List<FloorballTeam>>();
-            foreach (FloorballSeason season in seasonList)
+            foreach (FloorballCompetition season in seasonList)
             {
-                IEnumerable<FloorballSeasonDivisionTeam> seasonDivisionTeams = await _seasonDivisionRepository.GetSeasonDivisionTeamsAsync(season.Id);
+                IEnumerable<FloorballCompetitionDivisionTeam> seasonDivisionTeams = await _seasonDivisionRepository.GetCompetitionDivisionTeamsAsync(season.Id);
                 List<FloorballTeam> divisionTeams = seasonDivisionTeams.Select(sdt => sdt.Team).Where(team => team != null).ToList();
                 seasonTeamsBySeason[season.Id] = divisionTeams;
                 foreach (FloorballTeam team in divisionTeams)
@@ -89,14 +89,14 @@ public class GetActiveFloorballSeasonsHandler : IRequestHandler<GetActiveFloorba
             }
 
             Dictionary<Guid, IReadOnlyCollection<FloorballSeasonDivisionDto>> seasonDivisionsBySeason = new Dictionary<Guid, IReadOnlyCollection<FloorballSeasonDivisionDto>>();
-            foreach (FloorballSeason season in seasonList)
+            foreach (FloorballCompetition season in seasonList)
             {
-                IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+                IEnumerable<FloorballCompetitionDivision> seasonDivisions = await _seasonDivisionRepository.GetCompetitionDivisionsAsync(season.Id);
                 seasonDivisionsBySeason[season.Id] = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
             }
 
             List<FloorballSeasonDto> seasonDtos = new List<FloorballSeasonDto>();
-            foreach (FloorballSeason season in seasonList)
+            foreach (FloorballCompetition season in seasonList)
             {
                 seasonDivisionsBySeason.TryGetValue(season.Id, out IReadOnlyCollection<FloorballSeasonDivisionDto>? seasonDivisions);
                 IReadOnlyCollection<FloorballSeasonDivisionDto> safeSeasonDivisions = seasonDivisions ?? Array.Empty<FloorballSeasonDivisionDto>();

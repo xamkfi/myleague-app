@@ -3,7 +3,7 @@ import { API_URL } from '../../../constants/config';
 
 interface FloorballMatch {
   id: string;
-  seasonId: string;
+  competitionId: string;
   homeTeamId: string;
   homeTeamName: string;
   homeTeamLogo: string | null;
@@ -50,7 +50,7 @@ interface PaginatedApiResponse<T> {
 interface GetMatchesRequest {
   page?: number;
   pageSize?: number;
-  seasonId?: string;
+  competitionId?: string;
   teamId?: string;
   startDate?: string;
   endDate?: string;
@@ -64,7 +64,7 @@ export const getMatchesService = {
     
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
-    if (params?.seasonId) searchParams.append('seasonId', params.seasonId);
+    if (params?.competitionId) searchParams.append('competitionId', params.competitionId);
     if (params?.teamId) searchParams.append('teamId', params.teamId);
     if (params?.startDate) searchParams.append('startDate', params.startDate);
     if (params?.endDate) searchParams.append('endDate', params.endDate);

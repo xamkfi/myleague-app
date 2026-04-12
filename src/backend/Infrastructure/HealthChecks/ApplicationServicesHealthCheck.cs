@@ -51,7 +51,7 @@ namespace MyLeague.Infrastructure.HealthChecks
                 await CheckServiceAsync<IFloorballPlayerRepository>("FloorballPlayerRepository", serviceChecks, errors);
                 await CheckServiceAsync<IFloorballTeamRepository>("FloorballTeamRepository", serviceChecks, errors);
                 await CheckServiceAsync<IFloorballMatchRepository>("FloorballMatchRepository", serviceChecks, errors);
-                await CheckServiceAsync<IFloorballSeasonRepository>("FloorballSeasonRepository", serviceChecks, errors);
+                await CheckServiceAsync<IFloorballCompetitionRepository>("FloorballCompetitionRepository", serviceChecks, errors);
 
                 // Check Unit of Work
                 await CheckServiceAsync<IUnitOfWork>("UnitOfWork", serviceChecks, errors);

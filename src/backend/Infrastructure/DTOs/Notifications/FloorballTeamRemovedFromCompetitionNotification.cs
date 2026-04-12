@@ -3,19 +3,19 @@ using System;
 namespace MyLeague.Infrastructure.DTOs.Notifications
 {
     /// <summary>
-    /// DTO for the FloorballTeamAddedToSeason notification
+    /// DTO for the FloorballTeamRemovedFromCompetition notification
     /// </summary>
-    public record FloorballTeamAddedToSeasonNotification
+    public record FloorballTeamRemovedFromCompetitionNotification
     {
         /// <summary>
-        /// Gets the ID of the season
+        /// Gets the ID of the competition
         /// </summary>
-        public Guid SeasonId { get; init; }
+        public Guid CompetitionId { get; init; }
 
         /// <summary>
-        /// Gets the name of the season
+        /// Gets the name of the competition
         /// </summary>
-        public string SeasonName { get; init; } = "Unknown Season";
+        public string CompetitionName { get; init; } = "Unknown Competition";
 
         /// <summary>
         /// Gets the ID of the team
@@ -28,8 +28,8 @@ namespace MyLeague.Infrastructure.DTOs.Notifications
         public string TeamName { get; init; } = "Unknown Team";
 
         /// <summary>
-        /// Gets the date and time when the team was added to the season
+        /// Gets the date and time when the team was removed from the competition
         /// </summary>
-        public DateTime AddedOn { get; init; }
+        public DateTime RemovedOn { get; init; }
     }
-} 
+}

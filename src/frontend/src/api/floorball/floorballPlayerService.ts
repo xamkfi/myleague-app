@@ -59,7 +59,7 @@ export interface FloorballPlayerMatchStatsDto {
 
 export interface FloorballPlayerMatchDto {
   id: string;
-  seasonId: string;
+  competitionId: string;
   seasonName: string;
   homeTeamId: string;
   homeTeamName: string;

@@ -21,7 +21,7 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
 
   const activeCount = [
     filters.statuses.length > 0,
-    filters.seasonId !== null,
+    filters.competitionId !== null,
     filters.teamSearch.length > 0,
   ].filter(Boolean).length;
 
@@ -33,7 +33,7 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
   };
 
   const handleSeasonChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onFiltersChange({ ...filters, seasonId: e.target.value || null });
+    onFiltersChange({ ...filters, competitionId: e.target.value || null });
   };
 
   const handleTeamSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,7 +44,7 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
     onFiltersChange({
       ...filters,
       statuses: [],
-      seasonId: null,
+      competitionId: null,
       teamSearch: '',
     });
   };
@@ -103,7 +103,7 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
             <select
               id="calendar-season-filter"
               className="calendar-filters__select"
-              value={filters.seasonId ?? ''}
+              value={filters.competitionId ?? ''}
               onChange={handleSeasonChange}
             >
               <option value="">{t('eventCalendarPage.filters.allSeasons')}</option>

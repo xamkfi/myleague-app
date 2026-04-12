@@ -3,28 +3,28 @@ using System;
 namespace MyLeague.Infrastructure.DTOs.Notifications
 {
     /// <summary>
-    /// DTO for the FloorballSeasonDateRangeUpdated notification
+    /// DTO for the FloorballCompetitionDateRangeUpdated notification
     /// </summary>
-    public record FloorballSeasonDateRangeUpdatedNotification
+    public record FloorballCompetitionDateRangeUpdatedNotification
     {
         /// <summary>
-        /// Gets the ID of the season
+        /// Gets the ID of the competition
         /// </summary>
-        public Guid SeasonId { get; init; }
+        public Guid CompetitionId { get; init; }
 
         /// <summary>
-        /// Gets the updated start date of the season
+        /// Gets the updated start date of the competition
         /// </summary>
         public DateTime StartDate { get; init; }
 
         /// <summary>
-        /// Gets the updated end date of the season
+        /// Gets the updated end date of the competition
         /// </summary>
         public DateTime EndDate { get; init; }
 
         /// <summary>
-        /// Gets the date and time when the season date range was updated
+        /// Gets the date and time when the competition date range was updated
         /// </summary>
         public DateTime UpdatedOn { get; init; }
     }
-} 
+}

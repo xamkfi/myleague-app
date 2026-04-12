@@ -6,7 +6,7 @@ namespace Application.Constants
         public const string MatchCreated = "FloorballMatchCreated";
         public const string MatchStarted = "FloorballMatchStarted";
         public const string MatchCompleted = "FloorballMatchCompleted";
-        public const string MatchAddedToSeason = "FloorballMatchAddedToSeason";
+        public const string MatchAddedToCompetition = "FloorballMatchAddedToCompetition";
 
         // In-match events
         public const string GoalScored = "FloorballGoalScored";
@@ -21,19 +21,19 @@ namespace Application.Constants
         public const string PlayerStatUpdated = "FloorballPlayerStatUpdated";
 
         // Team events
-        public const string TeamAddedToSeason = "FloorballTeamAddedToSeason";
-        public const string TeamRemovedFromSeason = "FloorballTeamRemovedFromSeason";
+        public const string TeamAddedToCompetition = "FloorballTeamAddedToCompetition";
+        public const string TeamRemovedFromCompetition = "FloorballTeamRemovedFromCompetition";
         public const string TeamRemoved = "FloorballTeamRemoved";
 
         // Official events
         public const string OfficialAssigned = "FloorballOfficialAssigned";
 
-        // Season events
-        public const string SeasonActivated = "FloorballSeasonActivated";
-        public const string SeasonDeactivated = "FloorballSeasonDeactivated";
-        public const string SeasonCompleted = "FloorballSeasonCompleted";
-        public const string SeasonDetailsUpdated = "FloorballSeasonDetailsUpdated";
-        public const string SeasonDivisionUpdated = "FloorballSeasonDivisionUpdated";
-        public const string SeasonDateRangeUpdated = "FloorballSeasonDateRangeUpdated";
+        // Competition events
+        public const string CompetitionActivated = "FloorballCompetitionActivated";
+        public const string CompetitionDeactivated = "FloorballCompetitionDeactivated";
+        public const string CompetitionCompleted = "FloorballCompetitionCompleted";
+        public const string CompetitionDetailsUpdated = "FloorballCompetitionDetailsUpdated";
+        public const string CompetitionDivisionUpdated = "FloorballCompetitionDivisionUpdated";
+        public const string CompetitionDateRangeUpdated = "FloorballCompetitionDateRangeUpdated";
     }
 }

@@ -11,14 +11,14 @@ namespace Domain.Entities.Floorball;
 public class FloorballMatch : BaseEntity
 {
     /// <summary>
-    /// Gets the season this match belongs to
+    /// Gets the competition this match belongs to
     /// </summary>
-    public FloorballSeason Season { get; private set; }
+    public FloorballCompetition Competition { get; private set; }
 
     /// <summary>
-    /// Gets or sets the ID of the season
+    /// Gets the ID of the competition
     /// </summary>
-    public Guid SeasonId { get; private set; }
+    public Guid CompetitionId { get; private set; }
 
     /// <summary>
     /// Gets the home team
@@ -143,7 +143,7 @@ public class FloorballMatch : BaseEntity
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
-        Season = null!; // EF Core will set this
+        Competition = null!; // EF Core will set this
         HomeTeam = null!;
         AwayTeam = null!;
         Venue = string.Empty;
@@ -152,45 +152,39 @@ public class FloorballMatch : BaseEntity
     /// <summary>
     /// Initializes a new instance of the FloorballMatch class
     /// </summary>
-    /// <param name="season">The season this match belongs to</param>
+    /// <param name="competition">The competition this match belongs to</param>
     /// <param name="homeTeam">The home team</param>
     /// <param name="awayTeam">The away team</param>
     /// <param name="scheduledDateTime">The scheduled date and time of the match</param>
     /// <param name="venue">The venue where the match will be played</param>
-    /// <exception cref="ArgumentNullException">Thrown when a required parameter is null</exception>
-    /// <exception cref="ArgumentException">Thrown when teams are the same or venue is invalid</exception>
     public FloorballMatch(
-        FloorballSeason season,
+        FloorballCompetition competition,
         FloorballTeam homeTeam,
         FloorballTeam awayTeam,
         DateTime scheduledDateTime,
         string? venue)
-        : this(Guid.NewGuid(), season, homeTeam, awayTeam, scheduledDateTime, venue)
+        : this(Guid.NewGuid(), competition, homeTeam, awayTeam, scheduledDateTime, venue)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the FloorballMatch class with a predefined identifier.
-    /// This overload is intended for projections so that the read-model row uses exactly
-    /// the same Guid as EventSourcedFloorballMatch aggregateId.
     /// </summary>
     /// <param name="id">The identifier that should be used for the match.</param>
-    /// <param name="season">The season this match belongs to</param>
+    /// <param name="competition">The competition this match belongs to</param>
     /// <param name="homeTeam">The home team</param>
     /// <param name="awayTeam">The away team</param>
     /// <param name="scheduledDateTime">The scheduled date and time of the match</param>
     /// <param name="venue">The venue where the match will be played</param>
-    /// <exception cref="ArgumentNullException">Thrown when a required parameter is null</exception>
-    /// <exception cref="ArgumentException">Thrown when teams are the same or venue is invalid</exception>
     public FloorballMatch(
         Guid id,
-        FloorballSeason season,
+        FloorballCompetition competition,
         FloorballTeam homeTeam,
         FloorballTeam awayTeam,
         DateTime scheduledDateTime,
         string? venue)
     {
-        ArgumentNullException.ThrowIfNull(season);
+        ArgumentNullException.ThrowIfNull(competition);
         ArgumentNullException.ThrowIfNull(homeTeam);
         ArgumentNullException.ThrowIfNull(awayTeam);
 
@@ -198,8 +192,8 @@ public class FloorballMatch : BaseEntity
             throw new ArgumentException("Home team and away team cannot be the same team.");
 
         Id = id;
-        Season = season;
-        SeasonId = season.Id;
+        Competition = competition;
+        CompetitionId = competition.Id;
         HomeTeam = homeTeam;
         HomeTeamId = homeTeam.Id;
         AwayTeam = awayTeam;
@@ -212,11 +206,11 @@ public class FloorballMatch : BaseEntity
         WentToOvertime = false;
         WentToShootout = false;
         MatchRules = new FloorballMatchRules(
-            season.MatchRules.NumberOfPeriods,
-            season.MatchRules.PeriodDurationMinutes,
-            season.MatchRules.AllowOvertime,
-            season.MatchRules.OvertimeDurationMinutes,
-            season.MatchRules.AllowShootout);
+            competition.MatchRules.NumberOfPeriods,
+            competition.MatchRules.PeriodDurationMinutes,
+            competition.MatchRules.AllowOvertime,
+            competition.MatchRules.OvertimeDurationMinutes,
+            competition.MatchRules.AllowShootout);
         HomeActiveGoalieId = null;
         AwayActiveGoalieId = null;
         _events = new List<FloorballMatchEvent>();
@@ -229,15 +223,14 @@ public class FloorballMatch : BaseEntity
     }
 
     /// <summary>
-    /// Changes the season for this match
+    /// Changes the competition for this match
     /// </summary>
-    /// <param name="season">The new season</param>
-    /// <exception cref="ArgumentNullException">Thrown when season is null</exception>
-    public void ChangeSeason(FloorballSeason season)
+    /// <param name="competition">The new competition</param>
+    public void ChangeCompetition(FloorballCompetition competition)
     {
-        ArgumentNullException.ThrowIfNull(season);
-        Season = season;
-        SeasonId = season.Id;
+        ArgumentNullException.ThrowIfNull(competition);
+        Competition = competition;
+        CompetitionId = competition.Id;
     }
 
     /// <summary>

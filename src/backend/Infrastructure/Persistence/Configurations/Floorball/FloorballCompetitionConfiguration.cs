@@ -6,17 +6,20 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
 {
     /// <summary>
-    /// Entity Framework configuration for the FloorballSeason entity.
+    /// Entity Framework configuration for the FloorballCompetition entity hierarchy (TPH).
     /// </summary>
-    public class FloorballSeasonConfiguration : IEntityTypeConfiguration<FloorballSeason>
+    public class FloorballCompetitionConfiguration : IEntityTypeConfiguration<FloorballCompetition>
     {
         /// <summary>
-        /// Configures the entity mapping for FloorballSeason.
+        /// Configures the entity mapping for FloorballCompetition.
         /// </summary>
         /// <param name="builder">The entity type builder.</param>
-        public void Configure(EntityTypeBuilder<FloorballSeason> builder)
+        public void Configure(EntityTypeBuilder<FloorballCompetition> builder)
         {
             builder.HasKey(s => s.Id);
+
+            builder.HasDiscriminator<string>("CompetitionType")
+                .HasValue<FloorballSeason>("Season");
 
             builder.Property(s => s.Name)
                 .IsRequired()
@@ -34,7 +37,6 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(s => s.IsCompleted)
                 .IsRequired();
 
-            // Configure MatchRules as an owned entity (stored as columns in the same table)
             builder.OwnsOne(s => s.MatchRules, rules =>
             {
                 rules.Property(r => r.NumberOfPeriods)
@@ -63,17 +65,13 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                     .HasDefaultValue(true);
             });
 
-            // Configure many-to-many relationship with FloorballTeam
             builder.HasMany(s => s.Teams)
                 .WithMany()
                 .UsingEntity<Dictionary<string, object>>(
-                    "FloorballSeasonTeam",
+                    "FloorballCompetitionTeam",
                     j => j.HasOne<FloorballTeam>().WithMany().HasForeignKey("TeamsId"),
-                    j => j.HasOne<FloorballSeason>().WithMany().HasForeignKey("SeasonsId")
+                    j => j.HasOne<FloorballCompetition>().WithMany().HasForeignKey("CompetitionsId")
                 );
-
-            // Configure one-to-many relationship with FloorballMatch
-            // Note: The inverse relationship is configured in FloorballMatchConfiguration
         }
     }
-} 
+}

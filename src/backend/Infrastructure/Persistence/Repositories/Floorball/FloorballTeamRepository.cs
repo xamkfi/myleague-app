@@ -199,35 +199,33 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
-        /// Gets teams participating in a season
+        /// Gets teams participating in a competition
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
-        /// <returns>A collection of teams in the season</returns>
-        public async Task<IEnumerable<FloorballTeam>> GetBySeasonIdAsync(Guid seasonId)
+        /// <param name="competitionId">The competition ID</param>
+        /// <returns>A collection of teams in the competition</returns>
+        public async Task<IEnumerable<FloorballTeam>> GetByCompetitionIdAsync(Guid competitionId)
         {
-            FloorballSeason? season = await _dbContext.FloorballSeasons
+            FloorballCompetition? competition = await _dbContext.FloorballCompetitions
                 .Include(s => s.Teams)
-                .FirstOrDefaultAsync(s => s.Id == seasonId);
+                .FirstOrDefaultAsync(s => s.Id == competitionId);
 
-            return season?.Teams ?? new List<FloorballTeam>();
+            return competition?.Teams ?? new List<FloorballTeam>();
         }
 
         /// <summary>
-        /// Gets the team standings for a season
+        /// Gets the team standings for a competition
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
-        /// <returns>Teams ordered by their standing in the season</returns>
-        public async Task<IEnumerable<FloorballTeam>> GetStandingsAsync(Guid seasonId)
+        /// <param name="competitionId">The competition ID</param>
+        /// <returns>Teams ordered by their standing in the competition</returns>
+        public async Task<IEnumerable<FloorballTeam>> GetStandingsAsync(Guid competitionId)
         {
-            // Get all matches for the season
             List<FloorballMatch> matches = await _dbContext.FloorballMatches
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
-                .Where(m => m.SeasonId == seasonId && m.Status == FloorballMatchStatus.Completed)
+                .Where(m => m.CompetitionId == competitionId && m.Status == FloorballMatchStatus.Completed)
                 .ToListAsync();
 
-            // Get all teams in the season
-            IEnumerable<FloorballTeam> teams = await GetBySeasonIdAsync(seasonId);
+            IEnumerable<FloorballTeam> teams = await GetByCompetitionIdAsync(competitionId);
             List<FloorballTeam> teamList = teams.ToList();
 
             // Calculate points for each team

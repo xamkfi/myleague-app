@@ -76,13 +76,13 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(m => m.AwayTeamId)
                 .IsRequired();
 
-            builder.Property(m => m.SeasonId)
+            builder.Property(m => m.CompetitionId)
                 .IsRequired();
 
             // Configure relationships within FloorballDbContext
-            builder.HasOne(m => m.Season)
+            builder.HasOne(m => m.Competition)
                 .WithMany(s => s.Matches)
-                .HasForeignKey(m => m.SeasonId)
+                .HasForeignKey(m => m.CompetitionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(m => m.HomeTeam)
