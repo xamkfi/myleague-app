@@ -110,6 +110,21 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
           </ul>
         </div>
 
+       
+          <div className="admin-navbar-section">
+            {!collapsed && (
+              <h3 className="admin-navbar-section-title">Sivusto</h3>
+            )}
+            <ul className="admin-navbar-menu">
+              <li className={`admin-navbar-item ${isActive('/admin/site-settings/footer-contact') ? 'active' : ''}`}>
+                <Link to="/admin/site-settings/footer-contact" title={collapsed ? 'Footerin yhteystiedot' : undefined}>
+                  <img src={NewsIcon} alt="Footer" className="icon" />
+                  {!collapsed && <span>Footerin yhteystiedot</span>}
+                </Link>
+              </li>
+            </ul>
+          </div>
+           
         <div className="admin-navbar-section">
           {!collapsed && (
             <h3 className="admin-navbar-section-title">{t('admin.sportsTitle', 'Sports')}</h3>
