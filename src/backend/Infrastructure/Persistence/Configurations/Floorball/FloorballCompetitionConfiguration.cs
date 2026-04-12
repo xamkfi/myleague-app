@@ -19,7 +19,8 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.HasKey(s => s.Id);
 
             builder.HasDiscriminator<string>("CompetitionType")
-                .HasValue<FloorballSeason>("Season");
+                .HasValue<FloorballSeason>("Season")
+                .HasValue<FloorballTournament>("Tournament");
 
             builder.Property(s => s.Name)
                 .IsRequired()
@@ -72,6 +73,86 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                     j => j.HasOne<FloorballTeam>().WithMany().HasForeignKey("TeamsId"),
                     j => j.HasOne<FloorballCompetition>().WithMany().HasForeignKey("CompetitionsId")
                 );
+
+            // Tournament-specific TPH columns (nullable because not all competition rows are tournaments)
+            builder.Property<string?>("ContentHtml")
+                .HasMaxLength(50000)
+                .IsRequired(false);
+
+            builder.Property<string?>("Venue")
+                .HasMaxLength(200)
+                .IsRequired(false);
+
+            builder.Property<int?>("TournamentStatus")
+                .IsRequired(false);
+
+            // TournamentRules owned entity for FloorballTournament
+            builder.OwnsOne<FloorballTournamentRules>("TournamentRules", tr =>
+            {
+                tr.OwnsOne(r => r.GroupStageMatchRules, gsm =>
+                {
+                    gsm.Property(r => r.NumberOfPeriods)
+                        .HasColumnName("TournamentRules_GroupStage_NumberOfPeriods")
+                        .IsRequired(false);
+
+                    gsm.Property(r => r.PeriodDurationMinutes)
+                        .HasColumnName("TournamentRules_GroupStage_PeriodDurationMinutes")
+                        .IsRequired(false);
+
+                    gsm.Property(r => r.AllowOvertime)
+                        .HasColumnName("TournamentRules_GroupStage_AllowOvertime")
+                        .IsRequired(false);
+
+                    gsm.Property(r => r.OvertimeDurationMinutes)
+                        .HasColumnName("TournamentRules_GroupStage_OvertimeDurationMinutes")
+                        .IsRequired(false);
+
+                    gsm.Property(r => r.AllowShootout)
+                        .HasColumnName("TournamentRules_GroupStage_AllowShootout")
+                        .IsRequired(false);
+                });
+
+                tr.OwnsOne(r => r.PlayoffMatchRules, pm =>
+                {
+                    pm.Property(r => r.NumberOfPeriods)
+                        .HasColumnName("TournamentRules_Playoff_NumberOfPeriods")
+                        .IsRequired(false);
+
+                    pm.Property(r => r.PeriodDurationMinutes)
+                        .HasColumnName("TournamentRules_Playoff_PeriodDurationMinutes")
+                        .IsRequired(false);
+
+                    pm.Property(r => r.AllowOvertime)
+                        .HasColumnName("TournamentRules_Playoff_AllowOvertime")
+                        .IsRequired(false);
+
+                    pm.Property(r => r.OvertimeDurationMinutes)
+                        .HasColumnName("TournamentRules_Playoff_OvertimeDurationMinutes")
+                        .IsRequired(false);
+
+                    pm.Property(r => r.AllowShootout)
+                        .HasColumnName("TournamentRules_Playoff_AllowShootout")
+                        .IsRequired(false);
+                });
+
+                tr.Property(r => r.TeamsAdvancingPerGroup)
+                    .HasColumnName("TournamentRules_TeamsAdvancingPerGroup")
+                    .IsRequired(false);
+
+                tr.Property(r => r.HasPlayoffStage)
+                    .HasColumnName("TournamentRules_HasPlayoffStage")
+                    .IsRequired(false);
+
+                tr.Property(r => r.HasThirdPlaceMatch)
+                    .HasColumnName("TournamentRules_HasThirdPlaceMatch")
+                    .IsRequired(false);
+            });
+
+            // Configure the Groups navigation for FloorballTournament
+            builder.HasMany<FloorballTournamentGroup>("Groups")
+                .WithOne()
+                .HasForeignKey(g => g.TournamentId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

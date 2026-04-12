@@ -115,6 +115,16 @@ public class FloorballMatch : BaseEntity
     public Guid? AwayActiveGoalieId { get; private set; }
     
     /// <summary>
+    /// Gets the tournament stage for this match (null for regular season matches)
+    /// </summary>
+    public FloorballTournamentStage? TournamentStage { get; private set; }
+
+    /// <summary>
+    /// Gets the tournament group ID for group-stage matches (null for non-tournament or playoff matches)
+    /// </summary>
+    public Guid? TournamentGroupId { get; private set; }
+
+    /// <summary>
     /// Gets the match officials (referees)
     /// </summary>
     public IReadOnlyCollection<FloorballReferee> Officials => _officials.AsReadOnly();
@@ -733,6 +743,15 @@ public class FloorballMatch : BaseEntity
             return AwayActiveGoalieId;
         else
             throw new ArgumentException("Team is not participating in this match.", nameof(teamId));
+    }
+
+    /// <summary>
+    /// Sets tournament-specific metadata on this match
+    /// </summary>
+    public void SetTournamentInfo(FloorballTournamentStage stage, Guid? groupId = null)
+    {
+        TournamentStage = stage;
+        TournamentGroupId = groupId;
     }
 
     // ── Private helpers ──────────────────────────────────────────────────

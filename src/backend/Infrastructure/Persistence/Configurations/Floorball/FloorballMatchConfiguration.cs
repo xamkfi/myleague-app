@@ -1,4 +1,5 @@
 using Domain.Entities.Floorball;
+using Domain.Enums.Floorball;
 using Domain.ValueObjects.Floorball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -127,7 +128,19 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
 
             builder.Navigation(m => m.Events)
                 .HasField("_events")
-                .EnableLazyLoading(false);        // optional
+                .EnableLazyLoading(false);
+
+            builder.Property(m => m.TournamentStage)
+                .HasConversion<int?>()
+                .IsRequired(false);
+
+            builder.Property(m => m.TournamentGroupId)
+                .IsRequired(false);
+
+            builder.HasOne<FloorballTournamentGroup>()
+                .WithMany()
+                .HasForeignKey(m => m.TournamentGroupId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 } 

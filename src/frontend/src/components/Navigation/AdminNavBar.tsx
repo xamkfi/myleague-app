@@ -160,6 +160,12 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                       <span>{t('floorball.management.actions.seasons', 'Seasons')}</span>
                     </Link>
                   </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/tournaments') ? 'active' : ''}`}>
+                    <Link to="/admin/floorball/tournaments">
+                      <img src={SeasonsIcon} alt="Tournaments" className="icon" />
+                      <span>{t('floorball.management.actions.tournaments', 'Tournaments')}</span>
+                    </Link>
+                  </li>
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/matches') ? 'active' : ''}`}>
                     <Link to="/admin/floorball/matches">
                       <img src={MatchesIcon} alt="Matches" className="icon" />
