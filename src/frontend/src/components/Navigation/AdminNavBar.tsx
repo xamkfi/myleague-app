@@ -13,6 +13,7 @@ import MatchesIcon from '../../assets/adminIcons/Matches.svg';
 import RefereesIcon from '../../assets/adminIcons/Referees.svg';
 import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
 import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
+import EditIcon from '../../assets/basicIcons/edit.svg';
 
 interface AdminNavBarProps {
   collapsed: boolean;
@@ -113,13 +114,13 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
        
           <div className="admin-navbar-section">
             {!collapsed && (
-              <h3 className="admin-navbar-section-title">Sivusto</h3>
+              <h3 className="admin-navbar-section-title">{t('admin.siteSettings', 'Site Settings')}</h3>
             )}
             <ul className="admin-navbar-menu">
               <li className={`admin-navbar-item ${isActive('/admin/site-settings/footer-contact') ? 'active' : ''}`}>
-                <Link to="/admin/site-settings/footer-contact" title={collapsed ? 'Footerin yhteystiedot' : undefined}>
-                  <img src={NewsIcon} alt="Footer" className="icon" />
-                  {!collapsed && <span>Footerin yhteystiedot</span>}
+                <Link to="/admin/site-settings/footer-contact" title={collapsed ? 'admin.actions.footerContact' : undefined}>
+                  <img src={EditIcon} alt="Footer" className="icon" />
+                  {!collapsed && <span>{t('admin.actions.footerContact', 'Footer contact info')}</span>}
                 </Link>
               </li>
             </ul>

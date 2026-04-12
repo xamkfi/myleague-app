@@ -7,6 +7,7 @@ import NewsIcon from '../../assets/adminIcons/News.svg';
 import SportsIcon from '../../assets/adminIcons/Sports.svg';
 import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
 import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
+import EditIcon from '../../assets/basicIcons/edit.svg';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -69,8 +70,20 @@ const AdminPage = () => {
               <span className="button-subtitle">{t('admin.actions.manageUsers', 'Manage system users')}</span>
             </div>
             <img src={PersonIcon} alt="System Users" className="button-icon" />
+          </button>              
+        </div>
+        <h2 className="admin-sport-selection">SITE SETTINGS</h2>
+        <div className="admin-actions">
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/site-settings/footer-contact')}
+          >
+            <div className="button-text">
+              <span className="button-title">{t('admin.actions.footerContact', 'Footer contact info')}</span>
+              <span className="button-subtitle">{t('admin.actions.manageFooterContact', 'Manage footer contact information')}</span>
+            </div>
+            <img src={EditIcon} alt="Footer Contact" className="button-icon" />
           </button>
-          
         </div>
         <h2 className="admin-sport-selection">SPORTS SELECTION</h2>
         <div className="admin-actions">
