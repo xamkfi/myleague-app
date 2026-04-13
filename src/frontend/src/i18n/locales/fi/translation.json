@@ -162,7 +162,9 @@
       "clubs": "Seurat",
       "manageClubs": "Hallitse seuroja",
       "users": "Järjestelmäkäyttäjät",
-      "manageUsers": "Hallitse järjestelmäkäyttäjiä"
+      "manageUsers": "Hallitse järjestelmäkäyttäjiä",
+      "rules": "Säännöt",
+      "manageRules": "Hallitse sääntöjä"
     },
     "users": {
       "title": "Järjestelmäkäyttäjät",

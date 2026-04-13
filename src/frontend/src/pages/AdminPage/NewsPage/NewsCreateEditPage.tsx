@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import PageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
-import QuillEditor from "./components/QuillEditor";
+import QuillEditor from "../../../components/QuillEditor/QuillEditor";
 import { useTranslation } from "react-i18next";
 import NewsInputs, { type NewsInputsData } from "./components/NewsInputs";
 import PreviewNews from "./components/PreviewNews";

@@ -162,7 +162,10 @@
       "clubs": "Clubs",
       "manageClubs": "Manage clubs",
       "users": "System Users",
-      "manageUsers": "Manage system users"
+      "manageUsers": "Manage system users",
+      "rules": "Rules",
+      "manageRules": "Manage rules content"
+
     },
     "users": {
       "title": "System Users",

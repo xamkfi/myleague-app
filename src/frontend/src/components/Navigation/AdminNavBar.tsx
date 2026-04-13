@@ -13,6 +13,7 @@ import MatchesIcon from '../../assets/adminIcons/Matches.svg';
 import RefereesIcon from '../../assets/adminIcons/Referees.svg';
 import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
 import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
+import EventsIcon from '../../assets/adminIcons/Events.svg';
 
 interface AdminNavBarProps {
   collapsed: boolean;
@@ -105,6 +106,12 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
               <Link to="/admin/users" title={collapsed ? t('admin.actions.users', 'System Users') : undefined}>
                 <img src={PersonsIcon} alt="Users" className="icon" />
                 {!collapsed && <span>{t('admin.actions.users', 'System Users')}</span>}
+              </Link>
+            </li>
+            <li className={`admin-navbar-item ${isActive('/admin/rules') ? 'active' : ''}`}>
+              <Link to="/admin/rules" title={collapsed ? t('admin.actions.rules', 'Rules') : undefined}>
+                <img src={EventsIcon} alt="Rules" className="icon" />
+                {!collapsed && <span>{t('admin.actions.rules', 'Rules')}</span>}
               </Link>
             </li>
           </ul>
