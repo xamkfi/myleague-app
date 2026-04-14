@@ -54,7 +54,7 @@
             "searchPlaceholder": "Search rules...",
             "publish": "Publish",
             "publishing": "Publishing...",
-            "addRule": "Add rule",
+            "addRule": "Add new rule",
             "createRuleTitle": "Configure new rule",
             "createRuleDescription": "Write the rule content before adding it to preview.",
             "typeRulePlaceholder": "Type here...",
@@ -71,7 +71,10 @@
             },
             "editRuleTitle": "Edit rule",
             "editRuleDescription": "Update the rule before moving it to preview.",
-            "selectCategory": "Select category"
+            "selectCategory": "Select category",
+            "rule": "Rule",
+            "subtitle": "Manage Rules",
+            "confirmPublish": "Are you sure you want to publish the rules?"
         }
     },
     "eventCalendarPage": {

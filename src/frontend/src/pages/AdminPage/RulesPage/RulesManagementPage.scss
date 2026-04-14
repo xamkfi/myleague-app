@@ -1,35 +1,27 @@
 .rules-management-page {
-    font-size: 14px;
-    max-width: 1800px;
-    margin: 0 auto;
-    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 260px);
+    position: relative;
+}
+
+.rules-management-page__page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #212529;
 }
 
 .rules-management-page__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
     margin-bottom: 2rem;
 
     h2 {
         font-size: 1.5rem;
         font-weight: 600;
         color: #212529;
-        margin-bottom: 0.25rem;
     }
-
-    p {
-        color: #6c757d;
-        margin: 0;
-    }
-}
-
-.rules-management-page__alert {
-    border-radius: 0.75rem;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1rem;
-    font-weight: 500;
 }
 
 .rules-management-page__alert--success {
@@ -44,10 +36,7 @@
 
 .rules-management-page__meta {
     background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
 
     p {
         margin: 0.25rem 0;
@@ -56,7 +45,8 @@
 }
 
 .rules-management-page__content {
-    display: grid;
+    display: flex;
+    justify-content: space-between;
     gap: 1.5rem;
 }
 
@@ -65,6 +55,7 @@
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     padding: 1rem 1rem 0rem 1rem;
+    width: 100%;
 }
 
 .rules-management-page__saved-card {
@@ -177,16 +168,34 @@
 .rules-management-page__rule-display-row {
     display: grid;
     grid-template-columns: 1fr auto auto;
-    gap: 0.75rem;
-    align-items: center;
+    align-items: flex-start;
     border: 1px solid #e5e7eb;
     border-radius: 0.75rem;
     padding: 0.5rem;
     background: #fafafa;
 }
 
+.rules-management-page__alerts-overlay {
+    position: absolute;
+    top: 97%;
+    left: 8%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 720px;
+    pointer-events: none;
+}
+
+.rules-management-page__alert {
+    pointer-events: auto;
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
 .rules-management-page__rule-display-row--editing {
-    // align-items: start;
     display: block;
 }
 
@@ -208,6 +217,13 @@
     margin-bottom: 0.75rem;
 }
 
+.rules-management-page__topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
 .rules-management-page__toolbar {
     display: flex;
     justify-content: space-between;
@@ -216,9 +232,20 @@
     margin-bottom: 1.5rem;
 }
 
+.rules-management-page__topbar-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.rules-management-page__column {
+    width: 50%;
+}
+
 .rules-management-page__search {
-    flex: 1;
-    max-width: 420px;
+    max-width: 320px;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .rules-management-page__search-input {
@@ -226,9 +253,25 @@
     height: 44px;
     border: 1px solid #d5d9e0;
     border-radius: 0.75rem;
-    padding: 0 1rem;
+    padding: 0 2.5rem 0 1rem;
     font-size: 1rem;
     outline: none;
+}
+
+.search-clear-button {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6c757d;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0;
+
+    &:hover {
+        color: #212529;
+    }
 }
 
 .rules-management-page__toolbar-actions {
@@ -238,11 +281,13 @@
 }
 
 .rules-management-page__create-layer {
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    height: 100%;
+    gap: 1.5rem;
 }
 
 .rules-management-page__create-layer-header {
@@ -294,9 +339,10 @@
 }
 
 .rules-management-page__scroll-area {
-    max-height: 320px;
+    height: calc(100vh - 509px);
     overflow-y: auto;
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 0.75rem;
     padding-right: 0.25rem;
     padding-bottom: 1rem;
@@ -306,10 +352,11 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    margin-bottom: 13px;
 }
 
 .rules-management-page__filter {
-    min-width: 190px;
+    width: 200px;
 }
 
 .rules-management-page__filter-select {
@@ -321,14 +368,10 @@
     font-size: 0.95rem;
     outline: none;
     background: white;
-}
-
-.rules-management-page__create-layer {
-    width: 100%;
-    max-width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
 }
 
 .rules-management-page__create-header {
@@ -344,24 +387,28 @@
 
     h3 {
         font-weight: 600;
-        font-size: 1.1rem;
+        font-size: 1.5rem;
         margin: 0;
     }
-}
-
-.rules-management-page__create-header-right {
-    min-width: 220px;
 }
 
 .rules-management-page__create-body {
     display: flex;
     flex-direction: column;
+    flex: 1;
 }
 
 .rules-management-page__create-footer {
+    position: sticky;
+    bottom: 0;
+
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
+
+    padding: 1rem 0;
+    background: white;
+    z-index: 10;
 }
 
 .rules-management-page__cancel-button {
@@ -387,7 +434,6 @@
 .rules-management-page__rule-display-row-left {
     display: flex;
     align-items: center;
-    gap: 1rem;
     min-width: 0;
 }
 
@@ -396,7 +442,29 @@
     color: #6c757d;
     background: #f1f3f5;
     border-radius: 999px;
-    padding: 0.2rem 0.65rem;
+    padding: 0.6rem;
     white-space: nowrap;
     flex-shrink: 0;
+    margin-right: 0.4rem;
+}
+
+.rules-management-page__create-field {
+    margin-bottom: 1.25rem;
+}
+
+.rules-management-page__create-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #212529;
+    margin-bottom: 0.4rem;
+}
+
+.rules-management-page__quill-wrapper {
+    width: 50%;
+}
+
+.rules-management-page__rule-category-action-buttons {
+    display: flex;
+    align-content: center;
 }

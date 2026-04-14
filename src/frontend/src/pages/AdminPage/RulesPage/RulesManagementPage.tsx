@@ -11,34 +11,43 @@ import type {
 } from "../../../types/admin/ruleTypes";
 import { pageContentService } from "../../../services/pageContentService";
 import { useTranslation } from "react-i18next";
-import RuleForm from "./components/RuleForm";
+import RuleForm from "./components/RulesForm";
 import RulesList from "./components/RulesList";
 import CategorySelect from "./components/CategorySelect";
 import { createRuleBlock, parseRulesFromHtml } from "../../../utils/helpers";
+import RulesSearchInput from "./components/RulesSearchInput";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
+
+type RuleFormState = Pick<RuleItem, "html" | "category"> & {
+    id: string | null;
+};
 
 const RULES_SLUG = "saannot";
 
 export default function RulesManagementPage() {
     const { t } = useTranslation();
 
-    const [title, setTitle] = useState<string>("Säännöt");
-    const [draftRuleHtml, setDraftRuleHtml] = useState<string>("");
-    const [draftRuleCategory, setDraftRuleCategory] = useState<string>("");
     const [previewHtml, setPreviewHtml] = useState<string>("");
     const [isCreateLayerOpen, setIsCreateLayerOpen] = useState<boolean>(false);
-    const [searchTerm, setSearchTerm] = useState<string>("");
     const [filterCategory, setFilterCategory] = useState<string>("all");
-    const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
-    const [editingRuleHtml, setEditingRuleHtml] = useState<string>("");
     const [savedContent, setSavedContent] =
         useState<PageContentResponse | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [isPreviewExpanded, setIsPreviewExpanded] = useState<boolean>(true);
-    const [isPublishedExpanded, setIsPublishedExpanded] =
-        useState<boolean>(true);
+    const [searchTerm, setSearchTerm] = useState("");
+    const emptyRuleFormState: RuleFormState = {
+        id: null,
+        html: "",
+        category: "general",
+    };
+    const [ruleFormState, setRuleFormState] =
+        useState<RuleFormState>(emptyRuleFormState);
+
+    const debouncedSearchTerm = useDebouncedValue(searchTerm, 300);
+
+    const pageTitle = savedContent?.title?.trim() || t("rules.defaultTitle");
 
     useEffect(() => {
         let isMounted = true;
@@ -55,7 +64,6 @@ export default function RulesManagementPage() {
                     return;
                 }
 
-                setTitle(response.title || t("rules.defaultTitle"));
                 setSavedContent(response);
             } catch (error) {
                 if (!isMounted) {
@@ -68,7 +76,6 @@ export default function RulesManagementPage() {
                         : t("rules.admin.loadFailed");
 
                 if (message.includes("not found")) {
-                    setTitle(t("rules.defaultTitle"));
                     setSavedContent(null);
                 } else {
                     setErrorMessage(message);
@@ -100,20 +107,14 @@ export default function RulesManagementPage() {
     }, [successMessage]);
 
     const handleOpenCreateLayer = (): void => {
-        setDraftRuleHtml("");
-        setDraftRuleCategory("");
-        setEditingRuleId(null);
-        setEditingRuleHtml("");
+        setRuleFormState(emptyRuleFormState);
         setErrorMessage(null);
         setSuccessMessage(null);
         setIsCreateLayerOpen(true);
     };
 
     const handleCloseCreateLayer = (): void => {
-        setDraftRuleHtml("");
-        setDraftRuleCategory("");
-        setEditingRuleId(null);
-        setEditingRuleHtml("");
+        setRuleFormState(emptyRuleFormState);
         setErrorMessage("");
         setIsCreateLayerOpen(false);
     };
@@ -122,7 +123,10 @@ export default function RulesManagementPage() {
         setSuccessMessage(null);
         setErrorMessage(null);
 
-        const newRuleBlock = createRuleBlock(draftRuleHtml, draftRuleCategory);
+        const newRuleBlock = createRuleBlock(
+            ruleFormState.html,
+            ruleFormState.category,
+        );
 
         if (!newRuleBlock) {
             setErrorMessage(t("rules.admin.typeRuleToAdd"));
@@ -134,8 +138,10 @@ export default function RulesManagementPage() {
             : newRuleBlock;
 
         setPreviewHtml(mergedPreviewHtml);
-        setDraftRuleHtml("");
-        setDraftRuleCategory("general");
+        setRuleFormState({
+            ...emptyRuleFormState,
+            category: "general",
+        });
         setIsCreateLayerOpen(false);
     };
 
@@ -147,31 +153,39 @@ export default function RulesManagementPage() {
         return parseRulesFromHtml(savedContent?.contentHtml || "").reverse();
     }, [savedContent]);
 
+    const normalizedSearchTerm =
+        debouncedSearchTerm.trim().length >= 2
+            ? debouncedSearchTerm.toLowerCase().trim()
+            : "";
+
     const filteredPreviewRules = useMemo(() => {
         return previewRules.filter((rule) => {
             const matchesSearch = rule.text
                 .toLowerCase()
-                .includes(searchTerm.trim().toLowerCase());
+                .includes(normalizedSearchTerm);
+
             const matchesCategory =
                 filterCategory === "all" || rule.category === filterCategory;
-
             return matchesSearch && matchesCategory;
         });
-    }, [previewRules, searchTerm, filterCategory]);
+    }, [previewRules, normalizedSearchTerm, filterCategory]);
 
     const filteredPublishedRules = useMemo(() => {
         return publishedRules.filter((rule) => {
             const matchesSearch = rule.text
                 .toLowerCase()
-                .includes(searchTerm.trim().toLowerCase());
+                .includes(normalizedSearchTerm);
+
             const matchesCategory =
                 filterCategory === "all" || rule.category === filterCategory;
-
             return matchesSearch && matchesCategory;
         });
-    }, [publishedRules, searchTerm, filterCategory]);
+    }, [publishedRules, normalizedSearchTerm, filterCategory]);
 
     const handlePublishRules = async (): Promise<void> => {
+        const confirmed = window.confirm(t("rules.admin.confirmPublish"));
+        if (!confirmed) return;
+
         try {
             setIsSaving(true);
             setSuccessMessage(null);
@@ -191,7 +205,6 @@ export default function RulesManagementPage() {
                 );
 
                 if (existsInPublished) {
-                    // Replace old version in published with updated version
                     const wrapper = document.createElement("div");
                     wrapper.innerHTML = baseHtml;
                     const target = wrapper.querySelector(
@@ -209,7 +222,6 @@ export default function RulesManagementPage() {
                     }
                     baseHtml = wrapper.innerHTML.trim();
                 } else {
-                    // New rule, append
                     appendHtml += `\n${createRuleBlock(previewRule.html, previewRule.category, previewRule.id)}`;
                 }
             }
@@ -219,7 +231,7 @@ export default function RulesManagementPage() {
                 : baseHtml;
 
             const request: PageContentUpdateRequest = {
-                title: title.trim() || t("rules.defaultTitle"),
+                title: pageTitle,
                 contentHtml: mergedHtml,
             };
 
@@ -245,21 +257,25 @@ export default function RulesManagementPage() {
     const handleStartEditRule = (rule: RuleItem): void => {
         setErrorMessage(null);
         setSuccessMessage(null);
-        setEditingRuleId(rule.id);
-        setEditingRuleHtml(rule.html);
-        setDraftRuleCategory(rule.category);
+
+        setRuleFormState({
+            id: rule.id,
+            html: rule.html,
+            category: rule.category,
+        });
+
         setIsCreateLayerOpen(true);
     };
 
     const handleUpdateRule = (): void => {
-        if (!editingRuleId) {
+        if (!ruleFormState.id) {
             return;
         }
 
         const updatedRuleBlock = createRuleBlock(
-            editingRuleHtml,
-            draftRuleCategory,
-            editingRuleId,
+            ruleFormState.html,
+            ruleFormState.category,
+            ruleFormState.id,
         );
 
         if (!updatedRuleBlock) {
@@ -272,7 +288,7 @@ export default function RulesManagementPage() {
             wrapper.innerHTML = html;
 
             const target = wrapper.querySelector(
-                `.rules-item[data-rule-id="${editingRuleId}"]`,
+                `.rules-item[data-rule-id="${ruleFormState.id}"]`,
             );
 
             if (target) {
@@ -289,17 +305,17 @@ export default function RulesManagementPage() {
         };
 
         const existsInPreview = previewRules.some(
-            (rule) => rule.id === editingRuleId,
+            (rule) => rule.id === ruleFormState.id,
         );
         const existsInPublished = publishedRules.some(
-            (rule) => rule.id === editingRuleId,
+            (rule) => rule.id === ruleFormState.id,
         );
 
         if (existsInPreview) {
             setPreviewHtml(replaceRuleInHtml(previewHtml));
         } else if (existsInPublished) {
             const publishedRule = publishedRules.find(
-                (rule) => rule.id === editingRuleId,
+                (rule) => rule.id === ruleFormState.id,
             );
 
             if (publishedRule) {
@@ -311,7 +327,7 @@ export default function RulesManagementPage() {
                 wrapper.innerHTML = savedContent?.contentHtml || "";
 
                 const target = wrapper.querySelector(
-                    `.rules-item[data-rule-id="${editingRuleId}"]`,
+                    `.rules-item[data-rule-id="${ruleFormState.id}"]`,
                 );
 
                 if (target) {
@@ -331,9 +347,10 @@ export default function RulesManagementPage() {
             }
         }
 
-        setEditingRuleId(null);
-        setEditingRuleHtml("");
-        setDraftRuleCategory("general");
+        setRuleFormState({
+            ...emptyRuleFormState,
+            category: "general",
+        });
         setIsCreateLayerOpen(false);
     };
 
@@ -390,155 +407,144 @@ export default function RulesManagementPage() {
     };
 
     return (
-        <div className="rules-management-page-wrapper">
-            <PageTemplate title={t("rules.admin.pageTitle")}>
-                <div className="rules-management-page">
-                    {!isCreateLayerOpen && (
-                        <>
-                            <div className="rules-management-page__toolbar">
-                                <div className="rules-management-page__toolbar-left">
-                                    <div className="rules-management-page__search">
-                                        <input
-                                            type="text"
-                                            value={searchTerm}
-                                            onChange={(event) =>
-                                                setSearchTerm(
-                                                    event.target.value,
-                                                )
-                                            }
-                                            placeholder={t(
-                                                "rules.admin.searchPlaceholder",
-                                            )}
-                                            className="rules-management-page__search-input"
-                                        />
-                                    </div>
+        <PageTemplate title={t("rules.admin.pageTitle")}>
+            <div className="rules-management-page">
+                <div className="rules-management-page__alerts-overlay">
+                    {successMessage && (
+                        <div className="rules-management-page__alert rules-management-page__alert--success">
+                            {successMessage}
+                        </div>
+                    )}
 
-                                    <div className="rules-management-page__filter">
-                                        <CategorySelect
-                                            value={filterCategory}
-                                            onChange={setFilterCategory}
-                                            includeAll
-                                        />
-                                    </div>
-                                </div>
+                    {errorMessage && (
+                        <div className="rules-management-page__alert rules-management-page__alert--error">
+                            {errorMessage}
+                        </div>
+                    )}
+                </div>
+                {!isCreateLayerOpen && (
+                    <>
+                        <div className="rules-management-page__topbar">
+                            <h2 className="rules-management-page__page-title">
+                                {t("rules.admin.subtitle")}
+                            </h2>
 
-                                <div className="rules-management-page__toolbar-actions">
-                                    {previewRules.length > 0 && (
-                                        <Button
-                                            iconLeft={PublishIcon}
-                                            rounded="pill"
-                                            onClick={handlePublishRules}
-                                            disabled={isSaving}
-                                        >
-                                            {isSaving
-                                                ? t("rules.admin.publishing")
-                                                : t("rules.admin.publish")}
-                                        </Button>
-                                    )}
-
+                            <div className="rules-management-page__topbar-actions">
+                                {previewRules.length > 0 && (
                                     <Button
-                                        iconLeft={AddIcon}
+                                        iconLeft={PublishIcon}
                                         rounded="pill"
-                                        onClick={handleOpenCreateLayer}
+                                        onClick={handlePublishRules}
                                         disabled={isSaving}
                                     >
-                                        {t("rules.admin.addRule")}
+                                        {isSaving
+                                            ? t("rules.admin.publishing")
+                                            : t("rules.admin.publish")}
                                     </Button>
-                                </div>
+                                )}
+
+                                <Button
+                                    iconLeft={AddIcon}
+                                    rounded="pill"
+                                    onClick={handleOpenCreateLayer}
+                                    disabled={isSaving}
+                                >
+                                    {t("rules.admin.addRule")}
+                                </Button>
                             </div>
+                        </div>
 
-                            {successMessage && (
-                                <div className="rules-management-page__alert rules-management-page__alert--success">
-                                    {successMessage}
-                                </div>
-                            )}
+                        <div className="rules-management-page__meta">
+                            <p>
+                                <strong>{t("rules.admin.lastUpdate")}: </strong>
+                                {savedContent?.updatedAt
+                                    ? new Date(
+                                          savedContent.updatedAt,
+                                      ).toLocaleString()
+                                    : t("rules.admin.noRulesAddedYet")}
+                            </p>
+                            <p>
+                                <strong>{t("rules.admin.editor")}: </strong>
+                                {savedContent?.lastModifiedBy ??
+                                    t("rules.admin.unknown")}
+                            </p>
+                        </div>
 
-                            {errorMessage && (
-                                <div className="rules-management-page__alert rules-management-page__alert--error">
-                                    {errorMessage}
-                                </div>
-                            )}
+                        <div className="rules-management-page__toolbar-left">
+                            <RulesSearchInput
+                                value={searchTerm}
+                                onChange={setSearchTerm}
+                                placeholder={t("rules.admin.searchPlaceholder")}
+                            />
 
-                            <div className="rules-management-page__meta">
-                                <p>
-                                    <strong>
-                                        {t("rules.admin.lastUpdate")}:{" "}
-                                    </strong>
-                                    {savedContent?.updatedAt
-                                        ? new Date(
-                                              savedContent.updatedAt,
-                                          ).toLocaleString()
-                                        : t("rules.admin.noRulesAddedYet")}
-                                </p>
-                                <p>
-                                    <strong>{t("rules.admin.editor")}: </strong>
-                                    {savedContent?.lastModifiedBy ??
-                                        t("rules.admin.unknown")}
-                                </p>
-                            </div>
+                            <CategorySelect
+                                value={filterCategory}
+                                onChange={setFilterCategory}
+                                includeAll
+                            />
+                        </div>
 
-                            <div className="rules-management-page__content">
+                        <div className="rules-management-page__content">
+                            <div className="rules-management-page__column">
                                 <RulesList
                                     title={t("rules.admin.preview")}
                                     rules={filteredPreviewRules}
                                     emptyMessage={t(
                                         "rules.admin.noPreviewRules",
                                     )}
-                                    isExpanded={isPreviewExpanded}
-                                    onToggleExpanded={() =>
-                                        setIsPreviewExpanded((prev) => !prev)
-                                    }
                                     onEditRule={handleStartEditRule}
                                     onDeleteRule={handleDeleteRule}
                                     isSaving={isSaving}
                                     showCancel={true}
                                     isLoading={false}
                                 />
+                            </div>
 
+                            <div className="rules-management-page__column">
                                 <RulesList
                                     title={t("rules.admin.publishedRules")}
                                     rules={filteredPublishedRules}
                                     emptyMessage={t(
                                         "rules.admin.noPublishedRules",
                                     )}
-                                    isExpanded={isPublishedExpanded}
-                                    onToggleExpanded={() =>
-                                        setIsPublishedExpanded((prev) => !prev)
-                                    }
                                     onEditRule={handleStartEditRule}
                                     onDeleteRule={handleDeleteRule}
                                     isSaving={isSaving}
                                     isLoading={isLoading}
                                 />
                             </div>
-                        </>
-                    )}
+                        </div>
+                    </>
+                )}
 
-                    {isCreateLayerOpen && (
-                        <RuleForm
-                            isEditMode={!!editingRuleId}
-                            category={draftRuleCategory}
-                            contentHtml={
-                                editingRuleId ? editingRuleHtml : draftRuleHtml
-                            }
-                            isSaving={isSaving}
-                            onBack={handleCloseCreateLayer}
-                            onCategoryChange={setDraftRuleCategory}
-                            onContentChange={
-                                editingRuleId
-                                    ? setEditingRuleHtml
-                                    : setDraftRuleHtml
-                            }
-                            onCancel={handleCloseCreateLayer}
-                            onSave={
-                                editingRuleId
-                                    ? handleUpdateRule
-                                    : handleAddRuleToPreview
-                            }
-                        />
-                    )}
-                </div>
-            </PageTemplate>
-        </div>
+                {isCreateLayerOpen && (
+                    <RuleForm
+                        isEditMode={Boolean(ruleFormState.id)}
+                        category={ruleFormState.category}
+                        contentHtml={ruleFormState.html}
+                        isSaving={isSaving}
+                        onBack={handleCloseCreateLayer}
+                        onCategoryChange={(value) =>
+                            setRuleFormState((prev) => ({
+                                ...prev,
+                                category: value,
+                            }))
+                        }
+                        onContentChange={(value) =>
+                            setRuleFormState((prev) => ({
+                                ...prev,
+                                html: value,
+                            }))
+                        }
+                        onCancel={handleCloseCreateLayer}
+                        onSave={
+                            ruleFormState.id
+                                ? handleUpdateRule
+                                : handleAddRuleToPreview
+                        }
+                    />
+                )}
+            </div>
+        </PageTemplate>
     );
 }

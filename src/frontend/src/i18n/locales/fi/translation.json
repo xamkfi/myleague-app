@@ -126,7 +126,7 @@
             "searchPlaceholder": "Etsi sääntöjä...",
             "publish": "Julkaise",
             "publishing": "Julkaistaan...",
-            "addRule": "Lisää sääntö",
+            "addRule": "Lisää uusi sääntö",
             "createRuleTitle": "Lisää uusi sääntö",
             "createRuleDescription": "Kirjoita säännön sisältö ennen kuin lisäät sen esikatseluun.",
             "typeRulePlaceholder": "Kirjoita tähän...",
@@ -143,7 +143,10 @@
             },
             "editRuleTitle": "Muokkaa sääntöä",
             "editRuleDescription": "Päivitä sääntö ennen kuin siirrät sen esikatseluun.",
-            "selectCategory": "Valitse kategoria"
+            "selectCategory": "Valitse kategoria",
+            "rule": "Sääntö",
+            "subtitle": "Halitse Sääntöjä",
+            "confirmPublish": "Haluatko varmasti julkaista säännöt?"
         }
     },
     "eventCalendarPage": {
