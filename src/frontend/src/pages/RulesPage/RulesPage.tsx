@@ -69,43 +69,41 @@ export default function RulesPage() {
     }, [rules, filterCategory]);
 
     return (
-        <div className="rules-page">
-            <PageTemplate title={pageContent?.title || t("Rules")}>
-                <div className="rules-page__hero">
-                    <div className="rules-page__hero-content">
-                        <h1 className="rules-page__title">
-                            {pageContent?.title || t("Rules")}
-                        </h1>
-                    </div>
+        <PageTemplate title={pageContent?.title || t("Rules")}>
+            <div className="rules-page__hero">
+                <div className="rules-page__hero-content">
+                    <h1 className="rules-page__title">
+                        {pageContent?.title || t("Rules")}
+                    </h1>
+                </div>
+            </div>
+
+            <div className="rules-page__content-section">
+                <div className="rules-page__filter-wrapper">
+                    <CategorySelect
+                        value={filterCategory}
+                        onChange={setFilterCategory}
+                        includeAll
+                    />
                 </div>
 
-                <div className="rules-page__content-section">
-                    <div className="rules-page__filter-wrapper">
-                        <CategorySelect
-                            value={filterCategory}
-                            onChange={setFilterCategory}
-                            includeAll
-                        />
+                {error && !error.includes("not found") && (
+                    <div className="rules-page__alert rules-page__alert--error">
+                        {error}
                     </div>
+                )}
 
-                    {error && !error.includes("not found") && (
-                        <div className="rules-page__alert rules-page__alert--error">
-                            {error}
-                        </div>
-                    )}
-
-                    <div className="rules-page__list-wrapper">
-                        <RulesList
-                            title=""
-                            rules={filteredRules}
-                            emptyMessage={t("No rules have been added.")}
-                            isSaving={false}
-                            isLoading={isLoading}
-                            showActions={false}
-                        />
-                    </div>
+                <div className="rules-page__list-wrapper">
+                    <RulesList
+                        title=""
+                        rules={filteredRules}
+                        emptyMessage={t("No rules have been added.")}
+                        isSaving={false}
+                        isLoading={isLoading}
+                        showActions={false}
+                    />
                 </div>
-            </PageTemplate>
-        </div>
+            </div>
+        </PageTemplate>
     );
 }

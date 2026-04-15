@@ -1,0 +1,79 @@
+.rules-management-page__rule-row {
+    width: 100%;
+}
+
+.rules-management-page__rule-display-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: flex-start;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    background: #fafafa;
+}
+
+.rules-management-page__rule-display-row-left {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.rules-management-page__preview-box--empty {
+    padding: 0.5rem 0.5rem;
+    min-height: 200px;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: #fafafa;
+}
+
+.rules-management-page__preview-box--inline {
+    border: none;
+    background: transparent;
+    padding: 0.35rem 0.75rem;
+}
+
+.rules-management-page__rule-category-action-buttons {
+    display: flex;
+    align-content: center;
+}
+
+.rules-management-page__rule-category {
+    font-size: 0.8rem;
+    color: #6c757d;
+    background: #f1f3f5;
+    border-radius: 999px;
+    padding: 0.6rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-right: 0.4rem;
+}
+
+.rules-management-page__rule-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.rules-management-page__icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid #d5d9e0;
+    background: white;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.rules-management-page__icon-button--secondary {
+    background: #f8f9fa;
+}
+
+.rules-management-page__icon-button--danger {
+    color: #b42318;
+    border-color: #f1b0b7;
+}

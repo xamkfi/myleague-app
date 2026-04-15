@@ -4,8 +4,7 @@ import EditIcon from "../../../../assets/adminIcons/EditIcon.svg";
 import DeleteIcon from "../../../../assets/adminIcons/DeleteIcon.svg";
 import CancelIcon from "../../../../assets/adminIcons/CancelIcon.svg";
 import type { RuleItem } from "../../../../types/admin/ruleTypes";
-// import "./RulesListItem.scss";
-import "../RulesManagementPage.scss";
+import "./RulesListItem.scss";
 
 interface RuleListItemProps {
     rule: RuleItem;
@@ -31,7 +30,7 @@ export default function RulesListItem({
             <div className="rules-management-page__rule-display-row">
                 <div className="rules-management-page__rule-display-row-left">
                     <div
-                        className="rules-management-page__preview-box rules-management-page__preview-box--inline"
+                        className="rules-management-page__preview-box--empty rules-management-page__preview-box--inline"
                         dangerouslySetInnerHTML={{
                             __html: DOMPurify.sanitize(rule.html),
                         }}

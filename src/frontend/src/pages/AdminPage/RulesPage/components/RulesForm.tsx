@@ -4,7 +4,8 @@ import Button from "../../../../components/Button/Button";
 import { useTranslation } from "react-i18next";
 import CategorySelect from "./CategorySelect";
 import backArrow from "../../../../assets/adminIcons/backArrow.svg";
-import "../RulesManagementPage.scss";
+import "./RulesForm.scss";
+import { useEffect, useRef } from "react";
 
 interface RuleFormProps {
     isEditMode: boolean;
@@ -31,8 +32,30 @@ export default function RuleForm({
 }: Readonly<RuleFormProps>) {
     const { t } = useTranslation();
 
+    const initialContentRef = useRef(contentHtml);
+
+    const hasChanges = contentHtml !== initialContentRef.current;
+
     const hasContent =
         contentHtml.replace(/<p><br><\/p>/g, "").trim().length > 0;
+
+    const handleAttemptClose = (action: () => void): void => {
+        if (hasChanges) {
+            const confirmed = window.confirm(
+                t("rules.admin.confirmDiscardChanges"),
+            );
+
+            if (!confirmed) {
+                return;
+            }
+        }
+
+        action();
+    };
+
+    useEffect(() => {
+        initialContentRef.current = contentHtml;
+    }, []);
 
     return (
         <div className="rules-management-page__create-layer">
@@ -41,7 +64,7 @@ export default function RuleForm({
                     <button
                         type="button"
                         className="rules-management-page__back-button"
-                        onClick={onBack}
+                        onClick={() => handleAttemptClose(onBack)}
                     >
                         <div>
                             <img src={backArrow} alt="back arrow" />
@@ -87,7 +110,7 @@ export default function RuleForm({
                 <button
                     type="button"
                     className="rules-management-page__cancel-button"
-                    onClick={onCancel}
+                    onClick={() => handleAttemptClose(onCancel)}
                     disabled={isSaving}
                 >
                     {t("common.cancel")}
@@ -96,7 +119,7 @@ export default function RuleForm({
                 <Button
                     rounded="pill"
                     onClick={onSave}
-                    disabled={isSaving || !hasContent}
+                    disabled={isSaving || !hasContent || !hasChanges}
                 >
                     {t("common.save")}
                 </Button>

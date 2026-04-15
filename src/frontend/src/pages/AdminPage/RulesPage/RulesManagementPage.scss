@@ -51,14 +51,6 @@
 }
 
 .rules-management-page__saved-card {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    padding: 1rem 1rem 0rem 1rem;
-    width: 100%;
-}
-
-.rules-management-page__saved-card {
     h3 {
         font-size: 1.1rem;
         font-weight: 600;
@@ -91,13 +83,6 @@
     box-shadow: 0 0 0 3px rgba(79, 108, 171, 0.12);
 }
 
-.rules-management-page__preview-box {
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.5rem;
-    background: #fafafa;
-}
-
 .rules-management-page__preview-box--empty {
     padding: 0.5rem 0.5rem;
     min-height: auto;
@@ -126,65 +111,21 @@
     padding-bottom: 1rem;
 }
 
-.rules-management-page__rule-row {
-    width: 100%;
-}
-
-.rules-management-page__rule-actions {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
-}
-
-.rules-management-page__icon-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    border: 1px solid #d5d9e0;
-    background: white;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
 .rules-management-page__icon-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.rules-management-page__icon-button--secondary {
-    background: #f8f9fa;
-}
-
-.rules-management-page__icon-button--danger {
-    color: #b42318;
-    border-color: #f1b0b7;
-}
-
-.rules-management-page__rule-display-row {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    align-items: flex-start;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.75rem;
-    padding: 0.5rem;
-    background: #fafafa;
-}
-
 .rules-management-page__alerts-overlay {
     position: absolute;
-    top: 97%;
-    left: 8%;
-    transform: translateX(-50%);
+    left: 0.1rem;
+    bottom: 0.1rem;
     z-index: 1000;
+
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    max-width: 720px;
+    max-width: 420px;
     pointer-events: none;
 }
 
@@ -201,12 +142,6 @@
 
 .rules-management-page__rule-editor {
     min-width: 0;
-}
-
-.rules-management-page__preview-box--inline {
-    border: none;
-    background: transparent;
-    padding: 0.35rem 0.75rem;
 }
 
 .rules-management-page__editor-window-actions {
@@ -280,29 +215,11 @@
     align-items: center;
 }
 
-.rules-management-page__create-layer {
-    width: 100%;
-    max-width: 100%;
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    height: 100%;
-    gap: 1.5rem;
-}
-
 .rules-management-page__create-layer-header {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
     margin-bottom: 1rem;
-}
-
-.rules-management-page__back-button {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 1.5rem;
-    line-height: 1;
 }
 
 .rules-management-page__create-layer-body {
@@ -313,17 +230,6 @@
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
-}
-
-.rules-management-page__section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-
-    label {
-        font-weight: 600;
-    }
 }
 
 .rules-management-page__collapse-button {
@@ -338,133 +244,9 @@
     justify-content: center;
 }
 
-.rules-management-page__scroll-area {
-    height: calc(100vh - 509px);
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding-right: 0.25rem;
-    padding-bottom: 1rem;
-}
-
 .rules-management-page__toolbar-left {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 13px;
-}
-
-.rules-management-page__filter {
-    width: 200px;
-}
-
-.rules-management-page__filter-select {
-    width: 100%;
-    height: 44px;
-    border: 1px solid #d5d9e0;
-    border-radius: 0.75rem;
-    padding: 0 1rem;
-    font-size: 0.95rem;
-    outline: none;
-    background: white;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-}
-
-.rules-management-page__create-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.rules-management-page__create-header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-
-    h3 {
-        font-weight: 600;
-        font-size: 1.5rem;
-        margin: 0;
-    }
-}
-
-.rules-management-page__create-body {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-
-.rules-management-page__create-footer {
-    position: sticky;
-    bottom: 0;
-
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-
-    padding: 1rem 0;
-    background: white;
-    z-index: 10;
-}
-
-.rules-management-page__cancel-button {
-    border: 1.5px solid #b42318;
-    color: #b42318;
-    background: transparent;
-    border-radius: 999px;
-    padding: 0.5rem 1.25rem;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-        background: #fde2e2;
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-}
-
-.rules-management-page__rule-display-row-left {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-}
-
-.rules-management-page__rule-category {
-    font-size: 0.8rem;
-    color: #6c757d;
-    background: #f1f3f5;
-    border-radius: 999px;
-    padding: 0.6rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-    margin-right: 0.4rem;
-}
-
-.rules-management-page__create-field {
-    margin-bottom: 1.25rem;
-}
-
-.rules-management-page__create-label {
-    display: block;
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: #212529;
-    margin-bottom: 0.4rem;
-}
-
-.rules-management-page__quill-wrapper {
-    width: 50%;
-}
-
-.rules-management-page__rule-category-action-buttons {
-    display: flex;
-    align-content: center;
 }

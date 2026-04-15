@@ -146,7 +146,8 @@
             "selectCategory": "Valitse kategoria",
             "rule": "Sääntö",
             "subtitle": "Halitse Sääntöjä",
-            "confirmPublish": "Haluatko varmasti julkaista säännöt?"
+            "confirmPublish": "Haluatko varmasti julkaista säännöt?",
+            "confirmDiscardChanges": "Sinulla on tallentamattomia muutoksia."
         }
     },
     "eventCalendarPage": {

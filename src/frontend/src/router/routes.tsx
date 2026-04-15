@@ -410,31 +410,31 @@ export const routes: RouteObject[] = [
                     {
                         index: true,
                         element: (
-                            // <ProtectedRoute>
-                            <SuspenseWrapper>
-                                <PersonsPage />
-                            </SuspenseWrapper>
-                            // </ProtectedRoute>
+                            <ProtectedRoute>
+                                <SuspenseWrapper>
+                                    <PersonsPage />
+                                </SuspenseWrapper>
+                            </ProtectedRoute>
                         ),
                     },
                     {
                         path: "new",
                         element: (
-                            // <ProtectedRoute>
-                            <SuspenseWrapper>
-                                <PersonForm />
-                            </SuspenseWrapper>
-                            // </ProtectedRoute>
+                            <ProtectedRoute>
+                                <SuspenseWrapper>
+                                    <PersonForm />
+                                </SuspenseWrapper>
+                            </ProtectedRoute>
                         ),
                     },
                     {
                         path: ":id/edit",
                         element: (
-                            // <ProtectedRoute>
-                            <SuspenseWrapper>
-                                <PersonForm />
-                            </SuspenseWrapper>
-                            // </ProtectedRoute>
+                            <ProtectedRoute>
+                                <SuspenseWrapper>
+                                    <PersonForm />
+                                </SuspenseWrapper>
+                            </ProtectedRoute>
                         ),
                     },
                 ],
@@ -442,11 +442,11 @@ export const routes: RouteObject[] = [
             {
                 path: "/admin/rules",
                 element: (
-                    // <ProtectedRoute>
-                    <SuspenseWrapper>
-                        <RulesManagementPage />
-                    </SuspenseWrapper>
-                    // </ProtectedRoute>
+                    <ProtectedRoute>
+                        <SuspenseWrapper>
+                            <RulesManagementPage />
+                        </SuspenseWrapper>
+                    </ProtectedRoute>
                 ),
             },
             {
@@ -455,31 +455,31 @@ export const routes: RouteObject[] = [
                     {
                         index: true,
                         element: (
-                            // <ProtectedRoute>
-                            <SuspenseWrapper>
-                                <DivisionsPage />
-                            </SuspenseWrapper>
-                            // </ProtectedRoute>
+                            <ProtectedRoute>
+                                <SuspenseWrapper>
+                                    <DivisionsPage />
+                                </SuspenseWrapper>
+                            </ProtectedRoute>
                         ),
                     },
                     {
                         path: "create",
                         element: (
-                            // <ProtectedRoute>
-                            <SuspenseWrapper>
-                                <DivisionFormPage />
-                            </SuspenseWrapper>
-                            // </ProtectedRoute>
+                            <ProtectedRoute>
+                                <SuspenseWrapper>
+                                    <DivisionFormPage />
+                                </SuspenseWrapper>
+                            </ProtectedRoute>
                         ),
                     },
                     {
                         path: ":divisionId/edit",
                         element: (
-                            // <ProtectedRoute>
-                            <SuspenseWrapper>
-                                <DivisionFormPage />
-                            </SuspenseWrapper>
-                            // </ProtectedRoute>
+                            <ProtectedRoute>
+                                <SuspenseWrapper>
+                                    <DivisionFormPage />
+                                </SuspenseWrapper>
+                            </ProtectedRoute>
                         ),
                     },
                 ],
@@ -762,31 +762,31 @@ export const routes: RouteObject[] = [
                     {
                         index: true,
                         element: (
-                            // <ProtectedRoute>
-                            <SuspenseWrapper>
-                                <NewsManagementPage />
-                            </SuspenseWrapper>
-                            // </ProtectedRoute>
+                            <ProtectedRoute>
+                                <SuspenseWrapper>
+                                    <NewsManagementPage />
+                                </SuspenseWrapper>
+                            </ProtectedRoute>
                         ),
                     },
                     {
                         path: "create",
                         element: (
-                            // <ProtectedRoute>
-                            <SuspenseWrapper>
-                                <NewsCreateEditPage />
-                            </SuspenseWrapper>
-                            // </ProtectedRoute>
+                            <ProtectedRoute>
+                                <SuspenseWrapper>
+                                    <NewsCreateEditPage />
+                                </SuspenseWrapper>
+                            </ProtectedRoute>
                         ),
                     },
                     {
                         path: "edit/:id",
                         element: (
-                            // <ProtectedRoute>
-                            <SuspenseWrapper>
-                                <NewsCreateEditPage />
-                            </SuspenseWrapper>
-                            // </ProtectedRoute>
+                            <ProtectedRoute>
+                                <SuspenseWrapper>
+                                    <NewsCreateEditPage />
+                                </SuspenseWrapper>
+                            </ProtectedRoute>
                         ),
                     },
                 ],

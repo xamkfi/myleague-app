@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import "../RulesManagementPage.scss";
+import "./CategorySelect.scss";
 
 interface CategorySelectProps {
     value: string;

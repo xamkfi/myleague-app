@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { RuleItem } from "../../../../types/admin/ruleTypes";
 import RuleListItem from "./RulesListItem";
-import "../RulesManagementPage.scss";
+import "./RulesList.scss";
 
 interface RulesListProps {
     title: string;
@@ -35,7 +35,7 @@ export default function RulesList({
 
         if (rules.length === 0) {
             return (
-                <div className="rules-management-page__preview-box">
+                <div className="rules-management-page__preview-box--empty">
                     {emptyMessage}
                 </div>
             );

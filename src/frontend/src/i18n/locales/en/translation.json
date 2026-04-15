@@ -74,7 +74,8 @@
             "selectCategory": "Select category",
             "rule": "Rule",
             "subtitle": "Manage Rules",
-            "confirmPublish": "Are you sure you want to publish the rules?"
+            "confirmPublish": "Are you sure you want to publish the rules?",
+            "confirmDiscardChanges": "You have unsaved changes."
         }
     },
     "eventCalendarPage": {
