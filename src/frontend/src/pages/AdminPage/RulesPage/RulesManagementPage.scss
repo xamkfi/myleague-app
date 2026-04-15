@@ -1,0 +1,252 @@
+.rules-management-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 260px);
+    position: relative;
+}
+
+.rules-management-page__page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.rules-management-page__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #212529;
+    }
+}
+
+.rules-management-page__alert--success {
+    background: #dff5e5;
+    color: #166534;
+}
+
+.rules-management-page__alert--error {
+    background: #fde2e2;
+    color: #991b1b;
+}
+
+.rules-management-page__meta {
+    background-color: white;
+    padding-bottom: 1rem;
+
+    p {
+        margin: 0.25rem 0;
+        color: #212529;
+    }
+}
+
+.rules-management-page__content {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.rules-management-page__saved-card {
+    h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #212529;
+    }
+}
+
+.rules-management-page__field {
+    margin-bottom: 1.5rem;
+
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #212529;
+    }
+}
+
+.rules-management-page__input {
+    width: 100%;
+    border: 1px solid #d5d9e0;
+    border-radius: 999px;
+    padding: 0.9rem 1rem;
+    font-size: 1rem;
+    outline: none;
+}
+
+.rules-management-page__input:focus {
+    border-color: #4f6cab;
+    box-shadow: 0 0 0 3px rgba(79, 108, 171, 0.12);
+}
+
+.rules-management-page__preview-box--empty {
+    padding: 0.5rem 0.5rem;
+    min-height: auto;
+}
+
+.rules-item {
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.rules-item:last-child {
+    border-bottom: none;
+}
+
+.rules-management-page__preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.rules-management-page__rules-list {
+    display: grid;
+    gap: 1rem;
+    padding-bottom: 1rem;
+}
+
+.rules-management-page__icon-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.rules-management-page__alerts-overlay {
+    position: absolute;
+    left: 0.1rem;
+    bottom: 0.1rem;
+    z-index: 1000;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 420px;
+    pointer-events: none;
+}
+
+.rules-management-page__alert {
+    pointer-events: auto;
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.rules-management-page__rule-display-row--editing {
+    display: block;
+}
+
+.rules-management-page__rule-editor {
+    min-width: 0;
+}
+
+.rules-management-page__editor-window-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.rules-management-page__topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.rules-management-page__toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.rules-management-page__topbar-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.rules-management-page__column {
+    width: 50%;
+}
+
+.rules-management-page__search {
+    max-width: 320px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.rules-management-page__search-input {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #d5d9e0;
+    border-radius: 0.75rem;
+    padding: 0 2.5rem 0 1rem;
+    font-size: 1rem;
+    outline: none;
+}
+
+.search-clear-button {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6c757d;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0;
+
+    &:hover {
+        color: #212529;
+    }
+}
+
+.rules-management-page__toolbar-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.rules-management-page__create-layer-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.rules-management-page__create-layer-body {
+    margin-bottom: 1rem;
+}
+
+.rules-management-page__create-layer-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.rules-management-page__collapse-button {
+    border: 1px solid #d5d9e0;
+    background: white;
+    border-radius: 999px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rules-management-page__toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 13px;
+}

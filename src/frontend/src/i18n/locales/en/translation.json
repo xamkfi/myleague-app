@@ -1,1232 +1,1286 @@
 {
-  "nav": {
-    "news": "News",
-    "eventCalendar": "Event calendar",
-    "rules": "Rules",
-    "mahl": "MAHL",
-    "ageGroups": "Age Groups",
-    "register": "Register",
-    "tournaments": "Tournaments",
-    "sports": "Sports",
-    "clubs": "Clubs",
-    "team": "Team"
-  },
-  "hero": {
-    "title": "SUMMER SEASON IS HERE",
-    "buttonText": "EXPLORE SUMMER EVENTS"
-  },
-  "homePage": {
-    "newsSection": {
-      "title": "Latest News",
-      "readMore": "Read more",
-      "noNews": "No news available",
-      "loading": "Loading news...",
-      "error": "Failed to load news",
-      "retry": "Try again"
-    }
-  },
-  "eventCalendarPage": {
-    "title": "Event calendar",
-    "noEvents": "No events",
-    "prevMonth": "Previous month",
-    "nextMonth": "Next month",
-    "loading": "Loading events...",
-    "error": "Failed to load events",
-    "today": "Today",
-    "upcoming": "Upcoming",
-    "noEventsMonth": "No events this month",
-    "noEventsDay": "No events on {{day}}",
-    "eventSingular": "event",
-    "eventPlural": "events",
-    "status": {
-      "scheduled": "Scheduled",
-      "live": "Live",
-      "completed": "Completed"
+    "nav": {
+        "news": "News",
+        "eventCalendar": "Event calendar",
+        "rules": "Rules",
+        "mahl": "MAHL",
+        "ageGroups": "Age Groups",
+        "register": "Register",
+        "tournaments": "Tournaments",
+        "sports": "Sports",
+        "clubs": "Clubs",
+        "team": "Team"
     },
-    "filters": {
-      "showFilters": "Filters",
-      "status": "Status",
-      "season": "Season",
-      "allSeasons": "All seasons",
-      "team": "Team",
-      "teamPlaceholder": "Search by team name...",
-      "clear": "Clear filters"
-    }
-  },
-  "sidebar": {
-    "nextMatch": "NEXT MATCH",
-    "standings": "STANDINGS",
-    "stats": "STATISTICS",
-    "liveMatches": "Live",
-    "upcomingMatches": "Upcoming",
-    "completedMatches": "Completed",
-    "noLiveMatches": "No live matches",
-    "noUpcomingMatches": "No upcoming matches",
-    "noCompletedMatches": "No completed matches",
-    "allMatches": "All matches",
-    "loading": "Loading...",
-    "error": "Failed to load matches"
-  },
-  "language": {
-    "en": "English",
-    "fi": "Finnish",
-    "switchLanguage": "Switch language"
-  },
-  "matchPage": {
-    "navigation": {
-      "summary": "SUMMARY",
-      "stats": "STATS",
-      "lineups": "LINEUPS",
-      "table": "TABLE"
+    "hero": {
+        "title": "SUMMER SEASON IS HERE",
+        "buttonText": "EXPLORE SUMMER EVENTS"
     },
-    "dateTime": {
-      "weekdays": {
-        "Monday": "Monday",
-        "Tuesday": "Tuesday",
-        "Wednesday": "Wednesday",
-        "Thursday": "Thursday",
-        "Friday": "Friday",
-        "Saturday": "Saturday",
-        "Sunday": "Sunday"
-      },
-      "months": {
-        "Jan": "Jan",
-        "Feb": "Feb",
-        "Mar": "Mar",
-        "Apr": "Apr",
-        "May": "May",
-        "Jun": "Jun",
-        "Jul": "Jul",
-        "Aug": "Aug",
-        "Sep": "Sep",
-        "Oct": "Oct",
-        "Nov": "Nov",
-        "Dec": "Dec"
-      }
-    },
-    "matchInfo": {
-      "venue": "Venue",
-      "status": "Status",
-      "overtime": "Went to overtime",
-      "shootout": "Went to shootout"
-    },
-    "stats": {
-      "title": "Team Statistics",
-      "shotsOnTarget": "Shots on Target",
-      "goalieSaves": "Goalie Saves",
-      "savePercentage": "Save Percentage",
-      "penaltyMinutes": "Penalty Minutes",
-      "loading": "Loading live match statistics...",
-      "realTimeEnabled": "Real-time updates enabled",
-      "noStats": "No statistics available"
-    },
-    "events": {
-      "goal": "Goal",
-      "penalty": "Penalty",
-      "matchStart": "Match Started",
-      "matchEnd": "Match Ended",
-      "periodStart": "Period Started",
-      "periodEnd": "Period Ended",
-      "timeout": "Timeout",
-      "noEvents": "No match events yet"
-    },
-    "timer": {
-      "start": "Start Timer",
-      "stop": "Stop Timer",
-      "reset": "Reset Timer",
-      "adjust": "Adjust Time",
-      "period": "Period {{number}}"
-    },
-    "status": {
-      "scheduled": "Scheduled",
-      "inProgress": "In Progress",
-      "completed": "Completed",
-      "cancelled": "Cancelled"
-    }
-  },
-  "admin": {
-    "title": "Admin Dashboard",
-    "database": "Database",
-    "sportsTitle": "Sports",
-    "view": "Admin view",
-    "actions": {
-      "home": "Home",
-      "persons": "Persons",
-      "managePerson": "Manage persons",
-      "news": "News",
-      "manageNews": "Manage news articles",
-      "divisions": "Divisions",
-      "manageDivisions": "Manage sport divisions",
-      "floorball": "Floorball",
-      "manageFloorball": "Manage floorball",
-      "clubs": "Clubs",
-      "manageClubs": "Manage clubs",
-      "users": "System Users",
-      "manageUsers": "Manage system users"
-    },
-    "users": {
-      "title": "System Users",
-      "subtitle": "Create, edit or remove system user accounts.",
-      "searchPlaceholder": "Search by name or email...",
-      "addUser": "Add User",
-      "noData": "No system users found yet.",
-      "noSearchResults": "No users match your filters.",
-      "table": {
-        "person": "Person",
-        "email": "Email",
-        "role": "Role",
-        "status": "Status",
-        "lastLogin": "Last Login",
-        "never": "Never"
-      },
-      "form": {
-        "createTitle": "Add User",
-        "editTitle": "Edit User",
-        "email": "Email",
-        "emailPlaceholder": "user@example.com",
-        "emailRequired": "Email is required",
-        "emailInvalid": "Invalid email format",
-        "selectPerson": "Person",
-        "searchPerson": "Search persons...",
-        "noPerson": "No available persons found",
-        "personRequired": "Person is required",
-        "role": "Role",
-        "hasAccount": "Already has an account",
-        "save": "Save",
-        "saving": "Saving..."
-      },
-      "roles": {
-        "systemAdmin": "System Admin",
-        "clubAdmin": "Club Admin"
-      },
-      "confirmDelete": {
-        "title": "Delete user",
-        "message": "Are you sure you want to delete user \"{{userName}}\"? This action cannot be undone.",
-        "warning": "The person record will not be deleted, only the user account."
-      },
-      "errors": {
-        "load": "Failed to load users. Please try again.",
-        "create": "Failed to create user. Please try again.",
-        "update": "Failed to update user. Please try again.",
-        "delete": "Failed to delete user. Please try again."
-      },
-      "success": {
-        "create": "User created successfully.",
-        "update": "User updated successfully.",
-        "delete": "User deleted successfully."
-      }
-    },
-    "divisions": {
-      "title": "Manage Divisions",
-      "manageTitle": "Manage divisions",
-      "subtitle": "Create, edit, activate or remove sport divisions across the league.",
-      "search": "Search by name or description...",
-      "emptyFiltered": "No divisions match your filters.",
-      "emptyDefault": "No divisions found yet.",
-      "table": {
-        "sport": "Sport",
-        "level": "Level",
-        "status": "Status",
-        "created": "Created"
-      },
-      "filters": {
-        "sport": "Sport",
-        "status": "Status"
-      },
-      "actions": {
-        "create": "Create division",
-        "activate": "Activate division",
-        "deactivate": "Deactivate division",
-        "menu": "Division actions menu"
-      },
-      "confirmDelete": {
-        "title": "Delete division",
-        "message": "Are you sure you want to delete division \"{{divisionName}}\"? This action cannot be undone."
-      },
-      "errors": {
-        "load": "Failed to load divisions. Please try again.",
-        "loadSingle": "Failed to load division data.",
-        "updateStatus": "Failed to update status. Please try again.",
-        "delete": "Failed to delete division. Please try again.",
-        "save": "Failed to save division. Please try again.",
-        "levelRequired": "Level must be a number."
-      },
-      "form": {
-        "loading": "Loading division...",
-        "createTitle": "Create division",
-        "editTitle": "Edit division",
-        "createSubtitle": "Provide the information for the new division.",
-        "editSubtitle": "Update the key details of this division.",
-        "namePlaceholder": "Division name",
-        "levelHelper": "1 = highest",
-        "descriptionPlaceholder": "Short summary of this division",
-        "sportPlaceholder": "e.g. Floorball",
-        "sportHint": "Sport type cannot be changed for existing divisions."
-      }
-    },
-    "persons":{
-      "title": "Person Management",
-      "subtitle": "Manage Persons",
-      "searchPlaceholder": "Search persons by name...",
-      "clearSearch": "Clear search",
-      "noData": "No persons found",
-      "noSearchResults": "No matching persons found",
-      "modal": {
-        "createTitle": "Create New Person",
-        "editTitle": "Edit Person",
-        "close": "Close"
-      },
-      "status":{
-        "registered": "Yes",
-        "notRegistered": "No"
-      },
-      "success":{
-        "registered": "Person registered successfully.",
-        "unregister": "Person unregistered successfully.",
-        "roleUpdated": "Person role updated successfully"
-      },
-      "table":{
-        "name": "Name",
-        "birthDate": "Birth Date",
-        "email": "Email",
-        "registered": "Registered",
-        "role": "Role",
-        "actions": "Actions"
-      },
-      "roles":{
-        "user": "User",
-        "admin": "Admin",
-        "superAdmin": "Super Admin"
-      },
-      "selected": "{{count}} selected",
-      "selectAllOnPage": "Select all on this page",
-      "loading": "Loading persons...",
-      "form": {
-        "basicInfo": "Basic Information",
-        "firstName": "First Name",
-        "lastName": "Last Name",
-        "birthDate": "Birth Date",
-        "isRegistered": "Registered",
-        "dateFormat": "Format: dd-mm-yyyy",
-        "address": "Address",
-        "street1": "Street Address",
-        "street2": "Street Address 2",
-        "city": "City",
-        "postalCode": "Postal Code",
-        "country": "Country",
-        "contact": "Contact Information",
-        "email": "Email",
-        "phone": "Phone",
-        "alternativePhone": "Alternative Phone",
-        "floorballAssignment": "Floorball Team Assignment (Optional)",
-        "team": "Team",
-        "selectTeam": "Select a team...",
-        "searchTeams": "Search teams...",
-        "noTeams": "No teams found",
-        "position": "Position",
-        "selectPosition": "Select position...",
-        "jerseyNumber": "Jersey Number",
-        "jerseyNumberHint": "Optional: 1-99",
-        "positions": {
-          "none": "No position",
-          "center": "Center",
-          "winger": "Winger",
-          "forward": "Forward",
-          "defender": "Defender",
-          "goalkeeper": "Goalkeeper"
+    "homePage": {
+        "newsSection": {
+            "title": "Latest News",
+            "readMore": "Read more",
+            "noNews": "No news available",
+            "loading": "Loading news...",
+            "error": "Failed to load news",
+            "retry": "Try again"
         }
-      },
-      "actions": {
-        "cancel": "Cancel",
-        "create": "Create Person",
-        "update": "Update Person",
-        "saving": "Saving...",
-        "add": "Add New Person",
-        "confirmDelete": "Are you sure you want to delete this person?",
-        "confirmUnregister": "Are you sure you want to unregister this person?",
-        "confirmRegister": "Are you sure you want to register this person?",
-        "toggleRegistration": "Click to toggle registration status.",
-        "updateRole": "Update Role",
-        "edit": "Edit",
-        "delete": "Delete"
-      },
-      "validation": {
-        "firstNameRequired": "First name is required",
-        "firstNameTooLong": "First name cannot exceed {{max}} characters",
-        "lastNameRequired": "Last name is required", 
-        "lastNameTooLong": "Last name cannot exceed {{max}} characters",
-        "birthDateRequired": "Birth date is required",
-        "invalidDate": "Invalid date format",
-        "birthDateFuture": "Birth date cannot be in the future",
-        "birthDateTooOld": "Birth date is too far in the past",
-        "street1Required": "Street address is required",
-        "street1TooLong": "Street address cannot exceed {{max}} characters",
-        "street2TooLong": "Street address 2 cannot exceed {{max}} characters",
-        "cityRequired": "City is required",
-        "cityTooLong": "City cannot exceed {{max}} characters", 
-        "postalCodeRequired": "Postal code is required",
-        "postalCodeTooLong": "Postal code cannot exceed {{max}} characters",
-        "countryRequired": "Country is required",
-        "countryTooLong": "Country cannot exceed {{max}} characters",
-        "invalidEmail": "Invalid email format",
-        "emailTooLong": "Email cannot exceed {{max}} characters",
-        "phoneTooLong": "Phone number cannot exceed {{max}} characters",
-        "alternativePhoneTooLong": "Alternative phone number cannot exceed {{max}} characters",
-        "positionRequired": "Position is required when team is selected",
-        "invalidJerseyNumber": "Jersey number must be between 1 and 99"
-      },
-      "errors": {
-        "fetchFailed": "Failed to fetch person details",
-        "saveFailed": "Failed to save person",
-        "teamAssignmentFailed": "Person created, but team assignment failed",
-        "deleteFailed": "Failed to delete person.",
-        "updateRoleFailed": "Failed to update person role"
-      }
     },
-    "news":{
-      "pageTitle": "News Management",
-      "createNew": "Create New",
-      "create": "Create News Article",
-      "edit": "Edit News Article",
-      "loading": "Loading...",
-      "title": "Title",
-      "title_placeholder": "Enter article title...",
-      "summary": "Summary",
-      "summary_placeholder": "Write a brief summary...",
-      "main_picture": "Main Picture",
-      "author": "Author",
-      "author_placeholder": "Enter author name...",
-      "category": "Category",
-      "sport_category": "Sport Category",
-      "select_category": "Select category",
-      "select_sport": "Select sport",
-      "tags": "Tags",
-      "add_tag_placeholder": "Type tag and press Enter...",
-      "no_tags": "No tags added yet. Tags help categorize your article.",
-      "content": "Article Content",
-      "article_details": "Article Details",
-      "characters": "characters",
-      "summary_too_long": "Summary should be under 200 characters",
-      "uploading": "Uploading...",
-      "click_to_upload": "Click to upload",
-      "or_drag_drop": "or drag and drop",
-      "up_to": "up to",
-      "image_uploaded": "Image uploaded successfully",
-      "replace": "Replace",
-      "remove_image": "Remove image",
-      "publish": "Publish",
-      "update": "Update Article",
-      "preview": "Preview",
-      "edit_content": "Edit Content",
-      "untitled": "Untitled Article",
-      "no_content": "No content written yet...",
-      "loading_article": "Loading article...",
-      "preview_mode": "Preview Mode",
-      "edit_mode": "Edit Mode",
-      "create_mode": "Create Mode",
-      "preview_description": "This is how your article will appear to readers",
-      "edit_description": "Edit existing news article",
-      "create_description": "Create a new news article",
-      "main_picture_preview": "Main picture preview",
-      "news_image": "News image",
-      "noData": "No news articles found",
-      "confirmDelete": "Are you sure you want to delete this news article?",
-      "confirmArchive": "Are you sure you want to archive this news article?",
-      "confirmUnarchive": "Are you sure you want to unarchive this news article?",
-      "confirm_publish": "Are you sure you want to publish this news article?",
-      "confirm_update": "Are you sure you want to update this news article?",
-      "table": {
-        "title": "Title",
-        "author": "Author", 
-        "category": "Category",
-        "createdAt": "Created",
-        "archived": "Archived",
-        "actions": "Actions"
-      },
-      "actions": {
+    "rules": {
+        "defaultTitle": "Rules",
+        "loading": "Loading rules...",
+        "loadFailed": "Failed to load rules.",
+        "admin": {
+            "pageTitle": "Rules management",
+            "managementTitle": "Rules management",
+            "managementDescription": "Publish rules to the public rules page.",
+            "loadFailed": "Failed to load rules content.",
+            "noPublishedRules": "No published rules.",
+            "typeRuleToAdd": "Type to add rules.",
+            "addRuleBeforeSaving": "Add a rule first before saving.",
+            "rulesPublishedSuccessfully": "Rules published successfully!",
+            "saveFailed": "Failed to save rules.",
+            "lastUpdate": "Last update",
+            "noRulesAddedYet": "No rules added yet.",
+            "editor": "Editor",
+            "unknown": "Unknown",
+            "ruleUpdatedSuccessfully": "Rule updated successfully!",
+            "updateRuleFailed": "Failed to update rule.",
+            "confirmDeleteRule": "Are you sure you want to delete this rule: {{ruleName}}?",
+            "ruleDeletedSuccessfully": "Rule deleted successfully!",
+            "deleteRuleFailed": "Failed to delete rule.",
+            "editRule": "Edit rule",
+            "saveRule": "Save rule",
+            "saving": "Saving...",
+            "searchPlaceholder": "Search rules...",
+            "publish": "Publish",
+            "publishing": "Publishing...",
+            "addRule": "Add new rule",
+            "createRuleTitle": "Configure new rule",
+            "createRuleDescription": "Write the rule content before adding it to preview.",
+            "typeRulePlaceholder": "Type here...",
+            "preview": "Preview",
+            "noPreviewRules": "No rules to preview.",
+            "publishedRules": "Published rules",
+            "allCategories": "All Categories",
+            "category": "Category",
+            "categories": {
+                "general": "General",
+                "fees": "Fees & Charges",
+                "validation": "Validation",
+                "calculation": "Calculation"
+            },
+            "editRuleTitle": "Edit rule",
+            "editRuleDescription": "Update the rule before moving it to preview.",
+            "selectCategory": "Select category",
+            "rule": "Rule",
+            "subtitle": "Manage Rules",
+            "confirmPublish": "Are you sure you want to publish the rules?",
+            "confirmDiscardChanges": "You have unsaved changes."
+        }
+    },
+    "eventCalendarPage": {
+        "title": "Event calendar",
+        "noEvents": "No events",
+        "prevMonth": "Previous month",
+        "nextMonth": "Next month",
+        "loading": "Loading events...",
+        "error": "Failed to load events",
+        "today": "Today",
+        "upcoming": "Upcoming",
+        "noEventsMonth": "No events this month",
+        "noEventsDay": "No events on {{day}}",
+        "eventSingular": "event",
+        "eventPlural": "events",
+        "status": {
+            "scheduled": "Scheduled",
+            "live": "Live",
+            "completed": "Completed"
+        },
+        "filters": {
+            "showFilters": "Filters",
+            "status": "Status",
+            "season": "Season",
+            "allSeasons": "All seasons",
+            "team": "Team",
+            "teamPlaceholder": "Search by team name...",
+            "clear": "Clear filters"
+        }
+    },
+    "sidebar": {
+        "nextMatch": "NEXT MATCH",
+        "standings": "STANDINGS",
+        "stats": "STATISTICS",
+        "liveMatches": "Live",
+        "upcomingMatches": "Upcoming",
+        "completedMatches": "Completed",
+        "noLiveMatches": "No live matches",
+        "noUpcomingMatches": "No upcoming matches",
+        "noCompletedMatches": "No completed matches",
+        "allMatches": "All matches",
+        "loading": "Loading...",
+        "error": "Failed to load matches"
+    },
+    "language": {
+        "en": "English",
+        "fi": "Finnish",
+        "switchLanguage": "Switch language"
+    },
+    "matchPage": {
+        "navigation": {
+            "summary": "SUMMARY",
+            "stats": "STATS",
+            "lineups": "LINEUPS",
+            "table": "TABLE"
+        },
+        "dateTime": {
+            "weekdays": {
+                "Monday": "Monday",
+                "Tuesday": "Tuesday",
+                "Wednesday": "Wednesday",
+                "Thursday": "Thursday",
+                "Friday": "Friday",
+                "Saturday": "Saturday",
+                "Sunday": "Sunday"
+            },
+            "months": {
+                "Jan": "Jan",
+                "Feb": "Feb",
+                "Mar": "Mar",
+                "Apr": "Apr",
+                "May": "May",
+                "Jun": "Jun",
+                "Jul": "Jul",
+                "Aug": "Aug",
+                "Sep": "Sep",
+                "Oct": "Oct",
+                "Nov": "Nov",
+                "Dec": "Dec"
+            }
+        },
+        "matchInfo": {
+            "venue": "Venue",
+            "status": "Status",
+            "overtime": "Went to overtime",
+            "shootout": "Went to shootout"
+        },
+        "stats": {
+            "title": "Team Statistics",
+            "shotsOnTarget": "Shots on Target",
+            "goalieSaves": "Goalie Saves",
+            "savePercentage": "Save Percentage",
+            "penaltyMinutes": "Penalty Minutes",
+            "loading": "Loading live match statistics...",
+            "realTimeEnabled": "Real-time updates enabled",
+            "noStats": "No statistics available"
+        },
+        "events": {
+            "goal": "Goal",
+            "penalty": "Penalty",
+            "matchStart": "Match Started",
+            "matchEnd": "Match Ended",
+            "periodStart": "Period Started",
+            "periodEnd": "Period Ended",
+            "timeout": "Timeout",
+            "noEvents": "No match events yet"
+        },
+        "timer": {
+            "start": "Start Timer",
+            "stop": "Stop Timer",
+            "reset": "Reset Timer",
+            "adjust": "Adjust Time",
+            "period": "Period {{number}}"
+        },
+        "status": {
+            "scheduled": "Scheduled",
+            "inProgress": "In Progress",
+            "completed": "Completed",
+            "cancelled": "Cancelled"
+        }
+    },
+    "admin": {
+        "title": "Admin Dashboard",
+        "database": "Database",
+        "sportsTitle": "Sports",
+        "view": "Admin view",
+        "actions": {
+            "home": "Home",
+            "persons": "Persons",
+            "managePerson": "Manage persons",
+            "news": "News",
+            "manageNews": "Manage news articles",
+            "divisions": "Divisions",
+            "manageDivisions": "Manage sport divisions",
+            "floorball": "Floorball",
+            "manageFloorball": "Manage floorball",
+            "clubs": "Clubs",
+            "manageClubs": "Manage clubs",
+            "users": "System Users",
+            "manageUsers": "Manage system users"
+        },
+        "users": {
+            "title": "System Users",
+            "subtitle": "Create, edit or remove system user accounts.",
+            "searchPlaceholder": "Search by name or email...",
+            "addUser": "Add User",
+            "noData": "No system users found yet.",
+            "noSearchResults": "No users match your filters.",
+            "table": {
+                "person": "Person",
+                "email": "Email",
+                "role": "Role",
+                "status": "Status",
+                "lastLogin": "Last Login",
+                "never": "Never"
+            },
+            "form": {
+                "createTitle": "Add User",
+                "editTitle": "Edit User",
+                "email": "Email",
+                "emailPlaceholder": "user@example.com",
+                "emailRequired": "Email is required",
+                "emailInvalid": "Invalid email format",
+                "selectPerson": "Person",
+                "searchPerson": "Search persons...",
+                "noPerson": "No available persons found",
+                "personRequired": "Person is required",
+                "role": "Role",
+                "hasAccount": "Already has an account",
+                "save": "Save",
+                "saving": "Saving..."
+            },
+            "roles": {
+                "systemAdmin": "System Admin",
+                "clubAdmin": "Club Admin"
+            },
+            "confirmDelete": {
+                "title": "Delete user",
+                "message": "Are you sure you want to delete user \"{{userName}}\"? This action cannot be undone.",
+                "warning": "The person record will not be deleted, only the user account."
+            },
+            "errors": {
+                "load": "Failed to load users. Please try again.",
+                "create": "Failed to create user. Please try again.",
+                "update": "Failed to update user. Please try again.",
+                "delete": "Failed to delete user. Please try again."
+            },
+            "success": {
+                "create": "User created successfully.",
+                "update": "User updated successfully.",
+                "delete": "User deleted successfully."
+            }
+        },
+        "divisions": {
+            "title": "Manage Divisions",
+            "manageTitle": "Manage divisions",
+            "subtitle": "Create, edit, activate or remove sport divisions across the league.",
+            "search": "Search by name or description...",
+            "emptyFiltered": "No divisions match your filters.",
+            "emptyDefault": "No divisions found yet.",
+            "table": {
+                "sport": "Sport",
+                "level": "Level",
+                "status": "Status",
+                "created": "Created"
+            },
+            "filters": {
+                "sport": "Sport",
+                "status": "Status"
+            },
+            "actions": {
+                "create": "Create division",
+                "activate": "Activate division",
+                "deactivate": "Deactivate division",
+                "menu": "Division actions menu"
+            },
+            "confirmDelete": {
+                "title": "Delete division",
+                "message": "Are you sure you want to delete division \"{{divisionName}}\"? This action cannot be undone."
+            },
+            "errors": {
+                "load": "Failed to load divisions. Please try again.",
+                "loadSingle": "Failed to load division data.",
+                "updateStatus": "Failed to update status. Please try again.",
+                "delete": "Failed to delete division. Please try again.",
+                "save": "Failed to save division. Please try again.",
+                "levelRequired": "Level must be a number."
+            },
+            "form": {
+                "loading": "Loading division...",
+                "createTitle": "Create division",
+                "editTitle": "Edit division",
+                "createSubtitle": "Provide the information for the new division.",
+                "editSubtitle": "Update the key details of this division.",
+                "namePlaceholder": "Division name",
+                "levelHelper": "1 = highest",
+                "descriptionPlaceholder": "Short summary of this division",
+                "sportPlaceholder": "e.g. Floorball",
+                "sportHint": "Sport type cannot be changed for existing divisions."
+            }
+        },
+        "persons": {
+            "title": "Person Management",
+            "subtitle": "Manage Persons",
+            "searchPlaceholder": "Search persons by name...",
+            "clearSearch": "Clear search",
+            "noData": "No persons found",
+            "noSearchResults": "No matching persons found",
+            "modal": {
+                "createTitle": "Create New Person",
+                "editTitle": "Edit Person",
+                "close": "Close"
+            },
+            "status": {
+                "registered": "Yes",
+                "notRegistered": "No"
+            },
+            "success": {
+                "registered": "Person registered successfully.",
+                "unregister": "Person unregistered successfully.",
+                "roleUpdated": "Person role updated successfully"
+            },
+            "table": {
+                "name": "Name",
+                "birthDate": "Birth Date",
+                "email": "Email",
+                "registered": "Registered",
+                "role": "Role",
+                "actions": "Actions"
+            },
+            "roles": {
+                "user": "User",
+                "admin": "Admin",
+                "superAdmin": "Super Admin"
+            },
+            "selected": "{{count}} selected",
+            "selectAllOnPage": "Select all on this page",
+            "loading": "Loading persons...",
+            "form": {
+                "basicInfo": "Basic Information",
+                "firstName": "First Name",
+                "lastName": "Last Name",
+                "birthDate": "Birth Date",
+                "isRegistered": "Registered",
+                "dateFormat": "Format: dd-mm-yyyy",
+                "address": "Address",
+                "street1": "Street Address",
+                "street2": "Street Address 2",
+                "city": "City",
+                "postalCode": "Postal Code",
+                "country": "Country",
+                "contact": "Contact Information",
+                "email": "Email",
+                "phone": "Phone",
+                "alternativePhone": "Alternative Phone",
+                "floorballAssignment": "Floorball Team Assignment (Optional)",
+                "team": "Team",
+                "selectTeam": "Select a team...",
+                "searchTeams": "Search teams...",
+                "noTeams": "No teams found",
+                "position": "Position",
+                "selectPosition": "Select position...",
+                "jerseyNumber": "Jersey Number",
+                "jerseyNumberHint": "Optional: 1-99",
+                "positions": {
+                    "none": "No position",
+                    "center": "Center",
+                    "winger": "Winger",
+                    "forward": "Forward",
+                    "defender": "Defender",
+                    "goalkeeper": "Goalkeeper"
+                }
+            },
+            "actions": {
+                "cancel": "Cancel",
+                "create": "Create Person",
+                "update": "Update Person",
+                "saving": "Saving...",
+                "add": "Add New Person",
+                "confirmDelete": "Are you sure you want to delete this person?",
+                "confirmUnregister": "Are you sure you want to unregister this person?",
+                "confirmRegister": "Are you sure you want to register this person?",
+                "toggleRegistration": "Click to toggle registration status.",
+                "updateRole": "Update Role",
+                "edit": "Edit",
+                "delete": "Delete"
+            },
+            "validation": {
+                "firstNameRequired": "First name is required",
+                "firstNameTooLong": "First name cannot exceed {{max}} characters",
+                "lastNameRequired": "Last name is required",
+                "lastNameTooLong": "Last name cannot exceed {{max}} characters",
+                "birthDateRequired": "Birth date is required",
+                "invalidDate": "Invalid date format",
+                "birthDateFuture": "Birth date cannot be in the future",
+                "birthDateTooOld": "Birth date is too far in the past",
+                "street1Required": "Street address is required",
+                "street1TooLong": "Street address cannot exceed {{max}} characters",
+                "street2TooLong": "Street address 2 cannot exceed {{max}} characters",
+                "cityRequired": "City is required",
+                "cityTooLong": "City cannot exceed {{max}} characters",
+                "postalCodeRequired": "Postal code is required",
+                "postalCodeTooLong": "Postal code cannot exceed {{max}} characters",
+                "countryRequired": "Country is required",
+                "countryTooLong": "Country cannot exceed {{max}} characters",
+                "invalidEmail": "Invalid email format",
+                "emailTooLong": "Email cannot exceed {{max}} characters",
+                "phoneTooLong": "Phone number cannot exceed {{max}} characters",
+                "alternativePhoneTooLong": "Alternative phone number cannot exceed {{max}} characters",
+                "positionRequired": "Position is required when team is selected",
+                "invalidJerseyNumber": "Jersey number must be between 1 and 99"
+            },
+            "errors": {
+                "fetchFailed": "Failed to fetch person details",
+                "saveFailed": "Failed to save person",
+                "teamAssignmentFailed": "Person created, but team assignment failed",
+                "deleteFailed": "Failed to delete person.",
+                "updateRoleFailed": "Failed to update person role"
+            }
+        },
+        "news": {
+            "pageTitle": "News Management",
+            "createNew": "Create New",
+            "create": "Create News Article",
+            "edit": "Edit News Article",
+            "loading": "Loading...",
+            "title": "Title",
+            "title_placeholder": "Enter article title...",
+            "summary": "Summary",
+            "summary_placeholder": "Write a brief summary...",
+            "main_picture": "Main Picture",
+            "author": "Author",
+            "author_placeholder": "Enter author name...",
+            "category": "Category",
+            "sport_category": "Sport Category",
+            "select_category": "Select category",
+            "select_sport": "Select sport",
+            "tags": "Tags",
+            "add_tag_placeholder": "Type tag and press Enter...",
+            "no_tags": "No tags added yet. Tags help categorize your article.",
+            "content": "Article Content",
+            "article_details": "Article Details",
+            "characters": "characters",
+            "summary_too_long": "Summary should be under 200 characters",
+            "uploading": "Uploading...",
+            "click_to_upload": "Click to upload",
+            "or_drag_drop": "or drag and drop",
+            "up_to": "up to",
+            "image_uploaded": "Image uploaded successfully",
+            "replace": "Replace",
+            "remove_image": "Remove image",
+            "publish": "Publish",
+            "update": "Update Article",
+            "preview": "Preview",
+            "edit_content": "Edit Content",
+            "untitled": "Untitled Article",
+            "no_content": "No content written yet...",
+            "loading_article": "Loading article...",
+            "preview_mode": "Preview Mode",
+            "edit_mode": "Edit Mode",
+            "create_mode": "Create Mode",
+            "preview_description": "This is how your article will appear to readers",
+            "edit_description": "Edit existing news article",
+            "create_description": "Create a new news article",
+            "main_picture_preview": "Main picture preview",
+            "news_image": "News image",
+            "noData": "No news articles found",
+            "confirmDelete": "Are you sure you want to delete this news article?",
+            "confirmArchive": "Are you sure you want to archive this news article?",
+            "confirmUnarchive": "Are you sure you want to unarchive this news article?",
+            "confirm_publish": "Are you sure you want to publish this news article?",
+            "confirm_update": "Are you sure you want to update this news article?",
+            "table": {
+                "title": "Title",
+                "author": "Author",
+                "category": "Category",
+                "createdAt": "Created",
+                "archived": "Archived",
+                "actions": "Actions"
+            },
+            "actions": {
+                "edit": "Edit",
+                "delete": "Delete",
+                "toggleArchive": "Click to toggle archive status"
+            },
+            "status": {
+                "archived": "Yes",
+                "notArchived": "No"
+            },
+            "success": {
+                "archived": "News article archived successfully",
+                "unarchived": "News article unarchived successfully",
+                "deleted": "News article deleted successfully",
+                "publish_success": "News article published successfully!",
+                "update_success": "News article updated successfully!"
+            },
+            "errors": {
+                "fetchFailed": "Failed to fetch news articles",
+                "deleteFailed": "Failed to delete news article",
+                "updateArchiveFailed": "Failed to update archive status",
+                "publish_error": "Failed to publish news article. Please try again.",
+                "update_error": "Failed to update news article. Please try again.",
+                "title_required": "Title is required",
+                "title_too_short": "Title must be at least 5 characters long",
+                "title_too_long": "Title cannot exceed 200 characters",
+                "content_required": "Article content is required",
+                "author_too_long": "Author name cannot exceed 50 characters",
+                "summary_too_long": "Summary cannot exceed 200 characters",
+                "invalid_image": "Please select a valid image file",
+                "image_too_large": "Image file must be less than 5MB"
+            },
+            "matches": {
+                "add_matches": "Add Matches",
+                "add_matches_selected": "Add Matches",
+                "browse_matches": "Browse Matches",
+                "search_matches": "Search matches...",
+                "all_matches": "All matches",
+                "upcoming_matches": "Upcoming matches",
+                "results": "Results",
+                "cancelled": "Cancelled",
+                "selected_matches": "Selected matches",
+                "clear_all": "Clear all",
+                "add_selected": "Add selected",
+                "cancel": "Cancel",
+                "no_matches_available": "No matches available",
+                "loading_matches": "Loading matches...",
+                "try_again": "Try again",
+                "error": "Error"
+            }
+        }
+    },
+    "clubs": {
+        "manage": {
+            "title": "Manage Clubs"
+        },
+        "total": "Total",
+        "createNew": "Create New Club",
+        "searchPlaceholder": "Search clubs by name or city...",
+        "searchAria": "Search clubs",
+        "empty": "No clubs found",
+        "create": {
+            "title": "Create Club"
+        },
+        "table": {
+            "name": "Club Name",
+            "city": "City",
+            "country": "Country",
+            "foundingDate": "Founding Date",
+            "actions": "Actions"
+        },
+        "form": {
+            "name": "Club Name",
+            "city": "City",
+            "country": "Country",
+            "foundingDate": "Founding Date",
+            "foundingDatePlaceholder": "dd-mm-yyyy",
+            "namePlaceholder": "Enter club name",
+            "cityPlaceholder": "Enter city",
+            "countryPlaceholder": "Enter country",
+            "websiteUrl": "Website URL",
+            "logoUrl": "Club logo",
+            "logoUrlPlaceholder": "https://…",
+            "contactEmail": "Contact Email",
+            "uploadLogo": "Upload logo",
+            "removeLogo": "Remove logo",
+            "replaceLogo": "Replace",
+            "orPasteUrl": "Or paste URL",
+            "clickToUploadLogo": "Click to upload logo",
+            "uploadingLogo": "Uploading...",
+            "upTo": "up to",
+            "logoPreviewAlt": "Club logo",
+            "errorInvalidImage": "Please select a valid image file (PNG, JPG, GIF, WebP).",
+            "errorImageTooLarge": "Image must be less than 5MB."
+        },
+        "details": {
+            "title": "Club Details",
+            "foundingDate": "Founding Date",
+            "teams": "Teams",
+            "noTeams": "No teams yet",
+            "members": "Members"
+        },
+        "deleteClubButton": "Delete club",
+        "confirmDeleteTitle": "Delete club?",
+        "confirmDelete": "Are you sure you want to delete this club?",
+        "confirmDeleteWarning": "This action cannot be undone."
+    },
+    "floorball": {
+        "management": {
+            "title": "Floorball Management",
+            "legend": {
+                "availableNow": "Available Now",
+                "comingSoon": "Coming Soon"
+            },
+            "badges": {
+                "ready": "✨ Ready!",
+                "soon": "🚧 Soon"
+            },
+            "comingSoonAlert": "🚧 {{featureName}} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯",
+            "actions": {
+                "teams": "Teams",
+                "manageTeams": "Manage teams",
+                "players": "Manage Players",
+                "coaches": "Manage Coaches",
+                "teamManagers": "Manage Team Managers",
+                "referees": "Manage Referees",
+                "matches": "Manage Matches",
+                "matchEvents": "Manage Match Events",
+                "seasons": "Manage Seasons"
+            }
+        },
+        "teams": {
+            "title": "Manage Teams",
+            "totalCount": "Total: {{count}} teams",
+            "createNew": "Create New Team",
+            "searchPlaceholder": "Search teams by name...",
+            "noTeams": "No teams found",
+            "players": "Team Players",
+            "hasMembers": "Yes",
+            "noMembers": "No",
+            "primary": "Primary",
+            "secondary": "Secondary",
+            "name": "Team Name",
+            "namePlaceholder": "Enter team name",
+            "club": "Club",
+            "selectClub": "Select a club",
+            "division": "Division",
+            "selectDivision": "Select division...",
+            "category": "Category",
+            "homeArena": "Home Arena",
+            "homeArenaPlaceholder": "Enter home arena",
+            "optional": "Optional",
+            "secondaryColorTooShort": "Secondary color must be at least 2 characters",
+            "secondaryColorTooLong": "Secondary color must be no more than 50 characters",
+            "confirmDelete": "Are you sure you want to delete team \"{{name}}\"?",
+            "table": {
+                "name": "Team Name",
+                "club": "Club",
+                "division": "Division",
+                "homeArena": "Home Arena",
+                "activeMembers": "Active Members",
+                "actions": "Actions"
+            },
+            "assignPlayerToTeam": "Assign to Team",
+            "assignPlayersToTeam": "Assign Players to Team",
+            "selectTeam": "Select Team",
+            "chooseTeam": "Choose a team...",
+            "addToRoster": "Add to Roster",
+            "errors": {
+                "loadFailed": "Failed to load teams",
+                "selectTeam": "Please select a team",
+                "invalidJerseyNumber": "Jersey number must be between 1 and 99"
+            }
+        },
+        "divisions": {
+            "men": "Men",
+            "women": "Women",
+            "youth": "Youth",
+            "junior": "Junior"
+        },
+        "players": {
+            "title": "Manage Floorball Players",
+            "totalCount": "{{count}} players",
+            "createNew": "Create New Player",
+            "noPlayers": "No players found.",
+            "createFromPerson": "Create Player from Available Persons",
+            "createNewPerson": "Create New Person",
+            "searchPersons": "Search available persons...",
+            "searchPlayers": "Search players...",
+            "selected": "{{count}} selected",
+            "selectedPlayers": "{{count}} players selected",
+            "selectAll": "Select All",
+            "selectAllVisible": "Select all visible persons",
+            "createPlayer": "Create Player",
+            "createPlayers": "Create Multiple Players",
+            "playerCreated": "{{personName}} is now a floorball player!",
+            "playersCreated": "{{personName}} are now floorball players!",
+            "personCreated": "{{personName}} created successfully! You can now create a player from them.",
+            "noPersonsFound": "No persons found matching your search",
+            "noPersonsAvailable": "No available persons to convert to players. All persons are already players.",
+            "backToPersonSelection": "Back to Person Selection",
+            "backToPlayerCreation": "Back to Player Creation",
+            "table": {
+                "name": "Name",
+                "position": "Position",
+                "status": "Status",
+                "actions": "Actions"
+            },
+            "position": "Position",
+            "games": "Games",
+            "goals": "Goals",
+            "assists": "Assists",
+            "penalties": "PIM",
+            "confirmDelete": {
+                "title": "Confirm Deletion",
+                "message": "Are you sure you want to delete {{playerName}}?",
+                "warning": "This action cannot be undone."
+            },
+            "noPlayersInTeam": "This team has no players assigned yet.",
+            "addPlayersHelp": "Use the edit button to manage team roster and add players.",
+            "actions": {
+                "menu": "Player actions menu",
+                "activate": "Activate Player",
+                "deactivate": "Deactivate Player",
+                "bulkActivate": "Activate Selected ({{count}})",
+                "bulkDeactivate": "Deactivate Selected ({{count}})",
+                "bulkDelete": "Delete Selected ({{count}})",
+                "bulkAssignToTeam": "Assign to Team ({{count}})"
+            },
+            "errors": {
+                "loadPlayers": "Failed to load players. Please try again.",
+                "deleteFailed": "Failed to delete player. Please try again."
+            }
+        },
+        "positions": {
+            "none": "None",
+            "center": "Center",
+            "winger": "Winger",
+            "defender": "Defender",
+            "goalkeeper": "Goalkeeper",
+            "forward": "Forward"
+        },
+        "seasons": {
+            "title": "Manage Seasons",
+            "totalCount": "{{count}} seasons",
+            "createNew": "Create New Season",
+            "showActiveOnly": "Show Active Only",
+            "division": "Division",
+            "fields": {
+                "name": "Name",
+                "division": "Division",
+                "startDate": "Starts",
+                "endDate": "Ends",
+                "teams": "Teams"
+            },
+            "status": {
+                "active": "Active",
+                "inactive": "Inactive",
+                "completed": "Completed"
+            },
+            "create": {
+                "title": "Create New Season",
+                "info": "The season will be created as inactive by default"
+            },
+            "placeholders": {
+                "name": "Enter season name",
+                "selectDivision": "Select division"
+            },
+            "errors": {
+                "networkError": "Network error. Please check your connection and try again.",
+                "validationError": "Invalid data provided. Please check your input and try again.",
+                "conflictError": "A season with overlapping dates already exists.",
+                "serverError": "Server error. Please try again later.",
+                "overlappingDates": "A season already exists that overlaps with the specified dates."
+            },
+            "validation": {
+                "nameRequired": "Season name is required.",
+                "nameTooLong": "Season name cannot exceed 100 characters.",
+                "divisionRequired": "Please select a valid division.",
+                "startDateRequired": "Start date is required.",
+                "endDateRequired": "End date is required."
+            }
+        },
+        "categories": {
+            "adult": "Adult",
+            "youth": "Youth",
+            "women": "Women"
+        },
+        "referees": {
+            "title": "Manage Referees",
+            "totalCount": "{{count}} referees",
+            "createNew": "Create New Referee",
+            "createFromPerson": "Create Referee from Available Persons",
+            "createRefereeFor": "Create Referee for {{name}}",
+            "searchPersons": "Search available persons...",
+            "selectPerson": "Select",
+            "createReferee": "Create Referee",
+            "refereeCreated": "{{personName}} is now a floorball referee!",
+            "noPersonsFound": "No persons found matching your search",
+            "noPersonsAvailable": "No available persons to convert to referees. All persons are already referees.",
+            "licenseIssueDate": "License Issue Date",
+            "licenseExpiryDate": "License Expiry Date",
+            "noReferees": "No referees found.",
+            "table": {
+                "name": "Name",
+                "status": "Status",
+                "licenseExpiry": "License Expiry",
+                "matchesOfficiated": "Matches",
+                "actions": "Actions"
+            },
+            "license": {
+                "valid": "Valid",
+                "expired": "Expired",
+                "expiring": "Expiring Soon"
+            },
+            "errors": {
+                "loadReferees": "Failed to load referees. Please try again.",
+                "deleteFailed": "Failed to delete referee. Please try again."
+            }
+        },
+        "matches": {
+            "title": "Match Management",
+            "subtitle": "Manage your floorball matches, track live games, and organize your season",
+            "loading": "Loading matches...",
+            "noMatchesFound": "No matches found",
+            "noMatchesForSeason": "No matches found for the selected season",
+            "createFirstMatch": "Create your first match to get started",
+            "createNewMatch": "Create New Match",
+            "goLive": "🟢 Go Live",
+            "live": "🔴 Live",
+            "edit": "✏️ Edit",
+            "tbd": "TBD",
+            "noScore": "-",
+            "table": {
+                "match": "Match",
+                "dateTime": "Date & Time",
+                "venue": "Venue",
+                "score": "Score",
+                "status": "Status",
+                "actions": "Actions"
+            },
+            "columns": {
+                "match": "Match",
+                "season": "Season",
+                "dateTime": "Date & Time",
+                "venue": "Venue",
+                "score": "Score",
+                "status": "Status"
+            },
+            "sections": {
+                "matches": "Matches",
+                "ongoing": "Ongoing Matches",
+                "scheduled": "Scheduled Matches",
+                "completed": "Completed Matches",
+                "cancelled": "Cancelled Matches"
+            },
+            "tabs": {
+                "all": "All",
+                "ongoing": "Ongoing",
+                "scheduled": "Scheduled",
+                "completed": "Completed",
+                "cancelled": "Cancelled",
+                "ariaLabel": "Filter matches by status"
+            },
+            "create": {
+                "title": "Create New Match",
+                "season": "Season",
+                "homeTeam": "Home Team",
+                "awayTeam": "Away Team",
+                "referee": "Referee",
+                "dateTime": "Date & Time",
+                "venue": "Venue",
+                "createMatch": "Create Match"
+            },
+            "placeholders": {
+                "selectSeason": "Select Season",
+                "selectHomeTeam": "Select Home Team",
+                "selectAwayTeam": "Select Away Team",
+                "selectReferee": "Select Referee",
+                "searchSeasons": "Search seasons...",
+                "searchTeams": "Search teams...",
+                "searchReferees": "Search referees...",
+                "hoursPlaceholder": "HH",
+                "minutesPlaceholder": "MM",
+                "venuePlaceholder": "Enter venue (optional)"
+            },
+            "validation": {
+                "fillRequired": "Please fill in all required fields",
+                "sameTeams": "Home team and away team cannot be the same",
+                "validDateTime": "Please enter a valid date and time",
+                "createFailed": "Failed to create match"
+            },
+            "emptyStates": {
+                "noSeasons": "No seasons found",
+                "noTeams": "No teams found",
+                "noReferees": "No referees found"
+            },
+            "stats": {
+                "totalMatches": "Total Matches",
+                "seasonMatches": "Season Matches",
+                "completed": "Completed",
+                "scheduled": "Scheduled",
+                "inProgress": "In Progress",
+                "cancelled": "Cancelled",
+                "createNew": "Create New"
+            },
+            "filters": {
+                "filterBySeason": "Filter by Season:",
+                "allSeasons": "All Seasons",
+                "searchByTeam": "Search by Team:",
+                "searchPlaceholder": "Search for team names..."
+            },
+            "status": {
+                "Scheduled": "Scheduled",
+                "InProgress": "In Progress",
+                "Completed": "Completed",
+                "Cancelled": "Cancelled",
+                "Postponed": "Postponed"
+            },
+            "actions": {
+                "open": "Open Match",
+                "manage": "Manage",
+                "live": "Live View",
+                "cancel": "Cancel Match",
+                "reactivate": "Reactivate Match",
+                "menu": "Match actions menu"
+            },
+            "confirmCancel": {
+                "title": "Cancel Match",
+                "message": "Are you sure you want to cancel this match? This will mark the match as cancelled.",
+                "confirm": "Yes, Cancel Match"
+            },
+            "confirmReactivate": {
+                "title": "Reactivate Match",
+                "message": "Are you sure you want to reactivate this match? This will set the match back to Scheduled status.",
+                "confirm": "Yes, Reactivate Match"
+            },
+            "cancelling": "Cancelling...",
+            "reactivating": "Reactivating...",
+            "creating": "Creating...",
+            "updating": "Updating...",
+            "createMatch": "Create Match",
+            "updateMatch": "Update Match",
+            "matchCount": "match(es)"
+        }
+    },
+    "roster": {
+        "positions": {
+            "Goalkeeper": "Goalkeepers",
+            "Defender": "Defenders",
+            "Center": "Centers",
+            "Forward": "Forwards"
+        },
+        "jerseyNumber": "#",
+        "name": "Name",
+        "age": "Age",
+        "matchesPlayed": "Games",
+        "goals": "Goals",
+        "assists": "Assists",
+        "tooltips": {
+            "jerseyNumber": "Jersey Number",
+            "age": "Age",
+            "matchesPlayed": "Matches Played",
+            "goals": "Goals",
+            "assists": "Assists"
+        }
+    },
+    "common": {
+        "back": "Back",
+        "backTo": "Back to",
+        "loading": "Loading…",
         "edit": "Edit",
         "delete": "Delete",
-        "toggleArchive": "Click to toggle archive status"
-      },
-      "status": {
-        "archived": "Yes",
-        "notArchived": "No"
-      },
-      "success": {
-        "archived": "News article archived successfully",
-        "unarchived": "News article unarchived successfully",
-        "deleted": "News article deleted successfully",
-        "publish_success": "News article published successfully!",
-        "update_success": "News article updated successfully!"
-      },
-      "errors": {
-        "fetchFailed": "Failed to fetch news articles",
-        "deleteFailed": "Failed to delete news article",
-        "updateArchiveFailed": "Failed to update archive status",
-        "publish_error": "Failed to publish news article. Please try again.",
-        "update_error": "Failed to update news article. Please try again.",
-        "title_required": "Title is required",
-        "title_too_short": "Title must be at least 5 characters long", 
-        "title_too_long": "Title cannot exceed 200 characters",
-        "content_required": "Article content is required",
-        "author_too_long": "Author name cannot exceed 50 characters",
-        "summary_too_long": "Summary cannot exceed 200 characters",
-        "invalid_image": "Please select a valid image file",
-        "image_too_large": "Image file must be less than 5MB"
-      },
-      "matches": {
-        "add_matches": "Add Matches",
-        "add_matches_selected": "Add Matches",
-        "browse_matches": "Browse Matches",
-        "search_matches": "Search matches...",
-        "all_matches": "All matches",
-        "upcoming_matches": "Upcoming matches",
-        "results": "Results",
-        "cancelled": "Cancelled",
-        "selected_matches": "Selected matches",
-        "clear_all": "Clear all",
-        "add_selected": "Add selected",
+        "save": "Save",
+        "deleting": "Deleting...",
         "cancel": "Cancel",
-        "no_matches_available": "No matches available",
-        "loading_matches": "Loading matches...",
-        "try_again": "Try again",
-        "error": "Error"
-      }
-    }
-  },
-  "clubs": {
-    "manage": {
-      "title": "Manage Clubs"
-    },
-    "total": "Total",
-    "createNew": "Create New Club",
-    "searchPlaceholder": "Search clubs by name or city...",
-    "searchAria": "Search clubs",
-    "empty": "No clubs found",
-    "create": {
-      "title": "Create Club"
-    },
-    "table": {
-      "name": "Club Name",
-      "city": "City",
-      "country": "Country",
-      "foundingDate": "Founding Date",
-      "actions": "Actions"
-    },
-    "form": {
-      "name": "Club Name",
-      "city": "City",
-      "country": "Country",
-      "foundingDate": "Founding Date",
-      "foundingDatePlaceholder": "dd-mm-yyyy",
-      "namePlaceholder": "Enter club name",
-      "cityPlaceholder": "Enter city",
-      "countryPlaceholder": "Enter country",
-      "websiteUrl": "Website URL",
-      "logoUrl": "Club logo",
-      "logoUrlPlaceholder": "https://…",
-      "contactEmail": "Contact Email",
-      "uploadLogo": "Upload logo",
-      "removeLogo": "Remove logo",
-      "replaceLogo": "Replace",
-      "orPasteUrl": "Or paste URL",
-      "clickToUploadLogo": "Click to upload logo",
-      "uploadingLogo": "Uploading...",
-      "upTo": "up to",
-      "logoPreviewAlt": "Club logo",
-      "errorInvalidImage": "Please select a valid image file (PNG, JPG, GIF, WebP).",
-      "errorImageTooLarge": "Image must be less than 5MB."
-    },
-    "details": {
-      "title": "Club Details",
-      "foundingDate": "Founding Date",
-      "teams": "Teams",
-      "noTeams": "No teams yet",
-      "members": "Members"
-    },
-    "deleteClubButton": "Delete club",
-    "confirmDeleteTitle": "Delete club?",
-    "confirmDelete": "Are you sure you want to delete this club?",
-    "confirmDeleteWarning": "This action cannot be undone."
-  },
-  "floorball": {
-    "management": {
-      "title": "Floorball Management",
-      "legend": {
-        "availableNow": "Available Now",
-        "comingSoon": "Coming Soon"
-      },
-      "badges": {
-        "ready": "✨ Ready!",
-        "soon": "🚧 Soon"
-      },
-      "comingSoonAlert": "🚧 {{featureName}} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯",
-      "actions": {
-        "teams": "Teams",
-        "manageTeams": "Manage teams",
-        "players": "Manage Players",
-        "coaches": "Manage Coaches",
-        "teamManagers": "Manage Team Managers",
-        "referees": "Manage Referees",
-        "matches": "Manage Matches",
-        "matchEvents": "Manage Match Events",
-        "seasons": "Manage Seasons"
-      }
-    },
-    "teams": {
-      "title": "Manage Teams",
-      "totalCount": "Total: {{count}} teams",
-      "createNew": "Create New Team",
-      "searchPlaceholder": "Search teams by name...",
-      "noTeams": "No teams found",
-      "players": "Team Players",
-      "hasMembers": "Yes",
-      "noMembers": "No",
-      "primary": "Primary",
-      "secondary": "Secondary", 
-      "name": "Team Name",
-      "namePlaceholder": "Enter team name",
-      "club": "Club",
-      "selectClub": "Select a club",
-      "division": "Division",
-      "selectDivision": "Select division...",
-      "category": "Category",
-      "homeArena": "Home Arena",
-      "homeArenaPlaceholder": "Enter home arena",
-      "optional": "Optional",
-      "secondaryColorTooShort": "Secondary color must be at least 2 characters",
-      "secondaryColorTooLong": "Secondary color must be no more than 50 characters",
-      "confirmDelete": "Are you sure you want to delete team \"{{name}}\"?",
-      "table": {
-        "name": "Team Name",
-        "club": "Club",
-        "division": "Division",
-        "homeArena": "Home Arena",
-        "activeMembers": "Active Members",
-        "actions": "Actions"
-      },
-      "assignPlayerToTeam": "Assign to Team",
-      "assignPlayersToTeam": "Assign Players to Team",
-      "selectTeam": "Select Team",
-      "chooseTeam": "Choose a team...",
-      "addToRoster": "Add to Roster",
-      "errors": {
-        "loadFailed": "Failed to load teams",
-        "selectTeam": "Please select a team",
-        "invalidJerseyNumber": "Jersey number must be between 1 and 99"
-      }
-    },
-    "divisions": {
-      "men": "Men",
-      "women": "Women",
-      "youth": "Youth",
-      "junior": "Junior"
-    },
-    "players": {
-      "title": "Manage Floorball Players",
-      "totalCount": "{{count}} players",
-      "createNew": "Create New Player",
-      "noPlayers": "No players found.",
-      "createFromPerson": "Create Player from Available Persons",
-      "createNewPerson": "Create New Person",
-      "searchPersons": "Search available persons...",
-      "searchPlayers": "Search players...",
-      "selected": "{{count}} selected",
-      "selectedPlayers": "{{count}} players selected",
-      "selectAll": "Select All",
-      "selectAllVisible": "Select all visible persons",
-      "createPlayer": "Create Player",
-      "createPlayers": "Create Multiple Players",
-      "playerCreated": "{{personName}} is now a floorball player!",
-      "playersCreated": "{{personName}} are now floorball players!",
-      "personCreated": "{{personName}} created successfully! You can now create a player from them.",
-      "noPersonsFound": "No persons found matching your search",
-      "noPersonsAvailable": "No available persons to convert to players. All persons are already players.",
-      "backToPersonSelection": "Back to Person Selection",
-      "backToPlayerCreation": "Back to Player Creation",
-      "table": {
-        "name": "Name",
-        "position": "Position",
-        "status": "Status",
-        "actions": "Actions"
-      },
-      "position": "Position",
-      "games": "Games",
-      "goals": "Goals",
-      "assists": "Assists",
-      "penalties": "PIM",
-      "confirmDelete": {
-        "title": "Confirm Deletion",
-        "message": "Are you sure you want to delete {{playerName}}?",
-        "warning": "This action cannot be undone."
-      },
-      "noPlayersInTeam": "This team has no players assigned yet.",
-      "addPlayersHelp": "Use the edit button to manage team roster and add players.",
-      "actions": {
-        "menu": "Player actions menu",
-        "activate": "Activate Player",
-        "deactivate": "Deactivate Player",
-        "bulkActivate": "Activate Selected ({{count}})",
-        "bulkDeactivate": "Deactivate Selected ({{count}})",
-        "bulkDelete": "Delete Selected ({{count}})",
-        "bulkAssignToTeam": "Assign to Team ({{count}})"
-      },
-      "errors": {
-        "loadPlayers": "Failed to load players. Please try again.",
-        "deleteFailed": "Failed to delete player. Please try again."
-      }
-    },
-    "positions": {
-      "none": "None",
-      "center": "Center",
-      "winger": "Winger",
-      "defender": "Defender",
-      "goalkeeper": "Goalkeeper",
-      "forward": "Forward"
-    },
-    "seasons": {
-      "title": "Manage Seasons",
-      "totalCount": "{{count}} seasons",
-      "createNew": "Create New Season",
-      "showActiveOnly": "Show Active Only",
-      "division": "Division",
-      "fields": {
-        "name": "Name",
-        "division": "Division",
-        "startDate": "Starts",
-        "endDate": "Ends",
-        "teams": "Teams"
-      },
-            "status": {
         "active": "Active",
         "inactive": "Inactive",
-        "completed": "Completed"
-      },
-      "create": {
-        "title": "Create New Season",
-        "info": "The season will be created as inactive by default"
-      },
-      "placeholders": {
-        "name": "Enter season name",
-        "selectDivision": "Select division"
-      },
-      "errors": {
-        "networkError": "Network error. Please check your connection and try again.",
-        "validationError": "Invalid data provided. Please check your input and try again.",
-        "conflictError": "A season with overlapping dates already exists.",
-        "serverError": "Server error. Please try again later.",
-        "overlappingDates": "A season already exists that overlaps with the specified dates."
-      },
-      "validation": {
-        "nameRequired": "Season name is required.",
-        "nameTooLong": "Season name cannot exceed 100 characters.",
-        "divisionRequired": "Please select a valid division.",
-        "startDateRequired": "Start date is required.",
-        "endDateRequired": "End date is required."
-      }
-    },
-    "categories": {
-      "adult": "Adult",
-      "youth": "Youth", 
-      "women": "Women"
-    },
-    "referees": {
-      "title": "Manage Referees",
-      "totalCount": "{{count}} referees",
-      "createNew": "Create New Referee",
-      "createFromPerson": "Create Referee from Available Persons",
-      "createRefereeFor": "Create Referee for {{name}}",
-      "searchPersons": "Search available persons...",
-      "selectPerson": "Select",
-      "createReferee": "Create Referee",
-      "refereeCreated": "{{personName}} is now a floorball referee!",
-      "noPersonsFound": "No persons found matching your search",
-      "noPersonsAvailable": "No available persons to convert to referees. All persons are already referees.",
-      "licenseIssueDate": "License Issue Date",
-      "licenseExpiryDate": "License Expiry Date",
-      "noReferees": "No referees found.",
-      "table": {
+        "add": "Add",
+        "creating": "Creating...",
+        "birthDate": "Birth Date",
+        "registration": "Registration",
         "name": "Name",
-        "status": "Status",
-        "licenseExpiry": "License Expiry",
-        "matchesOfficiated": "Matches",
-        "actions": "Actions"
-      },
-      "license": {
-        "valid": "Valid",
-        "expired": "Expired",
-        "expiring": "Expiring Soon"
-      },
-      "errors": {
-        "loadReferees": "Failed to load referees. Please try again.",
-        "deleteFailed": "Failed to delete referee. Please try again."
-      }
+        "actions": "Actions",
+        "registered": "Registered",
+        "notRegistered": "Not Registered",
+        "cancelSelection": "Cancel Selection",
+        "selectAll": "Select All",
+        "clear": "Clear",
+        "previous": "Previous",
+        "next": "Next",
+        "pageInfo": "Page {{current}} of {{total}}",
+        "itemsPerPage": "Items per page:",
+        "showingItems": "Showing {{start}}-{{end}} of {{total}} items",
+        "noItemsToShow": "No items to show",
+        "error": "Error",
+        "goBack": "Go Back",
+        "retry": "Retry",
+        "all": "All",
+        "create": "Create",
+        "close": "Close",
+        "pagination": {
+            "previous": "Previous",
+            "next": "Next",
+            "pageOf": "Page {{current}} of {{total}}"
+        },
+        "open": "Open"
+    },
+    "newsPage": {
+        "category": {
+            "all": "All"
+        },
+        "sportCategory": {
+            "floorball": "Floorball",
+            "hockey": "Icehockey",
+            "football": "Football"
+        },
+        "search": "Search",
+        "searchPlaceholder": "Search news...",
+        "readMore": "Read more"
+    },
+    "teamUserPage": {
+        "loadingInfo": "Loading team information…",
+        "notFoundTitle": "Team Not Found",
+        "notFound": "Team not found",
+        "notFoundDesc": "The team you are looking for does not exist.",
+        "summary": "Summary",
+        "results": "Results",
+        "resultsTitle": "RESULTS",
+        "roster": "Roster",
+        "stats": {
+            "Stats": "Stats",
+            "loading": "Loading team statistics...",
+            "error": "Error loading team statistics",
+            "noStats": "No statistics available",
+            "noStatsDesc": "Team statistics are not available for this season.",
+            "currentSeason": "Current Season",
+            "overallRecord": "Overall Record",
+            "gamesPlayed": "Games Played",
+            "wins": "Wins",
+            "losses": "Losses",
+            "ties": "Ties",
+            "points": "Points",
+            "goals": "Goals",
+            "goalsFor": "Goals For",
+            "goalsAgainst": "Goals Against",
+            "goalDifference": "Goal Difference",
+            "shooting": "Shooting",
+            "shotsFor": "Shots For",
+            "shotsAgainst": "Shots Against",
+            "shotPercentage": "Shot Percentage",
+            "specialTeams": "Special Teams",
+            "powerPlay": "Power Play",
+            "penaltyKill": "Penalty Kill",
+            "shortHandedGoals": "Short Handed Goals",
+            "faceoffs": "Faceoffs",
+            "faceoffPercentage": "Faceoff Percentage",
+            "penalties": "Penalties",
+            "penaltyMinutes": "Penalty Minutes",
+            "homeVsAway": "Home vs Away",
+            "home": "Home",
+            "away": "Away",
+            "winPercentage": "Win %",
+            "perGame": "per game",
+            "playerStats": "Player Statistics",
+            "playerName": "Player",
+            "position": "Pos",
+            "gp": "GP",
+            "g": "G",
+            "a": "A",
+            "pts": "PTS",
+            "pim": "PIM",
+            "noRosterData": "No roster data available."
+        },
+        "standings": "Standings",
+        "todaysMatches": "TODAY'S MATCHES",
+        "latestMatches": "Latest Matches",
+        "scheduled": "SCHEDULED"
     },
     "matches": {
-      "title": "Match Management",
-      "subtitle": "Manage your floorball matches, track live games, and organize your season",
-      "loading": "Loading matches...",
-      "noMatchesFound": "No matches found",
-      "noMatchesForSeason": "No matches found for the selected season",
-      "createFirstMatch": "Create your first match to get started",
-      "createNewMatch": "Create New Match",
-      "goLive": "🟢 Go Live",
-      "live": "🔴 Live",
-      "edit": "✏️ Edit",
-      "tbd": "TBD",
-      "noScore": "-",
-      "table": {
-        "match": "Match",
-        "dateTime": "Date & Time",
-        "venue": "Venue",
-        "score": "Score",
-        "status": "Status",
-        "actions": "Actions"
-      },
-      "columns": {
-        "match": "Match",
-        "season": "Season",
-        "dateTime": "Date & Time",
-        "venue": "Venue",
-        "score": "Score",
-        "status": "Status"
-      },
-      "sections": {
-        "matches": "Matches",
-        "ongoing": "Ongoing Matches",
-        "scheduled": "Scheduled Matches",
-        "completed": "Completed Matches",
-        "cancelled": "Cancelled Matches"
-      },
-      "tabs": {
-        "all": "All",
-        "ongoing": "Ongoing",
-        "scheduled": "Scheduled",
+        "loading": "Loading matches…",
+        "noMatches": "No matches found."
+    },
+    "fixtures": {
+        "title": "Match Schedule",
+        "filterAll": "All",
+        "filterUpcoming": "Upcoming",
+        "filterPast": "Completed",
+        "filterNext": "Next",
+        "noMatches": "No matches to display.",
+        "statusCompleted": "Completed",
+        "statusLive": "Live",
+        "statusCancelled": "Cancelled",
+        "statusPostponed": "Postponed"
+    },
+    "results": {
+        "title": "RESULTS",
+        "loading": "Loading results…",
+        "noResults": "No results found."
+    },
+    "roster": {
+        "jerseyNumber": "#",
+        "name": "Name",
+        "age": "Age",
+        "matchesPlayed": "Matches played",
+        "goals": "Goals",
+        "assists": "Assists",
+        "yellowCards": "Yellow cards",
+        "redCards": "Red cards",
+        "positions": {
+            "None": "NONE",
+            "Goalkeeper": "GOALKEEPER",
+            "Defender": "DEFENDER",
+            "Center": "CENTER",
+            "Forward": "FORWARD"
+        },
+        "tooltips": {
+            "jerseyNumber": "Jersey number",
+            "age": "Age",
+            "matchesPlayed": "Matches played",
+            "goals": "Goals",
+            "assists": "Assists",
+            "yellowCards": "Yellow cards",
+            "redCards": "Red cards"
+        }
+    },
+    "searchBar": {
+        "placeholder": "Search...",
+        "button": "Search",
+        "noMatches": "No matches found."
+    },
+    "results": {
+        "title": "RESULTS",
+        "loading": "Loading results…",
+        "noResults": "No results found."
+    },
+    "sports": {
+        "allSports": "All sports",
+        "floorball": "Floorball",
+        "iceHockey": "Ice Hockey"
+    },
+    "sportsPage": {
+        "title": "Sports",
+        "description": "MAHL sports are divided into different sports categories. Select a sport to see leagues, matches, and statistics.",
+        "floorballDescription": "Floorball is a fast-paced indoor sport where two teams compete to score goals.",
+        "iceHockeyDescription": "Ice hockey is an intense team sport played on ice.",
+        "viewLeagues": "View leagues",
+        "comingSoon": "Coming soon"
+    },
+    "floorballPage": {
+        "title": "Floorball",
+        "description": "Browse floorball leagues, standings, and statistics.",
+        "loading": "Loading leagues...",
+        "error": "Failed to load leagues",
+        "retry": "Try again",
+        "noSeasons": "No leagues available",
+        "active": "Active",
         "completed": "Completed",
-        "cancelled": "Cancelled",
-        "ariaLabel": "Filter matches by status"
-      },
-      "create": {
-        "title": "Create New Match",
-        "season": "Season",
-        "homeTeam": "Home Team",
-        "awayTeam": "Away Team",
-        "referee": "Referee",
-        "dateTime": "Date & Time",
-        "venue": "Venue",
-        "createMatch": "Create Match"
-      },
-      "placeholders": {
-        "selectSeason": "Select Season",
-        "selectHomeTeam": "Select Home Team",
-        "selectAwayTeam": "Select Away Team", 
-        "selectReferee": "Select Referee",
-        "searchSeasons": "Search seasons...",
-        "searchTeams": "Search teams...", 
-        "searchReferees": "Search referees...",
-        "hoursPlaceholder": "HH",
-        "minutesPlaceholder": "MM",
-        "venuePlaceholder": "Enter venue (optional)"
-      },
-      "validation": {
-        "fillRequired": "Please fill in all required fields",
-        "sameTeams": "Home team and away team cannot be the same",
-        "validDateTime": "Please enter a valid date and time",
-        "createFailed": "Failed to create match"
-      },
-      "emptyStates": {
-        "noSeasons": "No seasons found",
-        "noTeams": "No teams found",
-        "noReferees": "No referees found"
-      },
-      "stats": {
-        "totalMatches": "Total Matches",
-        "seasonMatches": "Season Matches",
-        "completed": "Completed",
-        "scheduled": "Scheduled",
-        "inProgress": "In Progress",
-        "cancelled": "Cancelled",
-        "createNew": "Create New"
-      },
-      "filters": {
-        "filterBySeason": "Filter by Season:",
-        "allSeasons": "All Seasons",
-        "searchByTeam": "Search by Team:",
-        "searchPlaceholder": "Search for team names..."
-      },
-      "status": {
-        "Scheduled": "Scheduled",
-        "InProgress": "In Progress", 
-        "Completed": "Completed",
-        "Cancelled": "Cancelled",
-        "Postponed": "Postponed"
-      },
-      "actions": {
-        "open": "Open Match",
-        "manage": "Manage",
-        "live": "Live View",
-        "cancel": "Cancel Match",
-        "reactivate": "Reactivate Match",
-        "menu": "Match actions menu"
-      },
-      "confirmCancel": {
-        "title": "Cancel Match",
-        "message": "Are you sure you want to cancel this match? This will mark the match as cancelled.",
-        "confirm": "Yes, Cancel Match"
-      },
-      "confirmReactivate": {
-        "title": "Reactivate Match",
-        "message": "Are you sure you want to reactivate this match? This will set the match back to Scheduled status.",
-        "confirm": "Yes, Reactivate Match"
-      },
-      "cancelling": "Cancelling...",
-      "reactivating": "Reactivating...",
-      "creating": "Creating...",
-      "updating": "Updating...",
-      "createMatch": "Create Match",
-      "updateMatch": "Update Match",
-      "matchCount": "match(es)"
+        "fixtures": "Fixtures",
+        "standings": "Standings",
+        "playerStats": "Player Statistics",
+        "goalieStats": "Goalie Statistics",
+        "teamStats": "Team Statistics",
+        "standingsTitle": "STANDINGS",
+        "loadingStandings": "Loading standings...",
+        "team": "TEAM",
+        "gamesShort": "GP",
+        "pointsShort": "PTS",
+        "viewFullTable": ">> full table"
+    },
+    "leaguePage": {
+        "title": "League",
+        "defaultTitle": "League",
+        "tabs": {
+            "summary": "Summary",
+            "statistics": "Statistics",
+            "results": "Results",
+            "fixtures": "Fixtures"
+        },
+        "summary": {
+            "title": "League Summary",
+            "leagueInformation": "League Information",
+            "season": "Season",
+            "teams": "Teams",
+            "matchesPlayed": "Matches Played",
+            "goalsScored": "Goals Scored",
+            "avgGoalsPerGame": "Avg Goals/Game",
+            "loading": "Loading summary...",
+            "error": "Error: {{error}}",
+            "noData": "No data available",
+            "standingsPreview": "Standings",
+            "viewFullStandings": "View Full Standings"
+        },
+        "standings": {
+            "title": "Standings",
+            "standings": "Standings",
+            "topScorers": "Top Scorers",
+            "topAssists": "Top Assists",
+            "emptyStandings": "Standings not available",
+            "emptyStandingsDesc": "League standings will appear here once data is available.",
+            "emptyScorers": "Top scorers not available",
+            "emptyScorersDesc": "Player scoring leaders will appear here once data is available.",
+            "emptyAssists": "Top assists not available",
+            "emptyAssistsDesc": "Player assist leaders will appear here once data is available.",
+            "topGoalies": "Goalies",
+            "emptyGoalies": "Goalie statistics not available",
+            "emptyGoaliesDesc": "Goalie statistics will appear here once data is available.",
+            "goalieHeaders": {
+                "player": "PLAYER",
+                "team": "TEAM"
+            }
+        },
+        "errors": {
+            "loadLeagueData": "Failed to load league data",
+            "loadMatches": "Failed to load matches"
+        }
+    },
+    "roster": {
+        "jerseyNumber": "#",
+        "name": "Name",
+        "age": "Age",
+        "matchesPlayed": "Matches played",
+        "goals": "Goals",
+        "assists": "Assists",
+        "yellowCards": "Yellow cards",
+        "redCards": "Red cards",
+        "positions": {
+            "None": "NONE",
+            "Goalkeeper": "GOALKEEPER",
+            "Defender": "DEFENDER",
+            "Center": "CENTER",
+            "Forward": "FORWARD"
+        },
+        "tooltips": {
+            "jerseyNumber": "Jersey number",
+            "age": "Age",
+            "matchesPlayed": "Matches played",
+            "goals": "Goals",
+            "assists": "Assists",
+            "yellowCards": "Yellow cards",
+            "redCards": "Red cards"
+        }
+    },
+    "clubsPage": {
+        "title": "Clubs",
+        "description": "Browse and search MAHL league clubs.",
+        "searchPlaceholder": "Search clubs...",
+        "noClubs": "No clubs found",
+        "viewClub": "View club",
+        "loading": "Loading clubs...",
+        "error": "Failed to load clubs",
+        "totalClubs": "{{count}} clubs"
+    },
+    "clubPage": {
+        "loading": "Loading club information...",
+        "errorTitle": "Error",
+        "errorMessage": "Failed to load club information. Please try again later.",
+        "notFoundTitle": "Club Not Found",
+        "notFoundMessage": "The club you are looking for does not exist.",
+        "backToClubs": "All clubs",
+        "teams": "Teams",
+        "teamsLoading": "Loading teams...",
+        "noTeams": "This club doesn't have any floorball teams yet.",
+        "website": "Website",
+        "city": "City",
+        "founded": "Founded",
+        "contact": "Contact",
+        "activeRoster": "Active roster",
+        "noActiveMembers": "No active members",
+        "viewTeam": "View team"
+    },
+    "auth": {
+        "loginTitle": "Admin Login",
+        "loginSubtitle": "Enter your email to receive a login code.",
+        "enterCode": "Enter the 6-digit code sent to your email.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "your@email.com",
+        "sendCode": "Send Code",
+        "sending": "Sending...",
+        "codeLabel": "Login Code",
+        "codePlaceholder": "000000",
+        "verify": "Verify",
+        "verifying": "Verifying...",
+        "back": "Back",
+        "codeSent": "A login code has been sent to your email.",
+        "unexpectedError": "An unexpected error occurred.",
+        "logout": "Log out"
     }
-  },
-  "roster": {
-    "positions": {
-      "Goalkeeper": "Goalkeepers",
-      "Defender": "Defenders", 
-      "Center": "Centers",
-      "Forward": "Forwards"
-    },
-    "jerseyNumber": "#",
-    "name": "Name",
-    "age": "Age",
-    "matchesPlayed": "Games",
-    "goals": "Goals",
-    "assists": "Assists",
-    "tooltips": {
-      "jerseyNumber": "Jersey Number",
-      "age": "Age",
-      "matchesPlayed": "Matches Played",
-      "goals": "Goals",
-      "assists": "Assists"
-    }
-  },
-  "common": {
-    "back": "Back",
-    "backTo": "Back to",
-    "loading": "Loading…",
-    "edit": "Edit",
-    "delete": "Delete",
-    "save": "Save",
-    "deleting": "Deleting...",
-    "cancel": "Cancel",
-    "active": "Active",
-    "inactive": "Inactive",
-    "add": "Add",
-    "creating": "Creating...",
-    "birthDate": "Birth Date",
-    "registration": "Registration",
-    "name": "Name",
-    "actions": "Actions",
-    "registered": "Registered",
-    "notRegistered": "Not Registered",
-    "cancelSelection": "Cancel Selection",
-    "selectAll": "Select All",
-    "clear": "Clear",
-    "previous": "Previous",
-    "next": "Next",
-    "pageInfo": "Page {{current}} of {{total}}",
-    "itemsPerPage": "Items per page:",
-    "showingItems": "Showing {{start}}-{{end}} of {{total}} items",
-    "noItemsToShow": "No items to show",
-    "error": "Error",
-    "goBack": "Go Back",
-    "retry": "Retry",
-    "all": "All",
-    "create": "Create",
-    "close": "Close",
-    "pagination": {
-      "previous": "Previous",
-      "next": "Next",
-      "pageOf": "Page {{current}} of {{total}}"
-    }
-  },
-  "newsPage":{
-    "category": {
-      "all": "All"
-    },
-    "sportCategory": {
-      "floorball": "Floorball",
-      "hockey": "Icehockey",
-      "football": "Football" 
-    },
-    "search": "Search",
-    "searchPlaceholder": "Search news...",
-    "readMore": "Read more"
-  },
-  "teamUserPage": {
-    "loadingInfo": "Loading team information…",
-    "notFoundTitle": "Team Not Found",
-    "notFound": "Team not found",
-    "notFoundDesc": "The team you are looking for does not exist.",
-    "summary": "Summary",
-    "results": "Results",
-    "resultsTitle": "RESULTS",
-    "roster": "Roster",
-    "stats": {
-      "Stats": "Stats",
-      "loading": "Loading team statistics...",
-      "error": "Error loading team statistics",
-      "noStats": "No statistics available",
-      "noStatsDesc": "Team statistics are not available for this season.",
-      "currentSeason": "Current Season",
-      "overallRecord": "Overall Record",
-      "gamesPlayed": "Games Played",
-      "wins": "Wins",
-      "losses": "Losses",
-      "ties": "Ties",
-      "points": "Points",
-      "goals": "Goals",
-      "goalsFor": "Goals For",
-      "goalsAgainst": "Goals Against",
-      "goalDifference": "Goal Difference",
-      "shooting": "Shooting",
-      "shotsFor": "Shots For",
-      "shotsAgainst": "Shots Against",
-      "shotPercentage": "Shot Percentage",
-      "specialTeams": "Special Teams",
-      "powerPlay": "Power Play",
-      "penaltyKill": "Penalty Kill",
-      "shortHandedGoals": "Short Handed Goals",
-      "faceoffs": "Faceoffs",
-      "faceoffPercentage": "Faceoff Percentage",
-      "penalties": "Penalties",
-      "penaltyMinutes": "Penalty Minutes",
-      "homeVsAway": "Home vs Away",
-      "home": "Home",
-      "away": "Away",
-      "winPercentage": "Win %",
-      "perGame": "per game",
-      "playerStats": "Player Statistics",
-      "playerName": "Player",
-      "position": "Pos",
-      "gp": "GP",
-      "g": "G",
-      "a": "A",
-      "pts": "PTS",
-      "pim": "PIM",
-      "noRosterData": "No roster data available."
-    },
-    "standings": "Standings",
-    "todaysMatches": "TODAY'S MATCHES",
-    "latestMatches": "Latest Matches",
-    "scheduled": "SCHEDULED"
-  },
-  "matches": {
-    "loading": "Loading matches…",
-    "noMatches": "No matches found."
-  },
-  "fixtures": {
-    "title": "Match Schedule",
-    "filterAll": "All",
-    "filterUpcoming": "Upcoming",
-    "filterPast": "Completed",
-    "filterNext": "Next",
-    "noMatches": "No matches to display.",
-    "statusCompleted": "Completed",
-    "statusLive": "Live",
-    "statusCancelled": "Cancelled",
-    "statusPostponed": "Postponed"
-  },
-  "results": {
-    "title": "RESULTS",
-    "loading": "Loading results…",
-    "noResults": "No results found."
-  },
-  "roster": {
-    "jerseyNumber": "#",
-    "name": "Name",
-    "age": "Age",
-    "matchesPlayed": "Matches played",
-    "goals": "Goals",
-    "assists": "Assists",
-    "yellowCards": "Yellow cards",
-    "redCards": "Red cards",
-    "positions": {
-      "None": "NONE",
-      "Goalkeeper": "GOALKEEPER",
-      "Defender": "DEFENDER",
-      "Center": "CENTER",
-      "Forward": "FORWARD"
-    },
-    "tooltips": {
-      "jerseyNumber": "Jersey number",
-      "age": "Age",
-      "matchesPlayed": "Matches played",
-      "goals": "Goals",
-      "assists": "Assists",
-      "yellowCards": "Yellow cards",
-      "redCards": "Red cards"
-    }
-  },
-  "searchBar": {
-    "placeholder": "Search...",
-    "button": "Search",
-    "noMatches": "No matches found."
-  },
-  "results": {
-    "title": "RESULTS",
-    "loading": "Loading results…",
-    "noResults": "No results found."
-  },
-  "sports": {
-    "allSports": "All sports",
-    "floorball": "Floorball",
-    "iceHockey": "Ice Hockey"
-  },
-  "sportsPage": {
-    "title": "Sports",
-    "description": "MAHL sports are divided into different sports categories. Select a sport to see leagues, matches, and statistics.",
-    "floorballDescription": "Floorball is a fast-paced indoor sport where two teams compete to score goals.",
-    "iceHockeyDescription": "Ice hockey is an intense team sport played on ice.",
-    "viewLeagues": "View leagues",
-    "comingSoon": "Coming soon"
-  },
-  "floorballPage": {
-    "title": "Floorball",
-    "description": "Browse floorball leagues, standings, and statistics.",
-    "loading": "Loading leagues...",
-    "error": "Failed to load leagues",
-    "retry": "Try again",
-    "noSeasons": "No leagues available",
-    "active": "Active",
-    "completed": "Completed",
-    "fixtures": "Fixtures",
-    "standings": "Standings",
-    "playerStats": "Player Statistics",
-    "goalieStats": "Goalie Statistics",
-    "teamStats": "Team Statistics",
-    "standingsTitle": "STANDINGS",
-    "loadingStandings": "Loading standings...",
-    "team": "TEAM",
-    "gamesShort": "GP",
-    "pointsShort": "PTS",
-    "viewFullTable": ">> full table"
-  },
-  "leaguePage": {
-    "title": "League",
-    "defaultTitle": "League",
-    "tabs": {
-      "summary": "Summary",
-      "statistics": "Statistics",
-      "results": "Results",
-      "fixtures": "Fixtures"
-    },
-    "summary": {
-      "title": "League Summary",
-      "leagueInformation": "League Information",
-      "season": "Season",
-      "teams": "Teams",
-      "matchesPlayed": "Matches Played",
-      "goalsScored": "Goals Scored",
-      "avgGoalsPerGame": "Avg Goals/Game",
-      "loading": "Loading summary...",
-      "error": "Error: {{error}}",
-      "noData": "No data available",
-      "standingsPreview": "Standings",
-      "viewFullStandings": "View Full Standings"
-    },
-    "standings": {
-      "title": "Standings",
-      "standings": "Standings",
-      "topScorers": "Top Scorers",
-      "topAssists": "Top Assists",
-      "emptyStandings": "Standings not available",
-      "emptyStandingsDesc": "League standings will appear here once data is available.",
-      "emptyScorers": "Top scorers not available",
-      "emptyScorersDesc": "Player scoring leaders will appear here once data is available.",
-      "emptyAssists": "Top assists not available",
-      "emptyAssistsDesc": "Player assist leaders will appear here once data is available.",
-      "topGoalies": "Goalies",
-      "emptyGoalies": "Goalie statistics not available",
-      "emptyGoaliesDesc": "Goalie statistics will appear here once data is available.",
-      "goalieHeaders": {
-        "player": "PLAYER",
-        "team": "TEAM"
-      }
-    },
-    "errors": {
-      "loadLeagueData": "Failed to load league data",
-      "loadMatches": "Failed to load matches"
-    }
-  },
-  "roster": {
-    "jerseyNumber": "#",
-    "name": "Name",
-    "age": "Age",
-    "matchesPlayed": "Matches played",
-    "goals": "Goals",
-    "assists": "Assists",
-    "yellowCards": "Yellow cards",
-    "redCards": "Red cards",
-    "positions": {
-      "None": "NONE",
-      "Goalkeeper": "GOALKEEPER",
-      "Defender": "DEFENDER",
-      "Center": "CENTER",
-      "Forward": "FORWARD"
-    },
-    "tooltips": {
-      "jerseyNumber": "Jersey number",
-      "age": "Age",
-      "matchesPlayed": "Matches played",
-      "goals": "Goals",
-      "assists": "Assists",
-      "yellowCards": "Yellow cards",
-      "redCards": "Red cards"
-    }
-  },
-  "clubsPage": {
-    "title": "Clubs",
-    "description": "Browse and search MAHL league clubs.",
-    "searchPlaceholder": "Search clubs...",
-    "noClubs": "No clubs found",
-    "viewClub": "View club",
-    "loading": "Loading clubs...",
-    "error": "Failed to load clubs",
-    "totalClubs": "{{count}} clubs"
-  },
-  "clubPage": {
-    "loading": "Loading club information...",
-    "errorTitle": "Error",
-    "errorMessage": "Failed to load club information. Please try again later.",
-    "notFoundTitle": "Club Not Found",
-    "notFoundMessage": "The club you are looking for does not exist.",
-    "backToClubs": "All clubs",
-    "teams": "Teams",
-    "teamsLoading": "Loading teams...",
-    "noTeams": "This club doesn't have any floorball teams yet.",
-    "website": "Website",
-    "city": "City",
-    "founded": "Founded",
-    "contact": "Contact",
-    "activeRoster": "Active roster",
-    "noActiveMembers": "No active members",
-    "viewTeam": "View team"
-  },
-  "auth": {
-    "loginTitle": "Admin Login",
-    "loginSubtitle": "Enter your email to receive a login code.",
-    "enterCode": "Enter the 6-digit code sent to your email.",
-    "emailLabel": "Email",
-    "emailPlaceholder": "your@email.com",
-    "sendCode": "Send Code",
-    "sending": "Sending...",
-    "codeLabel": "Login Code",
-    "codePlaceholder": "000000",
-    "verify": "Verify",
-    "verifying": "Verifying...",
-    "back": "Back",
-    "codeSent": "A login code has been sent to your email.",
-    "unexpectedError": "An unexpected error occurred.",
-    "logout": "Log out"
-  }
 }
