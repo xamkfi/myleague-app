@@ -64,8 +64,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     CommonDbContext commonDbContext = scope.ServiceProvider.GetRequiredService<CommonDbContext>();
                     commonDbContext.Database.Migrate();
 
-                    // FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
-                    // floorballDbContext.Database.Migrate();
+                    FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
+                    floorballDbContext.Database.Migrate();
 
                     // Seed default users after migrations
                     DatabaseSeeder seeder = new();
