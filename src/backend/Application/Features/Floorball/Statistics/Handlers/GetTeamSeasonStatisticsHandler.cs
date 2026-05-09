@@ -52,19 +52,19 @@ public class GetTeamSeasonStatisticsHandler : IRequestHandler<GetTeamSeasonStati
     {
         try
         {
-            _logger.LogInformation("Retrieving team statistics for Team {TeamId} in Season {SeasonId}", request.TeamId, request.CompetitionId);
+            _logger.LogInformation("Retrieving team statistics for Team {TeamId} in Competition {CompetitionId}", request.TeamId, request.CompetitionId);
 
             Domain.Entities.Floorball.FloorballTeamSeasonStatistics? statistics = await _statisticsRepository.GetTeamSeasonStatisticsAsync(request.TeamId, request.CompetitionId, cancellationToken);
             
             if (statistics == null)
             {
-                _logger.LogInformation("No statistics found for Team {TeamId} in Season {SeasonId}", request.TeamId, request.CompetitionId);
-                return Result<FloorballTeamSeasonStatisticsDto>.NotFound("TeamSeasonStatistics", $"TeamId: {request.TeamId}, SeasonId: {request.CompetitionId}");
+                _logger.LogInformation("No statistics found for Team {TeamId} in Competition {CompetitionId}", request.TeamId, request.CompetitionId);
+                return Result<FloorballTeamSeasonStatisticsDto>.NotFound("TeamSeasonStatistics", $"TeamId: {request.TeamId}, CompetitionId: {request.CompetitionId}");
             }
 
             FloorballTeamSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(statistics);
             
-            _logger.LogInformation("Successfully retrieved team statistics for Team {TeamId} in Season {SeasonId}", request.TeamId, request.CompetitionId);
+            _logger.LogInformation("Successfully retrieved team statistics for Team {TeamId} in Competition {CompetitionId}", request.TeamId, request.CompetitionId);
             return Result<FloorballTeamSeasonStatisticsDto>.Success(dto);
         }
         catch (Exception ex)

@@ -52,7 +52,6 @@ public class RemoveTeamFromTournamentGroupHandler : IRequestHandler<RemoveTeamFr
             _logger.LogInformation("Removing team {TeamId} from group {GroupId} in tournament: {TournamentId}", request.TeamId, request.GroupId, request.CompetitionId);
             group.RemoveTeam(request.TeamId);
 
-            await _tournamentRepository.UpdateAsync(tournament);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
@@ -60,10 +59,17 @@ public class RemoveTeamFromTournamentGroupHandler : IRequestHandler<RemoveTeamFr
 
             return Result<FloorballTournamentDto>.Success(tournamentDto);
         }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Business rule violation while removing team from tournament group: {TournamentId}", request.CompetitionId);
+            return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while removing team {TeamId} from group {GroupId} in tournament: {TournamentId}", request.TeamId, request.GroupId, request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure("An error occurred while removing the team from the tournament group.");
+            return Result<FloorballTournamentDto>.Failure(
+                "An error occurred while removing the team from the tournament group.",
+                ex.Flatten());
         }
     }
 }

@@ -32,7 +32,7 @@ public static class FloorballMatchesSeeder
             Guid? refereeId = ResolveRefereeId(match.RefereeEmail, emailToRefereeId);
 
             // Idempotent check: look for existing match with same season, home team, away team and scheduled time
-            HttpResponseMessage listResp = await http.GetAsync($"api/floorballmatch?SeasonId={seasonId}&Page=1&PageSize=0");
+            HttpResponseMessage listResp = await http.GetAsync($"api/floorballmatch?CompetitionId={seasonId}&Page=1&PageSize=0");
             if (listResp.IsSuccessStatusCode)
             {
                 PaginatedApiResponse<FloorballMatchDto>? listApi = await listResp.Content.ReadFromJsonAsync<PaginatedApiResponse<FloorballMatchDto>>(jsonOptions);

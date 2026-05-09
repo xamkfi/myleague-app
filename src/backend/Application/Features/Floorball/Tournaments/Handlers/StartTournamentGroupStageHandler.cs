@@ -45,7 +45,6 @@ public class StartTournamentGroupStageHandler : IRequestHandler<StartTournamentG
             _logger.LogInformation("Starting group stage for tournament: {TournamentId}", request.CompetitionId);
             tournament.StartGroupStage();
 
-            await _tournamentRepository.UpdateAsync(tournament);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
@@ -56,12 +55,14 @@ public class StartTournamentGroupStageHandler : IRequestHandler<StartTournamentG
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Business rule violation while starting group stage for tournament: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure(ex.Message);
+            return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while starting group stage for tournament: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure("An error occurred while starting the tournament group stage.");
+            return Result<FloorballTournamentDto>.Failure(
+                "An error occurred while starting the tournament group stage.",
+                ex.Flatten());
         }
     }
 }

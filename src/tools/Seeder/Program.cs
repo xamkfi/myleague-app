@@ -8,6 +8,7 @@ using Application.Features.Common.Persons.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Tournaments.DTOs;
 using Application.Features.Floorball.Players.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
 using WebAPI.Models.Common;
@@ -85,6 +86,9 @@ public static class Program
 			Dictionary<string, Guid> emailToRefereeId = FloorballMatchesSeeder.BuildEmailToRefereeIdMap(allReferees, refereeEmailToPersonId);
 			List<FloorballMatchDto> matches = await FloorballMatchesSeeder.SeedAsync(http, jsonOptions, config.FloorballMatches, seasons, teams, referees, emailToRefereeId);
 
+			// Optional: create tournaments with groups and assign existing teams (requires Teams)
+			List<FloorballTournamentDto> tournaments = await FloorballTournamentsSeeder.SeedAsync(http, jsonOptions, config.FloorballTournaments, teams);
+
 			Console.WriteLine("\nSummary:");
 			Console.WriteLine($"  Persons created: {basePersons.Count}");
 			Console.WriteLine($"  Clubs created: {clubResults.Count}");
@@ -94,6 +98,7 @@ public static class Program
 			Console.WriteLine($"  Seasons created: {seasons.Count}");
 			Console.WriteLine($"  Teams created: {teams.Count}");
 			Console.WriteLine($"  Matches created: {matches.Count}");
+			Console.WriteLine($"  Tournaments created: {tournaments.Count}");
 
 			http.Dispose();
 			return 0;

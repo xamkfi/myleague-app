@@ -62,7 +62,9 @@ public class AddTeamToTournamentGroupHandler : IRequestHandler<AddTeamToTourname
             _logger.LogInformation("Adding team {TeamId} to group {GroupId} in tournament: {TournamentId}", request.TeamId, request.GroupId, request.CompetitionId);
             group.AddTeam(team);
 
-            await _tournamentRepository.UpdateAsync(tournament);
+            // The tournament aggregate is already tracked by the DbContext (loaded via Include),
+            // so EF Core will detect the new join row on SaveChanges. We avoid forcing the parent
+            // state to Modified here; that pattern has historically broken TPH-derived owned types.
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
@@ -73,12 +75,14 @@ public class AddTeamToTournamentGroupHandler : IRequestHandler<AddTeamToTourname
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Business rule violation while adding team to tournament group: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure(ex.Message);
+            return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while adding team {TeamId} to group {GroupId} in tournament: {TournamentId}", request.TeamId, request.GroupId, request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure("An error occurred while adding the team to the tournament group.");
+            return Result<FloorballTournamentDto>.Failure(
+                "An error occurred while adding the team to the tournament group.",
+                ex.Flatten());
         }
     }
 }

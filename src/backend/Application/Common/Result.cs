@@ -80,6 +80,7 @@ public class Result
     public static Result Success() => new(true, null);
     public static Result Failure(string error) => new(false, error);
     public static Result Failure(IEnumerable<string> errors) => new(false, null, errors);
+    public static Result Failure(string error, IEnumerable<string> errors) => new(false, error, errors);
     
     /// <summary>
     /// Creates a failure result from validation errors (string messages)

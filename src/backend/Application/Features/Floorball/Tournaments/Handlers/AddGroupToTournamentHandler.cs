@@ -35,7 +35,7 @@ public class AddGroupToTournamentHandler : IRequestHandler<AddGroupToTournamentC
     {
         try
         {
-            FloorballTournament? tournament = await _tournamentRepository.GetByIdWithGroupsAsync(request.CompetitionId);
+            FloorballTournament? tournament = await _tournamentRepository.GetByIdWithGroupsAsync(request.CompetitionId, cancellationToken);
             if (tournament == null)
             {
                 _logger.LogWarning("Tournament not found with ID: {TournamentId}", request.CompetitionId);
@@ -45,7 +45,10 @@ public class AddGroupToTournamentHandler : IRequestHandler<AddGroupToTournamentC
             _logger.LogInformation("Adding group '{GroupName}' to tournament: {TournamentId}", request.GroupName, request.CompetitionId);
             tournament.AddGroup(request.GroupName);
 
-            await _tournamentRepository.UpdateAsync(tournament);
+            // The tournament aggregate is already tracked by the DbContext (loaded via Include),
+            // so EF Core will detect the new group on SaveChanges. Calling UpdateAsync here would
+            // forcibly mark the parent state to Modified, which is unnecessary and has historically
+            // caused trouble with TPH-derived owned entities.
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
@@ -56,12 +59,14 @@ public class AddGroupToTournamentHandler : IRequestHandler<AddGroupToTournamentC
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Business rule violation while adding group to tournament: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure(ex.Message);
+            return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while adding group to tournament: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure("An error occurred while adding a group to the tournament.");
+            return Result<FloorballTournamentDto>.Failure(
+                "An error occurred while adding a group to the tournament.",
+                ex.Flatten());
         }
     }
 }

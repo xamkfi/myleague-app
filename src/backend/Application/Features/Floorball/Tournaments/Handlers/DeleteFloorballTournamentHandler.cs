@@ -60,10 +60,17 @@ public class DeleteFloorballTournamentHandler : IRequestHandler<DeleteFloorballT
             _logger.LogInformation("Successfully deleted floorball tournament with ID: {TournamentId}", request.CompetitionId);
             return Result.Success();
         }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Business rule violation while deleting tournament: {TournamentId}", request.CompetitionId);
+            return Result.Failure(ex.Message, ex.Flatten());
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while deleting floorball tournament: {TournamentId}", request.CompetitionId);
-            return Result.Failure("An error occurred while deleting the floorball tournament.");
+            return Result.Failure(
+                "An error occurred while deleting the floorball tournament.",
+                ex.Flatten());
         }
     }
 }

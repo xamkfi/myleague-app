@@ -90,10 +90,22 @@ public class CreateFloorballTournamentHandler : IRequestHandler<CreateFloorballT
 
             return Result<FloorballTournamentDto>.Success(tournamentDto);
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid argument while creating floorball tournament: {Name}", request.Name);
+            return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Business rule violation while creating floorball tournament: {Name}", request.Name);
+            return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while creating floorball tournament: {Name}", request.Name);
-            return Result<FloorballTournamentDto>.Failure("An error occurred while creating the floorball tournament.");
+            return Result<FloorballTournamentDto>.Failure(
+                "An error occurred while creating the floorball tournament.",
+                ex.Flatten());
         }
     }
 }

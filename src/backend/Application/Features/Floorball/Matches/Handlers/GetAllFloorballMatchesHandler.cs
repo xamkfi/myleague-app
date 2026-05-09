@@ -70,7 +70,7 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
             // Check for cancellation before starting
             cancellationToken.ThrowIfCancellationRequested();
 
-            _logger.LogInformation("Retrieving floorball matches - Page: {Page}, PageSize: {PageSize}, SeasonId: {SeasonId}, TeamId: {TeamId}, StartDate: {StartDate}, EndDate: {EndDate}, SearchQuery: {SearchQuery}, Status: {Status}", 
+            _logger.LogInformation("Retrieving floorball matches - Page: {Page}, PageSize: {PageSize}, CompetitionId: {CompetitionId}, TeamId: {TeamId}, StartDate: {StartDate}, EndDate: {EndDate}, SearchQuery: {SearchQuery}, Status: {Status}", 
                 request.Page, request.PageSize, request.CompetitionId, request.TeamId, request.StartDate, request.EndDate, request.SearchQuery, request.Status);
 
             // Validate pagination parameters using base handler

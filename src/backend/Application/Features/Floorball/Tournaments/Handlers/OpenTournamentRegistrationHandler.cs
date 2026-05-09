@@ -45,7 +45,6 @@ public class OpenTournamentRegistrationHandler : IRequestHandler<OpenTournamentR
             _logger.LogInformation("Opening registration for tournament: {TournamentId}", request.CompetitionId);
             tournament.OpenRegistration();
 
-            await _tournamentRepository.UpdateAsync(tournament);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
@@ -56,12 +55,14 @@ public class OpenTournamentRegistrationHandler : IRequestHandler<OpenTournamentR
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Business rule violation while opening registration for tournament: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure(ex.Message);
+            return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while opening registration for tournament: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure("An error occurred while opening tournament registration.");
+            return Result<FloorballTournamentDto>.Failure(
+                "An error occurred while opening tournament registration.",
+                ex.Flatten());
         }
     }
 }

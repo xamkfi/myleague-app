@@ -157,6 +157,39 @@
       }
     ],
 
+    "FloorballTournaments": [
+      {
+        "Name": "2027 Spring Cup",
+        "StartDate": "2027-06-01",
+        "EndDate": "2027-06-15",
+        "Venue": "Helsinki Arena",
+        "ContentHtml": "<p>Annual spring invitational floorball cup featuring the top clubs of the league.</p>",
+        "GroupStageNumberOfPeriods": 3,
+        "GroupStagePeriodDurationMinutes": 20,
+        "GroupStageAllowOvertime": false,
+        "GroupStageOvertimeDurationMinutes": 5,
+        "GroupStageAllowShootout": false,
+        "PlayoffNumberOfPeriods": 3,
+        "PlayoffPeriodDurationMinutes": 20,
+        "PlayoffAllowOvertime": true,
+        "PlayoffOvertimeDurationMinutes": 10,
+        "PlayoffAllowShootout": true,
+        "TeamsAdvancingPerGroup": 2,
+        "HasPlayoffStage": true,
+        "HasThirdPlaceMatch": false,
+        "Groups": [
+          {
+            "Name": "Group A",
+            "TeamNames": ["Helsinki Hammers", "Tampere Titans", "Turku Thunder"]
+          },
+          {
+            "Name": "Group B",
+            "TeamNames": ["Oulu Outlaws", "Espoo Eagles", "Vantaa Vikings"]
+          }
+        ]
+      }
+    ],
+
     "FloorballTeams": [
       {
         "Name": "Helsinki Hammers",

@@ -87,7 +87,6 @@ public class UpdateFloorballTournamentHandler : IRequestHandler<UpdateFloorballT
             tournament.UpdateTournamentRules(tournamentRules);
 
             _logger.LogInformation("Updating floorball tournament: {TournamentId}", tournament.Id);
-            await _tournamentRepository.UpdateAsync(tournament);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
@@ -95,15 +94,22 @@ public class UpdateFloorballTournamentHandler : IRequestHandler<UpdateFloorballT
 
             return Result<FloorballTournamentDto>.Success(tournamentDto);
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid argument while updating tournament: {TournamentId}", request.CompetitionId);
+            return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
+        }
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Business rule violation while updating tournament: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure(ex.Message);
+            return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while updating floorball tournament: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure("An error occurred while updating the floorball tournament.");
+            return Result<FloorballTournamentDto>.Failure(
+                "An error occurred while updating the floorball tournament.",
+                ex.Flatten());
         }
     }
 }

@@ -45,7 +45,6 @@ public class CompleteTournamentHandler : IRequestHandler<CompleteTournamentComma
             _logger.LogInformation("Completing tournament: {TournamentId}", request.CompetitionId);
             tournament.CompleteTournament();
 
-            await _tournamentRepository.UpdateAsync(tournament);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
@@ -56,12 +55,14 @@ public class CompleteTournamentHandler : IRequestHandler<CompleteTournamentComma
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Business rule violation while completing tournament: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure(ex.Message);
+            return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while completing tournament: {TournamentId}", request.CompetitionId);
-            return Result<FloorballTournamentDto>.Failure("An error occurred while completing the tournament.");
+            return Result<FloorballTournamentDto>.Failure(
+                "An error occurred while completing the tournament.",
+                ex.Flatten());
         }
     }
 }

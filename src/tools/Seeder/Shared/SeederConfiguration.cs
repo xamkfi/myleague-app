@@ -22,6 +22,7 @@ public sealed class SeederConfiguration
     public List<PersonSeed> GoaliePersons { get; set; } = new List<PersonSeed>();
     public List<PersonSeed> RefereePersons { get; set; } = new List<PersonSeed>();
     public List<FloorballSeasonSeed> FloorballSeasons { get; set; } = new List<FloorballSeasonSeed>();
+    public List<FloorballTournamentSeed> FloorballTournaments { get; set; } = new List<FloorballTournamentSeed>();
     public List<FloorballTeamSeed> FloorballTeams { get; set; } = new List<FloorballTeamSeed>();
     public List<FloorballMatchSeed> FloorballMatches { get; set; } = new List<FloorballMatchSeed>();
 

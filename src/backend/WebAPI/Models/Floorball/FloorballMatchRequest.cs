@@ -10,7 +10,7 @@ namespace WebAPI.Models.Floorball;
 public record GetFloorballMatchesRequest : PagedRequestBase
 {
     /// <summary>
-    /// Gets the season ID filter
+    /// Gets the competition ID filter (season or tournament)
     /// </summary>
     public Guid? CompetitionId { get; init; }
 
@@ -67,9 +67,9 @@ public record GetTeamMatchesRequest : PagedRequestBase
 public record CreateFloorballMatchRequest
 {
     /// <summary>
-    /// Gets the season ID
+    /// Gets the competition ID (season or tournament)
     /// </summary>
-    [Required(ErrorMessage = "Season ID is required")]
+    [Required(ErrorMessage = "Competition ID is required")]
     public Guid? CompetitionId { get; init; }
 
     /// <summary>
