@@ -253,13 +253,26 @@ namespace WebAPI.Controllers.Floorball
             if (!DateTime.TryParse(request.ScheduledDateTime, out DateTime scheduledDateTime))
                 return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse("Invalid scheduled date and time format"));
 
+            Domain.Enums.Floorball.FloorballTournamentStage? stage = null;
+            if (!string.IsNullOrWhiteSpace(request.TournamentStage))
+            {
+                if (!Enum.TryParse(request.TournamentStage, true, out Domain.Enums.Floorball.FloorballTournamentStage parsedStage))
+                {
+                    return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(
+                        $"Invalid tournament stage '{request.TournamentStage}'. Valid values: {string.Join(", ", Enum.GetNames(typeof(Domain.Enums.Floorball.FloorballTournamentStage)))}"));
+                }
+                stage = parsedStage;
+            }
+
             CreateFloorballMatchCommand command = new CreateFloorballMatchCommand(
                 request.CompetitionId,
                 request.HomeTeamId,
                 request.AwayTeamId,
                 request.RefereeId,
                 scheduledDateTime,
-                request.Venue
+                request.Venue,
+                request.TournamentGroupId,
+                stage
             );
 
             Result<FloorballMatchDto> result = await _mediator.Send(command);

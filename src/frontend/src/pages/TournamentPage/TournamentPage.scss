@@ -1,48 +1,82 @@
 @use 'sass:map';
 @use '@variables' as *;
 
-// Tournament-specific tweaks layered on top of `.league-page` styling, which is imported alongside.
+// TournamentPage now uses its own FloorballPage-style header (gradient blue) instead of the
+// hero-image LeaguePage layout, so the page reads as a focused tournament view with a clear
+// description and lifecycle status (Tulossa / Käynnissä / Päättynyt).
 
 .tournament-page {
-  &__content {
-    display: flex;
-    flex-direction: column;
-    gap: map.get($spacing, 'lg');
-  }
+  width: 100%;
+  max-width: $max-width-page;
+  margin: 0 auto;
+  padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'xl');
 
-  &__about {
-    background: $color-white;
+  &__hero {
+    background: linear-gradient(135deg, $color-blue-deep 0%, $color-blue-darkest 100%);
     border-radius: map.get($border-radius, 'lg');
-    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
-    box-shadow: $box-shadow-drop-1;
-    color: $color-neutral-black;
+    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+    margin-bottom: map.get($spacing, 'xl');
+    position: relative;
+    overflow: hidden;
+    color: $color-white;
 
-    h2 {
-      margin: 0 0 map.get($spacing, 'sm');
-      font-size: map.get($font-sizes, 'lg');
+    &::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba($color-blue-secondary, 0.18) 0%, transparent 70%);
+      pointer-events: none;
     }
   }
 
-  &__group-block {
+  &__hero-row {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    gap: map.get($spacing, 'md');
-    margin-bottom: map.get($spacing, 'md');
+    align-items: flex-start;
+    gap: map.get($spacing, 'lg');
+    flex-wrap: wrap;
+  }
 
-    &-title {
-      font-size: map.get($font-sizes, 'lg');
-      font-weight: map.get($font-weights, 'bold');
-      color: $color-neutral-black;
-      margin: 0 0 map.get($spacing, 'xs');
-    }
+  &__icon {
+    flex-shrink: 0;
+    width: 96px;
+    height: 96px;
+    border-radius: map.get($border-radius, 'lg-plus');
+    background: rgba($color-white, 0.12);
+    border: 1px solid rgba($color-white, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    box-shadow: $box-shadow-drop-1;
+  }
+
+  &__heading {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, 'xxl');
+    font-weight: map.get($font-weights, 'extrabold');
+    color: $color-white;
+    margin: 0 0 map.get($spacing, 'sm');
+    font-family: $font-family-display;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    line-height: 1.1;
   }
 
   &__meta {
     display: flex;
     flex-wrap: wrap;
-    gap: map.get($spacing, 'lg');
+    gap: map.get($spacing, 'md');
+    align-items: center;
     color: rgba($color-white, 0.85);
-    font-size: map.get($font-sizes, 'base');
+    font-size: map.get($font-sizes, 'sm');
     margin-bottom: map.get($spacing, 'sm');
 
     span {
@@ -52,14 +86,173 @@
     }
   }
 
+  &__description {
+    color: rgba($color-white, 0.85);
+    font-size: map.get($font-sizes, 'md');
+    line-height: 1.55;
+    max-width: 720px;
+    margin: 0;
+
+    p { margin: 0 0 map.get($spacing, 'sm'); }
+    p:last-child { margin: 0; }
+  }
+
   &__status-pill {
-    display: inline-block;
-    padding: map.get($spacing, '2xs') map.get($spacing, 'sm');
+    display: inline-flex;
+    align-items: center;
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
     border-radius: 9999px;
     font-size: map.get($font-sizes, 'xs');
     font-weight: map.get($font-weights, 'bold');
     color: $color-white;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    border: 1px solid rgba($color-white, 0.3);
+
+    &--upcoming { background: $color-blue-secondary; }
+    &--ongoing { background: $color-green-primary; }
+    &--past { background: rgba($color-white, 0.18); }
+  }
+
+  &__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xs');
+    margin-bottom: map.get($spacing, 'lg');
+  }
+
+  &__tab {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    background: $color-white;
+    border: 1px solid rgba($color-blue-deep, 0.15);
+    color: $color-blue-deep;
+    border-radius: map.get($border-radius, 'lg');
+    cursor: pointer;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: map.get($font-sizes, 'sm');
+    transition: all 0.2s ease;
+    box-shadow: $box-shadow-drop-1;
+
+    &:hover {
+      background: rgba($color-blue-secondary, 0.08);
+      color: $color-blue-deep;
+    }
+
+    &--active {
+      background: $color-blue-deep;
+      color: $color-white;
+      border-color: $color-blue-deep;
+      font-weight: map.get($font-weights, 'bold');
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'lg');
+  }
+
+  &__card {
+    background: $color-white;
+    border-radius: map.get($border-radius, 'lg');
+    padding: map.get($spacing, 'lg');
+    box-shadow: $box-shadow-drop-1;
+    color: $color-neutral-black;
+
+    h2 {
+      margin: 0 0 map.get($spacing, 'sm');
+      font-size: map.get($font-sizes, 'lg');
+      color: $color-blue-deep;
+    }
+  }
+
+  &__overview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'lg') map.get($spacing, 'xl');
+    font-size: map.get($font-sizes, 'base');
+    color: $color-neutral-black;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .label {
+      font-size: map.get($font-sizes, 'xs');
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: rgba($color-neutral-black, 0.6);
+      font-weight: map.get($font-weights, 'semibold');
+    }
+
+    .value {
+      font-weight: map.get($font-weights, 'bold');
+      color: $color-blue-deep;
+      font-size: map.get($font-sizes, 'lg');
+    }
+  }
+
+  &__group-block {
+    background: $color-white;
+    border-radius: map.get($border-radius, 'lg');
+    padding: map.get($spacing, 'lg');
+    box-shadow: $box-shadow-drop-1;
+    color: $color-neutral-black;
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'md');
+
+    &-title {
+      font-size: map.get($font-sizes, 'lg');
+      font-weight: map.get($font-weights, 'bold');
+      color: $color-blue-deep;
+      margin: 0;
+    }
+  }
+
+  &__empty {
+    text-align: center;
+    padding: map.get($spacing, 'lg');
+    color: rgba($color-neutral-black, 0.6);
+
+    h3 {
+      margin: 0 0 map.get($spacing, 'xs');
+      color: $color-blue-deep;
+      font-size: map.get($font-sizes, 'md');
+    }
+
+    p {
+      margin: 0;
+      font-size: map.get($font-sizes, 'sm');
+    }
+  }
+
+  &__notice {
+    text-align: center;
+    color: rgba($color-neutral-black, 0.6);
+    padding: map.get($spacing, 'md');
+  }
+}
+
+@media (max-width: 768px) {
+  .tournament-page {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md') map.get($spacing, 'lg');
+
+    &__hero {
+      padding: map.get($spacing, 'lg') map.get($spacing, 'md');
+      margin-bottom: map.get($spacing, 'lg');
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'xl');
+    }
+
+    &__icon {
+      width: 72px;
+      height: 72px;
+      font-size: 2.25rem;
+    }
   }
 }

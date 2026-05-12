@@ -105,6 +105,18 @@ public record CreateFloorballMatchRequest
     /// </summary>
     [StringLength(200, ErrorMessage = "Venue cannot exceed 200 characters")]
     public string? Venue { get; init; }
+
+    /// <summary>
+    /// Optional tournament group ID for tournament group-stage matches.
+    /// Ignored for league matches.
+    /// </summary>
+    public Guid? TournamentGroupId { get; init; }
+
+    /// <summary>
+    /// Optional tournament stage label (e.g. "GroupStage", "Quarterfinal") for tournament matches.
+    /// Ignored for league matches.
+    /// </summary>
+    public string? TournamentStage { get; init; }
 }
 
 /// <summary>

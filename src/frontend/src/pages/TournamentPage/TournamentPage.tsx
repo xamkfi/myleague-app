@@ -19,20 +19,25 @@ import type {
   FloorballTournamentDto,
   FloorballTournamentGroupDto
 } from '../../types/floorball/tournamentTypes';
-import '../LeaguePage/LeaguePage.scss';
 import './TournamentPage.scss';
 
 type TabType = 'summary' | 'groups' | 'statistics' | 'results' | 'fixtures';
 
 const VALID_TABS: TabType[] = ['summary', 'groups', 'statistics', 'results', 'fixtures'];
 
-const STATUS_COLORS: Record<string, string> = {
-  Draft: '#6b7280',
-  Registration: '#3b82f6',
-  GroupStage: '#f59e0b',
-  PlayoffStage: '#8b5cf6',
-  Completed: '#10b981'
-};
+type LifecycleStatus = 'upcoming' | 'ongoing' | 'past';
+
+const NOT_FOUND_PATTERNS = [
+  'was not found',
+  'season statistics with key',
+  'no statistics found'
+];
+
+function isNotFoundError(message: string | null | undefined): boolean {
+  if (!message) return false;
+  const lower = message.toLowerCase();
+  return NOT_FOUND_PATTERNS.some((pattern) => lower.includes(pattern));
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('fi-FI', {
@@ -40,6 +45,18 @@ function formatDate(iso: string): string {
     month: 'long',
     day: 'numeric'
   });
+}
+
+function getLifecycleStatus(tournament: FloorballTournamentDto): LifecycleStatus {
+  if (tournament.tournamentStatus === 'Completed' || tournament.isCompleted) {
+    return 'past';
+  }
+  const now = Date.now();
+  const start = new Date(tournament.startDate).getTime();
+  const end = new Date(tournament.endDate).getTime();
+  if (now < start) return 'upcoming';
+  if (now > end) return 'past';
+  return 'ongoing';
 }
 
 function getStatusForTab(tab: TabType): FloorballMatchStatus | undefined {
@@ -73,17 +90,14 @@ function TournamentPage() {
     }
   }, [searchParams]);
 
-  // Tournament data
   const [tournament, setTournament] = useState<FloorballTournamentDto | null>(null);
   const [tournamentLoading, setTournamentLoading] = useState(true);
   const [tournamentError, setTournamentError] = useState<string | null>(null);
 
-  // Statistics summary (used by Summary and Statistics tabs, and as a teaser on others)
   const [statsSummary, setStatsSummary] = useState<FloorballSeasonStatisticsSummaryDto | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
 
-  // Matches list state (Results / Fixtures tabs)
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [matchesError, setMatchesError] = useState<string | null>(null);
@@ -124,7 +138,7 @@ function TournamentPage() {
     };
   }, [id]);
 
-  // Fetch statistics summary
+  // Fetch statistics summary; treat "not found" as "no stats yet" (empty), not as an error.
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
@@ -138,9 +152,15 @@ function TournamentPage() {
         }
       } catch (err) {
         if (!cancelled) {
-          // Tournament may have no completed matches yet — surface the error in dependent tabs only
-          setStatsError(err instanceof Error ? err.message : 'Failed to load statistics');
-          setStatsSummary(null);
+          const message = err instanceof Error ? err.message : 'Failed to load statistics';
+          if (isNotFoundError(message)) {
+            // Tournament has no completed matches yet — that's an expected empty state, not an error.
+            setStatsSummary(null);
+            setStatsError(null);
+          } else {
+            setStatsError(message);
+            setStatsSummary(null);
+          }
         }
       } finally {
         if (!cancelled) {
@@ -202,18 +222,18 @@ function TournamentPage() {
   }, [tournament]);
 
   const tabs: { key: TabType; label: string }[] = [
-    { key: 'summary', label: t('leaguePage.tabs.summary', 'Summary') },
-    { key: 'groups', label: t('tournaments.tabs.groups', 'Groups') },
-    { key: 'statistics', label: t('leaguePage.tabs.statistics', 'Statistics') },
-    { key: 'results', label: t('leaguePage.tabs.results', 'Results') },
-    { key: 'fixtures', label: t('leaguePage.tabs.fixtures', 'Fixtures') }
+    { key: 'summary', label: t('leaguePage.tabs.summary', 'Yhteenveto') },
+    { key: 'groups', label: t('tournaments.tabs.groups', 'Lohkot') },
+    { key: 'statistics', label: t('leaguePage.tabs.statistics', 'Tilastot') },
+    { key: 'results', label: t('leaguePage.tabs.results', 'Tulokset') },
+    { key: 'fixtures', label: t('leaguePage.tabs.fixtures', 'Otteluohjelma') }
   ];
 
   if (tournamentLoading) {
     return (
-      <PageTemplate title={t('tournaments.loading', 'Loading...')}>
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
-          <p>{t('common.loading', 'Loading...')}</p>
+      <PageTemplate title={t('tournaments.loading', 'Ladataan...')}>
+        <div className="tournament-page">
+          <div className="tournament-page__notice">{t('common.loading', 'Ladataan...')}</div>
         </div>
       </PageTemplate>
     );
@@ -221,46 +241,74 @@ function TournamentPage() {
 
   if (tournamentError || !tournament) {
     return (
-      <PageTemplate title={t('tournaments.error', 'Error')}>
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
-          <p style={{ color: '#ef4444', marginBottom: '1rem' }}>
-            {tournamentError ?? t('tournaments.notFound', 'Tournament not found')}
-          </p>
-          <Link to="/tournaments" style={{ color: '#3b82f6' }}>
-            {t('tournaments.backToList', 'Back to tournaments')}
-          </Link>
+      <PageTemplate title={t('tournaments.error', 'Virhe')}>
+        <div className="tournament-page">
+          <div className="tournament-page__card tournament-page__notice">
+            <p style={{ color: '#ef4444', marginBottom: '0.5rem' }}>
+              {tournamentError ?? t('tournaments.notFound', 'Turnausta ei löytynyt')}
+            </p>
+            <Link to="/tournaments">
+              {t('tournaments.backToList', 'Takaisin turnauslistaan')}
+            </Link>
+          </div>
         </div>
       </PageTemplate>
     );
   }
 
+  const lifecycle = getLifecycleStatus(tournament);
+  const lifecycleLabels: Record<LifecycleStatus, string> = {
+    upcoming: t('tournaments.status.upcoming', 'Tulossa'),
+    ongoing: t('tournaments.status.ongoing', 'Käynnissä'),
+    past: t('tournaments.status.past', 'Päättynyt')
+  };
+  const description =
+    tournament.contentHtml ||
+    t(
+      'tournaments.defaultDescription',
+      'Selaa turnauksen lohkoja, tuloksia, tulevia otteluita ja tilastoja.'
+    );
+
   const renderSummaryTab = () => (
     <div className="tournament-page__content">
-      {tournament.contentHtml && (
-        <div className="tournament-page__about">
-          <h2>{t('tournaments.about', 'About')}</h2>
-          <div dangerouslySetInnerHTML={{ __html: tournament.contentHtml }} />
-        </div>
-      )}
-
-      <div className="tournament-page__about">
-        <h2>{t('tournaments.overview', 'Overview')}</h2>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', fontSize: '0.95rem' }}>
-          <span><strong>{tournament.teamCount}</strong> {t('tournaments.teams', 'teams')}</span>
-          <span><strong>{tournament.matchCount}</strong> {t('tournaments.matches', 'matches')}</span>
-          <span><strong>{tournament.groups.length}</strong> {t('tournaments.groups', 'groups')}</span>
+      <div className="tournament-page__card">
+        <h2>{t('tournaments.overview', 'Yleiskatsaus')}</h2>
+        <div className="tournament-page__overview">
+          <div>
+            <span className="label">{t('tournaments.teams', 'Joukkueet')}</span>
+            <span className="value">{tournament.teamCount}</span>
+          </div>
+          <div>
+            <span className="label">{t('tournaments.matches', 'Ottelut')}</span>
+            <span className="value">{tournament.matchCount}</span>
+          </div>
+          <div>
+            <span className="label">{t('tournaments.groups', 'Lohkot')}</span>
+            <span className="value">{tournament.groups.length}</span>
+          </div>
           {tournament.venue && (
-            <span>
-              <i className="fas fa-map-marker-alt" style={{ marginRight: '0.4rem' }}></i>
-              {tournament.venue}
-            </span>
+            <div>
+              <span className="label">{t('tournaments.venue', 'Paikka')}</span>
+              <span className="value" style={{ fontSize: '1rem' }}>{tournament.venue}</span>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Top scorers / goalies preview from full statistics summary */}
       {(statsSummary || statsLoading) && (
         <LeagueStanding seasonSummary={statsSummary} loading={statsLoading} error={null} />
+      )}
+
+      {!statsLoading && !statsSummary && (
+        <div className="tournament-page__card tournament-page__empty">
+          <h3>{t('tournaments.statsEmptyTitle', 'Tilastoja ei vielä ole')}</h3>
+          <p>
+            {t(
+              'tournaments.statsEmptyDescription',
+              'Tilastot päivittyvät automaattisesti, kun turnauksen ensimmäiset ottelut on pelattu.'
+            )}
+          </p>
+        </div>
       )}
     </div>
   );
@@ -269,8 +317,9 @@ function TournamentPage() {
     if (!id) return null;
     if (sortedGroups.length === 0) {
       return (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
-          {t('tournaments.noGroups', 'No groups have been created yet.')}
+        <div className="tournament-page__card tournament-page__empty">
+          <h3>{t('tournaments.noGroupsTitle', 'Lohkoja ei ole vielä luotu')}</h3>
+          <p>{t('tournaments.noGroups', 'Lohkot näkyvät tässä, kun turnauksen järjestäjä on lisännyt ne.')}</p>
         </div>
       );
     }
@@ -283,13 +332,38 @@ function TournamentPage() {
     );
   };
 
-  const renderStatisticsTab = () => (
-    <LeagueStanding
-      seasonSummary={statsSummary}
-      loading={statsLoading}
-      error={statsError}
-    />
-  );
+  const renderStatisticsTab = () => {
+    if (statsError) {
+      return (
+        <div className="tournament-page__card tournament-page__empty">
+          <h3>{t('tournaments.statsErrorTitle', 'Tilastojen lataus epäonnistui')}</h3>
+          <p>{statsError}</p>
+        </div>
+      );
+    }
+
+    if (!statsLoading && !statsSummary) {
+      return (
+        <div className="tournament-page__card tournament-page__empty">
+          <h3>{t('tournaments.statsEmptyTitle', 'Tilastoja ei vielä ole')}</h3>
+          <p>
+            {t(
+              'tournaments.statsEmptyDescription',
+              'Tilastot päivittyvät automaattisesti, kun turnauksen ensimmäiset ottelut on pelattu.'
+            )}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <LeagueStanding
+        seasonSummary={statsSummary}
+        loading={statsLoading}
+        error={null}
+      />
+    );
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -320,56 +394,53 @@ function TournamentPage() {
 
   return (
     <PageTemplate title={tournament.name}>
-      <div className="league-page tournament-page">
-        <div className="hero-image-container">
-          <div className="hero-image"></div>
-
-          <div className="league-header">
-            <div className="header-content">
-              <div className="league-branding">
-                <div className="league-icon">
-                  <div className="trophy-icon">🏆</div>
-                </div>
-              </div>
-
-              <div className="league-info">
-                <h1 className="league-title">{tournament.name}</h1>
-                <div className="tournament-page__meta">
+      <div className="tournament-page">
+        <header className="tournament-page__hero">
+          <div className="tournament-page__hero-row">
+            <div className="tournament-page__icon" aria-hidden="true">🏆</div>
+            <div className="tournament-page__heading">
+              <h1 className="tournament-page__title">{tournament.name}</h1>
+              <div className="tournament-page__meta">
+                <span>
+                  <i className="fas fa-calendar-alt" aria-hidden="true"></i>
+                  {formatDate(tournament.startDate)} – {formatDate(tournament.endDate)}
+                </span>
+                {tournament.venue && (
                   <span>
-                    <i className="fas fa-calendar-alt"></i>
-                    {formatDate(tournament.startDate)} – {formatDate(tournament.endDate)}
+                    <i className="fas fa-map-marker-alt" aria-hidden="true"></i>
+                    {tournament.venue}
                   </span>
-                  {tournament.venue && (
-                    <span>
-                      <i className="fas fa-map-marker-alt"></i>
-                      {tournament.venue}
-                    </span>
-                  )}
-                  <span
-                    className="tournament-page__status-pill"
-                    style={{ backgroundColor: STATUS_COLORS[tournament.tournamentStatus] ?? '#6b7280' }}
-                  >
-                    {tournament.tournamentStatus}
-                  </span>
-                </div>
-
-                <div className="league-tabs">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.key}
-                      className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
-                      onClick={() => handleTabChange(tab.key)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
+                )}
+                <span className={`tournament-page__status-pill tournament-page__status-pill--${lifecycle}`}>
+                  {lifecycleLabels[lifecycle]}
+                </span>
               </div>
+              {tournament.contentHtml ? (
+                <div
+                  className="tournament-page__description"
+                  dangerouslySetInnerHTML={{ __html: tournament.contentHtml }}
+                />
+              ) : (
+                <p className="tournament-page__description">{description}</p>
+              )}
             </div>
           </div>
-        </div>
+        </header>
 
-        <div className="league-content">{renderTabContent()}</div>
+        <nav className="tournament-page__tabs" aria-label={t('tournaments.tabsAria', 'Turnauksen välilehdet')}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={`tournament-page__tab ${activeTab === tab.key ? 'tournament-page__tab--active' : ''}`}
+              onClick={() => handleTabChange(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        {renderTabContent()}
       </div>
     </PageTemplate>
   );
@@ -429,7 +500,7 @@ function GroupSection({ competitionId, group }: GroupSectionProps) {
   return (
     <div className="tournament-page__group-block">
       <h2 className="tournament-page__group-block-title">
-        {t('tournaments.group', 'Group')} {group.name}
+        {t('tournaments.group', 'Lohko')} {group.name}
       </h2>
 
       <TournamentGroupStandingsTable groupId={group.id} groupName={group.name} />

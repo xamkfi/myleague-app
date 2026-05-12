@@ -117,7 +117,7 @@ export default function MatchPage() {
       <PageTemplate title="Match Details">
         <div className="match-page">
           <MatchBreadcrumb 
-            seasonName={match.seasonName}
+            seasonName={match.competitionName}
             competitionId={match.competitionId}
           />
           <MatchHeader match={match} />

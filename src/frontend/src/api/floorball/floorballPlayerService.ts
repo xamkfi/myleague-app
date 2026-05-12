@@ -60,7 +60,12 @@ export interface FloorballPlayerMatchStatsDto {
 export interface FloorballPlayerMatchDto {
   id: string;
   competitionId: string;
-  seasonName: string;
+  /**
+   * Display name of the competition (season or tournament).
+   * Backend renamed from "seasonName" to "competitionName" when seasons were
+   * generalized to FloorballCompetition (TPH base for seasons + tournaments).
+   */
+  competitionName: string;
   homeTeamId: string;
   homeTeamName: string;
   awayTeamId: string;

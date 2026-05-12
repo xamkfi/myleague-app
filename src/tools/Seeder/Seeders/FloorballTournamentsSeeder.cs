@@ -69,6 +69,8 @@ public static class FloorballTournamentsSeeder
 		JsonSerializerOptions jsonOptions,
 		FloorballTournamentSeed seed)
 	{
+		(DateTime startUtc, DateTime endUtc) = ComputeTournamentWindowUtc();
+
 		HttpResponseMessage listResp = await http.GetAsync("api/floorballtournament");
 		if (listResp.IsSuccessStatusCode)
 		{
@@ -78,7 +80,12 @@ public static class FloorballTournamentsSeeder
 				FloorballTournamentDto? existing = listApi.Data.FirstOrDefault(t => string.Equals(t.Name, seed.Name, StringComparison.OrdinalIgnoreCase));
 				if (existing != null)
 				{
-					Console.WriteLine($"Tournament exists, skipping create: {existing.Name} ({existing.Id})");
+					Console.WriteLine($"Tournament exists, refreshing dates: {existing.Name} ({existing.Id})");
+
+					// Refresh the tournament's window so it always looks current (dates anchored to "now").
+					// This keeps the lifecycle status (Tulossa/Käynnissä/Päättynyt) sensible across re-runs.
+					await TryRefreshTournamentDatesAsync(http, jsonOptions, existing, seed, startUtc, endUtc);
+
 					// The list endpoint does not eagerly load groups, so re-fetch full details by ID
 					// to make subsequent idempotency checks (groups, group teams) work correctly.
 					HttpResponseMessage detailResp = await http.GetAsync($"api/floorballtournament/{existing.Id}");
@@ -95,11 +102,14 @@ public static class FloorballTournamentsSeeder
 			}
 		}
 
+		// Always anchor tournament dates to "now" so the seeded tournament looks current
+		// (some matches in the past are completed with stats; some upcoming matches remain scheduled).
+		// This overrides the JSON-supplied dates so re-seeding after time has passed still produces a believable window.
 		CreateFloorballTournamentRequest request = new CreateFloorballTournamentRequest
 		{
 			Name = seed.Name,
-			StartDate = ParseDate(seed.StartDate, nameof(seed.StartDate)),
-			EndDate = ParseDate(seed.EndDate, nameof(seed.EndDate)),
+			StartDate = startUtc,
+			EndDate = endUtc,
 			Venue = seed.Venue,
 			ContentHtml = seed.ContentHtml,
 			GroupStageNumberOfPeriods = seed.GroupStageNumberOfPeriods,
@@ -173,5 +183,78 @@ public static class FloorballTournamentsSeeder
 			throw new InvalidOperationException($"Invalid {fieldName}: '{value}' (expected ISO-8601 date)");
 		}
 		return parsed;
+	}
+
+	/// <summary>
+	/// Returns a tournament window anchored to the current UTC time:
+	/// starts 7 days ago and ends 14 days from now, so seeded tournaments always look "currently running".
+	/// </summary>
+	private static (DateTime StartUtc, DateTime EndUtc) ComputeTournamentWindowUtc()
+	{
+		DateTime nowUtc = DateTime.UtcNow.Date;
+		DateTime startUtc = DateTime.SpecifyKind(nowUtc.AddDays(-7), DateTimeKind.Utc);
+		DateTime endUtc = DateTime.SpecifyKind(nowUtc.AddDays(14), DateTimeKind.Utc);
+		return (startUtc, endUtc);
+	}
+
+	/// <summary>
+	/// Refreshes the start/end dates of an existing tournament so they stay anchored to "now".
+	/// Failures are logged but never abort the seed run — keeping idempotency forgiving.
+	/// </summary>
+	private static async Task TryRefreshTournamentDatesAsync(
+		HttpClient http,
+		JsonSerializerOptions jsonOptions,
+		FloorballTournamentDto existing,
+		FloorballTournamentSeed seed,
+		DateTime startUtc,
+		DateTime endUtc)
+	{
+		// Skip the update if dates already line up with the dynamic window (within a 1-day tolerance).
+		bool startsClose = Math.Abs((existing.StartDate.ToUniversalTime() - startUtc).TotalDays) < 1.0;
+		bool endsClose = Math.Abs((existing.EndDate.ToUniversalTime() - endUtc).TotalDays) < 1.0;
+		if (startsClose && endsClose)
+		{
+			return;
+		}
+
+		UpdateFloorballTournamentRequest update = new UpdateFloorballTournamentRequest
+		{
+			Name = existing.Name,
+			StartDate = startUtc,
+			EndDate = endUtc,
+			Venue = existing.Venue,
+			ContentHtml = existing.ContentHtml,
+			GroupStageNumberOfPeriods = seed.GroupStageNumberOfPeriods,
+			GroupStagePeriodDurationMinutes = seed.GroupStagePeriodDurationMinutes,
+			GroupStageAllowOvertime = seed.GroupStageAllowOvertime,
+			GroupStageOvertimeDurationMinutes = seed.GroupStageOvertimeDurationMinutes,
+			GroupStageAllowShootout = seed.GroupStageAllowShootout,
+			PlayoffNumberOfPeriods = seed.PlayoffNumberOfPeriods,
+			PlayoffPeriodDurationMinutes = seed.PlayoffPeriodDurationMinutes,
+			PlayoffAllowOvertime = seed.PlayoffAllowOvertime,
+			PlayoffOvertimeDurationMinutes = seed.PlayoffOvertimeDurationMinutes,
+			PlayoffAllowShootout = seed.PlayoffAllowShootout,
+			TeamsAdvancingPerGroup = seed.TeamsAdvancingPerGroup,
+			HasPlayoffStage = seed.HasPlayoffStage,
+			HasThirdPlaceMatch = seed.HasThirdPlaceMatch
+		};
+
+		try
+		{
+			HttpResponseMessage response = await http.PutAsJsonAsync($"api/floorballtournament/{existing.Id}", update);
+			if (response.IsSuccessStatusCode)
+			{
+				Console.WriteLine($"  Refreshed tournament window to {startUtc:yyyy-MM-dd} - {endUtc:yyyy-MM-dd}");
+			}
+			else
+			{
+				string body = await response.Content.ReadAsStringAsync();
+				Console.WriteLine($"  Warning: failed to refresh tournament window ({(int)response.StatusCode}): {body}");
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"  Warning: tournament window refresh threw: {ex.Message}");
+		}
 	}
 }

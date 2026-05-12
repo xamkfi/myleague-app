@@ -137,16 +137,29 @@ public static class FloorballMatchesSeeder
     public static async Task<List<FloorballRefereeDto>> FetchAllRefereesFromApiAsync(HttpClient http, JsonSerializerOptions jsonOptions)
     {
         List<FloorballRefereeDto> all = new List<FloorballRefereeDto>();
-        const int pageSize = 100;
+        // 50 is the most restrictive MaxPageSize across environments (Development sets Global.MaxPageSize = 50).
+        const int pageSize = 50;
         int page = 1;
         while (true)
         {
             HttpResponseMessage resp = await http.GetAsync($"api/floorballreferee?page={page}&pageSize={pageSize}");
             if (!resp.IsSuccessStatusCode)
+            {
+                string body = await resp.Content.ReadAsStringAsync();
+                Console.Error.WriteLine(
+                    $"WARNING: FetchAllRefereesFromApiAsync got {(int)resp.StatusCode} {resp.StatusCode} from GET /api/floorballreferee?page={page}&pageSize={pageSize}. " +
+                    $"Body: {(body.Length > 500 ? body.Substring(0, 500) + "..." : body)}");
                 break;
+            }
             PaginatedApiResponse<FloorballRefereeDto>? api = await resp.Content.ReadFromJsonAsync<PaginatedApiResponse<FloorballRefereeDto>>(jsonOptions);
             if (api?.Data == null || api.Data.Count() == 0)
+            {
+                if (page == 1)
+                {
+                    Console.WriteLine($"FetchAllRefereesFromApiAsync: GET returned no referees on page 1 (pageSize={pageSize}).");
+                }
                 break;
+            }
             all.AddRange(api.Data);
             if (api.Data.Count() < pageSize)
                 break;

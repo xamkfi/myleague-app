@@ -30,7 +30,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
-        /// Gets a floorball tournament by ID with groups and group teams eagerly loaded
+        /// Gets a floorball tournament by ID with groups, group teams, and matches eagerly loaded.
+        /// AsSplitQuery is used because we are loading multiple unrelated collections (Groups.Teams + Matches)
+        /// and the cartesian product across them would otherwise inflate the result set.
         /// </summary>
         public async Task<FloorballTournament?> GetByIdWithGroupsAsync(Guid id, CancellationToken ct = default)
         {
@@ -39,11 +41,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(t => t.Groups)
                     .ThenInclude(g => g.Teams)
                         .ThenInclude(gt => gt.Team)
+                .Include(t => t.Matches)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(t => t.Id == id, ct);
         }
 
         /// <summary>
         /// Gets a floorball tournament by ID with groups eagerly loaded but without change tracking.
+        /// Matches are intentionally not loaded — this overload is used by command handlers that only
+        /// need to read group/team state and then persist a child entity directly via AddGroupAsync /
+        /// AddGroupTeamAsync (avoids change-tracking the parent tournament aggregate).
         /// </summary>
         public async Task<FloorballTournament?> GetByIdWithGroupsAsNoTrackingAsync(Guid id, CancellationToken ct = default)
         {
@@ -85,22 +92,36 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
-        /// Gets all floorball tournaments
+        /// Gets all floorball tournaments. Eagerly loads Groups (with their teams) and Matches so that
+        /// the listing DTO can report accurate teamCount/matchCount/group counts. AsSplitQuery is used to
+        /// avoid the cartesian explosion that would otherwise occur when including multiple unrelated
+        /// collections (Groups.Teams + Matches) on the same root.
         /// </summary>
         public async Task<List<FloorballTournament>> GetAllAsync(CancellationToken ct = default)
         {
             return await _entities
                 .Include(t => t.Teams)
+                .Include(t => t.Groups)
+                    .ThenInclude(g => g.Teams)
+                        .ThenInclude(gt => gt.Team)
+                .Include(t => t.Matches)
+                .AsSplitQuery()
                 .ToListAsync(ct);
         }
 
         /// <summary>
-        /// Gets active floorball tournaments
+        /// Gets active floorball tournaments. Same eager-loading strategy as GetAllAsync so the listing DTO
+        /// can populate group/team/match counts.
         /// </summary>
         public async Task<List<FloorballTournament>> GetActiveAsync(CancellationToken ct = default)
         {
             return await _entities
                 .Include(t => t.Teams)
+                .Include(t => t.Groups)
+                    .ThenInclude(g => g.Teams)
+                        .ThenInclude(gt => gt.Team)
+                .Include(t => t.Matches)
+                .AsSplitQuery()
                 .Where(t => t.IsActive && t.TournamentStatus != FloorballTournamentStatus.Completed)
                 .ToListAsync(ct);
         }

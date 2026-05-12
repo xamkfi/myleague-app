@@ -13,6 +13,14 @@ public static class FloorballRefereesSeeder
 	{
 		List<FloorballRefereeDto> created = new List<FloorballRefereeDto>();
 
+		if (personIds.Count == 0)
+		{
+			Console.WriteLine("Floorball referees seed: no person IDs provided, nothing to seed.");
+			return created;
+		}
+
+		Console.WriteLine($"Floorball referees seed: processing {personIds.Count} person ID(s).");
+
 		foreach (Guid personId in personIds)
 		{
 			// Idempotent: find referee by personId (paginates through all pages)
@@ -47,7 +55,12 @@ public static class FloorballRefereesSeeder
 					}
 					else
 					{
-						Console.WriteLine("Person already is a referee but could not find in list, skipping: " + personId);
+						// This is the silent-empty path that previously caused tournament match seeding to fail.
+						// Surface it loudly so the cause is obvious in seeder output.
+						Console.Error.WriteLine(
+							$"WARNING: person {personId} is already a referee in the database, but the GET /api/floorballreferee listing did not return them. " +
+							"This usually means the referee listing endpoint is failing silently (non-2xx, empty page, or the referee was filtered out). " +
+							"Tournament match seeding will fall back to creating matches without an assigned referee.");
 					}
 					continue;
 				}
@@ -64,26 +77,37 @@ public static class FloorballRefereesSeeder
 			Console.WriteLine("Created floorball referee for personId " + personId + " (refereeId: " + api.Data.Id + ")");
 		}
 
+		Console.WriteLine($"Floorball referees seed: produced {created.Count} referee record(s) (created or pre-existing).");
 		return created;
 	}
 
 	/// <summary>
 	/// Fetches all referee pages until the referee with the given personId is found (handles backend pagination).
+	/// Logs to stderr if the API returns a non-success status or an unexpected payload, so silent failures
+	/// (e.g. a 500 from the listing endpoint) don't masquerade as "no referees in DB".
 	/// </summary>
 	private static async Task<FloorballRefereeDto?> FindRefereeByPersonIdAsync(HttpClient http, JsonSerializerOptions jsonOptions, Guid personId)
 	{
-		const int pageSize = 100;
+		// Use 50 to stay within the most restrictive MaxPageSize across environments
+		// (Development overrides Global.MaxPageSize to 50 in appsettings.Development.json).
+		const int pageSize = 50;
 		int page = 1;
 		while (true)
 		{
 			HttpResponseMessage listResp = await http.GetAsync($"api/floorballreferee?page={page}&pageSize={pageSize}");
 			if (!listResp.IsSuccessStatusCode)
 			{
+				string body = await listResp.Content.ReadAsStringAsync();
+				Console.Error.WriteLine(
+					$"WARNING: GET /api/floorballreferee?page={page}&pageSize={pageSize} returned {(int)listResp.StatusCode} {listResp.StatusCode}. " +
+					$"Body: {Truncate(body, 500)}");
 				return null;
 			}
 			PaginatedApiResponse<FloorballRefereeDto>? listApi = await listResp.Content.ReadFromJsonAsync<PaginatedApiResponse<FloorballRefereeDto>>(jsonOptions);
-			if (listApi?.Data == null)
+			if (listApi == null || listApi.Data == null)
 			{
+				Console.Error.WriteLine(
+					$"WARNING: GET /api/floorballreferee?page={page}&pageSize={pageSize} returned a payload with no Data field — cannot detect existing referees.");
 				return null;
 			}
 			FloorballRefereeDto? found = listApi.Data.FirstOrDefault(r => r.PersonId == personId);
@@ -104,6 +128,15 @@ public static class FloorballRefereesSeeder
 				return null;
 			}
 		}
+	}
+
+	private static string Truncate(string value, int maxLength)
+	{
+		if (string.IsNullOrEmpty(value) || value.Length <= maxLength)
+		{
+			return value ?? string.Empty;
+		}
+		return value.Substring(0, maxLength) + "...";
 	}
 }
 

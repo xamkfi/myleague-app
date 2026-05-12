@@ -89,6 +89,28 @@ public static class Program
 			// Optional: create tournaments with groups and assign existing teams (requires Teams)
 			List<FloorballTournamentDto> tournaments = await FloorballTournamentsSeeder.SeedAsync(http, jsonOptions, config.FloorballTournaments, teams);
 
+			// Generate group-stage matches for tournaments. Past-dated matches are simulated through to completion
+			// so the tournament page has populated statistics; future-dated matches stay in Scheduled state.
+			// Use the union of "just-seeded" + "fetched-from-API" referees so we always have at least one referee
+			// even if FetchAllRefereesFromApiAsync returns an empty page.
+			List<FloorballRefereeDto> tournamentReferees = referees.Concat(allReferees)
+				.GroupBy(r => r.Id)
+				.Select(g => g.First())
+				.ToList();
+
+			if (tournamentReferees.Count == 0 && refereePersons.Count > 0)
+			{
+				// Both upstream lists were empty even though we have referee persons configured. That's the
+				// situation we hit on the user's environment — most often caused by the listing endpoint
+				// returning a non-2xx (now logged in detail above) or filtering out referees. Tournament match
+				// seeding will still proceed (RefereeId is optional on FloorballMatch), but we surface the
+				// state clearly so the cause is obvious.
+				Console.Error.WriteLine(
+					$"WARNING: tournament match seeding has no referees available even though {refereePersons.Count} referee person(s) were configured. " +
+					"Matches will be created without an assigned referee. See earlier WARNING lines for the underlying API response.");
+			}
+			int tournamentMatchesCreated = await FloorballTournamentMatchesSeeder.SeedAsync(http, jsonOptions, tournaments, tournamentReferees);
+
 			Console.WriteLine("\nSummary:");
 			Console.WriteLine($"  Persons created: {basePersons.Count}");
 			Console.WriteLine($"  Clubs created: {clubResults.Count}");
@@ -99,6 +121,7 @@ public static class Program
 			Console.WriteLine($"  Teams created: {teams.Count}");
 			Console.WriteLine($"  Matches created: {matches.Count}");
 			Console.WriteLine($"  Tournaments created: {tournaments.Count}");
+			Console.WriteLine($"  Tournament matches created: {tournamentMatchesCreated}");
 
 			http.Dispose();
 			return 0;

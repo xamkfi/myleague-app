@@ -11,6 +11,7 @@ using Application.Features.Floorball.Players.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
 using Application.Features.Floorball.TeamManagers.DTOs;
 using Application.Features.Floorball.Statistics.DTOs;
+using Domain.Enums.Floorball;
 using MediatR;
 
 namespace Application.Features.Floorball.Matches.Commands
@@ -24,11 +25,15 @@ namespace Application.Features.Floorball.Matches.Commands
     /// <param name="RefereeId"></param>
     /// <param name="ScheduledDateTime"></param>
     /// <param name="Venue"></param>
+    /// <param name="TournamentGroupId">Optional group ID for tournament group-stage matches</param>
+    /// <param name="TournamentStage">Optional stage for tournament matches</param>
     public record CreateFloorballMatchCommand(
         Guid? CompetitionId,
         Guid? HomeTeamId,
         Guid? AwayTeamId,
         Guid? RefereeId,
         DateTime ScheduledDateTime,
-        string? Venue) : IRequest<Result<FloorballMatchDto>>;
+        string? Venue,
+        Guid? TournamentGroupId = null,
+        FloorballTournamentStage? TournamentStage = null) : IRequest<Result<FloorballMatchDto>>;
 }

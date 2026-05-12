@@ -352,7 +352,7 @@ const FloorballTeamPlayerUserPage = () => {
                         <tr key={match.id}>
                           <td className="col-date">{formatDate(match.scheduledDateTime)}</td>
                           <td className="col-league">
-                            <Link to={`/league/${match.competitionId}`} className="team-link">{match.seasonName}</Link>
+                            <Link to={`/league/${match.competitionId}`} className="team-link">{match.competitionName}</Link>
                           </td>
                           <td className="col-team">
                             <Link to={`/team/${slugify(match.homeTeamName)}`} className="team-link">{match.homeTeamName}</Link>

@@ -8,6 +8,7 @@ using Application.Features.Floorball.TeamManagers.DTOs;
 using Application.Features.Floorball.Statistics.DTOs;
 using Domain.Entities.Floorball;
 using Domain.Entities.Common;
+using Domain.Enums.Floorball;
 using Domain.ValueObjects.Floorball;
 using System;
 using System.Collections.Generic;
@@ -262,6 +263,13 @@ public static class FloorballMatchMapper
         if (referee != null)
         {
             match.AddOfficial(referee);
+        }
+
+        // Apply tournament context if either stage or group ID is provided
+        if (command.TournamentStage.HasValue || command.TournamentGroupId.HasValue)
+        {
+            FloorballTournamentStage stage = command.TournamentStage ?? FloorballTournamentStage.GroupStage;
+            match.SetTournamentInfo(stage, command.TournamentGroupId);
         }
 
         return match;

@@ -143,7 +143,7 @@ const MatchTable = ({
                 </div>
               </td>
               <td>
-                <span className="admin-table__muted">{match.seasonName || '-'}</span>
+                <span className="admin-table__muted">{match.competitionName || '-'}</span>
               </td>
               <td className="admin-table__muted">
                 {formatDateTime(match.scheduledDateTime)}
