@@ -159,7 +159,7 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to create floorball tournament";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+            List<string> errorList = result.GetAllErrors().ToList();
 
             return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
         }
@@ -210,7 +210,7 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to update floorball tournament";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+            List<string> errorList = result.GetAllErrors().ToList();
 
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
@@ -372,7 +372,7 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to complete floorball tournament";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+            List<string> errorList = result.GetAllErrors().ToList();
 
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
@@ -407,7 +407,7 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to add group to tournament";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+            List<string> errorList = result.GetAllErrors().ToList();
 
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
@@ -442,7 +442,7 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to remove group from tournament";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+            List<string> errorList = result.GetAllErrors().ToList();
 
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
@@ -478,7 +478,7 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to add team to tournament group";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+            List<string> errorList = result.GetAllErrors().ToList();
 
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
@@ -514,7 +514,7 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to remove team from tournament group";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
+            List<string> errorList = result.GetAllErrors().ToList();
 
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {

@@ -37,8 +37,8 @@ public interface IFloorballMatchRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated collection of floorball matches</returns>
     Task<PagedResult<FloorballMatch>> GetPagedAsync(
-        int page, 
-        int pageSize, 
+        int page,
+        int pageSize,
         Guid? competitionId = null,
         Guid? teamId = null,
         DateTime? startDate = null,
@@ -46,6 +46,7 @@ public interface IFloorballMatchRepository
         FloorballMatchStatus? status = null,
         string sortOrder = "desc",
         string? searchQuery = null,
+        Guid? tournamentGroupId = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>
@@ -72,6 +73,18 @@ public interface IFloorballMatchRepository
     /// <param name="competitionId">The competition ID</param>
     /// <returns>A collection of matches in the competition</returns>
     Task<IEnumerable<FloorballMatch>> GetByCompetitionIdAsync(Guid competitionId);
+
+    /// <summary>
+    /// Gets matches assigned to a specific tournament group, optionally filtered by status.
+    /// </summary>
+    /// <param name="tournamentGroupId">The tournament group ID</param>
+    /// <param name="status">Optional match status filter</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A collection of matches in the tournament group</returns>
+    Task<IEnumerable<FloorballMatch>> GetByTournamentGroupAsync(
+        Guid tournamentGroupId,
+        FloorballMatchStatus? status = null,
+        CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets matches for a specified team

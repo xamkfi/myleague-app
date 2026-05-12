@@ -229,6 +229,8 @@ export interface FloorballMatchDto {
   penaltyEvents: FloorballPenaltyEventDto[];
   saveEvents: FloorballSaveEventDto[];
   matchRules: FloorballMatchRules;
+  tournamentGroupId?: string | null;
+  tournamentStage?: string | null;
 }
 
 export interface CreateFloorballMatchRequest {
@@ -275,4 +277,5 @@ export interface GetFloorballMatchesRequest {
   endDate?: string;
   sortOrder?: string;
   searchQuery?: string;
+  tournamentGroupId?: string;
 } 

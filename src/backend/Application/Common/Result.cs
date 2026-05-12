@@ -56,6 +56,17 @@ public class Result<T>
     /// </summary>
     public string GetErrorsString() => 
         string.IsNullOrEmpty(Error) ? string.Join("; ", Errors) : Error;
+
+    /// <summary>
+    /// Returns every available detailed error string from this result, combining
+    /// <see cref="Errors"/> (typically populated from caught exceptions via
+    /// <c>ex.Flatten()</c>) with <see cref="ValidationFailures"/> messages (from
+    /// FluentValidation). The high-level <see cref="Error"/> message is intentionally
+    /// excluded so callers can keep using it for the response's top-level <c>message</c>
+    /// while still surfacing the individual error details in the <c>errors</c> array.
+    /// </summary>
+    public IEnumerable<string> GetAllErrors() =>
+        Errors.Concat(ValidationFailures.Select(vf => vf.ErrorMessage));
 }
 
 /// <summary>
@@ -105,4 +116,15 @@ public class Result
     /// </summary>
     public string GetErrorsString() => 
         string.IsNullOrEmpty(Error) ? string.Join("; ", Errors) : Error;
+
+    /// <summary>
+    /// Returns every available detailed error string from this result, combining
+    /// <see cref="Errors"/> (typically populated from caught exceptions via
+    /// <c>ex.Flatten()</c>) with <see cref="ValidationFailures"/> messages (from
+    /// FluentValidation). The high-level <see cref="Error"/> message is intentionally
+    /// excluded so callers can keep using it for the response's top-level <c>message</c>
+    /// while still surfacing the individual error details in the <c>errors</c> array.
+    /// </summary>
+    public IEnumerable<string> GetAllErrors() =>
+        Errors.Concat(ValidationFailures.Select(vf => vf.ErrorMessage));
 } 

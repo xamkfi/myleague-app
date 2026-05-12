@@ -1,0 +1,65 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// Tournament-specific tweaks layered on top of `.league-page` styling, which is imported alongside.
+
+.tournament-page {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'lg');
+  }
+
+  &__about {
+    background: $color-white;
+    border-radius: map.get($border-radius, 'lg');
+    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+    box-shadow: $box-shadow-drop-1;
+    color: $color-neutral-black;
+
+    h2 {
+      margin: 0 0 map.get($spacing, 'sm');
+      font-size: map.get($font-sizes, 'lg');
+    }
+  }
+
+  &__group-block {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'md');
+    margin-bottom: map.get($spacing, 'md');
+
+    &-title {
+      font-size: map.get($font-sizes, 'lg');
+      font-weight: map.get($font-weights, 'bold');
+      color: $color-neutral-black;
+      margin: 0 0 map.get($spacing, 'xs');
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'lg');
+    color: rgba($color-white, 0.85);
+    font-size: map.get($font-sizes, 'base');
+    margin-bottom: map.get($spacing, 'sm');
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: map.get($spacing, 'xs');
+    }
+  }
+
+  &__status-pill {
+    display: inline-block;
+    padding: map.get($spacing, '2xs') map.get($spacing, 'sm');
+    border-radius: 9999px;
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}

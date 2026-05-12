@@ -38,6 +38,8 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// <param name="GoalEvents">The goals scored in the match</param>
     /// <param name="PenaltyEvents">The penalties given in the match</param>
     /// <param name="MatchRules">The match rules configuration snapshot</param>
+    /// <param name="TournamentGroupId">Group ID for tournament group-stage matches; null for league or playoff matches</param>
+    /// <param name="TournamentStage">Stage label for tournament matches (e.g. "GroupStage", "Quarterfinal"); null for league matches</param>
     public record FloorballMatchDto(
         Guid Id,
         Guid CompetitionId,
@@ -62,5 +64,7 @@ namespace Application.Features.Floorball.Matches.DTOs
         IReadOnlyCollection<FloorballGoalEventDto> GoalEvents,
         IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents,
         IReadOnlyCollection<FloorballSaveEventDto> SaveEvents,
-        FloorballMatchRulesDto MatchRules);
+        FloorballMatchRulesDto MatchRules,
+        Guid? TournamentGroupId = null,
+        string? TournamentStage = null);
 }

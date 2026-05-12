@@ -134,7 +134,9 @@ public static class FloorballMatchMapper
             goalEvents,
             penaltyEvents,
             saveEvents,
-            matchRulesDto);
+            matchRulesDto,
+            match.TournamentGroupId,
+            match.TournamentStage?.ToString());
     }
 
     /// <summary>
@@ -217,7 +219,9 @@ public static class FloorballMatchMapper
             new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed
             new List<FloorballPenaltyEventDto>(), // TODO: Map penalty events when needed
             new List<FloorballSaveEventDto>(),
-            matchRulesDto
+            matchRulesDto,
+            match.TournamentGroupId,
+            match.TournamentStage?.ToString()
         );
     }
 

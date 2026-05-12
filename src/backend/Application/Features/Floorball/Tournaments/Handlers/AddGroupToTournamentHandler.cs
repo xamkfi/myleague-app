@@ -35,7 +35,12 @@ public class AddGroupToTournamentHandler : IRequestHandler<AddGroupToTournamentC
     {
         try
         {
-            FloorballTournament? tournament = await _tournamentRepository.GetByIdWithGroupsAsync(request.CompetitionId, cancellationToken);
+            // Load the tournament without change tracking. The parent aggregate participates only
+            // in domain validation and order computation; we deliberately avoid putting it (and its
+            // owned types) into the change tracker because EF Core 9's TPH + owned-type change
+            // detection has been observed to mark the parent as Modified spuriously, leading to a
+            // DbUpdateConcurrencyException ("expected 1 row, actually 0") on SaveChanges.
+            FloorballTournament? tournament = await _tournamentRepository.GetByIdWithGroupsAsNoTrackingAsync(request.CompetitionId, cancellationToken);
             if (tournament == null)
             {
                 _logger.LogWarning("Tournament not found with ID: {TournamentId}", request.CompetitionId);
@@ -43,15 +48,17 @@ public class AddGroupToTournamentHandler : IRequestHandler<AddGroupToTournamentC
             }
 
             _logger.LogInformation("Adding group '{GroupName}' to tournament: {TournamentId}", request.GroupName, request.CompetitionId);
-            tournament.AddGroup(request.GroupName);
 
-            // The tournament aggregate is already tracked by the DbContext (loaded via Include),
-            // so EF Core will detect the new group on SaveChanges. Calling UpdateAsync here would
-            // forcibly mark the parent state to Modified, which is unnecessary and has historically
-            // caused trouble with TPH-derived owned entities.
+            // AddGroup runs the domain rules (status guard, name validation) and computes the order.
+            // The returned group is the only entity we need to persist — adding it directly via the
+            // repository keeps the change tracker focused on a single INSERT.
+            FloorballTournamentGroup newGroup = tournament.AddGroup(request.GroupName);
+
+            await _tournamentRepository.AddGroupAsync(newGroup, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
+            FloorballTournament? refreshed = await _tournamentRepository.GetByIdWithGroupsAsNoTrackingAsync(request.CompetitionId, cancellationToken);
+            FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(refreshed ?? tournament);
             _logger.LogInformation("Successfully added group '{GroupName}' to tournament: {TournamentId}", request.GroupName, request.CompetitionId);
 
             return Result<FloorballTournamentDto>.Success(tournamentDto);

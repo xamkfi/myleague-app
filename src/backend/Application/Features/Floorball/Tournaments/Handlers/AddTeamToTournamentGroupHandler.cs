@@ -38,7 +38,11 @@ public class AddTeamToTournamentGroupHandler : IRequestHandler<AddTeamToTourname
     {
         try
         {
-            FloorballTournament? tournament = await _tournamentRepository.GetByIdWithGroupsAsync(request.CompetitionId);
+            // Load with AsNoTracking so EF Core's TPH + owned-type change detection cannot mark the
+            // parent FloorballTournament/Group rows as Modified spuriously and trigger a
+            // DbUpdateConcurrencyException on SaveChanges. The parent aggregate is only used for
+            // validation/lookup and idempotency checks here.
+            FloorballTournament? tournament = await _tournamentRepository.GetByIdWithGroupsAsNoTrackingAsync(request.CompetitionId, cancellationToken);
             if (tournament == null)
             {
                 _logger.LogWarning("Tournament not found with ID: {TournamentId}", request.CompetitionId);
@@ -60,14 +64,28 @@ public class AddTeamToTournamentGroupHandler : IRequestHandler<AddTeamToTourname
             }
 
             _logger.LogInformation("Adding team {TeamId} to group {GroupId} in tournament: {TournamentId}", request.TeamId, request.GroupId, request.CompetitionId);
+
+            // Run domain rule via the (untracked) aggregate. AddTeam is idempotent: if the team is
+            // already in the group it does nothing. Use a count-delta check to detect whether a new
+            // join entity was actually created so we only persist real additions.
+            int beforeCount = group.Teams.Count;
             group.AddTeam(team);
+            FloorballTournamentGroupTeam? newJoin = group.Teams.Count > beforeCount
+                ? group.Teams.First(t => t.TeamId == team.Id)
+                : null;
 
-            // The tournament aggregate is already tracked by the DbContext (loaded via Include),
-            // so EF Core will detect the new join row on SaveChanges. We avoid forcing the parent
-            // state to Modified here; that pattern has historically broken TPH-derived owned types.
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            if (newJoin != null)
+            {
+                await _tournamentRepository.AddGroupTeamAsync(newJoin, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+            else
+            {
+                _logger.LogInformation("Team {TeamId} already in group {GroupId}, skipping persistence", request.TeamId, request.GroupId);
+            }
 
-            FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
+            FloorballTournament? refreshed = await _tournamentRepository.GetByIdWithGroupsAsNoTrackingAsync(request.CompetitionId, cancellationToken);
+            FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(refreshed ?? tournament);
             _logger.LogInformation("Successfully added team {TeamId} to group {GroupId} in tournament: {TournamentId}", request.TeamId, request.GroupId, request.CompetitionId);
 
             return Result<FloorballTournamentDto>.Success(tournamentDto);

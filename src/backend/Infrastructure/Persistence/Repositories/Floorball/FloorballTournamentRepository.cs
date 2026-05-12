@@ -43,6 +43,48 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
+        /// Gets a floorball tournament by ID with groups eagerly loaded but without change tracking.
+        /// </summary>
+        public async Task<FloorballTournament?> GetByIdWithGroupsAsNoTrackingAsync(Guid id, CancellationToken ct = default)
+        {
+            return await _entities
+                .AsNoTracking()
+                .Include(t => t.Teams)
+                .Include(t => t.Groups)
+                    .ThenInclude(g => g.Teams)
+                        .ThenInclude(gt => gt.Team)
+                .FirstOrDefaultAsync(t => t.Id == id, ct);
+        }
+
+        /// <summary>
+        /// Gets a tournament group by its ID with teams eagerly loaded.
+        /// </summary>
+        public async Task<FloorballTournamentGroup?> GetGroupByIdAsync(Guid groupId, CancellationToken ct = default)
+        {
+            return await _dbContext.Set<FloorballTournamentGroup>()
+                .Include(g => g.Teams)
+                    .ThenInclude(gt => gt.Team)
+                .FirstOrDefaultAsync(g => g.Id == groupId, ct);
+        }
+
+        /// <summary>
+        /// Adds a new tournament group directly to the persistence store without loading the parent
+        /// tournament into the change tracker.
+        /// </summary>
+        public async Task AddGroupAsync(FloorballTournamentGroup group, CancellationToken ct = default)
+        {
+            await _dbContext.Set<FloorballTournamentGroup>().AddAsync(group, ct);
+        }
+
+        /// <summary>
+        /// Adds a new tournament group/team join entity directly to the persistence store.
+        /// </summary>
+        public async Task AddGroupTeamAsync(FloorballTournamentGroupTeam groupTeam, CancellationToken ct = default)
+        {
+            await _dbContext.Set<FloorballTournamentGroupTeam>().AddAsync(groupTeam, ct);
+        }
+
+        /// <summary>
         /// Gets all floorball tournaments
         /// </summary>
         public async Task<List<FloorballTournament>> GetAllAsync(CancellationToken ct = default)

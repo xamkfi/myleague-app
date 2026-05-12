@@ -10,6 +10,14 @@ import { createTeamSlug } from '../../utils/slugUtils';
 
 export type MatchesListVariant = 'results' | 'fixtures';
 
+/**
+ * Controls how matches are grouped under headers.
+ * - 'season' (default) groups matches under their season name and triggers a season fetch.
+ * - 'none' renders all matches as a single flat list and skips the season fetch entirely
+ *   (used by tournament views where the parent already provides the competition context).
+ */
+export type MatchesListGroupingMode = 'season' | 'none';
+
 interface MatchesListProps {
   variant: MatchesListVariant;
   matchesLoading: boolean;
@@ -19,6 +27,7 @@ interface MatchesListProps {
   totalPages: number;
   handlePageChange: (page: number) => void;
   team?: FloorballTeam | null; // optional, used for win/loss badge in team view
+  groupingMode?: MatchesListGroupingMode;
 }
 
 export default function MatchesList({
@@ -29,7 +38,8 @@ export default function MatchesList({
   currentPage,
   totalPages,
   handlePageChange,
-  team
+  team,
+  groupingMode = 'season'
 }: MatchesListProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -37,6 +47,9 @@ export default function MatchesList({
   const [seasons, setSeasons] = useState<FloorballSeasonDto[] | null>(null);
 
   useEffect(() => {
+    if (groupingMode !== 'season') {
+      return;
+    }
     const run = async () => {
       try {
         const seasonsResponse = await floorballSeasonService.getAll();
@@ -47,7 +60,7 @@ export default function MatchesList({
     };
     refetch();
     run();
-  }, [refetch]);
+  }, [refetch, groupingMode]);
 
   const navigateToTeamPage = (teamId: string): void => {
     const teamToSearch = teams?.find(t => t.id === teamId);
@@ -70,6 +83,7 @@ export default function MatchesList({
   };
 
   const seasonToMatches = useMemo(() => {
+    if (groupingMode !== 'season') return [] as Array<{ season: FloorballSeasonDto, matches: FloorballMatchDto[] }>;
     if (!seasons || !matches) return [] as Array<{ season: FloorballSeasonDto, matches: FloorballMatchDto[] }>;
     return seasons.map(season => {
       const filtered = matches.filter(m => {
@@ -79,7 +93,39 @@ export default function MatchesList({
       });
       return { season, matches: filtered };
     }).filter(x => x.matches.length > 0);
-  }, [seasons, matches, isResults]);
+  }, [seasons, matches, isResults, groupingMode]);
+
+  const flatMatches = useMemo(() => {
+    if (groupingMode === 'season') return [] as FloorballMatchDto[];
+    if (!matches) return [] as FloorballMatchDto[];
+    // When the parent already pre-filtered the matches via API parameters
+    // (e.g. competitionId / tournamentGroupId / status), trust that filter and
+    // render the list as-is. Avoids hiding completed matches in a tournament
+    // group view that intentionally requests both completed and upcoming games.
+    return matches;
+  }, [matches, groupingMode]);
+
+  const renderMatchRow = (match: FloorballMatchDto) => (
+    <MatchRow
+      key={match.id}
+      id={match.id}
+      scheduledDateTime={match.scheduledDateTime}
+      homeTeamName={match.homeTeamName}
+      awayTeamName={match.awayTeamName}
+      homeTeamLogo={match.homeTeamLogo || undefined}
+      awayTeamLogo={match.awayTeamLogo || undefined}
+      homeScore={match.homeScore}
+      awayScore={match.awayScore}
+      periodCount={3}
+      periodScores={match.periodScores}
+      statusComponent={isResults && team ? (
+        <span className={`result-badge ${checkIfTeamWon(match) ? 'win' : 'loss'}`}>
+          {checkIfTeamWon(match) ? 'W' : 'L'}
+        </span>
+      ) : undefined}
+      onClick={() => navigateToTeamPage(match.homeTeamId)}
+    />
+  );
 
   return (
     <div className={sectionClass}>
@@ -96,33 +142,18 @@ export default function MatchesList({
         <>
           <div className="matches-grid">
             <div className={sectionHeaderClass}>{sectionTitle}</div>
-            {seasonToMatches.map(({ season, matches: seasonMatches }) => (
-              <div key={season.id} className="season-block">
-                <div className={seasonHeaderClass}><span>{season.name}</span></div>
-                {seasonMatches.map(match => (
-                  <MatchRow
-                    key={match.id}
-                    id={match.id}
-                    scheduledDateTime={match.scheduledDateTime}
-                    homeTeamName={match.homeTeamName}
-                    awayTeamName={match.awayTeamName}
-                    homeTeamLogo={match.homeTeamLogo || undefined}
-                    awayTeamLogo={match.awayTeamLogo || undefined}
-                    homeScore={match.homeScore}
-                    awayScore={match.awayScore}
-                    periodCount={3}
-                    periodScores={match.periodScores}
-                    // show W/L badge if team is provided and variant=results
-                    statusComponent={isResults && team ? (
-                      <span className={`result-badge ${checkIfTeamWon(match) ? 'win' : 'loss'}`}>
-                        {checkIfTeamWon(match) ? 'W' : 'L'}
-                      </span>
-                    ) : undefined}
-                    onClick={() => navigateToTeamPage(match.homeTeamId)}
-                  />
-                ))}
+            {groupingMode === 'season' ? (
+              seasonToMatches.map(({ season, matches: seasonMatches }) => (
+                <div key={season.id} className="season-block">
+                  <div className={seasonHeaderClass}><span>{season.name}</span></div>
+                  {seasonMatches.map(renderMatchRow)}
+                </div>
+              ))
+            ) : (
+              <div className="season-block">
+                {flatMatches.map(renderMatchRow)}
               </div>
-            ))}
+            )}
           </div>
 
           {totalPages > 1 && (

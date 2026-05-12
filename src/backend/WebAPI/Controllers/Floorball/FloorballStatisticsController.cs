@@ -279,5 +279,35 @@ namespace WebAPI.Controllers.Floorball
             return StatusCode(500, ApiResponse<List<FloorballTeamSeasonStatisticsDto>>.ErrorResponse(errorMessage));
         }
 
+        /// <summary>
+        /// Gets standings for a single tournament group computed from completed group-stage matches.
+        /// </summary>
+        /// <param name="groupId">The tournament group ID</param>
+        /// <returns>Per-team standings rows ordered by Points → GoalDifference → GoalsFor</returns>
+        [HttpGet("standings/group/{groupId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballTournamentGroupStandingDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballTournamentGroupStandingDto>>>> GetTournamentGroupStandings(Guid groupId)
+        {
+            _logger.LogInformation("Getting tournament group standings for Group: {GroupId}", groupId);
+
+            GetTournamentGroupStandingsQuery query = new GetTournamentGroupStandingsQuery(groupId);
+            Result<List<FloorballTournamentGroupStandingDto>> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<List<FloorballTournamentGroupStandingDto>>.SuccessResponse(result.Data, "Tournament group standings retrieved successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to retrieve tournament group standings";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<List<FloorballTournamentGroupStandingDto>>.ErrorResponse(errorMessage));
+            }
+
+            return StatusCode(500, ApiResponse<List<FloorballTournamentGroupStandingDto>>.ErrorResponse(errorMessage));
+        }
+
     }
 }

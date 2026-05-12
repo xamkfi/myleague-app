@@ -162,6 +162,10 @@ export const routes: RouteObject[] = [
     element: <SuspenseWrapper><TournamentPage /></SuspenseWrapper>
   },
   {
+    path: '/turnaukset/:id',
+    element: <SuspenseWrapper><TournamentPage /></SuspenseWrapper>
+  },
+  {
     path: '/lajit',
     element: <SuspenseWrapper><SportsPage /></SuspenseWrapper>
   },

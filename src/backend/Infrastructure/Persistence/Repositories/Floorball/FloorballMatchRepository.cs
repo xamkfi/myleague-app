@@ -74,6 +74,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <param name="status">Optional match status filter</param>
         /// <param name="sortOrder">Optional sort order ("asc" or "desc")</param>
         /// <param name="searchQuery">Optional search query to filter by team names (case-insensitive, partial match)</param>
+        /// <param name="tournamentGroupId">Optional tournament group ID filter (only matches assigned to this tournament group)</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Paginated collection of floorball matches</returns>
         public async Task<PagedResult<FloorballMatch>> GetPagedAsync(
@@ -86,6 +87,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             FloorballMatchStatus? status = null,
             string sortOrder = "desc",
             string? searchQuery = null,
+            Guid? tournamentGroupId = null,
             CancellationToken cancellationToken = default)
         {
             DateTime? startDateUtc = startDate.HasValue
@@ -127,6 +129,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (status.HasValue)
             {
                 query = query.Where(m => m.Status == status.Value);
+            }
+
+            if (tournamentGroupId.HasValue)
+            {
+                query = query.Where(m => m.TournamentGroupId == tournamentGroupId.Value);
             }
 
             // Apply search query filter (team names)
@@ -232,6 +239,30 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(m => m.PeriodScores)
                 .Where(m => m.CompetitionId == competitionId)
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gets matches assigned to a specific tournament group, optionally filtered by status.
+        /// </summary>
+        public async Task<IEnumerable<FloorballMatch>> GetByTournamentGroupAsync(
+            Guid tournamentGroupId,
+            FloorballMatchStatus? status = null,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballMatch> query = _entities
+                .AsNoTracking()
+                .Include(m => m.HomeTeam)
+                .Include(m => m.AwayTeam)
+                .Where(m => m.TournamentGroupId == tournamentGroupId);
+
+            if (status.HasValue)
+            {
+                query = query.Where(m => m.Status == status.Value);
+            }
+
+            return await query
+                .OrderBy(m => m.ScheduledDateTime)
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>

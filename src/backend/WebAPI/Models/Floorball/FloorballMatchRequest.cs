@@ -20,6 +20,11 @@ public record GetFloorballMatchesRequest : PagedRequestBase
     public Guid? TeamId { get; init; }
 
     /// <summary>
+    /// Gets the tournament group ID filter (matches in this tournament group only)
+    /// </summary>
+    public Guid? TournamentGroupId { get; init; }
+
+    /// <summary>
     /// Gets the start date filter (matches on or after this date)
     /// </summary>
     public DateTime? StartDate { get; init; }

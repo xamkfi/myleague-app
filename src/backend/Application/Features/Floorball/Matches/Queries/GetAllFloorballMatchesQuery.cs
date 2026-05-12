@@ -29,7 +29,8 @@ namespace Application.Features.Floorball.Matches.Queries
         DateTime? EndDate = null,
         string SortOrder = "desc", // "asc" or "desc"
         string? SearchQuery = null, // Search by team names (case-insensitive, partial match)
-        FloorballMatchStatus? Status = null
+        FloorballMatchStatus? Status = null,
+        Guid? TournamentGroupId = null
     ) : IRequest<Result<PagedResult<FloorballMatchDto>>>
     {
         /// <summary>

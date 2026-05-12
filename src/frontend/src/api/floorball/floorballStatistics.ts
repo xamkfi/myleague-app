@@ -1,6 +1,7 @@
 import type { 
   ApiResponse
 } from '../../types/floorball/floorballTypes';
+import type { FloorballTournamentGroupStandingDto } from '../../types/floorball/tournamentTypes';
 import { API_URL } from '../../constants/config';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 
@@ -363,6 +364,31 @@ export const floorballStatisticsService = {
       return apiResponse.data;
     } catch (error) {
       console.error('Error fetching team standings:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get standings for a single tournament group, computed from completed group-stage matches.
+   */
+  getTournamentGroupStandings: async (groupId: string): Promise<FloorballTournamentGroupStandingDto[]> => {
+    try {
+      const response = await fetch(`${API_URL}/floorball/statistics/standings/group/${groupId}`);
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch tournament group standings');
+        throw new Error(errorMessage);
+      }
+
+      const apiResponse: ApiResponse<FloorballTournamentGroupStandingDto[]> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch tournament group standings'));
+      }
+
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching tournament group standings:', error);
       throw error;
     }
   }

@@ -79,6 +79,17 @@ public static class FloorballTournamentsSeeder
 				if (existing != null)
 				{
 					Console.WriteLine($"Tournament exists, skipping create: {existing.Name} ({existing.Id})");
+					// The list endpoint does not eagerly load groups, so re-fetch full details by ID
+					// to make subsequent idempotency checks (groups, group teams) work correctly.
+					HttpResponseMessage detailResp = await http.GetAsync($"api/floorballtournament/{existing.Id}");
+					if (detailResp.IsSuccessStatusCode)
+					{
+						ApiResponse<FloorballTournamentDto>? detailApi = await detailResp.Content.ReadFromJsonAsync<ApiResponse<FloorballTournamentDto>>(jsonOptions);
+						if (detailApi != null && detailApi.Success && detailApi.Data != null)
+						{
+							return detailApi.Data;
+						}
+					}
 					return existing;
 				}
 			}
