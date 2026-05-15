@@ -758,7 +758,8 @@
       "tabs": {
         "details": "Tournament Details",
         "groups": "Manage Groups",
-        "teams": "Manage Teams"
+        "teams": "Manage Teams",
+        "bracket": "Playoff Bracket"
       },
       "sections": {
         "basicInfo": "Basic Information",
@@ -766,6 +767,9 @@
         "groupStageRules": "Group Stage Rules",
         "playoffRules": "Playoff Rules",
         "structure": "Structure"
+      },
+      "bracket": {
+        "empty": "Playoff bracket has not been generated yet. Start the playoff stage from the Details tab."
       },
       "status": {
         "draft": "Draft",
@@ -913,6 +917,20 @@
         "validDateTime": "Please enter a valid date and time",
         "createFailed": "Failed to create match"
       },
+      "matchForm": {
+        "loading": "Loading match...",
+        "notLoaded": "Failed to load match details.",
+        "editSeasonMatch": "Edit season match",
+        "editTournamentMatch": "Edit tournament match",
+        "season": "Season",
+        "tournament": "Tournament",
+        "selectSeason": "Select season",
+        "selectTournament": "Select tournament",
+        "searchSeasons": "Search seasons...",
+        "searchTournaments": "Search tournaments...",
+        "noSeasons": "No seasons found",
+        "noTournaments": "No tournaments found"
+      },
       "emptyStates": {
         "noSeasons": "No seasons found",
         "noTeams": "No teams found",
@@ -949,6 +967,7 @@
         "live": "Live View",
         "cancel": "Cancel Match",
         "reactivate": "Reactivate Match",
+        "edit": "Edit match details",
         "menu": "Match actions menu"
       },
       "confirmCancel": {

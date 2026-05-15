@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Application.Common;
 using Application.Features.Floorball.Statistics.DTOs;
 using Application.Features.Floorball.Statistics.Queries;
+using Application.Features.Floorball.Tournaments.Services;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
@@ -69,37 +70,33 @@ public class GetTournamentGroupStandingsHandler
                 ? new Dictionary<Guid, Club>()
                 : await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
 
-            // Initialize standings rows for every team that belongs to the group, even with 0 GP
-            Dictionary<Guid, GroupStandingAccumulator> rows = group.Teams.ToDictionary(
-                gt => gt.TeamId,
-                gt => new GroupStandingAccumulator(gt.Team, ResolveLogo(gt.Team, clubLookup)));
-
             IEnumerable<FloorballMatch> completedMatches = await _matchRepository.GetByTournamentGroupAsync(
                 request.GroupId,
                 FloorballMatchStatus.Completed,
                 cancellationToken);
 
-            foreach (FloorballMatch match in completedMatches)
-            {
-                ApplyMatch(rows, match);
-            }
+            // Compute standings via the shared calculator so the playoff bracket generator and the
+            // public group standings table apply the exact same tie-break ordering.
+            List<TournamentStandingsCalculator.StandingsRow> rankedRows =
+                TournamentStandingsCalculator.Compute(group, completedMatches);
 
-            List<FloorballTournamentGroupStandingDto> standings = rows.Values
-                .OrderByDescending(r => r.Points)
-                .ThenByDescending(r => r.GoalsFor - r.GoalsAgainst)
-                .ThenByDescending(r => r.GoalsFor)
-                .ThenBy(r => r.TeamName, StringComparer.OrdinalIgnoreCase)
+            // Map each ranked row to a DTO (with team-logo enrichment).
+            Dictionary<Guid, Uri?> teamLogos = group.Teams.ToDictionary(
+                gt => gt.TeamId,
+                gt => ResolveLogo(gt.Team, clubLookup));
+
+            List<FloorballTournamentGroupStandingDto> standings = rankedRows
                 .Select(r => new FloorballTournamentGroupStandingDto(
                     r.TeamId,
                     r.TeamName,
-                    r.TeamLogo,
+                    teamLogos.TryGetValue(r.TeamId, out Uri? logo) ? logo : null,
                     r.GamesPlayed,
                     r.Wins,
                     r.Draws,
                     r.Losses,
                     r.GoalsFor,
                     r.GoalsAgainst,
-                    r.GoalsFor - r.GoalsAgainst,
+                    r.GoalDifference,
                     r.Points))
                 .ToList();
 
@@ -118,80 +115,9 @@ public class GetTournamentGroupStandingsHandler
         }
     }
 
-    private static void ApplyMatch(Dictionary<Guid, GroupStandingAccumulator> rows, FloorballMatch match)
-    {
-        bool homeKnown = rows.TryGetValue(match.HomeTeamId, out GroupStandingAccumulator? home);
-        bool awayKnown = rows.TryGetValue(match.AwayTeamId, out GroupStandingAccumulator? away);
-
-        // Skip matches where neither team is part of the group (defensive guard).
-        if (!homeKnown && !awayKnown)
-        {
-            return;
-        }
-
-        int homeScore = match.HomeScore;
-        int awayScore = match.AwayScore;
-
-        if (homeKnown && home != null)
-        {
-            home.AddResult(scoredFor: homeScore, scoredAgainst: awayScore);
-        }
-
-        if (awayKnown && away != null)
-        {
-            away.AddResult(scoredFor: awayScore, scoredAgainst: homeScore);
-        }
-    }
-
     private static Uri? ResolveLogo(FloorballTeam team, Dictionary<Guid, Club> clubLookup)
     {
         clubLookup.TryGetValue(team.ClubId, out Club? club);
         return team.GetEffectiveLogoUrl(club?.LogoUrl);
-    }
-
-    /// <summary>
-    /// Mutable accumulator used while folding match results into per-team standings rows.
-    /// </summary>
-    private sealed class GroupStandingAccumulator
-    {
-        public Guid TeamId { get; }
-        public string TeamName { get; }
-        public Uri? TeamLogo { get; }
-        public int GamesPlayed { get; private set; }
-        public int Wins { get; private set; }
-        public int Draws { get; private set; }
-        public int Losses { get; private set; }
-        public int GoalsFor { get; private set; }
-        public int GoalsAgainst { get; private set; }
-        public int Points { get; private set; }
-
-        public GroupStandingAccumulator(FloorballTeam team, Uri? logo)
-        {
-            TeamId = team.Id;
-            TeamName = team.Name;
-            TeamLogo = logo;
-        }
-
-        public void AddResult(int scoredFor, int scoredAgainst)
-        {
-            GamesPlayed++;
-            GoalsFor += scoredFor;
-            GoalsAgainst += scoredAgainst;
-
-            if (scoredFor > scoredAgainst)
-            {
-                Wins++;
-                Points += 3;
-            }
-            else if (scoredFor < scoredAgainst)
-            {
-                Losses++;
-            }
-            else
-            {
-                Draws++;
-                Points += 1;
-            }
-        }
     }
 }

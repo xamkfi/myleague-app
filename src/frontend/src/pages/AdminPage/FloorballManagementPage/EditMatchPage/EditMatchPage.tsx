@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { 
   FloorballMatchDto,
   CreateFloorballMatchRequest,
@@ -16,6 +17,7 @@ import './EditMatchPage.scss';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 
 const EditMatchPage = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [matchData, setMatchData] = useState<FloorballMatchDto | null>(null);
@@ -141,18 +143,27 @@ const EditMatchPage = () => {
   };
 
   if (loading) {
-    return <div>Loading match data...</div>;
+    return <div>{t('floorball.matches.matchForm.loading', 'Ladataan ottelua...')}</div>;
   }
-  
+
+  // Detect tournament matches so the form switches its competition dropdown to tournaments.
+  const isTournamentMatch: boolean = Boolean(
+    matchData?.tournamentGroupId ||
+      (matchData?.tournamentStage && matchData.tournamentStage !== 'None')
+  );
+  const pageTitle: string = isTournamentMatch
+    ? t('floorball.matches.matchForm.editTournamentMatch', 'Muokkaa turnausottelua')
+    : t('floorball.matches.matchForm.editSeasonMatch', 'Muokkaa kauden ottelua');
+
   return (
-    <PageTemplate title={'Edit match'}>
+    <PageTemplate title={pageTitle}>
     <div className="match-management">
       <div className="match-management__content edit-match-page">
         <div className="page-header">
           <div className="header-left">
           </div>
           <div className="header-center">
-            <h1>Edit Match</h1>
+            <h1>{pageTitle}</h1>
           </div>
           <div className="header-right"></div>
         </div>
@@ -169,9 +180,10 @@ const EditMatchPage = () => {
               onCancelMatch={handleCancelMatch}
               onReactivateMatch={handleReactivateMatch}
               loading={loading}
+              competitionKind={isTournamentMatch ? 'tournament' : 'season'}
             />
           ) : (
-            !loading && <p>Match data could not be loaded.</p>
+            !loading && <p>{t('floorball.matches.matchForm.notLoaded', 'Ottelun tietojen lataus epäonnistui.')}</p>
           )}
         </div>
       </div>

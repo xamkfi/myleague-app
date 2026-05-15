@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import Pagination from '../../../../../components/Pagination';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
@@ -10,16 +10,21 @@ import { floorballTeamService } from '../../../../../api/floorball/floorballTeam
 import type {
   FloorballTournamentDto,
   CreateFloorballTournamentRequest,
+  FloorballPlayoffBracketDto,
 } from '../../../../../types/floorball/tournamentTypes';
 import { type FloorballTeam, TeamCategory } from '../../../../../types/floorball/floorballTypes';
+import TournamentBracket from '../../../../../components/TournamentBracket/TournamentBracket';
 import '../../FloorballSeasonsPage/EditSeasonPage/EditSeasonPage.scss';
 
-type TournamentTab = 'details' | 'groups' | 'teams';
+type TournamentTab = 'details' | 'groups' | 'teams' | 'bracket';
+
+const VALID_TOURNAMENT_TABS: ReadonlyArray<TournamentTab> = ['details', 'groups', 'teams', 'bracket'];
 
 const EditTournamentPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { competitionId } = useParams<{ competitionId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [tournament, setTournament] = useState<FloorballTournamentDto | null>(null);
   const [loadingTournament, setLoadingTournament] = useState(true);
@@ -46,7 +51,28 @@ const EditTournamentPage = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TournamentTab>('details');
+  const tabParam = searchParams.get('tab');
+  const activeTab: TournamentTab = VALID_TOURNAMENT_TABS.includes(tabParam as TournamentTab)
+    ? (tabParam as TournamentTab)
+    : 'details';
+  const setActiveTab = useCallback((tab: TournamentTab): void => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (tab === 'details') {
+          next.delete('tab');
+        } else {
+          next.set('tab', tab);
+        }
+        return next;
+      },
+      // Replace history entry so switching tabs doesn't pollute the back stack;
+      // the last-active tab still survives forward navigations + browser back, because
+      // the URL becomes part of the history entry that React Router pushes when navigating
+      // to another page (e.g. clicking a match card in the bracket).
+      { replace: true }
+    );
+  }, [setSearchParams]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
 
@@ -74,6 +100,11 @@ const EditTournamentPage = () => {
 
   // Lifecycle actions
   const [lifecycleLoading, setLifecycleLoading] = useState(false);
+
+  // Bracket tab state — read-only summary for admin verification.
+  const [bracket, setBracket] = useState<FloorballPlayoffBracketDto | null>(null);
+  const [bracketLoading, setBracketLoading] = useState(false);
+  const [bracketError, setBracketError] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -183,6 +214,45 @@ const EditTournamentPage = () => {
   useEffect(() => {
     loadAvailableTeams();
   }, [loadAvailableTeams]);
+
+  // Load playoff bracket on demand (admin Bracket tab) once playoffs are running or completed.
+  const showBracketTab = useMemo<boolean>(() => {
+    if (!tournament) return false;
+    if (!tournament.tournamentRules?.hasPlayoffStage) return false;
+    return (
+      tournament.tournamentStatus === 'PlayoffStage' ||
+      tournament.tournamentStatus === 'Completed'
+    );
+  }, [tournament]);
+
+  useEffect(() => {
+    if (!competitionId) return;
+    if (activeTab !== 'bracket') return;
+    if (!showBracketTab) return;
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setBracketLoading(true);
+        setBracketError(null);
+        const response = await floorballTournamentService.getPlayoffBracket(competitionId);
+        if (!cancelled) {
+          setBracket(response.data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setBracketError(err instanceof Error ? err.message : 'Failed to load playoff bracket');
+        }
+      } finally {
+        if (!cancelled) {
+          setBracketLoading(false);
+        }
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [competitionId, activeTab, showBracketTab]);
 
   const parseApiError = (err: unknown): string => {
     const msg = err instanceof Error ? err.message : String(err);
@@ -450,6 +520,14 @@ const EditTournamentPage = () => {
           >
             {t('floorball.tournaments.tabs.teams', 'Manage Teams')} ({totalTeamCount})
           </button>
+          {showBracketTab && (
+            <button
+              className={`tab-button ${activeTab === 'bracket' ? 'active' : ''}`}
+              onClick={() => setActiveTab('bracket')}
+            >
+              {t('floorball.tournaments.tabs.bracket', 'Pudotuspelikaavio')}
+            </button>
+          )}
         </div>
 
         <div className="edit-season-content">
@@ -995,6 +1073,33 @@ const EditTournamentPage = () => {
                     </>
                   )}
                 </>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'bracket' && showBracketTab && (
+            <div className="bracket-management" style={{ padding: '24px' }}>
+              <ErrorPopup message={error} />
+              {bracketLoading && (
+                <div style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>
+                  {t('common.loading', 'Ladataan...')}
+                </div>
+              )}
+              {bracketError && !bracketLoading && (
+                <div style={{ padding: '16px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', color: '#b91c1c', marginBottom: '16px' }}>
+                  {bracketError}
+                </div>
+              )}
+              {!bracketLoading && !bracketError && bracket && bracket.rounds.length > 0 && (
+                <TournamentBracket bracket={bracket} compact linkMode="admin" />
+              )}
+              {!bracketLoading && !bracketError && (!bracket || bracket.rounds.length === 0) && (
+                <div style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>
+                  {t(
+                    'floorball.tournaments.bracket.empty',
+                    'Pudotuspelikaaviota ei ole vielä luotu. Käynnistä pudotuspelivaihe Tiedot-välilehdeltä.'
+                  )}
+                </div>
               )}
             </div>
           )}

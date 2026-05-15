@@ -141,6 +141,29 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .WithMany()
                 .HasForeignKey(m => m.TournamentGroupId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Playoff bracket fields
+            builder.Property(m => m.PlayoffRound)
+                .HasConversion<int?>()
+                .IsRequired(false);
+
+            builder.Property(m => m.PlayoffMatchOrder)
+                .IsRequired(false);
+
+            builder.Property(m => m.NextMatchId)
+                .IsRequired(false);
+
+            builder.Property(m => m.NextMatchSlot)
+                .HasConversion<int?>()
+                .IsRequired(false);
+
+            // NextMatch is a self-reference inside the bracket. We don't expose a navigation property
+            // to keep the entity lean — the application layer fetches the next match by id when needed.
+            // Use Restrict to avoid cascade-delete cycles.
+            builder.HasOne<FloorballMatch>()
+                .WithMany()
+                .HasForeignKey(m => m.NextMatchId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 } 

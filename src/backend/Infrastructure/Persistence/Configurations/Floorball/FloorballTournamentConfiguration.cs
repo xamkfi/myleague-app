@@ -22,6 +22,9 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(t => t.TournamentStatus)
                 .HasConversion<int>();
 
+            builder.Property(t => t.ChampionTeamId)
+                .IsRequired(false);
+
             builder.OwnsOne(t => t.TournamentRules, tr =>
             {
                 tr.OwnsOne(r => r.GroupStageMatchRules, gsm =>

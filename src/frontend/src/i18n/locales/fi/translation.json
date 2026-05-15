@@ -758,7 +758,8 @@
       "tabs": {
         "details": "Turnauksen Tiedot",
         "groups": "Hallitse Lohkoja",
-        "teams": "Hallitse Joukkueita"
+        "teams": "Hallitse Joukkueita",
+        "bracket": "Pudotuspelikaavio"
       },
       "sections": {
         "basicInfo": "Perustiedot",
@@ -766,6 +767,9 @@
         "groupStageRules": "Alkulohkojen Säännöt",
         "playoffRules": "Pudotuspelien Säännöt",
         "structure": "Rakenne"
+      },
+      "bracket": {
+        "empty": "Pudotuspelikaaviota ei ole vielä luotu. Käynnistä pudotuspelivaihe Tiedot-välilehdeltä."
       },
       "status": {
         "draft": "Luonnos",
@@ -913,6 +917,20 @@
         "validDateTime": "Anna kelvollinen päiväys ja aika",
         "createFailed": "Ottelun luominen epäonnistui"
       },
+      "matchForm": {
+        "loading": "Ladataan ottelua...",
+        "notLoaded": "Ottelun tietojen lataus epäonnistui.",
+        "editSeasonMatch": "Muokkaa kauden ottelua",
+        "editTournamentMatch": "Muokkaa turnausottelua",
+        "season": "Kausi",
+        "tournament": "Turnaus",
+        "selectSeason": "Valitse kausi",
+        "selectTournament": "Valitse turnaus",
+        "searchSeasons": "Hae kausia...",
+        "searchTournaments": "Hae turnauksia...",
+        "noSeasons": "Kausia ei löytynyt",
+        "noTournaments": "Turnauksia ei löytynyt"
+      },
       "emptyStates": {
         "noSeasons": "Kausia ei löytynyt",
         "noTeams": "Joukkueita ei löytynyt",
@@ -950,6 +968,7 @@
         "start": "Käynnistä ottelu",
         "cancel": "Peruuta ottelu",
         "reactivate": "Aktivoi ottelu uudelleen",
+        "edit": "Muokkaa ottelun tietoja",
         "menu": "Ottelun toiminnot"
       },
       "confirmCancel": {

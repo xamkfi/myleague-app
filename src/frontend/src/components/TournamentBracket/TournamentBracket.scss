@@ -1,0 +1,307 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// TournamentBracket renders the playoff diagram as horizontally-scrollable columns of match cards.
+// On wide screens the columns flow left-to-right with sticky round headers; on narrow screens (<768px)
+// the same layout simply scrolls horizontally — a deliberate UX choice that keeps the bracket readable
+// without trying to redraw it as a stacked vertical list (which loses the structural meaning).
+
+.tournament-bracket {
+  background: $color-white;
+  border-radius: map.get($border-radius, 'lg');
+  padding: map.get($spacing, 'lg');
+  box-shadow: $box-shadow-drop-1;
+  color: $color-neutral-black;
+
+  &--empty {
+    text-align: center;
+    color: rgba($color-neutral-black, 0.6);
+    padding: map.get($spacing, 'lg');
+  }
+
+  &__scroller {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: map.get($spacing, 'sm');
+  }
+
+  &__rounds {
+    display: flex;
+    gap: map.get($spacing, 'lg');
+    align-items: stretch;
+    min-width: max-content;
+  }
+
+  &__round {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'md');
+    min-width: 240px;
+    max-width: 280px;
+    flex: 0 0 auto;
+
+    &--final &-matches {
+      justify-content: center;
+    }
+  }
+
+  &__round-header {
+    position: sticky;
+    top: 0;
+    background: $color-white;
+    z-index: 1;
+    padding-bottom: map.get($spacing, 'xs');
+    border-bottom: 1px solid rgba($color-blue-deep, 0.12);
+
+    h3 {
+      margin: 0;
+      font-size: map.get($font-sizes, 'md');
+      font-weight: map.get($font-weights, 'bold');
+      color: $color-blue-deep;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+  }
+
+  &__round-matches {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'md');
+    flex: 1;
+    justify-content: space-around;
+  }
+
+  &__match {
+    background: rgba($color-blue-deep, 0.02);
+    border: 1px solid rgba($color-blue-deep, 0.12);
+    border-radius: map.get($border-radius, 'md');
+    padding: map.get($spacing, 'sm');
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    &:hover,
+    &:focus-visible {
+      transform: translateY(-1px);
+      border-color: $color-blue-secondary;
+      box-shadow: $box-shadow-drop-1;
+      outline: none;
+    }
+
+    &--completed {
+      border-color: rgba($color-green-primary, 0.4);
+      background: rgba($color-green-primary, 0.04);
+    }
+
+    &--live {
+      border-color: rgba(#ef4444, 0.5);
+      background: rgba(#ef4444, 0.05);
+    }
+
+    &--bronze {
+      border-style: dashed;
+    }
+  }
+
+  &__match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'xs');
+    color: rgba($color-neutral-black, 0.6);
+  }
+
+  &__match-date {
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__match-status {
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: map.get($font-weights, 'bold');
+    padding: 2px 6px;
+    border-radius: 9999px;
+    font-size: 0.625rem;
+
+    &--completed {
+      background: rgba($color-green-primary, 0.15);
+      color: darken($color-green-primary, 10%);
+    }
+
+    &--live {
+      background: rgba(#ef4444, 0.15);
+      color: #ef4444;
+    }
+
+    &--scheduled {
+      background: rgba($color-blue-secondary, 0.12);
+      color: $color-blue-deep;
+    }
+  }
+
+  &__match-venue {
+    font-size: map.get($font-sizes, 'xs');
+    color: rgba($color-neutral-black, 0.55);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__slot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: map.get($spacing, 'xs');
+    padding: 6px 8px;
+    border-radius: map.get($border-radius, 'sm');
+    background: $color-white;
+    border: 1px solid rgba($color-blue-deep, 0.08);
+
+    &--winner {
+      background: rgba($color-green-primary, 0.12);
+      border-color: rgba($color-green-primary, 0.4);
+      font-weight: map.get($font-weights, 'bold');
+    }
+
+    &--tbd {
+      background: rgba($color-neutral-black, 0.03);
+      border-style: dashed;
+    }
+  }
+
+  &__slot-team {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__slot-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    border-radius: 50%;
+    background: $color-white;
+    flex-shrink: 0;
+
+    &--placeholder {
+      background: rgba($color-neutral-black, 0.08);
+    }
+  }
+
+  &__slot-name {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-neutral-black;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &--tbd {
+      color: rgba($color-neutral-black, 0.45);
+      font-style: italic;
+    }
+  }
+
+  &__slot-score {
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, 'sm');
+    min-width: 22px;
+    text-align: right;
+  }
+
+  &__champion {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'md');
+    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+    margin-bottom: map.get($spacing, 'lg');
+    background: linear-gradient(135deg, rgba($color-green-primary, 0.18) 0%, rgba($color-blue-secondary, 0.12) 100%);
+    border: 1px solid rgba($color-green-primary, 0.4);
+    border-radius: map.get($border-radius, 'md');
+  }
+
+  &__champion-label {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    font-weight: map.get($font-weights, 'extrabold');
+    color: $color-blue-deep;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  &__champion-icon {
+    font-size: 1.4rem;
+  }
+
+  &__champion-team {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'sm');
+    margin-left: auto;
+  }
+
+  &__champion-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 50%;
+    background: $color-white;
+    box-shadow: $box-shadow-drop-1;
+
+    &--placeholder {
+      background: rgba($color-neutral-black, 0.08);
+    }
+  }
+
+  &__champion-name {
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-blue-deep;
+  }
+
+  &--compact {
+    padding: map.get($spacing, 'md');
+
+    .tournament-bracket__round {
+      min-width: 200px;
+      max-width: 240px;
+    }
+
+    .tournament-bracket__match {
+      padding: 6px;
+    }
+
+    .tournament-bracket__slot-name {
+      font-size: map.get($font-sizes, 'xs');
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .tournament-bracket {
+    padding: map.get($spacing, 'md');
+
+    &__round {
+      min-width: 220px;
+      max-width: 240px;
+    }
+
+    &__champion {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: map.get($spacing, 'sm');
+    }
+
+    &__champion-team {
+      margin-left: 0;
+    }
+  }
+}

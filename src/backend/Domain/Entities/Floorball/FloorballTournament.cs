@@ -29,6 +29,11 @@ public class FloorballTournament : FloorballCompetition
     public FloorballTournamentRules TournamentRules { get; private set; }
 
     /// <summary>
+    /// Gets the team that won the playoff final (null until the final has been completed).
+    /// </summary>
+    public Guid? ChampionTeamId { get; private set; }
+
+    /// <summary>
     /// Gets the groups within this tournament
     /// </summary>
     public IReadOnlyCollection<FloorballTournamentGroup> Groups => _groups.AsReadOnly();
@@ -109,6 +114,18 @@ public class FloorballTournament : FloorballCompetition
 
         TournamentStatus = FloorballTournamentStatus.Completed;
         Complete();
+    }
+
+    /// <summary>
+    /// Records the playoff champion. Called automatically when the final is completed.
+    /// Idempotent: re-setting to the same team is allowed.
+    /// </summary>
+    public void SetChampion(Guid championTeamId)
+    {
+        if (championTeamId == Guid.Empty)
+            throw new ArgumentException("Champion team id cannot be empty.", nameof(championTeamId));
+
+        ChampionTeamId = championTeamId;
     }
 
     public void CancelTournament()

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useCallback, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { floorballMatchEventService, type RecordSaveEventRequest } from '../../../../api/floorball/floorballMatchEventService';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { timerService } from '../../../../api/common/timerService';
@@ -722,11 +723,19 @@ const ManageMatchPageWithContext = ({ match, setMatch }: ManageMatchPageContentP
 /**
  * Main page component with data loading
  */
-const ManageMatchPage = () => {
+const ManageMatchPage = (): JSX.Element => {
   const { matchId } = useParams<{ matchId: string }>();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const [match, setMatch] = useState<FloorballMatchDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleNavigateToEdit = useCallback((): void => {
+    if (matchId) {
+      navigate(`/admin/floorball/matches/${matchId}/edit`);
+    }
+  }, [matchId, navigate]);
 
   useEffect(() => {
     if (!matchId) {
@@ -776,6 +785,18 @@ const ManageMatchPage = () => {
         <div className="page-header">
           <div className="page-header__top">
             <h1 className="page-title-compact font-title">MATCH MANAGEMENT</h1>
+            <div className="page-header__actions">
+              <button
+                type="button"
+                className="edit-match-button"
+                onClick={handleNavigateToEdit}
+                disabled={!matchId}
+                title={t('floorball.matches.actions.edit')}
+              >
+                <span className="edit-match-button__icon" aria-hidden="true">✏️</span>
+                <span className="edit-match-button__label">{t('floorball.matches.actions.edit')}</span>
+              </button>
+            </div>
           </div>
         </div>
         <ManageMatchPageWithContext match={match} setMatch={setMatch} />

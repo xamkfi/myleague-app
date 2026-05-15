@@ -2,6 +2,7 @@ import type { ApiResponse } from '../../types/floorball/floorballTypes';
 import type {
   FloorballTournamentDto,
   CreateFloorballTournamentRequest,
+  FloorballPlayoffBracketDto,
 } from '../../types/floorball/tournamentTypes';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
@@ -192,6 +193,28 @@ export const floorballTournamentService = {
       return apiResponse;
     } catch (error) {
       console.error('Error in floorballTournamentService.startGroupStage:', error);
+      throw error;
+    }
+  },
+
+  getPlayoffBracket: async (id: string): Promise<ApiResponse<FloorballPlayoffBracketDto>> => {
+    try {
+      const response = await authFetch(`${API_URL}/FloorballTournament/${id}/playoff-bracket`);
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch playoff bracket');
+        throw new Error(errorMessage);
+      }
+
+      const apiResponse: ApiResponse<FloorballPlayoffBracketDto> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch playoff bracket'));
+      }
+
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballTournamentService.getPlayoffBracket:', error);
       throw error;
     }
   },

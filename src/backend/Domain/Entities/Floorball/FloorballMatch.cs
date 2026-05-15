@@ -125,6 +125,28 @@ public class FloorballMatch : BaseEntity
     public Guid? TournamentGroupId { get; private set; }
 
     /// <summary>
+    /// Gets the playoff round for playoff matches (null for non-playoff matches)
+    /// </summary>
+    public FloorballPlayoffRound? PlayoffRound { get; private set; }
+
+    /// <summary>
+    /// Gets the display order of this match within its playoff round (0-based, deterministic).
+    /// E.g. QF1 = 0, QF2 = 1, ... Used to render the bracket in a stable order.
+    /// </summary>
+    public int? PlayoffMatchOrder { get; private set; }
+
+    /// <summary>
+    /// Gets the next match (the match that the winner of this match advances into).
+    /// Null for the final and the optional 3rd place match.
+    /// </summary>
+    public Guid? NextMatchId { get; private set; }
+
+    /// <summary>
+    /// Gets the slot in <see cref="NextMatchId"/> the winner of this match should be placed into.
+    /// </summary>
+    public FloorballPlayoffSlot? NextMatchSlot { get; private set; }
+
+    /// <summary>
     /// Gets the match officials (referees)
     /// </summary>
     public IReadOnlyCollection<FloorballReferee> Officials => _officials.AsReadOnly();
@@ -193,6 +215,23 @@ public class FloorballMatch : BaseEntity
         FloorballTeam awayTeam,
         DateTime scheduledDateTime,
         string? venue)
+        : this(id, competition, homeTeam, awayTeam, scheduledDateTime, venue, matchRulesOverride: null)
+    {
+    }
+
+    /// <summary>
+    /// Internal constructor that accepts an explicit match-rules override. Used by playoff bracket
+    /// generation where the competition exposes group-stage rules but we need to copy the playoff
+    /// match rules instead.
+    /// </summary>
+    private FloorballMatch(
+        Guid id,
+        FloorballCompetition competition,
+        FloorballTeam homeTeam,
+        FloorballTeam awayTeam,
+        DateTime scheduledDateTime,
+        string? venue,
+        FloorballMatchRules? matchRulesOverride)
     {
         ArgumentNullException.ThrowIfNull(competition);
         ArgumentNullException.ThrowIfNull(homeTeam);
@@ -215,12 +254,13 @@ public class FloorballMatch : BaseEntity
         AwayScore = 0;
         WentToOvertime = false;
         WentToShootout = false;
-        MatchRules = new FloorballMatchRules(
+        FloorballMatchRules effectiveRules = matchRulesOverride ?? new FloorballMatchRules(
             competition.MatchRules.NumberOfPeriods,
             competition.MatchRules.PeriodDurationMinutes,
             competition.MatchRules.AllowOvertime,
             competition.MatchRules.OvertimeDurationMinutes,
             competition.MatchRules.AllowShootout);
+        MatchRules = effectiveRules;
         HomeActiveGoalieId = null;
         AwayActiveGoalieId = null;
         _events = new List<FloorballMatchEvent>();
@@ -230,6 +270,24 @@ public class FloorballMatch : BaseEntity
         {
             _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
         }
+    }
+
+    /// <summary>
+    /// Creates a playoff bracket match. The match rules override defaults to the playoff rules
+    /// from the tournament rather than the competition's group-stage rules. Bracket metadata
+    /// (round, ordering, forward references) is set after construction via <see cref="SetPlayoffInfo"/>.
+    /// </summary>
+    public static FloorballMatch CreatePlayoffMatch(
+        Guid id,
+        FloorballCompetition competition,
+        FloorballTeam homeTeam,
+        FloorballTeam awayTeam,
+        DateTime scheduledDateTime,
+        string? venue,
+        FloorballMatchRules playoffMatchRules)
+    {
+        ArgumentNullException.ThrowIfNull(playoffMatchRules);
+        return new FloorballMatch(id, competition, homeTeam, awayTeam, scheduledDateTime, venue, playoffMatchRules);
     }
 
     /// <summary>
@@ -753,6 +811,60 @@ public class FloorballMatch : BaseEntity
         TournamentStage = stage;
         TournamentGroupId = groupId;
     }
+
+    /// <summary>
+    /// Sets playoff bracket metadata on this match. Called by the bracket generator when the
+    /// playoff stage is started so the read-side can render rounds, ordering and forward references.
+    /// </summary>
+    public void SetPlayoffInfo(
+        FloorballPlayoffRound round,
+        int matchOrder,
+        Guid? nextMatchId,
+        FloorballPlayoffSlot? nextMatchSlot)
+    {
+        if (matchOrder < 0)
+            throw new ArgumentOutOfRangeException(nameof(matchOrder), "Playoff match order must be non-negative.");
+        if (nextMatchId.HasValue != nextMatchSlot.HasValue)
+            throw new ArgumentException("NextMatchId and NextMatchSlot must be provided together.");
+
+        PlayoffRound = round;
+        PlayoffMatchOrder = matchOrder;
+        NextMatchId = nextMatchId;
+        NextMatchSlot = nextMatchSlot;
+        TournamentStage = MapRoundToStage(round);
+    }
+
+    /// <summary>
+    /// Replaces a team slot on this playoff match. Used when a feeder match completes and the
+    /// winner has to be propagated into this (still scheduled) match.
+    /// </summary>
+    public void AssignPlayoffTeam(FloorballPlayoffSlot slot, FloorballTeam team)
+    {
+        ArgumentNullException.ThrowIfNull(team);
+        if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
+            throw new InvalidOperationException($"Cannot assign a playoff team when match status is {Status}.");
+
+        if (slot == FloorballPlayoffSlot.Home)
+        {
+            HomeTeam = team;
+            HomeTeamId = team.Id;
+        }
+        else
+        {
+            AwayTeam = team;
+            AwayTeamId = team.Id;
+        }
+    }
+
+    private static FloorballTournamentStage MapRoundToStage(FloorballPlayoffRound round) =>
+        round switch
+        {
+            FloorballPlayoffRound.QuarterFinal => FloorballTournamentStage.Quarterfinal,
+            FloorballPlayoffRound.SemiFinal => FloorballTournamentStage.Semifinal,
+            FloorballPlayoffRound.ThirdPlaceMatch => FloorballTournamentStage.ThirdPlace,
+            FloorballPlayoffRound.Final => FloorballTournamentStage.Final,
+            _ => FloorballTournamentStage.None
+        };
 
     // ── Private helpers ──────────────────────────────────────────────────
 

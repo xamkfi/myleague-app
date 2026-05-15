@@ -5,6 +5,7 @@ import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import MatchesList from '../../components/MatchesList/MatchesList';
 import TournamentGroupStandingsTable from '../../components/TournamentGroupStandingsTable/TournamentGroupStandingsTable';
+import TournamentBracket from '../../components/TournamentBracket/TournamentBracket';
 import { floorballTournamentService } from '../../api/floorball/floorballTournamentService';
 import {
   floorballStatisticsService,
@@ -17,13 +18,14 @@ import {
 } from '../../types/floorball/floorballTypes';
 import type {
   FloorballTournamentDto,
-  FloorballTournamentGroupDto
+  FloorballTournamentGroupDto,
+  FloorballPlayoffBracketDto
 } from '../../types/floorball/tournamentTypes';
 import './TournamentPage.scss';
 
-type TabType = 'summary' | 'groups' | 'statistics' | 'results' | 'fixtures';
+type TabType = 'summary' | 'groups' | 'playoffs' | 'statistics' | 'results' | 'fixtures';
 
-const VALID_TABS: TabType[] = ['summary', 'groups', 'statistics', 'results', 'fixtures'];
+const VALID_TABS: TabType[] = ['summary', 'groups', 'playoffs', 'statistics', 'results', 'fixtures'];
 
 type LifecycleStatus = 'upcoming' | 'ongoing' | 'past';
 
@@ -103,6 +105,10 @@ function TournamentPage() {
   const [matchesError, setMatchesError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const [bracket, setBracket] = useState<FloorballPlayoffBracketDto | null>(null);
+  const [bracketLoading, setBracketLoading] = useState(false);
+  const [bracketError, setBracketError] = useState<string | null>(null);
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
@@ -216,6 +222,45 @@ function TournamentPage() {
     setCurrentPage(page);
   }, []);
 
+  const showPlayoffsTab = useMemo<boolean>(() => {
+    if (!tournament) return false;
+    if (!tournament.tournamentRules?.hasPlayoffStage) return false;
+    return (
+      tournament.tournamentStatus === 'PlayoffStage' ||
+      tournament.tournamentStatus === 'Completed'
+    );
+  }, [tournament]);
+
+  // Fetch playoff bracket when the tab is active and the tournament is in PlayoffStage / Completed.
+  useEffect(() => {
+    if (!id) return;
+    if (activeTab !== 'playoffs') return;
+    if (!showPlayoffsTab) return;
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setBracketLoading(true);
+        setBracketError(null);
+        const response = await floorballTournamentService.getPlayoffBracket(id);
+        if (!cancelled) {
+          setBracket(response.data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setBracketError(err instanceof Error ? err.message : 'Failed to load playoff bracket');
+        }
+      } finally {
+        if (!cancelled) {
+          setBracketLoading(false);
+        }
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, activeTab, showPlayoffsTab]);
+
   const sortedGroups = useMemo<FloorballTournamentGroupDto[]>(() => {
     if (!tournament) return [];
     return tournament.groups.slice().sort((a, b) => a.order - b.order);
@@ -224,6 +269,9 @@ function TournamentPage() {
   const tabs: { key: TabType; label: string }[] = [
     { key: 'summary', label: t('leaguePage.tabs.summary', 'Yhteenveto') },
     { key: 'groups', label: t('tournaments.tabs.groups', 'Lohkot') },
+    ...(showPlayoffsTab
+      ? [{ key: 'playoffs' as TabType, label: t('tournaments.tabs.playoffs', 'Pudotuspelit') }]
+      : []),
     { key: 'statistics', label: t('leaguePage.tabs.statistics', 'Tilastot') },
     { key: 'results', label: t('leaguePage.tabs.results', 'Tulokset') },
     { key: 'fixtures', label: t('leaguePage.tabs.fixtures', 'Otteluohjelma') }
@@ -373,12 +421,53 @@ function TournamentPage() {
     );
   };
 
+  const renderPlayoffsTab = () => {
+    if (bracketLoading) {
+      return (
+        <div className="tournament-page__card tournament-page__notice">
+          {t('common.loading', 'Ladataan...')}
+        </div>
+      );
+    }
+    if (bracketError) {
+      return (
+        <div className="tournament-page__card tournament-page__empty">
+          <h3>{t('tournaments.playoffs.errorTitle', 'Pudotuspelikaavion lataus epäonnistui')}</h3>
+          <p>{bracketError}</p>
+        </div>
+      );
+    }
+    if (!bracket || bracket.rounds.length === 0) {
+      return (
+        <div className="tournament-page__card tournament-page__empty">
+          <h3>{t('tournaments.playoffs.notReadyTitle', 'Pudotuspelit eivät ole vielä alkaneet')}</h3>
+          <p>
+            {t(
+              'tournaments.playoffs.notReadyDescription',
+              'Pudotuspelikaavio näkyy täällä, kun turnauksen järjestäjä on käynnistänyt pudotuspelivaiheen.'
+            )}
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div className="tournament-page__content">
+        <TournamentBracket bracket={bracket} />
+      </div>
+    );
+  };
+
   const renderTabContent = () => {
+    if (activeTab === 'playoffs' && !showPlayoffsTab) {
+      return renderSummaryTab();
+    }
     switch (activeTab) {
       case 'summary':
         return renderSummaryTab();
       case 'groups':
         return renderGroupsTab();
+      case 'playoffs':
+        return renderPlayoffsTab();
       case 'statistics':
         return renderStatisticsTab();
       case 'results':

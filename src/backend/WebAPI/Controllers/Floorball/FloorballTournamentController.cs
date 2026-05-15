@@ -317,6 +317,37 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Gets the playoff bracket for a tournament. Returns an empty Rounds list when no
+        /// playoff matches have been generated yet (e.g. tournament is still in GroupStage).
+        /// </summary>
+        /// <param name="competitionId">Tournament ID</param>
+        /// <returns>Bracket grouped by round (Quarterfinals -> Semifinals -> [3rd place] -> Final), with optional champion.</returns>
+        [HttpGet("{competitionId:guid}/playoff-bracket")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballPlayoffBracketDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballPlayoffBracketDto>>> GetTournamentPlayoffBracket(Guid competitionId)
+        {
+            _logger.LogInformation("Getting playoff bracket for tournament: {competitionId}", competitionId);
+
+            GetTournamentPlayoffBracketQuery query = new GetTournamentPlayoffBracketQuery(competitionId);
+            Result<FloorballPlayoffBracketDto> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballPlayoffBracketDto>.SuccessResponse(result.Data, "Tournament playoff bracket retrieved successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to retrieve tournament playoff bracket";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballPlayoffBracketDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballPlayoffBracketDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Completes a floorball tournament
         /// </summary>
         /// <param name="competitionId">Tournament ID</param>
