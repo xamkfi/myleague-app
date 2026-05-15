@@ -148,26 +148,26 @@ export const floorballTournamentService = {
     }
   },
 
-  openRegistration: async (id: string): Promise<ApiResponse<FloorballTournamentDto>> => {
+  cancel: async (id: string): Promise<ApiResponse<FloorballTournamentDto>> => {
     try {
-      const response = await authFetch(`${API_URL}/FloorballTournament/${id}/open-registration`, {
+      const response = await authFetch(`${API_URL}/FloorballTournament/${id}/cancel`, {
         method: 'POST',
       });
 
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to open registration');
+        const errorMessage = await parseErrorResponse(response, 'Failed to cancel tournament');
         throw new Error(errorMessage);
       }
 
       const apiResponse: ApiResponse<FloorballTournamentDto> = await response.json();
 
       if (!apiResponse.success) {
-        throw new Error(await parseErrorResponse(apiResponse, 'Failed to open registration'));
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to cancel tournament'));
       }
 
       return apiResponse;
     } catch (error) {
-      console.error('Error in floorballTournamentService.openRegistration:', error);
+      console.error('Error in floorballTournamentService.cancel:', error);
       throw error;
     }
   },

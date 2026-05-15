@@ -6,8 +6,8 @@ namespace Domain.Enums.Floorball;
 public enum FloorballTournamentStatus
 {
     Draft = 0,
-    Registration = 1,
-    GroupStage = 2,
-    PlayoffStage = 3,
-    Completed = 4
+    GroupStage = 1,
+    PlayoffStage = 2,
+    Completed = 3,
+    Cancelled = 4
 }

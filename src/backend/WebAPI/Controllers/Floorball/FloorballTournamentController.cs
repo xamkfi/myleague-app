@@ -253,38 +253,6 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Opens registration for a floorball tournament
-        /// </summary>
-        /// <param name="competitionId">Tournament ID</param>
-        /// <returns>Updated tournament details</returns>
-        [HttpPost("{competitionId:guid}/open-registration")]
-        [Authorize]
-        [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballTournamentDto>>> OpenTournamentRegistration(Guid competitionId)
-        {
-            _logger.LogInformation("Opening registration for floorball tournament with ID: {competitionId}", competitionId);
-
-            OpenTournamentRegistrationCommand command = new OpenTournamentRegistrationCommand(competitionId);
-            Result<FloorballTournamentDto> result = await _mediator.Send(command);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Tournament registration opened successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to open tournament registration";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-        }
-
-        /// <summary>
         /// Starts the group stage of a floorball tournament
         /// </summary>
         /// <param name="competitionId">Tournament ID</param>
@@ -372,6 +340,40 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string errorMessage = result.Error ?? "Failed to complete floorball tournament";
+            List<string> errorList = result.GetAllErrors().ToList();
+
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+        }
+
+        /// <summary>
+        /// Cancels a floorball tournament
+        /// </summary>
+        /// <param name="competitionId">Tournament ID</param>
+        /// <returns>Updated tournament details</returns>
+        [HttpPost("{competitionId:guid}/cancel")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballTournamentDto>>> CancelTournament(Guid competitionId)
+        {
+            _logger.LogInformation("Cancelling floorball tournament with ID: {competitionId}", competitionId);
+
+            CancelTournamentCommand command = new CancelTournamentCommand(competitionId);
+            Result<FloorballTournamentDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Floorball tournament cancelled successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to cancel floorball tournament";
             List<string> errorList = result.GetAllErrors().ToList();
 
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))

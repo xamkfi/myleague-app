@@ -323,10 +323,18 @@ function TournamentPage() {
         </div>
       );
     }
+    const teamsAdvancingPerGroup = tournament.tournamentRules?.hasPlayoffStage
+      ? tournament.tournamentRules?.teamsAdvancingPerGroup ?? 0
+      : 0;
     return (
       <div className="tournament-page__content">
         {sortedGroups.map((group) => (
-          <GroupSection key={group.id} competitionId={id} group={group} />
+          <GroupSection
+            key={group.id}
+            competitionId={id}
+            group={group}
+            teamsAdvancingPerGroup={teamsAdvancingPerGroup}
+          />
         ))}
       </div>
     );
@@ -449,9 +457,10 @@ function TournamentPage() {
 interface GroupSectionProps {
   competitionId: string;
   group: FloorballTournamentGroupDto;
+  teamsAdvancingPerGroup: number;
 }
 
-function GroupSection({ competitionId, group }: GroupSectionProps) {
+function GroupSection({ competitionId, group, teamsAdvancingPerGroup }: GroupSectionProps) {
   const { t } = useTranslation();
 
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null);
@@ -503,7 +512,11 @@ function GroupSection({ competitionId, group }: GroupSectionProps) {
         {t('tournaments.group', 'Lohko')} {group.name}
       </h2>
 
-      <TournamentGroupStandingsTable groupId={group.id} groupName={group.name} />
+      <TournamentGroupStandingsTable
+        groupId={group.id}
+        groupName={group.name}
+        teamsAdvancingPerGroup={teamsAdvancingPerGroup}
+      />
 
       <MatchesList
         variant="fixtures"

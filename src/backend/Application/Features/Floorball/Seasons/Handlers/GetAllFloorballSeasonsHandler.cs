@@ -58,8 +58,10 @@ public class GetAllFloorballSeasonsHandler : IRequestHandler<GetAllFloorballSeas
         {
             _logger.LogInformation("Retrieving all floorball seasons");
             
-            IEnumerable<FloorballCompetition> seasons = await _seasonRepository.GetAllAsync();
-            List<FloorballCompetition> seasonList = seasons.ToList();
+            IEnumerable<FloorballCompetition> competitions = await _seasonRepository.GetAllAsync();
+            // FloorballCompetition uses Table-Per-Hierarchy; only return league seasons here,
+            // not tournaments (which are managed via FloorballTournamentController).
+            List<FloorballCompetition> seasonList = competitions.OfType<FloorballSeason>().Cast<FloorballCompetition>().ToList();
 
             // Load clubs for all teams across all seasons
             Dictionary<Guid, Club> clubsDict = new Dictionary<Guid, Club>();

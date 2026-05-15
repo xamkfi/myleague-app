@@ -57,11 +57,52 @@ public static class FloorballTournamentsSeeder
 				}
 			}
 
+			// When the seed asks for "all group matches completed", advance the lifecycle status to GroupStage
+			// before matches are created. The match seeder will then schedule every match in the past so they
+			// all simulate to completion, leaving the tournament ready for the admin to start the playoff stage.
+			if (tournamentSeed.AllGroupMatchesCompleted)
+			{
+				tournament = await TryAdvanceToGroupStageAsync(http, jsonOptions, tournament);
+			}
+
 			created.Add(tournament);
-			Console.WriteLine($"Tournament ready: {tournament.Name} ({tournament.Id}) with {tournament.Groups.Count} group(s) and {tournament.TeamCount} team(s)");
+			Console.WriteLine($"Tournament ready: {tournament.Name} ({tournament.Id}) with {tournament.Groups.Count} group(s) and {tournament.TeamCount} team(s) [status: {tournament.TournamentStatus}]");
 		}
 
 		return created;
+	}
+
+	private static async Task<FloorballTournamentDto> TryAdvanceToGroupStageAsync(
+		HttpClient http,
+		JsonSerializerOptions jsonOptions,
+		FloorballTournamentDto tournament)
+	{
+		if (!string.Equals(tournament.TournamentStatus, "Draft", StringComparison.OrdinalIgnoreCase))
+		{
+			Console.WriteLine($"  Tournament '{tournament.Name}' already in status '{tournament.TournamentStatus}', skipping start-group-stage");
+			return tournament;
+		}
+
+		HttpResponseMessage response = await http.PostAsync(
+			$"api/floorballtournament/{tournament.Id}/start-group-stage",
+			content: null);
+
+		if (!response.IsSuccessStatusCode)
+		{
+			string body = await response.Content.ReadAsStringAsync();
+			Console.WriteLine($"  Warning: failed to advance tournament '{tournament.Name}' to GroupStage ({(int)response.StatusCode}): {body}");
+			return tournament;
+		}
+
+		ApiResponse<FloorballTournamentDto>? api = await response.Content.ReadFromJsonAsync<ApiResponse<FloorballTournamentDto>>(jsonOptions);
+		if (api?.Data == null)
+		{
+			Console.WriteLine($"  Warning: start-group-stage returned an empty payload for '{tournament.Name}'.");
+			return tournament;
+		}
+
+		Console.WriteLine($"  Advanced tournament '{tournament.Name}' to status '{api.Data.TournamentStatus}'");
+		return api.Data;
 	}
 
 	private static async Task<FloorballTournamentDto> FindOrCreateTournamentAsync(

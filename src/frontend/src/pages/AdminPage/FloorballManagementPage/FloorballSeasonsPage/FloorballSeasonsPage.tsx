@@ -126,6 +126,7 @@ const FloorballSeasonsPage = () => {
         <SeasonsPageHeader
           seasonsCount={seasons.length}
           onCreateSeason={() => navigate('/admin/floorball/seasons/create')}
+          onManageMatches={() => navigate('/admin/floorball/seasons/matches')}
         />
 
         <ErrorPopup message={error} />

@@ -5,7 +5,7 @@ using MediatR;
 namespace Application.Features.Floorball.Tournaments.Commands;
 
 /// <summary>
-/// Command for opening tournament registration (Draft -> Registration)
+/// Command for cancelling a tournament (Draft/GroupStage/PlayoffStage -> Cancelled)
 /// </summary>
-public record OpenTournamentRegistrationCommand(
+public record CancelTournamentCommand(
     Guid CompetitionId) : IRequest<Result<FloorballTournamentDto>>;

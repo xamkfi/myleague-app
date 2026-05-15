@@ -6,13 +6,20 @@ import type { FloorballTournamentGroupStandingDto } from '../../types/floorball/
 import { useFloorballTeamsData } from '../../hooks/useTeamsData';
 import { createTeamSlug } from '../../utils/slugUtils';
 import '../LeagueStanding/LeagueStanding.scss';
+import './TournamentGroupStandingsTable.scss';
 
 interface TournamentGroupStandingsTableProps {
   groupId: string;
   groupName: string;
+  /**
+   * Number of teams that advance from this group to the playoff bracket.
+   * The top N rows are highlighted in green so users can see the qualifying teams at a glance.
+   * Pass 0 (or omit) to disable the highlight.
+   */
+  teamsAdvancingPerGroup?: number;
 }
 
-export default function TournamentGroupStandingsTable({ groupId, groupName }: TournamentGroupStandingsTableProps) {
+export default function TournamentGroupStandingsTable({ groupId, groupName, teamsAdvancingPerGroup = 0 }: TournamentGroupStandingsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { teams, refetch } = useFloorballTeamsData();
@@ -107,13 +114,19 @@ export default function TournamentGroupStandingsTable({ groupId, groupName }: To
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, index) => (
+              {rows.map((row, index) => {
+                const isQualifying = teamsAdvancingPerGroup > 0 && index < teamsAdvancingPerGroup;
+                return (
                 <tr
                   key={row.teamId}
-                  className="clickable-row"
+                  className={`clickable-row${isQualifying ? ' qualifying-row' : ''}`}
                   onClick={() => navigateToTeam(row.teamId)}
+                  title={isQualifying ? t('tournaments.standings.qualifyingHint', 'Etenee pudotuspelivaiheeseen') : undefined}
                 >
-                  <td className="rank-col">{index + 1}</td>
+                  <td className="rank-col">
+                    {isQualifying && <span className="qualifying-marker" aria-hidden="true" />}
+                    {index + 1}
+                  </td>
                   <td className="team-col">
                     <div className="team-info">
                       {row.teamLogo && row.teamLogo.trim() !== '' ? (
@@ -143,9 +156,22 @@ export default function TournamentGroupStandingsTable({ groupId, groupName }: To
                   <td className="stats-col">{row.goalDifference}</td>
                   <td className="points-col">{row.points}</td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
+        )}
+        {teamsAdvancingPerGroup > 0 && rows && rows.length > 0 && (
+          <div className="qualifying-legend">
+            <span className="qualifying-legend__swatch" aria-hidden="true" />
+            <span>
+              {t(
+                'tournaments.standings.qualifyingLegend',
+                'Vihreällä korostetut joukkueet etenevät pudotuspelivaiheeseen ({{count}} per lohko).',
+                { count: teamsAdvancingPerGroup }
+              )}
+            </span>
+          </div>
         )}
       </div>
     </div>

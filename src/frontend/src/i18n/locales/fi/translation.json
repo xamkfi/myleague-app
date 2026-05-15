@@ -570,7 +570,10 @@
         "referees": "Hallitse Tuomareita",
         "matches": "Hallitse Otteluita",
         "matchEvents": "Hallitse Ottelutapahtumia",
-        "seasons": "Hallitse Kausia"
+        "seasons": "Hallitse Kausia",
+        "seasonMatches": "Hallitse Kauden Otteluita",
+        "tournaments": "Hallitse Turnauksia",
+        "tournamentMatches": "Hallitse Turnausten Otteluita"
       }
     },
     "teams": {
@@ -689,6 +692,7 @@
       "totalCount": "{{count}} kautta",
       "createNew": "Luo Uusi Kausi",
       "showActiveOnly": "Näytä Vain Aktiiviset",
+      "backToList": "Takaisin kausilistaan",
       "division": "Sarja",
       "fields": {
         "name": "Nimi",
@@ -723,6 +727,77 @@
         "divisionRequired": "Valitse kelvollinen sarja.",
         "startDateRequired": "Aloituspäivä on pakollinen.",
         "endDateRequired": "Päättymispäivä on pakollinen."
+      }
+    },
+    "tournaments": {
+      "title": "Hallitse Turnauksia",
+      "totalCount": "{{count}} turnausta",
+      "createNew": "Luo Uusi Turnaus",
+      "editTitle": "Muokkaa Turnausta",
+      "createTitle": "Luo Uusi Turnaus",
+      "noTournaments": "Turnauksia ei löytynyt",
+      "noGroups": "Ei lohkoja",
+      "showOngoingOnly": "Näytä Vain Käynnissä Olevat",
+      "filterByStatus": "Suodata tilan mukaan",
+      "allStatuses": "Kaikki tilat",
+      "selectAll": "Valitse kaikki turnaukset",
+      "statusLabel": "Tila",
+      "teamsCount": "{{count}} joukkuetta",
+      "matchesCount": "{{count}} ottelua",
+      "backToList": "Takaisin turnauslistaan",
+      "fields": {
+        "name": "Nimi",
+        "venue": "Pelipaikka",
+        "groups": "Lohkot",
+        "startDate": "Alkaa",
+        "endDate": "Päättyy",
+        "teams": "Joukkueet",
+        "matches": "Ottelut",
+        "status": "Tila"
+      },
+      "tabs": {
+        "details": "Turnauksen Tiedot",
+        "groups": "Hallitse Lohkoja",
+        "teams": "Hallitse Joukkueita"
+      },
+      "sections": {
+        "basicInfo": "Perustiedot",
+        "schedule": "Aikataulu",
+        "groupStageRules": "Alkulohkojen Säännöt",
+        "playoffRules": "Pudotuspelien Säännöt",
+        "structure": "Rakenne"
+      },
+      "status": {
+        "draft": "Luonnos",
+        "groupStage": "Alkulohkot",
+        "playoffStage": "Pudotuspelit",
+        "completed": "Päättynyt",
+        "cancelled": "Peruttu"
+      },
+      "lifecycle": {
+        "startGroupStage": "Aloita Alkulohkot",
+        "startPlayoffStage": "Aloita Pudotuspelit",
+        "complete": "Päätä Turnaus",
+        "cancel": "Peru Turnaus",
+        "startGroupStageSuccess": "Alkulohkot aloitettu onnistuneesti.",
+        "startPlayoffStageSuccess": "Pudotuspelit aloitettu onnistuneesti.",
+        "completeSuccess": "Turnaus päätetty onnistuneesti.",
+        "cancelSuccess": "Turnaus peruttu onnistuneesti."
+      },
+      "actions": {
+        "menu": "Turnauksen toimintovalikko"
+      },
+      "errors": {
+        "networkError": "Verkkovirhe. Tarkista yhteytesi ja yritä uudelleen.",
+        "validationError": "Virheellistä tietoa annettu. Tarkista syötteesi ja yritä uudelleen.",
+        "notFound": "Turnausta ei löytynyt. Se on saatettu poistaa.",
+        "serverError": "Palvelinvirhe. Yritä myöhemmin uudelleen.",
+        "operationFailed": "Toiminto epäonnistui. Yritä uudelleen."
+      },
+      "confirmDelete": {
+        "title": "Vahvista Poisto",
+        "message": "Oletko varma että haluat poistaa turnauksen \"{{name}}\"?",
+        "warning": "Tätä toimintoa ei voi perua."
       }
     },
     "categories": {
@@ -765,6 +840,10 @@
     "matches": {
       "title": "Otteluiden Hallinta",
       "subtitle": "Hallitse salibandyotteluita, seuraa live-pelejä ja organisoi kautesi",
+      "seasonTitle": "Kauden Otteluiden Hallinta",
+      "seasonSubtitle": "Hallitse otteluita, jotka on aikataulutettu kausien sisällä",
+      "tournamentTitle": "Turnausten Otteluiden Hallinta",
+      "tournamentSubtitle": "Hallitse otteluita, jotka on aikataulutettu turnausten sisällä",
       "loading": "Ladataan otteluita...",
       "noMatchesFound": "Otteluita ei löytynyt",
       "noMatchesForSeason": "Valitulle kaudelle ei löytynyt otteluita",
@@ -850,7 +929,10 @@
       },
       "filters": {
         "filterBySeason": "Suodata Kauden Mukaan:",
+        "filterByTournament": "Suodata Turnauksen Mukaan:",
         "allSeasons": "Kaikki Kaudet",
+        "allTournaments": "Kaikki Turnaukset",
+        "allCompetitions": "Kaikki Kilpailut",
         "searchByTeam": "Hae joukkueen mukaan:",
         "searchPlaceholder": "Hae joukkueiden nimiä..."
       },

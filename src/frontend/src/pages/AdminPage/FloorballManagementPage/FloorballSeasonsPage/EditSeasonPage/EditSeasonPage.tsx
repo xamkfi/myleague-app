@@ -383,6 +383,16 @@ const EditSeasonPage = () => {
       )}
 
       <div className="edit-season-container">
+        <div className="edit-season-back">
+          <button
+            type="button"
+            className="back-button"
+            onClick={() => navigate('/admin/floorball/seasons')}
+          >
+            <span aria-hidden="true">&larr;</span>{' '}
+            {t('floorball.seasons.backToList', 'Back to Seasons')}
+          </button>
+        </div>
         {/* Tab Navigation */}
         <div className="tab-navigation">
           <button className={`tab-button ${activeTab === 'details' ? 'active' : ''}`} onClick={() => setActiveTab('details')}>

@@ -177,6 +177,7 @@
         "TeamsAdvancingPerGroup": 2,
         "HasPlayoffStage": true,
         "HasThirdPlaceMatch": false,
+        "AllGroupMatchesCompleted": false,
         "Groups": [
           {
             "Name": "Group A",
@@ -185,6 +186,37 @@
           {
             "Name": "Group B",
             "TeamNames": ["Oulu Outlaws", "Espoo Eagles", "Vantaa Vikings"]
+          }
+        ]
+      },
+      {
+        "Name": "Playoff test tournament",
+        "StartDate": "2027-08-01",
+        "EndDate": "2027-08-14",
+        "Venue": "Tampere Sports Hall",
+        "ContentHtml": "<p>Test tournament with all group-stage matches completed. Use this to verify that the playoff bracket advances the correct number of teams (TeamsAdvancingPerGroup = 2 → 4 playoff teams from 8 group teams).</p>",
+        "GroupStageNumberOfPeriods": 3,
+        "GroupStagePeriodDurationMinutes": 20,
+        "GroupStageAllowOvertime": false,
+        "GroupStageOvertimeDurationMinutes": 5,
+        "GroupStageAllowShootout": false,
+        "PlayoffNumberOfPeriods": 3,
+        "PlayoffPeriodDurationMinutes": 20,
+        "PlayoffAllowOvertime": true,
+        "PlayoffOvertimeDurationMinutes": 10,
+        "PlayoffAllowShootout": true,
+        "TeamsAdvancingPerGroup": 2,
+        "HasPlayoffStage": true,
+        "HasThirdPlaceMatch": true,
+        "AllGroupMatchesCompleted": true,
+        "Groups": [
+          {
+            "Name": "Group A",
+            "TeamNames": ["Helsinki Hammers", "Tampere Titans", "Turku Thunder", "Oulu Outlaws"]
+          },
+          {
+            "Name": "Group B",
+            "TeamNames": ["Espoo Eagles", "Vantaa Vikings", "Lahti Lions", "Jyväskylä Jets"]
           }
         ]
       }

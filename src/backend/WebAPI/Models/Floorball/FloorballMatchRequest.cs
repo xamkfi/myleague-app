@@ -48,6 +48,11 @@ public record GetFloorballMatchesRequest : PagedRequestBase
     /// Gets the search query to filter matches by team names (case-insensitive, partial match)
     /// </summary>
     public string? SearchQuery { get; init; }
+
+    /// <summary>
+    /// Gets the competition type filter (Season or Tournament). When null, matches from both types are returned.
+    /// </summary>
+    public FloorballCompetitionType? CompetitionType { get; init; }
 }
 
 /// <summary>

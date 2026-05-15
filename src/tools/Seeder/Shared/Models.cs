@@ -91,6 +91,14 @@ public class FloorballTournamentSeed
 	public bool HasPlayoffStage { get; init; } = true;
 	public bool HasThirdPlaceMatch { get; init; } = false;
 
+	/// <summary>
+	/// When true, the seeder transitions the tournament to GroupStage (if Draft), schedules every
+	/// group-stage match in the past, and simulates each one through to completion. The result is a
+	/// tournament that is ready for the admin to advance to the playoff stage — useful for testing
+	/// playoff bracket generation without manually playing every match.
+	/// </summary>
+	public bool AllGroupMatchesCompleted { get; init; } = false;
+
 	public List<FloorballTournamentGroupSeed> Groups { get; init; } = new List<FloorballTournamentGroupSeed>();
 }
 

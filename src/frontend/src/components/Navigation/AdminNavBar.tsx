@@ -9,7 +9,6 @@ import SportsIcon from '../../assets/adminIcons/Sports.svg';
 import TeamsIcon from '../../assets/adminIcons/Teams.svg';
 import PlayersIcon from '../../assets/adminIcons/Persons.svg';
 import SeasonsIcon from '../../assets/adminIcons/Seasons.svg';
-import MatchesIcon from '../../assets/adminIcons/Matches.svg';
 import RefereesIcon from '../../assets/adminIcons/Referees.svg';
 import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
 import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
@@ -157,19 +156,13 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/seasons') ? 'active' : ''}`}>
                     <Link to="/admin/floorball/seasons">
                       <img src={SeasonsIcon} alt="Seasons" className="icon" />
-                      <span>{t('floorball.management.actions.seasons', 'Seasons')}</span>
+                      <span>{t('floorball.management.actions.seasons', 'Manage Seasons')}</span>
                     </Link>
                   </li>
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/tournaments') ? 'active' : ''}`}>
                     <Link to="/admin/floorball/tournaments">
                       <img src={SeasonsIcon} alt="Tournaments" className="icon" />
-                      <span>{t('floorball.management.actions.tournaments', 'Tournaments')}</span>
-                    </Link>
-                  </li>
-                  <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/matches') ? 'active' : ''}`}>
-                    <Link to="/admin/floorball/matches">
-                      <img src={MatchesIcon} alt="Matches" className="icon" />
-                      <span>{t('floorball.management.actions.matches', 'Matches')}</span>
+                      <span>{t('floorball.management.actions.tournaments', 'Manage Tournaments')}</span>
                     </Link>
                   </li>
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/referees') ? 'active' : ''}`}>

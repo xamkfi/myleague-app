@@ -272,6 +272,8 @@ export interface ChangeMatchDateTimeRequest {
   scheduledDateTime: string;
 }
 
+export type FloorballCompetitionType = 'Season' | 'Tournament';
+
 export interface GetFloorballMatchesRequest {
   page?: number;
   pageSize?: number;
@@ -283,4 +285,5 @@ export interface GetFloorballMatchesRequest {
   sortOrder?: string;
   searchQuery?: string;
   tournamentGroupId?: string;
+  competitionType?: FloorballCompetitionType;
 } 

@@ -109,7 +109,7 @@ public static class Program
 					$"WARNING: tournament match seeding has no referees available even though {refereePersons.Count} referee person(s) were configured. " +
 					"Matches will be created without an assigned referee. See earlier WARNING lines for the underlying API response.");
 			}
-			int tournamentMatchesCreated = await FloorballTournamentMatchesSeeder.SeedAsync(http, jsonOptions, tournaments, tournamentReferees);
+			int tournamentMatchesCreated = await FloorballTournamentMatchesSeeder.SeedAsync(http, jsonOptions, tournaments, tournamentReferees, config.FloorballTournaments);
 
 			Console.WriteLine("\nSummary:");
 			Console.WriteLine($"  Persons created: {basePersons.Count}");

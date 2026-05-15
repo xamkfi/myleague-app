@@ -80,23 +80,15 @@ public class FloorballTournament : FloorballCompetition
         UpdateMatchRules(rules.GroupStageMatchRules);
     }
 
-    public void OpenRegistration()
-    {
-        if (TournamentStatus != FloorballTournamentStatus.Draft)
-            throw new InvalidOperationException($"Cannot open registration when status is {TournamentStatus}.");
-
-        TournamentStatus = FloorballTournamentStatus.Registration;
-        Activate();
-    }
-
     public void StartGroupStage()
     {
-        if (TournamentStatus != FloorballTournamentStatus.Registration)
+        if (TournamentStatus != FloorballTournamentStatus.Draft)
             throw new InvalidOperationException($"Cannot start group stage when status is {TournamentStatus}.");
         if (_groups.Count == 0)
             throw new InvalidOperationException("Cannot start group stage without any groups defined.");
 
         TournamentStatus = FloorballTournamentStatus.GroupStage;
+        Activate();
     }
 
     public void StartPlayoffStage()
@@ -117,6 +109,17 @@ public class FloorballTournament : FloorballCompetition
 
         TournamentStatus = FloorballTournamentStatus.Completed;
         Complete();
+    }
+
+    public void CancelTournament()
+    {
+        if (TournamentStatus == FloorballTournamentStatus.Completed)
+            throw new InvalidOperationException("Cannot cancel a completed tournament.");
+        if (TournamentStatus == FloorballTournamentStatus.Cancelled)
+            throw new InvalidOperationException("Tournament is already cancelled.");
+
+        TournamentStatus = FloorballTournamentStatus.Cancelled;
+        Deactivate();
     }
 
     public FloorballTournamentGroup AddGroup(string name)

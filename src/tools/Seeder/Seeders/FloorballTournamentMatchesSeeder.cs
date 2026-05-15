@@ -25,13 +25,22 @@ public static class FloorballTournamentMatchesSeeder
         HttpClient http,
         JsonSerializerOptions jsonOptions,
         List<FloorballTournamentDto> tournaments,
-        List<FloorballRefereeDto> allReferees)
+        List<FloorballRefereeDto> allReferees,
+        IReadOnlyList<FloorballTournamentSeed>? tournamentSeeds = null)
     {
         int createdCount = 0;
         if (tournaments.Count == 0)
         {
             return 0;
         }
+
+        // Build a fast lookup of "completed group stage" tournaments by name so we can adjust scheduling.
+        HashSet<string> allCompletedNames = tournamentSeeds == null
+            ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            : tournamentSeeds
+                .Where(s => s.AllGroupMatchesCompleted)
+                .Select(s => s.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         // RefereeId is optional on FloorballMatch — if no referees are available, we still create the matches
         // (just without an assigned official). This keeps tournament-match seeding resilient even if the
@@ -46,11 +55,25 @@ public static class FloorballTournamentMatchesSeeder
 
         foreach (FloorballTournamentDto tournament in tournaments)
         {
-            // Always anchor match dates around "now" so the seed produces a believable mix of completed
-            // and upcoming matches regardless of when the tournament itself was originally recorded.
-            // (If the tournament has stale dates from a previous seed run, we still get fresh matches.)
-            DateTime windowStartUtc = DateTime.UtcNow.AddDays(-6);
-            DateTime windowEndUtc = DateTime.UtcNow.AddDays(12);
+            bool allCompleted = allCompletedNames.Contains(tournament.Name);
+
+            // Match-date window strategy:
+            //   - Default: a believable mix of completed + upcoming matches around "now".
+            //   - allCompleted == true: every match is in the past so all of them simulate to completion,
+            //     leaving the tournament in GroupStage status and ready for the playoff transition test.
+            DateTime windowStartUtc;
+            DateTime windowEndUtc;
+            if (allCompleted)
+            {
+                windowStartUtc = DateTime.UtcNow.AddDays(-12);
+                // Leave a small buffer so SnapToReasonableHour cannot accidentally push past "now".
+                windowEndUtc = DateTime.UtcNow.AddHours(-2);
+            }
+            else
+            {
+                windowStartUtc = DateTime.UtcNow.AddDays(-6);
+                windowEndUtc = DateTime.UtcNow.AddDays(12);
+            }
 
             List<TournamentMatchPlan> plans = BuildGroupRoundRobinPlans(tournament, windowStartUtc, windowEndUtc);
             if (plans.Count == 0)

@@ -28,6 +28,7 @@ export const floorballMatchService = {
       if (params?.status) searchParams.append('status', params.status);
       if (params?.searchQuery) searchParams.append('searchQuery', params.searchQuery);
       if (params?.tournamentGroupId) searchParams.append('tournamentGroupId', params.tournamentGroupId);
+      if (params?.competitionType) searchParams.append('competitionType', params.competitionType);
 
       const url = `${API_URL}/FloorballMatch?${searchParams.toString()}`;
       console.log('Fetching matches from URL:', url);

@@ -13,25 +13,25 @@ using System.Threading.Tasks;
 namespace Application.Features.Floorball.Tournaments.Handlers;
 
 /// <summary>
-/// Handler for opening tournament registration
+/// Handler for cancelling a tournament
 /// </summary>
-public class OpenTournamentRegistrationHandler : IRequestHandler<OpenTournamentRegistrationCommand, Result<FloorballTournamentDto>>
+public class CancelTournamentHandler : IRequestHandler<CancelTournamentCommand, Result<FloorballTournamentDto>>
 {
     private readonly IFloorballTournamentRepository _tournamentRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
-    private readonly ILogger<OpenTournamentRegistrationHandler> _logger;
+    private readonly ILogger<CancelTournamentHandler> _logger;
 
-    public OpenTournamentRegistrationHandler(
+    public CancelTournamentHandler(
         IFloorballTournamentRepository tournamentRepository,
         IFloorballUnitOfWork unitOfWork,
-        ILogger<OpenTournamentRegistrationHandler> logger)
+        ILogger<CancelTournamentHandler> logger)
     {
         _tournamentRepository = tournamentRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
-    public async Task<Result<FloorballTournamentDto>> Handle(OpenTournamentRegistrationCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTournamentDto>> Handle(CancelTournamentCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -42,26 +42,26 @@ public class OpenTournamentRegistrationHandler : IRequestHandler<OpenTournamentR
                 return Result<FloorballTournamentDto>.NotFound("FloorballTournament", request.CompetitionId);
             }
 
-            _logger.LogInformation("Opening registration for tournament: {TournamentId}", request.CompetitionId);
-            tournament.OpenRegistration();
+            _logger.LogInformation("Cancelling tournament: {TournamentId}", request.CompetitionId);
+            tournament.CancelTournament();
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
-            _logger.LogInformation("Successfully opened registration for tournament: {TournamentId}", request.CompetitionId);
+            _logger.LogInformation("Successfully cancelled tournament: {TournamentId}", request.CompetitionId);
 
             return Result<FloorballTournamentDto>.Success(tournamentDto);
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Business rule violation while opening registration for tournament: {TournamentId}", request.CompetitionId);
+            _logger.LogWarning(ex, "Business rule violation while cancelling tournament: {TournamentId}", request.CompetitionId);
             return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while opening registration for tournament: {TournamentId}", request.CompetitionId);
+            _logger.LogError(ex, "Error occurred while cancelling tournament: {TournamentId}", request.CompetitionId);
             return Result<FloorballTournamentDto>.Failure(
-                "An error occurred while opening tournament registration.",
+                "An error occurred while cancelling the tournament.",
                 ex.Flatten());
         }
     }

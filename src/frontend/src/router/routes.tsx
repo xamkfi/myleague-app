@@ -309,6 +309,10 @@ export const routes: RouteObject[] = [
             element: <ProtectedRoute><SuspenseWrapper><CreateSeasonPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
+            path: 'matches',
+            element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage mode="season" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
             path: ':competitionId/edit',
             element: <ProtectedRoute><SuspenseWrapper><EditSeasonPage /></SuspenseWrapper></ProtectedRoute>
           }
@@ -324,6 +328,10 @@ export const routes: RouteObject[] = [
           {
             path: 'create',
             element: <ProtectedRoute><SuspenseWrapper><CreateTournamentPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches',
+            element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage mode="tournament" /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: ':competitionId/edit',

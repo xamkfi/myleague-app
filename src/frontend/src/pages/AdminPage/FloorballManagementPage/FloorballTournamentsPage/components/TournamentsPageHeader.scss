@@ -1,7 +1,7 @@
 @use "sass:map";
 @use '@variables' as *;
 
-.floorball-seasons-header {
+.floorball-tournaments-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -11,19 +11,19 @@
   border-radius: $border-radius-default;
   border: 1px solid $color-border;
 
-  .seasons-count {
+  .tournaments-count {
     font-size: map.get($font-sizes, 'md');
     font-weight: map.get($font-weights, 'medium');
     color: $color-text-primary;
   }
 
-  .seasons-actions {
+  .tournaments-actions {
     display: flex;
     gap: map.get($spacing, 'base');
     flex-wrap: wrap;
   }
 
-  .create-season-button {
+  .create-tournament-button {
     padding: map.get($spacing, 'sm') map.get($spacing, 'md');
     background-color: $color-blue-light;
     color: $color-white;
@@ -69,14 +69,13 @@
   }
 }
 
-// Responsive Design
 @media (max-width: map.get($breakpoints, 'tablet')) {
-  .floorball-seasons-header {
+  .floorball-tournaments-header {
     flex-direction: column;
     gap: map.get($spacing, 'base');
     align-items: stretch;
 
-    .create-season-button,
+    .create-tournament-button,
     .manage-matches-button {
       text-align: center;
     }

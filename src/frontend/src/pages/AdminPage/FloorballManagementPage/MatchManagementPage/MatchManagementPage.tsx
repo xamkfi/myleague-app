@@ -4,8 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
+import { floorballTournamentService } from '../../../../api/floorball/floorballTournamentService';
+import type { FloorballTournamentDto } from '../../../../types/floorball/tournamentTypes';
 import { signalRService, type MatchEvent } from '../../../../services/signalRService';
-import { FloorballMatchStatus } from '../../../../types/floorball/floorballTypes';
+import { FloorballMatchStatus, type FloorballCompetitionType } from '../../../../types/floorball/floorballTypes';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
@@ -35,10 +37,19 @@ const VALID_TABS: MatchTab[] = ['all', 'ongoing', 'scheduled', 'completed', 'can
 const isValidTab = (value: string | null): value is MatchTab =>
   value !== null && VALID_TABS.includes(value as MatchTab);
 
-const MatchManagementPage = () => {
+export type MatchManagementMode = 'all' | 'season' | 'tournament';
+
+interface MatchManagementPageProps {
+  mode?: MatchManagementMode;
+}
+
+const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const competitionType: FloorballCompetitionType | undefined =
+    mode === 'season' ? 'Season' : mode === 'tournament' ? 'Tournament' : undefined;
 
   // Tab state from URL
   const urlTab = searchParams.get('tab');
@@ -52,6 +63,7 @@ const MatchManagementPage = () => {
   // Data state
   const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
+  const [tournaments, setTournaments] = useState<FloorballTournamentDto[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,14 +93,15 @@ const MatchManagementPage = () => {
   const fetchStatusCounts = useCallback(async () => {
     const seasonFilter = selectedCompetitionId || undefined;
     const searchFilter = searchQuery.trim() || undefined;
+    const baseFilters = { competitionId: seasonFilter, searchQuery: searchFilter, competitionType };
 
     try {
       const [totalRes, scheduledRes, inProgressRes, completedRes, cancelledRes] = await Promise.all([
-        floorballMatchService.getAll({ pageSize: 1, competitionId: seasonFilter, searchQuery: searchFilter }),
-        floorballMatchService.getAll({ pageSize: 1, competitionId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.Scheduled }),
-        floorballMatchService.getAll({ pageSize: 1, competitionId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.InProgress }),
-        floorballMatchService.getAll({ pageSize: 1, competitionId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.Completed }),
-        floorballMatchService.getAll({ pageSize: 1, competitionId: seasonFilter, searchQuery: searchFilter, status: FloorballMatchStatus.Cancelled }),
+        floorballMatchService.getAll({ pageSize: 1, ...baseFilters }),
+        floorballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FloorballMatchStatus.Scheduled }),
+        floorballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FloorballMatchStatus.InProgress }),
+        floorballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FloorballMatchStatus.Completed }),
+        floorballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FloorballMatchStatus.Cancelled }),
       ]);
 
       setStatusCounts({
@@ -101,7 +114,7 @@ const MatchManagementPage = () => {
     } catch (err) {
       console.error('Error fetching status counts:', err);
     }
-  }, [selectedCompetitionId, searchQuery]);
+  }, [selectedCompetitionId, searchQuery, competitionType]);
 
   // Fetch matches for the current tab
   const fetchMatches = useCallback(async (isInitial = false) => {
@@ -117,19 +130,25 @@ const MatchManagementPage = () => {
       const searchFilter = searchQuery.trim() || undefined;
       const statusFilter = TAB_TO_STATUS[activeTab];
 
-      const [seasonsResponse, matchesResponse] = await Promise.all([
-        isInitial ? floorballSeasonService.getAll() : Promise.resolve(null),
+      const [seasonsResponse, tournamentsResponse, matchesResponse] = await Promise.all([
+        isInitial && (mode === 'season' || mode === 'all') ? floorballSeasonService.getAll() : Promise.resolve(null),
+        isInitial && (mode === 'tournament' || mode === 'all') ? floorballTournamentService.getAll() : Promise.resolve(null),
         floorballMatchService.getAll({
           page: currentPage,
           pageSize,
           competitionId: seasonFilter,
           searchQuery: searchFilter,
           status: statusFilter,
+          competitionType,
         }),
       ]);
 
       if (seasonsResponse?.success && seasonsResponse.data) {
         setSeasons(seasonsResponse.data);
+      }
+
+      if (tournamentsResponse?.success && tournamentsResponse.data) {
+        setTournaments(tournamentsResponse.data);
       }
 
       if (matchesResponse.success && matchesResponse.data) {
@@ -143,13 +162,22 @@ const MatchManagementPage = () => {
       setInitialLoading(false);
       setTableLoading(false);
     }
-  }, [activeTab, currentPage, pageSize, selectedCompetitionId, searchQuery]);
+  }, [activeTab, currentPage, pageSize, selectedCompetitionId, searchQuery, mode, competitionType]);
+
+  // Reset filters/state when switching modes (e.g. /seasons/matches -> /tournaments/matches)
+  useEffect(() => {
+    setSelectedCompetitionId('');
+    setSearchQuery('');
+    setCurrentPage(1);
+    setInitialLoading(true);
+  }, [mode]);
 
   // Initial load: fetch matches + seasons + counts
   useEffect(() => {
     fetchMatches(true);
     fetchStatusCounts();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   // Debounced re-fetch when filters/tab/pagination change (skip initial)
   useEffect(() => {
@@ -258,9 +286,23 @@ const MatchManagementPage = () => {
 
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
+  const pageTitle =
+    mode === 'season'
+      ? t('floorball.matches.seasonTitle', 'Season Match Management')
+      : mode === 'tournament'
+      ? t('floorball.matches.tournamentTitle', 'Tournament Match Management')
+      : t('floorball.matches.title', 'Match Management');
+
+  const pageSubtitle =
+    mode === 'season'
+      ? t('floorball.matches.seasonSubtitle', 'Manage matches scheduled within league seasons')
+      : mode === 'tournament'
+      ? t('floorball.matches.tournamentSubtitle', 'Manage matches scheduled within tournaments')
+      : t('floorball.matches.subtitle', 'Manage your floorball matches, track live games, and organize your season');
+
   if (initialLoading) {
     return (
-      <PageTemplate title={t('floorball.matches.title', 'Match Management')}>
+      <PageTemplate title={pageTitle}>
         <div className="match-mgmt">
           <LoadingSpinner text={t('floorball.matches.loading', 'Loading matches...')} />
         </div>
@@ -269,16 +311,16 @@ const MatchManagementPage = () => {
   }
 
   return (
-    <PageTemplate title={t('floorball.matches.title', 'Match Management')}>
+    <PageTemplate title={pageTitle}>
       <div className="match-mgmt">
         {/* Header */}
         <div className="match-mgmt__header">
           <div>
             <h2 className="match-mgmt__title">
-              {t('floorball.matches.title', 'Match Management')}
+              {pageTitle}
             </h2>
             <p className="match-mgmt__subtitle">
-              {t('floorball.matches.subtitle', 'Manage your floorball matches, track live games, and organize your season')}
+              {pageSubtitle}
             </p>
           </div>
           <Button
@@ -308,19 +350,32 @@ const MatchManagementPage = () => {
             fullWidth
           />
           <div className="match-mgmt__season-filter">
-            <label htmlFor="season-filter">
-              {t('floorball.matches.filters.filterBySeason', 'Filter by Season:')}
+            <label htmlFor="competition-filter">
+              {mode === 'tournament'
+                ? t('floorball.matches.filters.filterByTournament', 'Filter by Tournament:')
+                : t('floorball.matches.filters.filterBySeason', 'Filter by Season:')}
             </label>
             <select
-              id="season-filter"
+              id="competition-filter"
               value={selectedCompetitionId}
               onChange={(e) => { setSelectedCompetitionId(e.target.value); setCurrentPage(1); }}
               className="match-mgmt__select"
             >
-              <option value="">{t('floorball.matches.filters.allSeasons', 'All Seasons')}</option>
-              {seasons.map(season => (
+              <option value="">
+                {mode === 'tournament'
+                  ? t('floorball.matches.filters.allTournaments', 'All Tournaments')
+                  : mode === 'season'
+                  ? t('floorball.matches.filters.allSeasons', 'All Seasons')
+                  : t('floorball.matches.filters.allCompetitions', 'All Competitions')}
+              </option>
+              {(mode === 'season' || mode === 'all') && seasons.map(season => (
                 <option key={season.id} value={season.id}>
                   {formatSeasonDisplayName(season)}
+                </option>
+              ))}
+              {(mode === 'tournament' || mode === 'all') && tournaments.map(tournament => (
+                <option key={tournament.id} value={tournament.id}>
+                  {tournament.name}
                 </option>
               ))}
             </select>

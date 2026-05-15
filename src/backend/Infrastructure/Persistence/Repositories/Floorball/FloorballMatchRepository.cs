@@ -88,6 +88,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             string sortOrder = "desc",
             string? searchQuery = null,
             Guid? tournamentGroupId = null,
+            FloorballCompetitionType? competitionType = null,
             CancellationToken cancellationToken = default)
         {
             DateTime? startDateUtc = startDate.HasValue
@@ -134,6 +135,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (tournamentGroupId.HasValue)
             {
                 query = query.Where(m => m.TournamentGroupId == tournamentGroupId.Value);
+            }
+
+            if (competitionType.HasValue)
+            {
+                if (competitionType.Value == FloorballCompetitionType.Tournament)
+                {
+                    query = query.Where(m => m.Competition is FloorballTournament);
+                }
+                else
+                {
+                    query = query.Where(m => m.Competition is FloorballSeason);
+                }
             }
 
             // Apply search query filter (team names)

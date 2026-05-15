@@ -47,6 +47,7 @@ public interface IFloorballMatchRepository
         string sortOrder = "desc",
         string? searchQuery = null,
         Guid? tournamentGroupId = null,
+        FloorballCompetitionType? competitionType = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>

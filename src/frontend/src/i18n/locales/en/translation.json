@@ -570,7 +570,10 @@
         "referees": "Manage Referees",
         "matches": "Manage Matches",
         "matchEvents": "Manage Match Events",
-        "seasons": "Manage Seasons"
+        "seasons": "Manage Seasons",
+        "seasonMatches": "Manage Season Matches",
+        "tournaments": "Manage Tournaments",
+        "tournamentMatches": "Manage Tournament Matches"
       }
     },
     "teams": {
@@ -689,6 +692,7 @@
       "totalCount": "{{count}} seasons",
       "createNew": "Create New Season",
       "showActiveOnly": "Show Active Only",
+      "backToList": "Back to Seasons",
       "division": "Division",
       "fields": {
         "name": "Name",
@@ -723,6 +727,77 @@
         "divisionRequired": "Please select a valid division.",
         "startDateRequired": "Start date is required.",
         "endDateRequired": "End date is required."
+      }
+    },
+    "tournaments": {
+      "title": "Manage Tournaments",
+      "totalCount": "{{count}} tournaments",
+      "createNew": "Create New Tournament",
+      "editTitle": "Edit Tournament",
+      "createTitle": "Create New Tournament",
+      "noTournaments": "No tournaments found",
+      "noGroups": "No groups",
+      "showOngoingOnly": "Show Ongoing Only",
+      "filterByStatus": "Filter by status",
+      "allStatuses": "All statuses",
+      "selectAll": "Select all tournaments",
+      "statusLabel": "Status",
+      "teamsCount": "{{count}} teams",
+      "matchesCount": "{{count}} matches",
+      "backToList": "Back to Tournaments",
+      "fields": {
+        "name": "Name",
+        "venue": "Venue",
+        "groups": "Groups",
+        "startDate": "Starts",
+        "endDate": "Ends",
+        "teams": "Teams",
+        "matches": "Matches",
+        "status": "Status"
+      },
+      "tabs": {
+        "details": "Tournament Details",
+        "groups": "Manage Groups",
+        "teams": "Manage Teams"
+      },
+      "sections": {
+        "basicInfo": "Basic Information",
+        "schedule": "Schedule",
+        "groupStageRules": "Group Stage Rules",
+        "playoffRules": "Playoff Rules",
+        "structure": "Structure"
+      },
+      "status": {
+        "draft": "Draft",
+        "groupStage": "Group Stage",
+        "playoffStage": "Playoff Stage",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "lifecycle": {
+        "startGroupStage": "Start Group Stage",
+        "startPlayoffStage": "Start Playoff",
+        "complete": "Complete Tournament",
+        "cancel": "Cancel Tournament",
+        "startGroupStageSuccess": "Group stage started successfully.",
+        "startPlayoffStageSuccess": "Playoff stage started successfully.",
+        "completeSuccess": "Tournament completed successfully.",
+        "cancelSuccess": "Tournament cancelled successfully."
+      },
+      "actions": {
+        "menu": "Tournament actions menu"
+      },
+      "errors": {
+        "networkError": "Network error. Please check your connection and try again.",
+        "validationError": "Invalid data provided. Please check your input and try again.",
+        "notFound": "Tournament not found. It may have been deleted.",
+        "serverError": "Server error. Please try again later.",
+        "operationFailed": "Operation failed. Please try again."
+      },
+      "confirmDelete": {
+        "title": "Confirm Delete",
+        "message": "Are you sure you want to delete tournament \"{{name}}\"?",
+        "warning": "This action cannot be undone."
       }
     },
     "categories": {
@@ -765,6 +840,10 @@
     "matches": {
       "title": "Match Management",
       "subtitle": "Manage your floorball matches, track live games, and organize your season",
+      "seasonTitle": "Season Match Management",
+      "seasonSubtitle": "Manage matches scheduled within league seasons",
+      "tournamentTitle": "Tournament Match Management",
+      "tournamentSubtitle": "Manage matches scheduled within tournaments",
       "loading": "Loading matches...",
       "noMatchesFound": "No matches found",
       "noMatchesForSeason": "No matches found for the selected season",
@@ -850,7 +929,10 @@
       },
       "filters": {
         "filterBySeason": "Filter by Season:",
+        "filterByTournament": "Filter by Tournament:",
         "allSeasons": "All Seasons",
+        "allTournaments": "All Tournaments",
+        "allCompetitions": "All Competitions",
         "searchByTeam": "Search by Team:",
         "searchPlaceholder": "Search for team names..."
       },
