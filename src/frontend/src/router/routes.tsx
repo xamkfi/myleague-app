@@ -313,6 +313,10 @@ export const routes: RouteObject[] = [
             element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage mode="season" /></SuspenseWrapper></ProtectedRoute>
           },
           {
+            path: 'matches/create',
+            element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
             path: ':competitionId/edit',
             element: <ProtectedRoute><SuspenseWrapper><EditSeasonPage /></SuspenseWrapper></ProtectedRoute>
           }
@@ -334,6 +338,10 @@ export const routes: RouteObject[] = [
             element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage mode="tournament" /></SuspenseWrapper></ProtectedRoute>
           },
           {
+            path: 'matches/create',
+            element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage mode="tournament" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
             path: ':competitionId/edit',
             element: <ProtectedRoute><SuspenseWrapper><EditTournamentPage /></SuspenseWrapper></ProtectedRoute>
           }
@@ -343,7 +351,8 @@ export const routes: RouteObject[] = [
         path: 'matches',
         children: [
           { index: true, element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage /></SuspenseWrapper></ProtectedRoute> },
-          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          // Legacy route — defaults to season-based creation for back-compat.
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute> },
           { path: ':matchId/edit', element: <ProtectedRoute><SuspenseWrapper><EditMatchPage /></SuspenseWrapper></ProtectedRoute> },
           { path: 'manage/:matchId', element: <ProtectedRoute><SuspenseWrapper><ManageMatchPage /></SuspenseWrapper></ProtectedRoute> },
           { path: 'completed', element: <Navigate to="/admin/floorball/matches?tab=completed" replace /> },

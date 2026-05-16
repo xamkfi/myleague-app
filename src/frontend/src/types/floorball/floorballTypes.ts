@@ -245,6 +245,10 @@ export interface CreateFloorballMatchRequest {
   refereeId?: string;
   scheduledDateTime: string;
   venue?: string;
+  /** Optional tournament group id (only for tournament group-stage matches). */
+  tournamentGroupId?: string;
+  /** Optional tournament stage label (e.g. "GroupStage"). Only for tournament matches. */
+  tournamentStage?: string;
 }
 
 export interface UpdateFloorballMatchRequest {

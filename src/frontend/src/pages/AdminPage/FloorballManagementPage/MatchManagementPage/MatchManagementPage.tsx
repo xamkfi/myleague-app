@@ -55,8 +55,24 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
   const urlTab = searchParams.get('tab');
   const activeTab: MatchTab = isValidTab(urlTab) ? urlTab : 'all';
 
+  // Competition filter is mirrored in the URL (?competitionId=...) so callers like
+  // EditTournamentPage and the tournament list's kebab menu can deep-link straight to a
+  // pre-filtered match list. Empty string means "All Competitions / Tournaments / Seasons".
+  const urlCompetitionId: string = searchParams.get('competitionId') ?? '';
+
   const setActiveTab = (tab: MatchTab) => {
-    setSearchParams(tab === 'all' ? {} : { tab }, { replace: true });
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (tab === 'all') {
+          next.delete('tab');
+        } else {
+          next.set('tab', tab);
+        }
+        return next;
+      },
+      { replace: true },
+    );
     setCurrentPage(1);
   };
 
@@ -68,9 +84,38 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
   const [tableLoading, setTableLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter state
-  const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
+  // Filter state — `selectedCompetitionId` is the source of truth for the dropdown; we mirror
+  // it back to the URL so refreshes / deep links keep the filter applied.
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>(urlCompetitionId);
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Sync external URL changes (e.g. user navigates from another page with `?competitionId=...`)
+  // into the local select state. We compare against the current local value so we don't fight
+  // with the user typing into the dropdown.
+  useEffect(() => {
+    if (urlCompetitionId !== selectedCompetitionId) {
+      setSelectedCompetitionId(urlCompetitionId);
+      setCurrentPage(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlCompetitionId]);
+
+  const handleCompetitionFilterChange = (value: string): void => {
+    setSelectedCompetitionId(value);
+    setCurrentPage(1);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value) {
+          next.set('competitionId', value);
+        } else {
+          next.delete('competitionId');
+        }
+        return next;
+      },
+      { replace: true },
+    );
+  };
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -164,12 +209,17 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
     }
   }, [activeTab, currentPage, pageSize, selectedCompetitionId, searchQuery, mode, competitionType]);
 
-  // Reset filters/state when switching modes (e.g. /seasons/matches -> /tournaments/matches)
+  // Reset filters/state when switching modes (e.g. /seasons/matches -> /tournaments/matches).
+  // Preserve any `competitionId` from the URL on the first render after a mode switch so deep
+  // links continue to work — only clear it if it doesn't match the current mode (e.g. coming
+  // from /all into /tournaments with a season id wouldn't make sense, but we don't validate
+  // that here; the dropdown will just not have it as an option and show "All ...").
   useEffect(() => {
-    setSelectedCompetitionId('');
+    setSelectedCompetitionId(urlCompetitionId);
     setSearchQuery('');
     setCurrentPage(1);
     setInitialLoading(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
   // Initial load: fetch matches + seasons + counts
@@ -326,7 +376,17 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
           <Button
             iconLeft={AddIcon}
             rounded="pill"
-            onClick={() => navigate('/admin/floorball/matches/create')}
+            onClick={() => {
+              // Route to the mode-specific create page so the form shows the
+              // right competition picker (Tournament+Group vs Season+Division).
+              const createPath =
+                mode === 'tournament'
+                  ? '/admin/floorball/tournaments/matches/create'
+                  : mode === 'season'
+                    ? '/admin/floorball/seasons/matches/create'
+                    : '/admin/floorball/matches/create';
+              navigate(createPath);
+            }}
           >
             {t('floorball.matches.createNewMatch', 'Create New Match')}
           </Button>
@@ -358,7 +418,7 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
             <select
               id="competition-filter"
               value={selectedCompetitionId}
-              onChange={(e) => { setSelectedCompetitionId(e.target.value); setCurrentPage(1); }}
+              onChange={(e) => handleCompetitionFilterChange(e.target.value)}
               className="match-mgmt__select"
             >
               <option value="">

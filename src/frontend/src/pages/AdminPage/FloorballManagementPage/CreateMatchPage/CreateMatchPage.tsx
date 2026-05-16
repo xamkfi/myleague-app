@@ -5,27 +5,58 @@ import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate'
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballRefereeService, type FloorballRefereeDto } from '../../../../api/floorball/floorballRefereeService';
+import { floorballTournamentService } from '../../../../api/floorball/floorballTournamentService';
+import type {
+  FloorballTournamentDto,
+  FloorballTournamentGroupDto,
+} from '../../../../types/floorball/tournamentTypes';
 import { useDivisions } from '../../../../hooks/useDivisions';
 import type { CreateFloorballMatchRequest, FloorballTeam } from '../../../../types/floorball/floorballTypes';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import './CreateMatchPage.scss';
 
-const CreateMatchPage = () => {
+export type CreateMatchMode = 'season' | 'tournament';
+
+interface CreateMatchPageProps {
+  /**
+   * Determines what kind of competition the match belongs to.
+   * - `season`     : Pick a Season → Division → Teams in division.
+   * - `tournament` : Pick a Tournament → Group → Teams in group.
+   * Defaults to `season` for backwards compatibility with the legacy
+   * `/admin/floorball/matches/create` route.
+   */
+  mode?: CreateMatchMode;
+}
+
+interface TeamOption {
+  id: string;
+  name: string;
+}
+
+const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { divisions } = useDivisions();
 
-  // Data loading
+  const isTournament = mode === 'tournament';
+
+  // ── Data loading (competitions) ──────────────────────────────────────
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
+  const [tournaments, setTournaments] = useState<FloorballTournamentDto[]>([]);
+  const [loadingCompetitions, setLoadingCompetitions] = useState(true);
+
   const [selectedSeason, setSelectedSeason] = useState<FloorballSeasonDto | null>(null);
+  const [selectedTournament, setSelectedTournament] = useState<FloorballTournamentDto | null>(null);
+  const [loadingCompetitionDetails, setLoadingCompetitionDetails] = useState(false);
+
+  // ── Referees ─────────────────────────────────────────────────────────
   const [referees, setReferees] = useState<FloorballRefereeDto[]>([]);
-  const [loadingSeasons, setLoadingSeasons] = useState(true);
-  const [loadingSeasonDetails, setLoadingSeasonDetails] = useState(false);
   const [loadingReferees, setLoadingReferees] = useState(true);
 
-  // Form state
+  // ── Form state ───────────────────────────────────────────────────────
   const [selectedCompetitionId, setSelectedCompetitionId] = useState('');
   const [selectedDivisionId, setSelectedDivisionId] = useState('');
+  const [selectedGroupId, setSelectedGroupId] = useState('');
   const [homeTeamId, setHomeTeamId] = useState('');
   const [awayTeamId, setAwayTeamId] = useState('');
   const [refereeId, setRefereeId] = useState('');
@@ -34,30 +65,37 @@ const CreateMatchPage = () => {
   const [minutesInput, setMinutesInput] = useState('');
   const [venue, setVenue] = useState('');
 
-  // UI state
+  // ── UI state ─────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Load seasons
+  // ── Load competitions (seasons or tournaments depending on mode) ─────
   useEffect(() => {
-    const loadSeasons = async () => {
+    const load = async () => {
       try {
-        setLoadingSeasons(true);
-        const response = await floorballSeasonService.getAll();
-        if (response.success && response.data) {
-          setSeasons(response.data);
+        setLoadingCompetitions(true);
+        if (isTournament) {
+          const response = await floorballTournamentService.getAll();
+          if (response.success && response.data) {
+            setTournaments(response.data);
+          }
+        } else {
+          const response = await floorballSeasonService.getAll();
+          if (response.success && response.data) {
+            setSeasons(response.data);
+          }
         }
-      } catch {
-        console.error('Failed to load seasons');
+      } catch (err) {
+        console.error('Failed to load competitions', err);
       } finally {
-        setLoadingSeasons(false);
+        setLoadingCompetitions(false);
       }
     };
-    loadSeasons();
-  }, []);
+    load();
+  }, [isTournament]);
 
-  // Load referees
+  // ── Load referees ────────────────────────────────────────────────────
   useEffect(() => {
     const loadReferees = async () => {
       try {
@@ -75,80 +113,125 @@ const CreateMatchPage = () => {
     loadReferees();
   }, []);
 
-  // Load full season details when season is selected
+  // ── Load selected competition details ────────────────────────────────
   useEffect(() => {
     if (!selectedCompetitionId) {
       setSelectedSeason(null);
+      setSelectedTournament(null);
       return;
     }
 
-    const loadSeasonDetails = async () => {
+    let cancelled = false;
+    const loadDetails = async () => {
       try {
-        setLoadingSeasonDetails(true);
-        const response = await floorballSeasonService.getById(selectedCompetitionId);
-        if (response.success && response.data) {
-          setSelectedSeason(response.data);
+        setLoadingCompetitionDetails(true);
+        if (isTournament) {
+          const response = await floorballTournamentService.getById(selectedCompetitionId);
+          if (!cancelled && response.success && response.data) {
+            setSelectedTournament(response.data);
+          }
+        } else {
+          const response = await floorballSeasonService.getById(selectedCompetitionId);
+          if (!cancelled && response.success && response.data) {
+            setSelectedSeason(response.data);
+          }
         }
       } catch {
-        console.error('Failed to load season details');
-        setSelectedSeason(null);
+        console.error('Failed to load competition details');
+        if (!cancelled) {
+          setSelectedSeason(null);
+          setSelectedTournament(null);
+        }
       } finally {
-        setLoadingSeasonDetails(false);
+        if (!cancelled) {
+          setLoadingCompetitionDetails(false);
+        }
       }
     };
-    loadSeasonDetails();
-  }, [selectedCompetitionId]);
+    loadDetails();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCompetitionId, isTournament]);
 
-  // Divisions in the selected season
+  // ── Derived: divisions / groups available in the selected competition ─
   const seasonDivisions = useMemo(() => {
-    if (!selectedSeason?.seasonDivisions) return [];
-    return selectedSeason.seasonDivisions;
-  }, [selectedSeason]);
+    if (isTournament) return [];
+    return selectedSeason?.seasonDivisions ?? [];
+  }, [isTournament, selectedSeason]);
 
-  // Auto-select division if only one
+  const tournamentGroups = useMemo<FloorballTournamentGroupDto[]>(() => {
+    if (!isTournament) return [];
+    return selectedTournament?.groups ?? [];
+  }, [isTournament, selectedTournament]);
+
+  // Auto-select the only available division/group
   useEffect(() => {
-    if (seasonDivisions.length === 1) {
-      setSelectedDivisionId(seasonDivisions[0].divisionId);
-    } else if (seasonDivisions.length === 0) {
-      setSelectedDivisionId('');
+    if (isTournament) {
+      if (tournamentGroups.length === 1) {
+        setSelectedGroupId(tournamentGroups[0].id);
+      } else if (tournamentGroups.length === 0) {
+        setSelectedGroupId('');
+      }
+    } else {
+      if (seasonDivisions.length === 1) {
+        setSelectedDivisionId(seasonDivisions[0].divisionId);
+      } else if (seasonDivisions.length === 0) {
+        setSelectedDivisionId('');
+      }
     }
-  }, [seasonDivisions]);
+  }, [isTournament, seasonDivisions, tournamentGroups]);
 
-  // Reset downstream when season changes
-  const handleSeasonChange = useCallback((competitionId: string) => {
+  // ── Reset downstream when the competition changes ────────────────────
+  const handleCompetitionChange = useCallback((competitionId: string) => {
     setSelectedCompetitionId(competitionId);
     setSelectedDivisionId('');
+    setSelectedGroupId('');
     setHomeTeamId('');
     setAwayTeamId('');
   }, []);
 
-  // Reset teams when division changes
   const handleDivisionChange = useCallback((divisionId: string) => {
     setSelectedDivisionId(divisionId);
     setHomeTeamId('');
     setAwayTeamId('');
   }, []);
 
-  // Teams in the selected division of the season
-  const teamsInDivision = useMemo((): FloorballTeam[] => {
+  const handleGroupChange = useCallback((groupId: string) => {
+    setSelectedGroupId(groupId);
+    setHomeTeamId('');
+    setAwayTeamId('');
+  }, []);
+
+  // ── Derived: teams available in the selected division / group ────────
+  const teamsAvailable = useMemo<TeamOption[]>(() => {
+    if (isTournament) {
+      const group = tournamentGroups.find((g) => g.id === selectedGroupId);
+      if (!group) return [];
+      return group.teams.map((team) => ({ id: team.teamId, name: team.teamName }));
+    }
+
     if (!selectedSeason?.teams || !selectedDivisionId) return [];
-    const sd = selectedSeason.seasonDivisions?.find(d => d.divisionId === selectedDivisionId);
+    const sd = selectedSeason.seasonDivisions?.find((d) => d.divisionId === selectedDivisionId);
     if (!sd?.teamIds) return [];
     const teamIdSet = new Set(sd.teamIds);
-    return selectedSeason.teams.filter(team => teamIdSet.has(team.id));
-  }, [selectedSeason, selectedDivisionId]);
+    return selectedSeason.teams
+      .filter((team: FloorballTeam) => teamIdSet.has(team.id))
+      .map((team: FloorballTeam) => ({ id: team.id, name: team.name }));
+  }, [isTournament, tournamentGroups, selectedGroupId, selectedSeason, selectedDivisionId]);
 
-  // Available away teams (exclude selected home team)
-  const availableAwayTeams = useMemo(() => {
-    return teamsInDivision.filter(t => t.id !== homeTeamId);
-  }, [teamsInDivision, homeTeamId]);
+  const availableAwayTeams = useMemo(
+    () => teamsAvailable.filter((team) => team.id !== homeTeamId),
+    [teamsAvailable, homeTeamId]
+  );
 
-  // Division name helper
-  const getDivisionName = useCallback((divisionId: string): string => {
-    return divisions.find(d => d.id === divisionId)?.name ?? divisionId;
-  }, [divisions]);
+  // Helpers
+  const getDivisionName = useCallback(
+    (divisionId: string): string => divisions.find((d) => d.id === divisionId)?.name ?? divisionId,
+    [divisions]
+  );
 
-  // Date/time helpers
+  // ── Date/time helpers ────────────────────────────────────────────────
   const handleHoursChange = (value: string) => {
     const num = parseInt(value);
     if (value === '' || (num >= 0 && num <= 23 && value.length <= 2)) {
@@ -170,19 +253,34 @@ const CreateMatchPage = () => {
     return date.toISOString();
   };
 
-  // Submit
+  // ── Navigation targets ───────────────────────────────────────────────
+  const listPath = isTournament
+    ? '/admin/floorball/tournaments/matches'
+    : '/admin/floorball/seasons/matches';
+
+  // ── Submit ───────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Validation
     if (!selectedCompetitionId) {
-      setError(t('floorball.matches.validation.seasonRequired', 'Please select a season.'));
+      setError(
+        isTournament
+          ? t('floorball.matches.validation.tournamentRequired', 'Please select a tournament.')
+          : t('floorball.matches.validation.seasonRequired', 'Please select a season.')
+      );
       return;
     }
-    if (!selectedDivisionId) {
-      setError(t('floorball.matches.validation.divisionRequired', 'Please select a division.'));
-      return;
+    if (isTournament) {
+      if (!selectedGroupId) {
+        setError(t('floorball.matches.validation.groupRequired', 'Please select a group.'));
+        return;
+      }
+    } else {
+      if (!selectedDivisionId) {
+        setError(t('floorball.matches.validation.divisionRequired', 'Please select a division.'));
+        return;
+      }
     }
     if (!homeTeamId) {
       setError(t('floorball.matches.validation.homeTeamRequired', 'Please select a home team.'));
@@ -215,15 +313,17 @@ const CreateMatchPage = () => {
         awayTeamId,
         refereeId: refereeId || undefined,
         scheduledDateTime,
-        venue: venue || undefined
+        venue: venue || undefined,
+        ...(isTournament && {
+          tournamentGroupId: selectedGroupId,
+          tournamentStage: 'GroupStage',
+        }),
       };
 
       const response = await floorballMatchService.create(matchData);
       if (response.success) {
         setSuccessMessage(t('floorball.matches.created', 'Match created successfully!'));
-        setTimeout(() => {
-          navigate('/admin/floorball/matches');
-        }, 1500);
+        setTimeout(() => navigate(listPath), 1500);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to create match';
@@ -233,8 +333,36 @@ const CreateMatchPage = () => {
     }
   };
 
+  // ── Render ───────────────────────────────────────────────────────────
+  const pageTitle = isTournament
+    ? t('floorball.matches.create.tournamentTitle', 'Create Tournament Match')
+    : t('floorball.matches.create.seasonTitle', 'Create Season Match');
+
+  const sectionTitle = isTournament
+    ? t('floorball.matches.sections.tournamentGroup', 'Tournament & Group')
+    : t('floorball.matches.sections.seasonDivision', 'Season & Division');
+
+  const competitionLabel = isTournament
+    ? t('floorball.matches.fields.tournament', 'Tournament')
+    : t('floorball.matches.fields.season', 'Season');
+
+  const competitionPlaceholder = loadingCompetitions
+    ? t('common.loading', 'Loading...')
+    : isTournament
+      ? t('floorball.matches.placeholders.selectTournament', '-- Select a tournament --')
+      : t('floorball.matches.placeholders.selectSeason', '-- Select a season --');
+
+  const subdivisionLabel = isTournament
+    ? t('floorball.matches.fields.group', 'Group')
+    : t('floorball.matches.fields.division', 'Division');
+
+  const competitions = isTournament ? tournaments : seasons;
+
+  const hasGroupsOrDivisions = isTournament ? tournamentGroups.length > 0 : seasonDivisions.length > 0;
+  const subdivisionResolved = isTournament ? !!selectedGroupId : !!selectedDivisionId;
+
   return (
-    <PageTemplate title={t('floorball.matches.create.title', 'Create Match')}>
+    <PageTemplate title={pageTitle}>
       {successMessage && (
         <div className="cm-success-toast"><p>{successMessage}</p></div>
       )}
@@ -244,52 +372,96 @@ const CreateMatchPage = () => {
           <form onSubmit={handleSubmit} className="cm-form">
             <ErrorPopup message={error} />
 
-            {/* Season Selection */}
+            {/* Competition Selection */}
             <div className="cm-section">
               <h3 className="cm-section__title">
                 <i className="fas fa-trophy"></i>
-                {t('floorball.matches.sections.seasonDivision', 'Season & Division')}
+                {sectionTitle}
               </h3>
 
               <div className="cm-field">
-                <label htmlFor="cm-season">
-                  {t('floorball.matches.fields.season', 'Season')} *
+                <label htmlFor="cm-competition">
+                  {competitionLabel} *
                 </label>
                 <select
-                  id="cm-season"
+                  id="cm-competition"
                   value={selectedCompetitionId}
-                  onChange={(e) => handleSeasonChange(e.target.value)}
+                  onChange={(e) => handleCompetitionChange(e.target.value)}
                   required
-                  disabled={loading || loadingSeasons}
+                  disabled={loading || loadingCompetitions}
                 >
-                  <option value="">{loadingSeasons ? t('common.loading', 'Loading...') : t('floorball.matches.placeholders.selectSeason', '-- Select a season --')}</option>
-                  {seasons.map(season => (
-                    <option key={season.id} value={season.id}>
-                      {season.name} {season.isActive ? '(Active)' : ''} {season.isCompleted ? '(Completed)' : ''}
+                  <option value="">{competitionPlaceholder}</option>
+                  {competitions.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {isTournament
+                        ? c.name
+                        : `${(c as FloorballSeasonDto).name}` +
+                          ((c as FloorballSeasonDto).isActive ? ' (Active)' : '') +
+                          ((c as FloorballSeasonDto).isCompleted ? ' (Completed)' : '')}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Division - only show when season selected */}
-              {selectedCompetitionId && loadingSeasonDetails && (
+              {/* Division / Group — only show when a competition is selected */}
+              {selectedCompetitionId && loadingCompetitionDetails && (
                 <div className="cm-field">
-                  <label>{t('floorball.matches.fields.division', 'Division')} *</label>
+                  <label>{subdivisionLabel} *</label>
                   <div className="cm-field__info">
                     <i className="fas fa-spinner fa-spin"></i>
-                    {t('common.loadingSeasonDetails', 'Loading season details...')}
+                    {isTournament
+                      ? t('floorball.matches.loadingTournamentDetails', 'Loading tournament details...')
+                      : t('common.loadingSeasonDetails', 'Loading season details...')}
                   </div>
                 </div>
               )}
-              {selectedCompetitionId && !loadingSeasonDetails && (
+
+              {selectedCompetitionId && !loadingCompetitionDetails && isTournament && (
                 <div className="cm-field">
-                  <label htmlFor="cm-division">
-                    {t('floorball.matches.fields.division', 'Division')} *
-                  </label>
+                  <label htmlFor="cm-group">{subdivisionLabel} *</label>
+                  {!hasGroupsOrDivisions ? (
+                    <div className="cm-field__info cm-field__info--warning">
+                      <i className="fas fa-exclamation-triangle"></i>
+                      {t(
+                        'floorball.matches.noGroupsInTournament',
+                        'This tournament has no groups. Add groups in the tournament edit page first.'
+                      )}
+                    </div>
+                  ) : tournamentGroups.length === 1 ? (
+                    <div className="cm-field__auto-filled">
+                      <i className="fas fa-check-circle"></i>
+                      <span>{tournamentGroups[0].name}</span>
+                      <span className="cm-field__auto-tag">{t('common.autoSelected', 'Auto-selected')}</span>
+                    </div>
+                  ) : (
+                    <select
+                      id="cm-group"
+                      value={selectedGroupId}
+                      onChange={(e) => handleGroupChange(e.target.value)}
+                      required
+                      disabled={loading}
+                    >
+                      <option value="">{t('floorball.matches.placeholders.selectGroup', '-- Select a group --')}</option>
+                      {tournamentGroups.map((g) => (
+                        <option key={g.id} value={g.id}>
+                          {g.name} ({g.teams.length} {t('floorball.tournaments.teams', 'teams')})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              )}
+
+              {selectedCompetitionId && !loadingCompetitionDetails && !isTournament && (
+                <div className="cm-field">
+                  <label htmlFor="cm-division">{subdivisionLabel} *</label>
                   {seasonDivisions.length === 0 ? (
                     <div className="cm-field__info cm-field__info--warning">
                       <i className="fas fa-exclamation-triangle"></i>
-                      {t('floorball.matches.noDivisionsInSeason', 'This season has no divisions. Please add divisions to the season first.')}
+                      {t(
+                        'floorball.matches.noDivisionsInSeason',
+                        'This season has no divisions. Please add divisions to the season first.'
+                      )}
                     </div>
                   ) : seasonDivisions.length === 1 ? (
                     <div className="cm-field__auto-filled">
@@ -306,7 +478,7 @@ const CreateMatchPage = () => {
                       disabled={loading}
                     >
                       <option value="">{t('floorball.matches.placeholders.selectDivision', '-- Select a division --')}</option>
-                      {seasonDivisions.map(sd => (
+                      {seasonDivisions.map((sd) => (
                         <option key={sd.divisionId} value={sd.divisionId}>
                           {getDivisionName(sd.divisionId)} ({sd.teamCount} {t('floorball.seasons.teams', 'teams')})
                         </option>
@@ -317,18 +489,26 @@ const CreateMatchPage = () => {
               )}
             </div>
 
-            {/* Teams Selection - only show when division selected */}
-            {selectedDivisionId && (
+            {/* Teams Selection — only show when division/group is resolved */}
+            {subdivisionResolved && (
               <div className="cm-section">
                 <h3 className="cm-section__title">
                   <i className="fas fa-users"></i>
                   {t('floorball.matches.sections.teams', 'Teams')}
                 </h3>
 
-                {teamsInDivision.length < 2 ? (
+                {teamsAvailable.length < 2 ? (
                   <div className="cm-field__info cm-field__info--warning">
                     <i className="fas fa-exclamation-triangle"></i>
-                    {t('floorball.matches.notEnoughTeams', 'This division needs at least 2 teams. Please add teams to the season division first.')}
+                    {isTournament
+                      ? t(
+                          'floorball.matches.notEnoughTeamsInGroup',
+                          'This group needs at least 2 teams. Add teams to the group from the tournament edit page first.'
+                        )
+                      : t(
+                          'floorball.matches.notEnoughTeams',
+                          'This division needs at least 2 teams. Please add teams to the season division first.'
+                        )}
                   </div>
                 ) : (
                   <div className="cm-field-row">
@@ -339,18 +519,21 @@ const CreateMatchPage = () => {
                       <select
                         id="cm-home-team"
                         value={homeTeamId}
-                        onChange={(e) => { setHomeTeamId(e.target.value); if (e.target.value === awayTeamId) setAwayTeamId(''); }}
+                        onChange={(e) => {
+                          setHomeTeamId(e.target.value);
+                          if (e.target.value === awayTeamId) setAwayTeamId('');
+                        }}
                         required
                         disabled={loading}
                       >
                         <option value="">{t('floorball.matches.placeholders.selectHomeTeam', '-- Select home team --')}</option>
-                        {teamsInDivision.map(team => (
+                        {teamsAvailable.map((team) => (
                           <option key={team.id} value={team.id}>{team.name}</option>
                         ))}
                       </select>
                     </div>
 
-                    <div className="cm-field-row__vs">
+                    <div className="cm-field-row__vs" aria-hidden="true">
                       <span>VS</span>
                     </div>
 
@@ -366,7 +549,7 @@ const CreateMatchPage = () => {
                         disabled={loading || !homeTeamId}
                       >
                         <option value="">{t('floorball.matches.placeholders.selectAwayTeam', '-- Select away team --')}</option>
-                        {availableAwayTeams.map(team => (
+                        {availableAwayTeams.map((team) => (
                           <option key={team.id} value={team.id}>{team.name}</option>
                         ))}
                       </select>
@@ -459,7 +642,7 @@ const CreateMatchPage = () => {
                   disabled={loading || loadingReferees}
                 >
                   <option value="">{loadingReferees ? t('common.loading', 'Loading...') : t('floorball.matches.placeholders.noReferee', '-- No referee (assign later) --')}</option>
-                  {referees.map(ref => (
+                  {referees.map((ref) => (
                     <option key={ref.id} value={ref.id}>{ref.person?.fullName ?? ref.id}</option>
                   ))}
                 </select>
@@ -475,7 +658,7 @@ const CreateMatchPage = () => {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => navigate('/admin/floorball/matches')}
+                onClick={() => navigate(listPath)}
                 disabled={loading}
               >
                 {t('common.cancel', 'Cancel')}
@@ -483,7 +666,13 @@ const CreateMatchPage = () => {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={loading || !selectedCompetitionId || !selectedDivisionId || !homeTeamId || !awayTeamId}
+                disabled={
+                  loading ||
+                  !selectedCompetitionId ||
+                  !subdivisionResolved ||
+                  !homeTeamId ||
+                  !awayTeamId
+                }
               >
                 {loading ? (
                   <><i className="fas fa-spinner fa-spin"></i> {t('common.creating', 'Creating...')}</>

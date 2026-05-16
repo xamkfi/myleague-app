@@ -4,7 +4,13 @@
       "summary": "YHTEENVETO",
       "stats": "TILASTOT",
       "lineups": "KOKOONPANOT",
-      "table": "SARJATAULUKKO"
+      "table": "SARJATAULUKKO",
+      "groupStandings": "LOHKON TAULUKKO",
+      "playoffBracket": "PUDOTUSPELIKAAVIO"
+    },
+    "standings": {
+      "groupFallback": "Lohko",
+      "playoffBracket": "Pudotuspelikaavio"
     },
     "dateTime": {
       "weekdays": {
@@ -383,6 +389,13 @@
         "updateRoleFailed": "Henkilön roolin päivitys epäonnistui."
       }
     },
+    "editor": {
+      "confirmDeleteImages": "Haluatko varmasti poistaa {{count}} kuva(a)?",
+      "confirmDeleteMatches": "Haluatko varmasti poistaa {{count}} ottelutulosta?",
+      "confirmDeleteBoth": "Haluatko varmasti poistaa {{images}} kuva(a) ja {{matches}} ottelutulosta?",
+      "uploadFailed": "Kuvan lataus epäonnistui.",
+      "placeholder": "Kirjoita sisältö tähän..."
+    },
     "news":{
       "pageTitle": "Uutisten Hallinta",
       "createNew": "Luo Uusi",
@@ -564,6 +577,11 @@
       "actions": {
         "teams": "Joukkueet",
         "manageTeams": "Hallitse joukkueita",
+        "managePlayers": "Hallitse pelaajia",
+        "manageSeasons": "Hallitse kausia",
+        "manageTournaments": "Hallitse turnauksia",
+        "manageMatches": "Hallitse otteluita",
+        "manageReferees": "Hallitse tuomareita",
         "players": "Hallitse Pelaajia",
         "coaches": "Hallitse Valmentajia",
         "teamManagers": "Hallitse Joukkueenjohtajia",
@@ -789,7 +807,9 @@
         "cancelSuccess": "Turnaus peruttu onnistuneesti."
       },
       "actions": {
-        "menu": "Turnauksen toimintovalikko"
+        "menu": "Turnauksen toimintovalikko",
+        "manageMatches": "Hallitse turnauksen otteluita",
+        "bulkDelete": "Poista ({{count}})"
       },
       "errors": {
         "networkError": "Verkkovirhe. Tarkista yhteytesi ja yritä uudelleen.",
@@ -874,13 +894,6 @@
         "score": "Tulos",
         "status": "Tila"
       },
-      "sections": {
-        "matches": "Ottelut",
-        "ongoing": "Käynnissä olevat ottelut",
-        "scheduled": "Aikataulutetut ottelut",
-        "completed": "Päättyneet ottelut",
-        "cancelled": "Peruutetut ottelut"
-      },
       "tabs": {
         "all": "Kaikki",
         "ongoing": "Käynnissä",
@@ -891,6 +904,9 @@
       },
       "create": {
         "title": "Luo Uusi Ottelu",
+        "seasonTitle": "Luo Kauden Ottelu",
+        "tournamentTitle": "Luo Turnausottelu",
+        "submit": "Luo Ottelu",
         "season": "Kausi",
         "homeTeam": "Kotijoukkue",
         "awayTeam": "Vierasjoukkue",
@@ -899,24 +915,67 @@
         "venue": "Paikka",
         "createMatch": "Luo Ottelu"
       },
+      "fields": {
+        "season": "Kausi",
+        "tournament": "Turnaus",
+        "division": "Sarja",
+        "group": "Lohko",
+        "homeTeam": "Kotijoukkue",
+        "awayTeam": "Vierasjoukkue",
+        "referee": "Tuomari",
+        "dateTime": "Päiväys ja kellonaika",
+        "venue": "Pelipaikka"
+      },
+      "sections": {
+        "matches": "Ottelut",
+        "ongoing": "Käynnissä olevat ottelut",
+        "scheduled": "Aikataulutetut ottelut",
+        "completed": "Päättyneet ottelut",
+        "cancelled": "Peruutetut ottelut",
+        "seasonDivision": "Kausi & Sarja",
+        "tournamentGroup": "Turnaus & Lohko",
+        "teams": "Joukkueet",
+        "schedule": "Aikataulu & Pelipaikka",
+        "referee": "Tuomari"
+      },
       "placeholders": {
-        "selectSeason": "Valitse Kausi",
-        "selectHomeTeam": "Valitse Kotijoukkue",
-        "selectAwayTeam": "Valitse Vierasjoukkue",
+        "selectSeason": "-- Valitse kausi --",
+        "selectTournament": "-- Valitse turnaus --",
+        "selectDivision": "-- Valitse sarja --",
+        "selectGroup": "-- Valitse lohko --",
+        "selectHomeTeam": "-- Valitse kotijoukkue --",
+        "selectAwayTeam": "-- Valitse vierasjoukkue --",
         "selectReferee": "Valitse Tuomari",
+        "noReferee": "-- Ei tuomaria (lisätään myöhemmin) --",
         "searchSeasons": "Hae kausia...",
         "searchTeams": "Hae joukkueita...",
         "searchReferees": "Hae tuomareita...",
         "hoursPlaceholder": "TT",
-        "minutesPlaceholder": "MM", 
+        "minutesPlaceholder": "MM",
+        "venue": "Anna pelipaikan nimi",
         "venuePlaceholder": "Anna paikka (valinnainen)"
       },
       "validation": {
         "fillRequired": "Täytä kaikki pakolliset kentät",
+        "sameTeam": "Koti- ja vierasjoukkue eivät voi olla sama",
         "sameTeams": "Koti- ja vierasjoukkue eivät voi olla sama",
         "validDateTime": "Anna kelvollinen päiväys ja aika",
+        "dateTimeRequired": "Anna kelvollinen päiväys ja aika",
+        "seasonRequired": "Valitse kausi.",
+        "tournamentRequired": "Valitse turnaus.",
+        "divisionRequired": "Valitse sarja.",
+        "groupRequired": "Valitse lohko.",
+        "homeTeamRequired": "Valitse kotijoukkue.",
+        "awayTeamRequired": "Valitse vierasjoukkue.",
         "createFailed": "Ottelun luominen epäonnistui"
       },
+      "noGroupsInTournament": "Turnauksessa ei ole vielä lohkoja. Lisää lohkot ensin turnauksen muokkausnäkymästä.",
+      "noDivisionsInSeason": "Kaudella ei ole sarjoja. Lisää sarjat ensin kauteen.",
+      "notEnoughTeams": "Sarjassa pitää olla vähintään 2 joukkuetta. Lisää joukkueet sarjaan ensin.",
+      "notEnoughTeamsInGroup": "Lohkossa pitää olla vähintään 2 joukkuetta. Lisää joukkueet lohkoon turnauksen muokkausnäkymästä.",
+      "loadingTournamentDetails": "Ladataan turnauksen tietoja...",
+      "refereeHint": "Voit lisätä tuomarin myöhemmin ottelun tietosivulta.",
+      "created": "Ottelu luotu onnistuneesti!",
       "matchForm": {
         "loading": "Ladataan ottelua...",
         "notLoaded": "Ottelun tietojen lataus epäonnistui.",

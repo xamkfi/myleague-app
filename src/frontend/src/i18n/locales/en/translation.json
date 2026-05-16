@@ -77,7 +77,13 @@
       "summary": "SUMMARY",
       "stats": "STATS",
       "lineups": "LINEUPS",
-      "table": "TABLE"
+      "table": "TABLE",
+      "groupStandings": "GROUP STANDINGS",
+      "playoffBracket": "PLAYOFF BRACKET"
+    },
+    "standings": {
+      "groupFallback": "Group",
+      "playoffBracket": "Playoff bracket"
     },
     "dateTime": {
       "weekdays": {
@@ -383,6 +389,13 @@
         "updateRoleFailed": "Failed to update person role"
       }
     },
+    "editor": {
+      "confirmDeleteImages": "Are you sure you want to delete {{count}} image(s)?",
+      "confirmDeleteMatches": "Are you sure you want to delete {{count}} match result(s)?",
+      "confirmDeleteBoth": "Are you sure you want to delete {{images}} image(s) and {{matches}} match result(s)?",
+      "uploadFailed": "Image upload failed.",
+      "placeholder": "Start writing here..."
+    },
     "news":{
       "pageTitle": "News Management",
       "createNew": "Create New",
@@ -564,6 +577,11 @@
       "actions": {
         "teams": "Teams",
         "manageTeams": "Manage teams",
+        "managePlayers": "Manage players",
+        "manageSeasons": "Manage seasons",
+        "manageTournaments": "Manage tournaments",
+        "manageMatches": "Manage matches",
+        "manageReferees": "Manage referees",
         "players": "Manage Players",
         "coaches": "Manage Coaches",
         "teamManagers": "Manage Team Managers",
@@ -789,7 +807,9 @@
         "cancelSuccess": "Tournament cancelled successfully."
       },
       "actions": {
-        "menu": "Tournament actions menu"
+        "menu": "Tournament actions menu",
+        "manageMatches": "Manage tournament matches",
+        "bulkDelete": "Delete ({{count}})"
       },
       "errors": {
         "networkError": "Network error. Please check your connection and try again.",
@@ -874,13 +894,6 @@
         "score": "Score",
         "status": "Status"
       },
-      "sections": {
-        "matches": "Matches",
-        "ongoing": "Ongoing Matches",
-        "scheduled": "Scheduled Matches",
-        "completed": "Completed Matches",
-        "cancelled": "Cancelled Matches"
-      },
       "tabs": {
         "all": "All",
         "ongoing": "Ongoing",
@@ -891,6 +904,9 @@
       },
       "create": {
         "title": "Create New Match",
+        "seasonTitle": "Create Season Match",
+        "tournamentTitle": "Create Tournament Match",
+        "submit": "Create Match",
         "season": "Season",
         "homeTeam": "Home Team",
         "awayTeam": "Away Team",
@@ -899,24 +915,67 @@
         "venue": "Venue",
         "createMatch": "Create Match"
       },
+      "fields": {
+        "season": "Season",
+        "tournament": "Tournament",
+        "division": "Division",
+        "group": "Group",
+        "homeTeam": "Home Team",
+        "awayTeam": "Away Team",
+        "referee": "Referee",
+        "dateTime": "Date & Time",
+        "venue": "Venue"
+      },
+      "sections": {
+        "matches": "Matches",
+        "ongoing": "Ongoing Matches",
+        "scheduled": "Scheduled Matches",
+        "completed": "Completed Matches",
+        "cancelled": "Cancelled Matches",
+        "seasonDivision": "Season & Division",
+        "tournamentGroup": "Tournament & Group",
+        "teams": "Teams",
+        "schedule": "Schedule & Venue",
+        "referee": "Referee"
+      },
       "placeholders": {
-        "selectSeason": "Select Season",
-        "selectHomeTeam": "Select Home Team",
-        "selectAwayTeam": "Select Away Team", 
+        "selectSeason": "-- Select a season --",
+        "selectTournament": "-- Select a tournament --",
+        "selectDivision": "-- Select a division --",
+        "selectGroup": "-- Select a group --",
+        "selectHomeTeam": "-- Select home team --",
+        "selectAwayTeam": "-- Select away team --",
         "selectReferee": "Select Referee",
+        "noReferee": "-- No referee (assign later) --",
         "searchSeasons": "Search seasons...",
-        "searchTeams": "Search teams...", 
+        "searchTeams": "Search teams...",
         "searchReferees": "Search referees...",
         "hoursPlaceholder": "HH",
         "minutesPlaceholder": "MM",
+        "venue": "Enter venue name",
         "venuePlaceholder": "Enter venue (optional)"
       },
       "validation": {
         "fillRequired": "Please fill in all required fields",
+        "sameTeam": "Home team and away team cannot be the same",
         "sameTeams": "Home team and away team cannot be the same",
         "validDateTime": "Please enter a valid date and time",
+        "dateTimeRequired": "Please enter a valid date and time",
+        "seasonRequired": "Please select a season.",
+        "tournamentRequired": "Please select a tournament.",
+        "divisionRequired": "Please select a division.",
+        "groupRequired": "Please select a group.",
+        "homeTeamRequired": "Please select a home team.",
+        "awayTeamRequired": "Please select an away team.",
         "createFailed": "Failed to create match"
       },
+      "noGroupsInTournament": "This tournament has no groups yet. Add groups in the tournament edit page first.",
+      "noDivisionsInSeason": "This season has no divisions. Please add divisions to the season first.",
+      "notEnoughTeams": "This division needs at least 2 teams. Please add teams to the season division first.",
+      "notEnoughTeamsInGroup": "This group needs at least 2 teams. Add teams to the group from the tournament edit page first.",
+      "loadingTournamentDetails": "Loading tournament details...",
+      "refereeHint": "You can assign a referee later from the match details page.",
+      "created": "Match created successfully!",
       "matchForm": {
         "loading": "Loading match...",
         "notLoaded": "Failed to load match details.",
