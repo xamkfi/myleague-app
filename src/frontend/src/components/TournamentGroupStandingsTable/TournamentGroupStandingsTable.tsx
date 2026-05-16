@@ -17,9 +17,15 @@ interface TournamentGroupStandingsTableProps {
    * Pass 0 (or omit) to disable the highlight.
    */
   teamsAdvancingPerGroup?: number;
+  /**
+   * When true, the component skips its own `standing-header` block. Useful when the table is
+   * embedded inside another container (like the match-page standings tab) that already
+   * renders a title for the group, so the header is not duplicated.
+   */
+  hideHeader?: boolean;
 }
 
-export default function TournamentGroupStandingsTable({ groupId, groupName, teamsAdvancingPerGroup = 0 }: TournamentGroupStandingsTableProps) {
+export default function TournamentGroupStandingsTable({ groupId, groupName, teamsAdvancingPerGroup = 0, hideHeader = false }: TournamentGroupStandingsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { teams, refetch } = useFloorballTeamsData();
@@ -66,13 +72,15 @@ export default function TournamentGroupStandingsTable({ groupId, groupName, team
 
   return (
     <div className="standing-container">
-      <div className="standing-header">
-        <div className="header-top-row">
-          <div className="league-selector">
-            <span className="league-title">{groupName}</span>
+      {!hideHeader && (
+        <div className="standing-header">
+          <div className="header-top-row">
+            <div className="league-selector">
+              <span className="league-title">{groupName}</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="table-wrapper">
         {loading ? (

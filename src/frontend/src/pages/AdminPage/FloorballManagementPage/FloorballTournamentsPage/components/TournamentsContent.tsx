@@ -7,6 +7,7 @@ interface TournamentsContentProps {
   onEdit: (tournament: FloorballTournamentDto) => void;
   onDelete: (tournament: FloorballTournamentDto) => void;
   onLifecycleAction: (tournament: FloorballTournamentDto, action: 'startGroupStage' | 'startPlayoffStage' | 'complete' | 'cancel') => void;
+  onManageMatches: (tournament: FloorballTournamentDto) => void;
   operationLoading?: string | null;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -19,6 +20,7 @@ export const TournamentsContent = ({
   onEdit,
   onDelete,
   onLifecycleAction,
+  onManageMatches,
   operationLoading,
   selectedIds,
   onToggleSelect,
@@ -39,6 +41,7 @@ export const TournamentsContent = ({
           onEdit={onEdit}
           onDelete={onDelete}
           onLifecycleAction={onLifecycleAction}
+          onManageMatches={onManageMatches}
           operationLoading={operationLoading}
           selectedIds={selectedIds}
           onToggleSelect={onToggleSelect}

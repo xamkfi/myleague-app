@@ -1,0 +1,117 @@
+/* ------------------------------------------------------------------ */
+/* RichTextEditor — shared Quill-based editor for admin content        */
+/* ------------------------------------------------------------------ */
+
+.rich-text-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.rich-text-editor__toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.rich-text-editor__quill {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  /* Quill toolbar */
+  .ql-toolbar {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border: 1px solid #d1d5db;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+  }
+
+  /* Quill container */
+  .ql-container {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border: 1px solid #d1d5db;
+    border-top: none;
+    font-family: inherit;
+    overflow-y: auto;
+  }
+
+  /* The editable area */
+  .ql-editor {
+    min-height: 300px;
+    padding: 1rem;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #1f2937;
+
+    /* Long words should wrap at sensible break points only. The previous
+       `break-all` rule split words mid-letter, which is bad UX. `anywhere`
+       breaks only when there is no other option (e.g. very long URLs).      */
+    word-break: normal;
+    overflow-wrap: anywhere;
+
+    /* Quill keeps inline placeholder text light grey */
+    &.ql-blank::before {
+      color: #9ca3af;
+      font-style: normal;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 1rem 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Make embedded match-result tables blend with the page */
+    .match-result-table-container {
+      margin: 1rem 0;
+    }
+  }
+}
+
+/* Variant sizing — `default` is generous for long articles, `compact`
+   suits shorter descriptions like the tournament Description block. */
+.rich-text-editor--default .rich-text-editor__quill {
+  .ql-container { min-height: 320px; }
+  .ql-editor    { min-height: 320px; }
+}
+
+.rich-text-editor--compact .rich-text-editor__quill {
+  .ql-container { min-height: 200px; max-height: 360px; }
+  .ql-editor    { min-height: 200px; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 768px) {
+  .rich-text-editor--default .rich-text-editor__quill {
+    .ql-container { min-height: 240px; }
+    .ql-editor {
+      min-height: 240px;
+      padding: 0.75rem;
+      font-size: 14px;
+    }
+  }
+
+  .rich-text-editor--compact .rich-text-editor__quill {
+    .ql-container { min-height: 160px; max-height: 280px; }
+    .ql-editor {
+      min-height: 160px;
+      padding: 0.75rem;
+      font-size: 14px;
+    }
+  }
+
+  .rich-text-editor__quill .ql-toolbar {
+    padding: 0.5rem;
+  }
+}

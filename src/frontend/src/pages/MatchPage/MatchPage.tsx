@@ -10,6 +10,7 @@ import MatchBreadcrumb from './components/MatchBreadcrumb';
 import MatchHeader from './components/MatchHeader';
 import MatchNavigation, { type TabType } from './components/MatchNavigation';
 import MatchTabContent from './components/MatchTabContent';
+import { isTournamentCompetition } from '../../utils/competitionPath';
 
 
 
@@ -112,16 +113,36 @@ export default function MatchPage() {
 
 
 
+  // Pick a variant for the "table" tab label based on the match type so the standings tab
+  // reads naturally in tournament context.
+  const isTournament: boolean = isTournamentCompetition({
+    tournamentGroupId: match.tournamentGroupId,
+    tournamentStage: match.tournamentStage,
+  });
+  const tableVariant: 'season' | 'tournamentGroup' | 'tournamentPlayoff' = isTournament
+    ? match.tournamentGroupId
+      ? 'tournamentGroup'
+      : 'tournamentPlayoff'
+    : 'season';
+
   return (
     <div className="match-page-wrapper">
       <PageTemplate title="Match Details">
         <div className="match-page">
-          <MatchBreadcrumb 
-            seasonName={match.competitionName}
+          <MatchBreadcrumb
+            competitionName={match.competitionName}
             competitionId={match.competitionId}
+            hints={{
+              tournamentGroupId: match.tournamentGroupId,
+              tournamentStage: match.tournamentStage,
+            }}
           />
           <MatchHeader match={match} />
-          <MatchNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <MatchNavigation
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            tableVariant={tableVariant}
+          />
           <MatchTabContent activeTab={activeTab} match={match} />
         </div>
       </PageTemplate>

@@ -91,25 +91,6 @@
     font-style: italic;
   }
 
-  &__all-link-wrap {
-    margin-top: map.get($spacing, 'sm');
-    padding-top: map.get($spacing, 'sm');
-    border-top: 1px solid $color-neutral-medium-grey;
-  }
-
-  &__all-link {
-    display: block;
-    font-size: map.get($font-sizes, 'sm');
-    font-weight: map.get($font-weights, 'semibold');
-    color: $color-blue-medium;
-    text-decoration: none;
-    transition: color $transition-default;
-
-    &:hover {
-      color: $color-blue-deep;
-      text-decoration: underline;
-    }
-  }
 }
 
 // =============================================

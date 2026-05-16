@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import PageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
-import QuillEditor from "./components/QuillEditor";
+import RichTextEditor from "../../../components/RichTextEditor";
 import { useTranslation } from "react-i18next";
 import NewsInputs, { type NewsInputsData } from "./components/NewsInputs";
 import PreviewNews from "./components/PreviewNews";
@@ -11,12 +11,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { singleNewsService } from "../../../api/news/singleNewsService";
 import "./NewsCreateEditPage.scss";
 
-declare global {
-  interface Window {
-    setQuillNavigatingState?: (isNavigating: boolean) => void;
-  }
-}
-
 export default function NewsCreateEditPage() {
   const { t } = useTranslation();
   const { id } = useParams();
@@ -24,7 +18,6 @@ export default function NewsCreateEditPage() {
   const [value, setValue] = useState("");
   const [preview, setPreview] = useState(false);
   const [loadingAnimation, setLoadingAnimation] = useState(false);
-  const [isClearingEditor, setIsClearingEditor] = useState(false);
   const [isLoadingArticle, setIsLoadingArticle] = useState(isEditMode);
 
   const [newsData, setNewsData] = useState<NewsInputsData>({
@@ -167,15 +160,6 @@ export default function NewsCreateEditPage() {
           removeInputFields();
         }
         
-        console.log("=== Publish Completed ===");
-        
-        // Aseta navigaatio tila ENNEN navigointia
-        if (typeof window !== 'undefined' && window.setQuillNavigatingState) {
-          window.setQuillNavigatingState(true);
-          console.log("🚀 Setting navigation state to true before navigate");
-        }
-        
-        // Navigoi
         navigate('/admin/news');
         
       } catch (err) {
@@ -209,9 +193,7 @@ export default function NewsCreateEditPage() {
   };
 
   const removeInputFields = () => {
-    setIsClearingEditor(true);
     setValue("");
-    
     setNewsData({
       title: '',
       mainPicture: '',
@@ -224,11 +206,6 @@ export default function NewsCreateEditPage() {
     });
     setErrors({});
     setContentError('');
-    
-    // Reset the flag after a short delay
-    setTimeout(() => {
-      setIsClearingEditor(false);
-    }, 100);
   };
 
   if (isLoadingArticle) {
@@ -374,11 +351,11 @@ export default function NewsCreateEditPage() {
             </div>
             
             <div className={`border rounded-lg ${contentError ? 'border-red-300' : 'border-gray-200'}`}>
-              <QuillEditor 
-                value={value} 
-                setValue={setValue} 
-                setLoading={setLoadingAnimation}
-                isClearing={isClearingEditor}
+              <RichTextEditor
+                value={value}
+                onChange={setValue}
+                onUploadingChange={setLoadingAnimation}
+                showMatchInsert
               />
             </div>
             

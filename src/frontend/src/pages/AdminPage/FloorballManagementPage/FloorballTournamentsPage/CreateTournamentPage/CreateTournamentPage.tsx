@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import RichTextEditor from '../../../../../components/RichTextEditor';
 import { floorballTournamentService } from '../../../../../api/floorball/floorballTournamentService';
 import type { CreateFloorballTournamentRequest } from '../../../../../types/floorball/tournamentTypes';
 import '../../FloorballSeasonsPage/EditSeasonPage/EditSeasonPage.scss';
@@ -52,6 +53,10 @@ const CreateTournamentPage = () => {
       [name]: type === 'number' ? parseInt(value, 10) || 0 : value,
     }));
   };
+
+  const handleContentChange = useCallback((html: string) => {
+    setFormData((prev) => ({ ...prev, contentHtml: html }));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,15 +218,14 @@ const CreateTournamentPage = () => {
                 <label htmlFor="create-contentHtml">
                   {t('floorball.tournaments.fields.contentHtml', 'Content (HTML)')}
                 </label>
-                <textarea
+                <RichTextEditor
                   id="create-contentHtml"
-                  name="contentHtml"
                   value={formData.contentHtml ?? ''}
-                  onChange={handleInputChange}
-                  disabled={loading}
-                  rows={5}
+                  onChange={handleContentChange}
+                  readOnly={loading}
+                  variant="compact"
+                  showMatchInsert={false}
                   placeholder={t('floorball.tournaments.placeholders.content', 'Tournament description...')}
-                  style={{ width: '100%', resize: 'vertical', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontFamily: 'inherit', fontSize: '14px', boxSizing: 'border-box' }}
                 />
               </div>
             </div>

@@ -1,10 +1,11 @@
 import './LeagueStanding.scss';
-import type { 
+import type {
   FloorballPlayerSeasonStatisticsDto,
   FloorballGoalieSeasonStatisticsDto,
   FloorballSeasonStatisticsSummaryDto,
   FloorballTeamSeasonStatisticsDto
 } from '../../api/floorball/floorballStatistics';
+import type { ReactNode } from 'react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -16,9 +17,23 @@ interface LeagueStandingProps {
   seasonSummary?: FloorballSeasonStatisticsSummaryDto | null;
   loading?: boolean;
   error?: string | null;
+  /**
+   * Optional override that replaces the contents of the "standings" view. Use cases:
+   *  - In a tournament group-stage match, swap the season-wide league table for the
+   *    relevant group's standings.
+   *  - In a tournament playoff match, render the playoff bracket instead.
+   * Other views (top scorers / assists / goalies) are left untouched and continue to
+   * render from `seasonSummary`.
+   */
+  standingsOverride?: ReactNode;
+  /**
+   * Optional override for the title shown in the header. Defaults to the season name from
+   * `seasonSummary`. Useful e.g. to display "Group A" or "Playoff bracket" in match context.
+   */
+  titleOverride?: string;
 }
 
-export default function LeagueStanding({ seasonSummary, loading, error }: LeagueStandingProps) {
+export default function LeagueStanding({ seasonSummary, loading, error, standingsOverride, titleOverride }: LeagueStandingProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { teams, refetch } = useFloorballTeamsData();
@@ -40,8 +55,12 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     navigate(`/floorballplayer/${playerId}`);
   };
 
-  // Show loading state
-  if (loading) {
+  // When a `standingsOverride` is provided, the parent owns loading/error UX for the
+  // standings view (it's typically a self-contained component like
+  // `TournamentGroupStandingsTable` or `TournamentBracket`). We still need to render the
+  // surrounding view buttons so users can switch between standings/scorers/assists/goalies.
+  // The other views handle their own empty state via `seasonSummary` checks.
+  if (loading && !standingsOverride) {
     return (
       <div className="standing-container">
         <div className="loading-state">
@@ -51,8 +70,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     );
   }
 
-  // Show error state
-  if (error) {
+  if (error && !standingsOverride) {
     return (
       <div className="standing-container">
         <div className="error-state">
@@ -398,11 +416,13 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
     );
   };
 
-  // Render content based on active view
+  // Render content based on active view. If a caller supplied a `standingsOverride` we use
+  // it for the standings view only; the override is responsible for its own loading/error
+  // states (we don't gate it on the season summary loading state).
   const renderContent = () => {
     switch (activeView) {
       case 'standings':
-        return renderStandingsTable();
+        return standingsOverride ?? renderStandingsTable();
       case 'scorers':
         return renderTopScorersTable();
       case 'assists':
@@ -410,7 +430,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
       case 'goalies':
         return renderGoaliesTable();
       default:
-        return renderStandingsTable();
+        return standingsOverride ?? renderStandingsTable();
     }
   };
 
@@ -421,7 +441,7 @@ export default function LeagueStanding({ seasonSummary, loading, error }: League
         <div className="header-top-row">
           <div className="league-selector">
             <span className="league-title">
-              {seasonSummary?.seasonName || ""}
+              {titleOverride ?? seasonSummary?.seasonName ?? ""}
             </span>
           </div>
           

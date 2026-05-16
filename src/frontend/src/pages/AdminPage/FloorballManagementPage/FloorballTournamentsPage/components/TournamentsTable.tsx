@@ -8,6 +8,8 @@ interface TournamentsTableProps {
   onEdit: (tournament: FloorballTournamentDto) => void;
   onDelete: (tournament: FloorballTournamentDto) => void;
   onLifecycleAction: (tournament: FloorballTournamentDto, action: 'startGroupStage' | 'startPlayoffStage' | 'complete' | 'cancel') => void;
+  /** Opens the tournament-matches management page with this tournament pre-selected in the filter. */
+  onManageMatches: (tournament: FloorballTournamentDto) => void;
   operationLoading?: string | null;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -39,6 +41,7 @@ export const TournamentsTable = ({
   onEdit,
   onDelete,
   onLifecycleAction,
+  onManageMatches,
   operationLoading,
   selectedIds,
   onToggleSelect,
@@ -52,6 +55,11 @@ export const TournamentsTable = ({
       {
         label: t('common.edit', 'Edit'),
         onClick: () => onEdit(tournament),
+        disabled: operationLoading === tournament.id,
+      },
+      {
+        label: t('floorball.tournaments.actions.manageMatches', 'Hallitse turnauksen otteluita'),
+        onClick: () => onManageMatches(tournament),
         disabled: operationLoading === tournament.id,
       },
     ];

@@ -118,6 +118,9 @@ const FloorballTournamentsPage = () => {
             onEdit={(tournament) => navigate(`/admin/floorball/tournaments/${tournament.id}/edit`)}
             onDelete={openDeleteModal}
             onLifecycleAction={handleLifecycleAction}
+            onManageMatches={(tournament) =>
+              navigate(`/admin/floorball/tournaments/matches?competitionId=${tournament.id}`)
+            }
             operationLoading={operationLoading}
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}

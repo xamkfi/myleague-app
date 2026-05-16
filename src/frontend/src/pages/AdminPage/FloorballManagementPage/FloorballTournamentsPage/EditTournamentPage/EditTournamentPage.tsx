@@ -5,6 +5,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import Pagination from '../../../../../components/Pagination';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import RichTextEditor from '../../../../../components/RichTextEditor';
 import { floorballTournamentService } from '../../../../../api/floorball/floorballTournamentService';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
 import type {
@@ -275,6 +276,10 @@ const EditTournamentPage = () => {
     }));
   };
 
+  const handleContentChange = useCallback((html: string): void => {
+    setFormData((prev) => ({ ...prev, contentHtml: html }));
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!competitionId) return;
@@ -490,7 +495,7 @@ const EditTournamentPage = () => {
       )}
 
       <div className="edit-season-container">
-        <div className="edit-season-back">
+        <div className="edit-season-back edit-season-back--with-actions">
           <button
             type="button"
             className="back-button"
@@ -499,6 +504,24 @@ const EditTournamentPage = () => {
             <span aria-hidden="true">&larr;</span>{' '}
             {t('floorball.tournaments.backToList', 'Back to Tournaments')}
           </button>
+          {tournament && (
+            <button
+              type="button"
+              className="back-button back-button--primary"
+              onClick={() =>
+                navigate(`/admin/floorball/tournaments/matches?competitionId=${tournament.id}`)
+              }
+              title={t(
+                'floorball.tournaments.actions.manageMatches',
+                'Hallitse turnauksen otteluita'
+              )}
+            >
+              {t(
+                'floorball.tournaments.actions.manageMatches',
+                'Hallitse turnauksen otteluita'
+              )}
+            </button>
+          )}
         </div>
         {/* Tab Navigation */}
         <div className="tab-navigation">
@@ -628,14 +651,14 @@ const EditTournamentPage = () => {
                   </h3>
                   <div className="form-group">
                     <label htmlFor="edit-contentHtml">{t('floorball.tournaments.fields.contentHtml', 'Content (HTML)')}</label>
-                    <textarea
+                    <RichTextEditor
                       id="edit-contentHtml"
-                      name="contentHtml"
                       value={formData.contentHtml ?? ''}
-                      onChange={handleInputChange}
-                      disabled={loading}
-                      rows={5}
-                      style={{ width: '100%', resize: 'vertical', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontFamily: 'inherit', fontSize: '14px', boxSizing: 'border-box' }}
+                      onChange={handleContentChange}
+                      readOnly={loading}
+                      variant="compact"
+                      showMatchInsert={false}
+                      placeholder={t('floorball.tournaments.placeholders.content', 'Tournament description...')}
                     />
                   </div>
                 </div>

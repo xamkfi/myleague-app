@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
@@ -154,15 +153,6 @@ function MatchesPanel() {
     );
   }
 
-  // Link to season schedule: use first completed match's competitionId, then any match, otherwise sports/floorball
-  const completedSection = sections.find((s) => s.key === 'completed');
-  const firstCompletedMatch = completedSection?.matches[0];
-  const anyMatch = matches[0];
-  const competitionId = firstCompletedMatch?.competitionId ?? anyMatch?.competitionId;
-  const fixturesPath = competitionId
-    ? `/league/${competitionId}?tab=fixtures`
-    : '/sports/floorball';
-
   // --- Content ---
   return (
     <div className="matches-panel">
@@ -195,12 +185,6 @@ function MatchesPanel() {
           )}
         </div>
       ))}
-
-      <div className="matches-panel__all-link-wrap">
-        <Link to={fixturesPath} className="matches-panel__all-link">
-          {t('sidebar.allMatches', 'Kaikki ottelut')}
-        </Link>
-      </div>
     </div>
   );
 }
