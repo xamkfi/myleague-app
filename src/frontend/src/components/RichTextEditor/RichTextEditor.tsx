@@ -46,14 +46,14 @@ export interface RichTextEditorProps {
   className?: string;
 }
 
-/** Parses editor content as XML to avoid reinterpreting untrusted text as HTML. */
-const parseEditorXmlDocument = (html: string): XMLDocument => {
-  return new DOMParser().parseFromString(`<root>${html}</root>`, 'application/xml');
+/** Parses editor content in an inert HTML document without interpolating into a wrapper template. */
+const parseEditorHtmlDocument = (html: string): Document => {
+  return new DOMParser().parseFromString(html, 'text/html');
 };
 
 const extractImageUrls = (html: string): string[] => {
   if (!html) return [];
-  const doc = parseEditorXmlDocument(html);
+  const doc = parseEditorHtmlDocument(html);
   return Array.from(doc.getElementsByTagName('img'))
     .map((img) => img.getAttribute('src') ?? '')
     .filter(Boolean);
@@ -61,7 +61,7 @@ const extractImageUrls = (html: string): string[] => {
 
 const extractMatchResults = (html: string): MatchResultValue[] => {
   if (!html) return [];
-  const doc = parseEditorXmlDocument(html);
+  const doc = parseEditorHtmlDocument(html);
   const containers = Array.from(doc.getElementsByTagName('span')).filter((element) =>
     (element.getAttribute('class') ?? '').split(/\s+/).includes('match-result-table-container')
   );
