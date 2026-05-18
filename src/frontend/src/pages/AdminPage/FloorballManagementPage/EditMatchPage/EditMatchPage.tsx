@@ -183,7 +183,7 @@ const EditMatchPage = () => {
               competitionKind={isTournamentMatch ? 'tournament' : 'season'}
             />
           ) : (
-            !loading && <p>{t('floorball.matches.matchForm.notLoaded', 'Ottelun tietojen lataus epäonnistui.')}</p>
+            <p>{t('floorball.matches.matchForm.notLoaded', 'Ottelun tietojen lataus epäonnistui.')}</p>
           )}
         </div>
       </div>
