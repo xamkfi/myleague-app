@@ -246,6 +246,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<IEnumerable<FloorballMatch>> GetByCompetitionIdAsync(Guid competitionId)
         {
             return await _entities
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
@@ -264,6 +265,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             IQueryable<FloorballMatch> query = _entities
                 .AsNoTracking()
+                .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Where(m => m.TournamentGroupId == tournamentGroupId);
@@ -481,6 +483,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             return await _entities
                 .AsNoTracking()
+                .Include(m => m.Competition)
                 .Where(m =>
                     (m.HomeTeamId == teamId || m.AwayTeamId == teamId) &&
                     m.Status == FloorballMatchStatus.Completed &&

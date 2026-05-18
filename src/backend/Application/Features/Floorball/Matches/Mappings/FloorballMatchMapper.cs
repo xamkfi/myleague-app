@@ -116,7 +116,7 @@ public static class FloorballMatchMapper
         return new FloorballMatchDto(
             match.Id,
             match.CompetitionId,
-            match.Competition.Name,
+            match.Competition?.Name ?? string.Empty,
             match.HomeTeamId,
             match.HomeTeam.Name,
             homeTeamLogo,
