@@ -585,7 +585,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         
         eventToDelete={eventToDelete}
         deleteEventLoading={deleteEventLoading}
-        formatEventTime={timerContext.formatEventTime}
         onDeleteEventConfirm={handleDeleteEvent}
         onDeleteEventCancel={() => setEventToDelete(null)}
         
@@ -694,7 +693,6 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 
           <LiveMatchEventsHistory
             allEvents={matchEvents.allEvents}
-            formatEventTime={timerContext.formatEventTime}
             onDeleteEvent={(event) => {
               if (!event.eventId) {
                 matchData.setError('Cannot delete: missing event id');
