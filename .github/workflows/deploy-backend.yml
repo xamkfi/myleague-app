@@ -51,7 +51,7 @@ jobs:
           echo "Deploying to: myleague-${ENV}-api (rg: myleague-${ENV}-rg)"
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
