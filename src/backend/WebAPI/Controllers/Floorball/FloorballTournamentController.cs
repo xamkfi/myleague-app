@@ -124,7 +124,10 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballTournamentDto>>> CreateTournament([FromBody] CreateFloorballTournamentRequest request)
         {
-            _logger.LogInformation("Creating floorball tournament: {name}", request.Name);
+            string sanitizedTournamentNameForLog = (request.Name ?? string.Empty)
+                .Replace("\r", string.Empty)
+                .Replace("\n", string.Empty);
+            _logger.LogInformation("Creating floorball tournament: {name}", sanitizedTournamentNameForLog);
 
             CreateFloorballTournamentCommand command = new CreateFloorballTournamentCommand(
                 request.Name,
