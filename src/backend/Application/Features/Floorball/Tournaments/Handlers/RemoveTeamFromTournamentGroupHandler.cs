@@ -35,7 +35,9 @@ public class RemoveTeamFromTournamentGroupHandler : IRequestHandler<RemoveTeamFr
     {
         try
         {
-            FloorballTournament? tournament = await _tournamentRepository.GetByIdWithGroupsAsync(request.CompetitionId);
+            // Mirror the Add handler: load with AsNoTracking to avoid TPH/owned-type change tracking
+            // marking the parent tournament Modified during SaveChanges.
+            FloorballTournament? tournament = await _tournamentRepository.GetByIdWithGroupsAsNoTrackingAsync(request.CompetitionId, cancellationToken);
             if (tournament == null)
             {
                 _logger.LogWarning("Tournament not found with ID: {TournamentId}", request.CompetitionId);
@@ -49,12 +51,31 @@ public class RemoveTeamFromTournamentGroupHandler : IRequestHandler<RemoveTeamFr
                 return Result<FloorballTournamentDto>.NotFound("FloorballTournamentGroup", request.GroupId);
             }
 
+            FloorballTournamentGroupTeam? joinToRemove = group.Teams.FirstOrDefault(t => t.TeamId == request.TeamId);
+            if (joinToRemove == null)
+            {
+                _logger.LogInformation("Team {TeamId} not in group {GroupId}, nothing to remove", request.TeamId, request.GroupId);
+                return Result<FloorballTournamentDto>.Success(FloorballTournamentMapper.ToDto(tournament));
+            }
+
             _logger.LogInformation("Removing team {TeamId} from group {GroupId} in tournament: {TournamentId}", request.TeamId, request.GroupId, request.CompetitionId);
-            group.RemoveTeam(request.TeamId);
+            await _tournamentRepository.RemoveGroupTeamAsync(joinToRemove, cancellationToken);
+
+            // If this was the team's last group in the tournament, also drop the parent
+            // FloorballCompetitionTeam row so the inherited FloorballCompetition.Teams collection
+            // stays consistent. Teams kept in any other group should retain the parent row.
+            bool stillInAnotherGroup = tournament.Groups
+                .Where(g => g.Id != group.Id)
+                .Any(g => g.Teams.Any(t => t.TeamId == request.TeamId));
+            if (!stillInAnotherGroup)
+            {
+                await _tournamentRepository.RemoveCompetitionTeamAsync(request.CompetitionId, request.TeamId, cancellationToken);
+            }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(tournament);
+            FloorballTournament? refreshed = await _tournamentRepository.GetByIdWithGroupsAsNoTrackingAsync(request.CompetitionId, cancellationToken);
+            FloorballTournamentDto tournamentDto = FloorballTournamentMapper.ToDto(refreshed ?? tournament);
             _logger.LogInformation("Successfully removed team {TeamId} from group {GroupId} in tournament: {TournamentId}", request.TeamId, request.GroupId, request.CompetitionId);
 
             return Result<FloorballTournamentDto>.Success(tournamentDto);

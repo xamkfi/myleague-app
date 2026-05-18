@@ -40,6 +40,9 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// <param name="MatchRules">The match rules configuration snapshot</param>
     /// <param name="TournamentGroupId">Group ID for tournament group-stage matches; null for league or playoff matches</param>
     /// <param name="TournamentStage">Stage label for tournament matches (e.g. "GroupStage", "Quarterfinal"); null for league matches</param>
+    /// <param name="CompetitionType">Explicit competition discriminator (Season or Tournament). Lets the
+    /// frontend route matches without falling back to heuristics on tournament-only fields. Defaults
+    /// to "Season" for backward compatibility when the mapper can't resolve the navigation.</param>
     public record FloorballMatchDto(
         Guid Id,
         Guid CompetitionId,
@@ -66,5 +69,6 @@ namespace Application.Features.Floorball.Matches.DTOs
         IReadOnlyCollection<FloorballSaveEventDto> SaveEvents,
         FloorballMatchRulesDto MatchRules,
         Guid? TournamentGroupId = null,
-        string? TournamentStage = null);
+        string? TournamentStage = null,
+        FloorballCompetitionType CompetitionType = FloorballCompetitionType.Season);
 }

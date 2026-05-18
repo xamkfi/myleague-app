@@ -183,6 +183,19 @@ public class StartTournamentPlayoffStageHandler : IRequestHandler<StartTournamen
             _logger.LogInformation("Generated {Count} playoff matches for tournament {TournamentId}",
                 createdMatches.Count, request.CompetitionId);
 
+            // If the bracket extends past the tournament's configured EndDate (it almost always does
+            // because we schedule rounds after EndDate), push EndDate out so the tournament still
+            // qualifies as "active/ongoing" on the public lifecycle view. Use the latest match date
+            // as the baseline so the tournament isn't immediately marked past.
+            if (createdMatches.Count > 0)
+            {
+                DateTime latestPlayoffDate = createdMatches.Max(m => m.ScheduledDateTime);
+                if (latestPlayoffDate > tournament.EndDate)
+                {
+                    tournament.UpdateDateRange(tournament.StartDate, latestPlayoffDate);
+                }
+            }
+
             // Flip the lifecycle status (no-op for already-PlayoffStage tournaments without bracket).
             if (tournament.TournamentStatus == FloorballTournamentStatus.GroupStage)
             {

@@ -77,6 +77,19 @@ public class AddTeamToTournamentGroupHandler : IRequestHandler<AddTeamToTourname
             if (newJoin != null)
             {
                 await _tournamentRepository.AddGroupTeamAsync(newJoin, cancellationToken);
+
+                // Keep the parent FloorballCompetition.Teams collection (mapped from the shared
+                // FloorballCompetitionTeam join table) in sync. Without this row the team is not
+                // considered part of the tournament for the purposes of FloorballCompetition.AddMatch
+                // and IFloorballTeamRepository.GetByCompetitionIdAsync. The lookup is idempotent —
+                // a team may belong to several groups but only requires one parent join row.
+                bool alreadyOnTournament = tournament.Teams.Any(t => t.Id == team.Id)
+                    || await _tournamentRepository.ExistsCompetitionTeamAsync(request.CompetitionId, team.Id, cancellationToken);
+                if (!alreadyOnTournament)
+                {
+                    await _tournamentRepository.AddCompetitionTeamAsync(request.CompetitionId, team.Id, cancellationToken);
+                }
+
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
             else

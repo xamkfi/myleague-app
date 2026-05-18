@@ -155,6 +155,10 @@
     "database": "Database",
     "sportsTitle": "Sports",
     "view": "Admin view",
+    "navbar": {
+      "matchesInProgress_one": "{{count}} match in progress",
+      "matchesInProgress_other": "{{count}} matches in progress"
+    },
     "actions": {
       "home": "Home",
       "persons": "Persons",
@@ -712,6 +716,8 @@
       "showActiveOnly": "Show Active Only",
       "backToList": "Back to Seasons",
       "division": "Division",
+      "matchesInProgress_one": "{{count}} match in progress",
+      "matchesInProgress_other": "{{count}} matches in progress",
       "fields": {
         "name": "Name",
         "division": "Division",
@@ -755,6 +761,8 @@
       "createTitle": "Create New Tournament",
       "noTournaments": "No tournaments found",
       "noGroups": "No groups",
+      "matchesInProgress_one": "{{count}} match in progress",
+      "matchesInProgress_other": "{{count}} matches in progress",
       "showOngoingOnly": "Show Ongoing Only",
       "filterByStatus": "Filter by status",
       "allStatuses": "All statuses",

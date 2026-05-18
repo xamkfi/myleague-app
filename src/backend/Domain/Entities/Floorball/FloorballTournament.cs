@@ -80,6 +80,11 @@ public class FloorballTournament : FloorballCompetition
         ArgumentNullException.ThrowIfNull(rules);
         if (TournamentStatus == FloorballTournamentStatus.Completed)
             throw new InvalidOperationException("Cannot update rules for a completed tournament.");
+        // Once matches are scheduled the match rules (period count, OT, etc.) are snapshotted into
+        // each FloorballMatch. Allowing tournament rule edits after that point would produce a
+        // confusing split between the tournament's "current" rules and historical match rules.
+        if (_matches.Count > 0)
+            throw new InvalidOperationException("Cannot change tournament rules once matches have been created.");
 
         TournamentRules = rules;
         UpdateMatchRules(rules.GroupStageMatchRules);
@@ -91,6 +96,12 @@ public class FloorballTournament : FloorballCompetition
             throw new InvalidOperationException($"Cannot start group stage when status is {TournamentStatus}.");
         if (_groups.Count == 0)
             throw new InvalidOperationException("Cannot start group stage without any groups defined.");
+
+        foreach (FloorballTournamentGroup g in _groups)
+        {
+            if (g.Teams.Count < 2)
+                throw new InvalidOperationException($"Cannot start group stage: group '{g.Name}' must have at least 2 teams.");
+        }
 
         TournamentStatus = FloorballTournamentStatus.GroupStage;
         Activate();

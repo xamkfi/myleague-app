@@ -155,6 +155,10 @@
     "database": "Tietokanta",
     "sportsTitle": "Urheilulajit",
     "view": "Admin näkymä",
+    "navbar": {
+      "matchesInProgress_one": "{{count}} ottelu käynnissä",
+      "matchesInProgress_other": "{{count}} ottelua käynnissä"
+    },
     "actions": {
       "home": "Koti",
       "persons": "Henkilöt",
@@ -712,6 +716,8 @@
       "showActiveOnly": "Näytä Vain Aktiiviset",
       "backToList": "Takaisin kausilistaan",
       "division": "Sarja",
+      "matchesInProgress_one": "{{count}} ottelu käynnissä",
+      "matchesInProgress_other": "{{count}} ottelua käynnissä",
       "fields": {
         "name": "Nimi",
         "division": "Sarja",
@@ -755,6 +761,8 @@
       "createTitle": "Luo Uusi Turnaus",
       "noTournaments": "Turnauksia ei löytynyt",
       "noGroups": "Ei lohkoja",
+      "matchesInProgress_one": "{{count}} ottelu käynnissä",
+      "matchesInProgress_other": "{{count}} ottelua käynnissä",
       "showOngoingOnly": "Näytä Vain Käynnissä Olevat",
       "filterByStatus": "Suodata tilan mukaan",
       "allStatuses": "Kaikki tilat",

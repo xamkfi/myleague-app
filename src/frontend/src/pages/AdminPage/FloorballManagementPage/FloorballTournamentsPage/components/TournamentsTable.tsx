@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import type { FloorballTournamentDto } from '../../../../../types/floorball/tournamentTypes';
 import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
+import LiveDot from '../../../../../components/LiveDot/LiveDot';
+import { useInProgressMatches } from '../../../../../hooks/useInProgressMatches';
 import '../../../../../styles/AdminTable.scss';
 
 interface TournamentsTableProps {
@@ -49,6 +51,7 @@ export const TournamentsTable = ({
   onClearSelection,
 }: TournamentsTableProps) => {
   const { t } = useTranslation();
+  const { countByCompetitionId } = useInProgressMatches();
 
   const getActions = (tournament: FloorballTournamentDto) => {
     const actions: { label: string; onClick: () => void; variant?: 'default' | 'danger' | 'status'; disabled: boolean }[] = [
@@ -148,7 +151,9 @@ export const TournamentsTable = ({
         </tr>
       </thead>
       <tbody>
-        {tournaments.map((tournament) => (
+        {tournaments.map((tournament) => {
+          const liveCount: number = countByCompetitionId.get(tournament.id) ?? 0;
+          return (
           <tr
             key={tournament.id}
             className={`admin-table__row--clickable${selectedIds.has(tournament.id) ? ' admin-table__row--selected' : ''}`}
@@ -162,7 +167,18 @@ export const TournamentsTable = ({
                 onClick={(e) => e.stopPropagation()}
               />
             </td>
-            <td className="admin-table__name">{tournament.name}</td>
+            <td className="admin-table__name">
+              <span className="admin-table__name-inner">
+                {liveCount > 0 && (
+                  <LiveDot
+                    tone="light"
+                    count={liveCount}
+                    ariaLabel={t('floorball.tournaments.matchesInProgress', '{{count}} match(es) in progress', { count: liveCount })}
+                  />
+                )}
+                <span>{tournament.name}</span>
+              </span>
+            </td>
             <td>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                 {tournament.groups && tournament.groups.length > 0 ? (
@@ -202,7 +218,8 @@ export const TournamentsTable = ({
               />
             </td>
           </tr>
-        ))}
+          );
+        })}
       </tbody>
     </table>
   );

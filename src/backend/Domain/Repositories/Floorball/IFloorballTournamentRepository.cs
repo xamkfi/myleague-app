@@ -62,6 +62,42 @@ public interface IFloorballTournamentRepository
     Task AddGroupTeamAsync(FloorballTournamentGroupTeam groupTeam, CancellationToken ct = default);
 
     /// <summary>
+    /// Removes a tournament group/team join entity directly from the persistence store, without
+    /// loading the parent aggregate into the change tracker.
+    /// </summary>
+    /// <param name="groupTeam">The tournament group/team join to remove</param>
+    /// <param name="ct">Cancellation token</param>
+    Task RemoveGroupTeamAsync(FloorballTournamentGroupTeam groupTeam, CancellationToken ct = default);
+
+    /// <summary>
+    /// Inserts a row into the parent <c>FloorballCompetitionTeam</c> join table directly. Used to keep
+    /// the inherited <see cref="FloorballCompetition.Teams"/> collection in sync whenever a team is
+    /// added to a tournament group, without loading the tracked parent aggregate. Caller is responsible
+    /// for ensuring the join doesn't already exist (use <see cref="ExistsCompetitionTeamAsync"/> to
+    /// guard against duplicates).
+    /// </summary>
+    /// <param name="competitionId">The competition (tournament) id</param>
+    /// <param name="teamId">The team id</param>
+    /// <param name="ct">Cancellation token</param>
+    Task AddCompetitionTeamAsync(Guid competitionId, Guid teamId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Removes a row from the parent <c>FloorballCompetitionTeam</c> join table directly. No-op when
+    /// no matching row exists. Used to keep the parent collection consistent when a team leaves every
+    /// group it belonged to in a tournament.
+    /// </summary>
+    /// <param name="competitionId">The competition (tournament) id</param>
+    /// <param name="teamId">The team id</param>
+    /// <param name="ct">Cancellation token</param>
+    Task RemoveCompetitionTeamAsync(Guid competitionId, Guid teamId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns true when the parent <c>FloorballCompetitionTeam</c> join table contains a row for the
+    /// given competition + team pair.
+    /// </summary>
+    Task<bool> ExistsCompetitionTeamAsync(Guid competitionId, Guid teamId, CancellationToken ct = default);
+
+    /// <summary>
     /// Gets all floorball tournaments
     /// </summary>
     /// <param name="ct">Cancellation token</param>

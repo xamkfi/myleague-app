@@ -111,6 +111,8 @@ public static class FloorballMatchMapper
 
         FloorballMatchRulesDto matchRulesDto = MapMatchRules(match.MatchRules);
 
+        FloorballCompetitionType competitionType = ResolveCompetitionType(match);
+
         return new FloorballMatchDto(
             match.Id,
             match.CompetitionId,
@@ -137,7 +139,8 @@ public static class FloorballMatchMapper
             saveEvents,
             matchRulesDto,
             match.TournamentGroupId,
-            match.TournamentStage?.ToString());
+            match.TournamentStage?.ToString(),
+            competitionType);
     }
 
     /// <summary>
@@ -222,7 +225,8 @@ public static class FloorballMatchMapper
             new List<FloorballSaveEventDto>(),
             matchRulesDto,
             match.TournamentGroupId,
-            match.TournamentStage?.ToString()
+            match.TournamentStage?.ToString(),
+            ResolveCompetitionType(match)
         );
     }
 
@@ -358,4 +362,24 @@ public static class FloorballMatchMapper
 
         return $"{person.FirstName} {person.LastName}";
     }
-} 
+
+    /// <summary>
+    /// Resolves the competition type for a match. Prefers the runtime type of the loaded Competition
+    /// navigation (authoritative). Falls back to inferring from tournament-only fields when the
+    /// navigation isn't eagerly loaded (older read paths). Defaults to Season for backward
+    /// compatibility, matching the DTO default.
+    /// </summary>
+    private static FloorballCompetitionType ResolveCompetitionType(FloorballMatch match)
+    {
+        if (match.Competition is FloorballTournament)
+            return FloorballCompetitionType.Tournament;
+        if (match.Competition is FloorballSeason)
+            return FloorballCompetitionType.Season;
+
+        // Competition navigation not loaded — infer from tournament-only fields.
+        if (match.TournamentGroupId.HasValue || match.TournamentStage.HasValue)
+            return FloorballCompetitionType.Tournament;
+
+        return FloorballCompetitionType.Season;
+    }
+}

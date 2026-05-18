@@ -291,8 +291,8 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
     /// </summary>
     private async Task AdvancePlayoffWinnerAsync(FloorballMatch completed, CancellationToken cancellationToken)
     {
-        // Determine winner. Draws shouldn't happen because playoff matches typically allow OT/shootout,
-        // but if they do (mis-configured rules), keep the existing teams in place and log a warning.
+        // Determine winner. Domain guard in FloorballMatch.Complete() forbids playoff draws, but we
+        // keep the defensive null check here in case the match arrived via a different completion path.
         Guid? winnerTeamId = completed.HomeScore > completed.AwayScore
             ? completed.HomeTeamId
             : completed.AwayScore > completed.HomeScore
@@ -306,6 +306,10 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             return;
         }
         Guid loserTeamId = winnerTeamId.Value == completed.HomeTeamId ? completed.AwayTeamId : completed.HomeTeamId;
+
+        // Pull all tournament matches once so both the SF→3rd-place propagation and the final
+        // auto-complete check can share the lookup.
+        List<FloorballMatch> tournamentMatches = (await _matchRepository.GetByCompetitionIdAsync(completed.CompetitionId)).ToList();
 
         // Advance winner forward.
         if (completed.NextMatchId.HasValue && completed.NextMatchSlot.HasValue)
@@ -325,7 +329,6 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
         // For semifinals, also propagate the loser into the 3rd-place match (if one exists).
         if (completed.PlayoffRound == FloorballPlayoffRound.SemiFinal)
         {
-            IEnumerable<FloorballMatch> tournamentMatches = await _matchRepository.GetByCompetitionIdAsync(completed.CompetitionId);
             FloorballMatch? thirdPlace = tournamentMatches.FirstOrDefault(m => m.PlayoffRound == FloorballPlayoffRound.ThirdPlaceMatch);
             if (thirdPlace != null && thirdPlace.Status == FloorballMatchStatus.Scheduled)
             {
@@ -342,16 +345,31 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             }
         }
 
-        // Final completion -> mark tournament Completed and record the champion.
+        // Final completion -> always record the champion. Auto-complete the tournament only when no
+        // other group/playoff match is still pending; otherwise the admin completes it manually after
+        // e.g. the 3rd-place match wraps up. The `completed` match is excluded because its status is
+        // updated in memory but the repository fetch above might still see the pre-Save value.
         if (completed.PlayoffRound == FloorballPlayoffRound.Final)
         {
             FloorballTournament? tournament = await _tournamentRepository.GetByIdAsync(completed.CompetitionId, cancellationToken);
             if (tournament != null)
             {
                 tournament.SetChampion(winnerTeamId.Value);
-                if (tournament.TournamentStatus != FloorballTournamentStatus.Completed)
+
+                bool anyOtherUnfinished = tournamentMatches.Any(m =>
+                    m.Id != completed.Id &&
+                    m.Status != FloorballMatchStatus.Completed &&
+                    m.Status != FloorballMatchStatus.Cancelled);
+
+                if (!anyOtherUnfinished && tournament.TournamentStatus != FloorballTournamentStatus.Completed)
                 {
                     tournament.CompleteTournament();
+                }
+                else if (anyOtherUnfinished)
+                {
+                    _logger.LogInformation(
+                        "Final completed for tournament {TournamentId}, but other matches remain. Tournament left in {Status} for manual completion.",
+                        completed.CompetitionId, tournament.TournamentStatus);
                 }
             }
         }

@@ -236,6 +236,12 @@ export interface FloorballMatchDto {
   matchRules: FloorballMatchRules;
   tournamentGroupId?: string | null;
   tournamentStage?: string | null;
+  /**
+   * Explicit competition discriminator. Backend sets this from the loaded Competition runtime type
+   * (FloorballSeason vs FloorballTournament). Optional for backward compatibility with older clients
+   * that consumed the DTO before the field existed.
+   */
+  competitionType?: FloorballCompetitionType;
 }
 
 export interface CreateFloorballMatchRequest {

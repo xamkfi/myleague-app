@@ -90,12 +90,37 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
                 return Result<FloorballSeasonStatisticsSummaryDto>.NotFound("Season statistics", request.CompetitionId.ToString());
             }
 
-            // Build last-5 form per team
+            // For tournaments the team-standings table (W/L/T/Pts) must only reflect group-stage
+            // matches — playoff results should not pollute the league-style table. Top scorers/
+            // assists/goalies still cover the whole tournament span (those are individual awards).
+            bool isTournament = teamStats[0].Competition is Domain.Entities.Floorball.FloorballTournament;
+            List<Domain.Entities.Floorball.FloorballMatch> tournamentMatches = new List<Domain.Entities.Floorball.FloorballMatch>();
+            Dictionary<Guid, TournamentTeamAggregate>? tournamentAggregates = null;
+            if (isTournament)
+            {
+                tournamentMatches = (await _floorballMatchRepository.GetByCompetitionIdAsync(request.CompetitionId)).ToList();
+                tournamentAggregates = BuildTournamentGroupStageAggregates(tournamentMatches);
+            }
+
+            // Build last-5 form per team. For tournaments we restrict to group-stage completed matches
+            // so the badges on the standings table match the standings values themselves.
             Dictionary<Guid, FloorballGameResult[]> last5ByTeam = new Dictionary<Guid, FloorballGameResult[]>();
             foreach (Domain.Entities.Floorball.FloorballTeamSeasonStatistics ts in teamStats)
             {
-                IEnumerable<Domain.Entities.Floorball.FloorballMatch> matches =
-                    await _floorballMatchRepository.GetLastCompletedByTeamAsync(ts.TeamId, request.CompetitionId, 5);
+                IEnumerable<Domain.Entities.Floorball.FloorballMatch> matches;
+                if (isTournament)
+                {
+                    matches = tournamentMatches
+                        .Where(m => m.TournamentGroupId != null
+                            && m.Status == FloorballMatchStatus.Completed
+                            && (m.HomeTeamId == ts.TeamId || m.AwayTeamId == ts.TeamId))
+                        .OrderByDescending(m => m.ScheduledDateTime)
+                        .Take(5);
+                }
+                else
+                {
+                    matches = await _floorballMatchRepository.GetLastCompletedByTeamAsync(ts.TeamId, request.CompetitionId, 5);
+                }
 
                 FloorballGameResult[] form = matches.Select(m =>
                 {
@@ -155,9 +180,21 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
                 }
             }
 
-            // Calculate summary statistics
-            int totalGames = teamStats.Sum(ts => ts.GamesPlayed) / 2; // Divide by 2 since each game involves 2 teams
-            int totalGoals = teamStats.Sum(ts => ts.GoalsFor);
+            // Calculate summary statistics. For tournaments use the group-stage-only aggregates so
+            // the totals match the visible standings table; for seasons keep the existing
+            // statistics-store based totals.
+            int totalGames;
+            int totalGoals;
+            if (isTournament && tournamentAggregates != null)
+            {
+                totalGames = tournamentAggregates.Values.Sum(a => a.GamesPlayed) / 2;
+                totalGoals = tournamentAggregates.Values.Sum(a => a.GoalsFor);
+            }
+            else
+            {
+                totalGames = teamStats.Sum(ts => ts.GamesPlayed) / 2;
+                totalGoals = teamStats.Sum(ts => ts.GoalsFor);
+            }
             decimal averageGoalsPerGame = totalGames > 0 ? (decimal)totalGoals / totalGames : 0;
 
             FloorballSeasonStatisticsSummaryDto summaryDto = new FloorballSeasonStatisticsSummaryDto
@@ -193,6 +230,45 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
                 AverageGoalsPerGame = averageGoalsPerGame
             };
             
+            // For tournaments, override the standings W/L/T/Pts/GoalsFor/GoalsAgainst with group-stage
+            // only aggregates so the public standings table doesn't double-count playoff results. We
+            // re-sort by the new points so the table order matches the displayed values.
+            if (isTournament && tournamentAggregates != null)
+            {
+                foreach (FloorballTeamSeasonStatisticsDto teamDto in summaryDto.TeamStandings)
+                {
+                    if (tournamentAggregates.TryGetValue(teamDto.TeamId, out TournamentTeamAggregate? agg))
+                    {
+                        teamDto.GamesPlayed = agg.GamesPlayed;
+                        teamDto.Wins = agg.Wins;
+                        teamDto.Losses = agg.Losses;
+                        teamDto.Ties = agg.Draws;
+                        teamDto.Points = agg.Points;
+                        teamDto.GoalsFor = agg.GoalsFor;
+                        teamDto.GoalsAgainst = agg.GoalsAgainst;
+                        teamDto.GoalDifference = agg.GoalsFor - agg.GoalsAgainst;
+                    }
+                    else
+                    {
+                        teamDto.GamesPlayed = 0;
+                        teamDto.Wins = 0;
+                        teamDto.Losses = 0;
+                        teamDto.Ties = 0;
+                        teamDto.Points = 0;
+                        teamDto.GoalsFor = 0;
+                        teamDto.GoalsAgainst = 0;
+                        teamDto.GoalDifference = 0;
+                    }
+                }
+
+                summaryDto.TeamStandings = summaryDto.TeamStandings
+                    .OrderByDescending(t => t.Points)
+                    .ThenByDescending(t => t.GoalDifference)
+                    .ThenByDescending(t => t.GoalsFor)
+                    .ThenBy(t => t.TeamName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+
             // Add last-5 form to each team's DTO
             foreach (FloorballTeamSeasonStatisticsDto teamDto in summaryDto.TeamStandings)
             {
@@ -209,6 +285,67 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
         {
             _logger.LogError(ex, "Error occurred while getting season statistics summary for Season: {SeasonId}", request.CompetitionId);
             return Result<FloorballSeasonStatisticsSummaryDto>.Failure("An error occurred while retrieving season statistics summary.");
+        }
+    }
+
+    /// <summary>
+    /// Aggregates per-team group-stage results across all groups in a tournament. We don't reuse
+    /// TournamentStandingsCalculator directly because that calculator works per-group; here we need
+    /// one row per team summing across all of its group-stage games.
+    /// </summary>
+    private static Dictionary<Guid, TournamentTeamAggregate> BuildTournamentGroupStageAggregates(
+        IEnumerable<Domain.Entities.Floorball.FloorballMatch> tournamentMatches)
+    {
+        Dictionary<Guid, TournamentTeamAggregate> rows = new Dictionary<Guid, TournamentTeamAggregate>();
+
+        foreach (Domain.Entities.Floorball.FloorballMatch m in tournamentMatches)
+        {
+            if (m.TournamentGroupId == null || m.Status != FloorballMatchStatus.Completed)
+                continue;
+
+            TournamentTeamAggregate home = rows.TryGetValue(m.HomeTeamId, out TournamentTeamAggregate? h)
+                ? h
+                : rows[m.HomeTeamId] = new TournamentTeamAggregate();
+            TournamentTeamAggregate away = rows.TryGetValue(m.AwayTeamId, out TournamentTeamAggregate? a)
+                ? a
+                : rows[m.AwayTeamId] = new TournamentTeamAggregate();
+
+            home.Apply(m.HomeScore, m.AwayScore);
+            away.Apply(m.AwayScore, m.HomeScore);
+        }
+
+        return rows;
+    }
+
+    private sealed class TournamentTeamAggregate
+    {
+        public int GamesPlayed { get; private set; }
+        public int Wins { get; private set; }
+        public int Draws { get; private set; }
+        public int Losses { get; private set; }
+        public int GoalsFor { get; private set; }
+        public int GoalsAgainst { get; private set; }
+        public int Points { get; private set; }
+
+        public void Apply(int scoredFor, int scoredAgainst)
+        {
+            GamesPlayed++;
+            GoalsFor += scoredFor;
+            GoalsAgainst += scoredAgainst;
+            if (scoredFor > scoredAgainst)
+            {
+                Wins++;
+                Points += 3;
+            }
+            else if (scoredFor < scoredAgainst)
+            {
+                Losses++;
+            }
+            else
+            {
+                Draws++;
+                Points += 1;
+            }
         }
     }
 }

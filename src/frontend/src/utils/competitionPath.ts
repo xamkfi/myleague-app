@@ -14,21 +14,32 @@
 export type CompetitionKind = 'season' | 'tournament';
 
 /**
- * Heuristic-friendly shape: anything carrying tournament-only fields is treated as a tournament.
- * Both fields are nullable so that bare `FloorballMatchDto`s can be passed in directly.
+ * Hints used to classify a competition's kind for routing purposes. The authoritative source is
+ * `competitionType` (added to `FloorballMatchDto` so the backend emits the discriminator directly).
+ * The legacy heuristic fields (`tournamentGroupId` / `tournamentStage`) remain as a fallback for
+ * any payload that pre-dates the explicit discriminator.
+ *
+ * All fields are nullable so a bare `FloorballMatchDto` can be passed in directly.
  */
 export interface CompetitionRouteHints {
+  competitionType?: 'Season' | 'Tournament' | null;
   tournamentGroupId?: string | null;
   tournamentStage?: string | null;
 }
 
 /**
- * Returns true when the supplied hints indicate a tournament match. A match is considered a
- * tournament match if it has either a tournament group association or a non-empty / non-"None"
- * stage label (group stage matches set `tournamentGroupId`; playoff matches set `tournamentStage`).
+ * Returns true when the supplied hints indicate a tournament match. Prefers the explicit
+ * `competitionType` discriminator emitted by the backend; falls back to inferring from
+ * tournament-only fields when that field is missing (older clients/payloads).
  */
 export function isTournamentCompetition(hints: CompetitionRouteHints | null | undefined): boolean {
   if (!hints) {
+    return false;
+  }
+  if (hints.competitionType === 'Tournament') {
+    return true;
+  }
+  if (hints.competitionType === 'Season') {
     return false;
   }
   if (hints.tournamentGroupId) {

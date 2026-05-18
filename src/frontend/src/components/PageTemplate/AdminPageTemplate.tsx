@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState, useCallback } from 'react';
 import AdminNavBar from '../Navigation/AdminNavBar';
+import { InProgressMatchesProvider } from '../../hooks/InProgressMatchesProvider';
 import './AdminPageTemplate.scss';
 
 const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
@@ -35,16 +36,18 @@ function AdminPageTemplate({ title, children }: AdminPageTemplateProps) {
   }, [title]);
 
   return (
-    <div className={`admin-page-container ${sidebarCollapsed ? 'admin-page-container--collapsed' : ''}`}>
-      <AdminNavBar collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
-      <div className="admin-page-content">
-        <div className="admin-page-body">
-          {children || (
-            <p className="placeholder-text">This admin page is under construction.</p>
-          )}
+    <InProgressMatchesProvider>
+      <div className={`admin-page-container ${sidebarCollapsed ? 'admin-page-container--collapsed' : ''}`}>
+        <AdminNavBar collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
+        <div className="admin-page-content">
+          <div className="admin-page-body">
+            {children || (
+              <p className="placeholder-text">This admin page is under construction.</p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </InProgressMatchesProvider>
   );
 }
 

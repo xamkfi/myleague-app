@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { useInProgressMatches } from '../../hooks/useInProgressMatches';
+import LiveDot from '../LiveDot/LiveDot';
 import './AdminNavBar.scss';
 import PersonsIcon from '../../assets/adminIcons/Persons.svg';
 import NewsIcon from '../../assets/adminIcons/News.svg';
@@ -25,6 +27,10 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
   const { user, logout } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [floorballDropdownOpen, setFloorballDropdownOpen] = useState(true);
+  const inProgress = useInProgressMatches();
+  const totalLive: number = inProgress.totalCount;
+  const seasonLive: number = inProgress.countByCompetitionType.season;
+  const tournamentLive: number = inProgress.countByCompetitionType.tournament;
 
   const handleLogout = async () => {
     await logout();
@@ -117,7 +123,16 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
             <li className={`admin-navbar-item ${isFloorballActive() ? 'active' : ''}`}>
               {collapsed ? (
                 <Link to="/admin/floorball" title={t('admin.actions.floorball', 'Floorball')}>
-                  <img src={SportsIcon} alt="Floorball" className="icon" />
+                  <span className="admin-navbar-icon-wrapper">
+                    <img src={SportsIcon} alt="Floorball" className="icon" />
+                    {totalLive > 0 && (
+                      <LiveDot
+                        tone="dark"
+                        ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: totalLive })}
+                        className="admin-navbar__live-dot admin-navbar__live-dot--icon-corner"
+                      />
+                    )}
+                  </span>
                 </Link>
               ) : (
                 <div className="admin-navbar-dropdown-trigger">
@@ -127,6 +142,13 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                   >
                     <img src={SportsIcon} alt="Floorball" className="icon" />
                     <span>{t('admin.actions.floorball', 'Floorball')}</span>
+                    {totalLive > 0 && (
+                      <LiveDot
+                        tone="dark"
+                        ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: totalLive })}
+                        className="admin-navbar__live-dot"
+                      />
+                    )}
                   </Link>
                   <span 
                     className={`admin-navbar-dropdown-arrow ${floorballDropdownOpen ? 'open' : ''}`}
@@ -157,12 +179,26 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                     <Link to="/admin/floorball/seasons">
                       <img src={SeasonsIcon} alt="Seasons" className="icon" />
                       <span>{t('floorball.management.actions.seasons', 'Manage Seasons')}</span>
+                      {seasonLive > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: seasonLive })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
                     </Link>
                   </li>
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/tournaments') ? 'active' : ''}`}>
                     <Link to="/admin/floorball/tournaments">
                       <img src={SeasonsIcon} alt="Tournaments" className="icon" />
                       <span>{t('floorball.management.actions.tournaments', 'Manage Tournaments')}</span>
+                      {tournamentLive > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: tournamentLive })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
                     </Link>
                   </li>
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/referees') ? 'active' : ''}`}>

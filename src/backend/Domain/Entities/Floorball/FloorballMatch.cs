@@ -640,7 +640,13 @@ public class FloorballMatch : BaseEntity
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot complete a match with status {Status}.");
-        
+
+        // Playoff matches must have a winner: overtime/shootout codepaths increment scores on the
+        // OT/SO period scores and feed back into HomeScore/AwayScore, so an equal final score here
+        // means the tie was never resolved. Bracket advancement relies on a unique winner.
+        if (PlayoffRound != null && HomeScore == AwayScore)
+            throw new InvalidOperationException("Playoff matches cannot end in a draw. Record overtime or shootout result first.");
+
         Status = FloorballMatchStatus.Completed;
 
         // Record that the match has been officiated by all referees
