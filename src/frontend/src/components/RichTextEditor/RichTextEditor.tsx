@@ -46,26 +46,30 @@ export interface RichTextEditorProps {
   className?: string;
 }
 
-/** Parses editor HTML without assigning it to Element.innerHTML (XSS/CodeQL-safe). */
-const parseEditorHtmlDocument = (html: string): Document => {
-  return new DOMParser().parseFromString(html, 'text/html');
+/** Parses editor content as XML to avoid reinterpreting untrusted text as HTML. */
+const parseEditorXmlDocument = (html: string): XMLDocument => {
+  return new DOMParser().parseFromString(`<root>${html}</root>`, 'application/xml');
 };
 
 const extractImageUrls = (html: string): string[] => {
   if (!html) return [];
-  const doc = parseEditorHtmlDocument(html);
-  return Array.from(doc.querySelectorAll('img'))
+  const doc = parseEditorXmlDocument(html);
+  return Array.from(doc.getElementsByTagName('img'))
     .map((img) => img.getAttribute('src') ?? '')
     .filter(Boolean);
 };
 
 const extractMatchResults = (html: string): MatchResultValue[] => {
   if (!html) return [];
-  const doc = parseEditorHtmlDocument(html);
-  const containers = doc.querySelectorAll('.match-result-table-container');
+  const doc = parseEditorXmlDocument(html);
+  const containers = Array.from(doc.getElementsByTagName('span')).filter((element) =>
+    (element.getAttribute('class') ?? '').split(/\s+/).includes('match-result-table-container')
+  );
   const results: MatchResultValue[] = [];
   containers.forEach((element) => {
-    const dataElement = element.querySelector('.match-result-data');
+    const dataElement = Array.from(element.getElementsByTagName('span')).find((child) =>
+      (child.getAttribute('class') ?? '').split(/\s+/).includes('match-result-data')
+    );
     if (!dataElement?.textContent) return;
     try {
       const parsed = JSON.parse(dataElement.textContent) as { matches?: MatchResultValue[] };
