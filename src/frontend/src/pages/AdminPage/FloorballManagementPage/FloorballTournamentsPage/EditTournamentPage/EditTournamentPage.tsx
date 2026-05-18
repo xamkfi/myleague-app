@@ -565,24 +565,22 @@ const EditTournamentPage = () => {
             <span aria-hidden="true">&larr;</span>{' '}
             {t('floorball.tournaments.backToList', 'Back to Tournaments')}
           </button>
-          {tournament && (
-            <button
-              type="button"
-              className="back-button back-button--primary"
-              onClick={() =>
-                navigate(`/admin/floorball/tournaments/matches?competitionId=${tournament.id}`)
-              }
-              title={t(
-                'floorball.tournaments.actions.manageMatches',
-                'Hallitse turnauksen otteluita'
-              )}
-            >
-              {t(
-                'floorball.tournaments.actions.manageMatches',
-                'Hallitse turnauksen otteluita'
-              )}
-            </button>
-          )}
+          <button
+            type="button"
+            className="back-button back-button--primary"
+            onClick={() =>
+              navigate(`/admin/floorball/tournaments/matches?competitionId=${tournament.id}`)
+            }
+            title={t(
+              'floorball.tournaments.actions.manageMatches',
+              'Hallitse turnauksen otteluita'
+            )}
+          >
+            {t(
+              'floorball.tournaments.actions.manageMatches',
+              'Hallitse turnauksen otteluita'
+            )}
+          </button>
         </div>
         {/* Tab Navigation */}
         <div className="tab-navigation">
