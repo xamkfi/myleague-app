@@ -46,20 +46,23 @@ export interface RichTextEditorProps {
   className?: string;
 }
 
+/** Parses editor HTML without assigning it to Element.innerHTML (XSS/CodeQL-safe). */
+const parseEditorHtmlDocument = (html: string): Document => {
+  return new DOMParser().parseFromString(html, 'text/html');
+};
+
 const extractImageUrls = (html: string): string[] => {
   if (!html) return [];
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return Array.from(div.querySelectorAll('img'))
+  const doc = parseEditorHtmlDocument(html);
+  return Array.from(doc.querySelectorAll('img'))
     .map((img) => img.getAttribute('src') ?? '')
     .filter(Boolean);
 };
 
 const extractMatchResults = (html: string): MatchResultValue[] => {
   if (!html) return [];
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  const containers = div.querySelectorAll('.match-result-table-container');
+  const doc = parseEditorHtmlDocument(html);
+  const containers = doc.querySelectorAll('.match-result-table-container');
   const results: MatchResultValue[] = [];
   containers.forEach((element) => {
     const dataElement = element.querySelector('.match-result-data');

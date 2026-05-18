@@ -132,13 +132,17 @@ export class SignalRService {
 
     await this.connect();
 
+    // After `await`, control-flow narrowing can exclude `Connected` from `state`'s union; read via a nested function instead.
+    const isEstablished = (): boolean =>
+      Boolean(this.connection?.state === HubConnectionState.Connected);
+
     let attempts = 0;
-    while (this.connection && this.connection.state !== HubConnectionState.Connected && attempts < 10) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+    while (!isEstablished() && attempts < 10) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 100));
       attempts++;
     }
 
-    if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+    if (!isEstablished()) {
       throw new Error('SignalR connection failed to establish');
     }
   }
@@ -158,7 +162,7 @@ export class SignalRService {
       await this.connection.invoke('UnsubscribeFromEventTypeAsync', eventType);
       this.subscribedEventTypes.delete(eventType);
     } catch (error) {
-      console.error(`Error unsubscribing from event type ${eventType}:`, error);
+      console.error('Error unsubscribing from event type:', eventType, error);
     }
   }
 
@@ -177,7 +181,7 @@ export class SignalRService {
       await this.connection.invoke('UnsubscribeFromMatchAsync', matchId);
       this.subscribedMatches.delete(matchId);
     } catch (error) {
-      console.error(`Error unsubscribing from match ${matchId}:`, error);
+      console.error('Error unsubscribing from match:', matchId, error);
     }
   }
 

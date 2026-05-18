@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback, useState, useRef } from 'react';
+import { useEffect, useMemo, useCallback, useState, useRef, type ReactElement } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchEventService, type RecordSaveEventRequest } from '../../../../api/floorball/floorballMatchEventService';
@@ -721,7 +721,7 @@ const ManageMatchPageWithContext = ({ match, setMatch }: ManageMatchPageContentP
 /**
  * Main page component with data loading
  */
-const ManageMatchPage = (): JSX.Element => {
+const ManageMatchPage = (): ReactElement => {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();

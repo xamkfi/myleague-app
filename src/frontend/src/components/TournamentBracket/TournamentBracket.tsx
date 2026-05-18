@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type KeyboardEvent, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type {
@@ -60,7 +60,7 @@ interface TeamSlotProps {
   tbdLabel: string;
 }
 
-function TeamSlot({ team, resolved, score, isWinner, tbdLabel }: TeamSlotProps): JSX.Element {
+function TeamSlot({ team, resolved, score, isWinner, tbdLabel }: TeamSlotProps): ReactElement {
   const showTbd = !resolved || team == null;
   return (
     <div className={`tournament-bracket__slot${isWinner ? ' tournament-bracket__slot--winner' : ''}${showTbd ? ' tournament-bracket__slot--tbd' : ''}`}>
@@ -114,7 +114,7 @@ function MatchCard({
   notStartedLabel,
   liveLabel,
   completedLabel
-}: MatchCardProps): JSX.Element {
+}: MatchCardProps): ReactElement {
   const completed = isCompleted(match.status);
   const live = isInProgress(match.status);
   const homeWon = completed && match.homeScore > match.awayScore;
@@ -129,7 +129,7 @@ function MatchCard({
     onSelect(match.matchId);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>): void => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onSelect(match.matchId);
@@ -176,7 +176,7 @@ function MatchCard({
   );
 }
 
-export default function TournamentBracket({ bracket, compact = false, linkMode = 'public' }: TournamentBracketProps): JSX.Element {
+export default function TournamentBracket({ bracket, compact = false, linkMode = 'public' }: TournamentBracketProps): ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
