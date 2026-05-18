@@ -158,7 +158,7 @@ public class StartTournamentPlayoffStageHandler : IRequestHandler<StartTournamen
                     sameRoundCounter = 0;
                 }
                 int dayOffset = roundDayOffsets.TryGetValue(planned.Round, out int d) ? d : 0;
-                DateTime scheduled = baseDate.AddDays(dayOffset).AddHours(2 * sameRoundCounter);
+                DateTime scheduled = baseDate.AddDays(dayOffset).AddHours(2d * sameRoundCounter);
                 sameRoundCounter++;
 
                 FloorballMatch match = FloorballMatch.CreatePlayoffMatch(
