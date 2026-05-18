@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
@@ -7,122 +7,154 @@ import MatchPanelCard from './MatchPanelCard';
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import './MatchesPanel.scss';
 
-const MAX_PER_SECTION = 5;
+// How many upcoming / completed matches to show initially. Live matches are
+// always shown in full because there are typically very few of them and the
+// user wants to see every game that is currently being played.
+const INITIAL_VISIBLE = 5;
+// How many extra matches to fetch every time the user presses "Show more".
+const LOAD_MORE_STEP = 10;
+// Upper bound to avoid runaway pagination on misconfigured backends.
+const MAX_TOTAL = 200;
 
-interface MatchSection {
-  key: string;
-  titleKey: string;
-  titleFallback: string;
-  emptyKey: string;
-  emptyFallback: string;
-  isLive: boolean;
+interface PaginatedSectionState {
   matches: FloorballMatchDto[];
+  /** Total number of matches the backend says exist for this filter. */
+  totalCount: number;
+  /** How many of the loaded matches are currently rendered. */
+  visibleCount: number;
+  isLoadingMore: boolean;
 }
 
 function MatchesPanel() {
   const { t } = useTranslation();
-  const [matches, setMatches] = useState<FloorballMatchDto[]>([]);
+
+  const [liveMatches, setLiveMatches] = useState<FloorballMatchDto[]>([]);
+  const [upcoming, setUpcoming] = useState<PaginatedSectionState>({
+    matches: [],
+    totalCount: 0,
+    visibleCount: 0,
+    isLoadingMore: false,
+  });
+  const [completed, setCompleted] = useState<PaginatedSectionState>({
+    matches: [],
+    totalCount: 0,
+    visibleCount: 0,
+    isLoadingMore: false,
+  });
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchMatches = async () => {
+  const fetchInitial = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Fetch live + upcoming (asc = soonest first) and 5 most recent completed (desc, status filter)
-      const [mainResponse, completedResponse] = await Promise.all([
+      // Three independent queries so each section honours its own filters
+      // (status + date + sort), rather than slicing a single mixed page that
+      // could be dominated by old completed matches.
+      const [liveResponse, upcomingResponse, completedResponse] = await Promise.all([
         floorballMatchService.getAll({
-          pageSize: 20,
+          status: FloorballMatchStatus.InProgress,
           sortOrder: 'asc',
+          pageSize: 100,
+        }),
+        floorballMatchService.getAll({
+          status: FloorballMatchStatus.Scheduled,
+          sortOrder: 'asc',
+          pageSize: INITIAL_VISIBLE,
         }),
         floorballMatchService.getAll({
           status: FloorballMatchStatus.Completed,
           sortOrder: 'desc',
-          pageSize: MAX_PER_SECTION,
+          pageSize: INITIAL_VISIBLE,
         }),
       ]);
 
-      if (mainResponse.success && mainResponse.data && completedResponse.success && completedResponse.data) {
-        const liveAndUpcoming = mainResponse.data.filter(
-          (m) =>
-            m.status === FloorballMatchStatus.InProgress ||
-            m.status === FloorballMatchStatus.Scheduled,
-        );
-        const completed = completedResponse.data.slice(0, MAX_PER_SECTION);
-        setMatches([...liveAndUpcoming, ...completed]);
-      } else if (mainResponse.success && mainResponse.data) {
-        const liveAndUpcoming = mainResponse.data.filter(
-          (m) =>
-            m.status === FloorballMatchStatus.InProgress ||
-            m.status === FloorballMatchStatus.Scheduled,
-        );
-        const completed = completedResponse.success && completedResponse.data
-          ? completedResponse.data.slice(0, MAX_PER_SECTION)
-          : [];
-        setMatches([...liveAndUpcoming, ...completed]);
-      } else {
-        setMatches([]);
-      }
+      const liveList = liveResponse.success && liveResponse.data ? liveResponse.data : [];
+      setLiveMatches(liveList);
+
+      const upcomingList =
+        upcomingResponse.success && upcomingResponse.data ? upcomingResponse.data : [];
+      setUpcoming({
+        matches: upcomingList,
+        totalCount: upcomingResponse.pagination?.totalCount ?? upcomingList.length,
+        visibleCount: upcomingList.length,
+        isLoadingMore: false,
+      });
+
+      const completedList =
+        completedResponse.success && completedResponse.data ? completedResponse.data : [];
+      setCompleted({
+        matches: completedList,
+        totalCount: completedResponse.pagination?.totalCount ?? completedList.length,
+        visibleCount: completedList.length,
+        isLoadingMore: false,
+      });
     } catch (err) {
       console.error('MatchesPanel: fetch failed', err);
       setError(t('sidebar.error', 'Otteluiden lataus epäonnistui'));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
-    fetchMatches();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchInitial();
+  }, [fetchInitial]);
+
+  const loadMore = useCallback(
+    async (kind: 'upcoming' | 'completed') => {
+      const current = kind === 'upcoming' ? upcoming : completed;
+      const setSection = kind === 'upcoming' ? setUpcoming : setCompleted;
+
+      const nextSize = Math.min(current.visibleCount + LOAD_MORE_STEP, MAX_TOTAL);
+      // If we already have that many in memory we can just reveal them.
+      if (current.matches.length >= nextSize) {
+        setSection({ ...current, visibleCount: nextSize });
+        return;
+      }
+
+      setSection({ ...current, isLoadingMore: true });
+      try {
+        const response = await floorballMatchService.getAll({
+          status:
+            kind === 'upcoming' ? FloorballMatchStatus.Scheduled : FloorballMatchStatus.Completed,
+          sortOrder: kind === 'upcoming' ? 'asc' : 'desc',
+          pageSize: nextSize,
+        });
+
+        if (response.success && response.data) {
+          setSection({
+            matches: response.data,
+            totalCount: response.pagination?.totalCount ?? response.data.length,
+            visibleCount: Math.min(response.data.length, nextSize),
+            isLoadingMore: false,
+          });
+        } else {
+          setSection({ ...current, isLoadingMore: false });
+        }
+      } catch (err) {
+        console.error(`MatchesPanel: load more (${kind}) failed`, err);
+        setSection({ ...current, isLoadingMore: false });
+      }
+    },
+    [upcoming, completed]
+  );
+
+  const collapse = useCallback((kind: 'upcoming' | 'completed') => {
+    const setSection = kind === 'upcoming' ? setUpcoming : setCompleted;
+    setSection((prev) => ({ ...prev, visibleCount: INITIAL_VISIBLE }));
   }, []);
 
-  // Build sections from fetched data
-  const sections: MatchSection[] = [
-    {
-      key: 'live',
-      titleKey: 'sidebar.liveMatches',
-      titleFallback: 'Käynnissä',
-      emptyKey: 'sidebar.noLiveMatches',
-      emptyFallback: 'Ei käynnissä olevia otteluita',
-      isLive: true,
-      matches: matches
-        .filter((m) => m.status === FloorballMatchStatus.InProgress)
-        .slice(0, MAX_PER_SECTION),
-    },
-    {
-      key: 'upcoming',
-      titleKey: 'sidebar.upcomingMatches',
-      titleFallback: 'Tulevat',
-      emptyKey: 'sidebar.noUpcomingMatches',
-      emptyFallback: 'Ei tulevia otteluita',
-      isLive: false,
-      matches: matches
-        .filter((m) => m.status === FloorballMatchStatus.Scheduled)
-        .sort(
-          (a, b) =>
-            new Date(a.scheduledDateTime).getTime() -
-            new Date(b.scheduledDateTime).getTime(),
-        )
-        .slice(0, MAX_PER_SECTION),
-    },
-    {
-      key: 'completed',
-      titleKey: 'sidebar.completedMatches',
-      titleFallback: 'Päättyneet',
-      emptyKey: 'sidebar.noCompletedMatches',
-      emptyFallback: 'Ei päättyneitä otteluita',
-      isLive: false,
-      matches: matches
-        .filter((m) => m.status === FloorballMatchStatus.Completed)
-        .sort(
-          (a, b) =>
-            new Date(b.scheduledDateTime).getTime() -
-            new Date(a.scheduledDateTime).getTime(),
-        )
-        .slice(0, MAX_PER_SECTION),
-    },
-  ];
+  const upcomingVisible = useMemo(
+    () => upcoming.matches.slice(0, upcoming.visibleCount),
+    [upcoming]
+  );
+  const completedVisible = useMemo(
+    () => completed.matches.slice(0, completed.visibleCount),
+    [completed]
+  );
 
   // --- Loading ---
   if (isLoading) {
@@ -144,7 +176,7 @@ function MatchesPanel() {
           <button
             type="button"
             className="matches-panel__retry-btn"
-            onClick={fetchMatches}
+            onClick={fetchInitial}
           >
             {t('common.retry', 'Yritä uudelleen')}
           </button>
@@ -153,38 +185,120 @@ function MatchesPanel() {
     );
   }
 
-  // --- Content ---
+  const renderExpandControls = (
+    kind: 'upcoming' | 'completed',
+    section: PaginatedSectionState
+  ) => {
+    const remaining = Math.max(section.totalCount - section.visibleCount, 0);
+    const canLoadMore = remaining > 0;
+    const canCollapse = section.visibleCount > INITIAL_VISIBLE;
+    if (!canLoadMore && !canCollapse) return null;
+
+    const nextChunk = Math.min(remaining, LOAD_MORE_STEP);
+
+    return (
+      <div className="matches-panel__controls">
+        {canLoadMore && (
+          <button
+            type="button"
+            className="matches-panel__more-btn"
+            onClick={() => loadMore(kind)}
+            disabled={section.isLoadingMore}
+          >
+            {section.isLoadingMore
+              ? t('sidebar.loadingMore', 'Ladataan lisää...')
+              : t('sidebar.showMore', 'Näytä lisää ({{count}})', { count: nextChunk })}
+          </button>
+        )}
+        {canCollapse && !section.isLoadingMore && (
+          <button
+            type="button"
+            className="matches-panel__more-btn matches-panel__more-btn--ghost"
+            onClick={() => collapse(kind)}
+          >
+            {t('sidebar.showLess', 'Näytä vähemmän')}
+          </button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="matches-panel">
-      {sections.map((section) => (
-        <div key={section.key} className="matches-panel__section">
-          <div
-            className={`matches-panel__section-header${
-              section.isLive ? ' matches-panel__section-header--live' : ''
-            }`}
-          >
-            {section.isLive && <span className="pulse-dot" />}
-            <h3 className="matches-panel__section-title">
-              {t(section.titleKey, section.titleFallback)}
-            </h3>
-            {section.matches.length > 0 && (
-              <span className="matches-panel__section-count">
-                ({section.matches.length})
-              </span>
-            )}
-          </div>
-
-          {section.matches.length > 0 ? (
-            section.matches.map((match) => (
-              <MatchPanelCard key={match.id} match={match} />
-            ))
-          ) : (
-            <p className="matches-panel__empty-text">
-              {t(section.emptyKey, section.emptyFallback)}
-            </p>
+      {/* --- LIVE: always show all --- */}
+      <div className="matches-panel__section">
+        <div className="matches-panel__section-header matches-panel__section-header--live">
+          <span className="pulse-dot" />
+          <h3 className="matches-panel__section-title">
+            {t('sidebar.liveMatches', 'Käynnissä')}
+          </h3>
+          {liveMatches.length > 0 && (
+            <span className="matches-panel__section-count">({liveMatches.length})</span>
           )}
         </div>
-      ))}
+
+        {liveMatches.length > 0 ? (
+          liveMatches.map((match) => <MatchPanelCard key={match.id} match={match} />)
+        ) : (
+          <p className="matches-panel__empty-text">
+            {t('sidebar.noLiveMatches', 'Ei käynnissä olevia otteluita')}
+          </p>
+        )}
+      </div>
+
+      {/* --- UPCOMING: expandable --- */}
+      <div className="matches-panel__section">
+        <div className="matches-panel__section-header">
+          <h3 className="matches-panel__section-title">
+            {t('sidebar.upcomingMatches', 'Tulevat')}
+          </h3>
+          {upcoming.totalCount > 0 && (
+            <span className="matches-panel__section-count">
+              ({upcoming.visibleCount}/{upcoming.totalCount})
+            </span>
+          )}
+        </div>
+
+        {upcomingVisible.length > 0 ? (
+          <>
+            {upcomingVisible.map((match) => (
+              <MatchPanelCard key={match.id} match={match} />
+            ))}
+            {renderExpandControls('upcoming', upcoming)}
+          </>
+        ) : (
+          <p className="matches-panel__empty-text">
+            {t('sidebar.noUpcomingMatches', 'Ei tulevia otteluita')}
+          </p>
+        )}
+      </div>
+
+      {/* --- COMPLETED: expandable --- */}
+      <div className="matches-panel__section">
+        <div className="matches-panel__section-header">
+          <h3 className="matches-panel__section-title">
+            {t('sidebar.completedMatches', 'Päättyneet')}
+          </h3>
+          {completed.totalCount > 0 && (
+            <span className="matches-panel__section-count">
+              ({completed.visibleCount}/{completed.totalCount})
+            </span>
+          )}
+        </div>
+
+        {completedVisible.length > 0 ? (
+          <>
+            {completedVisible.map((match) => (
+              <MatchPanelCard key={match.id} match={match} />
+            ))}
+            {renderExpandControls('completed', completed)}
+          </>
+        ) : (
+          <p className="matches-panel__empty-text">
+            {t('sidebar.noCompletedMatches', 'Ei päättyneitä otteluita')}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

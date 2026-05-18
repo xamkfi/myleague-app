@@ -65,6 +65,9 @@
     "noCompletedMatches": "No completed matches",
     "allMatches": "All matches",
     "loading": "Loading...",
+    "loadingMore": "Loading more...",
+    "showMore": "Show more ({{count}})",
+    "showLess": "Show less",
     "error": "Failed to load matches"
   },
   "language": {

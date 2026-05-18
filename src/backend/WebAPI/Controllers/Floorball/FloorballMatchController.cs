@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using Application.Common;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
@@ -72,6 +73,32 @@ namespace WebAPI.Controllers.Floorball
                     _eventRateLimits.TryRemove(entry.Key, out _);
                 }
             }
+        }
+
+        /// <summary>
+        /// Converts a failed <see cref="Result{T}"/> into an HTTP response. Preserves the
+        /// detailed validation messages from <see cref="Result{T}.GetAllErrors"/> so the
+        /// client can show a specific reason instead of just "Validation failed".
+        /// </summary>
+        private ActionResult<ApiResponse<TResponse>> ToErrorResponse<TResult, TResponse>(
+            Result<TResult> result,
+            string defaultMessage)
+        {
+            string topMessage = result.Error ?? defaultMessage;
+            List<string> errors = result.GetAllErrors().ToList();
+            if (errors.Count == 0)
+            {
+                errors.Add(topMessage);
+            }
+
+            ApiResponse<TResponse> body = ApiResponse<TResponse>.ErrorResponse(topMessage, errors);
+
+            if (topMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(body);
+            }
+
+            return BadRequest(body);
         }
 
         /// <summary>
@@ -447,13 +474,7 @@ namespace WebAPI.Controllers.Floorball
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Goal recorded successfully"));
             }
 
-            string errorMessage = result.Error ?? "Failed to record goal";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return ToErrorResponse<FloorballMatchDto, FloorballMatchDto>(result, "Failed to record goal");
         }
 
         /// <summary>
@@ -493,13 +514,7 @@ namespace WebAPI.Controllers.Floorball
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Penalty recorded successfully"));
             }
 
-            string? errorMessage = result.Error ?? "Failed to record penalty";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return ToErrorResponse<FloorballMatchDto, FloorballMatchDto>(result, "Failed to record penalty");
         }
 
         /// <summary>
@@ -538,13 +553,7 @@ namespace WebAPI.Controllers.Floorball
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Save recorded successfully"));
             }
 
-            string? errorMessage = result.Error ?? "Failed to record save";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return ToErrorResponse<FloorballMatchDto, FloorballMatchDto>(result, "Failed to record save");
         }
 
         /// <summary>

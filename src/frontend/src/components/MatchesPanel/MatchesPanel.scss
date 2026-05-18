@@ -91,6 +91,53 @@
     font-style: italic;
   }
 
+  // Container for "Show more" / "Show less" buttons under a section.
+  &__controls {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xxs');
+    margin-top: map.get($spacing, 'xxs');
+  }
+
+  &__more-btn {
+    width: 100%;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    background: $color-blue-medium;
+    color: $color-white;
+    border: none;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'xs');
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'medium');
+    cursor: pointer;
+    transition: background $transition-default, opacity $transition-default;
+
+    &:hover:not(:disabled) {
+      background: $color-blue-deep;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-blue-secondary;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &--ghost {
+      background: transparent;
+      color: $color-text-muted;
+      border: 1px solid $color-neutral-medium-grey;
+
+      &:hover:not(:disabled) {
+        background: $color-neutral-light-grey;
+        color: $color-text-primary;
+      }
+    }
+  }
+
 }
 
 // =============================================

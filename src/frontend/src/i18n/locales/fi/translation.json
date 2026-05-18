@@ -143,6 +143,9 @@
     "noCompletedMatches": "Ei päättyneitä otteluita",
     "allMatches": "Kaikki ottelut",
     "loading": "Ladataan...",
+    "loadingMore": "Ladataan lisää...",
+    "showMore": "Näytä lisää ({{count}})",
+    "showLess": "Näytä vähemmän",
     "error": "Otteluiden lataus epäonnistui"
   },
   "language": {
