@@ -18,6 +18,7 @@ import { type FloorballTeam, TeamCategory, type FloorballMatchDto } from '../../
 import TournamentBracket from '../../../../../components/TournamentBracket/TournamentBracket';
 import TournamentLifecycleBar, { type LifecycleAction } from './components/TournamentLifecycleBar';
 import TournamentLifecycleConfirmModal from './components/TournamentLifecycleConfirmModal';
+import TournamentMatchesTab from './components/TournamentMatchesTab';
 import '../../FloorballSeasonsPage/EditSeasonPage/EditSeasonPage.scss';
 
 interface PendingTeamRemoval {
@@ -27,9 +28,9 @@ interface PendingTeamRemoval {
   teamName: string;
 }
 
-type TournamentTab = 'details' | 'groups' | 'teams' | 'bracket';
+type TournamentTab = 'details' | 'groups' | 'teams' | 'matches' | 'bracket';
 
-const VALID_TOURNAMENT_TABS: ReadonlyArray<TournamentTab> = ['details', 'groups', 'teams', 'bracket'];
+const VALID_TOURNAMENT_TABS: ReadonlyArray<TournamentTab> = ['details', 'groups', 'teams', 'matches', 'bracket'];
 
 const EditTournamentPage = () => {
   const { t } = useTranslation();
@@ -603,6 +604,12 @@ const EditTournamentPage = () => {
           >
             {t('floorball.tournaments.tabs.teams', 'Manage Teams')} ({totalTeamCount})
           </button>
+          <button
+            className={`tab-button ${activeTab === 'matches' ? 'active' : ''}`}
+            onClick={() => setActiveTab('matches')}
+          >
+            {t('floorball.tournaments.tabs.matches', 'Matches')}
+          </button>
           {showBracketTab && (
             <button
               className={`tab-button ${activeTab === 'bracket' ? 'active' : ''}`}
@@ -1171,6 +1178,10 @@ const EditTournamentPage = () => {
               onConfirm={confirmRemoveTeamFromGroup}
               onCancel={cancelRemoveTeamFromGroup}
             />
+          )}
+
+          {activeTab === 'matches' && (
+            <TournamentMatchesTab tournamentId={tournament.id} />
           )}
 
           {activeTab === 'bracket' && showBracketTab && (

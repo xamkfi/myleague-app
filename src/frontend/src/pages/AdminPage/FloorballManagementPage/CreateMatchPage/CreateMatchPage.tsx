@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
@@ -33,12 +33,32 @@ interface TeamOption {
   name: string;
 }
 
+const safeReturnTo = (raw: string | null): string | null => {
+  if (!raw) return null;
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    return null;
+  }
+  if (!decoded.startsWith('/admin/')) return null;
+  return decoded;
+};
+
 const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { divisions } = useDivisions();
 
   const isTournament = mode === 'tournament';
+
+  const lockedCompetitionIdFromUrl: string = searchParams.get('competitionId') ?? '';
+  const returnToTarget: string | null = useMemo(
+    () => safeReturnTo(searchParams.get('returnTo')),
+    [searchParams]
+  );
+  const isCompetitionLocked: boolean = lockedCompetitionIdFromUrl.length > 0;
 
   // ── Data loading (competitions) ──────────────────────────────────────
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
@@ -54,7 +74,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
   const [loadingReferees, setLoadingReferees] = useState(true);
 
   // ── Form state ───────────────────────────────────────────────────────
-  const [selectedCompetitionId, setSelectedCompetitionId] = useState('');
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>(lockedCompetitionIdFromUrl);
   const [selectedDivisionId, setSelectedDivisionId] = useState('');
   const [selectedGroupId, setSelectedGroupId] = useState('');
   const [homeTeamId, setHomeTeamId] = useState('');
@@ -323,7 +343,8 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
       const response = await floorballMatchService.create(matchData);
       if (response.success) {
         setSuccessMessage(t('floorball.matches.created', 'Match created successfully!'));
-        setTimeout(() => navigate(listPath), 1500);
+        const successPath: string = returnToTarget ?? listPath;
+        setTimeout(() => navigate(successPath), 1500);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to create match';
@@ -388,7 +409,15 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                   value={selectedCompetitionId}
                   onChange={(e) => handleCompetitionChange(e.target.value)}
                   required
-                  disabled={loading || loadingCompetitions}
+                  disabled={loading || loadingCompetitions || isCompetitionLocked}
+                  title={
+                    isCompetitionLocked
+                      ? t(
+                          'floorball.matches.create.lockedCompetitionTooltip',
+                          'Tournament is locked from context'
+                        )
+                      : undefined
+                  }
                 >
                   <option value="">{competitionPlaceholder}</option>
                   {competitions.map((c) => (
@@ -658,7 +687,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => navigate(listPath)}
+                onClick={() => navigate(returnToTarget ?? listPath)}
                 disabled={loading}
               >
                 {t('common.cancel', 'Cancel')}

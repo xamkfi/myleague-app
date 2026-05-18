@@ -788,7 +788,13 @@
         "details": "Tournament Details",
         "groups": "Manage Groups",
         "teams": "Manage Teams",
+        "matches": "Matches",
         "bracket": "Playoff Bracket"
+      },
+      "matchesTab": {
+        "empty": "No matches have been added to this tournament yet.",
+        "createFirst": "Create the first match",
+        "createNew": "Create new match"
       },
       "sections": {
         "basicInfo": "Basic Information",
@@ -991,7 +997,8 @@
         "referee": "Referee",
         "dateTime": "Date & Time",
         "venue": "Venue",
-        "createMatch": "Create Match"
+        "createMatch": "Create Match",
+        "lockedCompetitionTooltip": "Tournament is locked from context"
       },
       "fields": {
         "season": "Season",

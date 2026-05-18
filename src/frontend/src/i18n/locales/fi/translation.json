@@ -788,7 +788,13 @@
         "details": "Turnauksen Tiedot",
         "groups": "Hallitse Lohkoja",
         "teams": "Hallitse Joukkueita",
+        "matches": "Ottelut",
         "bracket": "Pudotuspelikaavio"
+      },
+      "matchesTab": {
+        "empty": "Tähän turnaukseen ei ole vielä lisätty otteluita.",
+        "createFirst": "Luo ensimmäinen ottelu",
+        "createNew": "Luo uusi ottelu"
       },
       "sections": {
         "basicInfo": "Perustiedot",
@@ -991,7 +997,8 @@
         "referee": "Tuomari",
         "dateTime": "Päiväys & Aika",
         "venue": "Paikka",
-        "createMatch": "Luo Ottelu"
+        "createMatch": "Luo Ottelu",
+        "lockedCompetitionTooltip": "Turnaus on lukittu kontekstista, ei voi muuttaa"
       },
       "fields": {
         "season": "Kausi",
