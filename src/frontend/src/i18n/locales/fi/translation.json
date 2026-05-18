@@ -890,6 +890,16 @@
         "title": "Vahvista Poisto",
         "message": "Oletko varma että haluat poistaa turnauksen \"{{name}}\"?",
         "warning": "Tätä toimintoa ei voi perua."
+      },
+      "teamGroup": {
+        "removeTeam": "Poista lohkosta",
+        "removeTeamTooltip": "Poista joukkue tästä lohkosta",
+        "removeTeamDisabledReason": "Joukkueita ei voi poistaa kun alkulohkot on aloitettu.",
+        "confirmRemoveTitle": "Poista joukkue lohkosta",
+        "confirmRemoveBody": "Poista {{teamName}} lohkosta {{groupName}}?",
+        "confirmRemoveDetail": "Joukkue palautuu valittavissa oleviin joukkueisiin alla.",
+        "confirmButton": "Poista lohkosta",
+        "teamRemovedSuccess": "Joukkue poistettu lohkosta."
       }
     },
     "categories": {

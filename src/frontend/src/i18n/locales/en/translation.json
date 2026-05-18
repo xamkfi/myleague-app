@@ -890,6 +890,16 @@
         "title": "Confirm Delete",
         "message": "Are you sure you want to delete tournament \"{{name}}\"?",
         "warning": "This action cannot be undone."
+      },
+      "teamGroup": {
+        "removeTeam": "Remove from group",
+        "removeTeamTooltip": "Remove this team from the group",
+        "removeTeamDisabledReason": "Teams cannot be removed once the group stage has started.",
+        "confirmRemoveTitle": "Remove team from group",
+        "confirmRemoveBody": "Remove {{teamName}} from {{groupName}}?",
+        "confirmRemoveDetail": "The team will become available again in the list below.",
+        "confirmButton": "Remove from group",
+        "teamRemovedSuccess": "Team removed from group."
       }
     },
     "categories": {

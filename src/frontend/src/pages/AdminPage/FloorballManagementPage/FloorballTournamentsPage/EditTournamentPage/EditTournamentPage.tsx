@@ -17,7 +17,15 @@ import type {
 import { type FloorballTeam, TeamCategory, type FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 import TournamentBracket from '../../../../../components/TournamentBracket/TournamentBracket';
 import TournamentLifecycleBar, { type LifecycleAction } from './components/TournamentLifecycleBar';
+import TournamentLifecycleConfirmModal from './components/TournamentLifecycleConfirmModal';
 import '../../FloorballSeasonsPage/EditSeasonPage/EditSeasonPage.scss';
+
+interface PendingTeamRemoval {
+  groupId: string;
+  groupName: string;
+  teamId: string;
+  teamName: string;
+}
 
 type TournamentTab = 'details' | 'groups' | 'teams' | 'bracket';
 
@@ -100,6 +108,7 @@ const EditTournamentPage = () => {
   const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set());
   const [teamOperationLoading, setTeamOperationLoading] = useState(false);
   const [removingTeamKey, setRemovingTeamKey] = useState<string | null>(null);
+  const [pendingTeamRemoval, setPendingTeamRemoval] = useState<PendingTeamRemoval | null>(null);
 
   // Lifecycle actions
   const [lifecycleLoading, setLifecycleLoading] = useState(false);
@@ -432,8 +441,29 @@ const EditTournamentPage = () => {
     }
   };
 
-  const handleRemoveTeamFromGroup = async (groupId: string, teamId: string) => {
-    if (!competitionId) return;
+  const requestRemoveTeamFromGroup = (
+    groupId: string,
+    groupName: string,
+    teamId: string,
+    teamName: string
+  ): void => {
+    if (tournament?.tournamentStatus !== 'Draft') return;
+    setError(null);
+    setPendingTeamRemoval({ groupId, groupName, teamId, teamName });
+  };
+
+  const cancelRemoveTeamFromGroup = (): void => {
+    if (removingTeamKey) return;
+    setPendingTeamRemoval(null);
+  };
+
+  const confirmRemoveTeamFromGroup = async (): Promise<void> => {
+    if (!competitionId || !pendingTeamRemoval) return;
+    if (tournament?.tournamentStatus !== 'Draft') {
+      setPendingTeamRemoval(null);
+      return;
+    }
+    const { groupId, teamId } = pendingTeamRemoval;
     const key = `${groupId}-${teamId}`;
     setRemovingTeamKey(key);
     setError(null);
@@ -441,7 +471,10 @@ const EditTournamentPage = () => {
       await floorballTournamentService.removeTeamFromGroup(competitionId, groupId, teamId);
       await loadTournament();
       await loadAvailableTeams();
-      showSuccess(t('floorball.tournaments.teamRemoved', 'Team removed!'));
+      setPendingTeamRemoval(null);
+      showSuccess(
+        t('floorball.tournaments.teamGroup.teamRemovedSuccess', 'Team removed from group.')
+      );
     } catch (err) {
       setError(parseApiError(err));
     } finally {
@@ -489,6 +522,11 @@ const EditTournamentPage = () => {
   }, [availableTeams, allTournamentTeamIds]);
 
   const totalTeamCount = allTournamentTeamIds.size;
+
+  // Mirrors the backend rule: teams should only be mutated while the tournament
+  // is still in Draft. Once the group stage starts (or later), the chip-level
+  // remove control disables itself and surfaces the reason via tooltip.
+  const canModifyTeams: boolean = tournament?.tournamentStatus === 'Draft';
 
   if (loadingTournament) {
     return (
@@ -887,26 +925,49 @@ const EditTournamentPage = () => {
                           </div>
                         ) : (
                           <div className="tm-team-grid">
-                            {teamsInSelectedGroup.map((team) => (
-                              <div key={team.id} className="tm-team-chip">
-                                <div className="tm-team-chip__info">
-                                  <span className="tm-team-chip__name">{team.teamName}</span>
+                            {teamsInSelectedGroup.map((team) => {
+                              const removeKey: string = `${selectedGroup.id}-${team.teamId}`;
+                              const isRemovingThisTeam: boolean = removingTeamKey === removeKey;
+                              const removeDisabled: boolean = !canModifyTeams || isRemovingThisTeam;
+                              const removeTooltip: string = canModifyTeams
+                                ? t(
+                                    'floorball.tournaments.teamGroup.removeTeamTooltip',
+                                    'Remove this team from the group'
+                                  )
+                                : t(
+                                    'floorball.tournaments.teamGroup.removeTeamDisabledReason',
+                                    'Teams cannot be removed once the group stage has started.'
+                                  );
+                              return (
+                                <div key={team.id} className="tm-team-chip">
+                                  <div className="tm-team-chip__info">
+                                    <span className="tm-team-chip__name">{team.teamName}</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="tm-team-chip__remove"
+                                    onClick={(): void => requestRemoveTeamFromGroup(
+                                      selectedGroup.id,
+                                      selectedGroup.name,
+                                      team.teamId,
+                                      team.teamName
+                                    )}
+                                    disabled={removeDisabled}
+                                    title={removeTooltip}
+                                    aria-label={`${t(
+                                      'floorball.tournaments.teamGroup.removeTeam',
+                                      'Remove from group'
+                                    )}: ${team.teamName}`}
+                                  >
+                                    {isRemovingThisTeam ? (
+                                      <i className="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                                    ) : (
+                                      <i className="fas fa-times" aria-hidden="true"></i>
+                                    )}
+                                  </button>
                                 </div>
-                                <button
-                                  type="button"
-                                  className="tm-team-chip__remove"
-                                  onClick={() => handleRemoveTeamFromGroup(selectedGroup.id, team.teamId)}
-                                  disabled={removingTeamKey === `${selectedGroup.id}-${team.teamId}`}
-                                  title={t('common.remove', 'Remove')}
-                                >
-                                  {removingTeamKey === `${selectedGroup.id}-${team.teamId}` ? (
-                                    <i className="fas fa-spinner fa-spin"></i>
-                                  ) : (
-                                    <i className="fas fa-times"></i>
-                                  )}
-                                </button>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -1080,6 +1141,36 @@ const EditTournamentPage = () => {
                 </>
               )}
             </div>
+          )}
+
+          {pendingTeamRemoval && (
+            <TournamentLifecycleConfirmModal
+              isOpen={true}
+              variant="default"
+              title={t(
+                'floorball.tournaments.teamGroup.confirmRemoveTitle',
+                'Remove team from group'
+              )}
+              description={`${t(
+                'floorball.tournaments.teamGroup.confirmRemoveBody',
+                'Remove {{teamName}} from {{groupName}}?',
+                {
+                  teamName: pendingTeamRemoval.teamName,
+                  groupName: pendingTeamRemoval.groupName,
+                }
+              )} ${t(
+                'floorball.tournaments.teamGroup.confirmRemoveDetail',
+                'The team will become available again in the list below.'
+              )}`}
+              prerequisites={[]}
+              confirmLabel={t(
+                'floorball.tournaments.teamGroup.confirmButton',
+                'Remove from group'
+              )}
+              loading={removingTeamKey !== null}
+              onConfirm={confirmRemoveTeamFromGroup}
+              onCancel={cancelRemoveTeamFromGroup}
+            />
           )}
 
           {activeTab === 'bracket' && showBracketTab && (
