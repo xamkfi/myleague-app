@@ -812,10 +812,67 @@
         "startPlayoffStage": "Start Playoff",
         "complete": "Complete Tournament",
         "cancel": "Cancel Tournament",
+        "moreActions": "More actions",
+        "matchesLoadError": "Failed to load match status — preconditions cannot be verified. Check match progress before triggering lifecycle actions.",
         "startGroupStageSuccess": "Group stage started successfully.",
         "startPlayoffStageSuccess": "Playoff stage started successfully.",
         "completeSuccess": "Tournament completed successfully.",
-        "cancelSuccess": "Tournament cancelled successfully."
+        "cancelSuccess": "Tournament cancelled successfully.",
+        "statusDescription": {
+          "draft": "Tournament is in draft state. Add groups and teams, then start the group stage to schedule matches.",
+          "groupStageWithPlayoff": "Group stage in progress. Once all group-stage matches are complete, you can move on to the playoffs.",
+          "groupStageNoPlayoff": "Group stage in progress. Once all matches are complete, you can mark the tournament as completed.",
+          "playoffStage": "Playoff stage in progress. Complete the tournament once all playoff matches are decided.",
+          "completed": "Tournament has been completed. No further lifecycle actions are available.",
+          "cancelled": "Tournament has been cancelled. No further lifecycle actions are available."
+        },
+        "tooltip": {
+          "startGroupStage": "Marks the tournament as active and exposes matches on public pages.",
+          "startPlayoffStage": "Calculates group standings, builds the playoff bracket and schedules playoff matches. Requires all group-stage matches to be completed.",
+          "complete": "Closes the tournament. Requires all matches to be completed first.",
+          "cancel": "Cancels the tournament. This action is final and cannot be undone."
+        },
+        "disabled": {
+          "noGroups": "Add at least one group before starting the group stage.",
+          "loadingMatches": "Loading match status...",
+          "unsupportedPlayoffSize": "Unsupported playoff size ({{size}}). Adjust groups or teams-advancing-per-group so the total is 2, 4 or 8.",
+          "noGroupStageMatches": "No group-stage matches have been created yet.",
+          "groupStageInProgress": "{{completed}}/{{total}} group-stage matches played. Finish them all before starting the playoffs.",
+          "noMatches": "Tournament has no matches yet.",
+          "matchesInProgress": "{{completed}}/{{total}} matches played. Finish them all before completing the tournament."
+        },
+        "prereq": {
+          "tournamentInDraft": "Tournament is in draft state.",
+          "hasAtLeastOneGroup": "Tournament has at least one group.",
+          "hasPlayoffStageEnabled": "Tournament has playoff stage enabled.",
+          "supportedPlayoffSize": "Playoff bracket size is supported (2, 4 or 8 teams). Current: {{size}}.",
+          "allGroupStageMatchesDone": "All group-stage matches are completed ({{completed}}/{{total}}).",
+          "tournamentIsRunning": "Tournament is running (group or playoff stage).",
+          "allMatchesDone": "All matches are completed ({{completed}}/{{total}})."
+        },
+        "confirm": {
+          "startGroupStage": {
+            "title": "Start group stage",
+            "description": "Marks the tournament as active. After this, the schedule and match data become visible on public pages.",
+            "confirm": "Start group stage"
+          },
+          "startPlayoffStage": {
+            "title": "Start playoff stage",
+            "description": "Calculates group standings, builds the playoff bracket and schedules playoff matches. This action cannot be undone without manual cleanup.",
+            "confirm": "Start playoff stage"
+          },
+          "complete": {
+            "title": "Complete tournament",
+            "description": "Closes the tournament for good. After this, matches and standings are not expected to change.",
+            "confirm": "Complete tournament"
+          },
+          "cancel": {
+            "title": "Cancel tournament",
+            "description": "Cancels the tournament. This is a final action and cannot be undone without database surgery. Match data is preserved but the tournament is marked cancelled.",
+            "confirm": "Yes, cancel tournament",
+            "acknowledge": "I understand that cancelling the tournament is a final action."
+          }
+        }
       },
       "actions": {
         "menu": "Tournament actions menu",
@@ -1114,6 +1171,7 @@
     "all": "All",
     "create": "Create",
     "close": "Close",
+    "processing": "Processing...",
     "pagination": {
       "previous": "Previous",
       "next": "Next",

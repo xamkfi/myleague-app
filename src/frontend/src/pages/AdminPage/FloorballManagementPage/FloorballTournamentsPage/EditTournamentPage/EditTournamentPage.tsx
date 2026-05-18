@@ -8,13 +8,15 @@ import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 import RichTextEditor from '../../../../../components/RichTextEditor';
 import { floorballTournamentService } from '../../../../../api/floorball/floorballTournamentService';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
+import { floorballMatchService } from '../../../../../api/floorball/floorballMatchService';
 import type {
   FloorballTournamentDto,
   CreateFloorballTournamentRequest,
   FloorballPlayoffBracketDto,
 } from '../../../../../types/floorball/tournamentTypes';
-import { type FloorballTeam, TeamCategory } from '../../../../../types/floorball/floorballTypes';
+import { type FloorballTeam, TeamCategory, type FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 import TournamentBracket from '../../../../../components/TournamentBracket/TournamentBracket';
+import TournamentLifecycleBar, { type LifecycleAction } from './components/TournamentLifecycleBar';
 import '../../FloorballSeasonsPage/EditSeasonPage/EditSeasonPage.scss';
 
 type TournamentTab = 'details' | 'groups' | 'teams' | 'bracket';
@@ -102,6 +104,12 @@ const EditTournamentPage = () => {
   // Lifecycle actions
   const [lifecycleLoading, setLifecycleLoading] = useState(false);
 
+  // Tournament matches — used by the lifecycle bar to compute readiness of
+  // "Start Playoff" / "Complete" actions (group-stage matches done, all matches done).
+  const [tournamentMatches, setTournamentMatches] = useState<FloorballMatchDto[]>([]);
+  const [matchesLoading, setMatchesLoading] = useState<boolean>(false);
+  const [matchesError, setMatchesError] = useState<string | null>(null);
+
   // Bracket tab state — read-only summary for admin verification.
   const [bracket, setBracket] = useState<FloorballPlayoffBracketDto | null>(null);
   const [bracketLoading, setBracketLoading] = useState(false);
@@ -163,6 +171,30 @@ const EditTournamentPage = () => {
   useEffect(() => {
     loadTournament();
   }, [loadTournament]);
+
+  // Load all matches for this tournament so the lifecycle bar can derive readiness.
+  // The endpoint returns both group-stage and playoff matches; the bar discriminates
+  // via the `tournamentGroupId` field. Refetched whenever `loadTournament` is called
+  // (status changes, group changes, etc.).
+  const loadTournamentMatches = useCallback(async () => {
+    if (!competitionId) return;
+    try {
+      setMatchesLoading(true);
+      setMatchesError(null);
+      const response = await floorballMatchService.getBySeason(competitionId);
+      setTournamentMatches(Array.isArray(response.data) ? response.data : []);
+    } catch (err) {
+      setTournamentMatches([]);
+      setMatchesError(err instanceof Error ? err.message : 'Failed to load matches');
+    } finally {
+      setMatchesLoading(false);
+    }
+  }, [competitionId]);
+
+  useEffect(() => {
+    if (activeTab !== 'details') return;
+    loadTournamentMatches();
+  }, [activeTab, loadTournamentMatches, tournament?.tournamentStatus]);
 
   // Auto-select first group when tournament loads or when teams tab opens
   useEffect(() => {
@@ -418,29 +450,19 @@ const EditTournamentPage = () => {
   };
 
   // ── Lifecycle actions ──
-  const handleLifecycleAction = async (action: 'startGroupStage' | 'startPlayoffStage' | 'complete' | 'cancel') => {
+  const handleLifecycleAction = async (action: LifecycleAction): Promise<void> => {
     if (!competitionId) return;
     setLifecycleLoading(true);
     setError(null);
     try {
       await floorballTournamentService[action](competitionId);
       await loadTournament();
+      await loadTournamentMatches();
       showSuccess(t(`floorball.tournaments.lifecycle.${action}Success`, 'Action completed successfully!'));
     } catch (err) {
       setError(parseApiError(err));
     } finally {
       setLifecycleLoading(false);
-    }
-  };
-
-  const getStatusLabel = (status: string): string => {
-    switch (status) {
-      case 'Draft': return t('floorball.tournaments.status.draft', 'Draft');
-      case 'GroupStage': return t('floorball.tournaments.status.groupStage', 'Group Stage');
-      case 'PlayoffStage': return t('floorball.tournaments.status.playoffStage', 'Playoff Stage');
-      case 'Completed': return t('floorball.tournaments.status.completed', 'Completed');
-      case 'Cancelled': return t('floorball.tournaments.status.cancelled', 'Cancelled');
-      default: return status;
     }
   };
 
@@ -557,54 +579,14 @@ const EditTournamentPage = () => {
           {/* ─── Details Tab ─── */}
           {activeTab === 'details' && (
             <>
-              {/* Lifecycle bar */}
-              <div style={{ padding: '16px 24px', borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <span style={{ fontWeight: 600, fontSize: '13px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', marginRight: '8px' }}>
-                    {t('floorball.tournaments.statusLabel', 'Status')}: {getStatusLabel(tournament.tournamentStatus)}
-                  </span>
-                  {tournament.tournamentStatus === 'Draft' && (
-                    <button
-                      type="button"
-                      style={{ padding: '6px 14px', fontSize: '13px', border: 'none', borderRadius: '6px', cursor: 'pointer', background: '#f59e0b', color: '#fff' }}
-                      onClick={() => handleLifecycleAction('startGroupStage')}
-                      disabled={lifecycleLoading}
-                    >
-                      {t('floorball.tournaments.lifecycle.startGroupStage', 'Start Group Stage')}
-                    </button>
-                  )}
-                  {tournament.tournamentStatus === 'GroupStage' && (
-                    <button
-                      type="button"
-                      style={{ padding: '6px 14px', fontSize: '13px', border: 'none', borderRadius: '6px', cursor: 'pointer', background: '#f59e0b', color: '#fff' }}
-                      onClick={() => handleLifecycleAction('startPlayoffStage')}
-                      disabled={lifecycleLoading}
-                    >
-                      {t('floorball.tournaments.lifecycle.startPlayoffStage', 'Start Playoff')}
-                    </button>
-                  )}
-                  {(tournament.tournamentStatus === 'GroupStage' || tournament.tournamentStatus === 'PlayoffStage') && (
-                    <button
-                      type="button"
-                      style={{ padding: '6px 14px', fontSize: '13px', border: 'none', borderRadius: '6px', cursor: 'pointer', background: '#10b981', color: '#fff' }}
-                      onClick={() => handleLifecycleAction('complete')}
-                      disabled={lifecycleLoading}
-                    >
-                      {t('floorball.tournaments.lifecycle.complete', 'Complete Tournament')}
-                    </button>
-                  )}
-                  {tournament.tournamentStatus !== 'Completed' && tournament.tournamentStatus !== 'Cancelled' && (
-                    <button
-                      type="button"
-                      style={{ padding: '6px 14px', fontSize: '13px', border: 'none', borderRadius: '6px', cursor: 'pointer', background: '#dc2626', color: '#fff' }}
-                      onClick={() => handleLifecycleAction('cancel')}
-                      disabled={lifecycleLoading}
-                    >
-                      {t('floorball.tournaments.lifecycle.cancel', 'Cancel Tournament')}
-                    </button>
-                  )}
-                </div>
-              </div>
+              <TournamentLifecycleBar
+                tournament={tournament}
+                matches={tournamentMatches}
+                matchesLoading={matchesLoading}
+                matchesError={matchesError}
+                loading={lifecycleLoading}
+                onAction={handleLifecycleAction}
+              />
 
               <form onSubmit={handleSubmit} className="edit-season-form">
                 <ErrorPopup message={error} />

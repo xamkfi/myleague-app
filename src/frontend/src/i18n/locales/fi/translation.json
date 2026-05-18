@@ -812,10 +812,67 @@
         "startPlayoffStage": "Aloita Pudotuspelit",
         "complete": "Päätä Turnaus",
         "cancel": "Peru Turnaus",
+        "moreActions": "Lisätoiminnot",
+        "matchesLoadError": "Otteluiden tilan lataaminen epäonnistui — esiehtoja ei voida vahvistaa. Tarkista ottelujen tilanne ennen lifecycle-toimintoja.",
         "startGroupStageSuccess": "Alkulohkot aloitettu onnistuneesti.",
         "startPlayoffStageSuccess": "Pudotuspelit aloitettu onnistuneesti.",
         "completeSuccess": "Turnaus päätetty onnistuneesti.",
-        "cancelSuccess": "Turnaus peruttu onnistuneesti."
+        "cancelSuccess": "Turnaus peruttu onnistuneesti.",
+        "statusDescription": {
+          "draft": "Turnaus on luonnostilassa. Lisää lohkot ja joukkueet, ja aloita sitten alkulohkot, jotta ottelut voidaan aikatauluttaa.",
+          "groupStageWithPlayoff": "Alkulohkot käynnissä. Kun kaikki alkulohkojen ottelut on pelattu loppuun, voit siirtyä pudotuspeleihin.",
+          "groupStageNoPlayoff": "Alkulohkot käynnissä. Kun kaikki ottelut on pelattu loppuun, voit päättää turnauksen.",
+          "playoffStage": "Pudotuspelit käynnissä. Päätä turnaus, kun kaikki pudotuspeliottelut ovat ratkenneet.",
+          "completed": "Turnaus on päättynyt. Lifecycle-toimintoja ei ole enää saatavilla.",
+          "cancelled": "Turnaus on peruttu. Lifecycle-toimintoja ei ole enää saatavilla."
+        },
+        "tooltip": {
+          "startGroupStage": "Merkitsee turnauksen aktiiviseksi ja paljastaa ottelut yleisösivuilla.",
+          "startPlayoffStage": "Laskee sarjataulukot, luo pudotuspelikaavion ja aikatauluttaa pudotuspeliottelut. Vaatii, että kaikki alkulohkojen ottelut on pelattu.",
+          "complete": "Sulkee turnauksen. Vaatii että kaikki ottelut on pelattu loppuun.",
+          "cancel": "Peruu turnauksen. Toiminto on lopullinen eikä sitä voi peruuttaa."
+        },
+        "disabled": {
+          "noGroups": "Lisää ainakin yksi lohko, jotta voit aloittaa alkulohkot.",
+          "loadingMatches": "Ladataan otteluiden tila...",
+          "unsupportedPlayoffSize": "Pudotuspelikaavion koko ei ole tuettu ({{size}}). Säädä lohkoja tai jatkajia per lohko niin, että summa on 2, 4 tai 8.",
+          "noGroupStageMatches": "Yhtään alkulohkon ottelua ei ole vielä luotu.",
+          "groupStageInProgress": "{{completed}}/{{total}} alkulohkon ottelua pelattu. Pelaa kaikki loppuun ennen pudotuspelejä.",
+          "noMatches": "Turnauksessa ei ole vielä otteluita.",
+          "matchesInProgress": "{{completed}}/{{total}} ottelua pelattu. Pelaa kaikki loppuun ennen päättämistä."
+        },
+        "prereq": {
+          "tournamentInDraft": "Turnaus on luonnostilassa.",
+          "hasAtLeastOneGroup": "Turnauksessa on vähintään yksi lohko.",
+          "hasPlayoffStageEnabled": "Turnauksessa on pudotuspelivaihe käytössä.",
+          "supportedPlayoffSize": "Pudotuspelikaavion koko on tuettu (2, 4 tai 8 joukkuetta). Nyt: {{size}}.",
+          "allGroupStageMatchesDone": "Kaikki alkulohkojen ottelut on pelattu loppuun ({{completed}}/{{total}}).",
+          "tournamentIsRunning": "Turnaus on käynnissä (alkulohkot tai pudotuspelit).",
+          "allMatchesDone": "Kaikki ottelut on pelattu loppuun ({{completed}}/{{total}})."
+        },
+        "confirm": {
+          "startGroupStage": {
+            "title": "Aloita alkulohkot",
+            "description": "Merkitsee turnauksen aktiiviseksi. Tämän jälkeen aikataulu ja otteluiden tiedot näkyvät yleisösivuilla.",
+            "confirm": "Aloita alkulohkot"
+          },
+          "startPlayoffStage": {
+            "title": "Aloita pudotuspelit",
+            "description": "Laskee sarjataulukot, luo pudotuspelikaavion ja aikatauluttaa pudotuspeliottelut. Toimintoa ei voi peruuttaa ilman erillisiä toimia.",
+            "confirm": "Aloita pudotuspelit"
+          },
+          "complete": {
+            "title": "Päätä turnaus",
+            "description": "Sulkee turnauksen lopullisesti. Tämän jälkeen otteluita tai pisteitä ei enää muuteta.",
+            "confirm": "Päätä turnaus"
+          },
+          "cancel": {
+            "title": "Peru turnaus",
+            "description": "Peruu turnauksen. Tämä on lopullinen toiminto, eikä sitä voi peruuttaa ilman tietokantatoimia. Otteluiden tiedot säilyvät, mutta turnaus merkitään peruutetuksi.",
+            "confirm": "Kyllä, peru turnaus",
+            "acknowledge": "Ymmärrän, että turnauksen peruminen on lopullinen toiminto."
+          }
+        }
       },
       "actions": {
         "menu": "Turnauksen toimintovalikko",
@@ -1094,6 +1151,7 @@
     "all": "Kaikki",
     "create": "Luo",
     "close": "Sulje",
+    "processing": "Käsitellään...",
     "pagination": {
       "previous": "Edellinen",
       "next": "Seuraava",
