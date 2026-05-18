@@ -223,12 +223,22 @@ export const floorballMatchEventService = {
   recordGoal: async (data: RecordGoalEventRequest): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording goal:', data);
-      // Switch to FloorballMatchController endpoint
+      // Switch to FloorballMatchController endpoint.
+      // Normalize empty/whitespace IDs to `undefined` so the backend treats them
+      // as "no assister" instead of receiving Guid.Empty (which fails the
+      // `NotEqual(Guid.Empty).When(...HasValue)` validator and surfaces only
+      // as a generic "Validation failed" to the user).
+      const normalizeId = (id?: string | null): string | undefined => {
+        if (!id) return undefined;
+        const trimmed = id.trim();
+        return trimmed.length > 0 ? trimmed : undefined;
+      };
+
       const payload = {
         matchId: data.matchId,
         scoringTeamId: data.teamId,
         scoringPlayerId: data.playerId,
-        assistingPlayerId: data.assisterId,
+        assistingPlayerId: normalizeId(data.assisterId),
         secondaryAssistingPlayerIs: undefined,
         periodNumber: data.periodNumber,
         timeInSeconds: data.timeInSeconds,

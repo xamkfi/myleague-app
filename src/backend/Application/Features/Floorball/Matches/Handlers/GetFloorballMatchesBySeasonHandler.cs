@@ -56,18 +56,18 @@ public class GetFloorballMatchesBySeasonHandler : IRequestHandler<GetFloorballMa
     {
         try
         {
-            _logger.LogInformation("Retrieving floorball matches for season: {SeasonId}", request.SeasonId);
+            _logger.LogInformation("Retrieving floorball matches for season: {SeasonId}", request.CompetitionId);
             
-            IEnumerable<FloorballMatch> matches = await _matchRepository.GetBySeasonIdAsync(request.SeasonId);
+            IEnumerable<FloorballMatch> matches = await _matchRepository.GetByCompetitionIdAsync(request.CompetitionId);
             IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(matches);
             
-            _logger.LogInformation("Successfully retrieved {MatchCount} floorball matches for season: {SeasonId}", matchDtos.Count(), request.SeasonId);
+            _logger.LogInformation("Successfully retrieved {MatchCount} floorball matches for season: {SeasonId}", matchDtos.Count(), request.CompetitionId);
             
             return Result<IEnumerable<FloorballMatchDto>>.Success(matchDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving floorball matches for season: {SeasonId}", request.SeasonId);
+            _logger.LogError(ex, "Error occurred while retrieving floorball matches for season: {SeasonId}", request.CompetitionId);
             return Result<IEnumerable<FloorballMatchDto>>.Failure("An error occurred while retrieving floorball matches.");
         }
     }

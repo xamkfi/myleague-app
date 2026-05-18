@@ -334,11 +334,11 @@ export const floorballSeasonService = {
   /**
    * Add a team to a floorball season
    */
-  addTeamToSeason: async (seasonId: string, teamId: string): Promise<ApiResponse<FloorballSeasonDto>> => {
+  addTeamToSeason: async (competitionId: string, teamId: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Adding team to season:', { seasonId, teamId });
+      console.log('Adding team to season:', { competitionId, teamId });
       
-      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/teams/${teamId}`, {
         method: 'POST',
       });
       
@@ -363,11 +363,11 @@ export const floorballSeasonService = {
   /**
    * Remove a team from a floorball season
    */
-  removeTeamFromSeason: async (seasonId: string, teamId: string): Promise<ApiResponse<FloorballSeasonDto>> => {
+  removeTeamFromSeason: async (competitionId: string, teamId: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Removing team from season:', { seasonId, teamId });
+      console.log('Removing team from season:', { competitionId, teamId });
       
-      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/teams/${teamId}`, {
         method: 'DELETE',
       });
       
@@ -392,11 +392,11 @@ export const floorballSeasonService = {
   /**
    * Add a division to a floorball season
    */
-  addDivisionToSeason: async (seasonId: string, divisionId: string): Promise<ApiResponse<void>> => {
+  addDivisionToSeason: async (competitionId: string, divisionId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Adding division to season:', { seasonId, divisionId });
+      console.log('Adding division to season:', { competitionId, divisionId });
       
-      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}`, {
         method: 'POST',
       });
       
@@ -421,11 +421,11 @@ export const floorballSeasonService = {
   /**
    * Remove a division from a floorball season
    */
-  removeDivisionFromSeason: async (seasonId: string, divisionId: string): Promise<ApiResponse<void>> => {
+  removeDivisionFromSeason: async (competitionId: string, divisionId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Removing division from season:', { seasonId, divisionId });
+      console.log('Removing division from season:', { competitionId, divisionId });
       
-      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}`, {
         method: 'DELETE',
       });
       
@@ -450,11 +450,11 @@ export const floorballSeasonService = {
   /**
    * Add a team to a specific division of a floorball season
    */
-  addTeamToSeasonDivision: async (seasonId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
+  addTeamToSeasonDivision: async (competitionId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Adding team to season division:', { seasonId, divisionId, teamId });
+      console.log('Adding team to season division:', { competitionId, divisionId, teamId });
       
-      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}/teams/${teamId}`, {
         method: 'POST',
       });
       
@@ -479,11 +479,11 @@ export const floorballSeasonService = {
   /**
    * Remove a team from a specific division of a floorball season
    */
-  removeTeamFromSeasonDivision: async (seasonId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
+  removeTeamFromSeasonDivision: async (competitionId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Removing team from season division:', { seasonId, divisionId, teamId });
+      console.log('Removing team from season division:', { competitionId, divisionId, teamId });
       
-      const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}/teams/${teamId}`, {
         method: 'DELETE',
       });
       

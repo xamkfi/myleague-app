@@ -24,6 +24,9 @@ concurrency:
   group: deploy-backend-${{ inputs.environment || 'dev' }}
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 env:
   DOTNET_VERSION: '9.0.x'
   WORKING_DIRECTORY: src/backend/WebAPI
@@ -32,8 +35,12 @@ jobs:
   deploy:
     name: Deploy to Azure (${{ inputs.environment || 'dev' }})
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    timeout-minutes: 20
     environment: ${{ inputs.environment || 'dev' }}
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'development')
 
     steps:
       - name: Set deployment targets
@@ -51,16 +58,20 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Restore dependencies
         run: dotnet restore
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-
       - name: Publish
-        run: dotnet publish --configuration Release --no-build --output ./publish
+        run: dotnet publish --configuration Release --output ./publish
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Deploy to Azure Web App

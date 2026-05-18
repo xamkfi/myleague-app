@@ -90,6 +90,14 @@
   color: $color-neutral-black;
 }
 
+// Inline wrapper inside .admin-table__name used to anchor inline indicators
+// (e.g. live-match dots) next to the name without breaking row layout.
+.admin-table__name-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .admin-table__subtitle {
   margin-top: 0.25rem;
   color: $color-neutral-dark-grey;

@@ -1,0 +1,82 @@
+@use 'sass:map';
+@use '../../../../../../styles/variables' as *;
+
+.tmt {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'base');
+  padding: map.get($spacing, 'base');
+}
+
+.tmt__action-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: map.get($spacing, 'sm');
+  flex-wrap: wrap;
+
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    justify-content: stretch;
+
+    .btn {
+      flex: 1;
+    }
+  }
+}
+
+.tmt__filters {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'base');
+
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-field {
+    max-width: 320px;
+    flex: 1;
+
+    @media (max-width: map.get($breakpoints, 'tablet')) {
+      max-width: none;
+    }
+  }
+}
+
+.tmt__error {
+  margin: 0;
+}
+
+.tmt__table-panel {
+  width: 100%;
+}
+
+.tmt__table-panel--dimmed {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.tmt__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: map.get($spacing, 'base');
+  padding: map.get($spacing, 'xl') map.get($spacing, 'base');
+  text-align: center;
+  border: 1px dashed $color-neutral-medium-grey;
+  border-radius: $border-radius-default;
+  color: $color-text-muted;
+
+  i {
+    font-size: 2rem;
+    color: $color-neutral-dark-grey;
+  }
+
+  p {
+    margin: 0;
+    font-size: map.get($font-sizes, 'base');
+  }
+}

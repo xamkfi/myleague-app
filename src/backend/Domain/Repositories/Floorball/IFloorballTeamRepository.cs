@@ -81,18 +81,18 @@ public interface IFloorballTeamRepository
     Task<IEnumerable<FloorballTeam>> GetByDivisionAsync(Guid divisionId);
     
     /// <summary>
-    /// Gets floorball teams participating in a season
+    /// Gets floorball teams participating in a competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
-    /// <returns>A collection of floorball teams in the season</returns>
-    Task<IEnumerable<FloorballTeam>> GetBySeasonIdAsync(Guid seasonId);
+    /// <param name="competitionId">The competition ID</param>
+    /// <returns>A collection of floorball teams in the competition</returns>
+    Task<IEnumerable<FloorballTeam>> GetByCompetitionIdAsync(Guid competitionId);
     
     /// <summary>
-    /// Gets the team standings for a season
+    /// Gets the team standings for a competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
-    /// <returns>Teams ordered by their standing in the season</returns>
-    Task<IEnumerable<FloorballTeam>> GetStandingsAsync(Guid seasonId);
+    /// <param name="competitionId">The competition ID</param>
+    /// <returns>Teams ordered by their standing in the competition</returns>
+    Task<IEnumerable<FloorballTeam>> GetStandingsAsync(Guid competitionId);
     
     /// <summary>
     /// Adds a new floorball team

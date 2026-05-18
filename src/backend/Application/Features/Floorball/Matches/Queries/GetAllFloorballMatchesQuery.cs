@@ -23,13 +23,15 @@ namespace Application.Features.Floorball.Matches.Queries
     public record GetAllFloorballMatchesQuery(
         int Page = 1,
         int PageSize = 0, // 0 means use default from configuration
-        Guid? SeasonId = null,
+        Guid? CompetitionId = null,
         Guid? TeamId = null,
         DateTime? StartDate = null,
         DateTime? EndDate = null,
         string SortOrder = "desc", // "asc" or "desc"
         string? SearchQuery = null, // Search by team names (case-insensitive, partial match)
-        FloorballMatchStatus? Status = null
+        FloorballMatchStatus? Status = null,
+        Guid? TournamentGroupId = null,
+        FloorballCompetitionType? CompetitionType = null
     ) : IRequest<Result<PagedResult<FloorballMatchDto>>>
     {
         /// <summary>

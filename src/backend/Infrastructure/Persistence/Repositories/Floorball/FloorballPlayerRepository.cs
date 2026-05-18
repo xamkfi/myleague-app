@@ -382,16 +382,15 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
-        /// Gets top scorers for the specified season
+        /// Gets top scorers for the specified competition
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
+        /// <param name="competitionId">The competition ID</param>
         /// <param name="count">Maximum number of players to return</param>
-        /// <returns>A collection of top scoring players in the season</returns>
-        public async Task<IEnumerable<FloorballPlayer>> GetTopScorersAsync(Guid seasonId, int count = 10)
+        /// <returns>A collection of top scoring players in the competition</returns>
+        public async Task<IEnumerable<FloorballPlayer>> GetTopScorersAsync(Guid competitionId, int count = 10)
         {
-            // Get all matches for the season
             List<FloorballMatch> matches = await _dbContext.FloorballMatches
-                .Where(m => m.SeasonId == seasonId && m.Status == FloorballMatchStatus.Completed)
+                .Where(m => m.CompetitionId == competitionId && m.Status == FloorballMatchStatus.Completed)
                 .ToListAsync();
 
             // Get all player IDs from these matches
@@ -425,16 +424,15 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
-        /// Gets top assisters for the specified season
+        /// Gets top assisters for the specified competition
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
+        /// <param name="competitionId">The competition ID</param>
         /// <param name="count">Maximum number of players to return</param>
-        /// <returns>A collection of top assisting players in the season</returns>
-        public async Task<IEnumerable<FloorballPlayer>> GetTopAssistersAsync(Guid seasonId, int count = 10)
+        /// <returns>A collection of top assisting players in the competition</returns>
+        public async Task<IEnumerable<FloorballPlayer>> GetTopAssistersAsync(Guid competitionId, int count = 10)
         {
-            // Get all matches for the season
             List<FloorballMatch> matches = await _dbContext.FloorballMatches
-                .Where(m => m.SeasonId == seasonId && m.Status == FloorballMatchStatus.Completed)
+                .Where(m => m.CompetitionId == competitionId && m.Status == FloorballMatchStatus.Completed)
                 .ToListAsync();
 
             // Get all player IDs from these matches

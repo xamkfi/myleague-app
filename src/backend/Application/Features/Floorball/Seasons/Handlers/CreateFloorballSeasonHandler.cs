@@ -18,8 +18,8 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 /// </summary>
 public class CreateFloorballSeasonHandler : IRequestHandler<CreateFloorballSeasonCommand, Result<FloorballSeasonDto>>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
-    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
+    private readonly IFloorballCompetitionDivisionRepository _seasonDivisionRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFloorballSeasonHandler> _logger;
 
@@ -31,8 +31,8 @@ public class CreateFloorballSeasonHandler : IRequestHandler<CreateFloorballSeaso
     /// <param name="unitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public CreateFloorballSeasonHandler(
-        IFloorballSeasonRepository seasonRepository,
-        IFloorballSeasonDivisionRepository seasonDivisionRepository,
+        IFloorballCompetitionRepository seasonRepository,
+        IFloorballCompetitionDivisionRepository seasonDivisionRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<CreateFloorballSeasonHandler> logger)
     {
@@ -64,12 +64,12 @@ public class CreateFloorballSeasonHandler : IRequestHandler<CreateFloorballSeaso
             // Create FloorballSeasonDivision entries for each provided division ID
             foreach (Guid divisionId in request.DivisionIds)
             {
-                await _seasonDivisionRepository.AddSeasonDivisionAsync(season.Id, divisionId);
+                await _seasonDivisionRepository.AddCompetitionDivisionAsync(season.Id, divisionId);
                 _logger.LogInformation("Added division {DivisionId} to season {SeasonId}", divisionId, season.Id);
             }
 
             // Load season divisions for DTO mapping
-            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+            IEnumerable<FloorballCompetitionDivision> seasonDivisions = await _seasonDivisionRepository.GetCompetitionDivisionsAsync(season.Id);
             IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
             FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, seasonDivisionDtos);
             _logger.LogInformation("Successfully created floorball season with ID: {SeasonId}", season.Id);

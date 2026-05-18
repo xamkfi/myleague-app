@@ -11,13 +11,13 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 /// </summary>
 public class RemoveDivisionFromSeasonHandler : IRequestHandler<RemoveDivisionFromSeasonCommand, Result>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
-    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
+    private readonly IFloorballCompetitionDivisionRepository _seasonDivisionRepository;
     private readonly ILogger<RemoveDivisionFromSeasonHandler> _logger;
 
     public RemoveDivisionFromSeasonHandler(
-        IFloorballSeasonRepository seasonRepository,
-        IFloorballSeasonDivisionRepository seasonDivisionRepository,
+        IFloorballCompetitionRepository seasonRepository,
+        IFloorballCompetitionDivisionRepository seasonDivisionRepository,
         ILogger<RemoveDivisionFromSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
@@ -30,18 +30,18 @@ public class RemoveDivisionFromSeasonHandler : IRequestHandler<RemoveDivisionFro
         try
         {
             // Ensure season exists
-            if (!await _seasonRepository.ExistsAsync(request.SeasonId))
+            if (!await _seasonRepository.ExistsAsync(request.CompetitionId))
             {
-                return Result.NotFound("FloorballSeason", request.SeasonId);
+                return Result.NotFound("FloorballSeason", request.CompetitionId);
             }
 
-            _logger.LogInformation("Removing division {DivisionId} from season {SeasonId}", request.DivisionId, request.SeasonId);
-            await _seasonDivisionRepository.RemoveSeasonDivisionAsync(request.SeasonId, request.DivisionId);
+            _logger.LogInformation("Removing division {DivisionId} from season {SeasonId}", request.DivisionId, request.CompetitionId);
+            await _seasonDivisionRepository.RemoveCompetitionDivisionAsync(request.CompetitionId, request.DivisionId);
             return Result.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing division {DivisionId} from season {SeasonId}", request.DivisionId, request.SeasonId);
+            _logger.LogError(ex, "Error removing division {DivisionId} from season {SeasonId}", request.DivisionId, request.CompetitionId);
             return Result.Failure("Failed to remove division from season.");
         }
     }

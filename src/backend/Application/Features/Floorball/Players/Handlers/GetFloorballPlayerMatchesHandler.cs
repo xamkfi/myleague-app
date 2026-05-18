@@ -149,8 +149,8 @@ namespace Application.Features.Floorball.Players.Handlers
 
                     FloorballPlayerMatchDto matchDto = new FloorballPlayerMatchDto(
                         match.Id,
-                        match.SeasonId,
-                        match.Season?.Name ?? "",
+                        match.CompetitionId,
+                        match.Competition?.Name ?? "",
                         match.HomeTeamId,
                         match.HomeTeam?.Name ?? "Unknown Team",
                         match.AwayTeamId,

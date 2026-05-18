@@ -34,10 +34,10 @@ public class GetTeamPlayerStatisticsHandler : IRequestHandler<GetTeamPlayerStati
     {
         try
         {
-            _logger.LogInformation("Retrieving player statistics for Team {TeamId} in Season {SeasonId}", request.TeamId, request.SeasonId);
+            _logger.LogInformation("Retrieving player statistics for Team {TeamId} in Season {SeasonId}", request.TeamId, request.CompetitionId);
 
-            List<FloorballPlayerSeasonStatistics> playerStats = await _statisticsRepository.GetPlayerStatisticsByTeamAndSeasonAsync(
-                request.TeamId, request.SeasonId, cancellationToken);
+            List<FloorballPlayerSeasonStatistics> playerStats = await _statisticsRepository.GetPlayerStatisticsByTeamAndCompetitionAsync(
+                request.TeamId, request.CompetitionId, cancellationToken);
 
             IEnumerable<Guid> personIds = playerStats.Select(x => x.Player.PersonId).ToList();
             IEnumerable<Person> persons = await _personRepository.GetByIdsAsync(personIds);
@@ -54,13 +54,13 @@ public class GetTeamPlayerStatisticsHandler : IRequestHandler<GetTeamPlayerStati
             }).ToList();
 
             _logger.LogInformation("Successfully retrieved {Count} player statistics for Team {TeamId} in Season {SeasonId}",
-                dtos.Count, request.TeamId, request.SeasonId);
+                dtos.Count, request.TeamId, request.CompetitionId);
             return Result<List<FloorballPlayerSeasonStatisticsDto>>.Success(dtos);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving player statistics for Team {TeamId} in Season {SeasonId}",
-                request.TeamId, request.SeasonId);
+                request.TeamId, request.CompetitionId);
             return Result<List<FloorballPlayerSeasonStatisticsDto>>.Failure("An error occurred while retrieving team player statistics.");
         }
     }

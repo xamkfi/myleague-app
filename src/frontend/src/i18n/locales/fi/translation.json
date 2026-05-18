@@ -4,7 +4,13 @@
       "summary": "YHTEENVETO",
       "stats": "TILASTOT",
       "lineups": "KOKOONPANOT",
-      "table": "SARJATAULUKKO"
+      "table": "SARJATAULUKKO",
+      "groupStandings": "LOHKON TAULUKKO",
+      "playoffBracket": "PUDOTUSPELIKAAVIO"
+    },
+    "standings": {
+      "groupFallback": "Lohko",
+      "playoffBracket": "Pudotuspelikaavio"
     },
     "dateTime": {
       "weekdays": {
@@ -137,6 +143,9 @@
     "noCompletedMatches": "Ei päättyneitä otteluita",
     "allMatches": "Kaikki ottelut",
     "loading": "Ladataan...",
+    "loadingMore": "Ladataan lisää...",
+    "showMore": "Näytä lisää ({{count}})",
+    "showLess": "Näytä vähemmän",
     "error": "Otteluiden lataus epäonnistui"
   },
   "language": {
@@ -149,6 +158,10 @@
     "database": "Tietokanta",
     "sportsTitle": "Urheilulajit",
     "view": "Admin näkymä",
+    "navbar": {
+      "matchesInProgress_one": "{{count}} ottelu käynnissä",
+      "matchesInProgress_other": "{{count}} ottelua käynnissä"
+    },
     "actions": {
       "home": "Koti",
       "persons": "Henkilöt",
@@ -383,6 +396,13 @@
         "updateRoleFailed": "Henkilön roolin päivitys epäonnistui."
       }
     },
+    "editor": {
+      "confirmDeleteImages": "Haluatko varmasti poistaa {{count}} kuva(a)?",
+      "confirmDeleteMatches": "Haluatko varmasti poistaa {{count}} ottelutulosta?",
+      "confirmDeleteBoth": "Haluatko varmasti poistaa {{images}} kuva(a) ja {{matches}} ottelutulosta?",
+      "uploadFailed": "Kuvan lataus epäonnistui.",
+      "placeholder": "Kirjoita sisältö tähän..."
+    },
     "news":{
       "pageTitle": "Uutisten Hallinta",
       "createNew": "Luo Uusi",
@@ -564,13 +584,21 @@
       "actions": {
         "teams": "Joukkueet",
         "manageTeams": "Hallitse joukkueita",
+        "managePlayers": "Hallitse pelaajia",
+        "manageSeasons": "Hallitse kausia",
+        "manageTournaments": "Hallitse turnauksia",
+        "manageMatches": "Hallitse otteluita",
+        "manageReferees": "Hallitse tuomareita",
         "players": "Hallitse Pelaajia",
         "coaches": "Hallitse Valmentajia",
         "teamManagers": "Hallitse Joukkueenjohtajia",
         "referees": "Hallitse Tuomareita",
         "matches": "Hallitse Otteluita",
         "matchEvents": "Hallitse Ottelutapahtumia",
-        "seasons": "Hallitse Kausia"
+        "seasons": "Hallitse Kausia",
+        "seasonMatches": "Hallitse Kauden Otteluita",
+        "tournaments": "Hallitse Turnauksia",
+        "tournamentMatches": "Hallitse Turnausten Otteluita"
       }
     },
     "teams": {
@@ -689,7 +717,10 @@
       "totalCount": "{{count}} kautta",
       "createNew": "Luo Uusi Kausi",
       "showActiveOnly": "Näytä Vain Aktiiviset",
+      "backToList": "Takaisin kausilistaan",
       "division": "Sarja",
+      "matchesInProgress_one": "{{count}} ottelu käynnissä",
+      "matchesInProgress_other": "{{count}} ottelua käynnissä",
       "fields": {
         "name": "Nimi",
         "division": "Sarja",
@@ -723,6 +754,158 @@
         "divisionRequired": "Valitse kelvollinen sarja.",
         "startDateRequired": "Aloituspäivä on pakollinen.",
         "endDateRequired": "Päättymispäivä on pakollinen."
+      }
+    },
+    "tournaments": {
+      "title": "Hallitse Turnauksia",
+      "totalCount": "{{count}} turnausta",
+      "createNew": "Luo Uusi Turnaus",
+      "editTitle": "Muokkaa Turnausta",
+      "createTitle": "Luo Uusi Turnaus",
+      "noTournaments": "Turnauksia ei löytynyt",
+      "noGroups": "Ei lohkoja",
+      "matchesInProgress_one": "{{count}} ottelu käynnissä",
+      "matchesInProgress_other": "{{count}} ottelua käynnissä",
+      "showOngoingOnly": "Näytä Vain Käynnissä Olevat",
+      "filterByStatus": "Suodata tilan mukaan",
+      "allStatuses": "Kaikki tilat",
+      "selectAll": "Valitse kaikki turnaukset",
+      "statusLabel": "Tila",
+      "teamsCount": "{{count}} joukkuetta",
+      "matchesCount": "{{count}} ottelua",
+      "backToList": "Takaisin turnauslistaan",
+      "fields": {
+        "name": "Nimi",
+        "venue": "Pelipaikka",
+        "groups": "Lohkot",
+        "startDate": "Alkaa",
+        "endDate": "Päättyy",
+        "teams": "Joukkueet",
+        "matches": "Ottelut",
+        "status": "Tila"
+      },
+      "tabs": {
+        "details": "Turnauksen Tiedot",
+        "groups": "Hallitse Lohkoja",
+        "teams": "Hallitse Joukkueita",
+        "matches": "Ottelut",
+        "bracket": "Pudotuspelikaavio"
+      },
+      "matchesTab": {
+        "empty": "Tähän turnaukseen ei ole vielä lisätty otteluita.",
+        "createFirst": "Luo ensimmäinen ottelu",
+        "createNew": "Luo uusi ottelu"
+      },
+      "sections": {
+        "basicInfo": "Perustiedot",
+        "schedule": "Aikataulu",
+        "groupStageRules": "Alkulohkojen Säännöt",
+        "playoffRules": "Pudotuspelien Säännöt",
+        "structure": "Rakenne"
+      },
+      "bracket": {
+        "empty": "Pudotuspelikaaviota ei ole vielä luotu. Käynnistä pudotuspelivaihe Tiedot-välilehdeltä."
+      },
+      "status": {
+        "draft": "Luonnos",
+        "groupStage": "Alkulohkot",
+        "playoffStage": "Pudotuspelit",
+        "completed": "Päättynyt",
+        "cancelled": "Peruttu"
+      },
+      "lifecycle": {
+        "startGroupStage": "Aloita Alkulohkot",
+        "startPlayoffStage": "Aloita Pudotuspelit",
+        "complete": "Päätä Turnaus",
+        "cancel": "Peru Turnaus",
+        "moreActions": "Lisätoiminnot",
+        "matchesLoadError": "Otteluiden tilan lataaminen epäonnistui — esiehtoja ei voida vahvistaa. Tarkista ottelujen tilanne ennen lifecycle-toimintoja.",
+        "startGroupStageSuccess": "Alkulohkot aloitettu onnistuneesti.",
+        "startPlayoffStageSuccess": "Pudotuspelit aloitettu onnistuneesti.",
+        "completeSuccess": "Turnaus päätetty onnistuneesti.",
+        "cancelSuccess": "Turnaus peruttu onnistuneesti.",
+        "statusDescription": {
+          "draft": "Turnaus on luonnostilassa. Lisää lohkot ja joukkueet, ja aloita sitten alkulohkot, jotta ottelut voidaan aikatauluttaa.",
+          "groupStageWithPlayoff": "Alkulohkot käynnissä. Kun kaikki alkulohkojen ottelut on pelattu loppuun, voit siirtyä pudotuspeleihin.",
+          "groupStageNoPlayoff": "Alkulohkot käynnissä. Kun kaikki ottelut on pelattu loppuun, voit päättää turnauksen.",
+          "playoffStage": "Pudotuspelit käynnissä. Päätä turnaus, kun kaikki pudotuspeliottelut ovat ratkenneet.",
+          "completed": "Turnaus on päättynyt. Lifecycle-toimintoja ei ole enää saatavilla.",
+          "cancelled": "Turnaus on peruttu. Lifecycle-toimintoja ei ole enää saatavilla."
+        },
+        "tooltip": {
+          "startGroupStage": "Merkitsee turnauksen aktiiviseksi ja paljastaa ottelut yleisösivuilla.",
+          "startPlayoffStage": "Laskee sarjataulukot, luo pudotuspelikaavion ja aikatauluttaa pudotuspeliottelut. Vaatii, että kaikki alkulohkojen ottelut on pelattu.",
+          "complete": "Sulkee turnauksen. Vaatii että kaikki ottelut on pelattu loppuun.",
+          "cancel": "Peruu turnauksen. Toiminto on lopullinen eikä sitä voi peruuttaa."
+        },
+        "disabled": {
+          "noGroups": "Lisää ainakin yksi lohko, jotta voit aloittaa alkulohkot.",
+          "loadingMatches": "Ladataan otteluiden tila...",
+          "unsupportedPlayoffSize": "Pudotuspelikaavion koko ei ole tuettu ({{size}}). Säädä lohkoja tai jatkajia per lohko niin, että summa on 2, 4 tai 8.",
+          "noGroupStageMatches": "Yhtään alkulohkon ottelua ei ole vielä luotu.",
+          "groupStageInProgress": "{{completed}}/{{total}} alkulohkon ottelua pelattu. Pelaa kaikki loppuun ennen pudotuspelejä.",
+          "noMatches": "Turnauksessa ei ole vielä otteluita.",
+          "matchesInProgress": "{{completed}}/{{total}} ottelua pelattu. Pelaa kaikki loppuun ennen päättämistä."
+        },
+        "prereq": {
+          "tournamentInDraft": "Turnaus on luonnostilassa.",
+          "hasAtLeastOneGroup": "Turnauksessa on vähintään yksi lohko.",
+          "hasPlayoffStageEnabled": "Turnauksessa on pudotuspelivaihe käytössä.",
+          "supportedPlayoffSize": "Pudotuspelikaavion koko on tuettu (2, 4 tai 8 joukkuetta). Nyt: {{size}}.",
+          "allGroupStageMatchesDone": "Kaikki alkulohkojen ottelut on pelattu loppuun ({{completed}}/{{total}}).",
+          "tournamentIsRunning": "Turnaus on käynnissä (alkulohkot tai pudotuspelit).",
+          "allMatchesDone": "Kaikki ottelut on pelattu loppuun ({{completed}}/{{total}})."
+        },
+        "confirm": {
+          "startGroupStage": {
+            "title": "Aloita alkulohkot",
+            "description": "Merkitsee turnauksen aktiiviseksi. Tämän jälkeen aikataulu ja otteluiden tiedot näkyvät yleisösivuilla.",
+            "confirm": "Aloita alkulohkot"
+          },
+          "startPlayoffStage": {
+            "title": "Aloita pudotuspelit",
+            "description": "Laskee sarjataulukot, luo pudotuspelikaavion ja aikatauluttaa pudotuspeliottelut. Toimintoa ei voi peruuttaa ilman erillisiä toimia.",
+            "confirm": "Aloita pudotuspelit"
+          },
+          "complete": {
+            "title": "Päätä turnaus",
+            "description": "Sulkee turnauksen lopullisesti. Tämän jälkeen otteluita tai pisteitä ei enää muuteta.",
+            "confirm": "Päätä turnaus"
+          },
+          "cancel": {
+            "title": "Peru turnaus",
+            "description": "Peruu turnauksen. Tämä on lopullinen toiminto, eikä sitä voi peruuttaa ilman tietokantatoimia. Otteluiden tiedot säilyvät, mutta turnaus merkitään peruutetuksi.",
+            "confirm": "Kyllä, peru turnaus",
+            "acknowledge": "Ymmärrän, että turnauksen peruminen on lopullinen toiminto."
+          }
+        }
+      },
+      "actions": {
+        "menu": "Turnauksen toimintovalikko",
+        "manageMatches": "Hallitse turnauksen otteluita",
+        "bulkDelete": "Poista ({{count}})"
+      },
+      "errors": {
+        "networkError": "Verkkovirhe. Tarkista yhteytesi ja yritä uudelleen.",
+        "validationError": "Virheellistä tietoa annettu. Tarkista syötteesi ja yritä uudelleen.",
+        "notFound": "Turnausta ei löytynyt. Se on saatettu poistaa.",
+        "serverError": "Palvelinvirhe. Yritä myöhemmin uudelleen.",
+        "operationFailed": "Toiminto epäonnistui. Yritä uudelleen."
+      },
+      "confirmDelete": {
+        "title": "Vahvista Poisto",
+        "message": "Oletko varma että haluat poistaa turnauksen \"{{name}}\"?",
+        "warning": "Tätä toimintoa ei voi perua."
+      },
+      "teamGroup": {
+        "removeTeam": "Poista lohkosta",
+        "removeTeamTooltip": "Poista joukkue tästä lohkosta",
+        "removeTeamDisabledReason": "Joukkueita ei voi poistaa kun alkulohkot on aloitettu.",
+        "confirmRemoveTitle": "Poista joukkue lohkosta",
+        "confirmRemoveBody": "Poista {{teamName}} lohkosta {{groupName}}?",
+        "confirmRemoveDetail": "Joukkue palautuu valittavissa oleviin joukkueisiin alla.",
+        "confirmButton": "Poista lohkosta",
+        "teamRemovedSuccess": "Joukkue poistettu lohkosta."
       }
     },
     "categories": {
@@ -765,6 +948,10 @@
     "matches": {
       "title": "Otteluiden Hallinta",
       "subtitle": "Hallitse salibandyotteluita, seuraa live-pelejä ja organisoi kautesi",
+      "seasonTitle": "Kauden Otteluiden Hallinta",
+      "seasonSubtitle": "Hallitse otteluita, jotka on aikataulutettu kausien sisällä",
+      "tournamentTitle": "Turnausten Otteluiden Hallinta",
+      "tournamentSubtitle": "Hallitse otteluita, jotka on aikataulutettu turnausten sisällä",
       "loading": "Ladataan otteluita...",
       "noMatchesFound": "Otteluita ei löytynyt",
       "noMatchesForSeason": "Valitulle kaudelle ei löytynyt otteluita",
@@ -791,13 +978,6 @@
         "score": "Tulos",
         "status": "Tila"
       },
-      "sections": {
-        "matches": "Ottelut",
-        "ongoing": "Käynnissä olevat ottelut",
-        "scheduled": "Aikataulutetut ottelut",
-        "completed": "Päättyneet ottelut",
-        "cancelled": "Peruutetut ottelut"
-      },
       "tabs": {
         "all": "Kaikki",
         "ongoing": "Käynnissä",
@@ -808,31 +988,92 @@
       },
       "create": {
         "title": "Luo Uusi Ottelu",
+        "seasonTitle": "Luo Kauden Ottelu",
+        "tournamentTitle": "Luo Turnausottelu",
+        "submit": "Luo Ottelu",
         "season": "Kausi",
         "homeTeam": "Kotijoukkue",
         "awayTeam": "Vierasjoukkue",
         "referee": "Tuomari",
         "dateTime": "Päiväys & Aika",
         "venue": "Paikka",
-        "createMatch": "Luo Ottelu"
+        "createMatch": "Luo Ottelu",
+        "lockedCompetitionTooltip": "Turnaus on lukittu kontekstista, ei voi muuttaa"
+      },
+      "fields": {
+        "season": "Kausi",
+        "tournament": "Turnaus",
+        "division": "Sarja",
+        "group": "Lohko",
+        "homeTeam": "Kotijoukkue",
+        "awayTeam": "Vierasjoukkue",
+        "referee": "Tuomari",
+        "dateTime": "Päiväys ja kellonaika",
+        "venue": "Pelipaikka"
+      },
+      "sections": {
+        "matches": "Ottelut",
+        "ongoing": "Käynnissä olevat ottelut",
+        "scheduled": "Aikataulutetut ottelut",
+        "completed": "Päättyneet ottelut",
+        "cancelled": "Peruutetut ottelut",
+        "seasonDivision": "Kausi & Sarja",
+        "tournamentGroup": "Turnaus & Lohko",
+        "teams": "Joukkueet",
+        "schedule": "Aikataulu & Pelipaikka",
+        "referee": "Tuomari"
       },
       "placeholders": {
-        "selectSeason": "Valitse Kausi",
-        "selectHomeTeam": "Valitse Kotijoukkue",
-        "selectAwayTeam": "Valitse Vierasjoukkue",
+        "selectSeason": "-- Valitse kausi --",
+        "selectTournament": "-- Valitse turnaus --",
+        "selectDivision": "-- Valitse sarja --",
+        "selectGroup": "-- Valitse lohko --",
+        "selectHomeTeam": "-- Valitse kotijoukkue --",
+        "selectAwayTeam": "-- Valitse vierasjoukkue --",
         "selectReferee": "Valitse Tuomari",
+        "noReferee": "-- Ei tuomaria (lisätään myöhemmin) --",
         "searchSeasons": "Hae kausia...",
         "searchTeams": "Hae joukkueita...",
         "searchReferees": "Hae tuomareita...",
         "hoursPlaceholder": "TT",
-        "minutesPlaceholder": "MM", 
+        "minutesPlaceholder": "MM",
+        "venue": "Anna pelipaikan nimi",
         "venuePlaceholder": "Anna paikka (valinnainen)"
       },
       "validation": {
         "fillRequired": "Täytä kaikki pakolliset kentät",
+        "sameTeam": "Koti- ja vierasjoukkue eivät voi olla sama",
         "sameTeams": "Koti- ja vierasjoukkue eivät voi olla sama",
         "validDateTime": "Anna kelvollinen päiväys ja aika",
+        "dateTimeRequired": "Anna kelvollinen päiväys ja aika",
+        "seasonRequired": "Valitse kausi.",
+        "tournamentRequired": "Valitse turnaus.",
+        "divisionRequired": "Valitse sarja.",
+        "groupRequired": "Valitse lohko.",
+        "homeTeamRequired": "Valitse kotijoukkue.",
+        "awayTeamRequired": "Valitse vierasjoukkue.",
         "createFailed": "Ottelun luominen epäonnistui"
+      },
+      "noGroupsInTournament": "Turnauksessa ei ole vielä lohkoja. Lisää lohkot ensin turnauksen muokkausnäkymästä.",
+      "noDivisionsInSeason": "Kaudella ei ole sarjoja. Lisää sarjat ensin kauteen.",
+      "notEnoughTeams": "Sarjassa pitää olla vähintään 2 joukkuetta. Lisää joukkueet sarjaan ensin.",
+      "notEnoughTeamsInGroup": "Lohkossa pitää olla vähintään 2 joukkuetta. Lisää joukkueet lohkoon turnauksen muokkausnäkymästä.",
+      "loadingTournamentDetails": "Ladataan turnauksen tietoja...",
+      "refereeHint": "Voit lisätä tuomarin myöhemmin ottelun tietosivulta.",
+      "created": "Ottelu luotu onnistuneesti!",
+      "matchForm": {
+        "loading": "Ladataan ottelua...",
+        "notLoaded": "Ottelun tietojen lataus epäonnistui.",
+        "editSeasonMatch": "Muokkaa kauden ottelua",
+        "editTournamentMatch": "Muokkaa turnausottelua",
+        "season": "Kausi",
+        "tournament": "Turnaus",
+        "selectSeason": "Valitse kausi",
+        "selectTournament": "Valitse turnaus",
+        "searchSeasons": "Hae kausia...",
+        "searchTournaments": "Hae turnauksia...",
+        "noSeasons": "Kausia ei löytynyt",
+        "noTournaments": "Turnauksia ei löytynyt"
       },
       "emptyStates": {
         "noSeasons": "Kausia ei löytynyt",
@@ -850,7 +1091,10 @@
       },
       "filters": {
         "filterBySeason": "Suodata Kauden Mukaan:",
+        "filterByTournament": "Suodata Turnauksen Mukaan:",
         "allSeasons": "Kaikki Kaudet",
+        "allTournaments": "Kaikki Turnaukset",
+        "allCompetitions": "Kaikki Kilpailut",
         "searchByTeam": "Hae joukkueen mukaan:",
         "searchPlaceholder": "Hae joukkueiden nimiä..."
       },
@@ -868,6 +1112,7 @@
         "start": "Käynnistä ottelu",
         "cancel": "Peruuta ottelu",
         "reactivate": "Aktivoi ottelu uudelleen",
+        "edit": "Muokkaa ottelun tietoja",
         "menu": "Ottelun toiminnot"
       },
       "confirmCancel": {
@@ -923,6 +1168,7 @@
     "all": "Kaikki",
     "create": "Luo",
     "close": "Sulje",
+    "processing": "Käsitellään...",
     "pagination": {
       "previous": "Edellinen",
       "next": "Seuraava",

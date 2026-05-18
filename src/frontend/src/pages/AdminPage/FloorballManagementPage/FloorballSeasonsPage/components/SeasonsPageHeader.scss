@@ -20,6 +20,7 @@
   .seasons-actions {
     display: flex;
     gap: map.get($spacing, 'base');
+    flex-wrap: wrap;
   }
 
   .create-season-button {
@@ -43,6 +44,29 @@
       transform: translateY(0);
     }
   }
+
+  .manage-matches-button {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    background-color: $color-white;
+    color: $color-blue-light;
+    border: 1px solid $color-blue-light;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'medium');
+    cursor: pointer;
+    @include transition(all);
+
+    &:hover {
+      background-color: $color-blue-light;
+      color: $color-white;
+      transform: translateY(-1px);
+      box-shadow: $box-shadow-drop-1;
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
 }
 
 // Responsive Design
@@ -52,7 +76,8 @@
     gap: map.get($spacing, 'base');
     align-items: stretch;
 
-    .create-season-button {
+    .create-season-button,
+    .manage-matches-button {
       text-align: center;
     }
   }

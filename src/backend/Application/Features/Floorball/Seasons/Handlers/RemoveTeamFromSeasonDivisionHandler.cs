@@ -11,15 +11,15 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 /// </summary>
 public class RemoveTeamFromSeasonDivisionHandler : IRequestHandler<RemoveTeamFromSeasonDivisionCommand, Result>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
     private readonly IFloorballTeamRepository _teamRepository;
-    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
+    private readonly IFloorballCompetitionDivisionRepository _seasonDivisionRepository;
     private readonly ILogger<RemoveTeamFromSeasonDivisionHandler> _logger;
 
     public RemoveTeamFromSeasonDivisionHandler(
-        IFloorballSeasonRepository seasonRepository,
+        IFloorballCompetitionRepository seasonRepository,
         IFloorballTeamRepository teamRepository,
-        IFloorballSeasonDivisionRepository seasonDivisionRepository,
+        IFloorballCompetitionDivisionRepository seasonDivisionRepository,
         ILogger<RemoveTeamFromSeasonDivisionHandler> logger)
     {
         _seasonRepository = seasonRepository;
@@ -32,22 +32,22 @@ public class RemoveTeamFromSeasonDivisionHandler : IRequestHandler<RemoveTeamFro
     {
         try
         {
-            if (!await _seasonRepository.ExistsAsync(request.SeasonId))
+            if (!await _seasonRepository.ExistsAsync(request.CompetitionId))
             {
-                return Result.NotFound("FloorballSeason", request.SeasonId);
+                return Result.NotFound("FloorballSeason", request.CompetitionId);
             }
             if (!await _teamRepository.ExistsAsync(request.TeamId))
             {
                 return Result.NotFound("FloorballTeam", request.TeamId);
             }
 
-            _logger.LogInformation("Removing team {TeamId} from season {SeasonId} division {DivisionId}", request.TeamId, request.SeasonId, request.DivisionId);
-            await _seasonDivisionRepository.RemoveTeamFromSeasonDivisionAsync(request.SeasonId, request.DivisionId, request.TeamId);
+            _logger.LogInformation("Removing team {TeamId} from season {SeasonId} division {DivisionId}", request.TeamId, request.CompetitionId, request.DivisionId);
+            await _seasonDivisionRepository.RemoveTeamFromCompetitionDivisionAsync(request.CompetitionId, request.DivisionId, request.TeamId);
             return Result.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing team {TeamId} from season {SeasonId} division {DivisionId}", request.TeamId, request.SeasonId, request.DivisionId);
+            _logger.LogError(ex, "Error removing team {TeamId} from season {SeasonId} division {DivisionId}", request.TeamId, request.CompetitionId, request.DivisionId);
             return Result.Failure("Failed to remove team from season division.");
         }
     }

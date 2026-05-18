@@ -87,8 +87,8 @@ function EventCalendarPage() {
       result = result.filter((e) => e.status && filters.statuses.includes(e.status));
     }
 
-    if (filters.seasonId) {
-      result = result.filter((e) => e.subtitle === seasons.find((s) => s.id === filters.seasonId)?.name);
+    if (filters.competitionId) {
+      result = result.filter((e) => e.subtitle === seasons.find((s) => s.id === filters.competitionId)?.name);
     }
 
     if (filters.teamSearch.trim()) {
@@ -97,7 +97,7 @@ function EventCalendarPage() {
     }
 
     return result;
-  }, [allEvents, filters.statuses, filters.seasonId, filters.teamSearch, seasons]);
+  }, [allEvents, filters.statuses, filters.competitionId, filters.teamSearch, seasons]);
 
   const goPrevMonth = () => {
     if (month === 1) { setMonth(12); setYear((y) => y - 1); }

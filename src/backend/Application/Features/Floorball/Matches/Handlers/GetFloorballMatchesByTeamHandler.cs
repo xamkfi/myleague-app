@@ -69,7 +69,7 @@ namespace Application.Features.Floorball.Matches.Handlers
                 PagedResult<FloorballMatch> pagedMatches = await _floorballMatchRepository.GetPagedAsync(
                     page: request.Page,
                     pageSize: actualPageSize,
-                    seasonId: null,
+                    competitionId: null,
                     teamId: request.TeamId,
                     startDate: request.StartDate,
                     endDate: request.EndDate,

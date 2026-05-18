@@ -8,6 +8,7 @@ using Application.Features.Common.Persons.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Tournaments.DTOs;
 using Application.Features.Floorball.Players.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
 using WebAPI.Models.Common;
@@ -27,6 +28,10 @@ public static class Program
 		string baseUrl = PromptForBaseUrl(config.BaseUrl);
 		config.BaseUrl = baseUrl;
 
+		SeedScope requested = PromptForScope(args);
+		SeedScope scope = SeedScopeResolver.Resolve(requested);
+		PrintEffectiveScope(requested, scope);
+
 		HttpClient http = new HttpClient();
 		http.BaseAddress = new Uri(config.BaseUrl);
 		http.DefaultRequestHeaders.Accept.Clear();
@@ -43,57 +48,117 @@ public static class Program
 		{
 			await AuthenticateAsync(http, jsonOptions);
 
-			List<PersonDto> basePersons = await PersonsSeeder.SeedAsync(http, jsonOptions, config);
-			List<ClubDto> clubResults = await ClubsSeeder.SeedAsync(http, jsonOptions, config);
-			List<DivisionDto> divisionResults = await DivisionsSeeder.SeedAsync(http, jsonOptions, config);
+			List<PersonDto> basePersons = scope.HasFlag(SeedScope.Persons)
+				? await PersonsSeeder.SeedAsync(http, jsonOptions, config)
+				: new List<PersonDto>();
 
-			// Create separate persons for players, goalies, referees and then create corresponding entities using their person IDs
-			// Use the new method that returns seed email to person ID mapping
-			(List<PersonDto> playerPersons, Dictionary<string, Guid> playerEmailToPersonId) = await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, config.PlayerPersons);
-			(List<PersonDto> goaliePersons, Dictionary<string, Guid> goalieEmailToPersonId) = await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, config.GoaliePersons);
-			(List<PersonDto> refereePersons, Dictionary<string, Guid> refereeEmailToPersonId) = await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, config.RefereePersons);
+			List<ClubDto> clubResults = scope.HasFlag(SeedScope.Clubs)
+				? await ClubsSeeder.SeedAsync(http, jsonOptions, config)
+				: new List<ClubDto>();
 
-			// Merge player and goalie email mappings
-			Dictionary<string, Guid> seedEmailToPersonId = new Dictionary<string, Guid>(playerEmailToPersonId, StringComparer.OrdinalIgnoreCase);
-			foreach (KeyValuePair<string, Guid> kvp in goalieEmailToPersonId)
+			List<DivisionDto> divisionResults = scope.HasFlag(SeedScope.Divisions)
+				? await DivisionsSeeder.SeedAsync(http, jsonOptions, config)
+				: new List<DivisionDto>();
+
+			List<PersonDto> playerPersons = new List<PersonDto>();
+			List<PersonDto> goaliePersons = new List<PersonDto>();
+			List<PersonDto> refereePersons = new List<PersonDto>();
+			Dictionary<string, Guid> playerEmailToPersonId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+			Dictionary<string, Guid> goalieEmailToPersonId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+			Dictionary<string, Guid> refereeEmailToPersonId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+
+			List<FloorballPlayerDto> players = new List<FloorballPlayerDto>();
+			Dictionary<string, Guid> emailToPlayerId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+			List<FloorballRefereeDto> referees = new List<FloorballRefereeDto>();
+
+			if (scope.HasFlag(SeedScope.PlayersReferees))
 			{
-				seedEmailToPersonId[kvp.Key] = kvp.Value;
+				(playerPersons, playerEmailToPersonId) = await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, config.PlayerPersons);
+				(goaliePersons, goalieEmailToPersonId) = await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, config.GoaliePersons);
+				(refereePersons, refereeEmailToPersonId) = await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, config.RefereePersons);
+
+				Dictionary<string, Guid> seedEmailToPersonId = new Dictionary<string, Guid>(playerEmailToPersonId, StringComparer.OrdinalIgnoreCase);
+				foreach (KeyValuePair<string, Guid> kvp in goalieEmailToPersonId)
+				{
+					seedEmailToPersonId[kvp.Key] = kvp.Value;
+				}
+
+				(players, emailToPlayerId) = await FloorballPlayersSeeder.SeedAsync(http, jsonOptions, playerPersons, goaliePersons, seedEmailToPersonId);
+				referees = await FloorballRefereesSeeder.SeedAsync(http, jsonOptions, refereePersons.Select(p => p.Id).ToList());
 			}
 
-			(List<FloorballPlayerDto> players, Dictionary<string, Guid> emailToPlayerId) = await FloorballPlayersSeeder.SeedAsync(http, jsonOptions, playerPersons, goaliePersons, seedEmailToPersonId);
-			List<FloorballRefereeDto> referees = await FloorballRefereesSeeder.SeedAsync(http, jsonOptions, refereePersons.Select(p => p.Id).ToList());
+			List<FloorballSeasonDto> seasons = new List<FloorballSeasonDto>();
+			List<FloorballTeamDto> teams = new List<FloorballTeamDto>();
 
-			// Optional: create seasons and teams (requires Divisions and Clubs)
-			List<FloorballSeasonDto> seasons = await FloorballSeasonsSeeder.SeedAsync(http, jsonOptions, config.FloorballSeasons, divisionResults);
-			List<FloorballTeamDto> teams = await FloorballTeamsSeeder.SeedTeamsAsync(http, jsonOptions, config.FloorballTeams, divisionResults, clubResults);
-
-			// Assign teams to season divisions based on their division names
-			await FloorballTeamsSeeder.AssignTeamsToSeasonsAsync(http, jsonOptions, seasons, config.FloorballTeams, teams, divisionResults);
-
-			// Add players to teams per config
-			foreach (FloorballTeamSeed teamSeed in config.FloorballTeams)
+			if (scope.HasFlag(SeedScope.Teams))
 			{
-				FloorballTeamDto? team = teams.FirstOrDefault(t => string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
-				if (team != null)
+				teams = await FloorballTeamsSeeder.SeedTeamsAsync(http, jsonOptions, config.FloorballTeams, divisionResults, clubResults);
+			}
+
+			if (scope.HasFlag(SeedScope.Seasons))
+			{
+				seasons = await FloorballSeasonsSeeder.SeedAsync(http, jsonOptions, config.FloorballSeasons, divisionResults);
+				await FloorballTeamsSeeder.AssignTeamsToSeasonsAsync(http, jsonOptions, seasons, config.FloorballTeams, teams, divisionResults);
+			}
+
+			if (scope.HasFlag(SeedScope.Teams))
+			{
+				foreach (FloorballTeamSeed teamSeed in config.FloorballTeams)
 				{
-					await FloorballTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, emailToPlayerId);
+					FloorballTeamDto? team = teams.FirstOrDefault(t => string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
+					if (team != null)
+					{
+						await FloorballTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, emailToPlayerId);
+					}
 				}
 			}
 
-			// Build referee map from all referees in the API so existing referees are found
-			List<FloorballRefereeDto> allReferees = await FloorballMatchesSeeder.FetchAllRefereesFromApiAsync(http, jsonOptions);
-			Dictionary<string, Guid> emailToRefereeId = FloorballMatchesSeeder.BuildEmailToRefereeIdMap(allReferees, refereeEmailToPersonId);
-			List<FloorballMatchDto> matches = await FloorballMatchesSeeder.SeedAsync(http, jsonOptions, config.FloorballMatches, seasons, teams, referees, emailToRefereeId);
+			List<FloorballRefereeDto> allReferees = new List<FloorballRefereeDto>();
+			List<FloorballMatchDto> matches = new List<FloorballMatchDto>();
+			List<FloorballTournamentDto> tournaments = new List<FloorballTournamentDto>();
+			int tournamentMatchesCreated = 0;
+
+			bool needsAllReferees = scope.HasFlag(SeedScope.SeasonMatches) || scope.HasFlag(SeedScope.Tournaments);
+			if (needsAllReferees)
+			{
+				allReferees = await FloorballMatchesSeeder.FetchAllRefereesFromApiAsync(http, jsonOptions);
+			}
+
+			if (scope.HasFlag(SeedScope.SeasonMatches))
+			{
+				Dictionary<string, Guid> emailToRefereeId = FloorballMatchesSeeder.BuildEmailToRefereeIdMap(allReferees, refereeEmailToPersonId);
+				matches = await FloorballMatchesSeeder.SeedAsync(http, jsonOptions, config.FloorballMatches, seasons, teams, referees, emailToRefereeId);
+			}
+
+			if (scope.HasFlag(SeedScope.Tournaments))
+			{
+				tournaments = await FloorballTournamentsSeeder.SeedAsync(http, jsonOptions, config.FloorballTournaments, teams);
+
+				List<FloorballRefereeDto> tournamentReferees = referees.Concat(allReferees)
+					.GroupBy(r => r.Id)
+					.Select(g => g.First())
+					.ToList();
+
+				if (tournamentReferees.Count == 0 && refereePersons.Count > 0)
+				{
+					Console.Error.WriteLine(
+						$"WARNING: tournament match seeding has no referees available even though {refereePersons.Count} referee person(s) were configured. " +
+						"Matches will be created without an assigned referee. See earlier WARNING lines for the underlying API response.");
+				}
+				tournamentMatchesCreated = await FloorballTournamentMatchesSeeder.SeedAsync(http, jsonOptions, tournaments, tournamentReferees, config.FloorballTournaments);
+			}
 
 			Console.WriteLine("\nSummary:");
-			Console.WriteLine($"  Persons created: {basePersons.Count}");
-			Console.WriteLine($"  Clubs created: {clubResults.Count}");
-			Console.WriteLine($"  Divisions created: {divisionResults.Count}");
-			Console.WriteLine($"  Floorball players created: {players.Count}");
-			Console.WriteLine($"  Floorball referees created: {referees.Count}");
-			Console.WriteLine($"  Seasons created: {seasons.Count}");
-			Console.WriteLine($"  Teams created: {teams.Count}");
-			Console.WriteLine($"  Matches created: {matches.Count}");
+			WriteSummaryLine("Persons created:", scope.HasFlag(SeedScope.Persons), basePersons.Count);
+			WriteSummaryLine("Clubs created:", scope.HasFlag(SeedScope.Clubs), clubResults.Count);
+			WriteSummaryLine("Divisions created:", scope.HasFlag(SeedScope.Divisions), divisionResults.Count);
+			WriteSummaryLine("Floorball players created:", scope.HasFlag(SeedScope.PlayersReferees), players.Count);
+			WriteSummaryLine("Floorball referees created:", scope.HasFlag(SeedScope.PlayersReferees), referees.Count);
+			WriteSummaryLine("Seasons created:", scope.HasFlag(SeedScope.Seasons), seasons.Count);
+			WriteSummaryLine("Teams created:", scope.HasFlag(SeedScope.Teams), teams.Count);
+			WriteSummaryLine("Matches created:", scope.HasFlag(SeedScope.SeasonMatches), matches.Count);
+			WriteSummaryLine("Tournaments created:", scope.HasFlag(SeedScope.Tournaments), tournaments.Count);
+			WriteSummaryLine("Tournament matches created:", scope.HasFlag(SeedScope.Tournaments), tournamentMatchesCreated);
 
 			http.Dispose();
 			return 0;
@@ -173,5 +238,192 @@ public static class Program
 
 		Console.WriteLine($"Using custom URL: {input}");
 		return input;
+	}
+
+	private static SeedScope PromptForScope(string[] args)
+	{
+		string? cliValue = TryGetScopeArg(args);
+		if (cliValue != null)
+		{
+			if (TryParseScopeArgValue(cliValue, out SeedScope cliScope))
+			{
+				Console.WriteLine($"Using --scope from command line: \"{cliValue}\"");
+				return cliScope;
+			}
+			Console.Error.WriteLine($"Invalid --scope value: '{cliValue}'. Valid tokens: all, persons, clubs, divisions, playersreferees, teams, seasons, seasonmatches, tournaments.");
+			Environment.Exit(2);
+			return SeedScope.None;
+		}
+
+		const int maxAttempts = 3;
+		int attempts = 0;
+		while (attempts < maxAttempts)
+		{
+			PrintScopeMenu();
+			Console.Write("> ");
+			string? line = Console.ReadLine();
+			string trimmed = (line ?? string.Empty).Trim();
+
+			SeedScope? parsed = TryParseMenuInput(trimmed);
+			if (parsed == null)
+			{
+				attempts++;
+				Console.WriteLine($"Invalid input. (attempt {attempts}/{maxAttempts})");
+				Console.WriteLine();
+				continue;
+			}
+
+			SeedScope requested = parsed.Value;
+			SeedScope effective = SeedScopeResolver.Resolve(requested);
+			Console.WriteLine();
+			Console.WriteLine(SeedScopeResolver.Explain(effective, requested));
+
+			while (true)
+			{
+				Console.Write("Proceed? (Y/n): ");
+				string? proceedInput = Console.ReadLine();
+				string proceedTrimmed = (proceedInput ?? string.Empty).Trim();
+				if (string.IsNullOrEmpty(proceedTrimmed) || string.Equals(proceedTrimmed, "y", StringComparison.OrdinalIgnoreCase))
+				{
+					return requested;
+				}
+				if (string.Equals(proceedTrimmed, "n", StringComparison.OrdinalIgnoreCase))
+				{
+					Console.WriteLine("Aborted by user.");
+					Environment.Exit(0);
+				}
+			}
+		}
+
+		Console.Error.WriteLine("Too many invalid attempts. Exiting.");
+		Environment.Exit(2);
+		return SeedScope.None;
+	}
+
+	private static void PrintScopeMenu()
+	{
+		Console.WriteLine("==========================================================");
+		Console.WriteLine("Seeder - Scope Selection");
+		Console.WriteLine("==========================================================");
+		Console.WriteLine("What do you want to seed? (auto-resolves dependencies)");
+		Console.WriteLine();
+		Console.WriteLine("  1) Henkilöt (Persons)              — base persons + player/goalie/referee persons");
+		Console.WriteLine("  2) Seurat (Clubs)");
+		Console.WriteLine("  3) Divisioonat (Divisions)");
+		Console.WriteLine("  4) Pelaajat ja tuomarit            — needs 1");
+		Console.WriteLine("  5) Joukkueet (Teams + rosters)     — needs 1, 2, 3, 4");
+		Console.WriteLine("  6) Kaudet (Seasons + team-to-season assignment)  — needs 1, 2, 3, 5");
+		Console.WriteLine("  7) Kausi-ottelut (Season matches)  — needs 1, 2, 3, 4, 5, 6");
+		Console.WriteLine("  8) Turnaukset ja turnausottelut    — needs 1, 2, 3, 4, 5");
+		Console.WriteLine("  9) Kaikki (Everything)");
+		Console.WriteLine();
+		Console.WriteLine("Enter selection: comma-separated numbers (e.g. \"1,2,5\") or \"9\" / \"all\" / blank for all.");
+	}
+
+	private static SeedScope? TryParseMenuInput(string trimmed)
+	{
+		if (string.IsNullOrEmpty(trimmed) ||
+			string.Equals(trimmed, "9", StringComparison.OrdinalIgnoreCase) ||
+			string.Equals(trimmed, "all", StringComparison.OrdinalIgnoreCase))
+		{
+			return SeedScope.All;
+		}
+
+		string[] tokens = trimmed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+		if (tokens.Length == 0)
+		{
+			return null;
+		}
+
+		SeedScope result = SeedScope.None;
+		foreach (string tok in tokens)
+		{
+			SeedScope? mapped = MapMenuNumber(tok);
+			if (mapped == null)
+			{
+				return null;
+			}
+			result |= mapped.Value;
+		}
+		return result == SeedScope.None ? null : result;
+	}
+
+	private static SeedScope? MapMenuNumber(string token)
+	{
+		return token switch
+		{
+			"1" => SeedScope.Persons,
+			"2" => SeedScope.Clubs,
+			"3" => SeedScope.Divisions,
+			"4" => SeedScope.PlayersReferees,
+			"5" => SeedScope.Teams,
+			"6" => SeedScope.Seasons,
+			"7" => SeedScope.SeasonMatches,
+			"8" => SeedScope.Tournaments,
+			"9" => SeedScope.All,
+			_ => null
+		};
+	}
+
+	private static string? TryGetScopeArg(string[] args)
+	{
+		for (int i = 0; i < args.Length; i++)
+		{
+			string a = args[i];
+			if (a.StartsWith("--scope=", StringComparison.OrdinalIgnoreCase))
+			{
+				return a.Substring("--scope=".Length);
+			}
+			if (string.Equals(a, "--scope", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
+			{
+				return args[i + 1];
+			}
+		}
+		return null;
+	}
+
+	private static bool TryParseScopeArgValue(string value, out SeedScope scope)
+	{
+		scope = SeedScope.None;
+		if (string.IsNullOrWhiteSpace(value))
+		{
+			return false;
+		}
+		string trimmed = value.Trim();
+		if (string.Equals(trimmed, "all", StringComparison.OrdinalIgnoreCase))
+		{
+			scope = SeedScope.All;
+			return true;
+		}
+		string[] tokens = trimmed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+		if (tokens.Length == 0)
+		{
+			return false;
+		}
+		foreach (string tok in tokens)
+		{
+			if (!SeedScopeResolver.TryParseToken(tok, out SeedScope parsed))
+			{
+				return false;
+			}
+			scope |= parsed;
+		}
+		return scope != SeedScope.None;
+	}
+
+	private static void PrintEffectiveScope(SeedScope requested, SeedScope scope)
+	{
+		Console.WriteLine();
+		Console.WriteLine("==========================================================");
+		Console.WriteLine("Effective seed scope");
+		Console.WriteLine("==========================================================");
+		Console.WriteLine(SeedScopeResolver.Explain(scope, requested));
+		Console.WriteLine("==========================================================\n");
+	}
+
+	private static void WriteSummaryLine(string label, bool ran, int value)
+	{
+		string display = ran ? value.ToString() : "(skipped)";
+		Console.WriteLine($"  {label,-32}{display}");
 	}
 }

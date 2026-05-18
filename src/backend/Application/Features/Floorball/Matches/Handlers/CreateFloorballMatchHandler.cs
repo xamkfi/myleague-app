@@ -32,7 +32,7 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
-    private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
     private readonly IFloorballRefereeRepository _refereeRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFloorballMatchHandler> _logger;
@@ -49,7 +49,7 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
     public CreateFloorballMatchHandler(
         IFloorballMatchRepository matchRepository,
         IFloorballTeamRepository teamRepository,
-        IFloorballSeasonRepository seasonRepository,
+        IFloorballCompetitionRepository seasonRepository,
         IFloorballRefereeRepository refereeRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<CreateFloorballMatchHandler> logger)
@@ -72,19 +72,19 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
     {
         try
         {
-            if (!request.SeasonId.HasValue)
-                return Result<FloorballMatchDto>.Failure("Season is required");
+            if (!request.CompetitionId.HasValue)
+                return Result<FloorballMatchDto>.Failure("Competition is required");
             if (!request.HomeTeamId.HasValue)
                 return Result<FloorballMatchDto>.Failure("Home team is required");
             if (!request.AwayTeamId.HasValue)
                 return Result<FloorballMatchDto>.Failure("Away team is required");
 
-            // Fetch season object
-            FloorballSeason? season = await _seasonRepository.GetByIdAsync(request.SeasonId);
-            if (season==null)
+            // Fetch competition object
+            FloorballCompetition? competition = await _seasonRepository.GetByIdAsync(request.CompetitionId);
+            if (competition==null)
             {
-                _logger.LogWarning("Attempt to create match for non-existent season with ID: {SeasonId}", request.SeasonId);
-                return Result<FloorballMatchDto>.NotFound("FloorballSeason", request.SeasonId ?? Guid.Empty);
+                _logger.LogWarning("Attempt to create match for non-existent competition with ID: {CompetitionId}", request.CompetitionId);
+                return Result<FloorballMatchDto>.NotFound("FloorballCompetition", request.CompetitionId ?? Guid.Empty);
             }
 
             // Fetch team objects
@@ -114,7 +114,7 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
             }
 
             // Create the match entity
-            FloorballMatch match = FloorballMatchMapper.ToEntity(request, season, homeTeam, awayTeam, referee);
+            FloorballMatch match = FloorballMatchMapper.ToEntity(request, competition, homeTeam, awayTeam, referee);
 
             _logger.LogInformation("Creating new floorball match between teams: {HomeTeamId} vs {AwayTeamId}", 
                 request.HomeTeamId, request.AwayTeamId);

@@ -31,7 +31,7 @@ export function mapFloorballMatchToCalendarEvent(match: FloorballMatchDto): Cale
     date,
     time,
     title: `${match.homeTeamName} – ${match.awayTeamName}`,
-    subtitle: match.seasonName,
+    subtitle: match.competitionName,
     link: `/match/${match.id}`,
     sport: 'floorball',
     status: matchStatusToCalendarStatus(match.status),

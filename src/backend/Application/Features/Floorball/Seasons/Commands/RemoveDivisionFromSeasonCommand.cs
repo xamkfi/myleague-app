@@ -8,7 +8,7 @@ namespace Application.Features.Floorball.Seasons.Commands
     /// Command to remove a division from a season
     /// </summary>
     public record RemoveDivisionFromSeasonCommand(
-        Guid SeasonId,
+        Guid CompetitionId,
         Guid DivisionId) : IRequest<Result>;
 }
 

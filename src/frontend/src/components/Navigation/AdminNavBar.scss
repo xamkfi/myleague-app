@@ -288,7 +288,7 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
     &-item {
       margin: 0;
 
-      a {
+      > a {
         display: flex;
         align-items: center;
         gap: map.get($spacing, 'sm');
@@ -320,7 +320,7 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
       }
 
       &.active {
-        a {
+        > a {
           background-color: rgba(255, 255, 255, 0.15);
           color: rgba(255, 255, 255, 1);
           font-weight: map.get($font-weights, 'medium');
@@ -437,6 +437,28 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
         }
       }
     }
+  }
+
+  // Live indicator dot — used to mark items with matches currently in progress.
+  &__live-dot {
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  // Wraps the icon when the sidebar is collapsed, so the live dot can be pinned
+  // to the icon's top-right corner without disturbing the centered alignment.
+  .admin-navbar-icon-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__live-dot--icon-corner {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    margin: 0;
   }
 
   // Scrollbar styling

@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useDivisions } from '../../../../../hooks/useDivisions';
+import { useInProgressMatches } from '../../../../../hooks/useInProgressMatches';
 import type { FloorballSeasonDto } from '../../../../../api/floorball/floorballSeasonService';
 import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
+import LiveDot from '../../../../../components/LiveDot/LiveDot';
 import '../../../../../styles/AdminTable.scss';
 
 interface SeasonsTableProps {
@@ -31,6 +33,7 @@ export const SeasonsTable = ({
 }: SeasonsTableProps) => {
   const { t } = useTranslation();
   const { divisions } = useDivisions();
+  const { countByCompetitionId } = useInProgressMatches();
 
   const formatDate = (dateString: string) => {
     try {
@@ -127,7 +130,9 @@ export const SeasonsTable = ({
         </tr>
       </thead>
       <tbody>
-        {seasons.map((season) => (
+        {seasons.map((season) => {
+          const liveCount: number = countByCompetitionId.get(season.id) ?? 0;
+          return (
           <tr
             key={season.id}
             className={`admin-table__row--clickable${selectedIds.has(season.id) ? ' admin-table__row--selected' : ''}`}
@@ -141,7 +146,18 @@ export const SeasonsTable = ({
                 onClick={(e) => e.stopPropagation()}
               />
             </td>
-            <td className="admin-table__name">{season.name}</td>
+            <td className="admin-table__name">
+              <span className="admin-table__name-inner">
+                {liveCount > 0 && (
+                  <LiveDot
+                    tone="light"
+                    count={liveCount}
+                    ariaLabel={t('floorball.seasons.matchesInProgress', '{{count}} match(es) in progress', { count: liveCount })}
+                  />
+                )}
+                <span>{season.name}</span>
+              </span>
+            </td>
             <td>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                 {season.seasonDivisions && season.seasonDivisions.length > 0 ? (
@@ -175,7 +191,8 @@ export const SeasonsTable = ({
               />
             </td>
           </tr>
-        ))}
+          );
+        })}
       </tbody>
     </table>
   );

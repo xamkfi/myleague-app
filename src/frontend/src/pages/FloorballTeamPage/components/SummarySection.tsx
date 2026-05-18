@@ -58,7 +58,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                   
                   {/* Group today's matches by season */}
                   {seasons?.map((season) => {
-                     const todaysSeasonMatches = todaysMatches.filter(match => match.seasonId === season.id);
+                     const todaysSeasonMatches = todaysMatches.filter(match => match.competitionId === season.id);
                      
                      // Only render season if it has today's matches
                      if (todaysSeasonMatches.length === 0) return null;
@@ -104,7 +104,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
 
             {/* Seasons */}
             {seasons?.map((season) => {
-               const seasonMatches = matches.filter(match => match.seasonId === season.id);
+               const seasonMatches = matches.filter(match => match.competitionId === season.id);
                
                // Filter out matches that are already shown in today's matches
                const todaysMatchIds = todaysMatches?.map(match => match.id) || [];

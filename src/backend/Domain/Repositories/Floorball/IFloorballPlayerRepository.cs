@@ -100,20 +100,20 @@ public interface IFloorballPlayerRepository
     Task<IEnumerable<FloorballPlayer>> GetActiveByPositionAsync(FloorballPosition position);
     
     /// <summary>
-    /// Gets top scorers for the specified season
+    /// Gets top scorers for the specified competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="count">Maximum number of players to return</param>
-    /// <returns>A collection of top scoring players in the season</returns>
-    Task<IEnumerable<FloorballPlayer>> GetTopScorersAsync(Guid seasonId, int count = 10);
+    /// <returns>A collection of top scoring players in the competition</returns>
+    Task<IEnumerable<FloorballPlayer>> GetTopScorersAsync(Guid competitionId, int count = 10);
     
     /// <summary>
-    /// Gets top assisters for the specified season
+    /// Gets top assisters for the specified competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="count">Maximum number of players to return</param>
-    /// <returns>A collection of top assisting players in the season</returns>
-    Task<IEnumerable<FloorballPlayer>> GetTopAssistersAsync(Guid seasonId, int count = 10);
+    /// <returns>A collection of top assisting players in the competition</returns>
+    Task<IEnumerable<FloorballPlayer>> GetTopAssistersAsync(Guid competitionId, int count = 10);
     
     /// <summary>
     /// Adds a new floorball player

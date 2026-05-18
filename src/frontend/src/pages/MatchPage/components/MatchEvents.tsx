@@ -1,6 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import type { FloorballMatchDto, FloorballGoalEventDto, FloorballPenaltyEventDto } from '../../../types/floorball/floorballTypes';
-import { getPeriodName } from './matchUtils';
+import type {
+  FloorballMatchDto,
+  FloorballGoalEventDto,
+  FloorballPenaltyEventDto,
+} from '../../../types/floorball/floorballTypes';
+import { getPeriodName, getTeamInitials } from './matchUtils';
+import { formatMatchEventTime } from '../../../utils/matchEventFormat';
 
 type MatchEventItem = {
   type: 'goal' | 'penalty';
@@ -16,47 +21,47 @@ interface MatchEventsProps {
 export default function MatchEvents({ match }: MatchEventsProps) {
   const navigate = useNavigate();
 
-  const handlePlayerClick = (playerId: string | undefined, e: React.MouseEvent) => {
+  const handlePlayerClick = (playerId: string | undefined, e: React.MouseEvent): void => {
     if (!playerId) return;
     e.stopPropagation();
     navigate(`/floorballplayer/${playerId}`);
   };
 
-  // Combine all events and sort by time within each period
   const allEvents: MatchEventItem[] = [
-    ...match.goalEvents.map(goal => ({
-      type: 'goal' as const,
+    ...match.goalEvents.map((goal): MatchEventItem => ({
+      type: 'goal',
       time: goal.timeInSeconds,
       periodNumber: goal.periodNumber,
-      event: goal
+      event: goal,
     })),
-    ...match.penaltyEvents.map(penalty => ({
-      type: 'penalty' as const,
+    ...match.penaltyEvents.map((penalty): MatchEventItem => ({
+      type: 'penalty',
       time: penalty.timeInSeconds,
       periodNumber: penalty.periodNumber,
-      event: penalty
-    }))
+      event: penalty,
+    })),
   ];
 
-  // Group events by period
-  const eventsByPeriod = allEvents.reduce((acc, event) => {
-    if (!acc[event.periodNumber]) {
-      acc[event.periodNumber] = [];
-    }
-    acc[event.periodNumber].push(event);
-    return acc;
-  }, {} as Record<number, MatchEventItem[]>);
+  const eventsByPeriod: Record<number, MatchEventItem[]> = allEvents.reduce<Record<number, MatchEventItem[]>>(
+    (acc, event) => {
+      if (!acc[event.periodNumber]) {
+        acc[event.periodNumber] = [];
+      }
+      acc[event.periodNumber].push(event);
+      return acc;
+    },
+    {},
+  );
 
-  // Sort events within each period by time
-  Object.keys(eventsByPeriod).forEach(period => {
+  Object.keys(eventsByPeriod).forEach((period) => {
     eventsByPeriod[parseInt(period)].sort((a, b) => a.time - b.time);
   });
 
-  const getScoreAtEvent = (event: FloorballGoalEventDto) => {
-    let homeScore = 0;
-    let awayScore = 0;
+  const getScoreAtEvent = (event: FloorballGoalEventDto): string => {
+    let homeScore: number = 0;
+    let awayScore: number = 0;
 
-    const sortedGoals = [...match.goalEvents].sort((a, b) => {
+    const sortedGoals: FloorballGoalEventDto[] = [...match.goalEvents].sort((a, b) => {
       if (a.periodNumber !== b.periodNumber) {
         return a.periodNumber - b.periodNumber;
       }
@@ -67,8 +72,10 @@ export default function MatchEvents({ match }: MatchEventsProps) {
     });
 
     for (const goal of sortedGoals) {
-      if (goal.periodNumber > event.periodNumber || 
-          (goal.periodNumber === event.periodNumber && goal.timeInSeconds > event.timeInSeconds)) {
+      if (
+        goal.periodNumber > event.periodNumber ||
+        (goal.periodNumber === event.periodNumber && goal.timeInSeconds > event.timeInSeconds)
+      ) {
         break;
       }
 
@@ -86,13 +93,20 @@ export default function MatchEvents({ match }: MatchEventsProps) {
     return `${homeScore} - ${awayScore}`;
   };
 
-  const isHomeTeam = (teamId: string) => teamId === match.homeTeamId;
+  const isHomeTeam = (teamId: string): boolean => teamId === match.homeTeamId;
+
+  const getTeamShort = (teamId: string): string => {
+    const teamName: string = isHomeTeam(teamId) ? match.homeTeamName : match.awayTeamName;
+    return getTeamInitials(teamName);
+  };
 
   const renderPlayerName = (name: string | undefined, playerId: string | undefined) => {
-    if (!name || name === 'Unknown Player') return <span>{name || 'Unknown Player'}</span>;
+    if (!name || name === 'Unknown Player') {
+      return <span className="event-player-name">{name || 'Unknown Player'}</span>;
+    }
     return (
-      <span 
-        className={`event-player-link ${playerId ? 'clickable' : ''}`}
+      <span
+        className={`event-player-name event-player-link ${playerId ? 'clickable' : ''}`}
         onClick={(e) => handlePlayerClick(playerId, e)}
       >
         {name}
@@ -103,7 +117,7 @@ export default function MatchEvents({ match }: MatchEventsProps) {
   const renderAssistName = (name: string | undefined, assisterId: string | undefined) => {
     if (!name || name === 'Unknown Player') return null;
     return (
-      <span 
+      <span
         className={`event-assist ${assisterId ? 'clickable' : ''}`}
         onClick={(e) => handlePlayerClick(assisterId, e)}
       >
@@ -112,106 +126,80 @@ export default function MatchEvents({ match }: MatchEventsProps) {
     );
   };
 
-  const renderGoalEvent = (event: FloorballGoalEventDto, isHome: boolean) => (
-    <div className={`event-row ${isHome ? 'home-event' : 'away-event'}`}>
-      <div className="event-left">
-        {isHome && (
-          <>
-            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
-            <div className="event-icon goal">G</div>
-            <span className="event-score">{getScoreAtEvent(event)}</span>
-            <div className="goal-info">
-              <span className="event-player">{renderPlayerName(event.playerName, event.playerId)}</span>
-              {event.assisterName && event.assisterName !== 'Unknown Player' && (
-                <span className="event-assists-inline">
-                  {' '}{renderAssistName(event.assisterName, event.assisterId)}
-                </span>
-              )}
-              {event.secondaryAssisterName && event.secondaryAssisterName !== 'Unknown Player' && (
-                <span className="event-assists-inline">
-                  {' '}{renderAssistName(event.secondaryAssisterName, event.secondaryAssisterId)}
-                </span>
-              )}
-            </div>
-          </>
-        )}
+  const renderGoalRow = (event: FloorballGoalEventDto) => {
+    const home: boolean = isHomeTeam(event.teamId);
+    return (
+      <div className={`event-row ${home ? 'home-event' : 'away-event'} goal`}>
+        <span className="event-time" title={`Period ${event.periodNumber}`}>
+          {formatMatchEventTime(event.periodNumber, event.timeInSeconds)}
+        </span>
+        <span className="event-type-badge goal" aria-label="Goal" title="Goal">
+          <span className="badge-letter" aria-hidden>G</span>
+        </span>
+        <span className="event-team-short" title={home ? match.homeTeamName : match.awayTeamName}>
+          {getTeamShort(event.teamId)}
+        </span>
+        <span className="event-score">{getScoreAtEvent(event)}</span>
+        <span className="event-details">
+          {renderPlayerName(event.playerName, event.playerId)}
+          {event.assisterName && event.assisterName !== 'Unknown Player' && (
+            <>
+              {' '}
+              {renderAssistName(event.assisterName, event.assisterId)}
+            </>
+          )}
+          {event.secondaryAssisterName && event.secondaryAssisterName !== 'Unknown Player' && (
+            <>
+              {' '}
+              {renderAssistName(event.secondaryAssisterName, event.secondaryAssisterId)}
+            </>
+          )}
+        </span>
       </div>
-      <div className="event-right">
-        {!isHome && (
-          <>
-            <div className="goal-info">
-              <span className="event-player">{renderPlayerName(event.playerName, event.playerId)}</span>
-              {event.assisterName && event.assisterName !== 'Unknown Player' && (
-                <span className="event-assists-inline">
-                  {' '}{renderAssistName(event.assisterName, event.assisterId)}
-                </span>
-              )}
-              {event.secondaryAssisterName && event.secondaryAssisterName !== 'Unknown Player' && (
-                <span className="event-assists-inline">
-                  {' '}{renderAssistName(event.secondaryAssisterName, event.secondaryAssisterId)}
-                </span>
-              )}
-            </div>
-            <span className="event-score">{getScoreAtEvent(event)}</span>
-            <div className="event-icon goal">G</div>
-            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
-          </>
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
-  const renderPenaltyEvent = (event: FloorballPenaltyEventDto, isHome: boolean) => (
-    <div className={`event-row ${isHome ? 'home-event' : 'away-event'}`}>
-      <div className="event-left">
-        {isHome && (
-          <>
-            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
-            <div className="event-icon penalty">P</div>
-            <span className="event-player">
-              {renderPlayerName(event.playerName, event.playerId)}
-              {event.penaltyType && <span className="penalty-type"> ({event.penaltyType.toLowerCase()})</span>}
-            </span>
-          </>
-        )}
+  const renderPenaltyRow = (event: FloorballPenaltyEventDto) => {
+    const home: boolean = isHomeTeam(event.teamId);
+    return (
+      <div className={`event-row ${home ? 'home-event' : 'away-event'} penalty`}>
+        <span className="event-time" title={`Period ${event.periodNumber}`}>
+          {formatMatchEventTime(event.periodNumber, event.timeInSeconds)}
+        </span>
+        <span className="event-type-badge penalty" aria-label="Penalty" title="Penalty">
+          <span className="badge-letter" aria-hidden>P</span>
+        </span>
+        <span className="event-team-short" title={home ? match.homeTeamName : match.awayTeamName}>
+          {getTeamShort(event.teamId)}
+        </span>
+        <span className="event-details">
+          {renderPlayerName(event.playerName, event.playerId)}
+          {event.penaltyType && (
+            <span className="penalty-type"> ({event.penaltyType.toLowerCase()})</span>
+          )}
+        </span>
       </div>
-      <div className="event-right">
-        {!isHome && (
-          <>
-            <span className="event-player">
-              {renderPlayerName(event.playerName, event.playerId)}
-              {event.penaltyType && <span className="penalty-type"> ({event.penaltyType.toLowerCase()})</span>}
-            </span>
-            <div className="event-icon penalty">P</div>
-            <span className="event-time">{Math.ceil(event.timeInSeconds / 60)}</span>
-          </>
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="match-events">
       {Object.keys(eventsByPeriod)
         .map(Number)
         .sort((a, b) => a - b)
-        .map(period => (
+        .map((period) => (
           <div key={period} className="period-section">
             <div className="period-header">
               <span className="period-name">{getPeriodName(period)}</span>
             </div>
             <div className="period-events">
-              {eventsByPeriod[period].map((eventItem, index) => {
-                const isHome = isHomeTeam(eventItem.event.teamId);
-                return (
-                  <div key={index}>
-                    {eventItem.type === 'goal' 
-                      ? renderGoalEvent(eventItem.event as FloorballGoalEventDto, isHome)
-                      : renderPenaltyEvent(eventItem.event as FloorballPenaltyEventDto, isHome)
-                    }
-                  </div>
-                );
-              })}
+              {eventsByPeriod[period].map((eventItem, index) => (
+                <div key={index}>
+                  {eventItem.type === 'goal'
+                    ? renderGoalRow(eventItem.event as FloorballGoalEventDto)
+                    : renderPenaltyRow(eventItem.event as FloorballPenaltyEventDto)}
+                </div>
+              ))}
             </div>
           </div>
         ))}

@@ -21,9 +21,9 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 /// </summary>
 public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Result<FloorballSeasonDto>>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
     private readonly IFloorballTeamRepository _teamRepository;
-    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
+    private readonly IFloorballCompetitionDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly IFloorballUnitOfWork _floorballUnitOfWork;
     private readonly IFloorballStatisticsRepository _floorballStatisticsRepository;
@@ -40,9 +40,9 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
     /// <param name="floorballStatisticsRepository">The floorball statistics repository</param>
     /// <param name="logger">The logger</param>
     public AddTeamToSeasonHandler(
-        IFloorballSeasonRepository seasonRepository,
+        IFloorballCompetitionRepository seasonRepository,
         IFloorballTeamRepository teamRepository,
-        IFloorballSeasonDivisionRepository seasonDivisionRepository,
+        IFloorballCompetitionDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         IFloorballUnitOfWork floorballUnitOfWork,
         IFloorballStatisticsRepository floorballStatisticsRepository,
@@ -68,11 +68,11 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
         try
         {
             // Get the season
-            FloorballSeason? season = await _seasonRepository.GetByIdAsync(request.SeasonId);
+            FloorballCompetition? season = await _seasonRepository.GetByIdAsync(request.CompetitionId);
             if (season == null)
             {
-                _logger.LogWarning("Season not found with ID: {SeasonId}", request.SeasonId);
-                return Result<FloorballSeasonDto>.NotFound("Season with ID {SeasonId} not found.", request.SeasonId);
+                _logger.LogWarning("Season not found with ID: {SeasonId}", request.CompetitionId);
+                return Result<FloorballSeasonDto>.NotFound("Season with ID {SeasonId} not found.", request.CompetitionId);
             }
 
             // Get the team
@@ -83,7 +83,7 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
                 return Result<FloorballSeasonDto>.NotFound("Team with ID {TeamId} not found.", request.TeamId);
             }
 
-            _logger.LogInformation("Adding team {TeamId} to season {SeasonId}", request.TeamId, request.SeasonId);
+            _logger.LogInformation("Adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
             
             // Use the domain method to add the team (includes business logic validation)
             season.AddTeam(team);
@@ -92,7 +92,7 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
             List<FloorballPlayerSeasonStatistics> players = new List<FloorballPlayerSeasonStatistics>();
             foreach (FloorballTeamPlayer player in team.Roster)
             {
-                FloorballPlayerSeasonStatistics playerSeasonStatistics = new FloorballPlayerSeasonStatistics(player.PlayerId, request.TeamId, request.SeasonId);
+                FloorballPlayerSeasonStatistics playerSeasonStatistics = new FloorballPlayerSeasonStatistics(player.PlayerId, request.TeamId, request.CompetitionId);
                 players.Add(playerSeasonStatistics);
             }
             await _floorballStatisticsRepository.SavePlayerSeasonStatisticsBatchAsync(players, cancellationToken);
@@ -111,21 +111,21 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
                 }
             }
 
-            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+            IEnumerable<FloorballCompetitionDivision> seasonDivisions = await _seasonDivisionRepository.GetCompetitionDivisionsAsync(season.Id);
             IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
             FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, seasonDivisionDtos, clubsDict);
-            _logger.LogInformation("Successfully added team {TeamId} to season {SeasonId}", request.TeamId, request.SeasonId);
+            _logger.LogInformation("Successfully added team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Business rule violation while adding team {TeamId} to season {SeasonId}", request.TeamId, request.SeasonId);
+            _logger.LogWarning(ex, "Business rule violation while adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
             return Result<FloorballSeasonDto>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while adding team {TeamId} to season {SeasonId}", request.TeamId, request.SeasonId);
+            _logger.LogError(ex, "Error occurred while adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
             return Result<FloorballSeasonDto>.Failure("An error occurred while adding the team to the season.");
         }
     }

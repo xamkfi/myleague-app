@@ -91,10 +91,10 @@ function MatchPanelCard({ match }: MatchPanelCardProps) {
       onClick={handleClick}
       onKeyDown={handleKeyDown}
     >
-      {/* Top row: season name + date */}
+      {/* Top row: competition name (season OR tournament) + date */}
       <div className="match-panel-card__top">
         <span className="match-panel-card__season">
-          {match.seasonName || 'Kausi'}
+          {match.competitionName || 'Kausi'}
         </span>
         <span className="match-panel-card__date">{dateLabel}</span>
       </div>

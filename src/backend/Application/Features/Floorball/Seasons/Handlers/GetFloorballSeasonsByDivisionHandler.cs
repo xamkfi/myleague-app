@@ -21,7 +21,7 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 /// </summary>
 public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorballSeasonsByDivisionQuery, Result<IEnumerable<FloorballSeasonDto>>>
 {
-    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
+    private readonly IFloorballCompetitionDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetFloorballSeasonsByDivisionHandler> _logger;
 
@@ -32,7 +32,7 @@ public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorball
     /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
     public GetFloorballSeasonsByDivisionHandler(
-        IFloorballSeasonDivisionRepository seasonDivisionRepository,
+        IFloorballCompetitionDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         ILogger<GetFloorballSeasonsByDivisionHandler> logger)
     {
@@ -53,8 +53,10 @@ public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorball
         {
             _logger.LogInformation("Retrieving floorball seasons for division: {DivisionId}", request.DivisionId);
             
-            IEnumerable<FloorballSeason> seasons = await _seasonDivisionRepository.GetSeasonsByDivisionAsync(request.DivisionId);
-            List<FloorballSeason> seasonList = seasons.ToList();
+            IEnumerable<FloorballCompetition> competitions = await _seasonDivisionRepository.GetCompetitionsByDivisionAsync(request.DivisionId);
+            // FloorballCompetition uses Table-Per-Hierarchy; only return league seasons here,
+            // not tournaments (which are managed via FloorballTournamentController).
+            List<FloorballCompetition> seasonList = competitions.OfType<FloorballSeason>().Cast<FloorballCompetition>().ToList();
 
             // Load clubs for all teams across all seasons
             Dictionary<Guid, Club> clubsDict = new Dictionary<Guid, Club>();
@@ -66,9 +68,9 @@ public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorball
 
             // Include clubs for teams linked via season divisions
             Dictionary<Guid, List<FloorballTeam>> seasonTeamsBySeason = new Dictionary<Guid, List<FloorballTeam>>();
-            foreach (FloorballSeason season in seasonList)
+            foreach (FloorballCompetition season in seasonList)
             {
-                IEnumerable<FloorballSeasonDivisionTeam> seasonDivisionTeams = await _seasonDivisionRepository.GetSeasonDivisionTeamsAsync(season.Id);
+                IEnumerable<FloorballCompetitionDivisionTeam> seasonDivisionTeams = await _seasonDivisionRepository.GetCompetitionDivisionTeamsAsync(season.Id);
                 List<FloorballTeam> divisionTeams = seasonDivisionTeams.Select(sdt => sdt.Team).Where(team => team != null).ToList();
                 seasonTeamsBySeason[season.Id] = divisionTeams;
                 foreach (FloorballTeam team in divisionTeams)
@@ -87,14 +89,14 @@ public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorball
             }
 
             Dictionary<Guid, IReadOnlyCollection<FloorballSeasonDivisionDto>> seasonDivisionsBySeason = new Dictionary<Guid, IReadOnlyCollection<FloorballSeasonDivisionDto>>();
-            foreach (FloorballSeason season in seasonList)
+            foreach (FloorballCompetition season in seasonList)
             {
-                IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+                IEnumerable<FloorballCompetitionDivision> seasonDivisions = await _seasonDivisionRepository.GetCompetitionDivisionsAsync(season.Id);
                 seasonDivisionsBySeason[season.Id] = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
             }
 
             List<FloorballSeasonDto> seasonDtos = new List<FloorballSeasonDto>();
-            foreach (FloorballSeason season in seasonList)
+            foreach (FloorballCompetition season in seasonList)
             {
                 seasonDivisionsBySeason.TryGetValue(season.Id, out IReadOnlyCollection<FloorballSeasonDivisionDto>? seasonDivisions);
                 IReadOnlyCollection<FloorballSeasonDivisionDto> safeSeasonDivisions = seasonDivisions ?? Array.Empty<FloorballSeasonDivisionDto>();

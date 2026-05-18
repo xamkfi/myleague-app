@@ -1,6 +1,7 @@
 import type { 
   ApiResponse
 } from '../../types/floorball/floorballTypes';
+import type { FloorballTournamentGroupStandingDto } from '../../types/floorball/tournamentTypes';
 import { API_URL } from '../../constants/config';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 
@@ -9,7 +10,7 @@ export interface FloorballPlayerSeasonStatisticsDto {
   id: string;
   playerId: string;
   teamId: string;
-  seasonId: string;
+  competitionId: string;
   playerName: string;
   teamName: string;
   teamLogo?: string | null;
@@ -36,7 +37,7 @@ export interface FloorballPlayerSeasonStatisticsDto {
 export interface FloorballTeamSeasonStatisticsDto {
   id: string;
   teamId: string;
-  seasonId: string;
+  competitionId: string;
   teamName: string;
   teamLogo: string;
   seasonName: string;
@@ -96,7 +97,7 @@ export interface FloorballGoalieSeasonStatisticsDto {
   id: string;
   playerId: string;
   teamId: string;
-  seasonId: string;
+  competitionId: string;
   playerName: string;
   teamName: string;
   seasonName: string;
@@ -121,7 +122,7 @@ export interface FloorballGoalieSeasonStatisticsDto {
 }
 
 export interface FloorballSeasonStatisticsSummaryDto {
-  seasonId: string;
+  competitionId: string;
   seasonName: string;
   startDate: string;
   endDate: string;
@@ -170,9 +171,9 @@ export const floorballStatisticsService = {
   /**
    * Get team statistics for a specific season
    */
-  getTeamStatistics: async (seasonId: string, teamId: string): Promise<FloorballTeamSeasonStatisticsDto> => {
+  getTeamStatistics: async (competitionId: string, teamId: string): Promise<FloorballTeamSeasonStatisticsDto> => {
     try {
-      const response = await fetch(`${API_URL}/floorball/statistics/team/${seasonId}/${teamId}`);
+      const response = await fetch(`${API_URL}/floorball/statistics/team/${competitionId}/${teamId}`);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch team statistics');
@@ -195,9 +196,9 @@ export const floorballStatisticsService = {
   /**
    * Get all player statistics for a specific team in a season
    */
-  getTeamPlayerStatistics: async (seasonId: string, teamId: string): Promise<FloorballPlayerSeasonStatisticsDto[]> => {
+  getTeamPlayerStatistics: async (competitionId: string, teamId: string): Promise<FloorballPlayerSeasonStatisticsDto[]> => {
     try {
-      const response = await fetch(`${API_URL}/floorball/statistics/team-players/${seasonId}/${teamId}`);
+      const response = await fetch(`${API_URL}/floorball/statistics/team-players/${competitionId}/${teamId}`);
 
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch team player statistics');
@@ -220,9 +221,9 @@ export const floorballStatisticsService = {
   /**
    * Get player statistics for a specific season
    */
-  getPlayerStatistics: async (seasonId: string, playerId: string): Promise<FloorballPlayerSeasonStatisticsDto> => {
+  getPlayerStatistics: async (competitionId: string, playerId: string): Promise<FloorballPlayerSeasonStatisticsDto> => {
     try {
-      const response = await fetch(`${API_URL}/floorball/statistics/player/${seasonId}/${playerId}`);
+      const response = await fetch(`${API_URL}/floorball/statistics/player/${competitionId}/${playerId}`);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch player statistics');
@@ -270,9 +271,9 @@ export const floorballStatisticsService = {
   /**
    * Get top scorers for a specific season
    */
-  getTopScorers: async (seasonId: string, topN: number = 10): Promise<FloorballPlayerSeasonStatisticsDto[]> => {
+  getTopScorers: async (competitionId: string, topN: number = 10): Promise<FloorballPlayerSeasonStatisticsDto[]> => {
     try {
-      const response = await fetch(`${API_URL}/floorball/statistics/topscorers/${seasonId}?topN=${topN}`);
+      const response = await fetch(`${API_URL}/floorball/statistics/topscorers/${competitionId}?topN=${topN}`);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch top scorers');
@@ -295,9 +296,9 @@ export const floorballStatisticsService = {
   /**
    * Get season statistics summary
    */
-  getSeasonStatistics: async (seasonId: string): Promise<FloorballSeasonStatisticsSummaryDto> => {
+  getSeasonStatistics: async (competitionId: string): Promise<FloorballSeasonStatisticsSummaryDto> => {
     try {
-      const response = await fetch(`${API_URL}/floorball/statistics/season/${seasonId}`);
+      const response = await fetch(`${API_URL}/floorball/statistics/season/${competitionId}`);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch season statistics');
@@ -345,9 +346,9 @@ export const floorballStatisticsService = {
   /**
    * Get team standings for a specific season
    */
-  getTeamStandings: async (seasonId: string): Promise<FloorballTeamSeasonStatisticsDto[]> => {
+  getTeamStandings: async (competitionId: string): Promise<FloorballTeamSeasonStatisticsDto[]> => {
     try {
-      const response = await fetch(`${API_URL}/floorball/statistics/standings/${seasonId}`);
+      const response = await fetch(`${API_URL}/floorball/statistics/standings/${competitionId}`);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch team standings');
@@ -363,6 +364,31 @@ export const floorballStatisticsService = {
       return apiResponse.data;
     } catch (error) {
       console.error('Error fetching team standings:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get standings for a single tournament group, computed from completed group-stage matches.
+   */
+  getTournamentGroupStandings: async (groupId: string): Promise<FloorballTournamentGroupStandingDto[]> => {
+    try {
+      const response = await fetch(`${API_URL}/floorball/statistics/standings/group/${groupId}`);
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch tournament group standings');
+        throw new Error(errorMessage);
+      }
+
+      const apiResponse: ApiResponse<FloorballTournamentGroupStandingDto[]> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch tournament group standings'));
+      }
+
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching tournament group standings:', error);
       throw error;
     }
   }

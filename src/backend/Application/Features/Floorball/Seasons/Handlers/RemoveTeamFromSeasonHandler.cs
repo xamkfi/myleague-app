@@ -13,17 +13,17 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 
 public class RemoveTeamFromSeasonHandler : IRequestHandler<RemoveTeamFromSeasonCommand, Result<FloorballSeasonDto>>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
     private readonly IFloorballTeamRepository _teamRepository;
-    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
+    private readonly IFloorballCompetitionDivisionRepository _seasonDivisionRepository;
     private readonly IClubRepository _clubRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<RemoveTeamFromSeasonHandler> _logger;
 
     public RemoveTeamFromSeasonHandler(
-        IFloorballSeasonRepository seasonRepository,
+        IFloorballCompetitionRepository seasonRepository,
         IFloorballTeamRepository teamRepository,
-        IFloorballSeasonDivisionRepository seasonDivisionRepository,
+        IFloorballCompetitionDivisionRepository seasonDivisionRepository,
         IClubRepository clubRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<RemoveTeamFromSeasonHandler> logger)
@@ -40,14 +40,14 @@ public class RemoveTeamFromSeasonHandler : IRequestHandler<RemoveTeamFromSeasonC
     {
         try
         {
-            _logger.LogInformation("Removing team {TeamId} from season {SeasonId}", request.TeamId, request.SeasonId);
+            _logger.LogInformation("Removing team {TeamId} from season {SeasonId}", request.TeamId, request.CompetitionId);
 
             // Get the season
-            FloorballSeason? season = await _seasonRepository.GetByIdAsync(request.SeasonId);
+            FloorballCompetition? season = await _seasonRepository.GetByIdAsync(request.CompetitionId);
             if (season == null)
             {
-                _logger.LogWarning("Season with ID {SeasonId} not found", request.SeasonId);
-                return Result<FloorballSeasonDto>.Failure($"Season with ID {request.SeasonId} not found");
+                _logger.LogWarning("Season with ID {SeasonId} not found", request.CompetitionId);
+                return Result<FloorballSeasonDto>.Failure($"Season with ID {request.CompetitionId} not found");
             }
 
             // Get the team
@@ -64,7 +64,7 @@ public class RemoveTeamFromSeasonHandler : IRequestHandler<RemoveTeamFromSeasonC
             // Save changes
             await _unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Successfully removed team {TeamId} from season {SeasonId}", request.TeamId, request.SeasonId);
+            _logger.LogInformation("Successfully removed team {TeamId} from season {SeasonId}", request.TeamId, request.CompetitionId);
 
             // Load clubs for all teams in the season for the DTO mapping
             Dictionary<Guid, Club> clubs = new Dictionary<Guid, Club>();
@@ -77,7 +77,7 @@ public class RemoveTeamFromSeasonHandler : IRequestHandler<RemoveTeamFromSeasonC
                 }
             }
 
-            IEnumerable<FloorballSeasonDivision> seasonDivisions = await _seasonDivisionRepository.GetSeasonDivisionsAsync(season.Id);
+            IEnumerable<FloorballCompetitionDivision> seasonDivisions = await _seasonDivisionRepository.GetCompetitionDivisionsAsync(season.Id);
             IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
 
             FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(season, seasonDivisionDtos, clubs);
@@ -85,7 +85,7 @@ public class RemoveTeamFromSeasonHandler : IRequestHandler<RemoveTeamFromSeasonC
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing team {TeamId} from season {SeasonId}", request.TeamId, request.SeasonId);
+            _logger.LogError(ex, "Error removing team {TeamId} from season {SeasonId}", request.TeamId, request.CompetitionId);
             return Result<FloorballSeasonDto>.Failure($"An error occurred while removing team from season: {ex.Message}");
         }
     }

@@ -22,12 +22,12 @@ function FloorballPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStandingsForSeason = useCallback(async (seasonId: string): Promise<FloorballTeamSeasonStatisticsDto[]> => {
+  const fetchStandingsForSeason = useCallback(async (competitionId: string): Promise<FloorballTeamSeasonStatisticsDto[]> => {
     try {
-      const standings = await floorballStatisticsService.getTeamStandings(seasonId);
+      const standings = await floorballStatisticsService.getTeamStandings(competitionId);
       return standings;
     } catch (err) {
-      console.error(`Failed to fetch standings for season ${seasonId}:`, err);
+      console.error(`Failed to fetch standings for season ${competitionId}:`, err);
       return [];
     }
   }, []);

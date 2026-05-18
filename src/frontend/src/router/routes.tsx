@@ -1,9 +1,9 @@
-import { Suspense } from 'react';
 import type { ComponentType } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
 import RouteErrorBoundary from '../components/RouteErrorBoundary/RouteErrorBoundary';
+import SuspenseWrapper from './SuspenseWrapper';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 // Public pages
@@ -14,6 +14,7 @@ const MAHLPage = lazyWithRetry(() => import('../pages/MAHLPage/MAHLPage'));
 const AgeGroupsPage = lazyWithRetry(() => import('../pages/AgeGroupsPage/AgeGroupsPage'));
 const RegisterPage = lazyWithRetry(() => import('../pages/RegisterPage/RegisterPage'));
 const TournamentsPage = lazyWithRetry(() => import('../pages/TournamentsPage/TournamentsPage'));
+const TournamentPage = lazyWithRetry(() => import('../pages/TournamentPage/TournamentPage'));
 const SportsPage = lazyWithRetry(() => import('../pages/SportsPage/SportsPage'));
 const ClubPage = lazyWithRetry(() => import('../pages/ClubPage/ClubPage'));
 const PlayerPage = lazyWithRetry(() => import('../pages/PlayerPage/PlayerPage'));
@@ -63,14 +64,13 @@ const EditRefereePage = lazyWithRetry(() => import('../pages/AdminPage/Floorball
 const FloorballSeasonsPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage'));
 const CreateSeasonPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/CreateSeasonPage/CreateSeasonPage'));
 const EditSeasonPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/EditSeasonPage/EditSeasonPage'));
+const FloorballTournamentsPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTournamentsPage/FloorballTournamentsPage'));
+const CreateTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTournamentsPage/CreateTournamentPage/CreateTournamentPage'));
+const EditTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTournamentsPage/EditTournamentPage/EditTournamentPage'));
 const MatchManagementPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/MatchManagementPage/MatchManagementPage'));
 const CreateMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/CreateMatchPage/CreateMatchPage'));
 const EditMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/EditMatchPage/EditMatchPage'));
 const ManageMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/ManageMatchPage/ManageMatchPage'));
-
-function SuspenseWrapper({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={null}>{children}</Suspense>;
-}
 
 export const routes: RouteObject[] = [
   {
@@ -152,6 +152,18 @@ export const routes: RouteObject[] = [
   {
     path: '/turnaukset',
     element: <SuspenseWrapper><TournamentsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/tournaments',
+    element: <SuspenseWrapper><TournamentsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/tournaments/:id',
+    element: <SuspenseWrapper><TournamentPage /></SuspenseWrapper>
+  },
+  {
+    path: '/turnaukset/:id',
+    element: <SuspenseWrapper><TournamentPage /></SuspenseWrapper>
   },
   {
     path: '/lajit',
@@ -297,8 +309,41 @@ export const routes: RouteObject[] = [
             element: <ProtectedRoute><SuspenseWrapper><CreateSeasonPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
-            path: ':seasonId/edit',
+            path: 'matches',
+            element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage mode="season" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches/create',
+            element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':competitionId/edit',
             element: <ProtectedRoute><SuspenseWrapper><EditSeasonPage /></SuspenseWrapper></ProtectedRoute>
+          }
+        ]
+      },
+      {
+        path: 'tournaments',
+        children: [
+          {
+            index: true,
+            element: <ProtectedRoute><SuspenseWrapper><FloorballTournamentsPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'create',
+            element: <ProtectedRoute><SuspenseWrapper><CreateTournamentPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches',
+            element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage mode="tournament" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches/create',
+            element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage mode="tournament" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':competitionId/edit',
+            element: <ProtectedRoute><SuspenseWrapper><EditTournamentPage /></SuspenseWrapper></ProtectedRoute>
           }
         ]
       },
@@ -306,7 +351,8 @@ export const routes: RouteObject[] = [
         path: 'matches',
         children: [
           { index: true, element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage /></SuspenseWrapper></ProtectedRoute> },
-          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          // Legacy route — defaults to season-based creation for back-compat.
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute> },
           { path: ':matchId/edit', element: <ProtectedRoute><SuspenseWrapper><EditMatchPage /></SuspenseWrapper></ProtectedRoute> },
           { path: 'manage/:matchId', element: <ProtectedRoute><SuspenseWrapper><ManageMatchPage /></SuspenseWrapper></ProtectedRoute> },
           { path: 'completed', element: <Navigate to="/admin/floorball/matches?tab=completed" replace /> },
