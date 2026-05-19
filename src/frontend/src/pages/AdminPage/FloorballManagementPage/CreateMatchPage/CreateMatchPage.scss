@@ -203,16 +203,43 @@
 }
 
 // ── Field row (side-by-side, for teams) ──
+//
+// Layout: two stacked label+select fields with a "VS" badge between them.
+// Cells stretch full height of the row so labels stay aligned at the top,
+// the selects are pushed to the bottom of their cell, and the VS badge
+// floats centred on the same baseline as the selects. This is robust to
+// focus rings / disabled state styling that previously made the inputs
+// drift out of alignment.
 .cm-field-row {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: map.get($spacing, 'sm');
-  align-items: end;
+  align-items: stretch;
+
+  .cm-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+
+    label {
+      flex-shrink: 0;
+    }
+
+    // Push the input/select to the bottom of the cell so it sits on the
+    // same baseline as its sibling in the next column.
+    select,
+    input[type="text"],
+    input[type="number"] {
+      margin-top: auto;
+    }
+  }
 
   &__vs {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
+    // Approx. height of one label row ("Home Team *" + margin-bottom)
+    // so the VS badge lands on the same baseline as the selects.
     padding-bottom: map.get($spacing, 'xs');
 
     span {
@@ -220,19 +247,26 @@
       font-size: map.get($font-sizes, 'sm');
       color: $color-text-muted;
       background: $color-neutral-light-grey;
-      padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
       border-radius: map.get($border-radius, 'sm');
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      line-height: 1.2;
     }
   }
 
   @media (max-width: map.get($breakpoints, 'tablet')) {
     grid-template-columns: 1fr;
 
+    .cm-field select,
+    .cm-field input[type="text"],
+    .cm-field input[type="number"] {
+      margin-top: 0;
+    }
+
     &__vs {
-      padding: 0;
-      span { margin: 0 auto; }
+      padding: map.get($spacing, 'xs') 0;
+      justify-content: flex-start;
     }
   }
 }

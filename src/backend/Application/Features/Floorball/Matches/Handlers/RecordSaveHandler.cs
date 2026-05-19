@@ -103,7 +103,7 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
                 // Still record the save but log the discrepancy
             }
 
-            await UpdateGoalieSeasonStatistics(goalie.Id, request.TeamId, match.SeasonId, 1, 1, 0, cancellationToken);
+            await UpdateGoalieSeasonStatistics(goalie.Id, request.TeamId, match.CompetitionId, 1, 1, 0, cancellationToken);
 
             // Update match team statistics for the attacking team (the team that took the shot that was saved)
             // The save is for the defending team (request.TeamId), so we need to update the opposing team's stats
@@ -116,7 +116,7 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
 
             await _notificationSenderService.SendNotificationAsync(
                 FloorballNotificationEvents.SaveRecorded,
-                new { MatchId = match.Id });
+                new MatchNotificationPayload(match.Id));
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             return Result<FloorballMatchDto>.Success(matchDto);

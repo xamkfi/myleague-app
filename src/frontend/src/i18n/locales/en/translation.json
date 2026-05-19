@@ -65,6 +65,9 @@
     "noCompletedMatches": "No completed matches",
     "allMatches": "All matches",
     "loading": "Loading...",
+    "loadingMore": "Loading more...",
+    "showMore": "Show more ({{count}})",
+    "showLess": "Show less",
     "error": "Failed to load matches"
   },
   "language": {
@@ -77,7 +80,13 @@
       "summary": "SUMMARY",
       "stats": "STATS",
       "lineups": "LINEUPS",
-      "table": "TABLE"
+      "table": "TABLE",
+      "groupStandings": "GROUP STANDINGS",
+      "playoffBracket": "PLAYOFF BRACKET"
+    },
+    "standings": {
+      "groupFallback": "Group",
+      "playoffBracket": "Playoff bracket"
     },
     "dateTime": {
       "weekdays": {
@@ -149,6 +158,10 @@
     "database": "Database",
     "sportsTitle": "Sports",
     "view": "Admin view",
+    "navbar": {
+      "matchesInProgress_one": "{{count}} match in progress",
+      "matchesInProgress_other": "{{count}} matches in progress"
+    },
     "actions": {
       "home": "Home",
       "persons": "Persons",
@@ -383,6 +396,13 @@
         "updateRoleFailed": "Failed to update person role"
       }
     },
+    "editor": {
+      "confirmDeleteImages": "Are you sure you want to delete {{count}} image(s)?",
+      "confirmDeleteMatches": "Are you sure you want to delete {{count}} match result(s)?",
+      "confirmDeleteBoth": "Are you sure you want to delete {{images}} image(s) and {{matches}} match result(s)?",
+      "uploadFailed": "Image upload failed.",
+      "placeholder": "Start writing here..."
+    },
     "news":{
       "pageTitle": "News Management",
       "createNew": "Create New",
@@ -564,13 +584,21 @@
       "actions": {
         "teams": "Teams",
         "manageTeams": "Manage teams",
+        "managePlayers": "Manage players",
+        "manageSeasons": "Manage seasons",
+        "manageTournaments": "Manage tournaments",
+        "manageMatches": "Manage matches",
+        "manageReferees": "Manage referees",
         "players": "Manage Players",
         "coaches": "Manage Coaches",
         "teamManagers": "Manage Team Managers",
         "referees": "Manage Referees",
         "matches": "Manage Matches",
         "matchEvents": "Manage Match Events",
-        "seasons": "Manage Seasons"
+        "seasons": "Manage Seasons",
+        "seasonMatches": "Manage Season Matches",
+        "tournaments": "Manage Tournaments",
+        "tournamentMatches": "Manage Tournament Matches"
       }
     },
     "teams": {
@@ -689,7 +717,10 @@
       "totalCount": "{{count}} seasons",
       "createNew": "Create New Season",
       "showActiveOnly": "Show Active Only",
+      "backToList": "Back to Seasons",
       "division": "Division",
+      "matchesInProgress_one": "{{count}} match in progress",
+      "matchesInProgress_other": "{{count}} matches in progress",
       "fields": {
         "name": "Name",
         "division": "Division",
@@ -723,6 +754,158 @@
         "divisionRequired": "Please select a valid division.",
         "startDateRequired": "Start date is required.",
         "endDateRequired": "End date is required."
+      }
+    },
+    "tournaments": {
+      "title": "Manage Tournaments",
+      "totalCount": "{{count}} tournaments",
+      "createNew": "Create New Tournament",
+      "editTitle": "Edit Tournament",
+      "createTitle": "Create New Tournament",
+      "noTournaments": "No tournaments found",
+      "noGroups": "No groups",
+      "matchesInProgress_one": "{{count}} match in progress",
+      "matchesInProgress_other": "{{count}} matches in progress",
+      "showOngoingOnly": "Show Ongoing Only",
+      "filterByStatus": "Filter by status",
+      "allStatuses": "All statuses",
+      "selectAll": "Select all tournaments",
+      "statusLabel": "Status",
+      "teamsCount": "{{count}} teams",
+      "matchesCount": "{{count}} matches",
+      "backToList": "Back to Tournaments",
+      "fields": {
+        "name": "Name",
+        "venue": "Venue",
+        "groups": "Groups",
+        "startDate": "Starts",
+        "endDate": "Ends",
+        "teams": "Teams",
+        "matches": "Matches",
+        "status": "Status"
+      },
+      "tabs": {
+        "details": "Tournament Details",
+        "groups": "Manage Groups",
+        "teams": "Manage Teams",
+        "matches": "Matches",
+        "bracket": "Playoff Bracket"
+      },
+      "matchesTab": {
+        "empty": "No matches have been added to this tournament yet.",
+        "createFirst": "Create the first match",
+        "createNew": "Create new match"
+      },
+      "sections": {
+        "basicInfo": "Basic Information",
+        "schedule": "Schedule",
+        "groupStageRules": "Group Stage Rules",
+        "playoffRules": "Playoff Rules",
+        "structure": "Structure"
+      },
+      "bracket": {
+        "empty": "Playoff bracket has not been generated yet. Start the playoff stage from the Details tab."
+      },
+      "status": {
+        "draft": "Draft",
+        "groupStage": "Group Stage",
+        "playoffStage": "Playoff Stage",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "lifecycle": {
+        "startGroupStage": "Start Group Stage",
+        "startPlayoffStage": "Start Playoff",
+        "complete": "Complete Tournament",
+        "cancel": "Cancel Tournament",
+        "moreActions": "More actions",
+        "matchesLoadError": "Failed to load match status — preconditions cannot be verified. Check match progress before triggering lifecycle actions.",
+        "startGroupStageSuccess": "Group stage started successfully.",
+        "startPlayoffStageSuccess": "Playoff stage started successfully.",
+        "completeSuccess": "Tournament completed successfully.",
+        "cancelSuccess": "Tournament cancelled successfully.",
+        "statusDescription": {
+          "draft": "Tournament is in draft state. Add groups and teams, then start the group stage to schedule matches.",
+          "groupStageWithPlayoff": "Group stage in progress. Once all group-stage matches are complete, you can move on to the playoffs.",
+          "groupStageNoPlayoff": "Group stage in progress. Once all matches are complete, you can mark the tournament as completed.",
+          "playoffStage": "Playoff stage in progress. Complete the tournament once all playoff matches are decided.",
+          "completed": "Tournament has been completed. No further lifecycle actions are available.",
+          "cancelled": "Tournament has been cancelled. No further lifecycle actions are available."
+        },
+        "tooltip": {
+          "startGroupStage": "Marks the tournament as active and exposes matches on public pages.",
+          "startPlayoffStage": "Calculates group standings, builds the playoff bracket and schedules playoff matches. Requires all group-stage matches to be completed.",
+          "complete": "Closes the tournament. Requires all matches to be completed first.",
+          "cancel": "Cancels the tournament. This action is final and cannot be undone."
+        },
+        "disabled": {
+          "noGroups": "Add at least one group before starting the group stage.",
+          "loadingMatches": "Loading match status...",
+          "unsupportedPlayoffSize": "Unsupported playoff size ({{size}}). Adjust groups or teams-advancing-per-group so the total is 2, 4 or 8.",
+          "noGroupStageMatches": "No group-stage matches have been created yet.",
+          "groupStageInProgress": "{{completed}}/{{total}} group-stage matches played. Finish them all before starting the playoffs.",
+          "noMatches": "Tournament has no matches yet.",
+          "matchesInProgress": "{{completed}}/{{total}} matches played. Finish them all before completing the tournament."
+        },
+        "prereq": {
+          "tournamentInDraft": "Tournament is in draft state.",
+          "hasAtLeastOneGroup": "Tournament has at least one group.",
+          "hasPlayoffStageEnabled": "Tournament has playoff stage enabled.",
+          "supportedPlayoffSize": "Playoff bracket size is supported (2, 4 or 8 teams). Current: {{size}}.",
+          "allGroupStageMatchesDone": "All group-stage matches are completed ({{completed}}/{{total}}).",
+          "tournamentIsRunning": "Tournament is running (group or playoff stage).",
+          "allMatchesDone": "All matches are completed ({{completed}}/{{total}})."
+        },
+        "confirm": {
+          "startGroupStage": {
+            "title": "Start group stage",
+            "description": "Marks the tournament as active. After this, the schedule and match data become visible on public pages.",
+            "confirm": "Start group stage"
+          },
+          "startPlayoffStage": {
+            "title": "Start playoff stage",
+            "description": "Calculates group standings, builds the playoff bracket and schedules playoff matches. This action cannot be undone without manual cleanup.",
+            "confirm": "Start playoff stage"
+          },
+          "complete": {
+            "title": "Complete tournament",
+            "description": "Closes the tournament for good. After this, matches and standings are not expected to change.",
+            "confirm": "Complete tournament"
+          },
+          "cancel": {
+            "title": "Cancel tournament",
+            "description": "Cancels the tournament. This is a final action and cannot be undone without database surgery. Match data is preserved but the tournament is marked cancelled.",
+            "confirm": "Yes, cancel tournament",
+            "acknowledge": "I understand that cancelling the tournament is a final action."
+          }
+        }
+      },
+      "actions": {
+        "menu": "Tournament actions menu",
+        "manageMatches": "Manage tournament matches",
+        "bulkDelete": "Delete ({{count}})"
+      },
+      "errors": {
+        "networkError": "Network error. Please check your connection and try again.",
+        "validationError": "Invalid data provided. Please check your input and try again.",
+        "notFound": "Tournament not found. It may have been deleted.",
+        "serverError": "Server error. Please try again later.",
+        "operationFailed": "Operation failed. Please try again."
+      },
+      "confirmDelete": {
+        "title": "Confirm Delete",
+        "message": "Are you sure you want to delete tournament \"{{name}}\"?",
+        "warning": "This action cannot be undone."
+      },
+      "teamGroup": {
+        "removeTeam": "Remove from group",
+        "removeTeamTooltip": "Remove this team from the group",
+        "removeTeamDisabledReason": "Teams cannot be removed once the group stage has started.",
+        "confirmRemoveTitle": "Remove team from group",
+        "confirmRemoveBody": "Remove {{teamName}} from {{groupName}}?",
+        "confirmRemoveDetail": "The team will become available again in the list below.",
+        "confirmButton": "Remove from group",
+        "teamRemovedSuccess": "Team removed from group."
       }
     },
     "categories": {
@@ -765,6 +948,10 @@
     "matches": {
       "title": "Match Management",
       "subtitle": "Manage your floorball matches, track live games, and organize your season",
+      "seasonTitle": "Season Match Management",
+      "seasonSubtitle": "Manage matches scheduled within league seasons",
+      "tournamentTitle": "Tournament Match Management",
+      "tournamentSubtitle": "Manage matches scheduled within tournaments",
       "loading": "Loading matches...",
       "noMatchesFound": "No matches found",
       "noMatchesForSeason": "No matches found for the selected season",
@@ -791,13 +978,6 @@
         "score": "Score",
         "status": "Status"
       },
-      "sections": {
-        "matches": "Matches",
-        "ongoing": "Ongoing Matches",
-        "scheduled": "Scheduled Matches",
-        "completed": "Completed Matches",
-        "cancelled": "Cancelled Matches"
-      },
       "tabs": {
         "all": "All",
         "ongoing": "Ongoing",
@@ -808,31 +988,92 @@
       },
       "create": {
         "title": "Create New Match",
+        "seasonTitle": "Create Season Match",
+        "tournamentTitle": "Create Tournament Match",
+        "submit": "Create Match",
         "season": "Season",
         "homeTeam": "Home Team",
         "awayTeam": "Away Team",
         "referee": "Referee",
         "dateTime": "Date & Time",
         "venue": "Venue",
-        "createMatch": "Create Match"
+        "createMatch": "Create Match",
+        "lockedCompetitionTooltip": "Tournament is locked from context"
+      },
+      "fields": {
+        "season": "Season",
+        "tournament": "Tournament",
+        "division": "Division",
+        "group": "Group",
+        "homeTeam": "Home Team",
+        "awayTeam": "Away Team",
+        "referee": "Referee",
+        "dateTime": "Date & Time",
+        "venue": "Venue"
+      },
+      "sections": {
+        "matches": "Matches",
+        "ongoing": "Ongoing Matches",
+        "scheduled": "Scheduled Matches",
+        "completed": "Completed Matches",
+        "cancelled": "Cancelled Matches",
+        "seasonDivision": "Season & Division",
+        "tournamentGroup": "Tournament & Group",
+        "teams": "Teams",
+        "schedule": "Schedule & Venue",
+        "referee": "Referee"
       },
       "placeholders": {
-        "selectSeason": "Select Season",
-        "selectHomeTeam": "Select Home Team",
-        "selectAwayTeam": "Select Away Team", 
+        "selectSeason": "-- Select a season --",
+        "selectTournament": "-- Select a tournament --",
+        "selectDivision": "-- Select a division --",
+        "selectGroup": "-- Select a group --",
+        "selectHomeTeam": "-- Select home team --",
+        "selectAwayTeam": "-- Select away team --",
         "selectReferee": "Select Referee",
+        "noReferee": "-- No referee (assign later) --",
         "searchSeasons": "Search seasons...",
-        "searchTeams": "Search teams...", 
+        "searchTeams": "Search teams...",
         "searchReferees": "Search referees...",
         "hoursPlaceholder": "HH",
         "minutesPlaceholder": "MM",
+        "venue": "Enter venue name",
         "venuePlaceholder": "Enter venue (optional)"
       },
       "validation": {
         "fillRequired": "Please fill in all required fields",
+        "sameTeam": "Home team and away team cannot be the same",
         "sameTeams": "Home team and away team cannot be the same",
         "validDateTime": "Please enter a valid date and time",
+        "dateTimeRequired": "Please enter a valid date and time",
+        "seasonRequired": "Please select a season.",
+        "tournamentRequired": "Please select a tournament.",
+        "divisionRequired": "Please select a division.",
+        "groupRequired": "Please select a group.",
+        "homeTeamRequired": "Please select a home team.",
+        "awayTeamRequired": "Please select an away team.",
         "createFailed": "Failed to create match"
+      },
+      "noGroupsInTournament": "This tournament has no groups yet. Add groups in the tournament edit page first.",
+      "noDivisionsInSeason": "This season has no divisions. Please add divisions to the season first.",
+      "notEnoughTeams": "This division needs at least 2 teams. Please add teams to the season division first.",
+      "notEnoughTeamsInGroup": "This group needs at least 2 teams. Add teams to the group from the tournament edit page first.",
+      "loadingTournamentDetails": "Loading tournament details...",
+      "refereeHint": "You can assign a referee later from the match details page.",
+      "created": "Match created successfully!",
+      "matchForm": {
+        "loading": "Loading match...",
+        "notLoaded": "Failed to load match details.",
+        "editSeasonMatch": "Edit season match",
+        "editTournamentMatch": "Edit tournament match",
+        "season": "Season",
+        "tournament": "Tournament",
+        "selectSeason": "Select season",
+        "selectTournament": "Select tournament",
+        "searchSeasons": "Search seasons...",
+        "searchTournaments": "Search tournaments...",
+        "noSeasons": "No seasons found",
+        "noTournaments": "No tournaments found"
       },
       "emptyStates": {
         "noSeasons": "No seasons found",
@@ -850,7 +1091,10 @@
       },
       "filters": {
         "filterBySeason": "Filter by Season:",
+        "filterByTournament": "Filter by Tournament:",
         "allSeasons": "All Seasons",
+        "allTournaments": "All Tournaments",
+        "allCompetitions": "All Competitions",
         "searchByTeam": "Search by Team:",
         "searchPlaceholder": "Search for team names..."
       },
@@ -867,6 +1111,7 @@
         "live": "Live View",
         "cancel": "Cancel Match",
         "reactivate": "Reactivate Match",
+        "edit": "Edit match details",
         "menu": "Match actions menu"
       },
       "confirmCancel": {
@@ -943,6 +1188,7 @@
     "all": "All",
     "create": "Create",
     "close": "Close",
+    "processing": "Processing...",
     "pagination": {
       "previous": "Previous",
       "next": "Next",

@@ -62,38 +62,38 @@ public class GetPlayerSeasonStatisticsHandler : IRequestHandler<GetPlayerSeasonS
     {
         try
         {
-            _logger.LogInformation("Getting player season statistics for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.SeasonId);
+            _logger.LogInformation("Getting player season statistics for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.CompetitionId);
 
             // Note: We need to find the team ID for this player in this season
             // This is a limitation of our current design - we might need to adjust the repository method
             IEnumerable<Domain.Entities.Floorball.FloorballPlayerSeasonStatistics> allPlayerStats = 
-                await _statisticsRepository.GetPlayerStatisticsBySeasonAsync(request.SeasonId, cancellationToken);
+                await _statisticsRepository.GetPlayerStatisticsByCompetitionAsync(request.CompetitionId, cancellationToken);
 
             Domain.Entities.Floorball.FloorballPlayerSeasonStatistics? playerStats = 
                 allPlayerStats.FirstOrDefault(ps => ps.PlayerId == request.PlayerId);
 
             if (playerStats == null)
             {
-                _logger.LogWarning("Player season statistics not found for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.SeasonId);
-                return Result<FloorballPlayerSeasonStatisticsDto>.NotFound("Player season statistics", $"Player {request.PlayerId} in season {request.SeasonId}");
+                _logger.LogWarning("Player season statistics not found for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.CompetitionId);
+                return Result<FloorballPlayerSeasonStatisticsDto>.NotFound("Player season statistics", $"Player {request.PlayerId} in season {request.CompetitionId}");
             }
 
             Person? person = await _personRepository.GetByIdAsync(playerStats.Player.PersonId); 
 
             if(person == null)
             {
-                _logger.LogWarning("Player season statistics not found for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.SeasonId);
-                return Result<FloorballPlayerSeasonStatisticsDto>.NotFound("Player season statistics", $"Player {request.PlayerId} in season {request.SeasonId}");
+                _logger.LogWarning("Player season statistics not found for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.CompetitionId);
+                return Result<FloorballPlayerSeasonStatisticsDto>.NotFound("Player season statistics", $"Player {request.PlayerId} in season {request.CompetitionId}");
             }
 
             FloorballPlayerSeasonStatisticsDto dto = FloorballStatisticsMapper.ToDto(playerStats, person.FullName);
             
-            _logger.LogInformation("Successfully retrieved player season statistics for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.SeasonId);
+            _logger.LogInformation("Successfully retrieved player season statistics for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.CompetitionId);
             return Result<FloorballPlayerSeasonStatisticsDto>.Success(dto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while getting player season statistics for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.SeasonId);
+            _logger.LogError(ex, "Error occurred while getting player season statistics for Player: {PlayerId} in Season: {SeasonId}", request.PlayerId, request.CompetitionId);
             return Result<FloorballPlayerSeasonStatisticsDto>.Failure("An error occurred while retrieving player season statistics.");
         }
     }

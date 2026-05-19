@@ -328,51 +328,99 @@
 
 .event-row {
   display: flex;
+  align-items: center;
+  gap: 0.875rem;
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid $color-neutral-light-grey;
   min-height: 48px;
-  align-items: center;
+  background-color: white;
 
   &:last-child {
     border-bottom: none;
   }
 
-  &.home-event {
-    justify-content: flex-start;
-    
-    .event-left {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
+  &.goal {
+    border-left: 4px solid $color-green-primary;
+  }
+
+  &.penalty {
+    border-left: 4px solid $color-red-primary;
+  }
+
+  .event-time {
+    flex: 0 0 auto;
+    min-width: 84px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: $color-neutral-black;
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+  }
+
+  .event-type-badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: white;
+
+    &.goal {
+      background-color: $color-green-primary;
     }
 
-    .event-right {
-      display: none;
+    &.penalty {
+      background-color: $color-red-primary;
+    }
+
+    .badge-letter {
+      line-height: 1;
     }
   }
 
-  &.away-event {
-    justify-content: flex-end;
-    
-    .event-left {
-      display: none;
-    }
-
-    .event-right {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-direction: row-reverse;
-    }
+  .event-team-short {
+    flex: 0 0 auto;
+    min-width: 44px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background-color: $color-neutral-light-grey;
+    color: $color-neutral-black;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-align: center;
+    text-transform: uppercase;
   }
-}
 
-.event-score {
-  font-weight: 700;
-  color: $color-neutral-black;
-  font-size: 0.875rem;
-  min-width: 40px;
-  text-align: center;
+  .event-score {
+    flex: 0 0 auto;
+    min-width: 48px;
+    text-align: center;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: $color-neutral-black;
+    font-size: 0.875rem;
+  }
+
+  .event-details {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem;
+    color: $color-neutral-black;
+    font-size: 0.875rem;
+  }
+
+  .event-player-name {
+    font-weight: 600;
+    color: $color-neutral-black;
+  }
 }
 
 .event-assist {
@@ -401,12 +449,6 @@
       text-decoration: underline;
     }
   }
-}
-
-.event-assists-inline {
-  font-size: 0.75rem;
-  color: $color-neutral-dark-grey;
-  font-style: italic;
 }
 
 .penalty-type {
@@ -538,21 +580,31 @@
   .event-row {
     padding: map.get($spacing, 'sm') map.get($spacing, 'md');
     min-height: 40px;
-  }
+    gap: map.get($spacing, 'sm');
 
-  .event-time,
-  .event-score,
-  .event-player {
-    font-size: 0.8125rem;
+    .event-time {
+      min-width: 76px;
+      font-size: 0.75rem;
+    }
+
+    .event-score,
+    .event-details {
+      font-size: 0.8125rem;
+    }
+
+    .event-type-badge {
+      width: 24px;
+      height: 24px;
+      font-size: 0.75rem;
+    }
+
+    .event-team-short {
+      font-size: 0.6875rem;
+      min-width: 40px;
+    }
   }
 
   .event-assist {
-    font-size: 0.6875rem;
-  }
-
-  .event-icon {
-    width: 20px;
-    height: 20px;
     font-size: 0.6875rem;
   }
 }
@@ -670,21 +722,33 @@
   .event-row {
     padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
     min-height: 35px;
-  }
+    gap: map.get($spacing, 'xs');
+    flex-wrap: wrap;
 
-  .event-time,
-  .event-score,
-  .event-player {
-    font-size: 0.75rem;
+    .event-time {
+      min-width: 70px;
+      font-size: 0.6875rem;
+    }
+
+    .event-score,
+    .event-details {
+      font-size: 0.75rem;
+    }
+
+    .event-type-badge {
+      width: 22px;
+      height: 22px;
+      font-size: 0.6875rem;
+    }
+
+    .event-team-short {
+      font-size: 0.625rem;
+      min-width: 36px;
+      padding: 2px 6px;
+    }
   }
 
   .event-assist {
-    font-size: 0.6rem;
-  }
-
-  .event-icon {
-    width: 18px;
-    height: 18px;
     font-size: 0.6rem;
   }
 }

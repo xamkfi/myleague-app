@@ -10,22 +10,22 @@ public interface IFloorballStatisticService
     #region Core Statistics Methods (As Requested)
 
     /// <summary>
-    /// Gets comprehensive team statistics for a specific season
+    /// Gets comprehensive team statistics for a specific competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="teamId">The team ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Team season statistics</returns>
-    Task<FloorballTeamSeasonStatistics?> GetTeamStatistics(Guid seasonId, Guid teamId, CancellationToken cancellationToken = default);
+    Task<FloorballTeamSeasonStatistics?> GetTeamStatistics(Guid competitionId, Guid teamId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets comprehensive player statistics for a specific season
+    /// Gets comprehensive player statistics for a specific competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="playerId">The player ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Player season statistics</returns>
-    Task<FloorballPlayerSeasonStatistics?> GetPlayerStatistics(Guid seasonId, Guid playerId, CancellationToken cancellationToken = default);
+    Task<FloorballPlayerSeasonStatistics?> GetPlayerStatistics(Guid competitionId, Guid playerId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets detailed match statistics for both teams
@@ -36,52 +36,52 @@ public interface IFloorballStatisticService
     Task<IEnumerable<FloorballMatchTeamStatistics>> GetMatchStatistics(Guid matchId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets top scorers for a specific season
+    /// Gets top scorers for a specific competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="topN">Number of top scorers to return (default: 10)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Top scoring players</returns>
-    Task<List<FloorballPlayerSeasonStatistics>> GetTopScorers(Guid seasonId, int topN = 10, CancellationToken cancellationToken = default);
+    Task<List<FloorballPlayerSeasonStatistics>> GetTopScorers(Guid competitionId, int topN = 10, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets comprehensive season statistics summary
+    /// Gets comprehensive competition statistics summary
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Season statistics including team standings and top performers</returns>
-    Task<SeasonStatisticsSummary> GetSeasonStatistics(Guid seasonId, CancellationToken cancellationToken = default);
+    /// <returns>Competition statistics including team standings and top performers</returns>
+    Task<CompetitionStatisticsSummary> GetCompetitionStatistics(Guid competitionId, CancellationToken cancellationToken = default);
 
     #endregion
 
     #region Additional Useful Statistics Methods
 
     /// <summary>
-    /// Gets team standings for a specific season ordered by points
+    /// Gets team standings for a specific competition ordered by points
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Team standings ordered by points (descending)</returns>
-    Task<List<FloorballTeamSeasonStatistics>> GetTeamStandings(Guid seasonId, CancellationToken cancellationToken = default);
+    Task<List<FloorballTeamSeasonStatistics>> GetTeamStandings(Guid competitionId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets top assists leaders for a specific season
+    /// Gets top assists leaders for a specific competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="topN">Number of top assists to return (default: 10)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Top assist leaders</returns>
-    Task<List<FloorballPlayerSeasonStatistics>> GetTopAssists(Guid seasonId, int topN = 10, CancellationToken cancellationToken = default);
+    Task<List<FloorballPlayerSeasonStatistics>> GetTopAssists(Guid competitionId, int topN = 10, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets top goalies for a specific season based on save percentage
+    /// Gets top goalies for a specific competition based on save percentage
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="topN">Number of top goalies to return (default: 10)</param>
     /// <param name="minimumGames">Minimum games played to qualify (default: 5)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Top performing goalies</returns>
-    Task<List<FloorballGoalieSeasonStatistics>> GetTopGoalies(Guid seasonId, int topN = 10, int minimumGames = 5, CancellationToken cancellationToken = default);
+    Task<List<FloorballGoalieSeasonStatistics>> GetTopGoalies(Guid competitionId, int topN = 10, int minimumGames = 5, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets career statistics for a specific player across all seasons
@@ -92,13 +92,13 @@ public interface IFloorballStatisticService
     Task<PlayerCareerStatistics> GetPlayerCareerStatistics(Guid playerId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets all statistics for a player in a specific season (includes both field player and goalie stats if applicable)
+    /// Gets all statistics for a player in a specific competition (includes both field player and goalie stats if applicable)
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="playerId">The player ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Complete player statistics for the season</returns>
-    Task<CompletePlayerSeasonStatistics> GetCompletePlayerStatistics(Guid seasonId, Guid playerId, CancellationToken cancellationToken = default);
+    /// <returns>Complete player statistics for the competition</returns>
+    Task<CompletePlayerSeasonStatistics> GetCompletePlayerStatistics(Guid competitionId, Guid playerId, CancellationToken cancellationToken = default);
 
     #endregion
 
@@ -113,41 +113,41 @@ public interface IFloorballStatisticService
     Task UpdateMatchStatistics(Guid matchId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Recalculates and updates all statistics for a specific season
+    /// Recalculates and updates all statistics for a specific competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task representing the async operation</returns>
-    Task UpdateSeasonStatistics(Guid seasonId, CancellationToken cancellationToken = default);
+    Task UpdateCompetitionStatistics(Guid competitionId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Refreshes cached statistics data
     /// </summary>
-    /// <param name="seasonId">Optional season ID to refresh specific season cache</param>
+    /// <param name="competitionId">Optional competition ID to refresh specific competition cache</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task representing the async operation</returns>
-    Task RefreshStatisticsCache(Guid? seasonId = null, CancellationToken cancellationToken = default);
+    Task RefreshStatisticsCache(Guid? competitionId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates statistics for a specific player after a match event
     /// </summary>
     /// <param name="playerId">The player ID</param>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="teamId">The team ID</param>
     /// <param name="matchId">The match ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task representing the async operation</returns>
-    Task UpdatePlayerStatistics(Guid playerId, Guid seasonId, Guid teamId, Guid matchId, CancellationToken cancellationToken = default);
+    Task UpdatePlayerStatistics(Guid playerId, Guid competitionId, Guid teamId, Guid matchId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates statistics for a specific team after a match
     /// </summary>
     /// <param name="teamId">The team ID</param>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="matchId">The match ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task representing the async operation</returns>
-    Task UpdateTeamStatistics(Guid teamId, Guid seasonId, Guid matchId, CancellationToken cancellationToken = default);
+    Task UpdateTeamStatistics(Guid teamId, Guid competitionId, Guid matchId, CancellationToken cancellationToken = default);
 
     #endregion
 
@@ -166,19 +166,19 @@ public interface IFloorballStatisticService
     /// </summary>
     /// <param name="cacheKey">The cache key</param>
     /// <param name="jsonData">The data to cache (serialized JSON)</param>
-    /// <param name="seasonId">Optional season ID</param>
+    /// <param name="competitionId">Optional competition ID</param>
     /// <param name="expirationMinutes">Cache expiration in minutes (default: 60)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task representing the async operation</returns>
-    Task SetCachedStatistics(string cacheKey, string jsonData, Guid? seasonId = null, int expirationMinutes = 60, CancellationToken cancellationToken = default);
+    Task SetCachedStatistics(string cacheKey, string jsonData, Guid? competitionId = null, int expirationMinutes = 60, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Invalidates cached statistics for a specific season
+    /// Invalidates cached statistics for a specific competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task representing the async operation</returns>
-    Task InvalidateSeasonCache(Guid seasonId, CancellationToken cancellationToken = default);
+    Task InvalidateCompetitionCache(Guid competitionId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Cleans up expired cache entries
@@ -193,14 +193,14 @@ public interface IFloorballStatisticService
 #region Statistics Summary DTOs
 
 /// <summary>
-/// Comprehensive season statistics summary
+/// Comprehensive competition statistics summary
 /// </summary>
-public class SeasonStatisticsSummary
+public class CompetitionStatisticsSummary
 {
     /// <summary>
-    /// Gets or sets the season ID
+    /// Gets or sets the competition ID
     /// </summary>
-    public Guid SeasonId { get; set; }
+    public Guid CompetitionId { get; set; }
 
     /// <summary>
     /// Gets or sets team standings ordered by points
@@ -275,9 +275,9 @@ public class CompletePlayerSeasonStatistics
     public Guid PlayerId { get; set; }
 
     /// <summary>
-    /// Gets or sets the season ID
+    /// Gets or sets the competition ID
     /// </summary>
-    public Guid SeasonId { get; set; }
+    public Guid CompetitionId { get; set; }
 
     /// <summary>
     /// Gets or sets field player statistics

@@ -15,15 +15,21 @@ MyLeague is a comprehensive league management system designed for organizing and
 
 ### Key Features
 - 🏟️ **Multi-Sport Support** - Primary focus on floorball with hockey extensibility
+- 🏆 **Seasons & Tournaments** - Unified `FloorballCompetition` (TPH) base for league seasons and group/playoff tournaments, with shared match/statistics flow
+- 📅 **Event Calendar** - Cross-sport calendar of upcoming and past matches
+- 📰 **News & Editorial** - Hero carousel and category-tagged news articles managed in-app
+- 📈 **Statistics & Standings** - Per-season and per-group standings, top scorers, team/player season stats, and live match stats
 - 🏗️ **Clean Architecture** - Domain-driven design with clear separation of concerns
 - ⚡ **Event Sourcing** - Complete audit trail and historical data tracking
-- 🔄 **CQRS Pattern** - Optimized command and query operations
-- 🌐 **Modern Web API** - RESTful services with interactive documentation
-- ⚛️ **React Frontend** - Modern React 19 with TypeScript and TailwindCSS
-- 🌍 **Internationalization** - Multi-language support with i18next
-- 📊 **Structured Logging** - Seq integration for log visualization and analysis
+- 🔄 **CQRS Pattern** - Optimized command and query operations via MediatR
+- 🌐 **Modern Web API** - RESTful services with Scalar/OpenAPI interactive documentation
+- ⚛️ **React Frontend** - React 19 + TypeScript + Vite, with reusable design tokens and SCSS
+- 🔐 **Passwordless Auth** - Email-code login with JWT access + refresh-token rotation
+- 🌍 **Internationalization** - Finnish/English UI with i18next
+- 📊 **Structured Logging** - Serilog + Seq integration for log visualization and analysis
 - 🐳 **Containerized** - Full Docker support for development and deployment
-- 🧪 **Test-Driven** - Comprehensive testing strategy across all layers
+- 🧪 **Test-Driven** - xUnit + FluentAssertions across Domain and Application layers
+- 🌱 **Database Seeder** - Standalone tool that bootstraps a complete dev dataset (clubs, teams, players, referees, seasons, tournaments, matches, simulated stats) — see [Database Seeding](#-database-seeding)
 
 ## 🏗️ Architecture Overview
 
@@ -67,6 +73,8 @@ MyLeague follows **Clean Architecture** principles with **Domain-Driven Design (
 └─────────────────────────────────────────────────────────────┘
 ```
 
+> **Domain note — competitions:** `FloorballSeason` and `FloorballTournament` both inherit from `FloorballCompetition` and are persisted as a single PostgreSQL table using EF Core's **Table-Per-Hierarchy (TPH)** strategy. Matches, statistics, and standings reference a competition by `CompetitionId`, so the same query/handler stack serves both league seasons and tournaments.
+
 ## 🛠️ Technology Stack
 
 ### Backend Technologies
@@ -105,9 +113,11 @@ MyLeague/
 ├── src/
 │   ├── backend/                    # .NET Backend Application
 │   │   ├── Domain/                 # Core business logic and entities
-│   │   │   ├── Entities/           # Domain entities (Club, Team, Player, etc.)
-│   │   │   ├── ValueObjects/       # Immutable value objects
-│   │   │   ├── Enums/              # Domain enumerations
+│   │   │   ├── Entities/           # Domain entities (Club, Team, Player,
+│   │   │   │                       # FloorballCompetition (TPH base),
+│   │   │   │                       # FloorballSeason, FloorballTournament, etc.)
+│   │   │   ├── ValueObjects/       # Immutable value objects (e.g. FloorballMatchRules)
+│   │   │   ├── Enums/              # Domain enumerations (incl. tournament lifecycle)
 │   │   │   ├── DomainEvents/       # Domain event definitions
 │   │   │   ├── EventSourcing/      # Event sourcing infrastructure
 │   │   │   └── Repositories/       # Repository interfaces
@@ -131,9 +141,12 @@ MyLeague/
 │   │       ├── Middlewares/        # Custom middleware
 │   │       └── Extensions/         # Service configuration
 │   │
-│   ├── tools/                      # Development tools
-│   │   ├── Seeder/                 # Database seeder for test data
-│   │   └── FloorballPlayerImporter/# Player import utility
+│   ├── tools/                      # Development & data-import tools
+│   │   ├── Seeder/                 # HTTP-based dev database seeder (clubs, teams,
+│   │   │                           # players, referees, seasons, tournaments, matches)
+│   │   ├── FloorballPlayerImporter/# Bulk player import from JSON team rosters
+│   │   ├── MahlImporter/           # Scrape & import historical MAHL data
+│   │   └── DataImporter/           # Legacy JLG XML person import
 │   │
 │   └── frontend/                   # React Frontend Application
 │       ├── src/                    # Source code
@@ -189,13 +202,13 @@ MyLeague/
    docker-compose up -d
    ```
 
-4. **Seed Initial Data**
+4. **Seed Initial Data** (optional but recommended)
 
-   After the services are running, seed the database with test data (clubs, teams, players, seasons, matches, referees, etc.):
+   After the services are running, populate the database with a complete dev dataset (clubs, teams, players, referees, seasons, **tournaments**, matches with simulated stats):
    ```bash
    dotnet run --project src/tools/Seeder/Seeder.csproj
    ```
-   The seeder is idempotent and safe to run multiple times. See the [Seeder README](src/tools/Seeder/README.md) for details.
+   The seeder is idempotent — see the dedicated [Database Seeding](#-database-seeding) section below for what gets created and how to troubleshoot.
 
 5. **Access the Application**
    - **Frontend**: http://localhost:5173
@@ -239,13 +252,13 @@ MyLeague/
    dotnet run
    ```
 
-5. **Seed Initial Data**
+5. **Seed Initial Data** (optional but recommended)
 
-   In a separate terminal, run the seeder to populate the database with test data:
+   In a separate terminal, run the seeder to populate the database with the standard dev dataset:
    ```bash
    dotnet run --project src/tools/Seeder/Seeder.csproj
    ```
-   This creates clubs, teams, players, referees, seasons, and matches. The seeder is idempotent and safe to run multiple times. See the [Seeder README](src/tools/Seeder/README.md) for details.
+   See the [Database Seeding](#-database-seeding) section below for the full breakdown.
 
 #### Frontend Setup
 1. **Install Dependencies**
@@ -280,15 +293,28 @@ MyLeague/
 | POST | `/api/auth/logout` | Revoke a refresh token (logout) |
 | GET | `/api/auth/me` | Get current authenticated user info |
 
-### Core Resources
+### Common Resources
 | Resource | Base URL | Description |
 |----------|----------|-------------|
 | **Clubs** | `/api/clubs` | Sports club management |
+| **Divisions** | `/api/divisions` | Division/league hierarchy |
+| **Persons** | `/api/persons` | Person profiles (used by players, referees, managers) |
 | **Users** | `/api/users` | User management (requires auth) |
-| **Teams** | `/api/floorball/teams` | Floorball team operations |
-| **Players** | `/api/floorball/players` | Player management |
-| **Matches** | `/api/floorball/matches` | Match scheduling and results |
-| **Seasons** | `/api/floorball/seasons` | Season organization |
+| **News** | `/api/news` | News articles and hero carousel content |
+| **Search** | `/api/search` | Cross-entity search |
+
+### Floorball Resources
+| Resource | Base URL | Description |
+|----------|----------|-------------|
+| **Teams** | `/api/floorballteam` | Floorball team and roster operations |
+| **Players** | `/api/floorballplayer` | Player profiles and team assignments |
+| **Referees** | `/api/floorballreferee` | Referee profiles and license info |
+| **Seasons** | `/api/floorballseason` | League season organization |
+| **Tournaments** | `/api/floorballtournament` | Tournaments with groups, group teams, lifecycle (draft → registration → group stage → playoff → completed) |
+| **Matches** | `/api/floorballmatch` | Match scheduling, live state, goals/penalties/saves, and results |
+| **Statistics** | `/api/floorball/statistics` | Standings (season + tournament group), top scorers, season summaries, per-match stats |
+
+> Tournaments and seasons share the `FloorballCompetition` (TPH) base, so a `competitionId` works uniformly across match, statistics, and standings endpoints regardless of whether it points to a season or a tournament.
 
 ### System Endpoints
 | Endpoint | Description |
@@ -297,34 +323,51 @@ MyLeague/
 | `/scalar/v1` | Interactive API documentation |
 | `/swagger/v1/swagger.json` | OpenAPI specification |
 
-## 📬 Postman Collections
+## 🌱 Database Seeding
 
-The `postman collections/` folder contains ready-to-use Postman collections for testing and populating the database with sample data.
+A standalone .NET console tool at [`src/tools/Seeder`](src/tools/Seeder/README.md) populates a clean database with a complete, realistic dataset by calling the running WebAPI through HTTP. It's the fastest way to get a usable dev environment after a fresh `docker-compose up` (or after dropping the DB volume).
 
-### Using Existing Collections
-- **Clubs.json** - Complete collection for creating clubs and teams with sample data
-- Import any `.json` file from the folder into Postman to get started with API testing
+### What gets seeded
 
-### Creating New Collections
-When developing new endpoints, follow these steps:
+The seeder creates entities in a strict order so foreign keys resolve naturally:
 
-1. **Create a new collection** in Postman for your endpoint
-2. **Add comprehensive test requests** including:
-   - Creating sample entities with realistic data
-   - Testing different scenarios (success, validation errors, etc.)
-   - GET requests to verify created data
-3. **Export the collection** as JSON (Collection v2.1)
-4. **Save the file** in `postman collections/` folder
-5. **Name the file** after the main endpoint (e.g., `Players.json` for `/api/floorball/players`)
+1. **Persons** — base persons, players, goalies, and referees
+2. **Clubs** (10) — Finnish floorball clubs with logos and contact info
+3. **Divisions** — league/division hierarchy
+4. **Floorball Players** (~100) — player registrations
+5. **Floorball Referees** — referee profiles with license dates anchored to "now"
+6. **Seasons** — league season(s) with division associations and match-rule defaults
+7. **Teams** — teams assigned to clubs and divisions
+8. **Team-Season assignments** — divisional placement
+9. **Player-Team assignments** — populated rosters with jersey numbers and positions
+10. **League Matches** — scheduled matches per season; some are simulated through to completion to populate stats
+11. **Tournaments** — `FloorballTournament` with groups, group-teams, and dynamic dates relative to "now" (so the listing always shows a sensible "Tulossa / Käynnissä / Päättynyt" status)
+12. **Tournament Matches** — round-robin group-stage matches anchored around "now"; past-dated matches are simulated through to completion (goals + saves + completion event), future-dated matches stay in `Scheduled` state
 
-### Collection Structure
-Each collection should include:
-- **Descriptive request names** (e.g., "CreateClub1", "CreateClub2")
-- **Sample data** that represents realistic entities
-- **Proper HTTP methods** and endpoints
-- **Valid JSON payloads** for POST/PUT requests
+### Run
 
-This approach ensures team members can quickly set up test data and understand how to interact with new endpoints.
+After the WebAPI is up (Docker or local `dotnet run`):
+
+```bash
+dotnet run --project src/tools/Seeder/Seeder.csproj
+```
+
+The seeder will prompt for the API base URL (default `http://localhost:8080/`), authenticate as the dev admin (`test@myleague.local`), and report progress for each step. A summary at the end prints how many entities were created or already existed.
+
+### Idempotency & re-runs
+
+Every step performs an existence check before creating anything (by email/name/composite key), so the seeder is safe to run repeatedly. Re-runs also **refresh the tournament's date window** so the seeded tournament always overlaps "now" and matches stay in a believable mix of completed/upcoming states.
+
+If the API responses look wrong or empty (e.g. pagination silently returns no records), the seeder now prints loud `WARNING:` lines to `stderr` with the raw HTTP status and response body — see [Seeder/README](src/tools/Seeder/README.md) for the full diagnostic flow and the test data layout in `data/testdata.json`.
+
+### Other tools under `src/tools/`
+
+| Tool | Purpose |
+|------|---------|
+| [`Seeder/`](src/tools/Seeder/README.md) | Populate a dev database via HTTP (described above) |
+| [`MahlImporter/`](src/tools/MahlImporter/) | Scrape and import historical MAHL match/team data |
+| [`FloorballPlayerImporter/`](src/tools/FloorballPlayerImporter/README.md) | Bulk-import floorball players from JSON team rosters |
+| `DataImporter/` | Import legacy person data from JLG XML files |
 
 ## 📚 Layer Documentation
 
@@ -476,8 +519,9 @@ MyLeague uses a passwordless login system -- no passwords are stored in the data
 The frontend supports multiple languages through i18next:
 
 ### Supported Languages
-- **English** (default)
-- **Additional languages** can be easily added
+- **Finnish** (default)
+- **English**
+- Additional languages can be added by dropping a JSON file into `src/frontend/src/i18n/locales/` and registering it in the i18n setup.
 
 ### Adding New Languages
 1. Create language files in `src/frontend/src/i18n/locales/`
@@ -522,15 +566,23 @@ The frontend supports multiple languages through i18next:
 - [x] Passwordless email authentication with JWT
 - [x] Refresh token rotation with theft detection
 - [x] Database seeding for dev and production admin users
-- [ ] Advanced reporting and analytics
-- [ ] Real-time match updates
+- [x] Standalone HTTP seeder tool with idempotent test dataset
+- [x] `FloorballCompetition` (TPH) refactor — unified seasons & tournaments
+- [x] Tournament management (groups, group-teams, lifecycle, group standings)
+- [x] Public tournament listing & detail pages with full statistics
+- [x] News module (hero carousel + categorized articles)
+- [x] Cross-sport event calendar of upcoming matches
+- [x] Statistics module (standings, top scorers, team/player season stats)
+- [x] GitHub Actions backend CI
+- [ ] Real-time match updates (live scoreboard via WebSockets/SSE)
+- [ ] Advanced reporting and analytics dashboards
 - [ ] Mobile-responsive design improvements
 - [ ] Performance monitoring dashboard
 
 ### Phase 3: Scalability & Production 📋
 - [ ] Microservices architecture consideration
 - [ ] Kubernetes deployment configurations
-- [ ] CI/CD pipeline implementation
+- [ ] Full CI/CD pipeline (deploy + frontend CI)
 - [ ] Load testing and optimization
 - [ ] Multi-tenant support
 

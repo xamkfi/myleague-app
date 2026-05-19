@@ -166,12 +166,12 @@ export const CreateSeasonPage = () => {
 
       // Navigate to edit page after a short delay so the user sees the success message
       // This keeps them on the season and unlocks the division/team tabs
-      const createdSeasonId = result?.data?.id;
+      const createdCompetitionId = result?.data?.id;
       const timeoutId = setTimeout(() => {
         setSuccessMessage(null);
         setSuccessTimeoutId(null);
-        if (createdSeasonId) {
-          navigate(`/admin/floorball/seasons/${createdSeasonId}/edit`, { replace: true });
+        if (createdCompetitionId) {
+          navigate(`/admin/floorball/seasons/${createdCompetitionId}/edit`, { replace: true });
         } else {
           navigate('/admin/floorball/seasons');
         }

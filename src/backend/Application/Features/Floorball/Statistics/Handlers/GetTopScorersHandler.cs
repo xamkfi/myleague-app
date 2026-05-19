@@ -56,9 +56,9 @@ public class GetTopScorersHandler : IRequestHandler<GetTopScorersQuery, Result<L
     {
         try
         {
-            _logger.LogInformation("Retrieving top {TopN} scorers for Season {SeasonId}", request.TopN, request.SeasonId);
+            _logger.LogInformation("Retrieving top {TopN} scorers for Season {SeasonId}", request.TopN, request.CompetitionId);
 
-            List<Domain.Entities.Floorball.FloorballPlayerSeasonStatistics>? topScorers = await _statisticsRepository.GetTopScorersAsync(request.SeasonId, request.TopN, cancellationToken);
+            List<Domain.Entities.Floorball.FloorballPlayerSeasonStatistics>? topScorers = await _statisticsRepository.GetTopScorersAsync(request.CompetitionId, request.TopN, cancellationToken);
 
             IEnumerable<Guid> PersonIds = topScorers.Select(x => x.Player.PersonId).ToList();
             IEnumerable<Person>? persons = await _personRepository.GetByIdsAsync(PersonIds);
@@ -76,12 +76,12 @@ public class GetTopScorersHandler : IRequestHandler<GetTopScorersQuery, Result<L
                 return FloorballStatisticsMapper.ToDto(stats, playerName);
             }).ToList();
 
-            _logger.LogInformation("Successfully retrieved {Count} top scorers for Season {SeasonId}", dtos.Count, request.SeasonId);
+            _logger.LogInformation("Successfully retrieved {Count} top scorers for Season {SeasonId}", dtos.Count, request.CompetitionId);
             return Result<List<FloorballPlayerSeasonStatisticsDto>>.Success(dtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while retrieving top scorers for Season {SeasonId}", request.SeasonId);
+            _logger.LogError(ex, "Error occurred while retrieving top scorers for Season {SeasonId}", request.CompetitionId);
             return Result<List<FloorballPlayerSeasonStatisticsDto>>.Failure("An error occurred while retrieving top scorers.");
         }
     }

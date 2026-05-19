@@ -64,6 +64,50 @@ public class FloorballSeasonSeed
 	public bool AllowShootout { get; init; } = true;
 }
 
+public class FloorballTournamentSeed
+{
+	public string Name { get; init; } = "2027 Spring Cup";
+	public string StartDate { get; init; } = "2027-06-01";
+	public string EndDate { get; init; } = "2027-06-30";
+	public string? Venue { get; init; }
+	public string? ContentHtml { get; init; }
+
+	// Group-stage match rules
+	public int GroupStageNumberOfPeriods { get; init; } = 3;
+	public int GroupStagePeriodDurationMinutes { get; init; } = 20;
+	public bool GroupStageAllowOvertime { get; init; } = false;
+	public int GroupStageOvertimeDurationMinutes { get; init; } = 5;
+	public bool GroupStageAllowShootout { get; init; } = false;
+
+	// Playoff match rules
+	public int PlayoffNumberOfPeriods { get; init; } = 3;
+	public int PlayoffPeriodDurationMinutes { get; init; } = 20;
+	public bool PlayoffAllowOvertime { get; init; } = true;
+	public int PlayoffOvertimeDurationMinutes { get; init; } = 10;
+	public bool PlayoffAllowShootout { get; init; } = true;
+
+	// Structural flags
+	public int TeamsAdvancingPerGroup { get; init; } = 2;
+	public bool HasPlayoffStage { get; init; } = true;
+	public bool HasThirdPlaceMatch { get; init; } = false;
+
+	/// <summary>
+	/// When true, the seeder transitions the tournament to GroupStage (if Draft), schedules every
+	/// group-stage match in the past, and simulates each one through to completion. The result is a
+	/// tournament that is ready for the admin to advance to the playoff stage — useful for testing
+	/// playoff bracket generation without manually playing every match.
+	/// </summary>
+	public bool AllGroupMatchesCompleted { get; init; } = false;
+
+	public List<FloorballTournamentGroupSeed> Groups { get; init; } = new List<FloorballTournamentGroupSeed>();
+}
+
+public class FloorballTournamentGroupSeed
+{
+	public string Name { get; init; } = "Group A";
+	public List<string> TeamNames { get; init; } = new List<string>();
+}
+
 public class FloorballTeamSeed
 {
 	public string Name { get; init; } = "Falcons";

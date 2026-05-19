@@ -10,7 +10,7 @@ public class FloorballSeasonStatisticsSummaryDto
     /// <summary>
     /// Gets or sets the season ID
     /// </summary>
-    public Guid SeasonId { get; set; }
+    public Guid CompetitionId { get; set; }
 
     /// <summary>
     /// Gets or sets season name

@@ -15,7 +15,7 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 /// </summary>
 public class DeleteFloorballSeasonHandler : IRequestHandler<DeleteFloorballSeasonCommand, Result>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<DeleteFloorballSeasonHandler> _logger;
@@ -28,7 +28,7 @@ public class DeleteFloorballSeasonHandler : IRequestHandler<DeleteFloorballSeaso
     /// <param name="unitOfWork">The floorball unit of work</param>
     /// <param name="logger">The logger</param>
     public DeleteFloorballSeasonHandler(
-        IFloorballSeasonRepository seasonRepository,
+        IFloorballCompetitionRepository seasonRepository,
         IFloorballMatchRepository matchRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<DeleteFloorballSeasonHandler> logger)
@@ -58,7 +58,7 @@ public class DeleteFloorballSeasonHandler : IRequestHandler<DeleteFloorballSeaso
             }
 
             // Check if there are any matches in this season
-            IEnumerable<Domain.Entities.Floorball.FloorballMatch> seasonMatches = await _matchRepository.GetBySeasonIdAsync(request.Id);
+            IEnumerable<Domain.Entities.Floorball.FloorballMatch> seasonMatches = await _matchRepository.GetByCompetitionIdAsync(request.Id);
             bool hasMatches = seasonMatches.Any();
             if (hasMatches)
             {

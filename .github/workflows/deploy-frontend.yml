@@ -14,6 +14,9 @@ concurrency:
   group: deploy-frontend
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 env:
   NODE_VERSION: '22'
   FRONTEND_PATH: 'src/frontend'
@@ -22,7 +25,12 @@ jobs:
   build-and-deploy:
     name: Build and Deploy to Azure Static Web App
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    timeout-minutes: 20
+    environment: dev
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'development')
 
     steps:
       - name: Checkout code
@@ -30,8 +38,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

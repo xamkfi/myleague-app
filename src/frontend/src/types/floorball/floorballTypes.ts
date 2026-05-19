@@ -205,8 +205,13 @@ export interface FloorballMatchRules {
 
 export interface FloorballMatchDto {
   id: string;
-  seasonId: string;
-  seasonName: string;
+  competitionId: string;
+  /**
+   * Display name of the competition (season or tournament) this match belongs to.
+   * Backend renamed from "seasonName" to "competitionName" when FloorballSeason was
+   * generalized to FloorballCompetition (TPH base for seasons + tournaments).
+   */
+  competitionName: string;
   homeTeamId: string;
   homeTeamName: string;
   homeTeamLogo: string | null;
@@ -229,15 +234,27 @@ export interface FloorballMatchDto {
   penaltyEvents: FloorballPenaltyEventDto[];
   saveEvents: FloorballSaveEventDto[];
   matchRules: FloorballMatchRules;
+  tournamentGroupId?: string | null;
+  tournamentStage?: string | null;
+  /**
+   * Explicit competition discriminator. Backend sets this from the loaded Competition runtime type
+   * (FloorballSeason vs FloorballTournament). Optional for backward compatibility with older clients
+   * that consumed the DTO before the field existed.
+   */
+  competitionType?: FloorballCompetitionType;
 }
 
 export interface CreateFloorballMatchRequest {
-  seasonId?: string;
+  competitionId?: string;
   homeTeamId?: string;
   awayTeamId?: string;
   refereeId?: string;
   scheduledDateTime: string;
   venue?: string;
+  /** Optional tournament group id (only for tournament group-stage matches). */
+  tournamentGroupId?: string;
+  /** Optional tournament stage label (e.g. "GroupStage"). Only for tournament matches. */
+  tournamentStage?: string;
 }
 
 export interface UpdateFloorballMatchRequest {
@@ -249,7 +266,7 @@ export interface UpdateFloorballMatchRequest {
 
 // New types for edit match functionality
 export interface ChangeMatchSeasonRequest {
-  seasonId: string;
+  competitionId: string;
 }
 
 export interface ChangeMatchTeamsRequest {
@@ -265,14 +282,18 @@ export interface ChangeMatchDateTimeRequest {
   scheduledDateTime: string;
 }
 
+export type FloorballCompetitionType = 'Season' | 'Tournament';
+
 export interface GetFloorballMatchesRequest {
   page?: number;
   pageSize?: number;
-  seasonId?: string;
+  competitionId?: string;
   teamId?: string;
   status?: FloorballMatchStatus;
   startDate?: string;
   endDate?: string;
   sortOrder?: string;
   searchQuery?: string;
+  tournamentGroupId?: string;
+  competitionType?: FloorballCompetitionType;
 } 

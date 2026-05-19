@@ -1,9 +1,9 @@
 import type { ProcessedEvent } from './types';
+import { formatMatchEventTime } from '../../../../../utils/matchEventFormat';
 import './LiveMatchEventsHistory.scss';
 
 interface LiveMatchEventsHistoryProps {
   allEvents: ProcessedEvent[];
-  formatEventTime: (timeInSeconds: number) => string;
   onDeleteEvent?: (event: ProcessedEvent) => void;
 }
 
@@ -43,7 +43,6 @@ function getEventTypeLabel(type: ProcessedEvent['type']): { label: string; icon:
 
 const LiveMatchEventsHistory = ({
   allEvents,
-  formatEventTime,
   onDeleteEvent
 }: LiveMatchEventsHistoryProps) => {
   return (
@@ -62,7 +61,7 @@ const LiveMatchEventsHistory = ({
             return (
               <div key={event.id} className={`event-item ${event.type}`}>
                 <div className="event-time">
-                  P{event.periodNumber} - {formatEventTime(event.timeInSeconds)}
+                  {formatMatchEventTime(event.periodNumber, event.timeInSeconds)}
                 </div>
 
                 <span className={`event-type-badge ${event.type}`} aria-label={label} title={label}>

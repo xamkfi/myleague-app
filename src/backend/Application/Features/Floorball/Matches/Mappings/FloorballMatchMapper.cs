@@ -8,6 +8,7 @@ using Application.Features.Floorball.TeamManagers.DTOs;
 using Application.Features.Floorball.Statistics.DTOs;
 using Domain.Entities.Floorball;
 using Domain.Entities.Common;
+using Domain.Enums.Floorball;
 using Domain.ValueObjects.Floorball;
 using System;
 using System.Collections.Generic;
@@ -110,10 +111,12 @@ public static class FloorballMatchMapper
 
         FloorballMatchRulesDto matchRulesDto = MapMatchRules(match.MatchRules);
 
+        FloorballCompetitionType competitionType = ResolveCompetitionType(match);
+
         return new FloorballMatchDto(
             match.Id,
-            match.SeasonId,
-            match.Season.Name,
+            match.CompetitionId,
+            match.Competition?.Name ?? string.Empty,
             match.HomeTeamId,
             match.HomeTeam.Name,
             homeTeamLogo,
@@ -134,7 +137,10 @@ public static class FloorballMatchMapper
             goalEvents,
             penaltyEvents,
             saveEvents,
-            matchRulesDto);
+            matchRulesDto,
+            match.TournamentGroupId,
+            match.TournamentStage?.ToString(),
+            competitionType);
     }
 
     /// <summary>
@@ -195,7 +201,7 @@ public static class FloorballMatchMapper
 
         return new FloorballMatchDto(
             match.Id,
-            match.SeasonId,
+            match.CompetitionId,
             "default",
             match.HomeTeamId,
             homeTeamName,
@@ -217,7 +223,10 @@ public static class FloorballMatchMapper
             new List<FloorballGoalEventDto>(), // TODO: Map goal events when needed
             new List<FloorballPenaltyEventDto>(), // TODO: Map penalty events when needed
             new List<FloorballSaveEventDto>(),
-            matchRulesDto
+            matchRulesDto,
+            match.TournamentGroupId,
+            match.TournamentStage?.ToString(),
+            ResolveCompetitionType(match)
         );
     }
 
@@ -232,7 +241,7 @@ public static class FloorballMatchMapper
     /// <returns>The new match entity</returns>
     /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
     /// <exception cref="NotSupportedException">Thrown because FloorballMatch creation requires loaded entities</exception>
-    public static FloorballMatch ToEntity(CreateFloorballMatchCommand command, FloorballSeason season, FloorballTeam homeTeam, FloorballTeam awayTeam, FloorballReferee? referee = null)
+    public static FloorballMatch ToEntity(CreateFloorballMatchCommand command, FloorballCompetition competition, FloorballTeam homeTeam, FloorballTeam awayTeam, FloorballReferee? referee = null)
     {
         if (command == null)
             throw new ArgumentNullException(nameof(command));
@@ -247,7 +256,7 @@ public static class FloorballMatchMapper
         };
 
         FloorballMatch match = new FloorballMatch(
-            season,
+            competition,
             homeTeam,
             awayTeam,
             scheduledDateTimeUtc,
@@ -258,6 +267,13 @@ public static class FloorballMatchMapper
         if (referee != null)
         {
             match.AddOfficial(referee);
+        }
+
+        // Apply tournament context if either stage or group ID is provided
+        if (command.TournamentStage.HasValue || command.TournamentGroupId.HasValue)
+        {
+            FloorballTournamentStage stage = command.TournamentStage ?? FloorballTournamentStage.GroupStage;
+            match.SetTournamentInfo(stage, command.TournamentGroupId);
         }
 
         return match;
@@ -346,4 +362,24 @@ public static class FloorballMatchMapper
 
         return $"{person.FirstName} {person.LastName}";
     }
-} 
+
+    /// <summary>
+    /// Resolves the competition type for a match. Prefers the runtime type of the loaded Competition
+    /// navigation (authoritative). Falls back to inferring from tournament-only fields when the
+    /// navigation isn't eagerly loaded (older read paths). Defaults to Season for backward
+    /// compatibility, matching the DTO default.
+    /// </summary>
+    private static FloorballCompetitionType ResolveCompetitionType(FloorballMatch match)
+    {
+        if (match.Competition is FloorballTournament)
+            return FloorballCompetitionType.Tournament;
+        if (match.Competition is FloorballSeason)
+            return FloorballCompetitionType.Season;
+
+        // Competition navigation not loaded — infer from tournament-only fields.
+        if (match.TournamentGroupId.HasValue || match.TournamentStage.HasValue)
+            return FloorballCompetitionType.Tournament;
+
+        return FloorballCompetitionType.Season;
+    }
+}

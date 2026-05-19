@@ -99,7 +99,7 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
             // Update player season statistics for penalty minutes
             if (player != null)
             {
-                await UpdatePlayerSeasonPenaltyStatistics(player.Id, request.TeamId, match.SeasonId, request.Minutes, cancellationToken);
+                await UpdatePlayerSeasonPenaltyStatistics(player.Id, request.TeamId, match.CompetitionId, request.Minutes, cancellationToken);
             }
 
             // Update match team statistics for penalty minutes
@@ -111,7 +111,7 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
 
             await _notificationSenderService.SendNotificationAsync(
                 FloorballNotificationEvents.PenaltyAssigned,
-                 new { MatchId = match.Id });
+                new MatchNotificationPayload(match.Id));
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             return Result<FloorballMatchDto>.Success(matchDto);

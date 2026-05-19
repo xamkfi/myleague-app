@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using Application.Common;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
@@ -75,6 +76,32 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Converts a failed <see cref="Result{T}"/> into an HTTP response. Preserves the
+        /// detailed validation messages from <see cref="Result{T}.GetAllErrors"/> so the
+        /// client can show a specific reason instead of just "Validation failed".
+        /// </summary>
+        private ActionResult<ApiResponse<TResponse>> ToErrorResponse<TResult, TResponse>(
+            Result<TResult> result,
+            string defaultMessage)
+        {
+            string topMessage = result.Error ?? defaultMessage;
+            List<string> errors = result.GetAllErrors().ToList();
+            if (errors.Count == 0)
+            {
+                errors.Add(topMessage);
+            }
+
+            ApiResponse<TResponse> body = ApiResponse<TResponse>.ErrorResponse(topMessage, errors);
+
+            if (topMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(body);
+            }
+
+            return BadRequest(body);
+        }
+
+        /// <summary>
         /// Get all floorball matches with pagination and filtering
         /// </summary>
         /// <param name="request">Query parameters for pagination and filtering</param>
@@ -90,13 +117,15 @@ namespace WebAPI.Controllers.Floorball
             GetAllFloorballMatchesQuery query = new GetAllFloorballMatchesQuery(
                 request.Page,
                 request.PageSize,
-                request.SeasonId,
+                request.CompetitionId,
                 request.TeamId,
                 request.StartDate,
                 request.EndDate,
                 request.SortOrder,
                 request.SearchQuery,
-                request.Status
+                request.Status,
+                request.TournamentGroupId,
+                request.CompetitionType
             );
 
             Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query);
@@ -144,17 +173,17 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Get floorball matches with season ID
         /// </summary>
-        /// <param name="seasonId">Season ID</param>
+        /// <param name="competitionId">Season ID</param>
         /// <returns></returns>
-        [HttpGet("by-seasonId/{seasonId:guid}")]
+        [HttpGet("by-competitionId/{competitionId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetMatchBySeason(Guid seasonId)
+        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetMatchBySeason(Guid competitionId)
         {
-            _logger.LogInformation("Getting floorball matches with season ID of: {seasonId}", seasonId);
+            _logger.LogInformation("Getting floorball matches with season ID of: {competitionId}", competitionId);
 
-            GetFloorballMatchesBySeasonQuery query = new GetFloorballMatchesBySeasonQuery(seasonId);
+            GetFloorballMatchesBySeasonQuery query = new GetFloorballMatchesBySeasonQuery(competitionId);
 
             Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(query);
 
@@ -252,13 +281,26 @@ namespace WebAPI.Controllers.Floorball
             if (!DateTime.TryParse(request.ScheduledDateTime, out DateTime scheduledDateTime))
                 return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse("Invalid scheduled date and time format"));
 
+            Domain.Enums.Floorball.FloorballTournamentStage? stage = null;
+            if (!string.IsNullOrWhiteSpace(request.TournamentStage))
+            {
+                if (!Enum.TryParse(request.TournamentStage, true, out Domain.Enums.Floorball.FloorballTournamentStage parsedStage))
+                {
+                    return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(
+                        $"Invalid tournament stage '{request.TournamentStage}'. Valid values: {string.Join(", ", Enum.GetNames(typeof(Domain.Enums.Floorball.FloorballTournamentStage)))}"));
+                }
+                stage = parsedStage;
+            }
+
             CreateFloorballMatchCommand command = new CreateFloorballMatchCommand(
-                request.SeasonId,
+                request.CompetitionId,
                 request.HomeTeamId,
                 request.AwayTeamId,
                 request.RefereeId,
                 scheduledDateTime,
-                request.Venue
+                request.Venue,
+                request.TournamentGroupId,
+                stage
             );
 
             Result<FloorballMatchDto> result = await _mediator.Send(command);
@@ -432,13 +474,7 @@ namespace WebAPI.Controllers.Floorball
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Goal recorded successfully"));
             }
 
-            string errorMessage = result.Error ?? "Failed to record goal";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return ToErrorResponse<FloorballMatchDto, FloorballMatchDto>(result, "Failed to record goal");
         }
 
         /// <summary>
@@ -478,13 +514,7 @@ namespace WebAPI.Controllers.Floorball
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Penalty recorded successfully"));
             }
 
-            string? errorMessage = result.Error ?? "Failed to record penalty";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return ToErrorResponse<FloorballMatchDto, FloorballMatchDto>(result, "Failed to record penalty");
         }
 
         /// <summary>
@@ -523,13 +553,7 @@ namespace WebAPI.Controllers.Floorball
                 return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Save recorded successfully"));
             }
 
-            string? errorMessage = result.Error ?? "Failed to record save";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return ToErrorResponse<FloorballMatchDto, FloorballMatchDto>(result, "Failed to record save");
         }
 
         /// <summary>

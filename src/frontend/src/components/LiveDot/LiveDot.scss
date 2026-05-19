@@ -1,0 +1,62 @@
+/* ============================================================================
+   Live Dot
+   Small pulsing red indicator used to highlight items with active/live state
+   (e.g. matches currently in progress) on both dark sidebar and light table
+   surfaces.
+   ============================================================================ */
+
+$live-dot-color: #ef4444;
+$live-dot-glow: rgba(239, 68, 68, 0.35);
+$live-dot-glow-soft: rgba(239, 68, 68, 0.0);
+
+@keyframes live-dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 $live-dot-glow;
+  }
+  70% {
+    box-shadow: 0 0 0 6px $live-dot-glow-soft;
+  }
+  100% {
+    box-shadow: 0 0 0 0 $live-dot-glow-soft;
+  }
+}
+
+.live-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: $live-dot-color;
+  box-shadow: 0 0 0 2px $live-dot-glow;
+  animation: live-dot-pulse 1.8s ease-in-out infinite;
+  vertical-align: middle;
+
+  &--with-count {
+    width: auto;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    padding: 0 6px;
+  }
+
+  &__count {
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  // Light surface (white/grey table rows)
+  &--light {
+    box-shadow: 0 0 0 2px $live-dot-glow;
+  }
+
+  // Dark surface (admin sidebar)
+  &--dark {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5);
+  }
+}

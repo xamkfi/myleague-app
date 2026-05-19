@@ -1,4 +1,5 @@
 using Domain.Entities.Floorball;
+using Domain.Enums.Floorball;
 using Domain.ValueObjects.Floorball;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -76,13 +77,13 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(m => m.AwayTeamId)
                 .IsRequired();
 
-            builder.Property(m => m.SeasonId)
+            builder.Property(m => m.CompetitionId)
                 .IsRequired();
 
             // Configure relationships within FloorballDbContext
-            builder.HasOne(m => m.Season)
+            builder.HasOne(m => m.Competition)
                 .WithMany(s => s.Matches)
-                .HasForeignKey(m => m.SeasonId)
+                .HasForeignKey(m => m.CompetitionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(m => m.HomeTeam)
@@ -127,7 +128,42 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
 
             builder.Navigation(m => m.Events)
                 .HasField("_events")
-                .EnableLazyLoading(false);        // optional
+                .EnableLazyLoading(false);
+
+            builder.Property(m => m.TournamentStage)
+                .HasConversion<int?>()
+                .IsRequired(false);
+
+            builder.Property(m => m.TournamentGroupId)
+                .IsRequired(false);
+
+            builder.HasOne<FloorballTournamentGroup>()
+                .WithMany()
+                .HasForeignKey(m => m.TournamentGroupId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Playoff bracket fields
+            builder.Property(m => m.PlayoffRound)
+                .HasConversion<int?>()
+                .IsRequired(false);
+
+            builder.Property(m => m.PlayoffMatchOrder)
+                .IsRequired(false);
+
+            builder.Property(m => m.NextMatchId)
+                .IsRequired(false);
+
+            builder.Property(m => m.NextMatchSlot)
+                .HasConversion<int?>()
+                .IsRequired(false);
+
+            // NextMatch is a self-reference inside the bracket. We don't expose a navigation property
+            // to keep the entity lean — the application layer fetches the next match by id when needed.
+            // Use Restrict to avoid cascade-delete cycles.
+            builder.HasOne<FloorballMatch>()
+                .WithMany()
+                .HasForeignKey(m => m.NextMatchId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 } 

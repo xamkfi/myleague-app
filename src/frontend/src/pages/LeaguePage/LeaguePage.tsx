@@ -101,7 +101,7 @@ export default function LeaguePage() {
         const pageSize = activeTab === 'fixtures' ? 20 : 10;
         
         const response = await floorballMatchService.getAll({
-          seasonId: id,
+          competitionId: id,
           page: currentPage,
           pageSize,
           sortOrder: getSortOrderForTab(activeTab),

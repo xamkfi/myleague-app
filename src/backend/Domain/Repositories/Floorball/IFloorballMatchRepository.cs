@@ -27,7 +27,7 @@ public interface IFloorballMatchRepository
     /// </summary>
     /// <param name="page">Page number (1-based)</param>
     /// <param name="pageSize">Number of items per page</param>
-    /// <param name="seasonId">Optional season ID filter</param>
+    /// <param name="competitionId">Optional competition ID filter</param>
     /// <param name="teamId">Optional team ID filter (home or away)</param>
     /// <param name="startDate">Optional start date filter</param>
     /// <param name="endDate">Optional end date filter</param>
@@ -37,21 +37,23 @@ public interface IFloorballMatchRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated collection of floorball matches</returns>
     Task<PagedResult<FloorballMatch>> GetPagedAsync(
-        int page, 
-        int pageSize, 
-        Guid? seasonId = null,
+        int page,
+        int pageSize,
+        Guid? competitionId = null,
         Guid? teamId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
         FloorballMatchStatus? status = null,
         string sortOrder = "desc",
         string? searchQuery = null,
+        Guid? tournamentGroupId = null,
+        FloorballCompetitionType? competitionType = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>
     /// Gets the total count of floorball matches with filtering
     /// </summary>
-    /// <param name="seasonId">Optional season ID filter</param>
+    /// <param name="competitionId">Optional competition ID filter</param>
     /// <param name="teamId">Optional team ID filter (home or away)</param>
     /// <param name="startDate">Optional start date filter</param>
     /// <param name="endDate">Optional end date filter</param>
@@ -59,7 +61,7 @@ public interface IFloorballMatchRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Total count of matching floorball matches</returns>
     Task<int> GetCountAsync(
-        Guid? seasonId = null,
+        Guid? competitionId = null,
         Guid? teamId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
@@ -67,11 +69,23 @@ public interface IFloorballMatchRepository
         CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// Gets matches for a specified season
+    /// Gets matches for a specified competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
-    /// <returns>A collection of matches in the season</returns>
-    Task<IEnumerable<FloorballMatch>> GetBySeasonIdAsync(Guid seasonId);
+    /// <param name="competitionId">The competition ID</param>
+    /// <returns>A collection of matches in the competition</returns>
+    Task<IEnumerable<FloorballMatch>> GetByCompetitionIdAsync(Guid competitionId);
+
+    /// <summary>
+    /// Gets matches assigned to a specific tournament group, optionally filtered by status.
+    /// </summary>
+    /// <param name="tournamentGroupId">The tournament group ID</param>
+    /// <param name="status">Optional match status filter</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A collection of matches in the tournament group</returns>
+    Task<IEnumerable<FloorballMatch>> GetByTournamentGroupAsync(
+        Guid tournamentGroupId,
+        FloorballMatchStatus? status = null,
+        CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets matches for a specified team
@@ -167,8 +181,8 @@ public interface IFloorballMatchRepository
     /// Gets last five game form
     /// </summary>
     /// <param name="teamId"></param>
-    /// <param name="seasonId"></param>
+    /// <param name="competitionId"></param>
     /// <param name="count"></param>
     /// <returns></returns>
-    Task<IEnumerable<FloorballMatch>> GetLastCompletedByTeamAsync(Guid teamId, Guid? seasonId = null, int count = 5);
+    Task<IEnumerable<FloorballMatch>> GetLastCompletedByTeamAsync(Guid teamId, Guid? competitionId = null, int count = 5);
 } 

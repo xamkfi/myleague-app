@@ -6,7 +6,10 @@ import { lazy, type ComponentType } from 'react';
  * the page is automatically reloaded once to fetch the updated manifest.
  * A sessionStorage flag prevents infinite reload loops.
  */
-export function lazyWithRetry<T extends ComponentType<unknown>>(
+// Using ComponentType<any> here so the generic preserves the component's
+// own prop signature (so callers can pass component-specific props like `mode`).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function lazyWithRetry<T extends ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
 ) {
   return lazy(() =>

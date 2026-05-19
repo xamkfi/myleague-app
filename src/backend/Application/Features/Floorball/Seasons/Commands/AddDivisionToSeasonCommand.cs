@@ -8,7 +8,7 @@ namespace Application.Features.Floorball.Seasons.Commands
     /// Command to add a division to a season
     /// </summary>
     public record AddDivisionToSeasonCommand(
-        Guid SeasonId,
+        Guid CompetitionId,
         Guid DivisionId) : IRequest<Result>;
 }
 

@@ -21,7 +21,7 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// Data Transfer Object for FloorballMatch entity
     /// </summary>
     /// <param name="Id">The unique identifier of the match</param>
-    /// <param name="SeasonId">The ID of the season this match belongs to</param>
+    /// <param name="CompetitionId">The ID of the competition this match belongs to</param>
     /// <param name="HomeTeamId">The ID of the home team</param>
     /// <param name="HomeTeamName">The name of the home team</param>
     /// <param name="AwayTeamId">The ID of the away team</param>
@@ -38,10 +38,15 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// <param name="GoalEvents">The goals scored in the match</param>
     /// <param name="PenaltyEvents">The penalties given in the match</param>
     /// <param name="MatchRules">The match rules configuration snapshot</param>
+    /// <param name="TournamentGroupId">Group ID for tournament group-stage matches; null for league or playoff matches</param>
+    /// <param name="TournamentStage">Stage label for tournament matches (e.g. "GroupStage", "Quarterfinal"); null for league matches</param>
+    /// <param name="CompetitionType">Explicit competition discriminator (Season or Tournament). Lets the
+    /// frontend route matches without falling back to heuristics on tournament-only fields. Defaults
+    /// to "Season" for backward compatibility when the mapper can't resolve the navigation.</param>
     public record FloorballMatchDto(
         Guid Id,
-        Guid SeasonId,
-        string SeasonName,
+        Guid CompetitionId,
+        string CompetitionName,
         Guid HomeTeamId,
         string HomeTeamName,
         Uri? HomeTeamLogo,
@@ -62,5 +67,8 @@ namespace Application.Features.Floorball.Matches.DTOs
         IReadOnlyCollection<FloorballGoalEventDto> GoalEvents,
         IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents,
         IReadOnlyCollection<FloorballSaveEventDto> SaveEvents,
-        FloorballMatchRulesDto MatchRules);
+        FloorballMatchRulesDto MatchRules,
+        Guid? TournamentGroupId = null,
+        string? TournamentStage = null,
+        FloorballCompetitionType CompetitionType = FloorballCompetitionType.Season);
 }

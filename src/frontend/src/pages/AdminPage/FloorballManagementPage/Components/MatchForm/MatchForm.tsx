@@ -5,7 +5,10 @@ import type {
   FloorballMatchDto,
 } from '../../../../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
-import { floorballSeasonSearchService } from '../../../../../api/floorball/floorballTeamSearchService';
+import {
+  floorballSeasonSearchService,
+  floorballTournamentSearchService,
+} from '../../../../../api/floorball/floorballTeamSearchService';
 import { floorballTeamNameSearchService } from '../../../../../api/floorball/floorballTeamNameSearchService';
 import { floorballRefereeSearchService } from '../../../../../api/floorball/floorballRefereeSearchService';
 import ConfirmationDialog from '../../ManageMatchPage/components/ConfirmationDialog';
@@ -16,6 +19,14 @@ const GUEST_REFEREE_NAME = 'GUEST REFEREE';
 
 type MatchFormMode = 'create' | 'edit';
 
+/**
+ * Competition kind the form is editing/creating against. When omitted, the form falls back to
+ * 'season' for backwards compatibility (the original behaviour). For tournament matches the
+ * competition dropdown is wired to the tournament search service and labels/copy switches to
+ * "Tournament" / "Turnaus".
+ */
+type MatchFormCompetitionKind = 'season' | 'tournament';
+
 interface MatchFormProps {
   mode: MatchFormMode;
   initialData?: FloorballMatchDto;
@@ -24,6 +35,11 @@ interface MatchFormProps {
   onCancelMatch?: (matchId: string) => Promise<void>;
   onReactivateMatch?: (matchId: string) => Promise<void>;
   loading?: boolean;
+  /**
+   * Optional override for the competition kind. When unset, the form auto-detects from
+   * `initialData` (tournament if `tournamentGroupId` or `tournamentStage` is set, else season).
+   */
+  competitionKind?: MatchFormCompetitionKind;
 }
 
 const MatchForm = ({
@@ -33,11 +49,32 @@ const MatchForm = ({
   onCancel,
   onCancelMatch,
   onReactivateMatch,
-  loading = false
+  loading = false,
+  competitionKind,
 }: MatchFormProps) => {
   const { t } = useTranslation();
+  // Auto-detect tournament matches: if the match has a tournament group or a non-empty stage label,
+  // treat it as a tournament match. Caller can override via the `competitionKind` prop.
+  const isTournamentMatch: boolean = competitionKind
+    ? competitionKind === 'tournament'
+    : Boolean(
+        initialData?.tournamentGroupId ||
+          (initialData?.tournamentStage && initialData.tournamentStage !== 'None')
+      );
+  const competitionLabel: string = isTournamentMatch
+    ? t('floorball.matches.matchForm.tournament', 'Turnaus')
+    : t('floorball.matches.matchForm.season', 'Kausi');
+  const competitionPlaceholder: string = isTournamentMatch
+    ? t('floorball.matches.matchForm.selectTournament', 'Valitse turnaus')
+    : t('floorball.matches.matchForm.selectSeason', 'Valitse kausi');
+  const competitionSearchPlaceholder: string = isTournamentMatch
+    ? t('floorball.matches.matchForm.searchTournaments', 'Hae turnauksia...')
+    : t('floorball.matches.matchForm.searchSeasons', 'Hae kausia...');
+  const competitionEmptyMessage: string = isTournamentMatch
+    ? t('floorball.matches.matchForm.noTournaments', 'Turnauksia ei löytynyt')
+    : t('floorball.matches.matchForm.noSeasons', 'Kausia ei löytynyt');
   const [formData, setFormData] = useState<CreateFloorballMatchRequest>({
-    seasonId: undefined,
+    competitionId: undefined,
     homeTeamId: undefined,
     awayTeamId: undefined,
     refereeId: undefined,
@@ -78,11 +115,13 @@ const MatchForm = ({
 
   const createInitialOptions = useCallback(() => {
     if (mode === 'edit' && initialData) {
-      const seasonOption = {
-        id: initialData.seasonId,
-        name: `Season ${initialData.seasonId}`
+      // Use the denormalized competition name returned by the API; falls back to the id
+      // when name is missing (legacy responses) so the dropdown still has something to render.
+      const competitionOption = {
+        id: initialData.competitionId,
+        name: initialData.competitionName?.trim() || initialData.competitionId,
       };
-      setInitialSeasonOptions([seasonOption]);
+      setInitialSeasonOptions([competitionOption]);
 
       const homeTeamOption = {
         id: initialData.homeTeamId,
@@ -105,10 +144,17 @@ const MatchForm = ({
   const preloadInitialOptions = useCallback(async () => {
     if (mode === 'edit' && initialData) {
       try {
-        const seasonResult = await floorballSeasonSearchService.searchSeasons('', 1);
-        const matchingSeason = seasonResult.data.find(season => season.id === initialData.seasonId);
-        if (matchingSeason) {
-          setInitialSeasonOptions([matchingSeason]);
+        // Switch to tournament search service for tournament matches so the dropdown actually
+        // resolves the competition; otherwise the season service would return an empty list
+        // (no season with that id exists) and the user would not be able to pick anything.
+        const competitionResult = isTournamentMatch
+          ? await floorballTournamentSearchService.searchTournaments('', 1)
+          : await floorballSeasonSearchService.searchSeasons('', 1);
+        const matchingCompetition = competitionResult.data.find(
+          (competition) => competition.id === initialData.competitionId
+        );
+        if (matchingCompetition) {
+          setInitialSeasonOptions([matchingCompetition]);
         }
 
         const homeTeamResult = await floorballTeamNameSearchService.searchTeams('', 1);
@@ -126,7 +172,7 @@ const MatchForm = ({
         console.error('Error pre-loading initial options:', error);
       }
     }
-  }, [mode, initialData]);
+  }, [mode, initialData, isTournamentMatch]);
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
@@ -139,7 +185,7 @@ const MatchForm = ({
       const dateStr = `${year}-${month}-${day}`;
 
       setFormData({
-        seasonId: initialData.seasonId,
+        competitionId: initialData.competitionId,
         homeTeamId: initialData.homeTeamId,
         awayTeamId: initialData.awayTeamId,
         refereeId: initialData.refereeId,
@@ -154,7 +200,7 @@ const MatchForm = ({
       preloadInitialOptions();
     } else {
       setFormData({
-        seasonId: undefined,
+        competitionId: undefined,
         homeTeamId: undefined,
         awayTeamId: undefined,
         refereeId: undefined,
@@ -188,49 +234,56 @@ const MatchForm = ({
     ensureGuestReferee();
   }, [promoteGuestReferee]);
 
-  const searchSeasonsWithInitial = useCallback(async (query: string, page: number) => {
-    const result = await floorballSeasonSearchService.searchSeasons(query, page);
-    
+  const searchCompetitionsWithInitial = useCallback(async (query: string, page: number) => {
+    // Pick the right backend depending on the competition kind. Note: the result type is the
+    // same `SearchResult`, so the consumer (`SearchableInfiniteDropdown`) doesn't need to know
+    // which kind of competition it's listing.
+    const result = isTournamentMatch
+      ? await floorballTournamentSearchService.searchTournaments(query, page)
+      : await floorballSeasonSearchService.searchSeasons(query, page);
+
     if (mode === 'edit' && page === 1 && initialData) {
       try {
-        const matchingSeason = result.data.find(season => season.id === initialData.seasonId);
-        
-        if (matchingSeason) {
+        const matchingCompetition = result.data.find((competition) => competition.id === initialData.competitionId);
+
+        if (matchingCompetition) {
           const updatedInitialOptions = [{
-            id: initialData.seasonId,
-            name: matchingSeason.name
+            id: initialData.competitionId,
+            name: matchingCompetition.name,
           }];
-          
-          const filteredInitial = updatedInitialOptions.filter(option => 
+
+          const filteredInitial = updatedInitialOptions.filter((option) =>
             option.name.toLowerCase().includes(query.toLowerCase())
           );
-          
+
           return {
-            data: [...filteredInitial, ...result.data.filter(item => 
-              !updatedInitialOptions.some(initial => initial.id === item.id)
-            )],
-            pagination: result.pagination
+            data: [
+              ...filteredInitial,
+              ...result.data.filter((item) => !updatedInitialOptions.some((initial) => initial.id === item.id)),
+            ],
+            pagination: result.pagination,
           };
         }
       } catch (error) {
-        console.error('Error fetching season name:', error);
+        console.error('Error fetching competition name:', error);
       }
     }
-    
+
     if (mode === 'edit' && page === 1 && initialSeasonOptions.length > 0) {
-      const filteredInitial = initialSeasonOptions.filter(option => 
+      const filteredInitial = initialSeasonOptions.filter((option) =>
         option.name.toLowerCase().includes(query.toLowerCase())
       );
       return {
-        data: [...filteredInitial, ...result.data.filter(item => 
-          !initialSeasonOptions.some(initial => initial.id === item.id)
-        )],
-        pagination: result.pagination
+        data: [
+          ...filteredInitial,
+          ...result.data.filter((item) => !initialSeasonOptions.some((initial) => initial.id === item.id)),
+        ],
+        pagination: result.pagination,
       };
     }
-    
+
     return result;
-  }, [mode, initialData, initialSeasonOptions]);
+  }, [mode, initialData, initialSeasonOptions, isTournamentMatch]);
 
   const searchHomeTeamsWithInitial = useCallback(async (query: string, page: number) => {
     const result = await floorballTeamNameSearchService.searchTeams(query, page);
@@ -316,7 +369,7 @@ const MatchForm = ({
       await onSubmit(formData);
       if (mode === 'create') {
         setFormData({
-          seasonId: undefined,
+          competitionId: undefined,
           homeTeamId: undefined,
           awayTeamId: undefined,
           refereeId: undefined,
@@ -336,7 +389,7 @@ const MatchForm = ({
 
   const handleCancel = () => {
     setFormData({
-      seasonId: '',
+      competitionId: '',
       homeTeamId: '',
       awayTeamId: '',
       refereeId: undefined,
@@ -393,15 +446,15 @@ const MatchForm = ({
       
       <form onSubmit={handleSubmit} className="modal-form">
         <div className="form-group create-match-form-row">
-          <label htmlFor="season">Season *</label>
+          <label htmlFor="competition">{competitionLabel} *</label>
           <div className="input-wrapper">
             <SearchableInfiniteDropdown
-              placeholder="Select Season"
-              value={formData.seasonId}
-              onChange={(value) => setFormData(prev => ({ ...prev, seasonId: value }))}
-              onSearch={searchSeasonsWithInitial}
-              searchPlaceholder="Search seasons..."
-              emptyMessage="No seasons found"
+              placeholder={competitionPlaceholder}
+              value={formData.competitionId}
+              onChange={(value) => setFormData(prev => ({ ...prev, competitionId: value }))}
+              onSearch={searchCompetitionsWithInitial}
+              searchPlaceholder={competitionSearchPlaceholder}
+              emptyMessage={competitionEmptyMessage}
               required
               loadInitialDataOnMount={mode === 'edit'}
             />

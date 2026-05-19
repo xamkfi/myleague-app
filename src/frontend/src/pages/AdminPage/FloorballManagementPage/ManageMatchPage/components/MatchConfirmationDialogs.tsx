@@ -1,5 +1,6 @@
 import ConfirmationDialog from './ConfirmationDialog';
 import type { ProcessedEvent } from './types';
+import { formatMatchEventTime } from '../../../../../utils/matchEventFormat';
 
 interface MatchConfirmationDialogsProps {
   // End Period
@@ -29,7 +30,6 @@ interface MatchConfirmationDialogsProps {
   // Delete Event
   eventToDelete: ProcessedEvent | null;
   deleteEventLoading: boolean;
-  formatEventTime: (timeInSeconds: number) => string;
   onDeleteEventConfirm: () => Promise<void>;
   onDeleteEventCancel: () => void;
   
@@ -60,7 +60,6 @@ export const MatchConfirmationDialogs = ({
   
   eventToDelete,
   deleteEventLoading,
-  formatEventTime,
   onDeleteEventConfirm,
   onDeleteEventCancel,
   
@@ -127,7 +126,7 @@ export const MatchConfirmationDialogs = ({
         title="Delete Event"
         message={
           eventToDelete
-            ? `Delete ${eventToDelete.type} for ${eventToDelete.teamName} at P${eventToDelete.periodNumber} ${formatEventTime(eventToDelete.timeInSeconds)}?`
+            ? `Delete ${eventToDelete.type} for ${eventToDelete.teamName} at ${formatMatchEventTime(eventToDelete.periodNumber, eventToDelete.timeInSeconds)}?`
             : ''
         }
         warningMessage="This action cannot be undone."

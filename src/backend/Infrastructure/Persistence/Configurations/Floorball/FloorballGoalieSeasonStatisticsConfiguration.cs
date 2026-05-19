@@ -30,9 +30,9 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .IsRequired()
                 .HasComment("ID of the team the goalie played for");
 
-            builder.Property(s => s.SeasonId)
+            builder.Property(s => s.CompetitionId)
                 .IsRequired()
-                .HasComment("ID of the season these statistics are for");
+                .HasComment("ID of the competition these statistics are for");
 
             // Configure basic goalie statistics
             builder.Property(s => s.GamesPlayed)
@@ -135,21 +135,21 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.HasIndex(s => s.TeamId)
                 .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_TeamId");
 
-            builder.HasIndex(s => s.SeasonId)
+            builder.HasIndex(s => s.CompetitionId)
                 .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_SeasonId");
 
-            builder.HasIndex(s => new { s.PlayerId, s.TeamId, s.SeasonId })
+            builder.HasIndex(s => new { s.PlayerId, s.TeamId, s.CompetitionId })
                 .IsUnique()
                 .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_PlayerId_TeamId_SeasonId");
 
             // Index for leaderboard queries
-            builder.HasIndex(s => new { s.SeasonId, s.SavePercentage })
+            builder.HasIndex(s => new { s.CompetitionId, s.SavePercentage })
                 .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_SeasonId_SavePercentage");
 
-            builder.HasIndex(s => new { s.SeasonId, s.GoalsAgainstAverage })
+            builder.HasIndex(s => new { s.CompetitionId, s.GoalsAgainstAverage })
                 .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_SeasonId_GAA");
 
-            builder.HasIndex(s => new { s.SeasonId, s.Wins })
+            builder.HasIndex(s => new { s.CompetitionId, s.Wins })
                 .HasDatabaseName("IX_FloorballGoalieSeasonStatistics_SeasonId_Wins");
 
             // Configure base entity properties

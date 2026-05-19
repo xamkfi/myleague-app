@@ -51,27 +51,27 @@ public class GetTeamStandingsHandler : IRequestHandler<GetTeamStandingsQuery, Re
     {
         try
         {
-            _logger.LogInformation("Getting team standings for Season: {SeasonId}", request.SeasonId);
+            _logger.LogInformation("Getting team standings for Season: {SeasonId}", request.CompetitionId);
 
             List<Domain.Entities.Floorball.FloorballTeamSeasonStatistics> standings = 
-                (await _statisticsRepository.GetTeamStandingsAsync(request.SeasonId, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTeamStandingsAsync(request.CompetitionId, cancellationToken)).ToList();
 
             if (standings.Count == 0)
             {
-                _logger.LogWarning("Team standings not found for Season: {SeasonId}", request.SeasonId);
-                return Result<List<FloorballTeamSeasonStatisticsDto>>.NotFound("Team standings", request.SeasonId.ToString());
+                _logger.LogWarning("Team standings not found for Season: {SeasonId}", request.CompetitionId);
+                return Result<List<FloorballTeamSeasonStatisticsDto>>.NotFound("Team standings", request.CompetitionId.ToString());
             }
 
             List<FloorballTeamSeasonStatisticsDto> standingsDtos = standings
                 .Select(ts => FloorballStatisticsMapper.ToDto(ts))
                 .ToList();
             
-            _logger.LogInformation("Successfully retrieved team standings for Season: {SeasonId} - {Count} teams", request.SeasonId, standingsDtos.Count);
+            _logger.LogInformation("Successfully retrieved team standings for Season: {SeasonId} - {Count} teams", request.CompetitionId, standingsDtos.Count);
             return Result<List<FloorballTeamSeasonStatisticsDto>>.Success(standingsDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while getting team standings for Season: {SeasonId}", request.SeasonId);
+            _logger.LogError(ex, "Error occurred while getting team standings for Season: {SeasonId}", request.CompetitionId);
             return Result<List<FloorballTeamSeasonStatisticsDto>>.Failure("An error occurred while retrieving team standings.");
         }
     }

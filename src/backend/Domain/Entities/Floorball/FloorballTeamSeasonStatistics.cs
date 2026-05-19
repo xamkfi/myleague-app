@@ -20,14 +20,14 @@ public class FloorballTeamSeasonStatistics : BaseEntity
     public FloorballTeam Team { get; private set; }
 
     /// <summary>
-    /// Gets the ID of the season these statistics are for
+    /// Gets the ID of the competition these statistics are for
     /// </summary>
-    public Guid SeasonId { get; private set; }
+    public Guid CompetitionId { get; private set; }
 
     /// <summary>
-    /// Gets the season these statistics are for
+    /// Gets the competition these statistics are for
     /// </summary>
-    public FloorballSeason Season { get; private set; }
+    public FloorballCompetition Competition { get; private set; }
 
     // Basic game statistics
     /// <summary>
@@ -168,20 +168,20 @@ public class FloorballTeamSeasonStatistics : BaseEntity
     private FloorballTeamSeasonStatistics()
     {
         Team = null!;
-        Season = null!;
+        Competition = null!;
     }
 
     /// <summary>
     /// Initializes a new instance of FloorballTeamSeasonStatistics
     /// </summary>
     /// <param name="teamId">The team ID</param>
-    /// <param name="seasonId">The season ID</param>
-    public FloorballTeamSeasonStatistics(Guid teamId, Guid seasonId)
+    /// <param name="competitionId">The competition ID</param>
+    public FloorballTeamSeasonStatistics(Guid teamId, Guid competitionId)
     {
         TeamId = teamId;
-        SeasonId = seasonId;
+        CompetitionId = competitionId;
         Team = null!;
-        Season = null!;
+        Competition = null!;
         
         // Initialize all statistics to zero
         GamesPlayed = 0;

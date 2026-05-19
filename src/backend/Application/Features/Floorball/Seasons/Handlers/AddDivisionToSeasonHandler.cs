@@ -11,13 +11,13 @@ namespace Application.Features.Floorball.Seasons.Handlers;
 /// </summary>
 public class AddDivisionToSeasonHandler : IRequestHandler<AddDivisionToSeasonCommand, Result>
 {
-    private readonly IFloorballSeasonRepository _seasonRepository;
-    private readonly IFloorballSeasonDivisionRepository _seasonDivisionRepository;
+    private readonly IFloorballCompetitionRepository _seasonRepository;
+    private readonly IFloorballCompetitionDivisionRepository _seasonDivisionRepository;
     private readonly ILogger<AddDivisionToSeasonHandler> _logger;
 
     public AddDivisionToSeasonHandler(
-        IFloorballSeasonRepository seasonRepository,
-        IFloorballSeasonDivisionRepository seasonDivisionRepository,
+        IFloorballCompetitionRepository seasonRepository,
+        IFloorballCompetitionDivisionRepository seasonDivisionRepository,
         ILogger<AddDivisionToSeasonHandler> logger)
     {
         _seasonRepository = seasonRepository;
@@ -30,18 +30,18 @@ public class AddDivisionToSeasonHandler : IRequestHandler<AddDivisionToSeasonCom
         try
         {
             // Ensure season exists
-            if (!await _seasonRepository.ExistsAsync(request.SeasonId))
+            if (!await _seasonRepository.ExistsAsync(request.CompetitionId))
             {
-                return Result.NotFound("FloorballSeason", request.SeasonId);
+                return Result.NotFound("FloorballSeason", request.CompetitionId);
             }
 
-            _logger.LogInformation("Adding division {DivisionId} to season {SeasonId}", request.DivisionId, request.SeasonId);
-            await _seasonDivisionRepository.AddSeasonDivisionAsync(request.SeasonId, request.DivisionId);
+            _logger.LogInformation("Adding division {DivisionId} to season {SeasonId}", request.DivisionId, request.CompetitionId);
+            await _seasonDivisionRepository.AddCompetitionDivisionAsync(request.CompetitionId, request.DivisionId);
             return Result.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding division {DivisionId} to season {SeasonId}", request.DivisionId, request.SeasonId);
+            _logger.LogError(ex, "Error adding division {DivisionId} to season {SeasonId}", request.DivisionId, request.CompetitionId);
             return Result.Failure("Failed to add division to season.");
         }
     }

@@ -39,6 +39,8 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballStatisticsRepository _statisticsRepository;
+    private readonly IFloorballTournamentRepository _tournamentRepository;
+    private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly IMatchTimerService _timerService;
     private readonly INotificationSenderService _notificationSenderService;
@@ -49,12 +51,16 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
     /// </summary>
     /// <param name="matchRepository">The floorball match repository</param>
     /// <param name="statisticsRepository">The statistics repository</param>
+    /// <param name="tournamentRepository">The tournament repository (used for playoff advancement)</param>
+    /// <param name="teamRepository">The team repository (used to resolve playoff winner/loser entities)</param>
     /// <param name="unitOfWork">The unit of work</param>
     /// <param name="timerService">The timer service</param>
     /// <param name="logger">The logger</param>
     public CompleteFloorballMatchHandler(
         IFloorballMatchRepository matchRepository,
         IFloorballStatisticsRepository statisticsRepository,
+        IFloorballTournamentRepository tournamentRepository,
+        IFloorballTeamRepository teamRepository,
         IFloorballUnitOfWork unitOfWork,
         IMatchTimerService timerService,
         INotificationSenderService notificationSenderService,
@@ -62,6 +68,8 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
     {
         _matchRepository = matchRepository;
         _statisticsRepository = statisticsRepository;
+        _tournamentRepository = tournamentRepository;
+        _teamRepository = teamRepository;
         _unitOfWork = unitOfWork;
         _timerService = timerService;
         _notificationSenderService = notificationSenderService;
@@ -97,7 +105,14 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
 
             // Update GamesPlayed for active goalies on their goalie season statistics
             await UpdateGoalieGamesPlayed(match, cancellationToken);
-            
+
+            // If this is a playoff match, advance the winner to the next match's correct slot.
+            // For the final, also mark the tournament Completed and record the champion.
+            if (match.PlayoffRound.HasValue)
+            {
+                await AdvancePlayoffWinnerAsync(match, cancellationToken);
+            }
+
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -116,7 +131,7 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
 
             await _notificationSenderService.SendNotificationAsync(
                 FloorballNotificationEvents.MatchCompleted,
-                new { MatchId = match.Id });
+                new MatchNotificationPayload(match.Id));
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             _logger.LogInformation("Successfully completed floorball match: {MatchId}", request.Id);
@@ -136,10 +151,10 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
     private async Task UpdateFinalTeamSeasonStatistics(FloorballMatch match, CancellationToken cancellationToken)
     {
         // Update home team statistics
-        await UpdateTeamMatchResult(match.HomeTeamId, match.SeasonId, match.HomeScore, match.AwayScore, true, match, cancellationToken);
+        await UpdateTeamMatchResult(match.HomeTeamId, match.CompetitionId, match.HomeScore, match.AwayScore, true, match, cancellationToken);
         
         // Update away team statistics  
-        await UpdateTeamMatchResult(match.AwayTeamId, match.SeasonId, match.AwayScore, match.HomeScore, false, match, cancellationToken);
+        await UpdateTeamMatchResult(match.AwayTeamId, match.CompetitionId, match.AwayScore, match.HomeScore, false, match, cancellationToken);
     }
 
     /// <summary>
@@ -213,11 +228,11 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
         foreach ((Guid playerId, Guid teamId) in participants)
         {
             FloorballPlayerSeasonStatistics? playerStats =
-                await _statisticsRepository.GetPlayerSeasonStatisticsAsync(playerId, teamId, match.SeasonId, cancellationToken);
+                await _statisticsRepository.GetPlayerSeasonStatisticsAsync(playerId, teamId, match.CompetitionId, cancellationToken);
 
             if (playerStats == null)
             {
-                playerStats = new FloorballPlayerSeasonStatistics(playerId, teamId, match.SeasonId);
+                playerStats = new FloorballPlayerSeasonStatistics(playerId, teamId, match.CompetitionId);
             }
 
             playerStats.RecordGamePlayed();
@@ -257,15 +272,106 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
         if (match.HomeActiveGoalieId.HasValue)
         {
             await UpdateSingleGoalieGamePlayed(
-                match.HomeActiveGoalieId.Value, match.HomeTeamId, match.SeasonId,
+                match.HomeActiveGoalieId.Value, match.HomeTeamId, match.CompetitionId,
                 homeResult, matchDurationMinutes, homeGoalieShutout, cancellationToken);
         }
 
         if (match.AwayActiveGoalieId.HasValue)
         {
             await UpdateSingleGoalieGamePlayed(
-                match.AwayActiveGoalieId.Value, match.AwayTeamId, match.SeasonId,
+                match.AwayActiveGoalieId.Value, match.AwayTeamId, match.CompetitionId,
                 awayResult, matchDurationMinutes, awayGoalieShutout, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Advances the winner of a playoff match into the next bracket slot, and updates the tournament
+    /// when the final is completed. Loser propagation into the optional 3rd-place match is handled
+    /// here for semifinals as well.
+    /// </summary>
+    private async Task AdvancePlayoffWinnerAsync(FloorballMatch completed, CancellationToken cancellationToken)
+    {
+        // Determine winner. Domain guard in FloorballMatch.Complete() forbids playoff draws, but we
+        // keep the defensive null check here in case the match arrived via a different completion path.
+        Guid? winnerTeamId = completed.HomeScore > completed.AwayScore
+            ? completed.HomeTeamId
+            : completed.AwayScore > completed.HomeScore
+                ? completed.AwayTeamId
+                : (Guid?)null;
+        if (!winnerTeamId.HasValue)
+        {
+            _logger.LogWarning(
+                "Playoff match {MatchId} ended in a draw. No winner advanced. Round={Round}",
+                completed.Id, completed.PlayoffRound);
+            return;
+        }
+        Guid loserTeamId = winnerTeamId.Value == completed.HomeTeamId ? completed.AwayTeamId : completed.HomeTeamId;
+
+        // Pull all tournament matches once so both the SF→3rd-place propagation and the final
+        // auto-complete check can share the lookup.
+        List<FloorballMatch> tournamentMatches = (await _matchRepository.GetByCompetitionIdAsync(completed.CompetitionId)).ToList();
+
+        // Advance winner forward.
+        if (completed.NextMatchId.HasValue && completed.NextMatchSlot.HasValue)
+        {
+            FloorballMatch? nextMatch = await _matchRepository.GetByIdAsync(completed.NextMatchId.Value);
+            if (nextMatch != null && nextMatch.Status == FloorballMatchStatus.Scheduled)
+            {
+                FloorballTeam? winnerTeam = await _teamRepository.GetByIdAsync(winnerTeamId.Value);
+                if (winnerTeam != null)
+                {
+                    nextMatch.AssignPlayoffTeam(completed.NextMatchSlot.Value, winnerTeam);
+                    await _matchRepository.UpdateAsync(nextMatch);
+                }
+            }
+        }
+
+        // For semifinals, also propagate the loser into the 3rd-place match (if one exists).
+        if (completed.PlayoffRound == FloorballPlayoffRound.SemiFinal)
+        {
+            FloorballMatch? thirdPlace = tournamentMatches.FirstOrDefault(m => m.PlayoffRound == FloorballPlayoffRound.ThirdPlaceMatch);
+            if (thirdPlace != null && thirdPlace.Status == FloorballMatchStatus.Scheduled)
+            {
+                FloorballTeam? loserTeam = await _teamRepository.GetByIdAsync(loserTeamId);
+                if (loserTeam != null)
+                {
+                    // Place SF1's loser in the 3rd-place HomeTeam slot, SF2's in the AwayTeam slot.
+                    FloorballPlayoffSlot slot = completed.PlayoffMatchOrder == 0
+                        ? FloorballPlayoffSlot.Home
+                        : FloorballPlayoffSlot.Away;
+                    thirdPlace.AssignPlayoffTeam(slot, loserTeam);
+                    await _matchRepository.UpdateAsync(thirdPlace);
+                }
+            }
+        }
+
+        // Final completion -> always record the champion. Auto-complete the tournament only when no
+        // other group/playoff match is still pending; otherwise the admin completes it manually after
+        // e.g. the 3rd-place match wraps up. The `completed` match is excluded because its status is
+        // updated in memory but the repository fetch above might still see the pre-Save value.
+        if (completed.PlayoffRound == FloorballPlayoffRound.Final)
+        {
+            FloorballTournament? tournament = await _tournamentRepository.GetByIdAsync(completed.CompetitionId, cancellationToken);
+            if (tournament != null)
+            {
+                tournament.SetChampion(winnerTeamId.Value);
+
+                bool anyOtherUnfinished = tournamentMatches.Any(m =>
+                    m.Id != completed.Id &&
+                    m.Status != FloorballMatchStatus.Completed &&
+                    m.Status != FloorballMatchStatus.Cancelled);
+
+                if (!anyOtherUnfinished && tournament.TournamentStatus != FloorballTournamentStatus.Completed)
+                {
+                    tournament.CompleteTournament();
+                }
+                else if (anyOtherUnfinished)
+                {
+                    _logger.LogInformation(
+                        "Final completed for tournament {TournamentId}, but other matches remain. Tournament left in {Status} for manual completion.",
+                        completed.CompetitionId, tournament.TournamentStatus);
+                }
+            }
         }
     }
 

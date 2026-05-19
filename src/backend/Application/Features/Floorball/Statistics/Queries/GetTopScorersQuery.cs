@@ -15,4 +15,4 @@ namespace Application.Features.Floorball.Statistics.Queries;
 /// </summary>
 /// <param name="SeasonId">The season ID</param>
 /// <param name="TopN">Number of top scorers to return (default: 10)</param>
-public record GetTopScorersQuery(Guid SeasonId, int TopN = 10) : IRequest<Result<List<FloorballPlayerSeasonStatisticsDto>>>;
+public record GetTopScorersQuery(Guid CompetitionId, int TopN = 10) : IRequest<Result<List<FloorballPlayerSeasonStatisticsDto>>>;

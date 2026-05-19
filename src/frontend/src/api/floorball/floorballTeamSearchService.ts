@@ -103,4 +103,44 @@ export const floorballSeasonSearchService = {
       throw new Error(error instanceof Error ? error.message : 'Failed to search seasons');
     }
   },
-}; 
+};
+
+export const floorballTournamentSearchService = {
+  /**
+   * Search tournaments for dropdown (typically few, so we can load all and filter client-side
+   * — same pattern as the season search service).
+   */
+  searchTournaments: async (query: string, page: number): Promise<SearchResult> => {
+    try {
+      console.debug(`Searching tournaments - page: ${page}, query: "${query}"`);
+
+      const { floorballTournamentService } = await import('./floorballTournamentService');
+      const response = await floorballTournamentService.getAll();
+
+      if (!response.success || !response.data) {
+        throw new Error('Failed to fetch tournaments');
+      }
+
+      let tournaments: DropdownOption[] = response.data.map((tournament) => ({
+        id: tournament.id,
+        name: tournament.name,
+      }));
+
+      if (query.trim()) {
+        tournaments = tournaments.filter((tournament) =>
+          tournament.name.toLowerCase().includes(query.toLowerCase())
+        );
+      }
+
+      return {
+        data: tournaments,
+        pagination: {
+          hasNextPage: false,
+          totalCount: tournaments.length,
+        },
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to search tournaments');
+    }
+  },
+};
