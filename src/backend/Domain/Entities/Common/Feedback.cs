@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities.Common
 {
-    public class Feedback : BaseEntity
+    public class FeedbackEntity : BaseEntity
     {
         /// <summary>
         /// Gets the title of the feedback.

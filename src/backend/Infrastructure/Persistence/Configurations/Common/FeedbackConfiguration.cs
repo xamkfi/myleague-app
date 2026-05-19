@@ -12,9 +12,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MyLeague.Infrastructure.Persistence.Configurations.Common
 {
-    public class FeedbackConfiguration : IEntityTypeConfiguration<Feedback>
+    public class FeedbackConfiguration : IEntityTypeConfiguration<FeedbackEntity>
     {
-        public void Configure(EntityTypeBuilder<Feedback> builder)
+        public void Configure(EntityTypeBuilder<FeedbackEntity> builder)
         {
 
             //Primary key
