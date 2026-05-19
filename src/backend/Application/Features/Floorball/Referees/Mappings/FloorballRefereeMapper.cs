@@ -108,6 +108,8 @@ public static class FloorballRefereeMapper
 
         // Update active status using the existing method
         referee.UpdateActiveStatus(command.IsActive);
+        // Update matches officiated
+        referee.UpdateMatchesOfficiated(command.MatchesOfficiated);
         
         // Update license expiry date if provided and different from current
         if (command.LicenseExpiryDate.HasValue)
@@ -129,8 +131,5 @@ public static class FloorballRefereeMapper
         
         // Note: License issue date cannot be updated after creation as the entity doesn't support it
         // This is by design - license issue dates should be immutable once set
-        
-        // Note: MatchesOfficiated should be updated through RecordMatchOfficiated() method
-        // when matches are actually officiated, not through direct updates
     }
 }

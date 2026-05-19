@@ -64,39 +64,48 @@ const EditRefereePage = () => {
   }, [successTimeoutId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!refereeId) return;
+  e.preventDefault();
+  if (!refereeId) return;
 
-    if (formData.licenseIssueDate && formData.licenseExpiryDate) {
-      const issueDate = new Date(formData.licenseIssueDate);
-      const expiryDate = new Date(formData.licenseExpiryDate);
-      if (expiryDate <= issueDate) {
-        setError(
-          t(
+  if (formData.licenseIssueDate && formData.licenseExpiryDate) {
+    const issueDate = new Date(formData.licenseIssueDate);
+    const expiryDate = new Date(formData.licenseExpiryDate);
+    if (expiryDate <= issueDate) {
+      setError(t(
             'floorball.referees.validation.expiryAfterIssue',
             'License expiry date must be after the issue date'
-          )
-        );
-        return;
-      }
-    }
-
-    if (formData.matchesOfficiated < 0) {
-      setError(
-        t(
-          'floorball.referees.validation.matchesNonNegative',
-          'Matches officiated cannot be negative'
-        )
-      );
+          ));
       return;
     }
+  }
 
-    try {
-      setSaving(true);
-      setError(null);
-      setSuccessMessage(null);
+  if (formData.matchesOfficiated < 0) {
+    setError(t(
+          'floorball.referees.validation.matchesNonNegative',
+          'Matches officiated cannot be negative'
+        ));
+    return;
+  }
 
-      await floorballRefereeService.update(refereeId, formData);
+  try {
+    setSaving(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    // Only send dates if they have values
+    const updateData: UpdateFloorballRefereeRequest = {
+      matchesOfficiated: formData.matchesOfficiated,
+      isActive: formData.isActive,
+    };
+    
+    if (formData.licenseIssueDate) {
+      updateData.licenseIssueDate = formData.licenseIssueDate;
+    }
+    if (formData.licenseExpiryDate) {
+      updateData.licenseExpiryDate = formData.licenseExpiryDate;
+    }
+
+    await floorballRefereeService.update(refereeId, updateData);
 
       if (successTimeoutId) clearTimeout(successTimeoutId);
 
