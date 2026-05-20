@@ -57,7 +57,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// <summary>
         /// Gets or set s the Feedbacks DbSet
         /// </summary>
-        public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<FeedbackEntity> Feedbacks { get; set; }
         
         /// <summary>
         /// Saves changes to the database with domain event dispatching.
@@ -111,6 +111,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new DivisionConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             modelBuilder.ApplyConfiguration(new TimerStateConfiguration());
+            modelBuilder.ApplyConfiguration(new FeedbackConfiguration());
         }
     }
 } 

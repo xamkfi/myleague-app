@@ -15,6 +15,6 @@ namespace Application.Features.Common.Feedback.Commands
     public record CreateFeedbackCommand(
         string Title,
         string FeedbackBody,
-        string? Email = null,
-        DateTime CreatedAt) : IRequest<Result<FeedbackDto>>;
+        DateTime CreatedAt,
+        string? Email = null) : IRequest<Result<FeedbackDto>>;
 }

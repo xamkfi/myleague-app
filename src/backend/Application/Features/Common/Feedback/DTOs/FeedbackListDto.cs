@@ -10,10 +10,11 @@ using System.Threading.Tasks;
 namespace Application.Features.Common.Feedback.DTOs
 {
     /// <summary>
-    /// Data Transfer Object for creating new Feedback
+    /// Data transfer object for simplified list view without FeedbackBody
     /// </summary>
-    public record FeedbackCreateDto(
+    public record FeedbackListDto(
+        Guid Id,
         string Title,
-        string FeedbackBody,
-        string? Email);
+        string? Email,
+        DateTime CreatedAt);
 }

@@ -42,6 +42,12 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
             builder.Property(f => f.Email)
                 .HasMaxLength(255);
 
+            //Performance Indexes
+
+            //Index for getting most recent feedback
+            builder.HasIndex(f => f.CreatedAt)
+                .HasDatabaseName("IX_Feedback_CreatedAt")
+                .IsDescending();
         }
     }
 }

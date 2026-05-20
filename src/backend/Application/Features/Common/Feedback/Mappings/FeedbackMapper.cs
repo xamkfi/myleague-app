@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.Features.Common.Feedback.Commands;
 using Application.Features.Common.Feedback.DTOs;
 using Domain.Entities.Common;
 
@@ -28,5 +29,39 @@ namespace Application.Features.Common.Feedback.Mappings
                 feedback.CreatedAt);
         }
 
+        public static FeedbackEntity ToEntity(CreateFeedbackCommand command)
+        {
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
+
+            Guid feedbackId = Guid.NewGuid();
+            FeedbackEntity feedbackEntity = new FeedbackEntity(feedbackId,
+                command.Title,
+                command.FeedbackBody);
+
+            if (!string.IsNullOrEmpty(command.Email))
+            {
+                feedbackEntity.SetEmail(command.Email);
+            }
+
+            return feedbackEntity;
+        }
+
+        public static FeedbackListDto ToListDto(FeedbackEntity feedback)
+        {
+            if (feedback == null) throw new ArgumentNullException(nameof(feedback));
+
+            return new FeedbackListDto(
+                feedback.Id,
+                feedback.Title,
+                feedback.Email?.ToString(),
+                feedback.CreatedAt);
+        }
+
+        public static IEnumerable<FeedbackListDto> ToListDtos(IEnumerable<FeedbackEntity> feedbackList)
+        {
+            if (feedbackList == null) throw new ArgumentNullException(nameof(feedbackList));
+            return feedbackList.Select(feedback => ToListDto(feedback));
+        }
     }
 }

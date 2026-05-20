@@ -25,5 +25,20 @@ namespace Domain.Entities.Common
         /// Gets the optional email of the feedback.
         /// </summary>
         public string? Email { get; set; }
+
+        public FeedbackEntity(Guid id, string title, string feedbackBody, string? email = null)
+        {
+            Id = id;
+            Title = title;
+            FeedbackBody = feedbackBody;
+            Email = email;
+            CreatedAt = DateTime.UtcNow;
+        }
+
+        public void SetEmail(string email)
+        {
+            string? oldEmail = Email;
+            Email = email;
+        }
     } 
 }
