@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { 
+import type {
   CreateFloorballMatchRequest,
   FloorballMatchDto,
 } from '../../../../../types/floorball/floorballTypes';
@@ -10,12 +10,9 @@ import {
   floorballTournamentSearchService,
 } from '../../../../../api/floorball/floorballTeamSearchService';
 import { floorballTeamNameSearchService } from '../../../../../api/floorball/floorballTeamNameSearchService';
-import { floorballRefereeSearchService } from '../../../../../api/floorball/floorballRefereeSearchService';
 import ConfirmationDialog from '../../ManageMatchPage/components/ConfirmationDialog';
 import './MatchForm.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
-
-const GUEST_REFEREE_NAME = 'GUEST REFEREE';
 
 type MatchFormMode = 'create' | 'edit';
 
@@ -53,6 +50,7 @@ const MatchForm = ({
   competitionKind,
 }: MatchFormProps) => {
   const { t } = useTranslation();
+
   // Auto-detect tournament matches: if the match has a tournament group or a non-empty stage label,
   // treat it as a tournament match. Caller can override via the `competitionKind` prop.
   const isTournamentMatch: boolean = competitionKind
@@ -61,26 +59,32 @@ const MatchForm = ({
         initialData?.tournamentGroupId ||
           (initialData?.tournamentStage && initialData.tournamentStage !== 'None')
       );
+
   const competitionLabel: string = isTournamentMatch
     ? t('floorball.matches.matchForm.tournament', 'Turnaus')
     : t('floorball.matches.matchForm.season', 'Kausi');
+
   const competitionPlaceholder: string = isTournamentMatch
     ? t('floorball.matches.matchForm.selectTournament', 'Valitse turnaus')
     : t('floorball.matches.matchForm.selectSeason', 'Valitse kausi');
+
   const competitionSearchPlaceholder: string = isTournamentMatch
     ? t('floorball.matches.matchForm.searchTournaments', 'Hae turnauksia...')
     : t('floorball.matches.matchForm.searchSeasons', 'Hae kausia...');
+
   const competitionEmptyMessage: string = isTournamentMatch
     ? t('floorball.matches.matchForm.noTournaments', 'Turnauksia ei löytynyt')
     : t('floorball.matches.matchForm.noSeasons', 'Kausia ei löytynyt');
+
   const [formData, setFormData] = useState<CreateFloorballMatchRequest>({
     competitionId: undefined,
     homeTeamId: undefined,
     awayTeamId: undefined,
     refereeId: undefined,
     scheduledDateTime: '',
-    venue: ''
+    venue: '',
   });
+
   const [selectedDate, setSelectedDate] = useState('');
   const [hoursInput, setHoursInput] = useState('');
   const [minutesInput, setMinutesInput] = useState('');
@@ -90,28 +94,10 @@ const MatchForm = ({
   const [dateError, setDateError] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showReactivateConfirm, setShowReactivateConfirm] = useState(false);
-  
-  const [initialSeasonOptions, setInitialSeasonOptions] = useState<Array<{id: string, name: string}>>([]);
-  const [initialHomeTeamOptions, setInitialHomeTeamOptions] = useState<Array<{id: string, name: string}>>([]);
-  const [initialAwayTeamOptions, setInitialAwayTeamOptions] = useState<Array<{id: string, name: string}>>([]);
 
-  const promoteGuestReferee = useCallback((options: Array<{ id: string; name: string }>) => {
-    const guestIndex = options.findIndex(option => option.name.toUpperCase() === GUEST_REFEREE_NAME);
-    if (guestIndex <= 0) {
-      return options;
-    }
-    const guest = options[guestIndex];
-    const remaining = options.filter((_, index) => index !== guestIndex);
-    return [guest, ...remaining];
-  }, []);
-
-  const searchRefereesWithGuest = useCallback(async (query: string, page: number) => {
-    const result = await floorballRefereeSearchService.searchReferees(query, page);
-    return {
-      data: promoteGuestReferee(result.data),
-      pagination: result.pagination
-    };
-  }, [promoteGuestReferee]);
+  const [initialSeasonOptions, setInitialSeasonOptions] = useState<Array<{ id: string; name: string }>>([]);
+  const [initialHomeTeamOptions, setInitialHomeTeamOptions] = useState<Array<{ id: string; name: string }>>([]);
+  const [initialAwayTeamOptions, setInitialAwayTeamOptions] = useState<Array<{ id: string; name: string }>>([]);
 
   const createInitialOptions = useCallback(() => {
     if (mode === 'edit' && initialData) {
@@ -125,13 +111,13 @@ const MatchForm = ({
 
       const homeTeamOption = {
         id: initialData.homeTeamId,
-        name: initialData.homeTeamName
+        name: initialData.homeTeamName,
       };
       setInitialHomeTeamOptions([homeTeamOption]);
 
       const awayTeamOption = {
         id: initialData.awayTeamId,
-        name: initialData.awayTeamName
+        name: initialData.awayTeamName,
       };
       setInitialAwayTeamOptions([awayTeamOption]);
     } else {
@@ -150,21 +136,25 @@ const MatchForm = ({
         const competitionResult = isTournamentMatch
           ? await floorballTournamentSearchService.searchTournaments('', 1)
           : await floorballSeasonSearchService.searchSeasons('', 1);
+
         const matchingCompetition = competitionResult.data.find(
           (competition) => competition.id === initialData.competitionId
         );
+
         if (matchingCompetition) {
           setInitialSeasonOptions([matchingCompetition]);
         }
 
         const homeTeamResult = await floorballTeamNameSearchService.searchTeams('', 1);
-        const matchingHomeTeam = homeTeamResult.data.find(team => team.id === initialData.homeTeamId);
+        const matchingHomeTeam = homeTeamResult.data.find((team) => team.id === initialData.homeTeamId);
+
         if (matchingHomeTeam) {
           setInitialHomeTeamOptions([matchingHomeTeam]);
         }
 
         const awayTeamResult = await floorballTeamNameSearchService.searchTeams('', 1);
-        const matchingAwayTeam = awayTeamResult.data.find(team => team.id === initialData.awayTeamId);
+        const matchingAwayTeam = awayTeamResult.data.find((team) => team.id === initialData.awayTeamId);
+
         if (matchingAwayTeam) {
           setInitialAwayTeamOptions([matchingAwayTeam]);
         }
@@ -188,14 +178,15 @@ const MatchForm = ({
         competitionId: initialData.competitionId,
         homeTeamId: initialData.homeTeamId,
         awayTeamId: initialData.awayTeamId,
-        refereeId: initialData.refereeId,
+        refereeId: undefined,
         scheduledDateTime: initialData.scheduledDateTime,
-        venue: initialData.venue || ''
+        venue: initialData.venue || '',
       });
+
       setSelectedDate(dateStr);
       setHoursInput(hoursStr);
       setMinutesInput(minutesStr);
-      
+
       createInitialOptions();
       preloadInitialOptions();
     } else {
@@ -205,8 +196,9 @@ const MatchForm = ({
         awayTeamId: undefined,
         refereeId: undefined,
         scheduledDateTime: '',
-        venue: ''
+        venue: '',
       });
+
       setSelectedDate('');
       setHoursInput('');
       setMinutesInput('');
@@ -214,121 +206,134 @@ const MatchForm = ({
     }
   }, [mode, initialData, createInitialOptions, preloadInitialOptions]);
 
-  useEffect(() => {
-    const ensureGuestReferee = async () => {
-      try {
-        const result = await floorballRefereeSearchService.searchReferees('', 1);
-        const promoted = promoteGuestReferee(result.data);
-        const guest = promoted.find(option => option.name.toUpperCase() === GUEST_REFEREE_NAME);
-        if (guest) {
-          setFormData(prev => ({
-            ...prev,
-            refereeId: prev.refereeId ?? guest.id
-          }));
-        }
-      } catch (err) {
-        console.error('Failed to load referees for default selection', err);
-      }
-    };
+  const searchCompetitionsWithInitial = useCallback(
+    async (query: string, page: number) => {
+      // Pick the right backend depending on the competition kind. Note: the result type is the
+      // same `SearchResult`, so the consumer (`SearchableInfiniteDropdown`) doesn't need to know
+      // which kind of competition it's listing.
+      const result = isTournamentMatch
+        ? await floorballTournamentSearchService.searchTournaments(query, page)
+        : await floorballSeasonSearchService.searchSeasons(query, page);
 
-    ensureGuestReferee();
-  }, [promoteGuestReferee]);
-
-  const searchCompetitionsWithInitial = useCallback(async (query: string, page: number) => {
-    // Pick the right backend depending on the competition kind. Note: the result type is the
-    // same `SearchResult`, so the consumer (`SearchableInfiniteDropdown`) doesn't need to know
-    // which kind of competition it's listing.
-    const result = isTournamentMatch
-      ? await floorballTournamentSearchService.searchTournaments(query, page)
-      : await floorballSeasonSearchService.searchSeasons(query, page);
-
-    if (mode === 'edit' && page === 1 && initialData) {
-      try {
-        const matchingCompetition = result.data.find((competition) => competition.id === initialData.competitionId);
-
-        if (matchingCompetition) {
-          const updatedInitialOptions = [{
-            id: initialData.competitionId,
-            name: matchingCompetition.name,
-          }];
-
-          const filteredInitial = updatedInitialOptions.filter((option) =>
-            option.name.toLowerCase().includes(query.toLowerCase())
+      if (mode === 'edit' && page === 1 && initialData) {
+        try {
+          const matchingCompetition = result.data.find(
+            (competition) => competition.id === initialData.competitionId
           );
 
-          return {
-            data: [
-              ...filteredInitial,
-              ...result.data.filter((item) => !updatedInitialOptions.some((initial) => initial.id === item.id)),
-            ],
-            pagination: result.pagination,
-          };
+          if (matchingCompetition) {
+            const updatedInitialOptions = [
+              {
+                id: initialData.competitionId,
+                name: matchingCompetition.name,
+              },
+            ];
+
+            const filteredInitial = updatedInitialOptions.filter((option) =>
+              option.name.toLowerCase().includes(query.toLowerCase())
+            );
+
+            return {
+              data: [
+                ...filteredInitial,
+                ...result.data.filter(
+                  (item) => !updatedInitialOptions.some((initial) => initial.id === item.id)
+                ),
+              ],
+              pagination: result.pagination,
+            };
+          }
+        } catch (error) {
+          console.error('Error fetching competition name:', error);
         }
-      } catch (error) {
-        console.error('Error fetching competition name:', error);
       }
-    }
 
-    if (mode === 'edit' && page === 1 && initialSeasonOptions.length > 0) {
-      const filteredInitial = initialSeasonOptions.filter((option) =>
-        option.name.toLowerCase().includes(query.toLowerCase())
-      );
-      return {
-        data: [
-          ...filteredInitial,
-          ...result.data.filter((item) => !initialSeasonOptions.some((initial) => initial.id === item.id)),
-        ],
-        pagination: result.pagination,
-      };
-    }
+      if (mode === 'edit' && page === 1 && initialSeasonOptions.length > 0) {
+        const filteredInitial = initialSeasonOptions.filter((option) =>
+          option.name.toLowerCase().includes(query.toLowerCase())
+        );
 
-    return result;
-  }, [mode, initialData, initialSeasonOptions, isTournamentMatch]);
+        return {
+          data: [
+            ...filteredInitial,
+            ...result.data.filter(
+              (item) => !initialSeasonOptions.some((initial) => initial.id === item.id)
+            ),
+          ],
+          pagination: result.pagination,
+        };
+      }
 
-  const searchHomeTeamsWithInitial = useCallback(async (query: string, page: number) => {
-    const result = await floorballTeamNameSearchService.searchTeams(query, page);
-    
-    if (mode === 'edit' && page === 1 && initialHomeTeamOptions.length > 0) {
-      const filteredInitial = initialHomeTeamOptions.filter(option => 
-        option.name.toLowerCase().includes(query.toLowerCase())
-      );
-      return {
-        data: [...filteredInitial, ...result.data.filter(item => 
-          !initialHomeTeamOptions.some(initial => initial.id === item.id)
-        )],
-        pagination: result.pagination
-      };
-    }
-    
-    return result;
-  }, [mode, initialHomeTeamOptions]);
+      return result;
+    },
+    [mode, initialData, initialSeasonOptions, isTournamentMatch]
+  );
 
-  const searchAwayTeamsWithInitial = useCallback(async (query: string, page: number) => {
-    const result = await floorballTeamNameSearchService.searchTeams(query, page);
-    
-    if (mode === 'edit' && page === 1 && initialAwayTeamOptions.length > 0) {
-      const filteredInitial = initialAwayTeamOptions.filter(option => 
-        option.name.toLowerCase().includes(query.toLowerCase())
-      );
-      return {
-        data: [...filteredInitial, ...result.data.filter(item => 
-          !initialAwayTeamOptions.some(initial => initial.id === item.id)
-        )],
-        pagination: result.pagination
-      };
-    }
-    
-    return result;
-  }, [mode, initialAwayTeamOptions]);
+  const searchHomeTeamsWithInitial = useCallback(
+    async (query: string, page: number) => {
+      const result = await floorballTeamNameSearchService.searchTeams(query, page);
+
+      if (mode === 'edit' && page === 1 && initialHomeTeamOptions.length > 0) {
+        const filteredInitial = initialHomeTeamOptions.filter((option) =>
+          option.name.toLowerCase().includes(query.toLowerCase())
+        );
+
+        return {
+          data: [
+            ...filteredInitial,
+            ...result.data.filter(
+              (item) => !initialHomeTeamOptions.some((initial) => initial.id === item.id)
+            ),
+          ],
+          pagination: result.pagination,
+        };
+      }
+
+      return result;
+    },
+    [mode, initialHomeTeamOptions]
+  );
+
+  const searchAwayTeamsWithInitial = useCallback(
+    async (query: string, page: number) => {
+      const result = await floorballTeamNameSearchService.searchTeams(query, page);
+
+      if (mode === 'edit' && page === 1 && initialAwayTeamOptions.length > 0) {
+        const filteredInitial = initialAwayTeamOptions.filter((option) =>
+          option.name.toLowerCase().includes(query.toLowerCase())
+        );
+
+        return {
+          data: [
+            ...filteredInitial,
+            ...result.data.filter(
+              (item) => !initialAwayTeamOptions.some((initial) => initial.id === item.id)
+            ),
+          ],
+          pagination: result.pagination,
+        };
+      }
+
+      return result;
+    },
+    [mode, initialAwayTeamOptions]
+  );
 
   const updateScheduledDateTime = (dateStr: string, hours: string, minutes: string) => {
     if (dateStr && hours && minutes) {
       const date = new Date(dateStr);
       date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       const isoDateTime = date.toISOString();
-      setFormData(prev => ({ ...prev, scheduledDateTime: isoDateTime }));
+
+      setFormData((prev) => ({
+        ...prev,
+        scheduledDateTime: isoDateTime,
+      }));
     } else {
-      setFormData(prev => ({ ...prev, scheduledDateTime: '' }));
+      setFormData((prev) => ({
+        ...prev,
+        scheduledDateTime: '',
+      }));
     }
   };
 
@@ -341,6 +346,7 @@ const MatchForm = ({
 
   const handleHoursChange = (value: string) => {
     const numValue = parseInt(value);
+
     if (value === '' || (numValue >= 0 && numValue <= 23 && value.length <= 2)) {
       setHoursInput(value);
       updateScheduledDateTime(selectedDate, value, minutesInput);
@@ -349,6 +355,7 @@ const MatchForm = ({
 
   const handleMinutesChange = (value: string) => {
     const numValue = parseInt(value);
+
     if (value === '' || (numValue >= 0 && numValue <= 59 && value.length <= 2)) {
       setMinutesInput(value);
       updateScheduledDateTime(selectedDate, hoursInput, value);
@@ -361,12 +368,13 @@ const MatchForm = ({
     try {
       setError(null);
 
-      if (!formData.refereeId) {
-        setError('Please select a referee');
-        return;
-      }
+      const matchData: CreateFloorballMatchRequest = {
+        ...formData,
+        refereeId: undefined,
+      };
 
-      await onSubmit(formData);
+      await onSubmit(matchData);
+
       if (mode === 'create') {
         setFormData({
           competitionId: undefined,
@@ -374,8 +382,9 @@ const MatchForm = ({
           awayTeamId: undefined,
           refereeId: undefined,
           scheduledDateTime: '',
-          venue: ''
+          venue: '',
         });
+
         setSelectedDate('');
         setHoursInput('');
         setMinutesInput('');
@@ -394,8 +403,9 @@ const MatchForm = ({
       awayTeamId: '',
       refereeId: undefined,
       scheduledDateTime: '',
-      venue: ''
+      venue: '',
     });
+
     setSelectedDate('');
     setHoursInput('');
     setMinutesInput('');
@@ -406,7 +416,7 @@ const MatchForm = ({
 
   const handleCancelMatchConfirm = async () => {
     if (!initialData || !onCancelMatch) return;
-    
+
     try {
       setCancelLoading(true);
       setError(null);
@@ -423,7 +433,7 @@ const MatchForm = ({
 
   const handleReactivateMatchConfirm = async () => {
     if (!initialData || !onReactivateMatch) return;
-    
+
     try {
       setReactivateLoading(true);
       setError(null);
@@ -440,10 +450,8 @@ const MatchForm = ({
 
   return (
     <>
-      {error && (
-        <ErrorPopup message={error} />
-      )}
-      
+      {error && <ErrorPopup message={error} />}
+
       <form onSubmit={handleSubmit} className="modal-form">
         <div className="form-group create-match-form-row">
           <label htmlFor="competition">{competitionLabel} *</label>
@@ -451,7 +459,12 @@ const MatchForm = ({
             <SearchableInfiniteDropdown
               placeholder={competitionPlaceholder}
               value={formData.competitionId}
-              onChange={(value) => setFormData(prev => ({ ...prev, competitionId: value }))}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  competitionId: value,
+                }))
+              }
               onSearch={searchCompetitionsWithInitial}
               searchPlaceholder={competitionSearchPlaceholder}
               emptyMessage={competitionEmptyMessage}
@@ -460,13 +473,19 @@ const MatchForm = ({
             />
           </div>
         </div>
+
         <div className="form-group create-match-form-row">
           <label htmlFor="homeTeam">Home Team *</label>
           <div className="input-wrapper">
             <SearchableInfiniteDropdown
               placeholder="Select Home Team"
               value={formData.homeTeamId}
-              onChange={(value) => setFormData(prev => ({ ...prev, homeTeamId: value }))}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  homeTeamId: value,
+                }))
+              }
               onSearch={searchHomeTeamsWithInitial}
               searchPlaceholder="Search teams..."
               emptyMessage="No teams found"
@@ -475,13 +494,19 @@ const MatchForm = ({
             />
           </div>
         </div>
+
         <div className="form-group create-match-form-row">
           <label htmlFor="awayTeam">Away Team *</label>
           <div className="input-wrapper">
             <SearchableInfiniteDropdown
               placeholder="Select Away Team"
               value={formData.awayTeamId}
-              onChange={(value) => setFormData(prev => ({ ...prev, awayTeamId: value }))}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  awayTeamId: value,
+                }))
+              }
               onSearch={searchAwayTeamsWithInitial}
               searchPlaceholder="Search teams..."
               emptyMessage="No teams found"
@@ -490,21 +515,7 @@ const MatchForm = ({
             />
           </div>
         </div>
-        <div className="form-group create-match-form-row">
-          <label htmlFor="referee">Referee *</label>
-          <div className="input-wrapper">
-            <SearchableInfiniteDropdown
-              placeholder="Select Referee"
-              value={formData.refereeId}
-              onChange={(value) => setFormData(prev => ({ ...prev, refereeId: value }))}
-              onSearch={searchRefereesWithGuest}
-              searchPlaceholder="Search referees..."
-              emptyMessage="No referees found"
-              required
-              loadInitialDataOnMount
-            />
-          </div>
-        </div>
+
         <div className="form-group create-match-form-row">
           <label>Date & Time *</label>
           <div className="input-wrapper">
@@ -517,9 +528,13 @@ const MatchForm = ({
                   required
                 />
               </div>
+
               {dateError && (
-                <div className="field-error" role="alert">{dateError}</div>
+                <div className="field-error" role="alert">
+                  {dateError}
+                </div>
               )}
+
               <div className="time-input-group">
                 <input
                   type="number"
@@ -531,7 +546,9 @@ const MatchForm = ({
                   className="time-input hours"
                   required
                 />
+
                 <span className="time-separator">:</span>
+
                 <input
                   type="number"
                   placeholder="MM"
@@ -546,6 +563,7 @@ const MatchForm = ({
             </div>
           </div>
         </div>
+
         <div className="form-group create-match-form-row">
           <label htmlFor="venue">Venue</label>
           <div className="input-wrapper">
@@ -553,38 +571,63 @@ const MatchForm = ({
               type="text"
               id="venue"
               value={formData.venue}
-              onChange={(e) => setFormData(prev => ({ ...prev, venue: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  venue: e.target.value,
+                }))
+              }
               placeholder="Enter venue"
             />
           </div>
         </div>
-        
+
         <div className="form-actions">
           <button type="button" onClick={handleCancel} className="cancel-button">
             {t('common.cancel', 'Cancel')}
           </button>
-          {mode === 'edit' && initialData && initialData.status === 'Cancelled' && onReactivateMatch && (
-            <button 
-              type="button" 
-              onClick={() => setShowReactivateConfirm(true)} 
-              disabled={reactivateLoading}
-              className="reactivate-match-button"
-            >
-              {reactivateLoading ? t('floorball.matches.reactivating', 'Reactivating...') : t('floorball.matches.actions.reactivate', 'Reactivate Match')}
-            </button>
-          )}
-          {mode === 'edit' && initialData && onCancelMatch && initialData.status !== 'Cancelled' && initialData.status !== 'Completed' && (
-            <button 
-              type="button" 
-              onClick={() => setShowCancelConfirm(true)} 
-              disabled={cancelLoading}
-              className="cancel-match-button"
-            >
-              {cancelLoading ? t('floorball.matches.cancelling', 'Cancelling...') : t('floorball.matches.actions.cancel', 'Cancel Match')}
-            </button>
-          )}
+
+          {mode === 'edit' &&
+            initialData &&
+            initialData.status === 'Cancelled' &&
+            onReactivateMatch && (
+              <button
+                type="button"
+                onClick={() => setShowReactivateConfirm(true)}
+                disabled={reactivateLoading}
+                className="reactivate-match-button"
+              >
+                {reactivateLoading
+                  ? t('floorball.matches.reactivating', 'Reactivating...')
+                  : t('floorball.matches.actions.reactivate', 'Reactivate Match')}
+              </button>
+            )}
+
+          {mode === 'edit' &&
+            initialData &&
+            onCancelMatch &&
+            initialData.status !== 'Cancelled' &&
+            initialData.status !== 'Completed' && (
+              <button
+                type="button"
+                onClick={() => setShowCancelConfirm(true)}
+                disabled={cancelLoading}
+                className="cancel-match-button"
+              >
+                {cancelLoading
+                  ? t('floorball.matches.cancelling', 'Cancelling...')
+                  : t('floorball.matches.actions.cancel', 'Cancel Match')}
+              </button>
+            )}
+
           <button type="submit" disabled={loading} className="submit-button">
-            {loading ? (mode === 'create' ? t('floorball.matches.creating', 'Creating...') : t('floorball.matches.updating', 'Updating...')) : (mode === 'create' ? t('floorball.matches.createMatch', 'Create Match') : t('floorball.matches.updateMatch', 'Update Match'))}
+            {loading
+              ? mode === 'create'
+                ? t('floorball.matches.creating', 'Creating...')
+                : t('floorball.matches.updating', 'Updating...')
+              : mode === 'create'
+                ? t('floorball.matches.createMatch', 'Create Match')
+                : t('floorball.matches.updateMatch', 'Update Match')}
           </button>
         </div>
       </form>
@@ -593,7 +636,10 @@ const MatchForm = ({
         isOpen={showCancelConfirm}
         icon="⚠️"
         title={t('floorball.matches.confirmCancel.title', 'Cancel Match')}
-        message={t('floorball.matches.confirmCancel.message', 'Are you sure you want to cancel this match? This will mark the match as cancelled.')}
+        message={t(
+          'floorball.matches.confirmCancel.message',
+          'Are you sure you want to cancel this match? This will mark the match as cancelled.'
+        )}
         confirmText={t('floorball.matches.confirmCancel.confirm', 'Yes, Cancel Match')}
         cancelText={t('common.cancel', 'Cancel')}
         isLoading={cancelLoading}
@@ -605,7 +651,10 @@ const MatchForm = ({
         isOpen={showReactivateConfirm}
         icon="✅"
         title={t('floorball.matches.confirmReactivate.title', 'Reactivate Match')}
-        message={t('floorball.matches.confirmReactivate.message', 'Are you sure you want to reactivate this match? This will set the match back to Scheduled status.')}
+        message={t(
+          'floorball.matches.confirmReactivate.message',
+          'Are you sure you want to reactivate this match? This will set the match back to Scheduled status.'
+        )}
         confirmText={t('floorball.matches.confirmReactivate.confirm', 'Yes, Reactivate Match')}
         cancelText={t('common.cancel', 'Cancel')}
         isLoading={reactivateLoading}
