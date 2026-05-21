@@ -29,6 +29,6 @@ public class UpdateFloorballRefereeCommandValidator : AbstractValidator<UpdateFl
 
     private bool BeValidDate(DateTime? date)
     {
-        return date.HasValue && date.Value.Kind == DateTimeKind.Utc;
+        return date.HasValue && date.Value != default;
     }
-} 
+}

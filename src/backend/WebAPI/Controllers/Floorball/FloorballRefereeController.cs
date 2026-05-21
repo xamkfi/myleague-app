@@ -106,7 +106,7 @@ namespace WebAPI.Controllers.Floorball
             {
                 if (!DateTime.TryParse(request.LicenseIssueDate, out DateTime parsedIssueDate))
                     return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse("License issue date must be a valid date (e.g., 2020-05-05, 10-10-1990, 2020.10.25)"));
-                licenseIssueDateUtc = parsedIssueDate;
+                licenseIssueDateUtc = DateTime.SpecifyKind(parsedIssueDate, DateTimeKind.Utc);  // ← ADD THIS
             }
 
             // Validate LicenseExpiryDate format if provided
@@ -114,7 +114,7 @@ namespace WebAPI.Controllers.Floorball
             {
                 if (!DateTime.TryParse(request.LicenseExpiryDate, out DateTime parsedExpiryDate))
                     return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse("License expiry date must be a valid date (e.g., 2030-05-05, 10-10-2030, 2030.10.25)"));
-                licenseExpiryDateUtc = parsedExpiryDate;
+                licenseExpiryDateUtc = DateTime.SpecifyKind(parsedExpiryDate, DateTimeKind.Utc);  // ← ADD THIS
             }
 
             // Validate that expiry date is after issue date if both are provided

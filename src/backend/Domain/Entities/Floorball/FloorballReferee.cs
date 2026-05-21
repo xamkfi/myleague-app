@@ -110,6 +110,18 @@ public class FloorballReferee : BaseEntity
     {
         MatchesOfficiated++;
     }
+    /// <summary>
+    /// Updates the number of floorball matches officiated by this referee.
+    /// </summary>
+    /// <param name="matchesOfficiated">The new number of matches officiated</param>
+    /// <exception cref="ArgumentException">Thrown when the value is negative</exception>
+    public void UpdateMatchesOfficiated(int matchesOfficiated)
+    {
+        if (matchesOfficiated < 0)
+            throw new ArgumentException("Matches officiated cannot be negative.", nameof(matchesOfficiated));
+
+        MatchesOfficiated = matchesOfficiated;
+    }
     
     /// <summary>
     /// Checks if the referee's license is valid as of a specific date
