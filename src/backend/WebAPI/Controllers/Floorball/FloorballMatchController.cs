@@ -819,6 +819,39 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Permanently deletes a floorball match. Only allowed for matches still in the
+        /// <see cref="Domain.Enums.Floorball.FloorballMatchStatus.Scheduled"/> state — matches
+        /// that have started, finished, or been cancelled cannot be deleted because they
+        /// carry recorded events and statistics. Used by the tournament JSON import revert flow.
+        /// </summary>
+        [HttpDelete("{matchId:guid}")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse>> DeleteMatch(Guid matchId)
+        {
+            _logger.LogInformation("Deleting match ID: {matchId}", matchId);
+
+            DeleteFloorballMatchCommand command = new DeleteFloorballMatchCommand(matchId);
+            Result result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+            {
+                return Ok(ApiResponse.SuccessResponse("Match deleted successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to delete match";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Reactivates a cancelled floorball match back to Scheduled status
         /// </summary>
         [HttpPost("{matchId:guid}/reactivate")]

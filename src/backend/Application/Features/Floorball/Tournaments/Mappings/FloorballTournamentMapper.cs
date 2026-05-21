@@ -28,6 +28,16 @@ public static class FloorballTournamentMapper
         int teamCount = tournament.Groups.Sum(g => g.Teams.Count);
         int matchCount = tournament.Matches.Count;
 
+        List<PlayoffScheduleSlotDto> playoffSlots = tournament.PlayoffSchedule
+            .OrderBy(s => s.Round)
+            .ThenBy(s => s.Order)
+            .Select(s => new PlayoffScheduleSlotDto(
+                s.Round,
+                s.Order,
+                DateTime.SpecifyKind(s.ScheduledDateTime, DateTimeKind.Utc),
+                s.Venue))
+            .ToList();
+
         return new FloorballTournamentDto(
             tournament.Id,
             tournament.Name,
@@ -41,7 +51,8 @@ public static class FloorballTournamentMapper
             rulesDto,
             groupDtos,
             teamCount,
-            matchCount);
+            matchCount,
+            playoffSlots);
     }
 
     /// <summary>

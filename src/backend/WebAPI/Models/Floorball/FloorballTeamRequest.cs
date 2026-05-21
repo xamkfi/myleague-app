@@ -62,23 +62,22 @@ namespace WebAPI.Models.Floorball
         public Guid ClubId { get; set; }
 
         /// <summary>
-        /// The home arena of the team
+        /// The home arena of the team (optional). When omitted the team is stored without a home
+        /// arena — useful for tournament-only teams that don't represent a single permanent venue.
         /// </summary>
-        [Required(ErrorMessage = "Home arena is required")]
-        [StringLength(200, MinimumLength = 2, ErrorMessage = "Home arena must be between 2 and 200 characters")]
-        public required string HomeArena { get; set; }
+        [StringLength(200, ErrorMessage = "Home arena cannot exceed 200 characters")]
+        public string? HomeArena { get; set; }
 
         /// <summary>
-        /// The primary jersey color of the team
+        /// The primary jersey color of the team (optional).
         /// </summary>
-        [Required(ErrorMessage = "Primary jersey color is required")]
-        [StringLength(50, MinimumLength = 2, ErrorMessage = "Primary jersey color must be between 2 and 50 characters")]
-        public required string PrimaryJerseyColor { get; set; }
+        [StringLength(50, ErrorMessage = "Primary jersey color cannot exceed 50 characters")]
+        public string? PrimaryJerseyColor { get; set; }
 
         /// <summary>
         /// The secondary jersey color of the team (optional)
         /// </summary>
-        [StringLength(50, MinimumLength = 2, ErrorMessage = "Secondary jersey color must be between 2 and 50 characters")]
+        [StringLength(50, ErrorMessage = "Secondary jersey color cannot exceed 50 characters")]
         public string? SecondaryJerseyColor { get; set; }
 
         /// <summary>
@@ -89,10 +88,10 @@ namespace WebAPI.Models.Floorball
         public string? LogoUrl { get; set; }
 
         /// <summary>
-        /// The category of the team (Adult, Youth, Women)
+        /// The category of the team (Adult, Youth, Women). Defaults to <see cref="TeamCategory.Adult"/>
+        /// when not supplied — most tournament imports don't carry this metadata.
         /// </summary>
-        [Required(ErrorMessage = "Team category is required")]
-        public TeamCategory Category { get; set; }
+        public TeamCategory? Category { get; set; }
 
         /// <summary>
         /// The short name / acronym of the team (max 4 characters)

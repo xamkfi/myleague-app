@@ -26,4 +26,5 @@ public record UpdateFloorballTournamentCommand(
     bool PlayoffAllowShootout,
     int TeamsAdvancingPerGroup,
     bool HasPlayoffStage,
-    bool HasThirdPlaceMatch) : IRequest<Result<FloorballTournamentDto>>;
+    bool HasThirdPlaceMatch,
+    IReadOnlyList<PlayoffScheduleSlotInput>? PlayoffSchedule = null) : IRequest<Result<FloorballTournamentDto>>;

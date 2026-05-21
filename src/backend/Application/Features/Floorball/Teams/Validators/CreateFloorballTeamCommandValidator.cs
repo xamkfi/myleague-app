@@ -20,17 +20,20 @@ public class CreateFloorballTeamCommandValidator : AbstractValidator<CreateFloor
             .NotEmpty().WithMessage("Club ID is required")
             .NotEqual(Guid.Empty).WithMessage("Club ID cannot be empty");
 
+        // HomeArena, PrimaryJerseyColor and TeamCategory are all optional metadata. Tournament
+        // imports often omit them — we only enforce maximum lengths and a valid enum value
+        // when the caller actually supplies a value.
         RuleFor(x => x.HomeArena)
-            .NotEmpty().WithMessage("Home arena is required")
-            .MaximumLength(100).WithMessage("Home arena name cannot exceed 100 characters");
+            .MaximumLength(200).WithMessage("Home arena cannot exceed 200 characters")
+            .When(x => !string.IsNullOrWhiteSpace(x.HomeArena));
 
         RuleFor(x => x.PrimaryJerseyColor)
-            .NotEmpty().WithMessage("Primary jersey color is required")
-            .MaximumLength(50).WithMessage("Primary jersey color cannot exceed 50 characters");
+            .MaximumLength(50).WithMessage("Primary jersey color cannot exceed 50 characters")
+            .When(x => !string.IsNullOrWhiteSpace(x.PrimaryJerseyColor));
 
-        RuleFor(x => x.TeamCategory)
-            .NotNull().WithMessage("Team category is required")
-            .IsInEnum().WithMessage("Invalid team category value");
+        RuleFor(x => x.TeamCategory!.Value)
+            .IsInEnum().WithMessage("Invalid team category value")
+            .When(x => x.TeamCategory.HasValue);
 
         RuleFor(x => x.SecondaryJerseyColor)
             .MaximumLength(50).WithMessage("Secondary jersey color cannot exceed 50 characters")

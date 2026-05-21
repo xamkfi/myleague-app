@@ -1,6 +1,17 @@
 using Application.Features.Floorball.Matches.DTOs;
+using Domain.Enums.Floorball;
 
 namespace Application.Features.Floorball.Tournaments.DTOs;
+
+/// <summary>
+/// Pre-defined playoff bracket slot exposed in the tournament DTO so the frontend can render
+/// "TBD vs TBD" placeholder rows in the schedule before the bracket is generated.
+/// </summary>
+public record PlayoffScheduleSlotDto(
+    FloorballPlayoffRound Round,
+    int Order,
+    DateTime ScheduledDateTime,
+    string? Venue);
 
 /// <summary>
 /// Data Transfer Object for FloorballTournament entity
@@ -18,6 +29,7 @@ namespace Application.Features.Floorball.Tournaments.DTOs;
 /// <param name="Groups">List of groups within this tournament</param>
 /// <param name="TeamCount">Total number of teams across all groups</param>
 /// <param name="MatchCount">Total number of matches in the tournament</param>
+/// <param name="PlayoffSchedule">Optional pre-defined playoff schedule (empty when the bracket should be auto-scheduled)</param>
 public record FloorballTournamentDto(
     Guid Id,
     string Name,
@@ -31,4 +43,5 @@ public record FloorballTournamentDto(
     FloorballTournamentRulesDto TournamentRules,
     List<FloorballTournamentGroupDto> Groups,
     int TeamCount,
-    int MatchCount);
+    int MatchCount,
+    List<PlayoffScheduleSlotDto> PlayoffSchedule);

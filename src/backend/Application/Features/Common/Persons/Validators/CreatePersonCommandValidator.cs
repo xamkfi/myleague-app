@@ -44,21 +44,23 @@ namespace Application.Features.Common.Persons.Validators
                     .When(x => !string.IsNullOrEmpty(x.Address!.PostalCode));
 
                 RuleFor(x => x.Address!.Country)
-                    .NotEmpty().WithMessage("Country is required")
-                    .MaximumLength(100).WithMessage("Country cannot exceed 100 characters");
+                    .MaximumLength(100).WithMessage("Country cannot exceed 100 characters")
+                    .When(x => !string.IsNullOrEmpty(x.Address!.Country));
 
                 RuleFor(x => x.Address!.Street2)
                     .MaximumLength(200).WithMessage("Street address 2 cannot exceed 200 characters")
                     .When(x => !string.IsNullOrEmpty(x.Address!.Street2));
             });
 
-            // Contact info validation (optional)
+            // Contact info validation (optional). Email itself is optional too — only the format
+            // and length are enforced when a value is supplied. Lets tournament-imported players
+            // without contact details pass through without manufacturing fake emails.
             When(x => x.ContactInfo != null, () =>
             {
                 RuleFor(x => x.ContactInfo!.Email)
-                    .NotEmpty().WithMessage("Email is required")
                     .EmailAddress().WithMessage("Invalid email format")
-                    .MaximumLength(200).WithMessage("Email cannot exceed 200 characters");
+                    .MaximumLength(200).WithMessage("Email cannot exceed 200 characters")
+                    .When(x => !string.IsNullOrEmpty(x.ContactInfo!.Email));
 
                 RuleFor(x => x.ContactInfo!.Phone)
                     .MaximumLength(50).WithMessage("Phone number cannot exceed 50 characters")

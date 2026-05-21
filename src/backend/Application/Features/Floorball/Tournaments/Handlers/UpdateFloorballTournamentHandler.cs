@@ -86,6 +86,17 @@ public class UpdateFloorballTournamentHandler : IRequestHandler<UpdateFloorballT
 
             tournament.UpdateTournamentRules(tournamentRules);
 
+            // Only touch the playoff schedule when the caller explicitly sends one. A null value
+            // means "do not change" so that update flows that don't know/care about the schedule
+            // (legacy admin form, etc.) won't accidentally wipe the slots imported earlier.
+            if (request.PlayoffSchedule != null)
+            {
+                List<PlayoffScheduleSlot> slots = request.PlayoffSchedule
+                    .Select(s => new PlayoffScheduleSlot(s.Round, s.Order, s.ScheduledDateTime, s.Venue))
+                    .ToList();
+                tournament.SetPlayoffSchedule(slots);
+            }
+
             _logger.LogInformation("Updating floorball tournament: {TournamentId}", tournament.Id);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

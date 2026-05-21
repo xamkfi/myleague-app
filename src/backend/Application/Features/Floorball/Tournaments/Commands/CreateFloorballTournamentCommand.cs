@@ -1,8 +1,20 @@
 using Application.Common;
 using Application.Features.Floorball.Tournaments.DTOs;
+using Domain.Enums.Floorball;
 using MediatR;
 
 namespace Application.Features.Floorball.Tournaments.Commands;
+
+/// <summary>
+/// One slot in a tournament's pre-defined playoff schedule. The orchestrator-side import
+/// shape mirrors the import JSON to keep validation simple; the handler converts each item
+/// to a <see cref="Domain.ValueObjects.Floorball.PlayoffScheduleSlot"/> before saving.
+/// </summary>
+public record PlayoffScheduleSlotInput(
+    FloorballPlayoffRound Round,
+    int Order,
+    DateTime ScheduledDateTime,
+    string? Venue);
 
 /// <summary>
 /// Command for creating a floorball tournament
@@ -25,4 +37,5 @@ public record CreateFloorballTournamentCommand(
     bool PlayoffAllowShootout,
     int TeamsAdvancingPerGroup,
     bool HasPlayoffStage,
-    bool HasThirdPlaceMatch) : IRequest<Result<FloorballTournamentDto>>;
+    bool HasThirdPlaceMatch,
+    IReadOnlyList<PlayoffScheduleSlotInput>? PlayoffSchedule = null) : IRequest<Result<FloorballTournamentDto>>;

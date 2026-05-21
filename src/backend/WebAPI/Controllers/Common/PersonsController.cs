@@ -339,7 +339,7 @@ namespace WebAPI.Controllers.Common
                 request.Street1,
                 request.City,
                 request.PostalCode,
-                request.Country ?? string.Empty,
+                request.Country,
                 request.Street2);
 
             UpdatePersonAddressCommand command = new UpdatePersonAddressCommand(id, address);

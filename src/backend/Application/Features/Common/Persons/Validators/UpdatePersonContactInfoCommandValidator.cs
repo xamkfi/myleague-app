@@ -27,10 +27,11 @@ namespace Application.Features.Common.Persons.Validators
 
             When(x => x.contactInfo != null, () =>
             {
+                // Email is optional now — only validate format/length when one is supplied.
                 RuleFor(x => x.contactInfo.Email)
-                    .NotEmpty().WithMessage("Email is required")
                     .EmailAddress().WithMessage("Invalid email format")
-                    .MaximumLength(200).WithMessage("Email cannot exceed 200 characters");
+                    .MaximumLength(200).WithMessage("Email cannot exceed 200 characters")
+                    .When(x => !string.IsNullOrEmpty(x.contactInfo.Email));
 
                 RuleFor(x => x.contactInfo.Phone)
                     .MaximumLength(50).WithMessage("Phone number cannot exceed 50 characters")

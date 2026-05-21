@@ -1,0 +1,73 @@
+{
+  "$schema": "myleague-tournament-import/v1",
+  "tournament": {
+    "name": "XAMK Floorball Cup 2026 - MIEHET",
+    "startDate": "2026-05-22",
+    "endDate": "2026-05-23",
+    "venue": "Mikkeli Sports Hall",
+    "contentHtml": "<p>Imported tournament — example data matching the XAMK Cup schedule.</p>",
+    "groupStageNumberOfPeriods": 2,
+    "groupStagePeriodDurationMinutes": 15,
+    "groupStageAllowOvertime": false,
+    "groupStageOvertimeDurationMinutes": 5,
+    "groupStageAllowShootout": false,
+    "playoffNumberOfPeriods": 2,
+    "playoffPeriodDurationMinutes": 15,
+    "playoffAllowOvertime": true,
+    "playoffOvertimeDurationMinutes": 5,
+    "playoffAllowShootout": true,
+    "teamsAdvancingPerGroup": 2,
+    "hasPlayoffStage": true,
+    "hasThirdPlaceMatch": true
+  },
+  "clubs": [
+    { "name": "Huru-Ukot", "city": "Mikkeli", "country": "Finland" },
+    { "name": "Weikkoset", "city": "Mikkeli", "country": "Finland" },
+    { "name": "MAHL", "city": "Mikkeli", "country": "Finland" },
+    { "name": "Rahula Academy", "city": "Mikkeli", "country": "Finland" },
+    { "name": "Hazard", "city": "Mikkeli", "country": "Finland" },
+    { "name": "XAMK", "city": "Mikkeli", "country": "Finland" },
+    { "name": "Pirkan sinine", "city": "Tampere", "country": "Finland" },
+    { "name": "Minttusilmät", "city": "Mikkeli", "country": "Finland" }
+  ],
+  "teams": [
+    { "name": "Huru-Ukot",      "clubName": "Huru-Ukot" },
+    { "name": "Weikkoset",      "clubName": "Weikkoset" },
+    { "name": "MAHL",           "clubName": "MAHL" },
+    { "name": "Rahula Academy", "clubName": "Rahula Academy" },
+    { "name": "Hazard",         "clubName": "Hazard" },
+    { "name": "XAMK",           "clubName": "XAMK" },
+    { "name": "Pirkan sinine",  "clubName": "Pirkan sinine" },
+    { "name": "Minttusilmät",   "clubName": "Minttusilmät" }
+  ],
+  "groups": [
+    {
+      "name": "A",
+      "teamNames": ["Huru-Ukot", "Weikkoset", "MAHL", "Rahula Academy"]
+    },
+    {
+      "name": "B",
+      "teamNames": ["Hazard", "XAMK", "Pirkan sinine", "Minttusilmät"]
+    }
+  ],
+  "matches": [
+    { "matchNumber": 1,  "scheduledDateTime": "2026-05-22T18:00:00+03:00", "field": "1", "homeTeamName": "Huru-Ukot",      "awayTeamName": "Weikkoset",      "groupName": "A" },
+    { "matchNumber": 2,  "scheduledDateTime": "2026-05-22T18:00:00+03:00", "field": "2", "homeTeamName": "Hazard",         "awayTeamName": "Minttusilmät",   "groupName": "B" },
+    { "matchNumber": 3,  "scheduledDateTime": "2026-05-22T18:40:00+03:00", "field": "1", "homeTeamName": "MAHL",           "awayTeamName": "Rahula Academy", "groupName": "A" },
+    { "matchNumber": 4,  "scheduledDateTime": "2026-05-22T18:40:00+03:00", "field": "2", "homeTeamName": "XAMK",           "awayTeamName": "Pirkan sinine",  "groupName": "B" },
+    { "matchNumber": 5,  "scheduledDateTime": "2026-05-22T19:20:00+03:00", "field": "1", "homeTeamName": "Rahula Academy", "awayTeamName": "Huru-Ukot",      "groupName": "A" },
+    { "matchNumber": 6,  "scheduledDateTime": "2026-05-22T19:20:00+03:00", "field": "2", "homeTeamName": "Pirkan sinine",  "awayTeamName": "Hazard",         "groupName": "B" },
+    { "matchNumber": 7,  "scheduledDateTime": "2026-05-22T20:00:00+03:00", "field": "1", "homeTeamName": "Weikkoset",      "awayTeamName": "MAHL",           "groupName": "A" },
+    { "matchNumber": 8,  "scheduledDateTime": "2026-05-22T20:00:00+03:00", "field": "2", "homeTeamName": "Minttusilmät",   "awayTeamName": "XAMK",           "groupName": "B" },
+    { "matchNumber": 9,  "scheduledDateTime": "2026-05-23T10:00:00+03:00", "field": "1", "homeTeamName": "XAMK",           "awayTeamName": "Hazard",         "groupName": "B" },
+    { "matchNumber": 10, "scheduledDateTime": "2026-05-23T10:40:00+03:00", "field": "1", "homeTeamName": "Minttusilmät",   "awayTeamName": "Pirkan sinine",  "groupName": "B" },
+    { "matchNumber": 11, "scheduledDateTime": "2026-05-23T11:20:00+03:00", "field": "1", "homeTeamName": "MAHL",           "awayTeamName": "Huru-Ukot",      "groupName": "A" },
+    { "matchNumber": 12, "scheduledDateTime": "2026-05-23T12:00:00+03:00", "field": "1", "homeTeamName": "Weikkoset",      "awayTeamName": "Rahula Academy", "groupName": "A" }
+  ],
+  "playoffSchedule": [
+    { "round": "SemiFinal",       "order": 0, "scheduledDateTime": "2026-05-23T13:00:00+03:00", "venue": "Mikkeli Sports Hall · 1" },
+    { "round": "SemiFinal",       "order": 1, "scheduledDateTime": "2026-05-23T13:00:00+03:00", "venue": "Mikkeli Sports Hall · 2" },
+    { "round": "ThirdPlaceMatch", "order": 0, "scheduledDateTime": "2026-05-23T14:30:00+03:00", "venue": "Mikkeli Sports Hall · 1" },
+    { "round": "Final",           "order": 0, "scheduledDateTime": "2026-05-23T15:30:00+03:00", "venue": "Mikkeli Sports Hall · 1" }
+  ]
+}
