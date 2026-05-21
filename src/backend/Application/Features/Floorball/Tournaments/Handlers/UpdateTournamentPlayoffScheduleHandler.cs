@@ -6,6 +6,7 @@ using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
 using Domain.ValueObjects.Floorball;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Floorball.Tournaments.Handlers;
@@ -73,11 +74,11 @@ public class UpdateTournamentPlayoffScheduleHandler : IRequestHandler<UpdateTour
             _logger.LogWarning(ex, "Business rule violation while updating playoff schedule for tournament {TournamentId}", request.CompetitionId);
             return Result<FloorballTournamentDto>.Failure(ex.Message, ex.Flatten());
         }
-        catch (Exception ex)
+        catch (DbUpdateException ex)
         {
-            _logger.LogError(ex, "Error occurred while updating playoff schedule for tournament {TournamentId}", request.CompetitionId);
+            _logger.LogError(ex, "Database error occurred while updating playoff schedule for tournament {TournamentId}", request.CompetitionId);
             return Result<FloorballTournamentDto>.Failure(
-                "An error occurred while updating the tournament playoff schedule.",
+                "A database error occurred while updating the tournament playoff schedule.",
                 ex.Flatten());
         }
     }
