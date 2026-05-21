@@ -18,6 +18,14 @@ namespace Application.Features.Floorball.Matches.DTOs
     public record PeriodScoreDto(int HomeScore, int AwayScore, bool IsCompleted);
 
     /// <summary>
+    /// Single entry in a team's active field player lineup, including the per-match role
+    /// (Forward / Center / Defender). Goalies are tracked separately on the match DTO.
+    /// </summary>
+    /// <param name="PlayerId">The active player's ID.</param>
+    /// <param name="Position">The per-match field role.</param>
+    public record FloorballActiveLineupPlayerDto(Guid PlayerId, FloorballPosition Position);
+
+    /// <summary>
     /// Data Transfer Object for FloorballMatch entity
     /// </summary>
     /// <param name="Id">The unique identifier of the match</param>
@@ -68,6 +76,8 @@ namespace Application.Features.Floorball.Matches.DTOs
         IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents,
         IReadOnlyCollection<FloorballSaveEventDto> SaveEvents,
         FloorballMatchRulesDto MatchRules,
+        IReadOnlyCollection<FloorballActiveLineupPlayerDto> HomeActivePlayers,
+        IReadOnlyCollection<FloorballActiveLineupPlayerDto> AwayActivePlayers,
         Guid? TournamentGroupId = null,
         string? TournamentStage = null,
         FloorballCompetitionType CompetitionType = FloorballCompetitionType.Season);

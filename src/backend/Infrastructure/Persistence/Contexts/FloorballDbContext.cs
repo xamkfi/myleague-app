@@ -79,6 +79,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballPeriodScore> FloorballPeriodScores { get; set; }
 
         /// <summary>
+        /// Gets or sets the FloorballMatchActivePlayers DbSet (per-match field player lineups).
+        /// </summary>
+        public DbSet<FloorballMatchActivePlayer> FloorballMatchActivePlayers { get; set; }
+
+        /// <summary>
         /// Gets or sets the FloorballMatchEvents DbSet.
         /// </summary>
         public DbSet<FloorballMatchEvent> FloorballMatchEvents { get; set; }
@@ -198,6 +203,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballTournamentConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballRefereeConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballMatchActivePlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchEventConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamManagerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballGoalConfiguration());

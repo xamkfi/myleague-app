@@ -6,6 +6,7 @@ import type {
   UpdateFloorballMatchRequest,
   GetFloorballMatchesRequest
 } from '../../types/floorball/floorballTypes';
+import type { FloorballPosition } from '../../types/floorball/floorballTypes';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
@@ -549,6 +550,45 @@ export const floorballMatchService = {
       return apiResponse;
     } catch (error) {
       console.error('Error in floorballMatchService.changeGoalie:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Replaces the active field player lineup for a team in a match. Each entry in
+   * `payload.players` carries the per-match role (Forward, Center or Defender). Optionally
+   * updates the goalie in the same operation; pass `goalieId: null` to leave the existing
+   * goalie untouched.
+   */
+  setActiveRoster: async (
+    matchId: string,
+    teamId: string,
+    payload: { players: { playerId: string; position: FloorballPosition }[]; goalieId: string | null }
+  ): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/team/${teamId}/active-roster`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          players: payload.players,
+          goalieId: payload.goalieId,
+        }),
+      });
+
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to update active roster');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to update active roster');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.setActiveRoster:', error);
       throw error;
     }
   },
