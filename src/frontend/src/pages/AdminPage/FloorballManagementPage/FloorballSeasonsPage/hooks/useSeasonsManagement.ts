@@ -131,18 +131,24 @@ export const useSeasonsManagement = () => {
   };
 
   const handleDeleteSeason = async () => {
-    if (!selectedSeason) return;
-    
-    try {
-      await floorballSeasonService.delete(selectedSeason.id);
-      setShowDeleteModal(false);
-      setSelectedSeason(null);
-      await loadSeasons();
-    } catch (err) {
-      console.error('Error deleting season:', err);
-      throw err;
-    }
-  };
+  if (!selectedSeason) return;
+
+  try {
+    setError(null);
+
+    await floorballSeasonService.delete(selectedSeason.id);
+
+    setShowDeleteModal(false);
+    setSelectedSeason(null);
+
+    await loadSeasons();
+  } catch (err) {
+    console.error('Error deleting season:', err);
+
+    // Shows delete errors in ErrorPopup instead of only DevTools.
+    setError(parseApiError(err));
+  }
+};
 
   const handleActivateToggle = async (season: FloorballSeasonDto) => {
     try {

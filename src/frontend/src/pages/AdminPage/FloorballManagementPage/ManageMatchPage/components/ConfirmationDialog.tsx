@@ -23,33 +23,58 @@ const ConfirmationDialog = ({
   cancelText = 'Cancel',
   isLoading = false,
   onConfirm,
-  onCancel
+  onCancel,
 }: ConfirmationDialogProps) => {
+
+  // Do not render dialog when closed.
   if (!isOpen) return null;
 
+  // Prevent closing while request is processing.
+  const handleOverlayClick = () => {
+    if (!isLoading) {
+      onCancel();
+    }
+  };
+
   return (
-  <div className="confirmation-dialog-overlay" onClick={onCancel}>
-      <div className="confirmation-dialog" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="confirmation-dialog-overlay"
+      onClick={handleOverlayClick}
+    >
+      <div
+        className="confirmation-dialog"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="confirmation-header">
           <span className="confirmation-icon">{icon}</span>
           <h3>{title}</h3>
         </div>
+
         <div className="confirmation-content">
           <p>{message}</p>
+
+          {/* Show warning text only if provided */}
           {warningMessage && (
-            <p className="confirmation-warning">{warningMessage}</p>
+            <p className="confirmation-warning">
+              {warningMessage}
+            </p>
           )}
         </div>
+
         <div className="confirmation-actions">
-          <button 
-            onClick={onConfirm} 
+          <button
+            type="button"
+            onClick={onConfirm}
             className="confirm-btn"
             disabled={isLoading}
           >
+            {/* Show loading text during API request */}
             {isLoading ? 'Processing...' : confirmText}
           </button>
-          <button 
-            onClick={onCancel} 
+
+          <button
+            type="button"
+            onClick={onCancel}
             className="cancel-btn"
             disabled={isLoading}
           >
@@ -61,4 +86,4 @@ const ConfirmationDialog = ({
   );
 };
 
-export default ConfirmationDialog; 
+export default ConfirmationDialog;
