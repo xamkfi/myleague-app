@@ -113,6 +113,15 @@ public static class FloorballMatchMapper
 
         FloorballCompetitionType competitionType = ResolveCompetitionType(match);
 
+        List<FloorballActiveLineupPlayerDto> homeActivePlayers = match.ActivePlayers
+            .Where(p => p.TeamId == match.HomeTeamId)
+            .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
+            .ToList();
+        List<FloorballActiveLineupPlayerDto> awayActivePlayers = match.ActivePlayers
+            .Where(p => p.TeamId == match.AwayTeamId)
+            .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
+            .ToList();
+
         return new FloorballMatchDto(
             match.Id,
             match.CompetitionId,
@@ -138,6 +147,8 @@ public static class FloorballMatchMapper
             penaltyEvents,
             saveEvents,
             matchRulesDto,
+            homeActivePlayers,
+            awayActivePlayers,
             match.TournamentGroupId,
             match.TournamentStage?.ToString(),
             competitionType);
@@ -224,6 +235,14 @@ public static class FloorballMatchMapper
             new List<FloorballPenaltyEventDto>(), // TODO: Map penalty events when needed
             new List<FloorballSaveEventDto>(),
             matchRulesDto,
+            match.ActivePlayers
+                .Where(p => p.TeamId == match.HomeTeamId)
+                .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
+                .ToList(),
+            match.ActivePlayers
+                .Where(p => p.TeamId == match.AwayTeamId)
+                .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
+                .ToList(),
             match.TournamentGroupId,
             match.TournamentStage?.ToString(),
             ResolveCompetitionType(match)

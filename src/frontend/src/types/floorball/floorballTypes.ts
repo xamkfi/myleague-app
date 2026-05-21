@@ -3,7 +3,18 @@ export enum FloorballPosition {
   None = 'None',
   Goalkeeper = 'Goalkeeper',
   Defender = 'Defender',
-  Forward = 'Forward'
+  Forward = 'Forward',
+  Center = 'Center'
+}
+
+/**
+ * Single entry in a team's active field player lineup for a specific match. Mirrors the
+ * backend `FloorballActiveLineupPlayerDto` and is used by the lineup UI to group players
+ * by per-match role (defender / forward / center).
+ */
+export interface FloorballActiveLineupPlayer {
+  playerId: string;
+  position: FloorballPosition;
 }
 
 export enum TeamCategory {
@@ -234,6 +245,16 @@ export interface FloorballMatchDto {
   penaltyEvents: FloorballPenaltyEventDto[];
   saveEvents: FloorballSaveEventDto[];
   matchRules: FloorballMatchRules;
+  /**
+   * Active field players for the home team in this match, each with the per-match role
+   * (Forward/Center/Defender). Goalies are tracked separately via
+   * {@link FloorballMatchDto.homeActiveGoalieId}.
+   */
+  homeActivePlayers: FloorballActiveLineupPlayer[];
+  /**
+   * Active field players for the away team in this match. See {@link FloorballMatchDto.homeActivePlayers}.
+   */
+  awayActivePlayers: FloorballActiveLineupPlayer[];
   tournamentGroupId?: string | null;
   tournamentStage?: string | null;
   /**

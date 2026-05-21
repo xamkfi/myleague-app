@@ -34,6 +34,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
                 .Include(m => m.PeriodScores)
+                .Include(m => m.ActivePlayers)
                 .Include(m => m.Events)
                 .FirstOrDefaultAsync(m => m.Id == id) ?? throw new KeyNotFoundException($"Match with ID {id} not found.");
         }
@@ -429,6 +430,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             foreach (FloorballPeriodScore periodScore in match.PeriodScores)
             {
                 _dbContext.Entry(periodScore).State = EntityState.Modified;
+            }
+
+            // Ensure ActivePlayer additions/removals are tracked. Existing rows can stay Unchanged
+            // because the entity is immutable; new rows get Added by EF when attached via
+            // navigation, deletions are handled by Remove().
+            foreach (FloorballMatchActivePlayer activePlayer in match.ActivePlayers)
+            {
+                Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<FloorballMatchActivePlayer> entry = _dbContext.Entry(activePlayer);
+                if (entry.State == EntityState.Detached)
+                {
+                    entry.State = EntityState.Added;
+                }
             }
 
             await Task.CompletedTask;

@@ -1023,5 +1023,60 @@ namespace WebAPI.Controllers.Floorball
 
             return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
         }
+
+        /// <summary>
+        /// Replaces the active field player lineup (and optionally the active goalie) for a single
+        /// team in a match. Used by the match-management UI's "Edit lineup" dialog.
+        /// </summary>
+        /// <param name="matchId">The ID of the match.</param>
+        /// <param name="teamId">The ID of the team whose lineup is being updated.</param>
+        /// <param name="request">Player IDs and optional goalie ID.</param>
+        /// <returns>Updated match details.</returns>
+        [HttpPut("{matchId:guid}/team/{teamId:guid}/active-roster")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> SetActiveRoster(
+            Guid matchId,
+            Guid teamId,
+            [FromBody] SetMatchActiveRosterRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse("Request body is required."));
+            }
+
+            _logger.LogInformation(
+                "Updating active roster for match {matchId}, team {teamId} ({playerCount} players, goalie={goalieId})",
+                matchId, teamId, request.Players?.Count ?? 0, request.GoalieId);
+
+            SetMatchActiveRosterCommand command = new SetMatchActiveRosterCommand
+            {
+                MatchId = matchId,
+                TeamId = teamId,
+                Players = request.Players?.Select(p => new ActivePlayerInput
+                {
+                    PlayerId = p.PlayerId,
+                    Position = p.Position,
+                }).ToList() ?? new List<ActivePlayerInput>(),
+                GoalieId = request.GoalieId,
+            };
+
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Active roster updated successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to update active roster";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
     }
 }

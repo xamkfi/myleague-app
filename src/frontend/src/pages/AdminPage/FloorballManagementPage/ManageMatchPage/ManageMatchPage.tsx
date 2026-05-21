@@ -15,7 +15,8 @@ import LiveMatchQuickActions from './components/LiveMatchQuickActions';
 import GoalRecordingForm from './components/GoalRecordingForm';
 import PenaltyRecordingForm from './components/PenaltyRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
-import ActivePlayersSelector from './components/ActivePlayersSelector';
+import ActiveRosterCard from './components/ActiveRosterCard';
+import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from './components/OfficialsSelectorSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
@@ -64,6 +65,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   const [deleteEventLoading, setDeleteEventLoading] = useState(false);
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
   const [isSidesSwapped, setIsSidesSwapped] = useState(false);
+  const [isLineupDialogOpen, setIsLineupDialogOpen] = useState(false);
 
   // Sync goalie state with match prop
   useEffect(() => {
@@ -629,20 +631,40 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             saveLoading={saveLoading}
           />
 
-          <ActivePlayersSelector
-            leftPlayers={leftSidePlayers}
-            rightPlayers={rightSidePlayers}
+          <ActiveRosterCard
             leftTeamName={leftSideTeamData?.name}
             rightTeamName={rightSideTeamData?.name}
-            leftTeamSide={leftSideTeam}
-            rightTeamSide={rightSideTeam}
+            leftPlayers={leftSidePlayers}
+            rightPlayers={rightSidePlayers}
+            leftLineup={leftSideTeam === 'home' ? matchData.currentMatch.homeActivePlayers : matchData.currentMatch.awayActivePlayers}
+            rightLineup={rightSideTeam === 'home' ? matchData.currentMatch.homeActivePlayers : matchData.currentMatch.awayActivePlayers}
             leftGoalieId={leftSideGoalieId}
             rightGoalieId={rightSideGoalieId}
-            setHomeGoalieId={setHomeGoalieId}
-            setAwayGoalieId={setAwayGoalieId}
-            currentMatch={matchData.currentMatch}
-            onMatchUpdated={setMatch}
-            setError={matchData.setError}
+            onEditLineup={() => setIsLineupDialogOpen(true)}
+            disabled={matchData.currentMatch.status === 'Completed' || matchData.currentMatch.status === 'Cancelled'}
+          />
+
+          <EditActiveRosterDialog
+            isOpen={isLineupDialogOpen}
+            matchId={matchData.currentMatch.id}
+            homeTeamId={homeTeamId}
+            awayTeamId={awayTeamId}
+            homeTeamName={matchData.homeTeam?.name ?? ''}
+            awayTeamName={matchData.awayTeam?.name ?? ''}
+            homePlayers={matchData.homePlayers}
+            awayPlayers={matchData.awayPlayers}
+            initialHomeLineup={matchData.currentMatch.homeActivePlayers ?? []}
+            initialAwayLineup={matchData.currentMatch.awayActivePlayers ?? []}
+            initialHomeGoalieId={homeGoalieId}
+            initialAwayGoalieId={awayGoalieId}
+            onClose={() => setIsLineupDialogOpen(false)}
+            onSaved={(updated) => {
+              matchData.setCurrentMatch(updated);
+              setMatch(updated);
+              setHomeGoalieId(updated.homeActiveGoalieId ?? '');
+              setAwayGoalieId(updated.awayActiveGoalieId ?? '');
+            }}
+            onError={matchData.setError}
           />
 
           <OfficialsSelectorSection
