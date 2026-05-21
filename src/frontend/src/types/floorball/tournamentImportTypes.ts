@@ -254,6 +254,18 @@ export interface ImportOptions {
    * re-categorized — only freshly created ones.
    */
   defaultTeamCategory?: TeamCategory;
+  /**
+   * Whether the tournament should be created with a playoff stage. When `false`:
+   *  - The backend skips the 1..8 range check on `teamsAdvancingPerGroup` (irrelevant without a
+   *    playoff stage), so non-standard team counts no longer block the import.
+   *  - Any `playoffSchedule` slots in the JSON are ignored.
+   *  - `hasThirdPlaceMatch` is forced off.
+   *
+   * Defaults to "honor the JSON" when omitted. The import modal pre-fills this based on the
+   * JSON's `hasPlayoffStage` flag + presence of `playoffSchedule` entries, and lets the admin
+   * override it before kicking off the import.
+   */
+  hasPlayoffStageOverride?: boolean;
 }
 
 export class ImportAbortedError extends Error {

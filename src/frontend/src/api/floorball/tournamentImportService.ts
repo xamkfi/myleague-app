@@ -56,6 +56,29 @@ export function getDryRunCounts(payload: TournamentImportPayload): ImportDryRunC
 }
 
 /**
+ * Heuristically infers whether the import payload describes a playoff-style tournament. Used by
+ * the import modal to pre-fill the "tournament has a playoff stage" checkbox so the admin
+ * usually doesn't have to touch it.
+ *
+ * The rule is intentionally conservative: we only return `true` when both the JSON explicitly
+ * says `hasPlayoffStage` and the bracket math actually works out to a supported playoff size
+ * (2/4/8 qualifying teams), OR when the JSON ships a non-empty `playoffSchedule`. Otherwise
+ * we recommend turning playoffs off so the backend doesn't reject the import on the 1..8
+ * `teamsAdvancingPerGroup` rule that only applies when playoffs are enabled.
+ */
+export function inferHasPlayoffStage(payload: TournamentImportPayload): boolean {
+  if ((payload.playoffSchedule?.length ?? 0) > 0) return true;
+  if (!payload.tournament.hasPlayoffStage) return false;
+  const advancing: number = payload.tournament.teamsAdvancingPerGroup;
+  const groupCount: number = payload.groups.length;
+  if (!Number.isFinite(advancing) || advancing < 1 || advancing > 8 || groupCount < 1) {
+    return false;
+  }
+  const playoffTeams: number = advancing * groupCount;
+  return playoffTeams === 2 || playoffTeams === 4 || playoffTeams === 8;
+}
+
+/**
  * Best-effort structural validation. Catches the obvious mistakes (missing required fields,
  * dangling team/club/group references) before any network calls are made.
  */
@@ -359,19 +382,37 @@ export async function importTournament(
       const teamId = teamIdByName.get(t.name);
       if (!teamId || !t.players || t.players.length === 0) continue;
       // Snapshot the team's current roster once so we can detect already-on-the-team
-      // entries without N round-trips per player.
-      const existingTeamPlayerIds = await loadExistingTeamPlayerIds(teamId);
-      for (const playerSpec of t.players) {
+      // entries (and jersey-number collisions) without N round-trips per player. Both fields
+      // are mutated by importPlayer as it succeeds, so subsequent rows see the up-to-date set.
+      const roster = await loadTeamRosterSnapshot(teamId);
+      for (let pi = 0; pi < t.players.length; pi += 1) {
+        const playerSpec = t.players[pi];
         if (checkAbort()) return summary;
         const label = `${playerSpec.firstName ?? ''} ${playerSpec.lastName ?? ''}`.trim()
           || playerSpec.personEmail
           || 'Unknown player';
+        // Reserve the jersey numbers requested by JSON rows that come AFTER this one on the
+        // same team. That way, if #24 collides on the server and we have to pick the next
+        // free number, we won't accidentally steal #25 from a teammate who's about to ask
+        // for it.
+        const remainingForTeam: TournamentImportTeamPlayer[] = t.players.slice(pi + 1);
+        const reservedJerseyNumbers: Set<number> = collectReservedJerseyNumbers(remainingForTeam);
         try {
-          await importPlayer(playerSpec, teamId, t.name, label, existingTeamPlayerIds, summary, callbacks, {
-            phase: 'players',
-            index: playerIdx,
-            total: totalPlayerOps,
-          });
+          await importPlayer(
+            playerSpec,
+            teamId,
+            t.name,
+            label,
+            roster,
+            reservedJerseyNumbers,
+            summary,
+            callbacks,
+            {
+              phase: 'players',
+              index: playerIdx,
+              total: totalPlayerOps,
+            }
+          );
         } catch (err) {
           // Treat per-player failures as non-fatal so one bad row doesn't kill the import.
           const e: ImportError = {
@@ -392,18 +433,27 @@ export async function importTournament(
   if (checkAbort()) return summary;
   let tournament: FloorballTournamentDto;
   try {
+    // Resolve the playoff stage flag: admin's modal override wins, falling back to the JSON value.
+    // When playoffs are disabled we also drop any playoffSchedule the JSON might have shipped, and
+    // force `hasThirdPlaceMatch` off — those settings only make sense alongside a playoff stage,
+    // and the backend domain would coerce them anyway.
+    const effectiveHasPlayoffStage: boolean = options.hasPlayoffStageOverride
+      ?? payload.tournament.hasPlayoffStage;
+
     // Forward the optional playoff schedule with the tournament create. The backend stores it
     // on the tournament so the public schedule renders placeholder rows for QF/SF/F slots
     // even before the bracket is generated. Slots with bad data are dropped here (a single
     // malformed date shouldn't block the entire tournament from being created).
-    const playoffSchedule = (payload.playoffSchedule ?? [])
-      .filter((s) => s.round && Number.isFinite(s.order) && s.scheduledDateTime && !isNaN(Date.parse(s.scheduledDateTime)))
-      .map((s) => ({
-        round: s.round,
-        order: s.order,
-        scheduledDateTime: s.scheduledDateTime,
-        venue: s.venue ?? undefined,
-      }));
+    const playoffSchedule = effectiveHasPlayoffStage
+      ? (payload.playoffSchedule ?? [])
+          .filter((s) => s.round && Number.isFinite(s.order) && s.scheduledDateTime && !isNaN(Date.parse(s.scheduledDateTime)))
+          .map((s) => ({
+            round: s.round,
+            order: s.order,
+            scheduledDateTime: s.scheduledDateTime,
+            venue: s.venue ?? undefined,
+          }))
+      : [];
 
     const req: CreateFloorballTournamentRequest = {
       name: payload.tournament.name,
@@ -422,8 +472,9 @@ export async function importTournament(
       playoffOvertimeDurationMinutes: payload.tournament.playoffOvertimeDurationMinutes,
       playoffAllowShootout: payload.tournament.playoffAllowShootout,
       teamsAdvancingPerGroup: payload.tournament.teamsAdvancingPerGroup,
-      hasPlayoffStage: payload.tournament.hasPlayoffStage,
-      hasThirdPlaceMatch: payload.tournament.hasThirdPlaceMatch,
+      hasPlayoffStage: effectiveHasPlayoffStage,
+      // hasThirdPlaceMatch only makes sense alongside a playoff stage.
+      hasThirdPlaceMatch: effectiveHasPlayoffStage && payload.tournament.hasThirdPlaceMatch,
       playoffSchedule: playoffSchedule.length > 0 ? playoffSchedule : undefined,
     };
     const resp = await floorballTournamentService.create(req);
@@ -682,15 +733,116 @@ function nonEmpty(value: string | null | undefined): string | null {
 // Player import helpers
 // ---------------------------------------------------------------------------
 
-/** Returns a Set of playerIds already on the given team, used to skip duplicates. */
-async function loadExistingTeamPlayerIds(teamId: string): Promise<Set<string>> {
+/**
+ * Snapshot of a team's current roster: which player IDs are already on it and which jersey
+ * numbers are currently in use. The orchestrator threads this snapshot through every player
+ * import for the team so we can (a) skip duplicate player rows without re-fetching, and
+ * (b) resolve jersey-number collisions client-side (see `pickJerseyNumber`).
+ */
+interface TeamRosterSnapshot {
+  /** Player IDs currently on the roster. */
+  playerIds: Set<string>;
+  /** Jersey numbers currently in use on the roster. Mutated as the import progresses. */
+  jerseyNumbers: Set<number>;
+}
+
+const JERSEY_NUMBER_MIN: number = 1;
+const JERSEY_NUMBER_MAX: number = 99;
+
+async function loadTeamRosterSnapshot(teamId: string): Promise<TeamRosterSnapshot> {
   try {
     const roster = await floorballPlayerService.getByTeamId(teamId);
-    return new Set(roster.map((p) => p.id));
+    const playerIds = new Set<string>(roster.map((p) => p.id));
+    const jerseyNumbers = new Set<number>(
+      roster
+        .map((p) => p.jerseyNumber)
+        .filter((n): n is number => typeof n === 'number' && Number.isFinite(n))
+    );
+    return { playerIds, jerseyNumbers };
   } catch {
-    // If we can't fetch the roster (e.g. team has no players), treat it as empty.
-    return new Set();
+    // Empty team / fresh team / network glitch: treat as no roster. The first failing
+    // addPlayerToTeam call surfaces the underlying issue anyway.
+    return { playerIds: new Set(), jerseyNumbers: new Set() };
   }
+}
+
+/**
+ * Returns the jersey numbers requested by the JSON for the team's remaining (still-to-be-imported)
+ * players. Used by `pickJerseyNumber` to avoid "stealing" a number that a later JSON row wants —
+ * if QF1 says #24 is taken on the server already, we shouldn't assign it to a player whose JSON
+ * spec says #24 either; the next-available number should also skip #25 if a JSON entry below us
+ * requests it.
+ */
+function collectReservedJerseyNumbers(remainingPlayers: TournamentImportTeamPlayer[]): Set<number> {
+  const reserved = new Set<number>();
+  for (const p of remainingPlayers) {
+    if (typeof p.jerseyNumber === 'number' && Number.isFinite(p.jerseyNumber) && p.jerseyNumber > 0) {
+      reserved.add(p.jerseyNumber);
+    }
+  }
+  return reserved;
+}
+
+/**
+ * Picks the next free jersey number when the preferred one is already in use.
+ *
+ * Strategy:
+ *  1. Try `preferred` first. If it isn't taken and isn't reserved by another JSON row, use it.
+ *  2. Otherwise sweep `preferred+1 ... MAX, MIN ... preferred-1`, skipping numbers that are
+ *     already on the team (`usedNumbers`) or earmarked by a later JSON row (`reservedNumbers`).
+ *  3. Falls back to `undefined` (assign the player without a number) when no slot is free.
+ *
+ * Returns the actually-chosen number along with a flag telling the caller whether we had to
+ * substitute, so it can surface a "skipped — used number X instead" warning.
+ */
+function pickJerseyNumber(
+  preferred: number | undefined,
+  usedNumbers: Set<number>,
+  reservedNumbers: Set<number>
+): { number: number | undefined; substituted: boolean } {
+  if (preferred === undefined) {
+    return { number: undefined, substituted: false };
+  }
+
+  if (!usedNumbers.has(preferred)) {
+    return { number: preferred, substituted: false };
+  }
+
+  // The preferred number is already taken. Walk forward first (more intuitive — #24 → #25 → #26)
+  // and wrap around once if needed.
+  const tryRange = (start: number, endExclusive: number): number | undefined => {
+    for (let n = start; n < endExclusive; n += 1) {
+      if (n === preferred) continue;
+      if (n < JERSEY_NUMBER_MIN || n > JERSEY_NUMBER_MAX) continue;
+      if (usedNumbers.has(n)) continue;
+      if (reservedNumbers.has(n)) continue;
+      return n;
+    }
+    return undefined;
+  };
+
+  const forward = tryRange(preferred + 1, JERSEY_NUMBER_MAX + 1);
+  if (forward !== undefined) {
+    return { number: forward, substituted: true };
+  }
+
+  const wrap = tryRange(JERSEY_NUMBER_MIN, preferred);
+  if (wrap !== undefined) {
+    return { number: wrap, substituted: true };
+  }
+
+  // Every number in 1..99 is taken/reserved. Assign without a number rather than failing.
+  return { number: undefined, substituted: true };
+}
+
+/**
+ * Used both by the proactive pick logic AND the retry-on-409 path. Extracted so the error
+ * message classification stays in one place (the backend wording has shifted slightly over
+ * time — we accept any phrasing that mentions "jersey number").
+ */
+function isJerseyNumberConflict(err: unknown): boolean {
+  const msg: string = err instanceof Error ? err.message : String(err);
+  return /jersey\s*number/i.test(msg) && /assigned|in\s*use|conflict|already/i.test(msg);
 }
 
 interface PlayerStepContext {
@@ -704,7 +856,14 @@ async function importPlayer(
   teamId: string,
   teamName: string,
   label: string,
-  existingTeamPlayerIds: Set<string>,
+  roster: TeamRosterSnapshot,
+  /**
+   * Jersey numbers requested by later JSON rows on the same team. Already excludes the current
+   * spec — the caller computes this once per team and drops each row off the front as we
+   * iterate, so collisions with future rows on the same team don't cause #24 → #25 → conflict
+   * with the row that actually requested #25.
+   */
+  reservedJerseyNumbers: Set<number>,
   summary: ImportSummary,
   callbacks: ImportCallbacks,
   step: PlayerStepContext,
@@ -728,7 +887,7 @@ async function importPlayer(
   }
 
   // 3) Add to the team unless already on the roster.
-  if (existingTeamPlayerIds.has(playerResult.id)) {
+  if (roster.playerIds.has(playerResult.id)) {
     callbacks.onStep({
       phase: step.phase,
       index: step.index,
@@ -740,27 +899,83 @@ async function importPlayer(
   }
 
   const position = spec.position ?? FloorballPosition.Forward;
-  const jerseyNumber = typeof spec.jerseyNumber === 'number' && spec.jerseyNumber > 0
+  const preferred: number | undefined = typeof spec.jerseyNumber === 'number' && spec.jerseyNumber > 0
     ? spec.jerseyNumber
     : undefined;
-  try {
-    await floorballTeamService.addPlayerToTeam(teamId, playerResult.id, position, jerseyNumber);
-  } catch (err) {
-    // The backend rejects duplicate roster entries. If the player got assigned by another
-    // race, swallow the error so the import still counts the row as resolved.
-    const refreshed = await loadExistingTeamPlayerIds(teamId);
-    if (!refreshed.has(playerResult.id)) {
-      throw err;
+
+  // First proactive pick: avoid known conflicts before we even hit the backend. This dramatically
+  // cuts the number of 400s we have to retry past for tournaments where two teams happen to share
+  // a default starting number set.
+  let resolved = pickJerseyNumber(preferred, roster.jerseyNumbers, reservedJerseyNumbers);
+  let attempts: number = 0;
+  let added: boolean = false;
+  while (!added && attempts < JERSEY_NUMBER_MAX + 2) {
+    attempts += 1;
+    try {
+      await floorballTeamService.addPlayerToTeam(teamId, playerResult.id, position, resolved.number);
+      added = true;
+    } catch (err) {
+      // Race: another concurrent import / a fresh server-side assignment may have grabbed the
+      // number between our snapshot and now. Only retry when the error actually looks like a
+      // jersey-number conflict — anything else (validation, network, auth) is fatal for this
+      // player and should bubble up to the caller's catch.
+      if (!isJerseyNumberConflict(err)) {
+        // Distinguish the "duplicate add" race (player already on roster) from "real" errors,
+        // matching the previous behaviour.
+        const refreshed = await loadTeamRosterSnapshot(teamId);
+        if (refreshed.playerIds.has(playerResult.id)) {
+          // Adopt the fresh snapshot so subsequent players see the up-to-date jersey set.
+          roster.playerIds = refreshed.playerIds;
+          roster.jerseyNumbers = refreshed.jerseyNumbers;
+          added = true;
+          break;
+        }
+        throw err;
+      }
+
+      // Refresh the roster so we don't fight against numbers that were taken since our last
+      // snapshot, then mark the number we just tried as taken too.
+      const refreshed = await loadTeamRosterSnapshot(teamId);
+      roster.playerIds = refreshed.playerIds;
+      roster.jerseyNumbers = refreshed.jerseyNumbers;
+      if (resolved.number !== undefined) {
+        roster.jerseyNumbers.add(resolved.number);
+      }
+      const nextPick = pickJerseyNumber(preferred, roster.jerseyNumbers, reservedJerseyNumbers);
+      if (
+        nextPick.number === resolved.number ||
+        (nextPick.number === undefined && resolved.number === undefined)
+      ) {
+        // Can't find any better option — surface the error to the caller so the row is logged
+        // as failed instead of looping forever.
+        throw err;
+      }
+      resolved = nextPick;
     }
   }
-  existingTeamPlayerIds.add(playerResult.id);
+
+  if (resolved.number !== undefined) {
+    roster.jerseyNumbers.add(resolved.number);
+  }
+  roster.playerIds.add(playerResult.id);
   summary.teamPlayerAssignments++;
   summary.created.push({ kind: 'team-player', teamId, playerId: playerResult.id, label: `${teamName} / ${label}` });
+
+  let stepLabel: string;
+  if (resolved.substituted) {
+    if (resolved.number !== undefined) {
+      stepLabel = `Added ${label} to "${teamName}" — jersey #${preferred} taken, assigned #${resolved.number} instead`;
+    } else {
+      stepLabel = `Added ${label} to "${teamName}" — no free jersey number, assigned without one`;
+    }
+  } else {
+    stepLabel = `Added ${label} to "${teamName}"`;
+  }
   callbacks.onStep({
     phase: step.phase,
     index: step.index,
     total: step.total,
-    label: `Added ${label} to "${teamName}"`,
+    label: stepLabel,
     status: 'created',
   });
 }

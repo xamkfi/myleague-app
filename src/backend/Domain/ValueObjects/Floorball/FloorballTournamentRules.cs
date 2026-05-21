@@ -54,14 +54,26 @@ public class FloorballTournamentRules : IEquatable<FloorballTournamentRules>
         ArgumentNullException.ThrowIfNull(groupStageMatchRules);
         ArgumentNullException.ThrowIfNull(playoffMatchRules);
 
-        if (teamsAdvancingPerGroup < 1 || teamsAdvancingPerGroup > 8)
-            throw new ArgumentOutOfRangeException(nameof(teamsAdvancingPerGroup), "Teams advancing per group must be between 1 and 8.");
+        // teamsAdvancingPerGroup is only meaningful when the tournament actually has a playoff
+        // stage (PlayoffBracketBuilder needs 2/4/8 qualifying teams). For group-stage-only
+        // tournaments any value is fine — we still persist it so the admin can flip
+        // hasPlayoffStage on later without losing the configuration — but we skip the range
+        // check and normalize obviously-invalid values to a sane default.
+        if (hasPlayoffStage)
+        {
+            if (teamsAdvancingPerGroup < 1 || teamsAdvancingPerGroup > 8)
+                throw new ArgumentOutOfRangeException(nameof(teamsAdvancingPerGroup), "Teams advancing per group must be between 1 and 8.");
+        }
 
         GroupStageMatchRules = groupStageMatchRules;
         PlayoffMatchRules = playoffMatchRules;
-        TeamsAdvancingPerGroup = teamsAdvancingPerGroup;
+        TeamsAdvancingPerGroup = hasPlayoffStage
+            ? teamsAdvancingPerGroup
+            : Math.Max(0, teamsAdvancingPerGroup);
         HasPlayoffStage = hasPlayoffStage;
-        HasThirdPlaceMatch = hasThirdPlaceMatch;
+        // A third-place match without a playoff stage doesn't make sense — force it off so the
+        // domain stays internally consistent.
+        HasThirdPlaceMatch = hasPlayoffStage && hasThirdPlaceMatch;
     }
 
     public static FloorballTournamentRules Default()

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   getDryRunCounts,
   importTournament,
+  inferHasPlayoffStage,
   revertImport,
   validatePayload,
 } from '../../../../../api/floorball/tournamentImportService';
@@ -16,7 +17,16 @@ import type {
   TournamentImportPayload,
 } from '../../../../../types/floorball/tournamentImportTypes';
 import { TeamCategory } from '../../../../../types/floorball/floorballTypes';
+import { TOURNAMENT_IMPORT_AI_PROMPT, buildPromptFileName } from './tournamentImportPrompt';
 import './TournamentImportModal.scss';
+
+/**
+ * Convenience union for the inline "Copy prompt" feedback toast. `null` hides the toast,
+ * `copied` is the happy path, `downloaded` is the auto-fallback when the clipboard write
+ * was refused (e.g. insecure origin, browser permissions), and `error` is the very rare
+ * case where even the download trick failed.
+ */
+type PromptCopyState = null | 'copied' | 'downloaded' | 'error';
 
 interface TournamentImportModalProps {
   onClose: () => void;
@@ -50,9 +60,88 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
   const [progress, setProgress] = useState<{ done: number; total: number; phase: string }>({ done: 0, total: 0, phase: '' });
   const [tournamentNameOverride, setTournamentNameOverride] = useState<string>('');
   const [defaultTeamCategory, setDefaultTeamCategory] = useState<TeamCategory>(TeamCategory.Adult);
+  // Admin-controlled override for the tournament's playoff stage. Pre-filled from the JSON +
+  // the inferHasPlayoffStage heuristic when a file is loaded, then can be toggled in the
+  // preview before kicking off the import.
+  const [hasPlayoffStage, setHasPlayoffStage] = useState<boolean>(true);
   const abortRef = useRef(false);
   const autoRevertRef = useRef(false);
   const [autoRevert, setAutoRevert] = useState(false);
+  const [promptCopyState, setPromptCopyState] = useState<PromptCopyState>(null);
+  const promptCopyTimerRef = useRef<number | null>(null);
+
+  /**
+   * Forces a download of the AI prompt as a plain `.txt` file. Used both as the explicit
+   * "Lataa tiedostona" button and as the fallback when `navigator.clipboard.writeText`
+   * is unavailable (insecure context) or rejected (permissions / focus issues).
+   */
+  const downloadPromptFile = useCallback((): boolean => {
+    try {
+      const blob: Blob = new Blob([TOURNAMENT_IMPORT_AI_PROMPT], { type: 'text/plain;charset=utf-8' });
+      const url: string = URL.createObjectURL(blob);
+      const link: HTMLAnchorElement = document.createElement('a');
+      link.href = url;
+      link.download = buildPromptFileName();
+      // The download attribute requires the anchor to be in the DOM in some browsers (Firefox).
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      // Defer revoking so Safari finishes the download trigger.
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return true;
+    } catch (err) {
+      console.error('Failed to download AI prompt', err);
+      return false;
+    }
+  }, []);
+
+  /**
+   * Tries the Clipboard API first, falling back to the file download when it fails. We
+   * surface a short-lived toast under the button so the user knows which branch ran —
+   * "Kopioitu" for the happy path, "Ladattu tiedostoon — leikepöytä ei ollut käytettävissä"
+   * for the fallback.
+   */
+  const handleCopyPrompt = useCallback(async (): Promise<void> => {
+    if (promptCopyTimerRef.current !== null) {
+      window.clearTimeout(promptCopyTimerRef.current);
+      promptCopyTimerRef.current = null;
+    }
+
+    let copied: boolean = false;
+    // navigator.clipboard is undefined in legacy/insecure contexts; guard before calling.
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      try {
+        await navigator.clipboard.writeText(TOURNAMENT_IMPORT_AI_PROMPT);
+        copied = true;
+      } catch (err) {
+        console.warn('Clipboard write was rejected, falling back to download.', err);
+      }
+    }
+
+    if (copied) {
+      setPromptCopyState('copied');
+    } else {
+      setPromptCopyState(downloadPromptFile() ? 'downloaded' : 'error');
+    }
+
+    promptCopyTimerRef.current = window.setTimeout(() => {
+      setPromptCopyState(null);
+      promptCopyTimerRef.current = null;
+    }, 4000);
+  }, [downloadPromptFile]);
+
+  const handleDownloadPrompt = useCallback((): void => {
+    if (promptCopyTimerRef.current !== null) {
+      window.clearTimeout(promptCopyTimerRef.current);
+      promptCopyTimerRef.current = null;
+    }
+    const ok: boolean = downloadPromptFile();
+    setPromptCopyState(ok ? 'downloaded' : 'error');
+    promptCopyTimerRef.current = window.setTimeout(() => {
+      setPromptCopyState(null);
+      promptCopyTimerRef.current = null;
+    }, 4000);
+  }, [downloadPromptFile]);
 
   const handleFileSelected = useCallback(async (file: File) => {
     setLog([]);
@@ -72,6 +161,7 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
       return;
     }
     setTournamentNameOverride(result.payload.tournament.name);
+    setHasPlayoffStage(inferHasPlayoffStage(result.payload));
     setState({
       kind: 'preview',
       payload: result.payload,
@@ -126,7 +216,7 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
         },
         shouldAbort: () => abortRef.current,
       },
-      { defaultTeamCategory },
+      { defaultTeamCategory, hasPlayoffStageOverride: hasPlayoffStage },
     );
 
     if (summary.fatal || summary.aborted) {
@@ -141,7 +231,7 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
       setState({ kind: 'success', summary });
       onImported();
     }
-  }, [appendLog, autoRevert, defaultTeamCategory, onImported, runRevert, t, tournamentNameOverride]);
+  }, [appendLog, autoRevert, defaultTeamCategory, hasPlayoffStage, onImported, runRevert, t, tournamentNameOverride]);
 
   const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -185,14 +275,96 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
                 className="import-modal__file-input"
               />
             </label>
-            <a
-              className="import-modal__sample-link"
-              href={SAMPLE_HREF}
-              download="tournament-import-sample.json"
-            >
-              <i className="fas fa-download"></i>
-              {t('floorball.tournaments.import.downloadSample', 'Download sample JSON')}
-            </a>
+
+            <div className="import-modal__ai-help">
+              <h4 className="import-modal__ai-help-title">
+                <i className="fas fa-robot" aria-hidden="true"></i>{' '}
+                {t('floorball.tournaments.import.aiHelp.title', "Don't have a JSON file yet? Generate one with AI")}
+              </h4>
+              <ol className="import-modal__ai-help-steps">
+                <li>
+                  {t(
+                    'floorball.tournaments.import.aiHelp.step1',
+                    'Copy the prompt below with the "Copy prompt" button (or download it if copying is blocked).'
+                  )}
+                </li>
+                <li>
+                  {t(
+                    'floorball.tournaments.import.aiHelp.step2',
+                    'Open ChatGPT, Claude, Gemini or another vision-capable AI and paste the prompt (Ctrl/Cmd + V).'
+                  )}
+                </li>
+                <li>
+                  {t(
+                    'floorball.tournaments.import.aiHelp.step3',
+                    'Attach a screenshot / photo of the tournament schedule (and roster sheets if you have them) and send the message.'
+                  )}
+                </li>
+                <li>
+                  {t(
+                    'floorball.tournaments.import.aiHelp.step4',
+                    'Save the AI\'s response as a .json file and drop it into the area above.'
+                  )}
+                </li>
+              </ol>
+
+              <div className="import-modal__ai-help-actions">
+                <button
+                  type="button"
+                  className="import-modal__ai-help-btn import-modal__ai-help-btn--primary"
+                  onClick={handleCopyPrompt}
+                >
+                  <i className="fas fa-copy" aria-hidden="true"></i>{' '}
+                  {t('floorball.tournaments.import.aiHelp.copyPrompt', 'Copy AI prompt to clipboard')}
+                </button>
+                <button
+                  type="button"
+                  className="import-modal__ai-help-btn import-modal__ai-help-btn--ghost"
+                  onClick={handleDownloadPrompt}
+                >
+                  <i className="fas fa-download" aria-hidden="true"></i>{' '}
+                  {t('floorball.tournaments.import.aiHelp.downloadPrompt', 'Download AI prompt as .txt')}
+                </button>
+              </div>
+
+              {promptCopyState === 'copied' && (
+                <p className="import-modal__ai-help-feedback import-modal__ai-help-feedback--ok" role="status">
+                  <i className="fas fa-check-circle" aria-hidden="true"></i>{' '}
+                  {t(
+                    'floorball.tournaments.import.aiHelp.copiedToast',
+                    'Prompt copied to clipboard. Paste it into your AI chat (Ctrl/Cmd + V) and attach the schedule image.'
+                  )}
+                </p>
+              )}
+              {promptCopyState === 'downloaded' && (
+                <p className="import-modal__ai-help-feedback import-modal__ai-help-feedback--info" role="status">
+                  <i className="fas fa-info-circle" aria-hidden="true"></i>{' '}
+                  {t(
+                    'floorball.tournaments.import.aiHelp.downloadedToast',
+                    'Prompt downloaded as a .txt file. Open it, copy the contents, and paste them into your AI chat.'
+                  )}
+                </p>
+              )}
+              {promptCopyState === 'error' && (
+                <p className="import-modal__ai-help-feedback import-modal__ai-help-feedback--error" role="alert">
+                  <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>{' '}
+                  {t(
+                    'floorball.tournaments.import.aiHelp.errorToast',
+                    'Could not copy or download the prompt. Please try the "Download" button again.'
+                  )}
+                </p>
+              )}
+
+              <a
+                className="import-modal__sample-link"
+                href={SAMPLE_HREF}
+                download="tournament-import-sample.json"
+              >
+                <i className="fas fa-file-download" aria-hidden="true"></i>
+                {' '}
+                {t('floorball.tournaments.import.downloadSample', 'Download sample JSON')}
+              </a>
+            </div>
           </div>
         );
       case 'invalid':
@@ -238,6 +410,27 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
                 {t('floorball.tournaments.import.tournamentCategoryHint', 'Applied to newly created teams (existing teams keep their category).')}
               </span>
             </label>
+            <label className="import-modal__checkbox import-modal__checkbox--featured">
+              <input
+                type="checkbox"
+                checked={hasPlayoffStage}
+                onChange={(e) => setHasPlayoffStage(e.target.checked)}
+              />
+              <span>
+                {t('floorball.tournaments.import.hasPlayoffStage', 'Tournament has a playoff stage')}
+              </span>
+            </label>
+            <p className="import-modal__field-hint import-modal__field-hint--checkbox">
+              {hasPlayoffStage
+                ? t(
+                    'floorball.tournaments.import.hasPlayoffStageHintOn',
+                    'Standard bracket rules apply: 2/4/8 teams must qualify for the playoffs (teamsAdvancingPerGroup × group count).'
+                  )
+                : t(
+                    'floorball.tournaments.import.hasPlayoffStageHintOff',
+                    'Group-stage-only tournament: any number of teams per group is fine and the playoff schedule (if any) will be ignored.'
+                  )}
+            </p>
             <table className="import-modal__counts">
               <tbody>
                 <tr><th>{t('floorball.tournaments.import.counts.clubs', 'Clubs')}</th><td>{state.counts.clubs}</td></tr>
@@ -246,7 +439,10 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
                 <tr><th>{t('floorball.tournaments.import.counts.groups', 'Groups')}</th><td>{state.counts.groups}</td></tr>
                 <tr><th>{t('floorball.tournaments.import.counts.assignments', 'Group assignments')}</th><td>{state.counts.groupAssignments}</td></tr>
                 <tr><th>{t('floorball.tournaments.import.counts.matches', 'Matches')}</th><td>{state.counts.matches}</td></tr>
-                <tr><th>{t('floorball.tournaments.import.counts.playoffSlots', 'Playoff slots')}</th><td>{state.counts.playoffSlots}</td></tr>
+                <tr>
+                  <th>{t('floorball.tournaments.import.counts.playoffSlots', 'Playoff slots')}</th>
+                  <td>{hasPlayoffStage ? state.counts.playoffSlots : 0}</td>
+                </tr>
               </tbody>
             </table>
             <p className="import-modal__note">
@@ -257,9 +453,18 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
                 {t('floorball.tournaments.import.playerRosterNote', 'Player rosters (if included in the JSON) are created and added to teams automatically. Existing players (matched by name) are reused.')}
               </p>
             )}
-            {state.counts.playoffSlots > 0 && (
+            {hasPlayoffStage && state.counts.playoffSlots > 0 && (
               <p className="import-modal__note">
                 {t('floorball.tournaments.import.playoffSlotsNote', 'Playoff slots will appear as placeholder "TBD vs TBD" rows in the schedule. The real teams are filled in automatically when the playoff stage is started.')}
+              </p>
+            )}
+            {!hasPlayoffStage && state.counts.playoffSlots > 0 && (
+              <p className="import-modal__note import-modal__note--warning">
+                {t(
+                  'floorball.tournaments.import.playoffSlotsIgnoredNote',
+                  'Playoffs are disabled for this import — the {{count}} playoff slot(s) in the JSON will be ignored.',
+                  { count: state.counts.playoffSlots }
+                )}
               </p>
             )}
             <label className="import-modal__checkbox">

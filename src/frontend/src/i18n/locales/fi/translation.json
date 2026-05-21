@@ -806,7 +806,23 @@
           "players": "Pelaajat"
         },
         "playerRosterNote": "Pelaajakokoonpanot (jos mukana JSONissa) luodaan ja liitetään joukkueisiin automaattisesti. Olemassa olevia pelaajia (nimen mukaan) käytetään uudelleen.",
-        "playoffSlotsNote": "Pudotuspeliotteluiden paikat näkyvät otteluohjelmassa \"TBD vs TBD\" -paikanvarauksina. Oikeat joukkueet täydennetään automaattisesti, kun pudotuspelivaihe käynnistetään."
+        "playoffSlotsNote": "Pudotuspeliotteluiden paikat näkyvät otteluohjelmassa \"TBD vs TBD\" -paikanvarauksina. Oikeat joukkueet täydennetään automaattisesti, kun pudotuspelivaihe käynnistetään.",
+        "playoffSlotsIgnoredNote": "Pudotuspelit on poistettu käytöstä tästä tuonnista — JSONin {{count}} pudotuspelipaikkaa ohitetaan.",
+        "hasPlayoffStage": "Turnauksessa on pudotuspelivaihe",
+        "hasPlayoffStageHintOn": "Käytössä vakio-pudotuspelisäännöt: lohkovaiheen jälkeen pudotuspeleihin pitää saada 2, 4 tai 8 joukkuetta (lohkosta jatkavat × lohkojen määrä).",
+        "hasPlayoffStageHintOff": "Pelkkä lohkovaihe: lohkossa voi olla mikä tahansa määrä joukkueita ja JSONin pudotuspeliaikataulu (jos sellainen on) ohitetaan.",
+        "aiHelp": {
+          "title": "Ei vielä JSON-tiedostoa? Generoi sellainen tekoälyllä",
+          "step1": "Kopioi alla oleva prompti \"Kopioi prompti\" -napilla (tai lataa se tiedostona, jos kopiointi ei onnistu).",
+          "step2": "Avaa ChatGPT, Claude, Gemini tai muu kuvia tukeva tekoäly ja liitä prompti (Ctrl/Cmd + V).",
+          "step3": "Liitä viestiin kuvakaappaus tai valokuva turnauksen otteluohjelmasta (ja mahdollisista joukkueiden rosterilistoista) ja lähetä viesti.",
+          "step4": "Tallenna tekoälyn vastaus .json-tiedostona ja pudota se yllä olevaan alueeseen.",
+          "copyPrompt": "Kopioi AI-prompti leikepöydälle",
+          "downloadPrompt": "Lataa AI-prompti .txt-tiedostona",
+          "copiedToast": "Prompti kopioitu leikepöydälle. Liitä se AI-keskusteluun (Ctrl/Cmd + V) ja lisää otteluohjelman kuva mukaan.",
+          "downloadedToast": "Prompti ladattiin .txt-tiedostona. Avaa tiedosto, kopioi sisältö ja liitä se AI-keskusteluun.",
+          "errorToast": "Promptia ei voitu kopioida eikä ladata. Yritä uudelleen \"Lataa\"-napilla."
+        }
       },
       "playoffSchedule": {
         "title": "Suunnitellut pudotuspeliottelut",
