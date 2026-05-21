@@ -29,6 +29,13 @@ namespace Domain.Repositories.Common
         Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets feedback with given ID
+        /// </summary>
+        /// <param name="id">The id to get</param>
+        /// <returns></returns>
+        Task<FeedbackEntity?> GetFeedbackByIdAsync(Guid id);
+
+        /// <summary>
         ///  Checks if feedback exists with the given id
         /// </summary>
         /// <param name="id">Id to be checked</param>

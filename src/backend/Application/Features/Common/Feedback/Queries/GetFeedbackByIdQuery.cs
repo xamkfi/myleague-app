@@ -10,13 +10,10 @@ using Application.Common;
 using Application.Features.Common.Feedback.DTOs;
 using MediatR;
 
-namespace Application.Features.Common.Feedback.Commands
+namespace Application.Features.Common.Feedback.Queries
 {
     /// <summary>
-    ///  Command for creating feedback
+    /// Query for getting feedback by its id
     /// </summary>
-    public record CreateFeedbackCommand(
-        string Title,
-        string FeedbackBody,
-        string? Email = null) : IRequest<Result<FeedbackDto>>;
+    public record GetFeedbackByIdQuery(Guid id) : IRequest<Result<FeedbackDto>>;
 }

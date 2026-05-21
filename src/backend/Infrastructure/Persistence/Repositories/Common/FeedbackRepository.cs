@@ -70,6 +70,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
+        /// Gets feedback with given ID
+        /// </summary>
+        /// <param name="id">The id to get</param>
+        /// <returns></returns>
+        public async Task<FeedbackEntity?> GetFeedbackByIdAsync(Guid id)
+        {
+            return await _entities.FirstOrDefaultAsync(f => f.Id == id);
+        }
+
+        /// <summary>
         /// Gets the total count of feedback
         /// </summary>
         /// <param name="cancellationToken">Cancellation token</param>
