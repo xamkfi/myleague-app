@@ -12,8 +12,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MyLeague.Infrastructure.Persistence.Configurations.Common
 {
+    /// <summary>
+    /// Entity Framework configuration for Feedback
+    /// </summary>
     public class FeedbackConfiguration : IEntityTypeConfiguration<FeedbackEntity>
     {
+        /// <summary>
+        /// Configures the entity mapping for Feedback
+        /// </summary>
+        /// <param name="builder">The entity type builder</param>
         public void Configure(EntityTypeBuilder<FeedbackEntity> builder)
         {
 

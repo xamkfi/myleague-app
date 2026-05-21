@@ -19,6 +19,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Common.Feedback.Handlers
 {
+    /// <summary>
+    /// Handler for getting all feedback with pagination
+    /// </summary>
     public class GetAllFeedbackHandler :BasePagedQueryHandler<GetAllFeedbackQuery,FeedbackListDto>,
         IRequestHandler<GetAllFeedbackQuery,Result<PagedResult<FeedbackListDto>>>
     {

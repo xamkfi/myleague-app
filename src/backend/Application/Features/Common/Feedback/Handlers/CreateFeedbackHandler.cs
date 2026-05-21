@@ -18,13 +18,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Common.Feedback.Handlers
 {
+    /// <summary>
+    /// Handler for creating feedback
+    /// </summary>
     public class CreateFeedbackHandler : IRequestHandler<CreateFeedbackCommand,Result<FeedbackDto>>
     {
         private readonly IFeedbackRepository _feedbackRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger _logger;
+        private readonly ILogger<CreateFeedbackHandler> _logger;
 
-        public CreateFeedbackHandler(IFeedbackRepository feedbackRepository, IUnitOfWork unitOfWork, ILogger logger)
+        public CreateFeedbackHandler(IFeedbackRepository feedbackRepository, IUnitOfWork unitOfWork, ILogger<CreateFeedbackHandler> logger)
         {
             _feedbackRepository = feedbackRepository;
             _unitOfWork = unitOfWork;

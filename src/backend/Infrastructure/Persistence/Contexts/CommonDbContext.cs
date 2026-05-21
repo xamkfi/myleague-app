@@ -55,7 +55,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<TimerState> TimerStates { get; set; }
 
         /// <summary>
-        /// Gets or set s the Feedbacks DbSet
+        /// Gets or sets the Feedbacks DbSet
         /// </summary>
         public DbSet<FeedbackEntity> Feedbacks { get; set; }
         

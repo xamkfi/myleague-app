@@ -26,6 +26,13 @@ namespace Domain.Entities.Common
         /// </summary>
         public string? Email { get; set; }
 
+        /// <summary>
+        /// Creates a FeedbackEntity with specified parameters
+        /// </summary>
+        /// <param name="id">Id of the feedback</param>
+        /// <param name="title">Title of the feedback with max 255 characters</param>
+        /// <param name="feedbackBody">HTML content of the feedback</param>
+        /// <param name="email">Optional email of the feedback with max 255 characters</param>
         public FeedbackEntity(Guid id, string title, string feedbackBody, string? email = null)
         {
             Id = id;
@@ -35,6 +42,10 @@ namespace Domain.Entities.Common
             CreatedAt = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// Sets the email.
+        /// </summary>
+        /// <param name="email">The new email to be set</param>
         public void SetEmail(string email)
         {
             string? oldEmail = Email;

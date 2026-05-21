@@ -7,17 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Common;
-using Application.Features.Common.Feedback.DTOs;
 using MediatR;
 
 namespace Application.Features.Common.Feedback.Commands
 {
     /// <summary>
-    ///  Command for creating feedback
+    /// Command for deleting feedback
     /// </summary>
-    public record CreateFeedbackCommand(
-        string Title,
-        string FeedbackBody,
-        DateTime CreatedAt,
-        string? Email = null) : IRequest<Result<FeedbackDto>>;
+    /// <param name="id"></param>
+    public record DeleteFeedbackCommand(Guid id) : IRequest<Result<bool>>;
 }

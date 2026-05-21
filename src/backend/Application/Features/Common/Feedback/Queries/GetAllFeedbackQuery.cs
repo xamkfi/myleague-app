@@ -13,6 +13,9 @@ using MediatR;
 
 namespace Application.Features.Common.Feedback.Queries
 {
+    /// <summary>
+    /// Query for retrieving all feedback with pagination
+    /// </summary>
     public record GetAllFeedbackQuery(
         int page = 1,
         int pageSize = 0) : IRequest<Result<PagedResult<FeedbackListDto>>>

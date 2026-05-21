@@ -29,9 +29,17 @@ namespace Domain.Repositories.Common
         Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Saves new feedback into the database
+        ///  Checks if feedback exists with the given id
         /// </summary>
-        /// <param name="feedback">Feedback entity to be saved into the database</param>
+        /// <param name="id">Id to be checked</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Saves new feedback
+        /// </summary>
+        /// <param name="feedback">Feedback entity to be saved</param>
         /// <returns></returns>
         Task SaveAsync(FeedbackEntity feedback, CancellationToken cancellationToken = default);
 

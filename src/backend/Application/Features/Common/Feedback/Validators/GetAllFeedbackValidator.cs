@@ -12,6 +12,9 @@ using FluentValidation;
 
 namespace Application.Features.Common.Feedback.Validators
 {
+    /// <summary>
+    /// Validator for GetAllFeedbackQuery
+    /// </summary>
     public class GetAllFeedbackQueryValidator : AbstractValidator<GetAllFeedbackQuery>
     {
         private readonly IPaginationService _paginationService;

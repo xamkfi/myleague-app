@@ -69,6 +69,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             }
         }
 
+        /// <summary>
+        /// Gets the total count of feedback
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
         public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
         {
             try
@@ -84,9 +89,20 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
-        /// Creates new feedback into the database
+        /// Checks if feedback exists with the given id
         /// </summary>
-        /// <param name="feedback">The feedback to be saved into the database</param>
+        /// <param name="id">Id to be checked</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _entities.AnyAsync(x => x.Id == id, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates new feedback
+        /// </summary>
+        /// <param name="feedback">The feedback to be saved</param>
         /// <returns></returns>
         public async Task SaveAsync(FeedbackEntity feedback, CancellationToken cancellationToken)
         {
@@ -109,7 +125,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
-        /// Deletes feedback from the database
+        /// Deletes feedback based on given id
         /// </summary>
         /// <param name="id">Id of the feedback to be deleted</param>
         /// <returns></returns>
@@ -122,7 +138,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 return false;
             }
             _entities.Remove(feedback);
-            _logger.LogDebug("Deleted feedback with ID: {id}", id);
             return true;
         }
     }
