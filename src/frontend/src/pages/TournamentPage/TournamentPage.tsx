@@ -4,6 +4,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import MatchesList from '../../components/MatchesList/MatchesList';
+import PlannedPlayoffSchedule from '../../components/PlannedPlayoffSchedule';
 import TournamentGroupStandingsTable from '../../components/TournamentGroupStandingsTable/TournamentGroupStandingsTable';
 import TournamentBracket from '../../components/TournamentBracket/TournamentBracket';
 import { floorballTournamentService } from '../../api/floorball/floorballTournamentService';
@@ -473,16 +474,23 @@ function TournamentPage() {
       case 'results':
       case 'fixtures':
         return (
-          <MatchesList
-            variant={activeTab}
-            matchesLoading={matchesLoading}
-            matchesError={matchesError}
-            matches={matches}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            handlePageChange={handlePageChange}
-            groupingMode="none"
-          />
+          <>
+            {/* Show pre-defined playoff slots only in the upcoming schedule view (not in the
+                completed results view) so end-users see the planned QF/SF/Final times even
+                while the bracket is still pending. The component renders nothing once the
+                playoff stage has been started — by then real matches exist. */}
+            {activeTab === 'fixtures' && <PlannedPlayoffSchedule tournament={tournament} />}
+            <MatchesList
+              variant={activeTab}
+              matchesLoading={matchesLoading}
+              matchesError={matchesError}
+              matches={matches}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              handlePageChange={handlePageChange}
+              groupingMode="none"
+            />
+          </>
         );
       default:
         return null;

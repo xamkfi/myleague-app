@@ -5,12 +5,14 @@ interface TournamentsPageHeaderProps {
   tournamentsCount: number;
   onCreateTournament: () => void;
   onManageMatches: () => void;
+  onImportTournament: () => void;
 }
 
 export const TournamentsPageHeader = ({
   tournamentsCount,
   onCreateTournament,
   onManageMatches,
+  onImportTournament,
 }: TournamentsPageHeaderProps) => {
   const { t } = useTranslation();
 
@@ -28,6 +30,16 @@ export const TournamentsPageHeader = ({
           onClick={onManageMatches}
         >
           {t('floorball.management.actions.tournamentMatches', 'Manage Tournament Matches')}
+        </button>
+        <button
+          type="button"
+          className="import-tournament-button"
+          onClick={onImportTournament}
+          title={t('floorball.tournaments.import.buttonTooltip', 'Create a tournament by uploading a JSON file (myleague format).')}
+        >
+          <i className="fas fa-file-import"></i>
+          {' '}
+          {t('floorball.tournaments.import.button', 'Import from JSON')}
         </button>
         <button
           type="button"

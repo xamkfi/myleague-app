@@ -11,6 +11,7 @@ import { TournamentsPageHeader } from './components/TournamentsPageHeader';
 import { TournamentsFilters } from './components/TournamentsFilters';
 import { TournamentsContent } from './components/TournamentsContent';
 import { ConfirmDeleteTournamentModal } from './components/ConfirmDeleteTournamentModal';
+import { TournamentImportModal } from './components/TournamentImportModal';
 import { LoadingState } from './components/LoadingState';
 import { floorballTournamentService } from '../../../../api/floorball/floorballTournamentService';
 
@@ -38,6 +39,7 @@ const FloorballTournamentsPage = () => {
   } = useTournamentsManagement();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showImportModal, setShowImportModal] = useState<boolean>(false);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -86,6 +88,7 @@ const FloorballTournamentsPage = () => {
           tournamentsCount={tournaments.length}
           onCreateTournament={() => navigate('/admin/floorball/tournaments/create')}
           onManageMatches={() => navigate('/admin/floorball/tournaments/matches')}
+          onImportTournament={() => setShowImportModal(true)}
         />
 
         <ErrorPopup message={error} />
@@ -134,6 +137,15 @@ const FloorballTournamentsPage = () => {
             tournament={selectedTournament}
             onConfirm={handleDeleteTournament}
             onCancel={closeModals}
+          />
+        )}
+
+        {showImportModal && (
+          <TournamentImportModal
+            onClose={() => setShowImportModal(false)}
+            // Silent refresh — a non-silent refresh would flip the page-level loading flag and
+            // unmount the modal mid-import, throwing away the user's progress log.
+            onImported={() => loadTournaments({ silent: true })}
           />
         )}
       </div>

@@ -133,11 +133,11 @@ public record UpdatePersonAddressRequest
     public string? PostalCode { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets the country
+    /// Gets the country. Optional — bulk imports (tournament rosters etc.) generally have no
+    /// address at all and shouldn't be blocked by a Country requirement.
     /// </summary>
-    [Required(ErrorMessage = "Country is required")]
     [StringLength(100, ErrorMessage = "Country cannot exceed 100 characters")]
-    public string Country { get; init; } = string.Empty;
+    public string? Country { get; init; }
 }
 
 /// <summary>
@@ -146,12 +146,12 @@ public record UpdatePersonAddressRequest
 public record UpdatePersonContactInfoRequest
 {
     /// <summary>
-    /// Gets the email address
+    /// Gets the email address. Optional — players imported from tournament rosters often have no
+    /// email at all. When provided it must look like a valid address.
     /// </summary>
-    [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Please provide a valid email address")]
     [StringLength(255, ErrorMessage = "Email cannot exceed 255 characters")]
-    public string Email { get; init; } = string.Empty;
+    public string? Email { get; init; }
 
     /// <summary>
     /// Gets the phone number

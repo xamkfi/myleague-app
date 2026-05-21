@@ -36,6 +36,20 @@ namespace WebAPI.Controllers.Floorball
             _logger = logger;
         }
 
+        // Converts the WebAPI request shape into the application-layer input. Returns null when
+        // the caller did not send a schedule field at all (so the update handler can distinguish
+        // "no change" from "clear the schedule" — see UpdateFloorballTournamentHandler).
+        private static IReadOnlyList<PlayoffScheduleSlotInput>? MapPlayoffSchedule(List<PlayoffScheduleSlotRequest>? slots)
+        {
+            if (slots == null)
+            {
+                return null;
+            }
+            return slots
+                .Select(s => new PlayoffScheduleSlotInput(s.Round, s.Order, s.ScheduledDateTime, s.Venue))
+                .ToList();
+        }
+
         /// <summary>
         /// Gets all floorball tournaments
         /// </summary>
@@ -129,6 +143,8 @@ namespace WebAPI.Controllers.Floorball
                 .Replace("\n", string.Empty);
             _logger.LogInformation("Creating floorball tournament: {name}", sanitizedTournamentNameForLog);
 
+            IReadOnlyList<PlayoffScheduleSlotInput>? scheduleSlots = MapPlayoffSchedule(request.PlayoffSchedule);
+
             CreateFloorballTournamentCommand command = new CreateFloorballTournamentCommand(
                 request.Name,
                 request.StartDate,
@@ -147,7 +163,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PlayoffAllowShootout,
                 request.TeamsAdvancingPerGroup,
                 request.HasPlayoffStage,
-                request.HasThirdPlaceMatch
+                request.HasThirdPlaceMatch,
+                scheduleSlots
             );
 
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
@@ -183,6 +200,8 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Updating floorball tournament with ID: {competitionId}", competitionId);
 
+            IReadOnlyList<PlayoffScheduleSlotInput>? scheduleSlots = MapPlayoffSchedule(request.PlayoffSchedule);
+
             UpdateFloorballTournamentCommand command = new UpdateFloorballTournamentCommand(
                 competitionId,
                 request.Name,
@@ -202,7 +221,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PlayoffAllowShootout,
                 request.TeamsAdvancingPerGroup,
                 request.HasPlayoffStage,
-                request.HasThirdPlaceMatch
+                request.HasThirdPlaceMatch,
+                scheduleSlots
             );
 
             Result<FloorballTournamentDto> result = await _mediator.Send(command);

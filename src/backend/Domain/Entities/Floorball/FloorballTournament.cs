@@ -40,6 +40,28 @@ public class FloorballTournament : FloorballCompetition
     private readonly List<FloorballTournamentGroup> _groups = new();
 
     /// <summary>
+    /// Optional pre-defined playoff bracket schedule. Each slot pins a (round, order) position
+    /// in the bracket to a specific kickoff time / venue. When the playoff stage is started,
+    /// <see cref="Application.Features.Floorball.Tournaments.Handlers.StartTournamentPlayoffStageHandler"/>
+    /// honors these slots instead of auto-calculating "next day at 16:00 UTC + 2-hour offsets".
+    /// Empty list = no pre-defined schedule = fall back to auto-scheduling.
+    /// </summary>
+    public IReadOnlyCollection<PlayoffScheduleSlot> PlayoffSchedule => PlayoffScheduleBacking.AsReadOnly();
+
+    // Not readonly: EF Core assigns this backing field directly when hydrating from the
+    // JSON column and may leave it null for older rows where PlayoffSchedule IS NULL.
+    private List<PlayoffScheduleSlot> _playoffSchedule = new();
+
+    private List<PlayoffScheduleSlot> PlayoffScheduleBacking
+    {
+        get
+        {
+            _playoffSchedule ??= new List<PlayoffScheduleSlot>();
+            return _playoffSchedule;
+        }
+    }
+
+    /// <summary>
     /// Private constructor for EF Core
     /// </summary>
     private FloorballTournament() : base()
@@ -47,6 +69,7 @@ public class FloorballTournament : FloorballCompetition
         TournamentStatus = FloorballTournamentStatus.Draft;
         TournamentRules = FloorballTournamentRules.Default();
         _groups = new List<FloorballTournamentGroup>();
+        _playoffSchedule = new List<PlayoffScheduleSlot>();
     }
 
     public FloorballTournament(
@@ -55,7 +78,8 @@ public class FloorballTournament : FloorballCompetition
         DateTime endDate,
         string? venue = null,
         string? contentHtml = null,
-        FloorballTournamentRules? tournamentRules = null)
+        FloorballTournamentRules? tournamentRules = null,
+        IEnumerable<PlayoffScheduleSlot>? playoffSchedule = null)
         : base(name, startDate, endDate, tournamentRules?.GroupStageMatchRules)
     {
         Venue = venue;
@@ -63,6 +87,41 @@ public class FloorballTournament : FloorballCompetition
         TournamentStatus = FloorballTournamentStatus.Draft;
         TournamentRules = tournamentRules ?? FloorballTournamentRules.Default();
         _groups = new List<FloorballTournamentGroup>();
+        _playoffSchedule = new List<PlayoffScheduleSlot>();
+        if (playoffSchedule != null)
+        {
+            SetPlayoffSchedule(playoffSchedule);
+        }
+    }
+
+    /// <summary>
+    /// Replaces the entire pre-defined playoff schedule with the provided slots.
+    /// Pass an empty enumerable to clear the schedule.
+    /// </summary>
+    /// <param name="slots">The new schedule. Duplicate (Round, Order) entries are rejected.</param>
+    public void SetPlayoffSchedule(IEnumerable<PlayoffScheduleSlot> slots)
+    {
+        ArgumentNullException.ThrowIfNull(slots);
+        if (TournamentStatus == FloorballTournamentStatus.PlayoffStage
+            || TournamentStatus == FloorballTournamentStatus.Completed)
+        {
+            throw new InvalidOperationException("Cannot change the playoff schedule once the playoff stage has started.");
+        }
+
+        List<PlayoffScheduleSlot> materialized = slots.ToList();
+        HashSet<(FloorballPlayoffRound, int)> seen = new();
+        foreach (PlayoffScheduleSlot slot in materialized)
+        {
+            ArgumentNullException.ThrowIfNull(slot);
+            if (!seen.Add((slot.Round, slot.Order)))
+            {
+                throw new InvalidOperationException($"Playoff schedule contains a duplicate slot for {slot.Round} #{slot.Order}.");
+            }
+        }
+
+        List<PlayoffScheduleSlot> backing = PlayoffScheduleBacking;
+        backing.Clear();
+        backing.AddRange(materialized);
     }
 
     public void UpdateContent(string? contentHtml)

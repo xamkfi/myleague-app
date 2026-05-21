@@ -73,13 +73,22 @@ public class CreateFloorballTournamentHandler : IRequestHandler<CreateFloorballT
                 request.HasPlayoffStage,
                 request.HasThirdPlaceMatch);
 
+            List<PlayoffScheduleSlot>? playoffSchedule = null;
+            if (request.PlayoffSchedule != null && request.PlayoffSchedule.Count > 0)
+            {
+                playoffSchedule = request.PlayoffSchedule
+                    .Select(s => new PlayoffScheduleSlot(s.Round, s.Order, s.ScheduledDateTime, s.Venue))
+                    .ToList();
+            }
+
             FloorballTournament tournament = new FloorballTournament(
                 request.Name,
                 startDateUtc,
                 endDateUtc,
                 request.Venue,
                 request.ContentHtml,
-                tournamentRules);
+                tournamentRules,
+                playoffSchedule);
 
             _logger.LogInformation("Creating new floorball tournament: {Name}", request.Name);
             await _tournamentRepository.AddAsync(tournament);

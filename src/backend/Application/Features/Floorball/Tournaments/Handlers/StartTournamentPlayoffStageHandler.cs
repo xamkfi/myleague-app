@@ -6,6 +6,7 @@ using Application.Features.Floorball.Tournaments.Services;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
+using Domain.ValueObjects.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -121,6 +122,7 @@ public class StartTournamentPlayoffStageHandler : IRequestHandler<StartTournamen
                 PlayoffBracketBuilder.Build(seeds, tournament.TournamentRules.HasThirdPlaceMatch);
 
             // Schedule rounds: spread them across the days following the tournament end (or now if past).
+            // Used only as the fallback when no pre-defined slot exists for a given (round, order).
             DateTime baseDate = (tournament.EndDate < DateTime.UtcNow ? DateTime.UtcNow : tournament.EndDate)
                 .ToUniversalTime()
                 .Date
@@ -134,6 +136,15 @@ public class StartTournamentPlayoffStageHandler : IRequestHandler<StartTournamen
                 { FloorballPlayoffRound.ThirdPlaceMatch, 2 },
                 { FloorballPlayoffRound.Final, 2 }
             };
+
+            // Index any pre-defined playoff slots saved on the tournament (set via the import or
+            // tournament edit form). Lookups are by (round, order) which is the same identity the
+            // bracket builder uses for planned matches.
+            Dictionary<(FloorballPlayoffRound Round, int Order), PlayoffScheduleSlot> scheduleSlots =
+                tournament.PlayoffSchedule
+                    .GroupBy(s => (s.Round, s.Order))
+                    // Defensive: ignore duplicates that shouldn't exist (SetPlayoffSchedule blocks them).
+                    .ToDictionary(g => g.Key, g => g.First());
 
             // Pre-populate each planned match's home/away with projected winners (best feeder seed).
             // The frontend renders these as "TBD" if the feeder hasn't been completed yet.
@@ -157,8 +168,23 @@ public class StartTournamentPlayoffStageHandler : IRequestHandler<StartTournamen
                     currentRound = planned.Round;
                     sameRoundCounter = 0;
                 }
-                int dayOffset = roundDayOffsets.TryGetValue(planned.Round, out int d) ? d : 0;
-                DateTime scheduled = baseDate.AddDays(dayOffset).AddHours(2d * sameRoundCounter);
+
+                // Prefer the pre-defined slot (admin-controlled, matches the schedule shown to
+                // end-users while the group stage was running). Fall back to auto-calculation
+                // when no slot was registered for this bracket position.
+                DateTime scheduled;
+                string? scheduledVenue;
+                if (scheduleSlots.TryGetValue((planned.Round, planned.Order), out PlayoffScheduleSlot? slot))
+                {
+                    scheduled = slot.ScheduledDateTime;
+                    scheduledVenue = slot.Venue ?? tournamentRef.Venue;
+                }
+                else
+                {
+                    int dayOffset = roundDayOffsets.TryGetValue(planned.Round, out int d) ? d : 0;
+                    scheduled = baseDate.AddDays(dayOffset).AddHours(2d * sameRoundCounter);
+                    scheduledVenue = tournamentRef.Venue;
+                }
                 sameRoundCounter++;
 
                 FloorballMatch match = FloorballMatch.CreatePlayoffMatch(
@@ -167,7 +193,7 @@ public class StartTournamentPlayoffStageHandler : IRequestHandler<StartTournamen
                     planned.HomeTeam,
                     planned.AwayTeam,
                     scheduled,
-                    tournamentRef.Venue,
+                    scheduledVenue,
                     tournamentRef.TournamentRules.PlayoffMatchRules);
 
                 match.SetPlayoffInfo(

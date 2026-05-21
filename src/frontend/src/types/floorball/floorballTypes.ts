@@ -122,8 +122,10 @@ export interface FloorballTeamRequest {
   name: string;
   divisionId?: string;
   clubId: string;
-  homeArena: string;
-  primaryJerseyColor: string;
+  /** Optional — tournament-only teams often have no permanent home arena. */
+  homeArena?: string;
+  /** Optional. */
+  primaryJerseyColor?: string;
   category?: TeamCategory;
   secondaryJerseyColor?: string;
   logoUrl?: string;

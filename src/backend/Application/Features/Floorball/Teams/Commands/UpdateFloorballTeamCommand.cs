@@ -33,9 +33,9 @@ namespace Application.Features.Floorball.Teams.Commands
         Guid Id,
         string Name,
         Guid? DivisionId,
-        string HomeArena,
-        string PrimaryJerseyColor,
-        TeamCategory TeamCategory,
+        string? HomeArena,
+        string? PrimaryJerseyColor,
+        TeamCategory? TeamCategory,
         string? SecondaryJerseyColor,
         string? LogoUrl,
         string? ShortName) : IRequest<Result<FloorballTeamDto>>;

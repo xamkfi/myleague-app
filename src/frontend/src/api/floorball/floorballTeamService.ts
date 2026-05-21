@@ -68,18 +68,32 @@ export const floorballTeamService = {
       },
       body: JSON.stringify(data),
     });
-    
-    if (!response.ok) {
-      throw new Error('Failed to create floorball team');
+
+    // Read the body regardless of status so server-side validation messages reach the caller.
+    let apiResponse: ApiResponse<FloorballTeam> | null = null;
+    try {
+      apiResponse = await response.json();
+    } catch {
+      apiResponse = null;
     }
-    
-    const apiResponse: ApiResponse<FloorballTeam> = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(
+        apiResponse ?? response,
+        `Failed to create floorball team (HTTP ${response.status})`,
+      );
+      throw new Error(errorMessage);
+    }
+
+    if (!apiResponse) {
+      throw new Error('Failed to create floorball team — empty response body.');
+    }
+
     if (!apiResponse.success) {
       const errorMessage = await parseErrorResponse(apiResponse, 'Failed to create floorball team');
-
       throw new Error(errorMessage || 'Failed to create floorball team');
     }
-    
+
     return apiResponse.data;
   },
 

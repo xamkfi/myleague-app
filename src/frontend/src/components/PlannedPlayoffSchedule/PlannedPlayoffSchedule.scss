@@ -1,0 +1,44 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.planned-playoff-schedule {
+  margin-bottom: map.get($spacing, "md");
+  padding: map.get($spacing, "sm") map.get($spacing, "md");
+  border: 1px dashed $color-neutral-medium-grey;
+  border-radius: map.get($border-radius, "md");
+  background: rgba($color-primary, 0.04);
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, "xs");
+    margin-bottom: map.get($spacing, "sm");
+  }
+
+  &__title {
+    font-weight: 600;
+    color: $color-primary;
+  }
+
+  &__hint {
+    font-size: map.get($font-sizes, "xs");
+    color: $color-neutral-dark-grey;
+  }
+
+  &__rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__badge {
+    display: inline-block;
+    padding: 2px map.get($spacing, "xs");
+    border-radius: map.get($border-radius, "sm");
+    background: $color-primary;
+    color: $color-neutral-white;
+    font-size: map.get($font-sizes, "xs");
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}

@@ -45,7 +45,8 @@
     }
   }
 
-  .manage-matches-button {
+  .manage-matches-button,
+  .import-tournament-button {
     padding: map.get($spacing, 'sm') map.get($spacing, 'md');
     background-color: $color-white;
     color: $color-blue-light;
@@ -67,6 +68,10 @@
       transform: translateY(0);
     }
   }
+
+  .import-tournament-button i {
+    margin-right: map.get($spacing, 'xs');
+  }
 }
 
 @media (max-width: map.get($breakpoints, 'tablet')) {
@@ -76,7 +81,8 @@
     align-items: stretch;
 
     .create-tournament-button,
-    .manage-matches-button {
+    .manage-matches-button,
+    .import-tournament-button {
       text-align: center;
     }
   }

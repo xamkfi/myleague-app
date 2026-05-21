@@ -37,8 +37,8 @@ namespace Application.Features.Common.Persons.Validators
                     .When(x => !string.IsNullOrEmpty(x.address.PostalCode));
 
                 RuleFor(x => x.address.Country)
-                    .NotEmpty().WithMessage("Country is required")
-                    .MaximumLength(100).WithMessage("Country cannot exceed 100 characters");
+                    .MaximumLength(100).WithMessage("Country cannot exceed 100 characters")
+                    .When(x => !string.IsNullOrEmpty(x.address.Country));
 
                 RuleFor(x => x.address.Street2)
                     .MaximumLength(200).WithMessage("Street address 2 cannot exceed 200 characters")

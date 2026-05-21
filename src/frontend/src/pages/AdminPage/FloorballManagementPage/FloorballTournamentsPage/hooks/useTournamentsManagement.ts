@@ -35,16 +35,26 @@ export const useTournamentsManagement = () => {
     return msg || t('floorball.tournaments.errors.operationFailed', 'Operation failed. Please try again.');
   }, [t]);
 
-  const loadTournaments = useCallback(async () => {
+  // `silent: true` keeps the page-level loading state untouched so the parent doesn't swap
+  // its content for <LoadingState />. That matters when a modal (e.g. TournamentImportModal)
+  // is open during the refresh — flipping `loading` would unmount the whole modal mid-import
+  // and the user would lose the progress log. Background refreshes after imports / lifecycle
+  // actions should always use silent mode.
+  const loadTournaments = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       setError(null);
       const result = await floorballTournamentService.getAll();
       setTournaments(result.data ?? []);
     } catch (err) {
       setError(parseApiError(err));
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [parseApiError]);
 

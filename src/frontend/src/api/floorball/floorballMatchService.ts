@@ -292,6 +292,35 @@ export const floorballMatchService = {
   },
 
   /**
+   * Permanently delete a floorball match. Only allowed for matches still in the
+   * Scheduled state (server enforces this). Used by the tournament JSON import
+   * revert flow to remove freshly created matches.
+   */
+  delete: async (id: string): Promise<ApiResponse<void>> => {
+    try {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${id}`, {
+        method: 'DELETE',
+      });
+
+      const apiResponse: ApiResponse<void> = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete floorball match');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete floorball match');
+      }
+
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.delete:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Start a floorball match
    */
   start: async (id: string): Promise<ApiResponse<FloorballMatchDto>> => {

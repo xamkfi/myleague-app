@@ -18,6 +18,14 @@ export interface MatchRowProps {
   statusComponent?: React.ReactNode;
   onClick?: () => void;
   className?: string;
+  /**
+   * Marks the row as a non-clickable placeholder (e.g. a pre-defined playoff slot whose
+   * real match hasn't been generated yet). Disables navigation, mutes the row visually
+   * and surfaces an explanatory tooltip when supplied.
+   */
+  isPlaceholder?: boolean;
+  /** Tooltip text shown on hover when `isPlaceholder` is true. */
+  placeholderTooltip?: string;
 }
 
 export default function MatchRow({
@@ -32,7 +40,9 @@ export default function MatchRow({
   periodCount = 3,
   periodScores,
   statusComponent,
-  className = ''
+  className = '',
+  isPlaceholder = false,
+  placeholderTooltip
 }: MatchRowProps) {
   const [formattedDate, formattedTime] = formatMatchDateTime(scheduledDateTime);
   const computedPeriodCount = periodScores ? Math.max(...Object.keys(periodScores).map(k => Number(k))) : periodCount;
@@ -43,13 +53,18 @@ export default function MatchRow({
   const awayWon = awayScore > homeScore;
 
   const handleClick = () => {
+    if (isPlaceholder) {
+      return;
+    }
     navigate(`/match/${id}`);
   };
 
   return (
     <div
-      className={`match-row ${className}`}
+      className={`match-row ${isPlaceholder ? 'match-row--placeholder' : ''} ${className}`.trim()}
       onClick={handleClick}
+      title={isPlaceholder ? placeholderTooltip : undefined}
+      aria-disabled={isPlaceholder || undefined}
     >
       {/* Date */}
       <div className="match-row-date">
