@@ -1047,9 +1047,13 @@ namespace WebAPI.Controllers.Floorball
                 return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse("Request body is required."));
             }
 
+            string? sanitizedGoalieIdForLog = request.GoalieId?.ToString()
+                .Replace("\r", string.Empty, StringComparison.Ordinal)
+                .Replace("\n", string.Empty, StringComparison.Ordinal);
+
             _logger.LogInformation(
                 "Updating active roster for match {matchId}, team {teamId} ({playerCount} players, goalie={goalieId})",
-                matchId, teamId, request.Players?.Count ?? 0, request.GoalieId);
+                matchId, teamId, request.Players?.Count ?? 0, sanitizedGoalieIdForLog);
 
             SetMatchActiveRosterCommand command = new SetMatchActiveRosterCommand
             {
