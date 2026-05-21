@@ -16,6 +16,56 @@ export interface ContactInfo {
   alternativePhone: string | null;
 }
 
+/** Fully-populated address block used by admin PersonForm local state (every field present). */
+export interface PersonFormAddress {
+  street1: string;
+  street2: string | null;
+  city: string;
+  postalCode: string;
+  country: string;
+}
+
+/** Fully-populated contact block used by admin PersonForm local state (every field present). */
+export interface PersonFormContactInfo {
+  email: string;
+  phone: string;
+  alternativePhone: string | null;
+}
+
+export const EMPTY_PERSON_FORM_ADDRESS: PersonFormAddress = {
+  street1: '',
+  street2: null,
+  city: '',
+  postalCode: '',
+  country: '',
+};
+
+export const EMPTY_PERSON_FORM_CONTACT_INFO: PersonFormContactInfo = {
+  email: '',
+  phone: '',
+  alternativePhone: null,
+};
+
+/** Normalises a partial API address into the shape the admin PersonForm expects. */
+export function toPersonFormAddress(partial?: Partial<Address> | null): PersonFormAddress {
+  return {
+    street1: partial?.street1 ?? '',
+    street2: partial?.street2 ?? null,
+    city: partial?.city ?? '',
+    postalCode: partial?.postalCode ?? '',
+    country: partial?.country ?? '',
+  };
+}
+
+/** Normalises a partial API contact block into the shape the admin PersonForm expects. */
+export function toPersonFormContactInfo(partial?: Partial<ContactInfo> | null): PersonFormContactInfo {
+  return {
+    email: partial?.email ?? '',
+    phone: partial?.phone ?? '',
+    alternativePhone: partial?.alternativePhone ?? null,
+  };
+}
+
 export enum PersonRole {
   User = 'User',
   Admin = 'Admin',
@@ -47,8 +97,12 @@ export interface PersonFormData {
   contactInfo?: ContactInfo;
 }
 
-// Enhanced interface for person creation with optional team assignment
-export interface EnhancedPersonFormData extends PersonFormData {
+// Enhanced interface for person creation with optional team assignment.
+// Address/contactInfo are required here because the admin form always renders those sections;
+// PersonFormData keeps them optional for API payloads (e.g. tournament import).
+export interface EnhancedPersonFormData extends Omit<PersonFormData, 'address' | 'contactInfo'> {
+  address: PersonFormAddress;
+  contactInfo: PersonFormContactInfo;
   teamId?: string;
   position?: string; // Will use FloorballPosition enum values
   jerseyNumber?: number;
