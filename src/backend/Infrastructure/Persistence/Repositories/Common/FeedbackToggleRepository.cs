@@ -33,7 +33,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
 
         public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
         {
-            return await _entities.AnyAsync(ft => ft.Id == id,, cancellationToken);
+            return await _entities.AnyAsync(ft => ft.Id == id, cancellationToken);
         }
 
         public async Task SaveAsync(FeedbackToggle toggle, CancellationToken cancellationToken)
@@ -54,13 +54,27 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 }
                 else
                 {
-                    await _entities.AddAsync(toggle);
-                    _logger.LogDebug("Added the toggle to the database");
+                    await _entities.AddAsync(toggle, cancellationToken);
+                    _logger.LogDebug("Added the toggle to the database with ID: {id}", toggle.Id);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while saving the toggle state");
+            }
+        }
+
+        public async Task<FeedbackToggle> GetToggleAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                FeedbackToggle? toggle = await _entities.FirstOrDefaultAsync(cancellationToken);
+                if(toggle == null)
+                {
+                    //figure out what to do here
+                }
             }
         }
     }
