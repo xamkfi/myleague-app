@@ -15,6 +15,13 @@ interface MatchTableProps {
   onStartMatch: (match: FloorballMatchDto) => void;
   onCancelMatch: (match: FloorballMatchDto) => void;
   onReactivateMatch: (match: FloorballMatchDto) => void;
+  /**
+   * When true, hides the Actions column entirely. Used by callers (e.g. the tournament
+   * edit page) where the only meaningful action is "open the match", which the whole
+   * row already triggers via {@link onLiveMatch}. Defaults to false so the global match
+   * management page keeps its existing dropdown menu.
+   */
+  hideActions?: boolean;
 }
 
 const MatchTable = ({
@@ -26,6 +33,7 @@ const MatchTable = ({
   onStartMatch,
   onCancelMatch,
   onReactivateMatch,
+  hideActions = false,
 }: MatchTableProps) => {
   const { t } = useTranslation();
 
@@ -151,7 +159,9 @@ const MatchTable = ({
             <th>{t('floorball.matches.columns.venue', 'Venue')}</th>
             <th>{t('floorball.matches.columns.score', 'Score')}</th>
             <th>{t('floorball.matches.columns.status', 'Status')}</th>
-            <th className="admin-table__actions-col">{t('common.actions', 'Actions')}</th>
+            {!hideActions && (
+              <th className="admin-table__actions-col">{t('common.actions', 'Actions')}</th>
+            )}
           </tr>
         </thead>
 
@@ -205,15 +215,17 @@ const MatchTable = ({
                 })()}
               </td>
 
-              <td
-                className="admin-table__actions-col"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <ActionsDropdown
-                  actions={getActions(match)}
-                  ariaLabel={t('floorball.matches.actions.menu', 'Match actions menu')}
-                />
-              </td>
+              {!hideActions && (
+                <td
+                  className="admin-table__actions-col"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ActionsDropdown
+                    actions={getActions(match)}
+                    ariaLabel={t('floorball.matches.actions.menu', 'Match actions menu')}
+                  />
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

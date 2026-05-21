@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useCallback, useState, useRef, type ReactElement } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchEventService, type RecordSaveEventRequest } from '../../../../api/floorball/floorballMatchEventService';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
@@ -41,13 +41,18 @@ import './ManageMatchPage.scss';
 interface ManageMatchPageContentProps {
   match: FloorballMatchDto;
   setMatch: (match: FloorballMatchDto) => void;
+  /**
+   * Where the Close button should navigate. Resolved by the parent so the page can return to
+   * the originating tournament edit view (via the `returnTo` query parameter) instead of always
+   * dropping the user on the global match list.
+   */
+  onClose: () => void;
 }
 
 /**
  * Main content component that uses the timer context
  */
-const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps) => {
-  const navigate = useNavigate();
+const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => {
   const timerContext = useMatchTimerContext();
   const lastSaveRef = useRef<Record<string, number>>({});
   
@@ -60,6 +65,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
   
   // UI state
   const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState(false);
+  const [showReopenConfirmation, setShowReopenConfirmation] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<ProcessedEvent | null>(null);
   const [deleteEventLoading, setDeleteEventLoading] = useState(false);
@@ -90,6 +96,9 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
       if (updatedMatch) setMatch(updatedMatch);
     },
     onCompleteLive: (_matchId: string, updatedMatch?: FloorballMatchDto) => {
+      if (updatedMatch) setMatch(updatedMatch);
+    },
+    onReopen: (_matchId: string, updatedMatch?: FloorballMatchDto) => {
       if (updatedMatch) setMatch(updatedMatch);
     },
   });
@@ -537,8 +546,9 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
         currentMatch={matchData.currentMatch}
         isSidesSwapped={isSidesSwapped}
         onToggleSides={() => setIsSidesSwapped(prev => !prev)}
-        onClose={() => navigate('/admin/floorball/matches')}
+        onClose={onClose}
         onCompleteLive={() => setShowEndMatchConfirmation(true)}
+        onReopen={() => setShowReopenConfirmation(true)}
       />
 
       <ErrorPopup message={matchData.error} />
@@ -584,7 +594,14 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
           setShowEndMatchConfirmation(false);
         }}
         onEndMatchCancel={() => setShowEndMatchConfirmation(false)}
-        
+
+        showReopenConfirmation={showReopenConfirmation}
+        onReopenConfirm={async () => {
+          await matchControls.handleReopenMatch();
+          setShowReopenConfirmation(false);
+        }}
+        onReopenCancel={() => setShowReopenConfirmation(false)}
+
         eventToDelete={eventToDelete}
         deleteEventLoading={deleteEventLoading}
         onDeleteEventConfirm={handleDeleteEvent}
@@ -674,6 +691,7 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
             onAddRow={() => setSelectedOfficials(prev => [...prev, ''])}
             onSelect={handleOfficialSelect}
             onRemove={handleOfficialRemove}
+            disabled={matchData.currentMatch.status === 'Completed' || matchData.currentMatch.status === 'Cancelled'}
           />
 
           <GoalRecordingForm
@@ -722,6 +740,10 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
               }
               setEventToDelete(event);
             }}
+            /* Once the match is Completed/Cancelled the backend blocks event deletion */
+            /* (the only legitimate edit path is to reopen the match first), so hide   */
+            /* the per-row delete affordance to match the user's mental model.         */
+            canDelete={matchData.currentMatch.status !== 'Completed' && matchData.currentMatch.status !== 'Cancelled'}
           />
         </div>
       </div>
@@ -732,12 +754,32 @@ const ManageMatchPageContent = ({ match, setMatch }: ManageMatchPageContentProps
 /**
  * Wrapper component that provides the timer context
  */
-const ManageMatchPageWithContext = ({ match, setMatch }: ManageMatchPageContentProps) => {
+const ManageMatchPageWithContext = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => {
   return (
     <MatchTimerProvider initialPeriod={1}>
-      <ManageMatchPageContent match={match} setMatch={setMatch} />
+      <ManageMatchPageContent match={match} setMatch={setMatch} onClose={onClose} />
     </MatchTimerProvider>
   );
+};
+
+/**
+ * Default landing page used when the user opens the match management view directly (no
+ * originating view to return to). Kept as a single source of truth so the Close button and
+ * any future "back" affordances stay in sync.
+ */
+const DEFAULT_RETURN_PATH = '/admin/floorball/matches';
+
+/**
+ * Whitelists the `returnTo` query parameter to internal absolute paths only. This prevents
+ * an open-redirect via a crafted URL and also guards against accidental protocol-relative
+ * paths (e.g. `//evil.example`).
+ */
+const sanitizeReturnTo = (raw: string | null): string => {
+  if (!raw) return DEFAULT_RETURN_PATH;
+  // Reject anything that isn't a same-origin absolute path. Allow `/foo` but not `//foo`,
+  // `http://...`, `javascript:...`, etc.
+  if (!raw.startsWith('/') || raw.startsWith('//')) return DEFAULT_RETURN_PATH;
+  return raw;
 };
 
 /**
@@ -746,10 +788,20 @@ const ManageMatchPageWithContext = ({ match, setMatch }: ManageMatchPageContentP
 const ManageMatchPage = (): ReactElement => {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const [match, setMatch] = useState<FloorballMatchDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const returnTo: string = useMemo(
+    () => sanitizeReturnTo(searchParams.get('returnTo')),
+    [searchParams]
+  );
+
+  const handleClose = useCallback((): void => {
+    navigate(returnTo);
+  }, [navigate, returnTo]);
 
   const handleNavigateToEdit = useCallback((): void => {
     if (matchId) {
@@ -799,6 +851,8 @@ const ManageMatchPage = (): ReactElement => {
     return <div>Match not found.</div>;
   }
 
+  const isMatchFinished = match.status === 'Completed';
+
   return (
     <PageTemplate title="Manage match page">
     <div className="manage-match-page">
@@ -806,20 +860,25 @@ const ManageMatchPage = (): ReactElement => {
           <div className="page-header__top">
             <h1 className="page-title-compact font-title">MATCH MANAGEMENT</h1>
             <div className="page-header__actions">
-              <button
-                type="button"
-                className="edit-match-button"
-                onClick={handleNavigateToEdit}
-                disabled={!matchId}
-                title={t('floorball.matches.actions.edit')}
-              >
-                <span className="edit-match-button__icon" aria-hidden="true">✏️</span>
-                <span className="edit-match-button__label">{t('floorball.matches.actions.edit')}</span>
-              </button>
+              {/* "Edit match details" navigates to a separate form that mutates schedule / teams. */}
+              {/* Hide it once the match is Finished: at that point the only sanctioned recovery */}
+              {/* path is "Open match" in the header, which reverts season aggregates safely.    */}
+              {!isMatchFinished && (
+                <button
+                  type="button"
+                  className="edit-match-button"
+                  onClick={handleNavigateToEdit}
+                  disabled={!matchId}
+                  title={t('floorball.matches.actions.edit')}
+                >
+                  <span className="edit-match-button__icon" aria-hidden="true">✏️</span>
+                  <span className="edit-match-button__label">{t('floorball.matches.actions.edit')}</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
-        <ManageMatchPageWithContext match={match} setMatch={setMatch} />
+        <ManageMatchPageWithContext match={match} setMatch={setMatch} onClose={handleClose} />
     </div>
     </PageTemplate>
   );

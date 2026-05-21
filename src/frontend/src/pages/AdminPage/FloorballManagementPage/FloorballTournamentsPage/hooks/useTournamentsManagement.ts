@@ -10,13 +10,9 @@ export const useTournamentsManagement = () => {
   const [tournaments, setTournaments] = useState<FloorballTournamentDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [operationLoading, setOperationLoading] = useState<string | null>(null);
 
   const [showOngoingOnly, setShowOngoingOnly] = useState(false);
   const [statusFilter, setStatusFilter] = useState<TournamentStatusFilter>('all');
-
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedTournament, setSelectedTournament] = useState<FloorballTournamentDto | null>(null);
 
   const parseApiError = useCallback((err: unknown): string => {
     const msg = err instanceof Error ? err.message : String(err);
@@ -58,46 +54,6 @@ export const useTournamentsManagement = () => {
     }
   }, [parseApiError]);
 
-  const handleDeleteTournament = async () => {
-    if (!selectedTournament) return;
-    try {
-      setOperationLoading(selectedTournament.id);
-      await floorballTournamentService.delete(selectedTournament.id);
-      setShowDeleteModal(false);
-      setSelectedTournament(null);
-      await loadTournaments();
-    } catch (err) {
-      setError(parseApiError(err));
-    } finally {
-      setOperationLoading(null);
-    }
-  };
-
-  type LifecycleAction = 'startGroupStage' | 'startPlayoffStage' | 'complete' | 'cancel';
-
-  const handleLifecycleAction = async (tournament: FloorballTournamentDto, action: LifecycleAction) => {
-    try {
-      setOperationLoading(tournament.id);
-      setError(null);
-      await floorballTournamentService[action](tournament.id);
-      await loadTournaments();
-    } catch (err) {
-      setError(parseApiError(err));
-    } finally {
-      setOperationLoading(null);
-    }
-  };
-
-  const openDeleteModal = (tournament: FloorballTournamentDto) => {
-    setSelectedTournament(tournament);
-    setShowDeleteModal(true);
-  };
-
-  const closeModals = () => {
-    setShowDeleteModal(false);
-    setSelectedTournament(null);
-  };
-
   const filteredTournaments = tournaments.filter((tournament) => {
     if (showOngoingOnly) {
       const status = tournament.tournamentStatus;
@@ -122,18 +78,11 @@ export const useTournamentsManagement = () => {
     allTournamentsCount: tournaments.length,
     loading,
     error,
-    operationLoading,
-    selectedTournament,
     showOngoingOnly,
     statusFilter,
     uniqueStatuses,
-    showDeleteModal,
     setShowOngoingOnly,
     setStatusFilter,
-    handleDeleteTournament,
-    handleLifecycleAction,
-    openDeleteModal,
-    closeModals,
     loadTournaments,
   };
 };

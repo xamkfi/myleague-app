@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Configuration;
 using Application.Features.Auth.Commands;
 using Application.Features.Auth.DTOs;
 using Application.Features.Common.Users.DTOs;
@@ -6,6 +7,7 @@ using Application.Features.Common.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using WebAPI.Models.Auth;
 using WebAPI.Models.Common;
 
@@ -21,19 +23,22 @@ public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<AuthController> _logger;
-    private readonly IWebHostEnvironment _environment;
+    private readonly LoginCodeConfiguration _loginCodeConfig;
 
     /// <summary>
     /// Initializes a new instance of the AuthController class
     /// </summary>
     /// <param name="mediator">The mediator</param>
     /// <param name="logger">The logger</param>
-    /// <param name="environment">The web host environment</param>
-    public AuthController(IMediator mediator, ILogger<AuthController> logger, IWebHostEnvironment environment)
+    /// <param name="loginCodeConfig">The login code configuration (controls auto-fill behavior)</param>
+    public AuthController(
+        IMediator mediator,
+        ILogger<AuthController> logger,
+        IOptions<LoginCodeConfiguration> loginCodeConfig)
     {
         _mediator = mediator;
         _logger = logger;
-        _environment = environment;
+        _loginCodeConfig = loginCodeConfig.Value;
     }
 
     /// <summary>
@@ -53,11 +58,17 @@ public class AuthController : ControllerBase
 
         if (result.IsSuccess)
         {
-            // In development, include the code in the response for auto-fill convenience
-            if (_environment.IsDevelopment() && result.Data != null)
+            // When the auto-fill flag is enabled, include the generated code in the response so the
+            // login page can pre-fill it. This is controlled by LoginCode:AutoFillLoginCode (env:
+            // LoginCode__AutoFillLoginCode) and must remain false in public production environments.
+            if (_loginCodeConfig.AutoFillLoginCode && result.Data != null)
             {
+                _logger.LogWarning(
+                    "AutoFillLoginCode is enabled - returning login code to client for {Email}. Disable this in production.",
+                    request.Email);
+
                 return Ok(ApiResponse<object>.SuccessResponse(
-                    new { devCode = result.Data },
+                    new { autoFillCode = result.Data },
                     "If an account exists with this email, a login code has been sent."));
             }
 

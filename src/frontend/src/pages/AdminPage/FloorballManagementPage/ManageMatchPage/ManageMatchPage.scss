@@ -3,6 +3,14 @@
 
 .admin-page-body {
   padding-top: 0.5rem;
+
+  // The admin shell defaults to `overflow: hidden`, which clips the rich match-management
+  // content on shorter viewports (e.g. laptop screens) so users cannot reach the lineup
+  // selector or events history below the fold. Allow vertical scrolling specifically when
+  // the manage match page is rendered.
+  &:has(.manage-match-page) {
+    overflow-y: auto;
+  }
 }
 
 .manage-match-page {

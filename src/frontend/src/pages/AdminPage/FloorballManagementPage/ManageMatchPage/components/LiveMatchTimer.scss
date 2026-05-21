@@ -3,11 +3,15 @@
 
 .clock-card {
   box-sizing: border-box;
-  width: 622px;
-  height: 200px;
+  // Was a fixed 622px which broke alignment with the right-hand scoreboard / events column
+  // when the page was rendered inside a flex parent that already split the width 50/50.
+  // Filling the parent here ensures both columns produce visually identical card widths.
+  width: 100%;
+  min-height: 200px;
   padding: 24px;
   border-radius: 8px;
   border: 1px solid $color-neutral-medium-grey;
+  background: $color-white;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -15,8 +19,8 @@
 }
 
 .clock-inner {
-  width: 574px;
-  height: 170px; /* increased to ensure controls sit inside the box */
+  width: 100%;
+  min-height: 170px; /* keep enough room for the timer controls */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -25,7 +29,6 @@
 
 .period-row {
   width: 100%;
-  max-width: 574px;
   height: 16px;
   display: flex;
   align-items: center;

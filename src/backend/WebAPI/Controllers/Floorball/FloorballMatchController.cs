@@ -353,6 +353,39 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Reopens a previously completed floorball match back to InProgress so the operator can
+        /// correct mistakes or continue recording events. Per-match aggregates that were applied
+        /// at completion time (team / player / goalie season stats) are reverted in the handler.
+        /// Playoff matches are rejected because bracket propagation rollback is not supported.
+        /// </summary>
+        [HttpPut("reopen-match/{id:guid}")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ReopenMatch(Guid id)
+        {
+            _logger.LogInformation("Reopening floorball match with ID: {id}", id);
+
+            ReopenFloorballMatchCommand command = new ReopenFloorballMatchCommand(id);
+
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Reopened floorball match successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to reopen floorball match";
+
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Updates an existing floorball match
         /// </summary>
         /// <param name="request">Update match request</param>

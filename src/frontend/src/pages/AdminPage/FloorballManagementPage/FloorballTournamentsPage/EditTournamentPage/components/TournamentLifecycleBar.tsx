@@ -16,6 +16,14 @@ export type LifecycleAction =
   | 'complete'
   | 'cancel';
 
+/**
+ * Destructive non-lifecycle actions surfaced from the "Lisätoiminnot" menu. Kept
+ * separate from {@link LifecycleAction} because deleting hits a different API
+ * (`floorballTournamentService.delete`) and must navigate the user away from
+ * the edit page instead of refreshing it in place.
+ */
+export type LifecycleMoreAction = 'delete';
+
 interface TournamentLifecycleBarProps {
   tournament: FloorballTournamentDto;
   matches: ReadonlyArray<FloorballMatchDto>;
@@ -23,6 +31,12 @@ interface TournamentLifecycleBarProps {
   matchesError: string | null;
   loading: boolean;
   onAction: (action: LifecycleAction) => Promise<void>;
+  /**
+   * Optional handler for non-lifecycle actions in the "Lisätoiminnot" menu (currently just
+   * delete). Omit when delete is not appropriate (e.g. on pages where the parent has no way
+   * to navigate away after the tournament disappears).
+   */
+  onMoreAction?: (action: LifecycleMoreAction) => Promise<void>;
 }
 
 interface ActionEligibility {
@@ -120,9 +134,14 @@ export const TournamentLifecycleBar = ({
   matchesError,
   loading,
   onAction,
+  onMoreAction,
 }: TournamentLifecycleBarProps): ReactElement => {
   const { t } = useTranslation();
   const [activeAction, setActiveAction] = useState<LifecycleAction | null>(null);
+  // Tracks an active non-lifecycle confirmation (currently only "delete"). Kept separate from
+  // `activeAction` so the existing lifecycle confirm modal can stay focused on the four
+  // status-transition actions without growing extra branches.
+  const [activeMoreAction, setActiveMoreAction] = useState<LifecycleMoreAction | null>(null);
   const [moreOpen, setMoreOpen] = useState<boolean>(false);
   const moreRef = useRef<HTMLDivElement | null>(null);
 
@@ -551,12 +570,12 @@ export const TournamentLifecycleBar = ({
         </p>
       </div>
 
-      {!isTerminalStatus && (
+      {(!isTerminalStatus || onMoreAction) && (
         <div className="tlb-actions-row">
           <div className="tlb-actions-primary">{renderPrimaryButton()}</div>
 
           <div className="tlb-actions-secondary" ref={moreRef}>
-            {cancelEligibility.visible && (
+            {(cancelEligibility.visible || onMoreAction) && (
               <>
                 <button
                   type="button"
@@ -583,24 +602,49 @@ export const TournamentLifecycleBar = ({
                 </button>
                 {moreOpen && (
                   <div className="tlb-more-menu" role="menu">
-                    <button
-                      type="button"
-                      className="tlb-more-item tlb-more-item--danger"
-                      onClick={(): void => {
-                        setMoreOpen(false);
-                        setActiveAction('cancel');
-                      }}
-                      title={cancelEligibility.tooltip}
-                      role="menuitem"
-                    >
-                      <i className="fas fa-ban" aria-hidden="true"></i>
-                      <span>
-                        {t(
-                          'floorball.tournaments.lifecycle.cancel',
-                          'Peru turnaus'
+                    {cancelEligibility.visible && (
+                      <button
+                        type="button"
+                        className="tlb-more-item tlb-more-item--danger"
+                        onClick={(): void => {
+                          setMoreOpen(false);
+                          setActiveAction('cancel');
+                        }}
+                        title={cancelEligibility.tooltip}
+                        role="menuitem"
+                      >
+                        <i className="fas fa-ban" aria-hidden="true"></i>
+                        <span>
+                          {t(
+                            'floorball.tournaments.lifecycle.cancel',
+                            'Peru turnaus'
+                          )}
+                        </span>
+                      </button>
+                    )}
+                    {onMoreAction && (
+                      <button
+                        type="button"
+                        className="tlb-more-item tlb-more-item--danger"
+                        onClick={(): void => {
+                          setMoreOpen(false);
+                          setActiveMoreAction('delete');
+                        }}
+                        title={t(
+                          'floorball.tournaments.lifecycle.tooltip.delete',
+                          'Poistaa turnauksen pysyvästi. Toimintoa ei voi peruuttaa.'
                         )}
-                      </span>
-                    </button>
+                        role="menuitem"
+                      >
+                        <i className="fas fa-trash" aria-hidden="true"></i>
+                        <span>
+                          {t(
+                            'floorball.tournaments.lifecycle.delete',
+                            'Poista turnaus'
+                          )}
+                        </span>
+                      </button>
+                    )}
                   </div>
                 )}
               </>
@@ -631,6 +675,37 @@ export const TournamentLifecycleBar = ({
           loading={loading}
           onConfirm={handleConfirm}
           onCancel={(): void => setActiveAction(null)}
+        />
+      )}
+
+      {activeMoreAction === 'delete' && onMoreAction && (
+        <TournamentLifecycleConfirmModal
+          isOpen={true}
+          variant="destructive"
+          title={t(
+            'floorball.tournaments.lifecycle.confirm.delete.title',
+            'Poista turnaus'
+          )}
+          description={t(
+            'floorball.tournaments.lifecycle.confirm.delete.description',
+            'Poistaa turnauksen "{{name}}" pysyvästi. Kaikki turnauksen lohkot, joukkueliitokset ja ottelut poistetaan eikä toimintoa voi peruuttaa.',
+            { name: tournament.name }
+          )}
+          prerequisites={[]}
+          confirmLabel={t(
+            'floorball.tournaments.lifecycle.confirm.delete.confirm',
+            'Kyllä, poista turnaus'
+          )}
+          destructiveAcknowledgeLabel={t(
+            'floorball.tournaments.lifecycle.confirm.delete.acknowledge',
+            'Ymmärrän, että turnauksen poistaminen on lopullinen toiminto.'
+          )}
+          loading={loading}
+          onConfirm={async (): Promise<void> => {
+            await onMoreAction('delete');
+            setActiveMoreAction(null);
+          }}
+          onCancel={(): void => setActiveMoreAction(null)}
         />
       )}
     </div>
