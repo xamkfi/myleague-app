@@ -23,6 +23,13 @@ interface TournamentBracketProps {
    *  - 'admin': navigate to the admin match management view (`/admin/floorball/matches/manage/{id}`).
    */
   linkMode?: 'public' | 'admin';
+  /**
+   * Optional return path appended as a `returnTo` query parameter when `linkMode='admin'`.
+   * The manage-match view honours this when the user clicks Close, so opening a match from
+   * the tournament bracket sends them back to the bracket tab instead of the global match
+   * list. Ignored in `'public'` mode.
+   */
+  adminReturnTo?: string;
 }
 
 const ROUND_DISPLAY_ORDER: FloorballPlayoffRoundKey[] = [
@@ -176,7 +183,7 @@ function MatchCard({
   );
 }
 
-export default function TournamentBracket({ bracket, compact = false, linkMode = 'public' }: TournamentBracketProps): ReactElement {
+export default function TournamentBracket({ bracket, compact = false, linkMode = 'public', adminReturnTo }: TournamentBracketProps): ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -191,10 +198,15 @@ export default function TournamentBracket({ bracket, compact = false, linkMode =
   }, [bracket.rounds]);
 
   const handleSelectMatch = (matchId: string): void => {
-    const target = linkMode === 'admin'
-      ? `/admin/floorball/matches/manage/${matchId}`
-      : `/match/${matchId}`;
-    navigate(target);
+    if (linkMode === 'admin') {
+      const base: string = `/admin/floorball/matches/manage/${matchId}`;
+      const target: string = adminReturnTo
+        ? `${base}?returnTo=${encodeURIComponent(adminReturnTo)}`
+        : base;
+      navigate(target);
+      return;
+    }
+    navigate(`/match/${matchId}`);
   };
 
   const tbdLabel = t('tournaments.playoffs.tbd', 'TBD');

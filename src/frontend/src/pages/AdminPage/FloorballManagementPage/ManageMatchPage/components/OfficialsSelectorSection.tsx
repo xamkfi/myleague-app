@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import './OfficialsSelectorSection.scss';
 
 export interface OfficialOption {
@@ -13,6 +14,12 @@ interface OfficialsSelectorSectionProps {
   onAddRow: () => void;
   onSelect: (index: number, refereeId: string) => void;
   onRemove: (index: number, refereeId: string) => void;
+  /**
+   * When true, the entire section becomes read-only: the Add referee action is hidden,
+   * and existing rows cannot be changed or removed. Used to lock officials editing after
+   * the match has been Completed — the operator must reopen the match first.
+   */
+  disabled?: boolean;
 }
 
 const OfficialsSelectorSection = ({
@@ -21,50 +28,86 @@ const OfficialsSelectorSection = ({
   saving,
   onAddRow,
   onSelect,
-  onRemove
+  onRemove,
+  disabled = false,
 }: OfficialsSelectorSectionProps) => {
+  const { t } = useTranslation();
   const handleChange = (index: number, event: ChangeEvent<HTMLSelectElement>) => {
     onSelect(index, event.target.value);
   };
 
+  const isLocked: boolean = disabled || saving;
+
   return (
-    <div className="officials-selector-section">
-      <div className="officials-title-row">
-        <div className="officials-title">MATCH OFFICIALS</div>
-        <button type="button" className="officials-add-btn" onClick={onAddRow} disabled={saving}>
-          + Add referee
-        </button>
+    <section
+      className="officials-selector-section"
+      aria-label={t('floorball.matches.manage.matchOfficials', 'Match officials')}
+    >
+      <div className="officials-selector-section__header">
+        <h3 className="officials-selector-section__title">
+          {t('floorball.matches.manage.matchOfficials', 'MATCH OFFICIALS')}
+        </h3>
+        {/* Hide the Add affordance entirely when the section is locked (Completed match): */}
+        {/* keeping a greyed-out button there would just invite frustrated clicks.        */}
+        {!disabled && (
+          <button
+            type="button"
+            className="officials-selector-section__add"
+            onClick={onAddRow}
+            disabled={saving}
+          >
+            <i className="fas fa-plus" aria-hidden="true"></i>
+            {t('floorball.matches.manage.addReferee', 'Add referee')}
+          </button>
+        )}
       </div>
-      <div className="officials-rows">
-        {selectedOfficials.map((refId, idx) => (
-          <div className="officials-row" key={`${idx}-${refId || 'empty'}`}>
-            <select
-              value={refId}
-              onChange={(e) => handleChange(idx, e)}
-              disabled={saving}
-            >
-              <option value="">{saving ? 'Saving...' : 'SELECT REFEREE'}</option>
-              {options.map(option => (
-                <option key={option.id} value={option.id} disabled={selectedOfficials.includes(option.id) && option.id !== refId}>
-                  {option.name}
+
+      {selectedOfficials.length === 0 ? (
+        <div className="officials-selector-section__empty">
+          {t('floorball.matches.manage.noOfficials', 'No officials assigned.')}
+        </div>
+      ) : (
+        <div className="officials-selector-section__rows">
+          {selectedOfficials.map((refId, idx) => (
+            <div className="officials-selector-section__row" key={`${idx}-${refId || 'empty'}`}>
+              <select
+                value={refId}
+                onChange={(e) => handleChange(idx, e)}
+                disabled={isLocked}
+              >
+                <option value="">
+                  {saving
+                    ? t('floorball.matches.manage.saving', 'Saving...')
+                    : t('floorball.matches.manage.selectReferee', 'SELECT REFEREE')}
                 </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              className="officials-remove-btn"
-              onClick={() => onRemove(idx, refId)}
-              disabled={saving || !refId}
-              aria-label="Remove referee"
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
+                {options.map(option => (
+                  <option
+                    key={option.id}
+                    value={option.id}
+                    disabled={selectedOfficials.includes(option.id) && option.id !== refId}
+                  >
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+              {/* Match the lineup card: only show the destructive action when editing is allowed. */}
+              {!disabled && (
+                <button
+                  type="button"
+                  className="officials-selector-section__remove"
+                  onClick={() => onRemove(idx, refId)}
+                  disabled={isLocked || !refId}
+                  aria-label={t('floorball.matches.manage.removeReferee', 'Remove referee')}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 };
 
 export default OfficialsSelectorSection;
-

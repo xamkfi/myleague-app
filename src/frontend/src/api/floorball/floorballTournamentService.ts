@@ -3,6 +3,7 @@ import type {
   FloorballTournamentDto,
   CreateFloorballTournamentRequest,
   FloorballPlayoffBracketDto,
+  PlayoffScheduleSlotRequest,
 } from '../../types/floorball/tournamentTypes';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
@@ -215,6 +216,39 @@ export const floorballTournamentService = {
       return apiResponse;
     } catch (error) {
       console.error('Error in floorballTournamentService.getPlayoffBracket:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Replaces the tournament's pre-defined playoff schedule slots in one request. Pass an empty
+   * array to clear the schedule. The backend rejects edits once the playoff stage has started.
+   */
+  updatePlayoffSchedule: async (
+    id: string,
+    slots: PlayoffScheduleSlotRequest[]
+  ): Promise<ApiResponse<FloorballTournamentDto>> => {
+    try {
+      const response = await authFetch(`${API_URL}/FloorballTournament/${id}/playoff-schedule`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slots }),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to update playoff schedule');
+        throw new Error(errorMessage);
+      }
+
+      const apiResponse: ApiResponse<FloorballTournamentDto> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to update playoff schedule'));
+      }
+
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballTournamentService.updatePlayoffSchedule:', error);
       throw error;
     }
   },

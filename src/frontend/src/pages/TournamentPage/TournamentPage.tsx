@@ -85,12 +85,17 @@ function TournamentPage() {
   };
 
   const [activeTab, setActiveTab] = useState<TabType>(getInitialTab);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(
+    () => searchParams.get('group')
+  );
 
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam && VALID_TABS.includes(tabParam as TabType)) {
       setActiveTab(tabParam as TabType);
     }
+    const groupParam = searchParams.get('group');
+    setSelectedGroupId(groupParam);
   }, [searchParams]);
 
   const [tournament, setTournament] = useState<FloorballTournamentDto | null>(null);
@@ -113,8 +118,17 @@ function TournamentPage() {
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    setSearchParams({ tab });
+    const next: Record<string, string> = { tab };
+    if (tab === 'groups' && selectedGroupId) {
+      next.group = selectedGroupId;
+    }
+    setSearchParams(next);
     setCurrentPage(1);
+  };
+
+  const handleGroupChange = (groupId: string) => {
+    setSelectedGroupId(groupId);
+    setSearchParams({ tab: 'groups', group: groupId });
   };
 
   // Fetch tournament details
@@ -267,6 +281,26 @@ function TournamentPage() {
     return tournament.groups.slice().sort((a, b) => a.order - b.order);
   }, [tournament]);
 
+  const activeGroup = useMemo<FloorballTournamentGroupDto | null>(() => {
+    if (sortedGroups.length === 0) return null;
+    if (selectedGroupId) {
+      const match = sortedGroups.find((g) => g.id === selectedGroupId);
+      if (match) return match;
+    }
+    return sortedGroups[0];
+  }, [sortedGroups, selectedGroupId]);
+
+  useEffect(() => {
+    if (activeTab !== 'groups') return;
+    if (sortedGroups.length === 0) return;
+    const exists = selectedGroupId && sortedGroups.some((g) => g.id === selectedGroupId);
+    if (!exists) {
+      const fallbackId = sortedGroups[0].id;
+      setSelectedGroupId(fallbackId);
+      setSearchParams({ tab: 'groups', group: fallbackId });
+    }
+  }, [activeTab, sortedGroups, selectedGroupId, setSearchParams]);
+
   const tabs: { key: TabType; label: string }[] = [
     { key: 'summary', label: t('leaguePage.tabs.summary', 'Yhteenveto') },
     { key: 'groups', label: t('tournaments.tabs.groups', 'Lohkot') },
@@ -375,16 +409,35 @@ function TournamentPage() {
     const teamsAdvancingPerGroup = tournament.tournamentRules?.hasPlayoffStage
       ? tournament.tournamentRules?.teamsAdvancingPerGroup ?? 0
       : 0;
+    const currentGroup = activeGroup ?? sortedGroups[0];
     return (
       <div className="tournament-page__content">
-        {sortedGroups.map((group) => (
-          <GroupSection
-            key={group.id}
-            competitionId={id}
-            group={group}
-            teamsAdvancingPerGroup={teamsAdvancingPerGroup}
-          />
-        ))}
+        {sortedGroups.length > 1 && (
+          <nav
+            className="tournament-page__subtabs"
+            aria-label={t('tournaments.groupTabsAria', 'Lohkovalinta')}
+          >
+            {sortedGroups.map((group) => (
+              <button
+                key={group.id}
+                type="button"
+                className={`tournament-page__subtab ${
+                  currentGroup.id === group.id ? 'tournament-page__subtab--active' : ''
+                }`}
+                onClick={() => handleGroupChange(group.id)}
+                aria-pressed={currentGroup.id === group.id}
+              >
+                {t('tournaments.group', 'Lohko')} {group.name}
+              </button>
+            ))}
+          </nav>
+        )}
+        <GroupSection
+          key={currentGroup.id}
+          competitionId={id}
+          group={currentGroup}
+          teamsAdvancingPerGroup={teamsAdvancingPerGroup}
+        />
       </div>
     );
   };

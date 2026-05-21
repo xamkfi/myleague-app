@@ -702,6 +702,22 @@ public class FloorballMatch : BaseEntity
     }
 
     /// <summary>
+    /// Reopens a previously completed match back into the InProgress state so the operator can
+    /// continue recording events or correct mistakes (e.g. when the match was finished by
+    /// accident). The caller is responsible for reverting any per-match aggregates that were
+    /// applied at completion time (team/player/goalie season statistics, playoff propagation,
+    /// tournament championship) — see <c>ReopenFloorballMatchHandler</c>.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not completed.</exception>
+    public void ReopenFromCompleted()
+    {
+        if (Status != FloorballMatchStatus.Completed)
+            throw new InvalidOperationException($"Can only reopen a completed match. Current status: {Status}.");
+
+        Status = FloorballMatchStatus.InProgress;
+    }
+
+    /// <summary>
     /// Deletes a goal event from the match
     /// </summary>
     /// <param name="goalEventId">The ID of the goal event to delete</param>

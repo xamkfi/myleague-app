@@ -387,6 +387,41 @@ export const floorballMatchService = {
   },
 
   /**
+   * Reopen a previously completed floorball match. Reverts the per-match aggregates that the
+   * backend applied at completion time (team / player / goalie season stats) and moves the
+   * status back to InProgress so the operator can keep editing events or finish the match
+   * again. The backend rejects this for playoff matches.
+   */
+  reopen: async (id: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      console.log('Reopening match with ID:', id);
+
+      const response = await authFetch(`${API_URL}/FloorballMatch/reopen-match/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to reopen floorball match');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to reopen floorball match');
+      }
+
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.reopen:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Change match season
    */
   changeCompetition: async (id: string, competitionId: string): Promise<ApiResponse<FloorballMatchDto>> => {

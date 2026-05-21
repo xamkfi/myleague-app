@@ -194,6 +194,45 @@
     }
   }
 
+  &__subtabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'xs');
+    background: rgba($color-blue-deep, 0.04);
+    border: 1px solid rgba($color-blue-deep, 0.1);
+    border-radius: map.get($border-radius, 'lg');
+  }
+
+  &__subtab {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
+    background: transparent;
+    border: 1px solid transparent;
+    color: $color-blue-deep;
+    border-radius: map.get($border-radius, 'md');
+    cursor: pointer;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: map.get($font-sizes, 'sm');
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: rgba($color-blue-secondary, 0.1);
+    }
+
+    &--active {
+      background: $color-blue-deep;
+      color: $color-white;
+      border-color: $color-blue-deep;
+      font-weight: map.get($font-weights, 'bold');
+      box-shadow: $box-shadow-drop-1;
+
+      &:hover {
+        background: $color-blue-deep;
+        color: $color-white;
+      }
+    }
+  }
+
   &__group-block {
     background: $color-white;
     border-radius: map.get($border-radius, 'lg');

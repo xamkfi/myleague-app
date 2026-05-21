@@ -9,9 +9,11 @@ export const authService = {
   /**
    * Request a login code to be sent to the specified email.
    * Always returns 200 to prevent email enumeration.
-   * In development, the response may include `devCode` for auto-fill convenience.
+   * When the backend `LoginCode:AutoFillLoginCode` flag is enabled, the response includes
+   * `autoFillCode` so the login page can pre-fill the verification input. The flag is intended
+   * for local development / trusted internal environments only.
    */
-  requestLoginCode: async (email: string): Promise<{ message: string; devCode?: string }> => {
+  requestLoginCode: async (email: string): Promise<{ message: string; autoFillCode?: string }> => {
     const response = await fetch(`${BASE_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -26,7 +28,7 @@ export const authService = {
 
     return {
       message: data.message as string,
-      devCode: data.data?.devCode as string | undefined,
+      autoFillCode: data.data?.autoFillCode as string | undefined,
     };
   },
 

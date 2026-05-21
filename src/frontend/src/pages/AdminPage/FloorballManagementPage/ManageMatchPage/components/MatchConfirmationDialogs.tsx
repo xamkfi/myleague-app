@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import ConfirmationDialog from './ConfirmationDialog';
 import type { ProcessedEvent } from './types';
 import { formatMatchEventTime } from '../../../../../utils/matchEventFormat';
@@ -26,7 +27,12 @@ interface MatchConfirmationDialogsProps {
   isShootout: boolean;
   onEndMatchConfirm: () => Promise<void>;
   onEndMatchCancel: () => void;
-  
+
+  // Reopen Match
+  showReopenConfirmation: boolean;
+  onReopenConfirm: () => Promise<void>;
+  onReopenCancel: () => void;
+
   // Delete Event
   eventToDelete: ProcessedEvent | null;
   deleteEventLoading: boolean;
@@ -57,7 +63,11 @@ export const MatchConfirmationDialogs = ({
   isShootout,
   onEndMatchConfirm,
   onEndMatchCancel,
-  
+
+  showReopenConfirmation,
+  onReopenConfirm,
+  onReopenCancel,
+
   eventToDelete,
   deleteEventLoading,
   onDeleteEventConfirm,
@@ -65,6 +75,7 @@ export const MatchConfirmationDialogs = ({
   
   matchLoading,
 }: MatchConfirmationDialogsProps) => {
+  const { t } = useTranslation();
   return (
     <>
       {/* End Period Confirmation */}
@@ -117,6 +128,25 @@ export const MatchConfirmationDialogs = ({
         isLoading={matchLoading}
         onConfirm={onEndMatchConfirm}
         onCancel={onEndMatchCancel}
+      />
+
+      {/* Reopen Match Confirmation */}
+      <ConfirmationDialog
+        isOpen={showReopenConfirmation}
+        icon="🔓"
+        title={t('floorball.matches.manage.confirmReopen.title', 'Reopen match for editing')}
+        message={t(
+          'floorball.matches.manage.confirmReopen.message',
+          'Are you sure you want to reopen this match? It will move back to In progress so you can edit events or continue play (e.g. if the match was finished by accident).'
+        )}
+        warningMessage={t(
+          'floorball.matches.manage.confirmReopen.warning',
+          'Per-match team, player and goalie season aggregates will be reverted. Statistics will be recalculated when you finish the match again.'
+        )}
+        confirmText={t('floorball.matches.manage.confirmReopen.confirm', 'Yes, reopen match')}
+        isLoading={matchLoading}
+        onConfirm={onReopenConfirm}
+        onCancel={onReopenCancel}
       />
 
       {/* Delete Event Confirmation */}

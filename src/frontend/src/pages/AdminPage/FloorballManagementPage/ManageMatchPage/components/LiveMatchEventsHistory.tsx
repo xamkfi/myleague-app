@@ -5,6 +5,12 @@ import './LiveMatchEventsHistory.scss';
 interface LiveMatchEventsHistoryProps {
   allEvents: ProcessedEvent[];
   onDeleteEvent?: (event: ProcessedEvent) => void;
+  /**
+   * When false, the per-row delete affordance is hidden. Used to make the events list
+   * read-only once the match is Completed — at that point the backend rejects deletes
+   * anyway and the only sanctioned way to mutate events is to reopen the match first.
+   */
+  canDelete?: boolean;
 }
 
 // Derive a smart placeholder short name from a full team name
@@ -43,7 +49,8 @@ function getEventTypeLabel(type: ProcessedEvent['type']): { label: string; icon:
 
 const LiveMatchEventsHistory = ({
   allEvents,
-  onDeleteEvent
+  onDeleteEvent,
+  canDelete = true,
 }: LiveMatchEventsHistoryProps) => {
   return (
     <div className="events-history">
@@ -95,14 +102,16 @@ const LiveMatchEventsHistory = ({
                   ) : null}
                 </div>
 
-                <button
-                  className="event-delete"
-                  title="Delete event"
-                  onClick={() => onDeleteEvent && onDeleteEvent(event)}
-                  aria-label="Delete event"
-                >
-                  ×
-                </button>
+                {canDelete && (
+                  <button
+                    className="event-delete"
+                    title="Delete event"
+                    onClick={() => onDeleteEvent && onDeleteEvent(event)}
+                    aria-label="Delete event"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             );
           })}

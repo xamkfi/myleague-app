@@ -308,6 +308,57 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Replaces the tournament's pre-defined playoff schedule slots. Authoritative — slots
+        /// not present in the request are removed. Send an empty list to clear the schedule.
+        /// Rejected with 400 once the playoff stage has started (the domain entity owns the
+        /// lifecycle rule; see <c>FloorballTournament.SetPlayoffSchedule</c>).
+        /// </summary>
+        /// <param name="competitionId">Tournament ID</param>
+        /// <param name="request">Full replacement slot list</param>
+        /// <returns>Updated tournament with the new schedule reflected in its DTO</returns>
+        [HttpPut("{competitionId:guid}/playoff-schedule")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballTournamentDto>>> UpdatePlayoffSchedule(
+            Guid competitionId,
+            [FromBody] UpdatePlayoffScheduleRequest request)
+        {
+            _logger.LogInformation(
+                "Updating playoff schedule for tournament {competitionId} with {slotCount} slot(s)",
+                competitionId,
+                request?.Slots?.Count ?? 0);
+
+            // Reuse the existing PlayoffScheduleSlotRequest → PlayoffScheduleSlotInput mapping
+            // so the JSON shape stays consistent across create/update/schedule endpoints.
+            IReadOnlyList<PlayoffScheduleSlotInput> slots =
+                MapPlayoffSchedule(request?.Slots) ?? Array.Empty<PlayoffScheduleSlotInput>();
+
+            UpdateTournamentPlayoffScheduleCommand command =
+                new UpdateTournamentPlayoffScheduleCommand(competitionId, slots);
+            Result<FloorballTournamentDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(
+                    result.Data,
+                    "Tournament playoff schedule updated successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to update tournament playoff schedule";
+            List<string> errorList = result.GetAllErrors().ToList();
+
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+        }
+
+        /// <summary>
         /// Starts the playoff stage of a floorball tournament
         /// </summary>
         /// <param name="competitionId">Tournament ID</param>

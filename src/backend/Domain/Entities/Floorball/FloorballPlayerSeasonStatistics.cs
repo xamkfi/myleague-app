@@ -183,6 +183,16 @@ public class FloorballPlayerSeasonStatistics : BaseEntity
     }
 
     /// <summary>
+    /// Reverts a previous <see cref="RecordGamePlayed"/> call. Used when the match the player
+    /// participated in is reopened from Completed back to InProgress, so the GamesPlayed counter
+    /// is not double-incremented when the match is later finished again.
+    /// </summary>
+    public void RemoveGamePlayed()
+    {
+        if (GamesPlayed > 0) GamesPlayed--;
+    }
+
+    /// <summary>
     /// Records a goal scored by this player
     /// </summary>
     /// <param name="isPowerPlay">Whether it was a power play goal</param>

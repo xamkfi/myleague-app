@@ -820,6 +820,44 @@
           "final": "Finaali"
         }
       },
+      "playoffScheduleManager": {
+        "title": "Suunniteltu pudotuspeliaikataulu",
+        "hint": "Aseta jokaiselle pudotuspelikierrokselle alkamisaika ja halutessasi pelipaikka. Joukkueet täydennetään automaattisesti, kun pudotuspelivaihe käynnistetään; tällä välin paikat näkyvät otteluohjelmassa \"TBD vs TBD\" -paikanvarauksina.",
+        "lockedHint": "Pudotuspelikaavio on jo luotu, joten suunniteltua aikataulua ei voi enää muokata. Muokkaa yksittäisiä otteluita otteluluettelosta.",
+        "disabledHint": "Tällä turnauksella ei ole pudotuspelivaihetta käytössä. Ota se käyttöön Turnauksen tiedot -välilehdellä voidaksesi suunnitella pudotuspeliotteluita.",
+        "fillSuggested": "Täytä puuttuvat paikat",
+        "fillSuggestedTooltip": "Lisää puuttuvat pudotuspelipaikat turnauksen sääntöjen mukaan.",
+        "savedSuccess": "Pudotuspeliaikataulu tallennettu.",
+        "empty": "Pudotuspelipaikkoja ei ole vielä suunniteltu.",
+        "errors": {
+          "unsupportedSize": "Aikataulua ei voi ehdottaa: jatkoonpääsijät × lohkojen määrä pitää olla 2, 4 tai 8 (nyt: {{count}}).",
+          "missingTime": "Jokaisella pudotuspelipaikalla pitää olla alkamisaika.",
+          "duplicateSlot": "Päällekkäisiä pudotuspelipaikkoja: {{slots}}"
+        },
+        "fields": {
+          "round": "Kierros",
+          "order": "Järjestys",
+          "scheduledDateTime": "Päivä ja kellonaika",
+          "venue": "Pelipaikka (valinnainen)"
+        },
+        "placeholders": {
+          "venue": "esim. Kenttä 1"
+        },
+        "rounds": {
+          "QuarterFinal": "Puolivälierä",
+          "SemiFinal": "Välierä",
+          "ThirdPlaceMatch": "Pronssiottelu",
+          "Final": "Finaali"
+        },
+        "addRound": {
+          "QuarterFinal": "Lisää puolivälierä",
+          "SemiFinal": "Lisää välierä",
+          "ThirdPlaceMatch": "Lisää pronssiottelu",
+          "Final": "Lisää finaali"
+        },
+        "removeRowAriaLabel": "Poista tämä pudotuspelipaikka",
+        "removeRowTooltip": "Poista tämä pudotuspelipaikka aikataulusta"
+      },
       "matchesInProgress_one": "{{count}} ottelu käynnissä",
       "matchesInProgress_other": "{{count}} ottelua käynnissä",
       "showOngoingOnly": "Näytä Vain Käynnissä Olevat",
@@ -874,6 +912,7 @@
         "startPlayoffStage": "Aloita Pudotuspelit",
         "complete": "Päätä Turnaus",
         "cancel": "Peru Turnaus",
+        "delete": "Poista turnaus",
         "moreActions": "Lisätoiminnot",
         "matchesLoadError": "Otteluiden tilan lataaminen epäonnistui — esiehtoja ei voida vahvistaa. Tarkista ottelujen tilanne ennen lifecycle-toimintoja.",
         "startGroupStageSuccess": "Alkulohkot aloitettu onnistuneesti.",
@@ -892,7 +931,8 @@
           "startGroupStage": "Merkitsee turnauksen aktiiviseksi ja paljastaa ottelut yleisösivuilla.",
           "startPlayoffStage": "Laskee sarjataulukot, luo pudotuspelikaavion ja aikatauluttaa pudotuspeliottelut. Vaatii, että kaikki alkulohkojen ottelut on pelattu.",
           "complete": "Sulkee turnauksen. Vaatii että kaikki ottelut on pelattu loppuun.",
-          "cancel": "Peruu turnauksen. Toiminto on lopullinen eikä sitä voi peruuttaa."
+          "cancel": "Peruu turnauksen. Toiminto on lopullinen eikä sitä voi peruuttaa.",
+          "delete": "Poistaa turnauksen pysyvästi. Toimintoa ei voi peruuttaa."
         },
         "disabled": {
           "noGroups": "Lisää ainakin yksi lohko, jotta voit aloittaa alkulohkot.",
@@ -933,13 +973,20 @@
             "description": "Peruu turnauksen. Tämä on lopullinen toiminto, eikä sitä voi peruuttaa ilman tietokantatoimia. Otteluiden tiedot säilyvät, mutta turnaus merkitään peruutetuksi.",
             "confirm": "Kyllä, peru turnaus",
             "acknowledge": "Ymmärrän, että turnauksen peruminen on lopullinen toiminto."
+          },
+          "delete": {
+            "title": "Poista turnaus",
+            "description": "Poistaa turnauksen \"{{name}}\" pysyvästi. Kaikki turnauksen lohkot, joukkueliitokset ja ottelut poistetaan eikä toimintoa voi peruuttaa.",
+            "confirm": "Kyllä, poista turnaus",
+            "acknowledge": "Ymmärrän, että turnauksen poistaminen on lopullinen toiminto."
           }
         }
       },
       "actions": {
         "menu": "Turnauksen toimintovalikko",
         "manageMatches": "Hallitse turnauksen otteluita",
-        "bulkDelete": "Poista ({{count}})"
+        "bulkDelete": "Poista ({{count}})",
+        "openEdit": "Avaa ja muokkaa turnausta"
       },
       "errors": {
         "networkError": "Verkkovirhe. Tarkista yhteytesi ja yritä uudelleen.",
@@ -1180,6 +1227,23 @@
         "title": "Aktivoi ottelu uudelleen",
         "message": "Haluatko varmasti aktivoida tämän ottelun uudelleen? Ottelu palautetaan aikataulutetuksi.",
         "confirm": "Kyllä, aktivoi uudelleen"
+      },
+      "manage": {
+        "finished": "PÄÄTTYNYT",
+        "reopenMatch": "Avaa ottelu",
+        "reopenMatchTitle": "Avaa ottelu uudelleen muokattavaksi",
+        "matchOfficials": "OTTELUN TUOMARIT",
+        "addReferee": "Lisää tuomari",
+        "removeReferee": "Poista tuomari",
+        "selectReferee": "VALITSE TUOMARI",
+        "saving": "Tallennetaan...",
+        "noOfficials": "Ei valittuja tuomareita.",
+        "confirmReopen": {
+          "title": "Avaa ottelu muokattavaksi",
+          "message": "Haluatko varmasti avata tämän ottelun uudelleen? Ottelu siirretään takaisin Käynnissä-tilaan, jolloin voit muokata ottelutapahtumia tai jatkaa peliä (esim. jos ottelu päättyi vahingossa).",
+          "warning": "Ottelukohtaiset joukkue-, pelaaja- ja maalivahtitilastot perutaan ja päivitetään uudelleen, kun ottelu päätetään seuraavan kerran.",
+          "confirm": "Kyllä, avaa ottelu"
+        }
       },
       "cancelling": "Peruutetaan...",
       "reactivating": "Aktivoidaan uudelleen...",

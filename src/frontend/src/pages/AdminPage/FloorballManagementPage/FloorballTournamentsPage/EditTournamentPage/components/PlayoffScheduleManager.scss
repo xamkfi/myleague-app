@@ -1,0 +1,180 @@
+@use 'sass:map';
+@use '../../../../../../styles/variables' as *;
+
+.psm {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'sm');
+  padding: map.get($spacing, 'base');
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'md');
+  background: rgba($color-primary, 0.03);
+
+  &--disabled {
+    opacity: 0.7;
+  }
+}
+
+.psm__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: map.get($spacing, 'sm');
+}
+
+.psm__title {
+  margin: 0;
+  font-size: map.get($font-sizes, 'base');
+  font-weight: 600;
+  color: $color-primary;
+
+  i {
+    margin-right: 4px;
+  }
+}
+
+.psm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map.get($spacing, 'xs');
+}
+
+.psm__hint {
+  margin: 0;
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-text-muted;
+}
+
+.psm__error {
+  padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+  border-radius: map.get($border-radius, 'sm');
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: map.get($font-sizes, 'sm');
+}
+
+.psm__success {
+  padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+  border-radius: map.get($border-radius, 'sm');
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: map.get($font-sizes, 'sm');
+}
+
+.psm__empty {
+  padding: map.get($spacing, 'sm');
+  text-align: center;
+  border: 1px dashed $color-neutral-medium-grey;
+  border-radius: map.get($border-radius, 'sm');
+  color: $color-text-muted;
+}
+
+.psm__table-wrap {
+  overflow-x: auto;
+}
+
+.psm__table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border-bottom: 1px solid $color-border;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th {
+    font-size: map.get($font-sizes, 'xs');
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $color-text-muted;
+  }
+
+  input,
+  select {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    background: $color-white;
+
+    &:disabled {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+  }
+}
+
+// Reserves room for the per-row "Poista" button so it can't collapse to an unreachable
+// width on narrow tables (the column previously had no header label and shrank to ~0px,
+// which is why admins reported being unable to delete accidentally-added playoff slots).
+.psm__table-actions-col {
+  width: 110px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.psm__add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map.get($spacing, 'xs');
+  padding-top: map.get($spacing, 'xs');
+  border-top: 1px solid $color-border;
+}
+
+.psm__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: 600;
+  border-radius: map.get($border-radius, 'sm');
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.psm__btn--primary {
+  color: $color-white;
+  background: $color-blue-darkest;
+  border-color: $color-blue-darkest;
+
+  &:hover:not(:disabled) {
+    background: darken($color-blue-darkest, 5%);
+    border-color: darken($color-blue-darkest, 5%);
+  }
+}
+
+.psm__btn--ghost {
+  background: transparent;
+  color: $color-primary;
+  border-color: $color-primary;
+
+  &:hover:not(:disabled) {
+    background: rgba($color-primary, 0.08);
+  }
+}
+
+.psm__btn--danger {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+  padding: 6px 10px;
+
+  &:hover:not(:disabled) {
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
+}

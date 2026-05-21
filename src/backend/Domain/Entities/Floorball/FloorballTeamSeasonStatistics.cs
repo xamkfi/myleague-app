@@ -339,4 +339,51 @@ public class FloorballTeamSeasonStatistics : BaseEntity
             GoalDifference = GoalsFor - GoalsAgainst;
         }
     }
+
+    /// <summary>
+    /// Reverts a previous <see cref="UpdateAfterMatch"/> call. Used when a Completed match is
+    /// reopened back to InProgress so the per-match aggregate counters (games, wins/losses/ties,
+    /// points, home/away splits) do not double-count once the match is finished again. Goals/shots
+    /// and other event-sourced totals are excluded here because they are maintained incrementally
+    /// (see DeleteGoalHandler.DecrementGoalsFor / DecrementGoalsAgainst), not on match completion.
+    /// </summary>
+    /// <param name="gameResult">The result that was applied when the match was completed.</param>
+    /// <param name="isHomeGame">Whether this team was the home team for the match being undone.</param>
+    public void UndoMatchResult(FloorballGameResult gameResult, bool isHomeGame)
+    {
+        if (GamesPlayed > 0) GamesPlayed--;
+
+        switch (gameResult)
+        {
+            case FloorballGameResult.Win:
+                if (Wins > 0) Wins--;
+                Points = Math.Max(0, Points - 3);
+                if (isHomeGame)
+                {
+                    if (HomeWins > 0) HomeWins--;
+                }
+                else
+                {
+                    if (AwayWins > 0) AwayWins--;
+                }
+                break;
+            case FloorballGameResult.Loss:
+                if (Losses > 0) Losses--;
+                if (isHomeGame)
+                {
+                    if (HomeLosses > 0) HomeLosses--;
+                }
+                else
+                {
+                    if (AwayLosses > 0) AwayLosses--;
+                }
+                break;
+            case FloorballGameResult.Tie:
+                if (Ties > 0) Ties--;
+                Points = Math.Max(0, Points - 1);
+                break;
+            default:
+                throw new ArgumentException($"Invalid game result: {gameResult}", nameof(gameResult));
+        }
+    }
 }
