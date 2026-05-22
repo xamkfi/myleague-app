@@ -444,6 +444,10 @@ public class FloorballMatch : BaseEntity
         if (secondaryAssistingPlayer != null)
             ValidatePlayerOnRoster(scoringTeam, secondaryAssistingPlayer.Id, "Secondary assisting player");
 
+        FloorballGoalType? mappedGoalType = goalType.HasValue
+            ? (FloorballGoalType)goalType.Value
+            : null;
+
         FloorballGoal goalEvent = new FloorballGoal(
             matchId: Id,
             scoringTeam.Id,
@@ -452,7 +456,7 @@ public class FloorballMatch : BaseEntity
             secondaryAssistingPlayer?.Id,
             periodNumber,
             timeInSeconds,
-            null,
+            mappedGoalType,
             description);
 
         _events.Add(goalEvent);

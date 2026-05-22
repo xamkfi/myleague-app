@@ -423,6 +423,28 @@
   }
 }
 
+// Goal-type tag (e.g. "(YV)", "(AV)") rendered right after the green Goal
+// badge in the spectator match-events list. Lives outside `.event-details`
+// so its styling sits at the same level as the team-short / score columns.
+.event-row .goal-type-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 18px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
 .event-assist {
   font-size: 0.75rem;
   color: $color-neutral-dark-grey;

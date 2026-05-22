@@ -11,6 +11,7 @@ import SportsIcon from '../../assets/adminIcons/Sports.svg';
 import TeamsIcon from '../../assets/adminIcons/Teams.svg';
 import PlayersIcon from '../../assets/adminIcons/Persons.svg';
 import SeasonsIcon from '../../assets/adminIcons/Seasons.svg';
+import MatchesIcon from '../../assets/adminIcons/Matches.svg';
 import RefereesIcon from '../../assets/adminIcons/Referees.svg';
 import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
 import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
@@ -196,6 +197,19 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                         <LiveDot
                           tone="dark"
                           ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: tournamentLive })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/matches') ? 'active' : ''}`}>
+                    <Link to="/admin/floorball/matches">
+                      <img src={MatchesIcon} alt="Matches" className="icon" />
+                      <span>{t('floorball.management.actions.matches', 'Manage Matches')}</span>
+                      {totalLive > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: totalLive })}
                           className="admin-navbar__live-dot"
                         />
                       )}

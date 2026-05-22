@@ -17,6 +17,7 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// <param name="PlayerName">The name of the player who scored</param>
     /// <param name="AssisterName">The name of the player who assisted (optional)</param>
     /// <param name="SecondaryAssisterName">The name of the player who provided secondary assist (optional)</param>
+    /// <param name="GoalType">The type of goal (regular, power play, short-handed, etc.)</param>
     public record FloorballGoalEventDto(
         Guid Id,
         Guid TeamId,
@@ -29,7 +30,8 @@ namespace Application.Features.Floorball.Matches.DTOs
         bool WasInShootout,
         string PlayerName,
         string? AssisterName,
-        string? SecondaryAssisterName);
+        string? SecondaryAssisterName,
+        FloorballGoalType? GoalType = null);
 
     /// <summary>
     /// Data Transfer Object for a penalty in a floorball match

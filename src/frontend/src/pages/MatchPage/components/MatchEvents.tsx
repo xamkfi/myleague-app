@@ -6,6 +6,7 @@ import type {
 } from '../../../types/floorball/floorballTypes';
 import { getPeriodName, getTeamInitials } from './matchUtils';
 import { formatMatchEventTime } from '../../../utils/matchEventFormat';
+import { getFloorballGoalTypeInfo } from '../../../utils/floorballGoalType';
 
 type MatchEventItem = {
   type: 'goal' | 'penalty';
@@ -128,6 +129,7 @@ export default function MatchEvents({ match }: MatchEventsProps) {
 
   const renderGoalRow = (event: FloorballGoalEventDto) => {
     const home: boolean = isHomeTeam(event.teamId);
+    const goalTypeInfo = getFloorballGoalTypeInfo(event.goalType);
     return (
       <div className={`event-row ${home ? 'home-event' : 'away-event'} goal`}>
         <span className="event-time" title={`Period ${event.periodNumber}`}>
@@ -136,6 +138,15 @@ export default function MatchEvents({ match }: MatchEventsProps) {
         <span className="event-type-badge goal" aria-label="Goal" title="Goal">
           <span className="badge-letter" aria-hidden>G</span>
         </span>
+        {goalTypeInfo && goalTypeInfo.abbreviation && (
+          <span
+            className="goal-type-badge"
+            title={goalTypeInfo.label}
+            aria-label={goalTypeInfo.label}
+          >
+            ({goalTypeInfo.abbreviation})
+          </span>
+        )}
         <span className="event-team-short" title={home ? match.homeTeamName : match.awayTeamName}>
           {getTeamShort(event.teamId)}
         </span>

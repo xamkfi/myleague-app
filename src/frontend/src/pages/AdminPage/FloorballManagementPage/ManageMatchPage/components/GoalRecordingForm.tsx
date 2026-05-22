@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floorball/floorballTypes';
+import { FloorballGoalType, type FloorballMatchDto, type FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 import './GoalRecordingForm.scss';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import type { GoalForm, LocalClock } from './types';
+import { FLOORBALL_GOAL_TYPE_OPTIONS } from '../../../../../utils/floorballGoalType';
 
 interface GoalRecordingFormProps {
   showGoalForm: boolean;
@@ -30,8 +30,10 @@ const GoalRecordingForm = ({
   onRecordGoal,
   onClose
 }: GoalRecordingFormProps) => {
-  const [goalType, setGoalType] = useState<string>('');
   if (!showGoalForm) return null;
+  const goalTypeValue: string = goalForm.goalType === null || goalForm.goalType === undefined
+    ? ''
+    : String(goalForm.goalType);
 
   const selectedTeamName = goalForm.teamId === currentMatch.homeTeamId
     ? homeTeam?.name
@@ -100,12 +102,22 @@ const GoalRecordingForm = ({
               <label htmlFor="goal-type">Goal type</label>
               <select 
                 id="goal-type"
-                className={`select-field${goalType ? '' : ' is-placeholder'}`}
-                value={goalType}
-                onChange={(e) => setGoalType(e.target.value)}
+                className={`select-field${goalTypeValue === '' ? ' is-placeholder' : ''}`}
+                value={goalTypeValue}
+                onChange={(e) => {
+                  const next: string = e.target.value;
+                  setGoalForm(prev => ({
+                    ...prev,
+                    goalType: next === '' ? null : (Number(next) as FloorballGoalType)
+                  }));
+                }}
               >
-                <option value="" disabled>Goal type</option>
-                <option value="not-implemented">Not implemented yet</option>
+                <option value="">Goal type</option>
+                {FLOORBALL_GOAL_TYPE_OPTIONS.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
             

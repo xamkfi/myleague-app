@@ -1,5 +1,6 @@
 import type { ProcessedEvent } from './types';
 import { formatMatchEventTime } from '../../../../../utils/matchEventFormat';
+import { getFloorballGoalTypeInfo } from '../../../../../utils/floorballGoalType';
 import './LiveMatchEventsHistory.scss';
 
 interface LiveMatchEventsHistoryProps {
@@ -64,6 +65,9 @@ const LiveMatchEventsHistory = ({
             const teamShort = event.teamShortName?.trim()
               ? event.teamShortName
               : getTeamShortName(event.teamName);
+            const goalTypeInfo = event.type === 'goal'
+              ? getFloorballGoalTypeInfo(event.goalType)
+              : undefined;
 
             return (
               <div key={event.id} className={`event-item ${event.type}`}>
@@ -77,6 +81,16 @@ const LiveMatchEventsHistory = ({
                   </span>
                   <span className="badge-text">{label}</span>
                 </span>
+
+                {goalTypeInfo && goalTypeInfo.abbreviation && (
+                  <span
+                    className="goal-type-badge"
+                    title={goalTypeInfo.label}
+                    aria-label={goalTypeInfo.label}
+                  >
+                    ({goalTypeInfo.abbreviation})
+                  </span>
+                )}
 
                 <span className="team-short" title={event.teamName}>{teamShort}</span>
 

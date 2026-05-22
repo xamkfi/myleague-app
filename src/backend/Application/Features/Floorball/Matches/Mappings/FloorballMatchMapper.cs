@@ -73,7 +73,8 @@ public static class FloorballMatchMapper
                 match.WentToShootout,
                 GetPlayerName(g.ScoringPlayerId, playerPersonLookup),
                 GetPlayerName(g.AssistingPlayerId, playerPersonLookup),
-                GetPlayerName(g.SecondaryAssistingPlayerId, playerPersonLookup)))
+                GetPlayerName(g.SecondaryAssistingPlayerId, playerPersonLookup),
+                g.GoalType))
             .ToList();
 
         // Map penalty events with player names
