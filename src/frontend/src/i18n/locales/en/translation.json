@@ -1414,6 +1414,7 @@
       "noStats": "No statistics available",
       "noStatsDesc": "Team statistics are not available for this season.",
       "currentSeason": "Current Season",
+      "allCompetitions": "All competitions (season + tournaments)",
       "overallRecord": "Overall Record",
       "gamesPlayed": "Games Played",
       "wins": "Wins",

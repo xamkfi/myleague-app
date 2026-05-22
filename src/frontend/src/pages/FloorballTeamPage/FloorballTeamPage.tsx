@@ -143,18 +143,22 @@ function FloorballTeamPage() {
         const fetchTeamStats = tabId === 'stats' && !teamStatistics;
         const fetchPlayerStats = !playerStatistics;
 
+        // Both fetches aggregate across all competitions the team has played in (regular season +
+        // tournaments) so tournament games and points appear on the Statistics tab alongside the
+        // regular-season totals. Using the per-competition endpoints with currentSeason.id silently
+        // drops tournament rows because those are stored under the tournament's CompetitionId.
         if (fetchTeamStats && fetchPlayerStats) {
           const [teamStats, playerStats] = await Promise.all([
-            floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id),
-            floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id)
+            floorballStatisticsService.getAggregatedTeamStatistics(team.id),
+            floorballStatisticsService.getAggregatedTeamPlayerStatistics(team.id)
           ]);
           setTeamStatistics(teamStats);
           setPlayerStatistics(playerStats);
         } else if (fetchTeamStats) {
-          const teamStats = await floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id);
+          const teamStats = await floorballStatisticsService.getAggregatedTeamStatistics(team.id);
           setTeamStatistics(teamStats);
         } else if (fetchPlayerStats) {
-          const playerStats = await floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id);
+          const playerStats = await floorballStatisticsService.getAggregatedTeamPlayerStatistics(team.id);
           setPlayerStatistics(playerStats);
         }
       } else if (tabId === 'standings') {
@@ -279,13 +283,17 @@ function FloorballTeamPage() {
 
       case 'stats':
         return (
-          <Statistics 
+          <Statistics
             teamStatistics={teamStatistics}
             playerStatistics={playerStatistics}
             roster={team.roster}
             loading={statisticsLoading}
             error={statisticsError}
-            seasonName={currentSeason?.name}
+            // Stats are aggregated across the season + every tournament the team played in, so
+            // labelling the block with just the season name (e.g. "2025-2026 SALIBANDY | LIIGA")
+            // would be misleading. The "all competitions" label makes it clear that tournament
+            // games / points are included.
+            seasonName={t('teamUserPage.stats.allCompetitions')}
           />
         );
 

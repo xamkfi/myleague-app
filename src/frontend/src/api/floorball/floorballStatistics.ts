@@ -194,6 +194,61 @@ export const floorballStatisticsService = {
   },
 
   /**
+   * Get a team's combined statistics aggregated across every competition (regular seasons +
+   * tournaments) the team has played in. Backed by /team-aggregate/{teamId}, which exists
+   * specifically so the team page's Statistics tab can surface tournament games and points
+   * alongside the regular-season totals — `getTeamStatistics` is keyed on a single competition
+   * and would silently drop those tournament rows.
+   */
+  getAggregatedTeamStatistics: async (teamId: string): Promise<FloorballTeamSeasonStatisticsDto> => {
+    try {
+      const response = await fetch(`${API_URL}/floorball/statistics/team-aggregate/${teamId}`);
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch aggregated team statistics');
+        throw new Error(errorMessage);
+      }
+
+      const apiResponse: ApiResponse<FloorballTeamSeasonStatisticsDto> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch aggregated team statistics'));
+      }
+
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching aggregated team statistics:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get per-player statistics for a team aggregated across every competition (regular seasons +
+   * tournaments) the team has played in. Each player appears once with their summed totals.
+   */
+  getAggregatedTeamPlayerStatistics: async (teamId: string): Promise<FloorballPlayerSeasonStatisticsDto[]> => {
+    try {
+      const response = await fetch(`${API_URL}/floorball/statistics/team-players-aggregate/${teamId}`);
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch aggregated team player statistics');
+        throw new Error(errorMessage);
+      }
+
+      const apiResponse: ApiResponse<FloorballPlayerSeasonStatisticsDto[]> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch aggregated team player statistics'));
+      }
+
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching aggregated team player statistics:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Get all player statistics for a specific team in a season
    */
   getTeamPlayerStatistics: async (competitionId: string, teamId: string): Promise<FloorballPlayerSeasonStatisticsDto[]> => {
