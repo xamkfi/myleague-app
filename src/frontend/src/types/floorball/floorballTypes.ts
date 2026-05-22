@@ -168,6 +168,21 @@ export interface AddPlayerToTeamRequest {
   jerseyNumber?: number;
 }
 
+/**
+ * Floorball goal type. Mirrors the backend `Domain.Enums.Floorball.FloorballGoalType` enum.
+ * Values are numeric so they can be sent over the wire in command payloads without ambiguity.
+ */
+export enum FloorballGoalType {
+  Regular = 0,
+  PowerPlay = 1,
+  ShortHanded = 2,
+  EmptyNet = 3,
+  PenaltyShot = 4,
+  OwnGoal = 5,
+  Overtime = 6,
+  Shootout = 7
+}
+
 // Match Event types
 export interface FloorballGoalEventDto {
   id: string;
@@ -182,6 +197,14 @@ export interface FloorballGoalEventDto {
   playerName?: string;
   assisterName?: string;
   secondaryAssisterName?: string;
+  /**
+   * Type of goal scored. `null`/`undefined` means the goal was recorded without a
+   * specific type (treated as a regular even-strength goal). Backend serializes
+   * the enum as its string name (e.g. `"PenaltyShot"`) via
+   * `JsonStringEnumConverter`, but command payloads use the numeric form, so we
+   * accept either at the type level.
+   */
+  goalType?: FloorballGoalType | number | string | null;
 }
 
 export interface FloorballPenaltyEventDto {

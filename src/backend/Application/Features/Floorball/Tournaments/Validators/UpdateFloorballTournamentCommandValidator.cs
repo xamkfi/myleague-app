@@ -26,7 +26,8 @@ public class UpdateFloorballTournamentCommandValidator : AbstractValidator<Updat
         RuleFor(x => x.EndDate)
             .NotEmpty().WithMessage("End date is required")
             .Must(BeValidDate).WithMessage("End date must be a valid date")
-            .GreaterThan(x => x.StartDate).WithMessage("End date must be after start date");
+            // One-day tournaments are allowed (e.g. a Saturday cup), so accept startDate == endDate.
+            .GreaterThanOrEqualTo(x => x.StartDate).WithMessage("End date cannot be before start date");
 
         RuleFor(x => x.GroupStageNumberOfPeriods)
             .InclusiveBetween(1, 5).WithMessage("Group stage number of periods must be between 1 and 5");
@@ -48,8 +49,11 @@ public class UpdateFloorballTournamentCommandValidator : AbstractValidator<Updat
             .InclusiveBetween(1, 30).WithMessage("Playoff overtime duration must be between 1 and 30 minutes")
             .When(x => x.PlayoffAllowOvertime);
 
+        // TeamsAdvancingPerGroup only constrains tournaments that actually have a playoff stage:
+        // for group-stage-only tournaments the value is unused and any number (or 0) is fine.
         RuleFor(x => x.TeamsAdvancingPerGroup)
-            .InclusiveBetween(1, 8).WithMessage("Teams advancing per group must be between 1 and 8");
+            .InclusiveBetween(1, 8).WithMessage("Teams advancing per group must be between 1 and 8")
+            .When(x => x.HasPlayoffStage);
     }
 
     private bool BeValidDate(DateTime date)

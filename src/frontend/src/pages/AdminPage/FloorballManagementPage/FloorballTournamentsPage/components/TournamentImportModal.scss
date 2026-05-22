@@ -90,6 +90,119 @@
     }
   }
 
+  &__ai-help {
+    width: 100%;
+    margin-top: map.get($spacing, 'sm');
+    padding: map.get($spacing, 'base');
+    border: 1px solid $color-border;
+    border-radius: $border-radius-default;
+    background: $color-neutral-light-grey;
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'sm');
+  }
+
+  &__ai-help-title {
+    margin: 0;
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-text-primary;
+
+    i {
+      margin-right: map.get($spacing, 'xxs');
+      color: $color-blue-light;
+    }
+  }
+
+  &__ai-help-steps {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+    line-height: 1.5;
+
+    li + li {
+      margin-top: map.get($spacing, 'xxs');
+    }
+  }
+
+  &__ai-help-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__ai-help-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+    cursor: pointer;
+    border: 1px solid transparent;
+    @include transition(all);
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &__ai-help-btn--primary {
+    background: $color-blue-light;
+    color: $color-white;
+    border-color: $color-blue-light;
+
+    &:hover:not(:disabled) {
+      background: $color-blue-medium;
+      border-color: $color-blue-medium;
+    }
+  }
+
+  &__ai-help-btn--ghost {
+    background: transparent;
+    color: $color-blue-light;
+    border-color: $color-blue-light;
+
+    &:hover:not(:disabled) {
+      background: rgba($color-blue-light, 0.08);
+    }
+  }
+
+  &__ai-help-feedback {
+    margin: 0;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    display: flex;
+    gap: map.get($spacing, 'xs');
+    align-items: flex-start;
+
+    i {
+      margin-top: 2px;
+    }
+  }
+
+  &__ai-help-feedback--ok {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+
+  &__ai-help-feedback--info {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+  }
+
+  &__ai-help-feedback--error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+
   &__filename {
     color: $color-text-muted;
     font-size: map.get($font-sizes, 'sm');
@@ -162,6 +275,11 @@
     color: $color-text-muted;
     font-size: map.get($font-sizes, 'sm');
     margin: map.get($spacing, 'base') 0 0;
+
+    &--warning {
+      color: $color-yellow-muted;
+      font-weight: map.get($font-weights, 'medium');
+    }
   }
 
   &__checkbox {
@@ -172,6 +290,21 @@
     color: $color-text-primary;
     font-size: map.get($font-sizes, 'sm');
     cursor: pointer;
+
+    &--featured {
+      margin-top: map.get($spacing, 'base');
+      padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      background: $color-neutral-light-grey;
+      border: 1px solid $color-border;
+      border-radius: map.get($border-radius, 'sm');
+      width: 100%;
+      box-sizing: border-box;
+      font-weight: map.get($font-weights, 'medium');
+    }
+  }
+
+  &__field-hint--checkbox {
+    margin: map.get($spacing, 'xxs') 0 0;
   }
 
   &__errors {

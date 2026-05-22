@@ -806,7 +806,23 @@
           "players": "Players"
         },
         "playerRosterNote": "Player rosters (if included in the JSON) are created and added to teams automatically. Existing players (matched by name) are reused.",
-        "playoffSlotsNote": "Playoff slots will appear as placeholder \"TBD vs TBD\" rows in the schedule. The real teams are filled in automatically when the playoff stage is started."
+        "playoffSlotsNote": "Playoff slots will appear as placeholder \"TBD vs TBD\" rows in the schedule. The real teams are filled in automatically when the playoff stage is started.",
+        "playoffSlotsIgnoredNote": "Playoffs are disabled for this import — the {{count}} playoff slot(s) in the JSON will be ignored.",
+        "hasPlayoffStage": "Tournament has a playoff stage",
+        "hasPlayoffStageHintOn": "Standard bracket rules apply: 2/4/8 teams must qualify for the playoffs (teamsAdvancingPerGroup × group count).",
+        "hasPlayoffStageHintOff": "Group-stage-only tournament: any number of teams per group is fine and the playoff schedule (if any) will be ignored.",
+        "aiHelp": {
+          "title": "Don't have a JSON file yet? Generate one with AI",
+          "step1": "Copy the prompt below with the \"Copy prompt\" button (or download it if copying is blocked).",
+          "step2": "Open ChatGPT, Claude, Gemini or another vision-capable AI and paste the prompt (Ctrl/Cmd + V).",
+          "step3": "Attach a screenshot / photo of the tournament schedule (and roster sheets if you have them) and send the message.",
+          "step4": "Save the AI's response as a .json file and drop it into the area above.",
+          "copyPrompt": "Copy AI prompt to clipboard",
+          "downloadPrompt": "Download AI prompt as .txt",
+          "copiedToast": "Prompt copied to clipboard. Paste it into your AI chat (Ctrl/Cmd + V) and attach the schedule image.",
+          "downloadedToast": "Prompt downloaded as a .txt file. Open it, copy the contents, and paste them into your AI chat.",
+          "errorToast": "Could not copy or download the prompt. Please try the \"Download\" button again."
+        }
       },
       "playoffSchedule": {
         "title": "Planned playoff matches",
