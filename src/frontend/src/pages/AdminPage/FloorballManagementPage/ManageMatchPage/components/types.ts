@@ -62,6 +62,24 @@ export interface SaveEventData {
   IsShootout: boolean;
 }
 
+/**
+ * Visual grouping wrapper used by {@link LiveMatchEventsHistory}. Bulk-recorded
+ * saves at the same (team, goalie, period, time) coordinate are collapsed into
+ * a single row so the events list isn't flooded with N identical rows. Non-save
+ * events (and single saves) are represented as a group of size 1.
+ *
+ * The full underlying {@link ProcessedEvent} list is preserved on the group so
+ * the delete affordance can remove every save in a bulk batch in one action.
+ */
+export interface EventGroup {
+  /** Stable React key — derived from event ids so reorders are well-behaved. */
+  key: string;
+  /** Event used to render the row (player name, time, team, etc.). */
+  representative: ProcessedEvent;
+  /** Underlying events; length === 1 for normal rows, > 1 for grouped saves. */
+  events: ProcessedEvent[];
+}
+
 export interface ProcessedEvent {
   id: string;
   type: 'goal' | 'penalty' | 'save';

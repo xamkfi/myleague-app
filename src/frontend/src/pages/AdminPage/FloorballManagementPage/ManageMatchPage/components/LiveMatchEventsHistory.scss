@@ -140,6 +140,26 @@
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+
+    // Multiplier badge rendered after the goalie's name for bulk-recorded saves
+    // (e.g. "Severi Noponen (×20)"). Sits inline with the player name so the row
+    // height stays identical to a single save and visually communicates that
+    // multiple saves share this coordinate.
+    .save-count-badge {
+      flex: 0 0 auto;
+      font-weight: map.get($font-weights, 'bold');
+      color: #1e40af;
+      white-space: nowrap;
+    }
+
+    // Slightly stronger left border so the bulk-aggregated row is recognisable
+    // at a glance among single-save rows.
+    &.save.bulk-save {
+      border-left-width: 6px;
+      background: #f5f9ff;
+
+      &:hover { background: #eef4ff; }
+    }
   }
 }
 
