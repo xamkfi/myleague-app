@@ -8,6 +8,55 @@
   border-radius: map.get($border-radius, "md");
   background: rgba($color-primary, 0.04);
 
+  &--after-list {
+    margin-bottom: 0;
+    margin-top: map.get($spacing, "lg");
+  }
+
+  &--collapsed {
+    padding: map.get($spacing, "xs") map.get($spacing, "sm");
+  }
+
+  &__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: map.get($spacing, "sm");
+    width: 100%;
+    padding: map.get($spacing, "sm") map.get($spacing, "md");
+    border: 1px solid rgba($color-primary, 0.2);
+    border-radius: map.get($border-radius, "md");
+    background: $color-white;
+    color: $color-primary;
+    font-weight: 600;
+    font-size: map.get($font-sizes, "sm");
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      background: rgba($color-primary, 0.06);
+      border-color: rgba($color-primary, 0.35);
+    }
+  }
+
+  &__toggle-label {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__toggle-icon {
+    flex-shrink: 0;
+    font-size: map.get($font-sizes, "xs");
+    opacity: 0.75;
+  }
+
+  &:not(&--collapsed) &__toggle {
+    margin-bottom: map.get($spacing, "sm");
+    border-style: dashed;
+    background: transparent;
+  }
+
   &__header {
     display: flex;
     flex-direction: column;

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import MatchRow from '../MatchRow';
 import type {
@@ -10,6 +10,15 @@ import './PlannedPlayoffSchedule.scss';
 
 interface Props {
   tournament: FloorballTournamentDto;
+  /**
+   * When true, the schedule is hidden behind a toggle so regular fixtures stay primary.
+   * Used on the public tournament Otteluohjelma tab.
+   */
+  collapsible?: boolean;
+  /** Initial open state when `collapsible` is true. Defaults to collapsed. */
+  defaultExpanded?: boolean;
+  /** Adds spacing suited for rendering below the main match list. */
+  afterMatchList?: boolean;
 }
 
 /**
@@ -22,8 +31,14 @@ interface Props {
  *  - Hidden once the tournament status reaches `PlayoffStage`/`Completed` because real playoff
  *    matches exist by then and the StartPlayoffStage handler uses these very slots for them.
  */
-export default function PlannedPlayoffSchedule({ tournament }: Props) {
+export default function PlannedPlayoffSchedule({
+  tournament,
+  collapsible = false,
+  defaultExpanded = false,
+  afterMatchList = false
+}: Props) {
   const { t } = useTranslation();
+  const [expanded, setExpanded] = useState<boolean>(() => !collapsible || defaultExpanded);
 
   const visible = useMemo(() => {
     if (!tournament.playoffSchedule || tournament.playoffSchedule.length === 0) return false;
@@ -60,42 +75,75 @@ export default function PlannedPlayoffSchedule({ tournament }: Props) {
     'floorball.tournaments.playoffSchedule.placeholderTooltip',
     'This is a planned playoff slot. The actual match will be generated when the group stage finishes.',
   );
+  const slotCount = orderedSlots.length;
+  const rootClassName = [
+    'planned-playoff-schedule',
+    afterMatchList ? 'planned-playoff-schedule--after-list' : '',
+    collapsible && !expanded ? 'planned-playoff-schedule--collapsed' : ''
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const toggleLabel = expanded
+    ? t('floorball.tournaments.playoffSchedule.toggleHide', 'Piilota pudotuspeliaikataulu')
+    : t('floorball.tournaments.playoffSchedule.toggleShow', 'Näytä pudotuspeliaikataulu ({{count}})', {
+        count: slotCount
+      });
 
   return (
-    <div className="planned-playoff-schedule">
-      <div className="planned-playoff-schedule__header">
-        <span className="planned-playoff-schedule__title">
-          {t('floorball.tournaments.playoffSchedule.title', 'Planned playoff matches')}
-        </span>
-        <span className="planned-playoff-schedule__hint">
-          {t(
-            'floorball.tournaments.playoffSchedule.hint',
-            'Teams are filled in automatically after the group stage finishes.',
-          )}
-        </span>
-      </div>
-      <div className="planned-playoff-schedule__rows">
-        {orderedSlots.map((slot) => {
-          const label = formatSlotLabel(slot, t);
-          return (
-            <MatchRow
-              key={`${slot.round}-${slot.order}`}
-              id={`planned-${slot.round}-${slot.order}`}
-              scheduledDateTime={slot.scheduledDateTime}
-              homeTeamName={tbd}
-              awayTeamName={tbd}
-              statusComponent={
-                <span className="planned-playoff-schedule__badge">
-                  {label}
-                  {slot.venue ? ` · ${slot.venue}` : ''}
-                </span>
-              }
-              isPlaceholder
-              placeholderTooltip={tooltip}
-            />
-          );
-        })}
-      </div>
+    <div className={rootClassName}>
+      {collapsible && (
+        <button
+          type="button"
+          className="planned-playoff-schedule__toggle"
+          onClick={() => setExpanded((open) => !open)}
+          aria-expanded={expanded}
+        >
+          <span className="planned-playoff-schedule__toggle-label">{toggleLabel}</span>
+          <i
+            className={`fas fa-chevron-${expanded ? 'up' : 'down'} planned-playoff-schedule__toggle-icon`}
+            aria-hidden="true"
+          />
+        </button>
+      )}
+
+      {(!collapsible || expanded) && (
+        <>
+          <div className="planned-playoff-schedule__header">
+            <span className="planned-playoff-schedule__title">
+              {t('floorball.tournaments.playoffSchedule.title', 'Planned playoff matches')}
+            </span>
+            <span className="planned-playoff-schedule__hint">
+              {t(
+                'floorball.tournaments.playoffSchedule.hint',
+                'Teams are filled in automatically after the group stage finishes.',
+              )}
+            </span>
+          </div>
+          <div className="planned-playoff-schedule__rows">
+            {orderedSlots.map((slot) => {
+              const label = formatSlotLabel(slot, t);
+              return (
+                <MatchRow
+                  key={`${slot.round}-${slot.order}`}
+                  id={`planned-${slot.round}-${slot.order}`}
+                  scheduledDateTime={slot.scheduledDateTime}
+                  homeTeamName={tbd}
+                  awayTeamName={tbd}
+                  statusComponent={
+                    <span className="planned-playoff-schedule__badge">
+                      {label}
+                      {slot.venue ? ` · ${slot.venue}` : ''}
+                    </span>
+                  }
+                  isPlaceholder
+                  placeholderTooltip={tooltip}
+                />
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }
