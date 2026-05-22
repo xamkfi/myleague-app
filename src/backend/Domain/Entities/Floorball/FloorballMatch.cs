@@ -489,8 +489,11 @@ public class FloorballMatch : BaseEntity
 
         if (periodNumber < 1 || periodNumber > _periodScores.Count)
             throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {_periodScores.Count}.");
-        if (timeInSeconds < 0 || timeInSeconds > 1200)
-            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
+        // Only enforce a non-negative floor on the timestamp: the match clock runs
+        // continuously across periods so any per-period upper bound would be wrong
+        // (e.g. a penalty in period 2 of a 15-minute match has time >= 900s).
+        if (timeInSeconds < 0)
+            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be non-negative.");
         if (minutes <= 0)
             throw new ArgumentOutOfRangeException(nameof(minutes), "Penalty minutes must be positive.");
 

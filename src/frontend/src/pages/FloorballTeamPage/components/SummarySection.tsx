@@ -88,6 +88,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                                     awayScore={match.awayScore}
                                     periodCount={3}
                                     periodScores={match.periodScores}
+                                    status={match.status}
                                     onClick={() => handleMatchClick(match.id)}
                                  />
                               ))}
@@ -139,6 +140,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               awayScore={match.awayScore}
                               periodCount={3}
                               periodScores={match.periodScores}
+                              status={match.status}
                               onClick={() => handleMatchClick(match.id)}
                            />
                         ))}
@@ -174,6 +176,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               awayScore={match.awayScore}
                               periodCount={3}
                               periodScores={match.periodScores}
+                              status={match.status}
                               onClick={() => handleMatchClick(match.id)}
                            />
                         ))}

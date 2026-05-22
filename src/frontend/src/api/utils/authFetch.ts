@@ -1,28 +1,56 @@
-const TOKEN_STORAGE_KEY = 'myleague_auth_tokens';
-
-interface StoredTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: string;
-}
+import {
+  getValidAccessToken,
+  recordActivity,
+  refreshTokens,
+} from './tokenManager';
 
 /**
- * Authenticated fetch wrapper that automatically includes the JWT access token
- * from localStorage in the Authorization header.
+ * Authenticated fetch wrapper that automatically injects the JWT access token in the
+ * Authorization header. Provides two layers of protection against expired tokens:
  *
- * Safe to use for all requests – if no token is stored, the request proceeds
- * without an Authorization header (behaves identically to plain `fetch`).
+ *  1. Before sending, calls `getValidAccessToken()` which refreshes proactively when the
+ *     access token is expired or close to expiry.
+ *  2. If the server still answers `401 Unauthorized` (for example because the token was
+ *     revoked server-side, or clock skew made the proactive check miss), it attempts a
+ *     single refresh and replays the original request once.
+ *
+ * Safe to use for all requests – if no token is stored the request proceeds without an
+ * Authorization header (behaves identically to plain `fetch`).
  */
 export async function authFetch(
   input: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<Response> {
-  const token = getAccessToken();
+  // Each outgoing API call counts as user activity so the proactive refresh loop knows
+  // the session is in use.
+  recordActivity();
+
+  const token = await getValidAccessToken();
 
   if (!token) {
     return fetch(input, init);
   }
 
+  const response = await sendWithToken(input, init, token);
+
+  if (response.status !== 401) {
+    return response;
+  }
+
+  // Server rejected the (presumably valid-looking) token. Try a single refresh and replay.
+  const refreshed = await refreshTokens();
+  if (!refreshed) {
+    return response;
+  }
+
+  return sendWithToken(input, init, refreshed.accessToken);
+}
+
+function sendWithToken(
+  input: RequestInfo | URL,
+  init: RequestInit | undefined,
+  token: string,
+): Promise<Response> {
   const mergedHeaders = new Headers(init?.headers);
   mergedHeaders.set('Authorization', `Bearer ${token}`);
 
@@ -30,15 +58,4 @@ export async function authFetch(
     ...init,
     headers: mergedHeaders,
   });
-}
-
-function getAccessToken(): string | null {
-  try {
-    const raw = localStorage.getItem(TOKEN_STORAGE_KEY);
-    if (!raw) return null;
-    const tokens: StoredTokens = JSON.parse(raw);
-    return tokens.accessToken ?? null;
-  } catch {
-    return null;
-  }
 }

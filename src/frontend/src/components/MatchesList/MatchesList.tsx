@@ -118,6 +118,7 @@ export default function MatchesList({
       awayScore={match.awayScore}
       periodCount={3}
       periodScores={match.periodScores}
+      status={match.status}
       statusComponent={isResults && team ? (
         <span className={`result-badge ${checkIfTeamWon(match) ? 'win' : 'loss'}`}>
           {checkIfTeamWon(match) ? 'W' : 'L'}

@@ -33,8 +33,9 @@ interface MatchConfirmationDialogsProps {
   onReopenConfirm: () => Promise<void>;
   onReopenCancel: () => void;
 
-  // Delete Event (single event or a bulk-save group of events)
-  eventToDelete: EventGroup | null;
+  // Delete Event(s). One entry → single-row delete (or a bulk-save cluster expanded into
+  // one EventGroup). Multiple entries → multi-select bulk delete from the events history.
+  groupsToDelete: EventGroup[] | null;
   deleteEventLoading: boolean;
   onDeleteEventConfirm: () => Promise<void>;
   onDeleteEventCancel: () => void;
@@ -68,7 +69,7 @@ export const MatchConfirmationDialogs = ({
   onReopenConfirm,
   onReopenCancel,
 
-  eventToDelete,
+  groupsToDelete,
   deleteEventLoading,
   onDeleteEventConfirm,
   onDeleteEventCancel,
@@ -76,6 +77,20 @@ export const MatchConfirmationDialogs = ({
   matchLoading,
 }: MatchConfirmationDialogsProps) => {
   const { t } = useTranslation();
+
+  // Pre-compute counts and a single representative once per render so the JSX below stays
+  // readable and avoids repeated `.flatMap` calls. `representativeGroup` is intentionally
+  // the first group: the dialog only surfaces full per-event detail in the single-group
+  // case, and the multi-group case uses an aggregate count summary instead.
+  const groupCount: number = groupsToDelete?.length ?? 0;
+  const totalEventCount: number = groupsToDelete
+    ? groupsToDelete.reduce((sum: number, g: EventGroup) => sum + g.events.length, 0)
+    : 0;
+  const isBulkMultiGroup: boolean = groupCount > 1;
+  // Bulk-save cluster collapsed into a single group still counts as a "single delete"
+  // from the dialog's perspective — the original copy already explains "all N saves".
+  const isSingleGroup: boolean = groupCount === 1;
+  const singleGroup: EventGroup | undefined = isSingleGroup ? groupsToDelete?.[0] : undefined;
   return (
     <>
       {/* End Period Confirmation */}
@@ -149,29 +164,37 @@ export const MatchConfirmationDialogs = ({
         onCancel={onReopenCancel}
       />
 
-      {/* Delete Event Confirmation. Bulk-save groups (multiple saves at the exact same
-          coordinate) are shown with a count so the user knows the click will remove every
-          save in the cluster, not just one. */}
+      {/* Delete Event Confirmation. Three cases share this dialog:                              */}
+      {/* 1. Single-row delete            → "Delete goal for ABC at 02:14?"                       */}
+      {/* 2. Bulk-save cluster (1 group)  → "Delete all 5 saves for ABC (Doe) at 02:14?"          */}
+      {/* 3. Multi-select bulk delete (N) → "Delete 12 selected match events?" + summary list    */}
       <ConfirmationDialog
-        isOpen={!!eventToDelete}
+        isOpen={!!groupsToDelete && groupsToDelete.length > 0}
         icon="🗑️"
         title={
-          eventToDelete && eventToDelete.events.length > 1
-            ? `Delete ${eventToDelete.events.length} ${eventToDelete.representative.type}s`
-            : 'Delete Event'
+          isBulkMultiGroup
+            ? `Delete ${totalEventCount} match events`
+            : singleGroup && singleGroup.events.length > 1
+              ? `Delete ${singleGroup.events.length} ${singleGroup.representative.type}s`
+              : 'Delete Event'
         }
         message={
-          eventToDelete
-            ? eventToDelete.events.length > 1
-              ? `Delete all ${eventToDelete.events.length} ${eventToDelete.representative.type}s for ${eventToDelete.representative.teamName}${eventToDelete.representative.playerName ? ` (${eventToDelete.representative.playerName})` : ''} at ${formatMatchEventTime(eventToDelete.representative.periodNumber, eventToDelete.representative.timeInSeconds)}?`
-              : `Delete ${eventToDelete.representative.type} for ${eventToDelete.representative.teamName} at ${formatMatchEventTime(eventToDelete.representative.periodNumber, eventToDelete.representative.timeInSeconds)}?`
-            : ''
+          isBulkMultiGroup
+            ? `Delete ${totalEventCount} selected match event${totalEventCount === 1 ? '' : 's'}` +
+              ` (${groupCount} row${groupCount === 1 ? '' : 's'})?`
+            : singleGroup
+              ? singleGroup.events.length > 1
+                ? `Delete all ${singleGroup.events.length} ${singleGroup.representative.type}s for ${singleGroup.representative.teamName}${singleGroup.representative.playerName ? ` (${singleGroup.representative.playerName})` : ''} at ${formatMatchEventTime(singleGroup.representative.periodNumber, singleGroup.representative.timeInSeconds)}?`
+                : `Delete ${singleGroup.representative.type} for ${singleGroup.representative.teamName} at ${formatMatchEventTime(singleGroup.representative.periodNumber, singleGroup.representative.timeInSeconds)}?`
+              : ''
         }
         warningMessage="This action cannot be undone."
         confirmText={
-          eventToDelete && eventToDelete.events.length > 1
-            ? `Delete ${eventToDelete.events.length}`
-            : 'Delete'
+          isBulkMultiGroup
+            ? `Delete ${totalEventCount}`
+            : singleGroup && singleGroup.events.length > 1
+              ? `Delete ${singleGroup.events.length}`
+              : 'Delete'
         }
         isLoading={deleteEventLoading}
         onConfirm={onDeleteEventConfirm}

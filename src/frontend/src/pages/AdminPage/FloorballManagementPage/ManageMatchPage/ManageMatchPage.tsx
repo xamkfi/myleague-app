@@ -21,7 +21,7 @@ import OfficialsSelectorSection from './components/OfficialsSelectorSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
 import BulkSaveDialog, { type BulkSavePayload } from './components/BulkSaveDialog';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
-import type { EventGroup } from './components/types';
+import type { EventGroup, ProcessedEvent } from './components/types';
 import { floorballRefereeService } from '../../../../api/floorball/floorballRefereeService';
 
 // Context
@@ -68,13 +68,31 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState(false);
   const [showReopenConfirmation, setShowReopenConfirmation] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
-  // Holds the group the user picked for deletion (always non-empty when set). For most events
-  // the group has a single underlying event; bulk-recorded saves expand into N entries and
-  // the delete handler removes every one of them in sequence.
-  const [eventToDelete, setEventToDelete] = useState<EventGroup | null>(null);
+  // Holds the groups the user picked for deletion (always non-empty when set). For a
+  // single-row delete the array contains exactly one group; for multi-select bulk deletes
+  // it carries every selected group, and the delete handler walks every underlying event
+  // in sequence so a partial failure leaves the rest of the batch consistent.
+  const [groupsToDelete, setGroupsToDelete] = useState<EventGroup[] | null>(null);
   const [deleteEventLoading, setDeleteEventLoading] = useState(false);
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
-  const [isSidesSwapped, setIsSidesSwapped] = useState(false);
+  // Persist the visual side swap per-match in localStorage so that leaving the page and
+  // returning preserves the operator's chosen orientation. Without this, the state lived
+  // only in React component state and was lost the moment the page unmounted.
+  const sidesStorageKey: string = `manage-match-sides-swapped:${match.id}`;
+  const [isSidesSwapped, setIsSidesSwapped] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(sidesStorageKey) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(sidesStorageKey, String(isSidesSwapped));
+    } catch {
+      /* noop – localStorage may be unavailable (private mode, quota, etc.) */
+    }
+  }, [sidesStorageKey, isSidesSwapped]);
   const [isLineupDialogOpen, setIsLineupDialogOpen] = useState(false);
   // Bulk save dialog state. `null` means "closed"; an object means the dialog is open for the
   // captured side + goalie. Using a single state object instead of separate `isOpen` + `side`
@@ -187,10 +205,21 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   const isPeriodActive = periodManagement.startedPeriods.has(timerContext.currentPeriod) &&
     !periodManagement.endedPeriods.has(timerContext.currentPeriod);
 
+  // Keybinds (Q/R/Space) saa olla aktiivinen vain kun yksikään dataa keräävä modaali tai
+  // varmistusdialogi ei ole avoinna. Aikaisemmin tarkistus huomioi vain goal- ja
+  // penalty-formit, jolloin esim. avoin BulkSaveDialog tai lineup-dialogi salli torjunnan
+  // rekisteröinnin vaikka käyttäjä kirjoitti niiden sisällä – etenkin select/button-fokus
+  // ohitti INPUT/TEXTAREA-suodattimen.
   const keybindsEnabled = matchData.currentMatch.status === 'InProgress' &&
     isPeriodActive &&
     !forms.showGoalForm &&
-    !forms.showPenaltyForm;
+    !forms.showPenaltyForm &&
+    !isLineupDialogOpen &&
+    !bulkSaveTarget &&
+    !showEndMatchConfirmation &&
+    !showReopenConfirmation &&
+    !groupsToDelete &&
+    !periodManagement.showEndPeriodConfirmation;
 
   const areNumberSetsEqual = useCallback((a: Set<number>, b: Set<number>) => {
     if (a === b) return true;
@@ -436,12 +465,42 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   // Keyboard shortcuts
   useEffect(() => {
     if (!keybindsEnabled) return;
-    
+
     const handler = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (['INPUT', 'TEXTAREA'].includes(target?.tagName) || target?.isContentEditable) return;
-      
-      const key = e.key.toLowerCase();
+      // Älä koskaan reagoi näppäinyhdistelmiin (esim. Ctrl+R reload, Cmd+Q quit). Käyttäjä
+      // pelkkää Q/R/Space ilman modifiereita käyttäessä haluamme rekisteröidä torjunnan
+      // tai vaihtaa ajastimen tilan.
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const target = e.target as HTMLElement | null;
+      if (target) {
+        const tagName: string = target.tagName;
+        // INPUT / TEXTAREA / SELECT kattaa lomakekentät; isContentEditable kattaa custom-
+        // editorit (esim. rich text). SELECT puuttui ennen, mikä päästi pikanäppäimet läpi
+        // kun käyttäjä oli erotuomarivalinnan dropdownissa.
+        if (
+          tagName === 'INPUT' ||
+          tagName === 'TEXTAREA' ||
+          tagName === 'SELECT' ||
+          target.isContentEditable
+        ) {
+          return;
+        }
+        // Suojaa kaikki avoinna olevat modaalit/dialogit kokonaisuutena: jos fokus on
+        // dialogin sisällä mutta jossain muussa kuin lomakekentässä (esim. nappi tai
+        // overlay-div), pikanäppäimet eivät silti saa laueta. Tämä on toinen
+        // turvaverkko keybindsEnabled-tarkistuksen lisäksi.
+        if (
+          typeof target.closest === 'function' &&
+          target.closest(
+            '[role="dialog"], dialog, .modal, .goal-record-modal, .penalty-record-modal, .bulk-save-modal, .eard-dialog',
+          )
+        ) {
+          return;
+        }
+      }
+
+      const key: string = e.key.toLowerCase();
       if (key === 'q' && leftSideGoalieId) {
         handleRecordSave(leftSideTeam, leftSideGoalieId);
         e.preventDefault();
@@ -455,7 +514,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         e.preventDefault();
       }
     };
-    
+
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [keybindsEnabled, leftSideGoalieId, rightSideGoalieId, leftSideTeam, rightSideTeam, toggleTimer, handleRecordSave]);
@@ -479,23 +538,72 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         setShowEndMatchConfirmation(true);
         return;
       }
-      
+
       // Get live elapsed time from callback, not stale context state
       const currentElapsedSeconds = timerContext.callbacks.getCurrentElapsedSeconds
         ? timerContext.callbacks.getCurrentElapsedSeconds()
         : timerContext.elapsedTimeSeconds;
-      
-      const isUnder15Minutes = currentElapsedSeconds < 900;
-      if (isUnder15Minutes) {
+
+      // With a continuous clock the operator-facing "did you really mean to end early?"
+      // confirmation must be evaluated against the time played *in the current period*,
+      // not the absolute match clock (otherwise period 2 would never trigger it).
+      const periodDurationSeconds: number = (matchData.currentMatch.matchRules?.periodDurationMinutes ?? 15) * 60;
+      const inPeriodElapsedSeconds: number = Math.max(0, currentElapsedSeconds - timerContext.currentPeriodStartSeconds);
+      const isUnderConfiguredPeriodLength: boolean = inPeriodElapsedSeconds < periodDurationSeconds;
+      if (isUnderConfiguredPeriodLength) {
         periodManagement.setShowEndPeriodConfirmation(true);
       } else {
         (async () => {
           await periodManagement.endPeriod();
-          if (timerContext.callbacks.reset) timerContext.callbacks.reset();
+          // Don't reset the clock between periods – the match clock is continuous so
+          // period N+1 should pick up where period N left off. We just pause the timer
+          // so the operator can deliberately restart it when the next period begins.
+          if (timerContext.callbacks.stop) timerContext.callbacks.stop();
         })();
       }
     } else {
       (async () => {
+        // Each period anchors at its theoretical start mark regardless of when the
+        // previous period was actually ended. With a 15-minute period length, period 2
+        // always begins at 15:00 – even if the operator ended period 1 early at 12:00
+        // or let it run over to 17:00. This makes the elapsed clock match the
+        // match-time convention operators expect on the scoreboard.
+        const startingPeriod: number = periodManagement.nextPeriodToStart;
+        const rules = matchData.currentMatch.matchRules;
+        const periodDurationSeconds: number = (rules?.periodDurationMinutes ?? 15) * 60;
+        const overtimeDurationSeconds: number = (rules?.overtimeDurationMinutes ?? 5) * 60;
+        const numberOfPeriods: number = rules?.numberOfPeriods ?? 2;
+
+        let theoreticalStartSeconds: number;
+        if (startingPeriod === periodManagement.overtimePeriodNumber) {
+          theoreticalStartSeconds = numberOfPeriods * periodDurationSeconds;
+        } else if (startingPeriod === periodManagement.shootoutPeriodNumber) {
+          // Shootouts come after overtime when overtime occurred, otherwise straight
+          // after regulation. The clock value for shootouts is mostly cosmetic since
+          // the timer doesn't tick during a shootout, but anchoring it consistently
+          // keeps the displayed clock monotone.
+          theoreticalStartSeconds = matchData.currentMatch.wentToOvertime
+            ? numberOfPeriods * periodDurationSeconds + overtimeDurationSeconds
+            : numberOfPeriods * periodDurationSeconds;
+        } else {
+          theoreticalStartSeconds = Math.max(0, (startingPeriod - 1) * periodDurationSeconds);
+        }
+
+        if (startingPeriod > 0) {
+          timerContext.setPeriodStartTime(startingPeriod, theoreticalStartSeconds);
+        }
+
+        // Jump the backend timer to the theoretical mark before starting the period so
+        // the operator sees e.g. 15:00 the instant period 2 begins. Skip the round-trip
+        // for period 1 because the timer is already at 0 when the match goes live.
+        if (theoreticalStartSeconds > 0) {
+          try {
+            await timerService.setTimer(match.id, theoreticalStartSeconds);
+          } catch (err) {
+            console.warn('Failed to align timer with period start mark:', err);
+          }
+        }
+
         await periodManagement.startPeriod();
         if (periodManagement.nextPeriodToStart !== 4) {
           if (timerContext.callbacks.start) {
@@ -506,20 +614,22 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         }
       })();
     }
-  }, [periodManagement, timerContext]);
+  }, [periodManagement, timerContext, matchData.currentMatch.matchRules, matchData.currentMatch.wentToOvertime, match.id]);
 
   const handleDeleteEvent = useCallback(async () => {
-    if (!eventToDelete || eventToDelete.events.length === 0) {
-      setEventToDelete(null);
+    if (!groupsToDelete || groupsToDelete.length === 0) {
+      setGroupsToDelete(null);
       return;
     }
-    // Require every underlying event to carry an id. We don't want to partially delete a
-    // bulk-save group and leave orphan rows behind, so abort the whole batch if anything
-    // is malformed.
-    const eventsToDelete = eventToDelete.events.filter(e => !!e.eventId);
-    if (eventsToDelete.length !== eventToDelete.events.length || eventsToDelete.length === 0) {
+    // Flatten the (possibly multi-group) selection into a single ordered list of underlying
+    // events, then require every entry to carry an id. We don't want to partially delete a
+    // bulk-save group — or skip silently corrupted rows in a multi-select batch — and leave
+    // orphan rows behind, so abort the whole batch up-front if anything is malformed.
+    const allEvents: ProcessedEvent[] = groupsToDelete.flatMap(group => group.events);
+    const eventsToDelete: ProcessedEvent[] = allEvents.filter(e => !!e.eventId);
+    if (eventsToDelete.length !== allEvents.length || eventsToDelete.length === 0) {
       matchData.setError('Cannot delete: missing event id');
-      setEventToDelete(null);
+      setGroupsToDelete(null);
       return;
     }
 
@@ -541,14 +651,14 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 
       await matchData.loadCurrentMatchStatus();
       await matchEvents.loadMatchEvents();
-      setEventToDelete(null);
+      setGroupsToDelete(null);
     } catch (err) {
       matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
-      setEventToDelete(null);
+      setGroupsToDelete(null);
     } finally {
       setDeleteEventLoading(false);
     }
-  }, [eventToDelete, match.id, matchData, matchEvents]);
+  }, [groupsToDelete, match.id, matchData, matchEvents]);
 
   const handleOfficialSelect = useCallback(async (index: number, refereeId: string) => {
     if (!match.id || !refereeId) return;
@@ -635,7 +745,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         periodLoading={periodManagement.periodLoading}
         onEndPeriodConfirm={async () => {
           await periodManagement.endPeriod();
-          if (timerContext.callbacks.reset) timerContext.callbacks.reset();
+          // Stop, don't reset: the next period continues from this elapsed-second mark.
+          if (timerContext.callbacks.stop) timerContext.callbacks.stop();
           periodManagement.setShowEndPeriodConfirmation(false);
         }}
         onEndPeriodCancel={periodManagement.cancelEndPeriod}
@@ -677,10 +788,10 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         }}
         onReopenCancel={() => setShowReopenConfirmation(false)}
 
-        eventToDelete={eventToDelete}
+        groupsToDelete={groupsToDelete}
         deleteEventLoading={deleteEventLoading}
         onDeleteEventConfirm={handleDeleteEvent}
-        onDeleteEventCancel={() => setEventToDelete(null)}
+        onDeleteEventCancel={() => setGroupsToDelete(null)}
         
         matchLoading={matchData.loading}
       />
@@ -817,7 +928,25 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
                 matchData.setError('Cannot delete: missing event id');
                 return;
               }
-              setEventToDelete(group);
+              setGroupsToDelete([group]);
+            }}
+            onBulkDelete={(groups) => {
+              // Belt-and-braces validation: the child only invokes this with non-empty
+              // groups whose underlying events all carry ids, but cross-component contracts
+              // can drift over time. Surface a visible error rather than opening a dialog
+              // backed by malformed data.
+              if (groups.length === 0) {
+                matchData.setError('Cannot delete: no events selected');
+                return;
+              }
+              const malformed: boolean = groups.some(
+                g => g.events.length === 0 || g.events.some(e => !e.eventId)
+              );
+              if (malformed) {
+                matchData.setError('Cannot delete: missing event id');
+                return;
+              }
+              setGroupsToDelete(groups);
             }}
             /* Once the match is Completed/Cancelled the backend blocks event deletion */
             /* (the only legitimate edit path is to reopen the match first), so hide   */
@@ -857,7 +986,9 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
  */
 const ManageMatchPageWithContext = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => {
   return (
-    <MatchTimerProvider initialPeriod={1}>
+    // Pass matchId so the timer context can persist per-period start times to localStorage
+    // for the duration of the match (continuous-clock behaviour relies on this).
+    <MatchTimerProvider initialPeriod={1} matchId={match.id}>
       <ManageMatchPageContent match={match} setMatch={setMatch} onClose={onClose} />
     </MatchTimerProvider>
   );

@@ -45,6 +45,7 @@ const LiveMatchTimer = ({
   const {
     currentPeriod,
     elapsedTimeSeconds,
+    currentPeriodStartSeconds,
     registerCallback,
     handleTimerUpdate,
   } = useMatchTimerContext();
@@ -67,9 +68,14 @@ const LiveMatchTimer = ({
   periodLabels[overtimePeriodNumber] = 'Overtime';
   periodLabels[shootoutPeriodNumber] = 'Shootout';
 
-  // Turn digits red when elapsed time exceeds period duration, except during shootout
+  // The clock display is continuous across periods, so the "should this period end now"
+  // alert has to compare the in-period elapsed time (total elapsed minus the current
+  // period's recorded start) against the configured period duration. Without this, the
+  // digits would turn red as soon as elapsed >= 15min in period 2 even though only a few
+  // seconds had been played in that period.
   const isInShootout = currentPeriod === shootoutPeriodNumber;
-  const shouldPeriodEnd = elapsedTimeSeconds >= periodDurationSeconds && !isInShootout;
+  const inPeriodElapsedSeconds: number = Math.max(0, elapsedTimeSeconds - currentPeriodStartSeconds);
+  const shouldPeriodEnd = inPeriodElapsedSeconds >= periodDurationSeconds && !isInShootout;
   
   // Timer controls enabled only if current period has started and not ended, and not in shootout
   const controlsEnabled = startedPeriods.has(currentPeriod) && !endedPeriods.has(currentPeriod) && currentPeriod !== shootoutPeriodNumber;
@@ -154,6 +160,7 @@ const LiveMatchTimer = ({
                 onGetStopFunction={handleGetStopFunction}
                     controlsEnabled={controlsEnabled}
                     keybindsEnabled={keybindsEnabled}
+                    periodStartSeconds={currentPeriodStartSeconds}
                     onPeriodControlClick={onPeriodControlClick}
                     canEndPeriod={canEndPeriod}
                     getPeriodControlButtonText={getPeriodControlButtonText}

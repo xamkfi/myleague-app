@@ -8,10 +8,12 @@ namespace WebAPI.Models.Common
     public class SetTimerRequest
     {
         /// <summary>
-        /// The time to set in seconds
+        /// The time to set in seconds. Only a non-negative floor is enforced – the
+        /// scorekeeper is trusted to enter any value appropriate for the match's
+        /// configured periods/overtime.
         /// </summary>
         [Required]
-        [Range(0, 7200, ErrorMessage = "Time in seconds must be between 0 and 7200 (2 hours)")]
+        [Range(0, int.MaxValue, ErrorMessage = "Time in seconds must be non-negative")]
         public int TimeInSeconds { get; set; }
     }
 }

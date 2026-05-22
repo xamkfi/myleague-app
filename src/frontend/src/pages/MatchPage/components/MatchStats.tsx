@@ -4,6 +4,7 @@ import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes'
 import { useTranslation } from 'react-i18next';
 import './MatchStats.scss';
 import StatRow from './StatRow';
+import { getTeamInitials } from './matchUtils';
 
 interface MatchStatsProps {
   match: FloorballMatchDto;
@@ -85,12 +86,49 @@ export default function MatchStats({ match }: MatchStatsProps) {
 
   
 
+  const homeInitials: string = getTeamInitials(homeStats.teamName);
+  const awayInitials: string = getTeamInitials(awayStats.teamName);
+
   return (
     <div className="match-stats">
       <div className="stats-header">
-        <div className="team-name home">{homeStats.teamName}</div>
+        <div className="team-identity home">
+          <div className="team-crest home-team" title={homeStats.teamName}>
+            {match.homeTeamLogo ? (
+              <img
+                src={match.homeTeamLogo}
+                alt={`${homeStats.teamName} logo`}
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            ) : (
+              <span className="team-initials">{homeInitials}</span>
+            )}
+          </div>
+          <span className="team-name">{homeStats.teamName}</span>
+        </div>
         <div className="header-label">{t('matchPage.stats.title')}</div>
-        <div className="team-name away">{awayStats.teamName}</div>
+        <div className="team-identity away">
+          <span className="team-name">{awayStats.teamName}</span>
+          <div className="team-crest away-team" title={awayStats.teamName}>
+            {match.awayTeamLogo ? (
+              <img
+                src={match.awayTeamLogo}
+                alt={`${awayStats.teamName} logo`}
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            ) : (
+              <span className="team-initials">{awayInitials}</span>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="stats-content">

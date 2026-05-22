@@ -18,6 +18,12 @@ interface MatchTimerProps {
   controlsEnabled?: boolean;
   isActive?: boolean;
   keybindsEnabled?: boolean;
+  /**
+   * Absolute elapsed-second mark at which the current period started. The Reset button
+   * rewinds to this value instead of 0, because the match clock is continuous across
+   * periods (e.g. period 2 starts at 15:00, so reset goes back to 15:00 there).
+   */
+  periodStartSeconds?: number;
   // Period control props
   onPeriodControlClick?: () => void;
   canEndPeriod?: () => boolean;
@@ -39,6 +45,7 @@ export const MatchTimer = ({
   controlsEnabled = true,
   isActive = true,
   keybindsEnabled = false,
+  periodStartSeconds = 0,
   onPeriodControlClick,
   canEndPeriod,
   getPeriodControlButtonText,
@@ -46,7 +53,7 @@ export const MatchTimer = ({
   nextPeriodToStart,
 }: MatchTimerProps) => {
   const [showTimeInputModal, setShowTimeInputModal] = useState(false);
-  
+
   const {
     displayTime,
     isRunning,
@@ -55,7 +62,6 @@ export const MatchTimer = ({
     initialLoadComplete,
     startTimer,
     stopTimer,
-    resetTimer,
     setTimer,
     adjustTimer,
     createTimer,
@@ -101,14 +107,20 @@ export const MatchTimer = ({
     }
   }, [stopTimer]);
   
-  // Handle reset button
+  // Handle reset button. With a continuous match clock, "reset" no longer means "back
+  // to 0" — it means "back to the start of the current period". For period 1 this is
+  // still 0; for later periods it's the absolute elapsed-second mark we recorded when
+  // the operator started that period.
   const handleReset = useCallback(async () => {
     try {
-      await resetTimer();
+      const target: number = Number.isFinite(periodStartSeconds) && periodStartSeconds >= 0
+        ? Math.floor(periodStartSeconds)
+        : 0;
+      await setTimer(target);
     } catch (err) {
       console.error('Error resetting timer:', err);
     }
-  }, [resetTimer]);
+  }, [setTimer, periodStartSeconds]);
   
   // Handle toggle (play/pause)
   const handleToggle = useCallback(async () => {
