@@ -1,12 +1,69 @@
 @use "sass:map";
 @use '@variables' as *;
 
+// IMPORTANT: `FloorballTournamentsPage.scss` defines `.modal-overlay .modal-content`
+// (specificity 0,2,0) with `max-width: 500px` and `overflow-y: auto`. Because that
+// selector wins over a bare `.import-modal { ... }` (specificity 0,1,0), we have to
+// scope the import-modal sizing under the same `.modal-overlay .modal-content`
+// chain — otherwise the import modal renders at 500px wide, the AI-help panel and
+// preview form overflow horizontally, and BOTH the wrapper and the body scroll
+// (the classic "double-scrollbar" bug seen in the screenshot). The selector below
+// reaches specificity 0,3,0 so it reliably wins.
+.modal-overlay > .modal-content.import-modal {
+  // Wider than the default confirm modal so the AI-help panel, the preview form
+  // fields and the dry-run table fit comfortably. Capped to the viewport so it
+  // never causes its own horizontal scroll on narrow screens.
+  max-width: min(880px, calc(100vw - 2 * #{map.get($spacing, 'base')}));
+  width: 100%;
+  // Switch off the wrapper-level vertical scroll: the inner `.import-modal__body`
+  // owns scrolling, so allowing it on both produces two competing scrollbars.
+  overflow: hidden;
+  max-height: min(92vh, 1000px);
+  display: flex;
+  flex-direction: column;
+}
+
 .import-modal {
-  max-width: 720px;
+  // Kept for backwards compatibility / lower-specificity contexts (e.g. tests, story
+  // book, or any future host page that doesn't ship the tournaments-page modal CSS).
+  max-width: 880px;
 
   &__body {
+    // The wrapper is `display: flex; flex-direction: column` (see scoped rule above),
+    // so the body takes the remaining vertical space and owns the scroll. We also
+    // clamp horizontal overflow so a stray long word / wide child never produces a
+    // horizontal scrollbar on the modal (the source of the cut-off title bug).
+    flex: 1 1 auto;
+    min-height: 0;
     max-height: 70vh;
     overflow-y: auto;
+    overflow-x: hidden;
+    // Honour border/padding inside the explicit height, otherwise nested padding
+    // can push the body past its parent and trigger the wrapper scroll again.
+    box-sizing: border-box;
+  }
+
+  // Defensive: flex/grid containers default to `min-width: auto`, which prevents
+  // long words / wide selects from shrinking and ends up triggering horizontal
+  // overflow on the parent. Force shrinking on every direct text/form descendant.
+  &__pick,
+  &__ai-help,
+  &__field,
+  &__errors,
+  &__summary,
+  &__log,
+  &__preview {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  &__field-input,
+  select,
+  textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   &__pick {

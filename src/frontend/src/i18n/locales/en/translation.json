@@ -832,6 +832,8 @@
       "playoffSchedule": {
         "title": "Planned playoff matches",
         "hint": "Teams are filled in automatically after the group stage finishes.",
+        "toggleShow": "Show playoff schedule ({{count}} matches)",
+        "toggleHide": "Hide playoff schedule",
         "tbd": "TBD",
         "placeholderTooltip": "This is a planned playoff slot. The actual match will be generated when the group stage finishes.",
         "rounds": {

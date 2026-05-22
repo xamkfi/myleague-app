@@ -22,6 +22,10 @@ import type {
   FloorballTournamentGroupDto,
   FloorballPlayoffBracketDto
 } from '../../types/floorball/tournamentTypes';
+import {
+  formatTournamentGroupLabel,
+  formatTournamentGroupTabLabel
+} from '../../utils/tournamentGroupLabel';
 import './TournamentPage.scss';
 
 type TabType = 'summary' | 'groups' | 'playoffs' | 'statistics' | 'results' | 'fixtures';
@@ -410,33 +414,52 @@ function TournamentPage() {
       ? tournament.tournamentRules?.teamsAdvancingPerGroup ?? 0
       : 0;
     const currentGroup = activeGroup ?? sortedGroups[0];
+    const groupWord = t('tournaments.group', 'Lohko');
+    const hasMultipleGroups = sortedGroups.length > 1;
     return (
       <div className="tournament-page__content">
-        {sortedGroups.length > 1 && (
-          <nav
-            className="tournament-page__subtabs"
-            aria-label={t('tournaments.groupTabsAria', 'Lohkovalinta')}
-          >
-            {sortedGroups.map((group) => (
-              <button
-                key={group.id}
-                type="button"
-                className={`tournament-page__subtab ${
-                  currentGroup.id === group.id ? 'tournament-page__subtab--active' : ''
-                }`}
-                onClick={() => handleGroupChange(group.id)}
-                aria-pressed={currentGroup.id === group.id}
-              >
-                {t('tournaments.group', 'Lohko')} {group.name}
-              </button>
-            ))}
-          </nav>
+        {hasMultipleGroups && (
+          <div className="tournament-page__group-nav">
+            <span className="tournament-page__group-nav-label" id="tournament-group-nav-label">
+              {t('tournaments.selectGroup', 'Valitse lohko')}
+            </span>
+            <nav
+              className="tournament-page__subtabs"
+              aria-labelledby="tournament-group-nav-label"
+            >
+              {sortedGroups.map((group) => {
+                const isActive = currentGroup.id === group.id;
+                const tabLabel = formatTournamentGroupTabLabel(group.name, groupWord);
+                const fullLabel = formatTournamentGroupLabel(group.name, groupWord);
+                return (
+                  <button
+                    key={group.id}
+                    type="button"
+                    className={`tournament-page__subtab ${
+                      isActive ? 'tournament-page__subtab--active' : ''
+                    }`}
+                    onClick={() => handleGroupChange(group.id)}
+                    aria-pressed={isActive}
+                    aria-label={fullLabel}
+                    title={fullLabel}
+                  >
+                    <span className="tournament-page__subtab-primary">{tabLabel}</span>
+                    {tabLabel !== fullLabel && (
+                      <span className="tournament-page__subtab-secondary">{fullLabel}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
         )}
         <GroupSection
           key={currentGroup.id}
           competitionId={id}
           group={currentGroup}
+          groupDisplayName={formatTournamentGroupLabel(currentGroup.name, groupWord)}
           teamsAdvancingPerGroup={teamsAdvancingPerGroup}
+          showTitle={!hasMultipleGroups}
         />
       </div>
     );
@@ -528,11 +551,6 @@ function TournamentPage() {
       case 'fixtures':
         return (
           <>
-            {/* Show pre-defined playoff slots only in the upcoming schedule view (not in the
-                completed results view) so end-users see the planned QF/SF/Final times even
-                while the bracket is still pending. The component renders nothing once the
-                playoff stage has been started — by then real matches exist. */}
-            {activeTab === 'fixtures' && <PlannedPlayoffSchedule tournament={tournament} />}
             <MatchesList
               variant={activeTab}
               matchesLoading={matchesLoading}
@@ -543,6 +561,13 @@ function TournamentPage() {
               handlePageChange={handlePageChange}
               groupingMode="none"
             />
+            {activeTab === 'fixtures' && (
+              <PlannedPlayoffSchedule
+                tournament={tournament}
+                collapsible
+                afterMatchList
+              />
+            )}
           </>
         );
       default:
@@ -607,12 +632,18 @@ function TournamentPage() {
 interface GroupSectionProps {
   competitionId: string;
   group: FloorballTournamentGroupDto;
+  groupDisplayName: string;
   teamsAdvancingPerGroup: number;
+  showTitle: boolean;
 }
 
-function GroupSection({ competitionId, group, teamsAdvancingPerGroup }: GroupSectionProps) {
-  const { t } = useTranslation();
-
+function GroupSection({
+  competitionId,
+  group,
+  groupDisplayName,
+  teamsAdvancingPerGroup,
+  showTitle
+}: GroupSectionProps) {
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -658,13 +689,13 @@ function GroupSection({ competitionId, group, teamsAdvancingPerGroup }: GroupSec
 
   return (
     <div className="tournament-page__group-block">
-      <h2 className="tournament-page__group-block-title">
-        {t('tournaments.group', 'Lohko')} {group.name}
-      </h2>
+      {showTitle && (
+        <h2 className="tournament-page__group-block-title">{groupDisplayName}</h2>
+      )}
 
       <TournamentGroupStandingsTable
         groupId={group.id}
-        groupName={group.name}
+        groupName={groupDisplayName}
         teamsAdvancingPerGroup={teamsAdvancingPerGroup}
       />
 

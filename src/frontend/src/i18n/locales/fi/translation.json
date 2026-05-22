@@ -832,6 +832,8 @@
       "playoffSchedule": {
         "title": "Suunnitellut pudotuspeliottelut",
         "hint": "Joukkueet täydennetään automaattisesti lohkovaiheen päätyttyä.",
+        "toggleShow": "Näytä pudotuspeliaikataulu ({{count}} ottelua)",
+        "toggleHide": "Piilota pudotuspeliaikataulu",
         "tbd": "TBD",
         "placeholderTooltip": "Tämä on suunniteltu pudotuspeliotteluiden paikka. Varsinainen ottelu luodaan, kun lohkovaihe päättyy.",
         "rounds": {
