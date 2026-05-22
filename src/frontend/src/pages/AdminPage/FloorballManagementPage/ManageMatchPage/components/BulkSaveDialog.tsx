@@ -59,6 +59,11 @@ const BulkSaveDialog = ({
   errorMessage,
 }: BulkSaveDialogProps) => {
   const countInputRef = useRef<HTMLInputElement | null>(null);
+  // Tracks the previous `isOpen` so we can detect the closed→open transition. Without this
+  // the reset effect would re-run every time `currentElapsedSeconds` (or any other live
+  // prop) ticks while the dialog is open, clobbering whatever the user has typed into the
+  // count / time fields — a 1Hz timer tick would reset count back to 1 once per second.
+  const wasOpenRef = useRef<boolean>(false);
 
   const [count, setCount] = useState<number>(1);
   const [periodNumber, setPeriodNumber] = useState<number>(currentPeriod);
@@ -67,11 +72,14 @@ const BulkSaveDialog = ({
   const [timeMinutes, setTimeMinutes] = useState<number>(initialMinutes);
   const [timeSeconds, setTimeSeconds] = useState<number>(initialSeconds);
 
-  // Re-sync the form whenever the dialog (re)opens so a stale period/time from the previous
-  // session doesn't leak in. Doing this on `isOpen` flipping to `true` covers both the
-  // initial mount and any later reopen after a successful submission.
+  // Re-sync the form only on the closed→open transition so a stale period/time from a
+  // previous open session doesn't leak in, but once the user is editing we leave the
+  // fields alone even as live props (current period / elapsed seconds) keep updating.
   useEffect(() => {
-    if (!isOpen) return;
+    const justOpened: boolean = isOpen && !wasOpenRef.current;
+    wasOpenRef.current = isOpen;
+    if (!justOpened) return;
+
     setCount(1);
     setPeriodNumber(currentPeriod);
     setTimeMinutes(Math.floor(currentElapsedSeconds / 60));
