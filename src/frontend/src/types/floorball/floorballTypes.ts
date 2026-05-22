@@ -61,6 +61,14 @@ export interface FloorballTeamPlayer {
   playerName: string;
   position: FloorballPosition;
   jerseyNumber?: number;
+  /**
+   * The jersey number originally requested for this player when the assigned
+   * {@link jerseyNumber} is a substitute (e.g. import had to pick the next free
+   * number). `null` / `undefined` means the assigned number matches the requested
+   * one and no admin review is needed. Drives the "needs review" highlight on the
+   * roster page; cleared automatically when the admin changes the number.
+   */
+  requestedJerseyNumber?: number | null;
   isActive: boolean;
   age?: number;
   gamesPlayed: number;
@@ -150,6 +158,8 @@ export interface FloorballTeamPlayerDto {
   playerName: string;
   position: FloorballPosition;
   jerseyNumber?: number;
+  /** See {@link FloorballTeamPlayer.requestedJerseyNumber}. */
+  requestedJerseyNumber?: number | null;
   isActive: boolean;
   gamesPlayed: number;
   goals: number;

@@ -1,7 +1,7 @@
 @use 'sass:map';
 @use '../../../../../styles/variables' as *;
 
-.penalty-record-modal-overlay {
+.bulk-save-modal-overlay {
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
@@ -12,23 +12,24 @@
   padding: 16px;
 }
 
-.penalty-record-modal {
+.bulk-save-modal {
   background: $color-neutral-white;
   border-radius: 12px;
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
-  width: min(560px, 100%);
+  width: min(480px, 100%);
   max-height: calc(100vh - 32px);
   overflow: auto;
   display: flex;
   flex-direction: column;
 }
 
-.penalty-record-modal__header {
+.bulk-save-modal__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 20px 24px;
   border-bottom: 1px solid $color-neutral-medium-grey;
+  gap: 12px;
 
   h3 {
     margin: 0;
@@ -39,7 +40,14 @@
   }
 }
 
-.penalty-record-modal__close {
+.bulk-save-modal__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: $color-neutral-dark-grey;
+}
+
+.bulk-save-modal__close {
   background: none;
   border: none;
   font-size: 22px;
@@ -52,6 +60,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 6px;
+  flex: 0 0 auto;
   transition: background-color 0.15s ease, color 0.15s ease;
 
   &:hover:not(:disabled) {
@@ -65,64 +74,46 @@
   }
 }
 
-.penalty-record-modal__body {
+.bulk-save-modal__body {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-
-  .event-form.penalty-form {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+  gap: 16px;
 }
 
-.penalty-record-modal .form-grid {
+.bulk-save-modal__row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 
-  @media (max-width: 520px) {
+  @media (max-width: 420px) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-.penalty-record-modal .field {
+.bulk-save-modal .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-
-  &--description {
-    /* The description field stretches across both columns so the textarea has enough room. */
-    grid-column: 1 / -1;
-  }
 
   label {
     font-size: 14px;
     line-height: 20px;
     font-weight: 600;
     color: $color-text-primary;
-
-    .field-hint {
-      font-weight: 400;
-      color: $color-neutral-dark-grey;
-    }
   }
 
-  .select-field,
-  .time-input-group,
-  .description-input {
-    width: 100%;
+  .field-help {
+    font-size: 12px;
+    line-height: 16px;
+    color: $color-neutral-dark-grey;
   }
 }
 
-.penalty-record-modal .select-field {
+.bulk-save-modal .number-input,
+.bulk-save-modal .select-field {
+  width: 100%;
   height: 40px;
   padding: 8px 12px;
   border-radius: 6px;
@@ -131,6 +122,7 @@
   font-size: 15px;
   line-height: 24px;
   color: $color-text-primary;
+  font-variant-numeric: tabular-nums;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 
   &:hover:not(:disabled) {
@@ -145,24 +137,21 @@
     box-shadow: 0 0 0 3px rgba(47, 96, 186, 0.15);
   }
 
-  &.is-placeholder {
-    color: $color-neutral-dark-grey;
-    font-weight: 400;
+  /* Remove the native spinner arrows so the count input matches the modal aesthetic and
+   * doesn't compete with the explicit preset buttons below. */
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
-
-  option {
-    color: $color-text-primary;
-  }
-
-  option[disabled] {
-    color: $color-neutral-dark-grey;
-  }
+  -moz-appearance: textfield;
 }
 
-.penalty-record-modal .time-input-group {
+.bulk-save-modal .time-input-group {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
 
   .time-input {
     flex: 1;
@@ -207,40 +196,36 @@
   }
 }
 
-.penalty-record-modal .description-input {
-  min-height: 88px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  background: $color-neutral-light-grey;
-  font-size: 14px;
-  line-height: 20px;
+.bulk-save-modal__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bulk-save-modal .preset-btn {
+  height: 32px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  background: $color-neutral-white;
+  border: 1px solid $color-neutral-medium-grey;
   color: $color-text-primary;
-  resize: vertical;
-  font-family: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: $color-neutral-white;
+    background: $color-neutral-light-grey;
     border-color: $color-neutral-dark-grey;
   }
 
-  &:focus {
-    outline: none;
-    border-color: $color-blue-deep;
-    background: $color-neutral-white;
-    box-shadow: 0 0 0 3px rgba(47, 96, 186, 0.15);
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
-.penalty-record-modal .description-counter {
-  align-self: flex-end;
-  font-size: 12px;
-  color: $color-neutral-dark-grey;
-  font-variant-numeric: tabular-nums;
-}
-
-.penalty-record-modal .field-error {
+.bulk-save-modal .field-error {
   background: #fef2f2;
   border: 1px solid #fecaca;
   color: #991b1b;
@@ -250,12 +235,13 @@
   line-height: 18px;
 }
 
-.penalty-record-modal .form-actions {
+.bulk-save-modal__footer {
   display: flex;
   gap: 12px;
   justify-content: space-between;
   align-items: center;
-  padding-top: 4px;
+  padding: 16px 24px;
+  border-top: 1px solid $color-neutral-medium-grey;
 
   .cancel-btn,
   .submit-btn {
@@ -290,8 +276,8 @@
     border: 1px solid $color-blue-deep;
 
     &:hover:not(:disabled) {
-      /* `filter: brightness(...)` keeps us forward-compatible with Dart Sass 3 (which
-       * removes `darken()`) without requiring a `@use 'sass:color'` import here. */
+      /* Avoid `darken()` (deprecated in Dart Sass 3) by using a filter-based hover state,
+       * matching the rest of the manage match page. */
       filter: brightness(0.92);
     }
   }

@@ -172,6 +172,9 @@ export default function MatchEvents({ match }: MatchEventsProps) {
 
   const renderPenaltyRow = (event: FloorballPenaltyEventDto) => {
     const home: boolean = isHomeTeam(event.teamId);
+    // Trim defensively because old data may have a non-trimmed empty string. Without trimming
+    // we'd render an empty italic line under every legacy penalty.
+    const description: string = (event.description ?? '').trim();
     return (
       <div className={`event-row ${home ? 'home-event' : 'away-event'} penalty`}>
         <span className="event-time" title={`Period ${event.periodNumber}`}>
@@ -183,10 +186,17 @@ export default function MatchEvents({ match }: MatchEventsProps) {
         <span className="event-team-short" title={home ? match.homeTeamName : match.awayTeamName}>
           {getTeamShort(event.teamId)}
         </span>
-        <span className="event-details">
-          {renderPlayerName(event.playerName, event.playerId)}
-          {event.penaltyType && (
-            <span className="penalty-type"> ({event.penaltyType.toLowerCase()})</span>
+        <span className="event-details penalty-details">
+          <span className="penalty-line">
+            {renderPlayerName(event.playerName, event.playerId)}
+            {event.penaltyType && (
+              <span className="penalty-type"> ({event.penaltyType.toLowerCase()})</span>
+            )}
+          </span>
+          {description && (
+            <span className="penalty-description" title={description}>
+              {description}
+            </span>
           )}
         </span>
       </div>

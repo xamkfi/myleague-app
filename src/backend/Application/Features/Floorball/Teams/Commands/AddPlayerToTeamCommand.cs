@@ -27,5 +27,12 @@ namespace Application.Features.Floorball.Teams.Commands
         Guid TeamId,
         Guid PlayerId,
         FloorballPosition Position,
-        int? JerseyNumber) : IRequest<Result<FloorballTeamDto>>;
+        int? JerseyNumber,
+        /// <summary>
+        /// The jersey number the caller originally wanted. When it differs from
+        /// <paramref name="JerseyNumber"/>, the resulting roster entry is flagged so the
+        /// roster UI can highlight it for admin review. <c>null</c> (or equal to
+        /// <paramref name="JerseyNumber"/>) means no substitution occurred.
+        /// </summary>
+        int? RequestedJerseyNumber = null) : IRequest<Result<FloorballTeamDto>>;
 }

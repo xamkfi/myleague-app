@@ -83,37 +83,54 @@ public class RecordSaveHandler : IRequestHandler<RecordSaveCommand, Result<Floor
                 return Result<FloorballMatchDto>.Failure($"Goalie with ID {request.GoalieId} not found.");
             }
 
-            _logger.LogInformation("Recording save in match {MatchId}", request.MatchId);
+            // Defensive clamp: the controller validates [1, 99] but legacy callers that
+            // construct the command directly (older tests, future internal flows) might pass
+            // Count = 0. Treating < 1 as 1 keeps the single-save semantics identical to
+            // before this field existed.
+            int saveCount = request.Count < 1 ? 1 : request.Count;
 
-            FloorballSave saveEvent = match.RecordSave(
-                team,
-                goalie,
-                request.PeriodNumber,
-                request.TimeInSeconds,
-                request.WasInOvertime,
-                request.WasInShootout);
+            _logger.LogInformation(
+                "Recording {Count} save(s) in match {MatchId}", saveCount, request.MatchId);
 
-            // Update goalie season statistics (1 save, 1 shot against, 0 goals allowed)
-            // First verify this is the active goalie
+            // Verify active goalie once (the discrepancy is the same for every save in the
+            // bulk batch, so logging it N times would just be noise).
             Guid? activeGoalieId = match.GetActiveGoalieId(request.TeamId);
             if (activeGoalieId.HasValue && activeGoalieId.Value != goalie.Id)
             {
                 _logger.LogWarning("Save recorded for goalie {GoalieId} but active goalie is {ActiveGoalieId} for team {TeamId}",
                     goalie.Id, activeGoalieId.Value, request.TeamId);
-                // Still record the save but log the discrepancy
+                // Still record the save(s) but log the discrepancy.
             }
 
-            await UpdateGoalieSeasonStatistics(goalie.Id, request.TeamId, match.CompetitionId, 1, 1, 0, cancellationToken);
+            for (int i = 0; i < saveCount; i++)
+            {
+                FloorballSave saveEvent = match.RecordSave(
+                    team,
+                    goalie,
+                    request.PeriodNumber,
+                    request.TimeInSeconds,
+                    request.WasInOvertime,
+                    request.WasInShootout);
+
+                _matchRepository.MarkEventAsAdded(saveEvent);
+            }
+
+            // Aggregate stats updates so we hit the statistics tables once per request rather
+            // than once per save — the per-save UpdateGoalieSeasonStatistics / UpdateMatch...
+            // calls are pure increments, so collapsing them into a single batched call yields
+            // the same end state.
+            await UpdateGoalieSeasonStatistics(goalie.Id, request.TeamId, match.CompetitionId, saveCount, saveCount, 0, cancellationToken);
 
             // Update match team statistics for the attacking team (the team that took the shot that was saved)
             // The save is for the defending team (request.TeamId), so we need to update the opposing team's stats
             Guid attackingTeamId = request.TeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
-            await UpdateMatchTeamStatistics(match.Id, attackingTeamId, 1, cancellationToken);
-
-            _matchRepository.MarkEventAsAdded(saveEvent);
+            await UpdateMatchTeamStatistics(match.Id, attackingTeamId, saveCount, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // Single notification regardless of bulk size — listeners (e.g. spectator pages,
+            // analytics) only need one cue to refresh and we don't want to spam them with N
+            // identical events.
             await _notificationSenderService.SendNotificationAsync(
                 FloorballNotificationEvents.SaveRecorded,
                 new MatchNotificationPayload(match.Id));

@@ -19,6 +19,7 @@ import ActiveRosterCard from './components/ActiveRosterCard';
 import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from './components/OfficialsSelectorSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
+import BulkSaveDialog, { type BulkSavePayload } from './components/BulkSaveDialog';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import type { ProcessedEvent } from './components/types';
 import { floorballRefereeService } from '../../../../api/floorball/floorballRefereeService';
@@ -72,6 +73,12 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
   const [isSidesSwapped, setIsSidesSwapped] = useState(false);
   const [isLineupDialogOpen, setIsLineupDialogOpen] = useState(false);
+  // Bulk save dialog state. `null` means "closed"; an object means the dialog is open for the
+  // captured side + goalie. Using a single state object instead of separate `isOpen` + `side`
+  // flags avoids inconsistent transitions when the user reopens the dialog after a submit.
+  const [bulkSaveTarget, setBulkSaveTarget] = useState<{ team: 'home' | 'away'; goalieId: string } | null>(null);
+  const [bulkSaveLoading, setBulkSaveLoading] = useState(false);
+  const [bulkSaveError, setBulkSaveError] = useState<string | null>(null);
 
   // Sync goalie state with match prop
   useEffect(() => {
@@ -369,6 +376,60 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     }
   }, [match.id, homeTeamId, awayTeamId, matchWentToOvertime, matchWentToShootout, timerContext.currentPeriod, timerContext.elapsedTimeSeconds, timerContext.callbacks, matchEvents, matchData]);
 
+  const handleOpenBulkSave = useCallback((team: 'home' | 'away', goalieId: string) => {
+    if (!goalieId) return;
+    setBulkSaveError(null);
+    setBulkSaveTarget({ team, goalieId });
+  }, []);
+
+  const handleCloseBulkSave = useCallback(() => {
+    if (bulkSaveLoading) return;
+    setBulkSaveTarget(null);
+    setBulkSaveError(null);
+  }, [bulkSaveLoading]);
+
+  const handleSubmitBulkSave = useCallback(async (payload: BulkSavePayload) => {
+    if (!bulkSaveTarget || !match.id) return;
+    const { team, goalieId } = bulkSaveTarget;
+    const teamId: string = team === 'home' ? homeTeamId : awayTeamId;
+    if (!teamId) {
+      setBulkSaveError('Cannot determine team — try reopening the match.');
+      return;
+    }
+
+    // The backend accepts a `count` field on the record-save request and writes all events
+    // inside a single transaction (and skips the per-(match, goalie) rate limit while it's
+    // doing so). This avoids both the 250ms rate limit that broke the previous client-side
+    // loop and the partial-failure window where some saves landed and some didn't.
+    setBulkSaveLoading(true);
+    setBulkSaveError(null);
+    try {
+      const request: RecordSaveEventRequest = {
+        goalieId,
+        matchId: match.id,
+        teamId,
+        playerId: goalieId,
+        periodNumber: payload.periodNumber,
+        timeInSeconds: payload.timeInSeconds,
+        wasInOvertime: matchWentToOvertime || payload.periodNumber > 2,
+        wasInShootout: matchWentToShootout || payload.periodNumber > 3,
+        count: payload.count,
+      };
+      await floorballMatchEventService.recordSave(request);
+      await matchEvents.loadMatchEvents();
+      matchData.setError(null);
+      setBulkSaveTarget(null);
+    } catch (error) {
+      const baseMessage: string = error instanceof Error ? error.message : 'Failed to record saves';
+      setBulkSaveError(baseMessage);
+      // Refresh the events list so any saves the backend committed before the failure are
+      // still reflected in the UI immediately.
+      await matchEvents.loadMatchEvents();
+    } finally {
+      setBulkSaveLoading(false);
+    }
+  }, [bulkSaveTarget, match.id, homeTeamId, awayTeamId, matchWentToOvertime, matchWentToShootout, matchEvents, matchData]);
+
   // Keyboard shortcuts
   useEffect(() => {
     if (!keybindsEnabled) return;
@@ -644,6 +705,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             leftGoalieId={leftSideGoalieId}
             rightGoalieId={rightSideGoalieId}
             onRecordSave={handleRecordSave}
+            onShowBulkSave={handleOpenBulkSave}
             keybindsEnabled={keybindsEnabled}
             saveLoading={saveLoading}
           />
@@ -747,6 +809,28 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
           />
         </div>
       </div>
+
+      {bulkSaveTarget && (
+        <BulkSaveDialog
+          isOpen={true}
+          goalieName={matchData.getPlayerNameById(bulkSaveTarget.goalieId)}
+          teamName={
+            (bulkSaveTarget.team === 'home' ? matchData.homeTeam?.name : matchData.awayTeam?.name) ?? ''
+          }
+          currentPeriod={timerContext.currentPeriod}
+          numberOfPeriods={matchData.currentMatch.matchRules?.numberOfPeriods ?? 3}
+          periodDurationMinutes={matchData.currentMatch.matchRules?.periodDurationMinutes ?? 20}
+          currentElapsedSeconds={
+            timerContext.callbacks.getCurrentElapsedSeconds
+              ? timerContext.callbacks.getCurrentElapsedSeconds()
+              : timerContext.elapsedTimeSeconds
+          }
+          onSubmit={handleSubmitBulkSave}
+          onClose={handleCloseBulkSave}
+          loading={bulkSaveLoading}
+          errorMessage={bulkSaveError}
+        />
+      )}
     </>
   );
 };

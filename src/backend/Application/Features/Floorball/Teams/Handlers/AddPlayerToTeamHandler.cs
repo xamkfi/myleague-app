@@ -97,7 +97,7 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
             }
 
             _logger.LogInformation("Adding player {PlayerId} to team {TeamId}", request.PlayerId, request.TeamId);
-            team.AddPlayer(player, request.Position, request.JerseyNumber);
+            team.AddPlayer(player, request.Position, request.JerseyNumber, request.RequestedJerseyNumber);
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);

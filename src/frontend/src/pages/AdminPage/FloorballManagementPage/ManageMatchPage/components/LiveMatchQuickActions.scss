@@ -54,6 +54,55 @@
   }
 }
 
+/* Save row combines the primary save button (fills available width) with a small "+N" affordance
+ * for bulk save entry. They share the same row so recorders can quickly bulk-backfill saves
+ * without losing the single-save click target. */
+.save-action-group {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+
+  .action-btn.save-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+.bulk-save-btn {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  height: 40px;
+  min-width: 44px;
+  padding: 0 10px;
+  background: $color-white;
+  border: 1px solid #2F60BA;
+  color: #2F60BA;
+  border-radius: 24px;
+  font-family: $font-family-body;
+  font-weight: map.get($font-weights, 'bold');
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, filter 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #2F60BA;
+    color: $color-white;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #2F60BA;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 .action-btn {
   box-sizing: border-box;
   height: 40px;

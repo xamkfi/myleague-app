@@ -642,7 +642,9 @@
         "loadFailed": "Joukkueiden lataus epäonnistui",
         "selectTeam": "Valitse joukkue",
         "invalidJerseyNumber": "Pelinumeron täytyy olla välillä 1-99"
-      }
+      },
+      "requestedJerseyTooltip": "Tuonnissa pyydettiin pelinumeroa #{{requested}}, mutta se oli varattu — pelaajalle annettiin #{{assigned}}. Vaihda numeroa poistaaksesi tämä huomautus.",
+      "requestedJerseyBadge": "pyydetty #{{requested}}"
     },
     "divisions": {
       "men": "Miehet",
@@ -774,6 +776,9 @@
         "invalidTitle": "JSON-tiedoston tarkistus epäonnistui",
         "invalidJson": "Tiedosto ei ole kelvollinen JSON: {{msg}}",
         "tournamentName": "Turnauksen nimi",
+        "tournamentVenue": "Pelipaikka",
+        "tournamentVenuePlaceholder": "esim. Kampparit Areena",
+        "tournamentVenueHint": "Esitäytetään JSON-tiedostosta, jos arvo löytyy. Käytetään turnauksen pelipaikkana ja oletuksena otteluiden sijaintina.",
         "tournamentCategory": "Turnauksen tyyppi",
         "tournamentCategoryHint": "Käytetään luotaviin joukkueisiin (olemassa olevat säilyttävät oman tyyppinsä).",
         "previewNote": "Olemassa olevat seurat/joukkueet (haku nimellä) käytetään uudelleen. Vain puuttuvat luodaan.",

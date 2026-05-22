@@ -149,6 +149,18 @@
             border-bottom: none;
           }
 
+          // Whole-row highlight applied to roster entries whose jersey number was
+          // substituted during import. Disappears as soon as the admin assigns a
+          // different jersey number (backend clears RequestedJerseyNumber).
+          &.roster-row--substituted-jersey {
+            background-color: #fffbeb;
+            box-shadow: inset 4px 0 0 0 #d97706;
+
+            &:hover {
+              background-color: #fef3c7;
+            }
+          }
+
           td {
             padding: 1rem 1.5rem;
             vertical-align: middle;
@@ -201,6 +213,26 @@
                   opacity: 0.6;
                   cursor: not-allowed;
                 }
+
+                // When the assigned jersey number is a substitute for the originally
+                // requested one (typically set by the tournament import flow when the
+                // preferred number was taken), the select is outlined in warning-yellow
+                // so the admin can see at a glance that this row needs review.
+                &--substituted {
+                  border-color: #d97706;
+                  background-color: #fef3c7;
+                  font-weight: 700;
+                }
+              }
+
+              .jersey-substituted-badge {
+                display: block;
+                margin-top: 0.25rem;
+                font-size: 0.7rem;
+                font-weight: 600;
+                color: #b45309;
+                text-transform: lowercase;
+                letter-spacing: 0.01em;
               }
             }
 
