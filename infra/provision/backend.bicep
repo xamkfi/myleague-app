@@ -7,6 +7,7 @@
 // - PostgreSQL Flexible Server (Burstable B1ms)
 // - Storage Account for image uploads
 // - Azure Communication Services (Email with Azure-managed domain)
+// - Log Analytics workspace + Application Insights (workspace-based)
 // ============================================================================
 
 targetScope = 'resourceGroup'
@@ -85,6 +86,9 @@ var storageAccountName = toLower(replace('${baseName}${environmentName}storage',
 var communicationServiceName = '${resourcePrefix}-comm'
 var emailServiceName = '${resourcePrefix}-email'
 
+var appInsightsName = '${resourcePrefix}-ai'
+var logAnalyticsWorkspaceName = '${resourcePrefix}-logs'
+
 var tags = {
   Environment: environmentName
   Application: baseName
@@ -147,6 +151,19 @@ module communicationServices 'modules/communication-services.bicep' = {
   }
 }
 
+// Application Insights (workspace-based) for application telemetry & error tracking
+module applicationInsights 'modules/application-insights.bicep' = {
+  name: 'applicationInsights'
+  params: {
+    name: appInsightsName
+    workspaceName: logAnalyticsWorkspaceName
+    location: location
+    retentionInDays: 30
+    dailyQuotaGb: 1
+    tags: tags
+  }
+}
+
 // App Service (API)
 module appService 'modules/app-service.bicep' = {
   name: 'appService'
@@ -164,6 +181,7 @@ module appService 'modules/app-service.bicep' = {
     acsSenderAddress: communicationServices.outputs.senderAddress
     seedAdminEmail: seedAdminEmail
     frontendBaseUrl: frontendBaseUrl
+    appInsightsConnectionString: applicationInsights.outputs.connectionString
     tags: tags
   }
 }
@@ -210,3 +228,9 @@ output emailServiceName string = communicationServices.outputs.emailServiceName
 
 @description('The sender email address for the Communication Service')
 output acsSenderAddress string = communicationServices.outputs.senderAddress
+
+@description('The name of the Application Insights component')
+output appInsightsName string = applicationInsights.outputs.name
+
+@description('The name of the Log Analytics workspace backing Application Insights')
+output logAnalyticsWorkspaceName string = applicationInsights.outputs.workspaceName

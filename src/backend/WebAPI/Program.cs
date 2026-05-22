@@ -15,9 +15,18 @@ using Microsoft.IdentityModel.Tokens;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
-builder.Host.UseSerilog((context, configuration) =>
-    configuration.ReadFrom.Configuration(context.Configuration));
+// Register Application Insights telemetry. The connection string is read from
+// APPLICATIONINSIGHTS_CONNECTION_STRING (set by the App Service app settings via Bicep).
+// This registers TelemetryClient + TelemetryConfiguration in DI, which the Serilog
+// ApplicationInsights sink resolves to forward Serilog log events as AI traces/exceptions.
+builder.Services.AddApplicationInsightsTelemetry();
+
+// Configure Serilog. The sink reads ApplicationInsights TelemetryConfiguration from
+// the service provider, so this MUST come after AddApplicationInsightsTelemetry().
+builder.Host.UseSerilog((context, services, configuration) =>
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services));
 
 // Add services to the container
 builder.Services.AddHttpContextAccessor();
