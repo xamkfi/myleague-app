@@ -15,14 +15,27 @@ using Microsoft.IdentityModel.Tokens;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Register Application Insights telemetry. The connection string is read from
-// APPLICATIONINSIGHTS_CONNECTION_STRING (set by the App Service app settings via Bicep).
-// This registers TelemetryClient + TelemetryConfiguration in DI, which the Serilog
-// ApplicationInsights sink resolves to forward Serilog log events as AI traces/exceptions.
-builder.Services.AddApplicationInsightsTelemetry();
+// Register Application Insights telemetry only when a connection string is supplied.
+// Source: APPLICATIONINSIGHTS_CONNECTION_STRING env var (set by the App Service app
+// settings via Bicep) or the ApplicationInsights:ConnectionString config key.
+// Skipping registration in unconfigured environments (CI smoke tests, local Docker,
+// developer machines without AI) keeps startup robust and lets the Serilog
+// ApplicationInsights sink no-op cleanly when it cannot resolve TelemetryConfiguration.
+string? appInsightsConnectionString =
+    builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+    ?? builder.Configuration["ApplicationInsights:ConnectionString"];
 
-// Configure Serilog. The sink reads ApplicationInsights TelemetryConfiguration from
-// the service provider, so this MUST come after AddApplicationInsightsTelemetry().
+if (!string.IsNullOrWhiteSpace(appInsightsConnectionString))
+{
+    builder.Services.AddApplicationInsightsTelemetry(options =>
+    {
+        options.ConnectionString = appInsightsConnectionString;
+    });
+}
+
+// Configure Serilog. The ApplicationInsights sink reads TelemetryConfiguration from
+// the service provider via ReadFrom.Services(), so this MUST come after the AI
+// registration above. When AI is not registered, the sink silently writes nowhere.
 builder.Host.UseSerilog((context, services, configuration) =>
     configuration
         .ReadFrom.Configuration(context.Configuration)

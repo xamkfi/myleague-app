@@ -24,8 +24,13 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
-    <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="5.0.0" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.1.0" />
+    <!-- AppInsights 3.x rewires AddApplicationInsightsTelemetry to require a connection
+         string at DI resolve time and crashes startup when it is missing (e.g. in CI
+         integration smoke tests or local Docker), which is a regression from 2.x.
+         Pinned to 2.23.0 (graceful no-op when unconfigured). The matching Serilog sink
+         is 4.1.0, which depends on Microsoft.ApplicationInsights >= 2.23.0. -->
+    <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.1.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.2" />
     
     <!-- Explicit EF Core references to resolve version conflicts -->
