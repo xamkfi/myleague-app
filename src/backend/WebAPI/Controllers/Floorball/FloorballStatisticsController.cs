@@ -68,6 +68,70 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Gets a team's combined statistics aggregated across every competition (regular seasons
+        /// + tournaments) the team has played in. Used by the team page so the Statistics tab
+        /// surfaces tournament games and points alongside the regular-season totals.
+        /// </summary>
+        /// <param name="teamId">The team ID</param>
+        /// <returns>Aggregated team statistics across all competitions</returns>
+        [HttpGet("team-aggregate/{teamId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballTeamSeasonStatisticsDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballTeamSeasonStatisticsDto>>> GetAggregatedTeamStatistics(Guid teamId)
+        {
+            _logger.LogInformation("Getting aggregated team statistics for Team: {TeamId}", teamId);
+
+            GetAggregatedTeamStatisticsQuery query = new GetAggregatedTeamStatisticsQuery(teamId);
+            Result<FloorballTeamSeasonStatisticsDto> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballTeamSeasonStatisticsDto>.SuccessResponse(result.Data, "Aggregated team statistics retrieved successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to retrieve aggregated team statistics";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballTeamSeasonStatisticsDto>.ErrorResponse(errorMessage));
+            }
+
+            return StatusCode(500, ApiResponse<FloorballTeamSeasonStatisticsDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Gets per-player statistics for a team aggregated across every competition (regular
+        /// seasons + tournaments) the team has played in. Each player appears once with their
+        /// totals summed; used by the team page's player stats table.
+        /// </summary>
+        /// <param name="teamId">The team ID</param>
+        /// <returns>Aggregated per-player statistics</returns>
+        [HttpGet("team-players-aggregate/{teamId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>>> GetAggregatedTeamPlayerStatistics(Guid teamId)
+        {
+            _logger.LogInformation("Getting aggregated player statistics for Team: {TeamId}", teamId);
+
+            GetAggregatedTeamPlayerStatisticsQuery query = new GetAggregatedTeamPlayerStatisticsQuery(teamId);
+            Result<List<FloorballPlayerSeasonStatisticsDto>> result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.SuccessResponse(result.Data, "Aggregated team player statistics retrieved successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to retrieve aggregated team player statistics";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
+            }
+
+            return StatusCode(500, ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Gets all player statistics for a specific team in a season
         /// </summary>
         /// <param name="competitionId">The season ID</param>

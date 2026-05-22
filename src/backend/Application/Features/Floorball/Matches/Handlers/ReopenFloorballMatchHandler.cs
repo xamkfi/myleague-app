@@ -133,7 +133,7 @@ public class ReopenFloorballMatchHandler : IRequestHandler<ReopenFloorballMatchC
 
     private async Task UndoPlayerGamesPlayed(FloorballMatch match, CancellationToken cancellationToken)
     {
-        HashSet<(Guid PlayerId, Guid TeamId)> participants = CollectMatchParticipants(match);
+        HashSet<(Guid PlayerId, Guid TeamId)> participants = CompleteFloorballMatchHandler.CollectMatchParticipants(match);
 
         _logger.LogInformation("[ReopenMatch] Decrementing GamesPlayed for {Count} players. MatchId={MatchId}", participants.Count, match.Id);
 
@@ -204,39 +204,4 @@ public class ReopenFloorballMatchHandler : IRequestHandler<ReopenFloorballMatchC
         await _statisticsRepository.SaveGoalieSeasonStatisticsAsync(goalieStats, cancellationToken);
     }
 
-    private static HashSet<(Guid PlayerId, Guid TeamId)> CollectMatchParticipants(FloorballMatch match)
-    {
-        HashSet<(Guid PlayerId, Guid TeamId)> participants = new();
-
-        foreach (FloorballMatchEvent evt in match.Events)
-        {
-            switch (evt)
-            {
-                case FloorballGoal goal:
-                    if (goal.ScoringPlayerId.HasValue)
-                        participants.Add((goal.ScoringPlayerId.Value, goal.TeamId));
-                    if (goal.AssistingPlayerId.HasValue)
-                        participants.Add((goal.AssistingPlayerId.Value, goal.TeamId));
-                    if (goal.SecondaryAssistingPlayerId.HasValue)
-                        participants.Add((goal.SecondaryAssistingPlayerId.Value, goal.TeamId));
-                    break;
-
-                case FloorballPenalty penalty:
-                    if (penalty.PlayerId.HasValue)
-                        participants.Add((penalty.PlayerId.Value, penalty.TeamId));
-                    break;
-
-                case FloorballSave save:
-                    participants.Add((save.GoalieId, save.TeamId));
-                    break;
-            }
-        }
-
-        if (match.HomeActiveGoalieId.HasValue)
-            participants.Add((match.HomeActiveGoalieId.Value, match.HomeTeamId));
-        if (match.AwayActiveGoalieId.HasValue)
-            participants.Add((match.AwayActiveGoalieId.Value, match.AwayTeamId));
-
-        return participants;
-    }
 }

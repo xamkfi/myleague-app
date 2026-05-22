@@ -186,12 +186,49 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
     }
 
     /// <summary>
-    /// Collects all unique players from match events and goalies, then increments GamesPlayed
+    /// Collects all unique players who participated in the match — anyone on the team's active
+    /// lineup, the active goalies, and any player that produced an event (defensively, in case
+    /// the active roster was not maintained). Every participant gets their GamesPlayed counter
+    /// incremented (and a season statistics row created when one does not yet exist), so even
+    /// players who did not score or take a penalty still appear on their team / career stats.
     /// </summary>
     private async Task UpdatePlayerGamesPlayed(FloorballMatch match, CancellationToken cancellationToken)
     {
-        // (playerId, teamId) pairs to avoid double-counting a player
+        HashSet<(Guid PlayerId, Guid TeamId)> participants = CollectMatchParticipants(match);
+
+        _logger.LogInformation("[CompleteMatch] Updating GamesPlayed for {Count} players. MatchId={MatchId}",
+            participants.Count, match.Id);
+
+        foreach ((Guid playerId, Guid teamId) in participants)
+        {
+            FloorballPlayerSeasonStatistics? playerStats =
+                await _statisticsRepository.GetPlayerSeasonStatisticsAsync(playerId, teamId, match.CompetitionId, cancellationToken);
+
+            if (playerStats == null)
+            {
+                playerStats = new FloorballPlayerSeasonStatistics(playerId, teamId, match.CompetitionId);
+            }
+
+            playerStats.RecordGamePlayed();
+            await _statisticsRepository.SavePlayerSeasonStatisticsAsync(playerStats, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Builds the set of unique (player, team) tuples that took part in <paramref name="match"/>:
+    /// every entry on the active field lineup, both active goalies, and (as a safety net) every
+    /// player referenced by goal / penalty / save events. The two sides need an identical view of
+    /// who counts as a participant — <see cref="ReopenFloorballMatchHandler"/> mirrors this logic
+    /// when reversing the per-match aggregates.
+    /// </summary>
+    internal static HashSet<(Guid PlayerId, Guid TeamId)> CollectMatchParticipants(FloorballMatch match)
+    {
         HashSet<(Guid PlayerId, Guid TeamId)> participants = new();
+
+        foreach (FloorballMatchActivePlayer active in match.ActivePlayers)
+        {
+            participants.Add((active.PlayerId, active.TeamId));
+        }
 
         foreach (FloorballMatchEvent evt in match.Events)
         {
@@ -222,22 +259,7 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
         if (match.AwayActiveGoalieId.HasValue)
             participants.Add((match.AwayActiveGoalieId.Value, match.AwayTeamId));
 
-        _logger.LogInformation("[CompleteMatch] Updating GamesPlayed for {Count} players. MatchId={MatchId}",
-            participants.Count, match.Id);
-
-        foreach ((Guid playerId, Guid teamId) in participants)
-        {
-            FloorballPlayerSeasonStatistics? playerStats =
-                await _statisticsRepository.GetPlayerSeasonStatisticsAsync(playerId, teamId, match.CompetitionId, cancellationToken);
-
-            if (playerStats == null)
-            {
-                playerStats = new FloorballPlayerSeasonStatistics(playerId, teamId, match.CompetitionId);
-            }
-
-            playerStats.RecordGamePlayed();
-            await _statisticsRepository.SavePlayerSeasonStatisticsAsync(playerStats, cancellationToken);
-        }
+        return participants;
     }
 
     /// <summary>

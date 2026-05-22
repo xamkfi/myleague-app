@@ -1395,6 +1395,7 @@
       "noStats": "Tilastoja ei saatavilla",
       "noStatsDesc": "Joukkueen tilastot eivät ole saatavilla tälle kaudelle.",
       "currentSeason": "Nykyinen kausi",
+      "allCompetitions": "Kaikki kilpailut (kausi + turnaukset)",
       "overallRecord": "Kokonaistilanne",
       "gamesPlayed": "Pelatut pelit",
       "wins": "Voitot",
