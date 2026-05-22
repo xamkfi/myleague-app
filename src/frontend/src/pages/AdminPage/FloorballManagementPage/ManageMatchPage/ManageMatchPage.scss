@@ -5,11 +5,13 @@
   padding-top: 0.5rem;
 
   // The admin shell defaults to `overflow: hidden`, which clips the rich match-management
-  // content on shorter viewports (e.g. laptop screens) so users cannot reach the lineup
-  // selector or events history below the fold. Allow vertical scrolling specifically when
-  // the manage match page is rendered.
+  // content on shorter viewports (laptop / narrow browser windows). The match management view
+  // packs a two-column layout that can overflow both axes depending on team-name length and
+  // available width, so we opt the shell into auto-scroll along both axes when this page is
+  // mounted. Combined with the responsive `flex-wrap` in `.modal-content` below, this means
+  // users get a horizontal scrollbar as a graceful fallback when stacking is still not enough.
   &:has(.manage-match-page) {
-    overflow-y: auto;
+    overflow: auto;
   }
 }
 
@@ -159,6 +161,7 @@
 .modal-content {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 16px;
   padding-left: 0;
   padding-right: 0;
@@ -172,7 +175,12 @@
 
   .left-section,
   .right-section {
-    flex: 1;
+    // `flex-basis: 480px` keeps the two columns side-by-side on wide viewports but lets
+    // them wrap to a single column once the available width drops below ~1000px (e.g.
+    // narrow laptop windows with the sidebar expanded). `min-width: 0` is required so the
+    // inner cards can shrink instead of pushing the column wider than its allocation.
+    flex: 1 1 480px;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 12px;

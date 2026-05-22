@@ -82,6 +82,14 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Penalty type is required")]
         public string PenaltyType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Optional free-text description of the penalty (e.g. "hooking", "slashing"). The
+        /// scorekeeper enters this in the Record Penalty modal. Persisted on the event so it
+        /// can be shown beneath the penalty line in both the admin live history and the public
+        /// match events list. May be empty when the operator did not provide a reason.
+        /// </summary>
+        public string? Description { get; set; }
     }
 
     /// <summary>
@@ -113,7 +121,16 @@ namespace WebAPI.Models.Floorball
     /// </summary>
     public class RecordSaveEventRequest : FloorballMatchEventBaseRequest
     {
-        // No additional fields required; goalie is provided via PlayerId
+        /// <summary>
+        /// Number of save events to record at the supplied (period, time) coordinate. Defaults to
+        /// `1`, which preserves the legacy single-save semantics including the controller-side
+        /// rate limit. Values greater than 1 indicate a bulk backfill (e.g. the scorekeeper
+        /// missed individual saves during play and is recording an aggregate count after the
+        /// fact); the controller skips the rate limit in that case and the handler records the
+        /// requested count inside a single transaction.
+        /// </summary>
+        [Range(1, 99, ErrorMessage = "Count must be between 1 and 99")]
+        public int Count { get; set; } = 1;
     }
 
 

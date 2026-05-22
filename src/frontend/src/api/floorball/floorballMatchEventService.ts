@@ -78,6 +78,13 @@ export interface RecordSaveEventRequest {
   timeInSeconds: number;
   wasInOvertime: boolean;
   wasInShootout: boolean;
+  /**
+   * Number of save events to record at the supplied (period, time) coordinate. Defaults to
+   * `1` (single save). Values greater than 1 are interpreted by the backend as a bulk
+   * backfill: rate limiting is skipped and all `count` events are written in a single
+   * transaction. Used by the bulk save dialog.
+   */
+  count?: number;
 }
 
 export interface UpdateGoalEventRequest extends RecordGoalEventRequest {
@@ -325,7 +332,8 @@ export const floorballMatchEventService = {
         periodNumber: data.periodNumber,
         timeInSeconds: data.timeInSeconds,
         wasInOvertime: data.wasInOvertime,
-        wasInShootout: data.wasInShootout
+        wasInShootout: data.wasInShootout,
+        count: data.count && data.count > 1 ? data.count : 1,
       };
 
       const response = await authFetch(`${API_URL}/FloorballMatch/record-save`, {

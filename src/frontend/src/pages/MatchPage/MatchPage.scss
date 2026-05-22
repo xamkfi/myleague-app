@@ -478,6 +478,34 @@
   color: $color-neutral-dark-grey;
 }
 
+// Penalty rows render the player + severity inline (`.penalty-line`) and, when the recorder
+// supplied a description, append it on a second muted/italic line below. Switching the
+// container to `flex-direction: column` lets the description claim its own row without
+// pushing the badges/team-short/score columns out of alignment.
+.event-details.penalty-details {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+
+  .penalty-line {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem;
+  }
+
+  .penalty-description {
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    color: $color-neutral-dark-grey;
+    font-style: italic;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 // ===== MOBILE RESPONSIVE STYLES =====
 
 // Tablet and smaller (768px and below)

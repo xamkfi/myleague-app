@@ -243,18 +243,29 @@ public class FloorballTeam : BaseEntity
     /// </summary>
     /// <param name="player">The player to add</param>
     /// <param name="position">The player's position in the team</param>
-    /// <param name="jerseyNumber">The player's jersey number</param>
+    /// <param name="jerseyNumber">The player's actually-assigned jersey number</param>
+    /// <param name="requestedJerseyNumber">
+    /// The jersey number the caller originally wanted. When it differs from
+    /// <paramref name="jerseyNumber"/>, the resulting roster entry is flagged via
+    /// <see cref="FloorballTeamPlayer.HasJerseyNumberSubstituted"/> so the roster UI can
+    /// highlight it for admin review. Pass <c>null</c> (or the same value as
+    /// <paramref name="jerseyNumber"/>) when there was no substitution.
+    /// </param>
     /// <exception cref="InvalidOperationException">Thrown when the player is already in the roster</exception>
-    public void AddPlayer(FloorballPlayer player, FloorballPosition position, int? jerseyNumber = null)
+    public void AddPlayer(
+        FloorballPlayer player,
+        FloorballPosition position,
+        int? jerseyNumber = null,
+        int? requestedJerseyNumber = null)
     {
         ArgumentNullException.ThrowIfNull(player);
         if (_roster.Count > 0 && _roster.Any(p => p.PlayerId == player.Id))
             throw new InvalidOperationException($"Player with ID {player.Id} is already in the roster.");
         if (jerseyNumber.HasValue && _roster.Count > 0 && _roster.Any(p => p.JerseyNumber == jerseyNumber))
             throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
-        var teamPlayer = new FloorballTeamPlayer(Id, player.Id, position, jerseyNumber);
+        var teamPlayer = new FloorballTeamPlayer(Id, player.Id, position, jerseyNumber, requestedJerseyNumber);
         _roster.Add(teamPlayer);
-        
+
     }
 
     /// <summary>

@@ -59,6 +59,7 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
   const [log, setLog] = useState<LogLine[]>([]);
   const [progress, setProgress] = useState<{ done: number; total: number; phase: string }>({ done: 0, total: 0, phase: '' });
   const [tournamentNameOverride, setTournamentNameOverride] = useState<string>('');
+  const [venueOverride, setVenueOverride] = useState<string>('');
   const [defaultTeamCategory, setDefaultTeamCategory] = useState<TeamCategory>(TeamCategory.Adult);
   // Admin-controlled override for the tournament's playoff stage. Pre-filled from the JSON +
   // the inferHasPlayoffStage heuristic when a file is loaded, then can be toggled in the
@@ -161,6 +162,7 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
       return;
     }
     setTournamentNameOverride(result.payload.tournament.name);
+    setVenueOverride(result.payload.tournament.venue?.trim() ?? '');
     setHasPlayoffStage(inferHasPlayoffStage(result.payload));
     setState({
       kind: 'preview',
@@ -198,9 +200,14 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
 
     // Apply the user's edits before kicking off the import.
     const effectiveName = tournamentNameOverride.trim() || payload.tournament.name;
+    const effectiveVenue = venueOverride.trim();
     const effectivePayload: TournamentImportPayload = {
       ...payload,
-      tournament: { ...payload.tournament, name: effectiveName },
+      tournament: {
+        ...payload.tournament,
+        name: effectiveName,
+        venue: effectiveVenue.length > 0 ? effectiveVenue : null,
+      },
     };
     setState({ kind: 'running', payload: effectivePayload, counts, fileName });
 
@@ -231,7 +238,7 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
       setState({ kind: 'success', summary });
       onImported();
     }
-  }, [appendLog, autoRevert, defaultTeamCategory, hasPlayoffStage, onImported, runRevert, t, tournamentNameOverride]);
+  }, [appendLog, autoRevert, defaultTeamCategory, hasPlayoffStage, onImported, runRevert, t, tournamentNameOverride, venueOverride]);
 
   const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -392,6 +399,24 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
                 onChange={(e) => setTournamentNameOverride(e.target.value)}
                 placeholder={state.payload.tournament.name}
               />
+            </label>
+            <label className="import-modal__field">
+              <span className="import-modal__field-label">
+                {t('floorball.tournaments.import.tournamentVenue', 'Venue')}
+              </span>
+              <input
+                type="text"
+                className="import-modal__field-input"
+                value={venueOverride}
+                onChange={(e) => setVenueOverride(e.target.value)}
+                placeholder={t('floorball.tournaments.import.tournamentVenuePlaceholder', 'e.g. Kampparit Areena')}
+              />
+              <span className="import-modal__field-hint">
+                {t(
+                  'floorball.tournaments.import.tournamentVenueHint',
+                  'Pre-filled from the JSON when available. Used as the tournament venue and as the default location for matches.'
+                )}
+              </span>
             </label>
             <label className="import-modal__field">
               <span className="import-modal__field-label">

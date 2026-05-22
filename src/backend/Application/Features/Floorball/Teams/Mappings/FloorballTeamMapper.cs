@@ -86,7 +86,10 @@ public static class FloorballTeamMapper
                     Goals: p.Goals,
                     Assists: p.Assists,
                     PenaltyMinutes: p.PenaltyMinutes,
-                    Age: age
+                    Age: age,
+                    // Only surface when there's actually a mismatch — the UI uses this to drive
+                    // the "needs admin review" highlight on the roster page.
+                    RequestedJerseyNumber: p.HasJerseyNumberSubstituted ? p.RequestedJerseyNumber : null
                 );
             }).ToList().AsReadOnly()
         );

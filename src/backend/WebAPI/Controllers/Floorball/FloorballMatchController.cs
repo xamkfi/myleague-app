@@ -538,7 +538,7 @@ namespace WebAPI.Controllers.Floorball
                 request.DurationMinutes,
                 request.PeriodNumber,
                 request.TimeInSeconds,
-                string.Empty);
+                request.Description ?? string.Empty);
 
             Result<FloorballMatchDto> result = await _mediator.Send(command);
 
@@ -561,13 +561,22 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordSave([FromBody] RecordSaveEventRequest request)
         {
-            _logger.LogInformation("Recording save for match ID: {matchId}", request.MatchId);
+            int saveCount = request.Count < 1 ? 1 : request.Count;
+            _logger.LogInformation(
+                "Recording {Count} save(s) for match ID: {matchId}", saveCount, request.MatchId);
 
-            string rateKey = $"{request.MatchId}:save:{request.TeamId}:{request.PlayerId}";
-            if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(250)))
+            // Rate-limit the live single-save flow only. Bulk backfills (count > 1) are an
+            // explicit operator action via the bulk dialog, so blocking them with a 429
+            // would defeat the feature's purpose; the handler still records each save as a
+            // distinct event inside one transaction.
+            if (saveCount == 1)
             {
-                return StatusCode(StatusCodes.Status429TooManyRequests,
-                    ApiResponse<FloorballMatchDto>.ErrorResponse("Too many save events; please wait a moment."));
+                string rateKey = $"{request.MatchId}:save:{request.TeamId}:{request.PlayerId}";
+                if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(250)))
+                {
+                    return StatusCode(StatusCodes.Status429TooManyRequests,
+                        ApiResponse<FloorballMatchDto>.ErrorResponse("Too many save events; please wait a moment."));
+                }
             }
 
             RecordSaveCommand command = new RecordSaveCommand(
@@ -577,7 +586,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.WasInOvertime,
-                request.WasInShootout);
+                request.WasInShootout,
+                saveCount);
 
             Result<FloorballMatchDto> result = await _mediator.Send(command);
 

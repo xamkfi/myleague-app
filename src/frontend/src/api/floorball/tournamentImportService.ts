@@ -744,25 +744,54 @@ interface TeamRosterSnapshot {
   playerIds: Set<string>;
   /** Jersey numbers currently in use on the roster. Mutated as the import progresses. */
   jerseyNumbers: Set<number>;
+  /**
+   * Normalized "firstname lastname" keys of players already on the roster. Mutated as the
+   * import adds new players. Used by `importPlayer` to detect "already on roster" by name
+   * BEFORE we hit the person/player lookup endpoints — both for correctness (the find-or-
+   * create person path can occasionally miss an existing record when the search returns
+   * more than 25 hits or the name differs by an accent/spacing) and for speed (skipping
+   * a redundant player saves 2-3 network round trips).
+   */
+  nameKeys: Set<string>;
+  /** Person IDs whose FloorballPlayer rows are on this team. Mutated as players are added. */
+  personIds: Set<string>;
 }
 
 const JERSEY_NUMBER_MIN: number = 1;
 const JERSEY_NUMBER_MAX: number = 99;
 
+/**
+ * Builds the canonical "firstname lastname" key used to detect duplicate roster rows. Strips
+ * surrounding/inner whitespace and lowercases so common AI-export artefacts ("Mona  Nenonen ")
+ * still match the existing roster entry.
+ */
+function buildPlayerNameKey(firstName: string | null | undefined, lastName: string | null | undefined): string {
+  const f: string = (firstName ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const l: string = (lastName ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+  if (f.length === 0 && l.length === 0) return '';
+  return `${f}|${l}`;
+}
+
 async function loadTeamRosterSnapshot(teamId: string): Promise<TeamRosterSnapshot> {
   try {
     const roster = await floorballPlayerService.getByTeamId(teamId);
     const playerIds = new Set<string>(roster.map((p) => p.id));
+    const personIds = new Set<string>(roster.map((p) => p.personId).filter((id): id is string => typeof id === 'string' && id.length > 0));
     const jerseyNumbers = new Set<number>(
       roster
         .map((p) => p.jerseyNumber)
         .filter((n): n is number => typeof n === 'number' && Number.isFinite(n))
     );
-    return { playerIds, jerseyNumbers };
+    const nameKeys = new Set<string>();
+    for (const p of roster) {
+      const key = buildPlayerNameKey(p.person?.firstName, p.person?.lastName);
+      if (key.length > 0) nameKeys.add(key);
+    }
+    return { playerIds, personIds, jerseyNumbers, nameKeys };
   } catch {
     // Empty team / fresh team / network glitch: treat as no roster. The first failing
     // addPlayerToTeam call surfaces the underlying issue anyway.
-    return { playerIds: new Set(), jerseyNumbers: new Set() };
+    return { playerIds: new Set(), personIds: new Set(), jerseyNumbers: new Set(), nameKeys: new Set() };
   }
 }
 
@@ -868,6 +897,26 @@ async function importPlayer(
   callbacks: ImportCallbacks,
   step: PlayerStepContext,
 ): Promise<void> {
+  // 0) Cheap name-based "already on roster" short-circuit. If the team's existing roster
+  // already has a player matching first+last name, skip the entire person/player/add cycle.
+  // This avoids 2-3 redundant API calls per duplicate AND prevents the orchestrator from
+  // accidentally creating a brand-new FloorballPlayer row + assigning it a substitute jersey
+  // number when the find-or-create person lookup happens to miss the existing record
+  // (search hit limit, accent / whitespace differences, etc.).
+  const candidateNameKey: string = buildPlayerNameKey(spec.firstName, spec.lastName);
+  if (candidateNameKey.length > 0 && roster.nameKeys.has(candidateNameKey)) {
+    summary.personsExisting++;
+    summary.playersExisting++;
+    callbacks.onStep({
+      phase: step.phase,
+      index: step.index,
+      total: step.total,
+      label: `${teamName}: ${label} already on roster — skipped`,
+      status: 'skipped',
+    });
+    return;
+  }
+
   // 1) Find-or-create the Person.
   const personResult = await ensurePerson(spec);
   if (personResult.created) {
@@ -875,6 +924,22 @@ async function importPlayer(
     summary.created.push({ kind: 'person', id: personResult.person.id, label });
   } else {
     summary.personsExisting++;
+  }
+
+  // Once we have a real personId, double-check the roster: a FloorballPlayer linked to this
+  // person may already be on the team even if the name didn't match (e.g. nickname vs. legal
+  // name). Skipping here also saves the ensureFloorballPlayer round-trip.
+  if (roster.personIds.has(personResult.person.id)) {
+    summary.playersExisting++;
+    if (candidateNameKey.length > 0) roster.nameKeys.add(candidateNameKey);
+    callbacks.onStep({
+      phase: step.phase,
+      index: step.index,
+      total: step.total,
+      label: `${teamName}: ${label} already on roster — skipped`,
+      status: 'skipped',
+    });
+    return;
   }
 
   // 2) Find-or-create the FloorballPlayer for that Person.
@@ -886,8 +951,10 @@ async function importPlayer(
     summary.playersExisting++;
   }
 
-  // 3) Add to the team unless already on the roster.
+  // 3) Add to the team unless already on the roster (by player id — final safety net).
   if (roster.playerIds.has(playerResult.id)) {
+    if (candidateNameKey.length > 0) roster.nameKeys.add(candidateNameKey);
+    roster.personIds.add(personResult.person.id);
     callbacks.onStep({
       phase: step.phase,
       index: step.index,
@@ -912,7 +979,14 @@ async function importPlayer(
   while (!added && attempts < JERSEY_NUMBER_MAX + 2) {
     attempts += 1;
     try {
-      await floorballTeamService.addPlayerToTeam(teamId, playerResult.id, position, resolved.number);
+      // When we substitute a different number than the JSON requested, forward the
+      // original `preferred` value as `requestedJerseyNumber` so the backend can flag
+      // the roster entry. The admin's roster page then highlights the row until they
+      // confirm or change the jersey number.
+      const requestedForBackend: number | undefined = resolved.substituted && preferred !== undefined && preferred !== resolved.number
+        ? preferred
+        : undefined;
+      await floorballTeamService.addPlayerToTeam(teamId, playerResult.id, position, resolved.number, requestedForBackend);
       added = true;
     } catch (err) {
       // Race: another concurrent import / a fresh server-side assignment may have grabbed the
@@ -926,7 +1000,9 @@ async function importPlayer(
         if (refreshed.playerIds.has(playerResult.id)) {
           // Adopt the fresh snapshot so subsequent players see the up-to-date jersey set.
           roster.playerIds = refreshed.playerIds;
+          roster.personIds = refreshed.personIds;
           roster.jerseyNumbers = refreshed.jerseyNumbers;
+          roster.nameKeys = refreshed.nameKeys;
           added = true;
           break;
         }
@@ -937,7 +1013,9 @@ async function importPlayer(
       // snapshot, then mark the number we just tried as taken too.
       const refreshed = await loadTeamRosterSnapshot(teamId);
       roster.playerIds = refreshed.playerIds;
+      roster.personIds = refreshed.personIds;
       roster.jerseyNumbers = refreshed.jerseyNumbers;
+      roster.nameKeys = refreshed.nameKeys;
       if (resolved.number !== undefined) {
         roster.jerseyNumbers.add(resolved.number);
       }
@@ -958,6 +1036,8 @@ async function importPlayer(
     roster.jerseyNumbers.add(resolved.number);
   }
   roster.playerIds.add(playerResult.id);
+  roster.personIds.add(personResult.person.id);
+  if (candidateNameKey.length > 0) roster.nameKeys.add(candidateNameKey);
   summary.teamPlayerAssignments++;
   summary.created.push({ kind: 'team-player', teamId, playerId: playerResult.id, label: `${teamName} / ${label}` });
 

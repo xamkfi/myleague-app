@@ -31,5 +31,11 @@ namespace Application.Features.Floorball.Teams.DTOs
         int Goals = 0,
         int Assists = 0,
         int PenaltyMinutes = 0,
-        int? Age = null);
+        int? Age = null,
+        /// <summary>
+        /// The jersey number originally requested for this player when the assigned number
+        /// is a substitute (i.e. the requested one was taken on the team). <c>null</c> means
+        /// the assigned number matches the requested one and no admin review is needed.
+        /// </summary>
+        int? RequestedJerseyNumber = null);
 } 

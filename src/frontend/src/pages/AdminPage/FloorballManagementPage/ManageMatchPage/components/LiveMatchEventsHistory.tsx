@@ -68,6 +68,9 @@ const LiveMatchEventsHistory = ({
             const goalTypeInfo = event.type === 'goal'
               ? getFloorballGoalTypeInfo(event.goalType)
               : undefined;
+            // Trim the description so whitespace-only entries (e.g. left over from a previously
+            // typed-then-cleared note) don't render an empty line under the penalty row.
+            const penaltyDescription: string = event.type === 'penalty' ? (event.description ?? '').trim() : '';
 
             return (
               <div key={event.id} className={`event-item ${event.type}`}>
@@ -103,9 +106,16 @@ const LiveMatchEventsHistory = ({
                       {event.wasInShootout && ` (SO)`}
                     </span>
                   ) : event.type === 'penalty' ? (
-                    <span className="event-text">
-                      {event.playerName || ''}
-                      {event.penaltyMinutes ? ` · ${event.penaltyMinutes}min` : ''}
+                    <span className="event-text penalty-text">
+                      <span className="penalty-line">
+                        {event.playerName || ''}
+                        {event.penaltyMinutes ? ` · ${event.penaltyMinutes}min` : ''}
+                      </span>
+                      {penaltyDescription && (
+                        <span className="penalty-description" title={penaltyDescription}>
+                          {penaltyDescription}
+                        </span>
+                      )}
                     </span>
                   ) : event.type === 'save' ? (
                     <span className="event-text">

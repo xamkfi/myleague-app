@@ -642,7 +642,9 @@
         "loadFailed": "Failed to load teams",
         "selectTeam": "Please select a team",
         "invalidJerseyNumber": "Jersey number must be between 1 and 99"
-      }
+      },
+      "requestedJerseyTooltip": "Requested #{{requested}} during import but it was taken; assigned #{{assigned}} instead. Pick a different number to clear this notice.",
+      "requestedJerseyBadge": "requested #{{requested}}"
     },
     "divisions": {
       "men": "Men",
@@ -774,6 +776,9 @@
         "invalidTitle": "JSON validation failed",
         "invalidJson": "File is not valid JSON: {{msg}}",
         "tournamentName": "Tournament name",
+        "tournamentVenue": "Venue",
+        "tournamentVenuePlaceholder": "e.g. Kampparit Areena",
+        "tournamentVenueHint": "Pre-filled from the JSON when available. Used as the tournament venue and as the default location for matches.",
         "tournamentCategory": "Tournament type",
         "tournamentCategoryHint": "Applied to newly created teams (existing teams keep their category).",
         "previewNote": "Existing clubs/teams (matched by name) are reused. Only missing ones are created.",
