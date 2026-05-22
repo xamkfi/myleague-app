@@ -43,6 +43,9 @@
       "overtime": "Jatkoaika",
       "shootout": "Voittomaalikilpailu"
     },
+    "lineups": {
+      "notSet": "Ottelun kokoonpanoa ei ole vielä asetettu."
+    },
     "stats": {
       "title": "Joukkuetilastot",
       "shotsOnTarget": "Laukaukset maalia kohti",

@@ -31,6 +31,14 @@
   margin-bottom: map.get($spacing, 'md');
 }
 
+.lineup-empty {
+  padding: map.get($spacing, 'md') map.get($spacing, 'sm');
+  text-align: center;
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-neutral-dark-grey;
+  font-style: italic;
+}
+
 .lineup-position-label {
   text-align: left;
   border-radius: map.get($border-radius, 'sm');

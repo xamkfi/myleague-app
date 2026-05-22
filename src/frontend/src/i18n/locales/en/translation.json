@@ -119,6 +119,9 @@
       "overtime": "Went to overtime",
       "shootout": "Went to shootout"
     },
+    "lineups": {
+      "notSet": "The match lineup has not been set yet."
+    },
     "stats": {
       "title": "Team Statistics",
       "shotsOnTarget": "Shots on Target",

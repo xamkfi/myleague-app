@@ -347,8 +347,10 @@ public class HockeyMatch : BaseEntity
             throw new InvalidOperationException($"Cannot record a penalty for a match with status {Status}.");
         if (periodNumber < 1 || periodNumber > _periodScores.Count)
             throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {_periodScores.Count}.");
-        if (timeInSeconds < 0 || timeInSeconds > 1200)
-            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
+        // Continuous match-clock convention: timestamps can exceed a single period's
+        // length, so we only enforce a non-negative floor here.
+        if (timeInSeconds < 0)
+            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be non-negative.");
         if (minutes <= 0)
             throw new ArgumentOutOfRangeException(nameof(minutes), "Penalty minutes must be positive.");
 

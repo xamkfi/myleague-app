@@ -26,16 +26,22 @@ namespace WebAPI.Models.Floorball
         public Guid PlayerId { get; set; }
 
         /// <summary>
-        /// Period number when the event occurred
+        /// Period number when the event occurred. Only a non-negative floor is enforced
+        /// here; the actual upper bound (regulation + overtime + shootout) is configured
+        /// per match in the domain layer.
         /// </summary>
         [Required(ErrorMessage = "Period number is required")]
-        [Range(1, 4, ErrorMessage = "Period number must be between 1 and 4")]
+        [Range(1, int.MaxValue, ErrorMessage = "Period number must be 1 or greater")]
         public int PeriodNumber { get; set; }
 
         /// <summary>
-        /// Time in seconds when the event occurred
+        /// Time in seconds when the event occurred. With the continuous match clock the
+        /// timestamp can exceed a single period's duration (e.g. period 2 begins at
+        /// 900s for a 15-minute period), so no upper limit is enforced – the scorekeeper
+        /// is trusted to enter the value shown on the live clock.
         /// </summary>
         [Required(ErrorMessage = "Time in seconds is required")]
+        [Range(0, int.MaxValue, ErrorMessage = "Time must be non-negative")]
         public int TimeInSeconds { get; set; }
 
         /// <summary>

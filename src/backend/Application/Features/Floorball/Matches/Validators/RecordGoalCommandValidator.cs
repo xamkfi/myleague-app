@@ -27,10 +27,15 @@ public class RecordGoalCommandValidator : AbstractValidator<RecordGoalCommand>
             .When(x => x.AssistingPlayerId.HasValue);
 
         RuleFor(x => x.PeriodNumber)
-            .InclusiveBetween(1, 5).WithMessage("Period number must be between 1 and 5 (4 for overtime, 5 for shootout)");
+            .GreaterThanOrEqualTo(1).WithMessage("Period number must be 1 or greater");
 
+        // We intentionally only enforce a non-negative floor on the timestamp. With the
+        // continuous match clock (period 2 begins at 15:00, period 3 at 30:00, etc.),
+        // any upper bound tied to a single period length would be wrong, and arbitrary
+        // global caps caused real workflows to fail. The scorekeeper is trusted to
+        // enter sensible values for goals; the UI prefills the live clock for them.
         RuleFor(x => x.TimeInSeconds)
-            .InclusiveBetween(0, 1200).WithMessage("Time must be between 0 and 1200 seconds (20 minutes)");
+            .GreaterThanOrEqualTo(0).WithMessage("Time must be non-negative");
 
         RuleFor(x => x.Description)
             .MaximumLength(500).WithMessage("Description cannot exceed 500 characters")

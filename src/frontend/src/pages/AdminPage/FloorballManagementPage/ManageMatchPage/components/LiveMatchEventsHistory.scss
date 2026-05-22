@@ -23,6 +23,46 @@
     height: 24px;
   }
 
+  // Header row groups the section title with the "Select all" affordance so the
+  // multi-select toggle lives in the natural top-right corner where users expect
+  // table-style controls.
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__select-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 16px;
+    color: $color-neutral-dark-grey;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      color: $color-neutral-black;
+    }
+  }
+
+  &__select-all-label {
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  // Shared checkbox styling so the header "Select all" and per-row checkboxes line
+  // up visually with the rest of the row content.
+  &__checkbox {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #4338ca;
+    flex: 0 0 auto;
+  }
+
   .no-events {
     text-align: center; color: #9ca3af; font-style: italic; padding: 24px;
     background: #f9fafb; border-radius: 6px; border: 2px dashed #e5e7eb;
@@ -42,6 +82,21 @@
     &.goal { border-left: 4px solid #10b981; }
     &.penalty { border-left: 4px solid #f59e0b; }
     &.save { border-left: 4px solid #3b82f6; }
+
+    // Tinted background when the row is part of an active multi-select. Kept light enough
+    // that the colour still reads with the team's left-edge type marker (goal/penalty/save).
+    &.selected {
+      background: #eef2ff;
+
+      &:hover { background: #e0e7ff; }
+    }
+
+    .event-select {
+      // Per-row checkbox sits flush at the start of the row, before the time column.
+      // Using a width of 16px keeps it the same size as the header "Select all" so the
+      // two checkboxes appear vertically aligned through the panel.
+      margin-right: 2px;
+    }
 
     .event-time {
       display: flex;
