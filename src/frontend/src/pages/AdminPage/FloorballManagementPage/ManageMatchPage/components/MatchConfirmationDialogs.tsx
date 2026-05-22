@@ -181,7 +181,7 @@ export const MatchConfirmationDialogs = ({
         message={
           isBulkMultiGroup
             ? `Delete ${totalEventCount} selected match event${totalEventCount === 1 ? '' : 's'}` +
-              ` (${groupCount} row${groupCount === 1 ? '' : 's'})?`
+              ` (${groupCount} rows)?`
             : singleGroup
               ? singleGroup.events.length > 1
                 ? `Delete all ${singleGroup.events.length} ${singleGroup.representative.type}s for ${singleGroup.representative.teamName}${singleGroup.representative.playerName ? ` (${singleGroup.representative.playerName})` : ''} at ${formatMatchEventTime(singleGroup.representative.periodNumber, singleGroup.representative.timeInSeconds)}?`
