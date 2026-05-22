@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import ConfirmationDialog from './ConfirmationDialog';
-import type { ProcessedEvent } from './types';
+import type { EventGroup } from './types';
 import { formatMatchEventTime } from '../../../../../utils/matchEventFormat';
 
 interface MatchConfirmationDialogsProps {
@@ -33,8 +33,8 @@ interface MatchConfirmationDialogsProps {
   onReopenConfirm: () => Promise<void>;
   onReopenCancel: () => void;
 
-  // Delete Event
-  eventToDelete: ProcessedEvent | null;
+  // Delete Event (single event or a bulk-save group of events)
+  eventToDelete: EventGroup | null;
   deleteEventLoading: boolean;
   onDeleteEventConfirm: () => Promise<void>;
   onDeleteEventCancel: () => void;
@@ -149,18 +149,30 @@ export const MatchConfirmationDialogs = ({
         onCancel={onReopenCancel}
       />
 
-      {/* Delete Event Confirmation */}
+      {/* Delete Event Confirmation. Bulk-save groups (multiple saves at the exact same
+          coordinate) are shown with a count so the user knows the click will remove every
+          save in the cluster, not just one. */}
       <ConfirmationDialog
         isOpen={!!eventToDelete}
         icon="🗑️"
-        title="Delete Event"
+        title={
+          eventToDelete && eventToDelete.events.length > 1
+            ? `Delete ${eventToDelete.events.length} ${eventToDelete.representative.type}s`
+            : 'Delete Event'
+        }
         message={
           eventToDelete
-            ? `Delete ${eventToDelete.type} for ${eventToDelete.teamName} at ${formatMatchEventTime(eventToDelete.periodNumber, eventToDelete.timeInSeconds)}?`
+            ? eventToDelete.events.length > 1
+              ? `Delete all ${eventToDelete.events.length} ${eventToDelete.representative.type}s for ${eventToDelete.representative.teamName}${eventToDelete.representative.playerName ? ` (${eventToDelete.representative.playerName})` : ''} at ${formatMatchEventTime(eventToDelete.representative.periodNumber, eventToDelete.representative.timeInSeconds)}?`
+              : `Delete ${eventToDelete.representative.type} for ${eventToDelete.representative.teamName} at ${formatMatchEventTime(eventToDelete.representative.periodNumber, eventToDelete.representative.timeInSeconds)}?`
             : ''
         }
         warningMessage="This action cannot be undone."
-        confirmText="Delete"
+        confirmText={
+          eventToDelete && eventToDelete.events.length > 1
+            ? `Delete ${eventToDelete.events.length}`
+            : 'Delete'
+        }
         isLoading={deleteEventLoading}
         onConfirm={onDeleteEventConfirm}
         onCancel={onDeleteEventCancel}

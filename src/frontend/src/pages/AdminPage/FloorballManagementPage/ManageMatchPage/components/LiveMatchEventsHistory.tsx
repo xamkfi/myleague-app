@@ -1,11 +1,17 @@
-import type { ProcessedEvent } from './types';
+import { useMemo } from 'react';
+import type { EventGroup, ProcessedEvent } from './types';
 import { formatMatchEventTime } from '../../../../../utils/matchEventFormat';
 import { getFloorballGoalTypeInfo } from '../../../../../utils/floorballGoalType';
 import './LiveMatchEventsHistory.scss';
 
 interface LiveMatchEventsHistoryProps {
   allEvents: ProcessedEvent[];
-  onDeleteEvent?: (event: ProcessedEvent) => void;
+  /**
+   * Called when the user clicks the per-row delete affordance. The group always
+   * contains at least one event; for bulk-recorded saves it can contain many,
+   * and the consumer is responsible for deleting all of them.
+   */
+  onDeleteEvent?: (group: EventGroup) => void;
   /**
    * When false, the per-row delete affordance is hidden. Used to make the events list
    * read-only once the match is Completed — at that point the backend rejects deletes
@@ -48,19 +54,66 @@ function getEventTypeLabel(type: ProcessedEvent['type']): { label: string; icon:
   }
 }
 
+/**
+ * Collapses bulk-recorded saves into single visual rows. Saves are grouped when
+ * they share team, goalie, period and time-in-seconds — exactly the coordinates
+ * the bulk-save flow stamps onto every event it produces — so genuinely separate
+ * saves recorded at different moments remain on their own rows. Non-save events
+ * are passed through 1:1.
+ *
+ * Input order is preserved so the existing "most recent first" sort produced by
+ * `useMatchEvents` continues to dictate the rendering order.
+ */
+function groupEvents(events: readonly ProcessedEvent[]): EventGroup[] {
+  const groups: EventGroup[] = [];
+  // Maps a save-group key → its index in `groups` so we can append additional
+  // saves to an existing visual row without doing an O(n) scan per event.
+  const saveKeyToIndex = new Map<string, number>();
+
+  for (const event of events) {
+    if (event.type === 'save') {
+      const key: string = `save|${event.teamId}|${event.playerId ?? ''}|${event.periodNumber}|${event.timeInSeconds}`;
+      const existingIndex: number | undefined = saveKeyToIndex.get(key);
+      if (existingIndex !== undefined) {
+        groups[existingIndex].events.push(event);
+        continue;
+      }
+      saveKeyToIndex.set(key, groups.length);
+      groups.push({
+        key: `${key}|${event.eventId ?? event.id}`,
+        representative: event,
+        events: [event],
+      });
+      continue;
+    }
+
+    groups.push({
+      key: event.eventId ?? event.id,
+      representative: event,
+      events: [event],
+    });
+  }
+
+  return groups;
+}
+
 const LiveMatchEventsHistory = ({
   allEvents,
   onDeleteEvent,
   canDelete = true,
 }: LiveMatchEventsHistoryProps) => {
+  const groups: EventGroup[] = useMemo(() => groupEvents(allEvents), [allEvents]);
+
   return (
     <div className="events-history">
       <h3>MATCH EVENTS</h3>
-      {allEvents.length === 0 ? (
+      {groups.length === 0 ? (
         <div className="no-events">No events recorded yet</div>
       ) : (
         <div className="events-list">
-          {allEvents.map(event => {
+          {groups.map(group => {
+            const event: ProcessedEvent = group.representative;
+            const groupSize: number = group.events.length;
             const { label, icon } = getEventTypeLabel(event.type);
             const teamShort = event.teamShortName?.trim()
               ? event.teamShortName
@@ -71,9 +124,10 @@ const LiveMatchEventsHistory = ({
             // Trim the description so whitespace-only entries (e.g. left over from a previously
             // typed-then-cleared note) don't render an empty line under the penalty row.
             const penaltyDescription: string = event.type === 'penalty' ? (event.description ?? '').trim() : '';
+            const isBulkSave: boolean = event.type === 'save' && groupSize > 1;
 
             return (
-              <div key={event.id} className={`event-item ${event.type}`}>
+              <div key={group.key} className={`event-item ${event.type}${isBulkSave ? ' bulk-save' : ''}`}>
                 <div className="event-time">
                   {formatMatchEventTime(event.periodNumber, event.timeInSeconds)}
                 </div>
@@ -120,6 +174,15 @@ const LiveMatchEventsHistory = ({
                   ) : event.type === 'save' ? (
                     <span className="event-text">
                       <span className="player-name">{event.playerName}</span>
+                      {isBulkSave && (
+                        <span
+                          className="save-count-badge"
+                          title={`${groupSize} saves recorded together`}
+                          aria-label={`${groupSize} saves`}
+                        >
+                          {` (×${groupSize})`}
+                        </span>
+                      )}
                       {event.wasInOvertime && ` (OT)`}
                       {event.wasInShootout && ` (SO)`}
                     </span>
@@ -129,9 +192,9 @@ const LiveMatchEventsHistory = ({
                 {canDelete && (
                   <button
                     className="event-delete"
-                    title="Delete event"
-                    onClick={() => onDeleteEvent && onDeleteEvent(event)}
-                    aria-label="Delete event"
+                    title={isBulkSave ? `Delete all ${groupSize} saves in this group` : 'Delete event'}
+                    onClick={() => onDeleteEvent && onDeleteEvent(group)}
+                    aria-label={isBulkSave ? `Delete all ${groupSize} saves` : 'Delete event'}
                   >
                     ×
                   </button>

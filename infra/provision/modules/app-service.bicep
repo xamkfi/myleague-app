@@ -56,6 +56,10 @@ param seedAdminEmail string = ''
 @description('The base URL of the frontend application (e.g. https://myleague.fi)')
 param frontendBaseUrl string = ''
 
+@description('The Application Insights connection string (leave empty to skip wiring)')
+@secure()
+param appInsightsConnectionString string = ''
+
 resource appService 'Microsoft.Web/sites@2023-12-01' = {
   name: name
   location: location
@@ -116,6 +120,14 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'Frontend__BaseUrl'
           value: frontendBaseUrl
+        }
+        // Application Insights connection string (consumed by AddApplicationInsightsTelemetry()
+        // and forwarded to the Serilog ApplicationInsights sink via the TelemetryConfiguration in DI).
+        // We intentionally do NOT enable codeless attach (ApplicationInsightsAgent_EXTENSION_VERSION),
+        // because the SDK is wired in code; enabling both would double-instrument requests.
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsightsConnectionString
         }
       ]
       connectionStrings: [

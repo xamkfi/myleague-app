@@ -21,7 +21,7 @@ import OfficialsSelectorSection from './components/OfficialsSelectorSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
 import BulkSaveDialog, { type BulkSavePayload } from './components/BulkSaveDialog';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
-import type { ProcessedEvent } from './components/types';
+import type { EventGroup } from './components/types';
 import { floorballRefereeService } from '../../../../api/floorball/floorballRefereeService';
 
 // Context
@@ -68,7 +68,10 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState(false);
   const [showReopenConfirmation, setShowReopenConfirmation] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState<ProcessedEvent | null>(null);
+  // Holds the group the user picked for deletion (always non-empty when set). For most events
+  // the group has a single underlying event; bulk-recorded saves expand into N entries and
+  // the delete handler removes every one of them in sequence.
+  const [eventToDelete, setEventToDelete] = useState<EventGroup | null>(null);
   const [deleteEventLoading, setDeleteEventLoading] = useState(false);
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
   const [isSidesSwapped, setIsSidesSwapped] = useState(false);
@@ -506,25 +509,36 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   }, [periodManagement, timerContext]);
 
   const handleDeleteEvent = useCallback(async () => {
-    if (!eventToDelete?.eventId) {
+    if (!eventToDelete || eventToDelete.events.length === 0) {
+      setEventToDelete(null);
+      return;
+    }
+    // Require every underlying event to carry an id. We don't want to partially delete a
+    // bulk-save group and leave orphan rows behind, so abort the whole batch if anything
+    // is malformed.
+    const eventsToDelete = eventToDelete.events.filter(e => !!e.eventId);
+    if (eventsToDelete.length !== eventToDelete.events.length || eventsToDelete.length === 0) {
       matchData.setError('Cannot delete: missing event id');
       setEventToDelete(null);
       return;
     }
-    
+
     try {
       setDeleteEventLoading(true);
       matchData.setError(null);
       await matchData.loadCurrentMatchStatus();
-      
-      if (eventToDelete.type === 'goal') {
-        await floorballMatchService.deleteGoal(match.id, eventToDelete.eventId);
-      } else if (eventToDelete.type === 'penalty') {
-        await floorballMatchService.deletePenalty(match.id, eventToDelete.eventId);
-      } else if (eventToDelete.type === 'save') {
-        await floorballMatchService.deleteSave(match.id, eventToDelete.eventId);
+
+      for (const evt of eventsToDelete) {
+        const eventId: string = evt.eventId as string;
+        if (evt.type === 'goal') {
+          await floorballMatchService.deleteGoal(match.id, eventId);
+        } else if (evt.type === 'penalty') {
+          await floorballMatchService.deletePenalty(match.id, eventId);
+        } else if (evt.type === 'save') {
+          await floorballMatchService.deleteSave(match.id, eventId);
+        }
       }
-      
+
       await matchData.loadCurrentMatchStatus();
       await matchEvents.loadMatchEvents();
       setEventToDelete(null);
@@ -795,12 +809,15 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 
           <LiveMatchEventsHistory
             allEvents={matchEvents.allEvents}
-            onDeleteEvent={(event) => {
-              if (!event.eventId) {
+            onDeleteEvent={(group) => {
+              // A group always carries at least one event from the child component, so an
+              // empty list here would indicate a programming error. Reject it loudly via
+              // the visible error popup instead of silently opening an empty dialog.
+              if (group.events.length === 0 || !group.representative.eventId) {
                 matchData.setError('Cannot delete: missing event id');
                 return;
               }
-              setEventToDelete(event);
+              setEventToDelete(group);
             }}
             /* Once the match is Completed/Cancelled the backend blocks event deletion */
             /* (the only legitimate edit path is to reopen the match first), so hide   */
