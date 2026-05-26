@@ -85,7 +85,7 @@ const ActionsDropdown = ({ actions, ariaLabel }: ActionsDropdownProps) => {
       >
         <span className="actions-dropdown__dots">&#x22EF;</span>
       </button>
-// Render menu outside parent container to avoid clipping
+      {/* Render menu outside parent container to avoid clipping */}
       {isOpen &&
         createPortal(
           <div
