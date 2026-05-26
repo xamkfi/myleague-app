@@ -13,7 +13,7 @@ namespace Domain.Entities.Common
     /// Represents wether or not you can submit feedback
     /// This class manages the functionality of toggling wether or not you can submit feedback
     /// </summary>
-    public class FeedbackToggle : BaseEntity
+    public class FeedbackToggleEntity : BaseEntity
     {
         /// <summary>
         /// Gets wether or not feedback is enabled
@@ -24,11 +24,17 @@ namespace Domain.Entities.Common
         /// initializes a new instance of the FeedbackToggle
         /// </summary>
         /// <param name="isEnabled">Determines if feedback is enabled</param>
-        public FeedbackToggle(Guid id, bool isEnabled)
+        public FeedbackToggleEntity(Guid id, bool isEnabled)
         {
             Id = id;
             IsEnabled = isEnabled;
             CreatedAt = DateTime.Now;
+        }
+
+        public void Update(bool isEnabled)
+        {
+            IsEnabled = isEnabled;
+            UpdatedAt = DateTime.Now;
         }
     }
 }

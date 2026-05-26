@@ -17,7 +17,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
     /// <summary>
     /// Implementation of the FeedbackToggleRepository
     /// </summary>
-    public class FeedbackToggleRepository : RepositoryBase<FeedbackToggle, CommonDbContext>, IFeedbackToggleRepository
+    public class FeedbackToggleRepository : RepositoryBase<FeedbackToggleEntity, CommonDbContext>, IFeedbackToggleRepository
     {
         private readonly ILogger<FeedbackToggleRepository> _logger;
 
@@ -31,12 +31,12 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             _logger = logger;
         }
 
-        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _entities.AnyAsync(ft => ft.Id == id, cancellationToken);
         }
 
-        public async Task SaveAsync(FeedbackToggle toggle, CancellationToken cancellationToken)
+        public async Task SaveAsync(FeedbackToggleEntity toggle, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -58,24 +58,22 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     _logger.LogDebug("Added the toggle to the database with ID: {id}", toggle.Id);
                 }
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
                 _logger.LogError(ex, "Error occurred while saving the toggle state");
             }
         }
 
-        public async Task<FeedbackToggle> GetToggleAsync(CancellationToken cancellationToken)
+        public async Task<FeedbackToggleEntity?> GetToggleAsync(CancellationToken cancellationToken = default)
         {
-            try
+            FeedbackToggleEntity? toggle = await _entities.FirstOrDefaultAsync(cancellationToken);
+            if(toggle == null)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                FeedbackToggle? toggle = await _entities.FirstOrDefaultAsync(cancellationToken);
-                if(toggle == null)
-                {
-                    //figure out what to do here
-                }
+                _logger.LogWarning("No toggle found in the database.");
+                return null;
             }
+            _logger.LogInformation("Successfully retrieved toggle with state: {toggle.IsEnabled}", toggle.IsEnabled);
+            return toggle;
         }
     }
 }
