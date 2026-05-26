@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import {createPortal} from 'react-dom';
 import './ActionsDropdown.scss';
 
 type ActionVariant = 'default' | 'danger' | 'status';
@@ -15,13 +16,14 @@ interface ActionsDropdownProps {
   ariaLabel?: string;
 }
 
-type DropdownPosition = 'left' | 'right' | 'center';
 
+  
 const ActionsDropdown = ({ actions, ariaLabel }: ActionsDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState<DropdownPosition>('left');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  // Stores dropdown position styles dynamically
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -40,23 +42,19 @@ const ActionsDropdown = ({ actions, ariaLabel }: ActionsDropdownProps) => {
     };
   }, [isOpen]);
 
-  // Calculate dropdown position based on available viewport space
+// Calculate menu position based on trigger button location  
   useEffect(() => {
-    if (isOpen && triggerRef.current) {
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const dropdownWidth = 160;
-      const margin = 20;
+  if (isOpen && triggerRef.current) {
+    const rect = triggerRef.current.getBoundingClientRect();
 
-      if (triggerRect.left - dropdownWidth - margin >= 0) {
-        setPosition('left');
-      } else if (triggerRect.right + dropdownWidth + margin <= viewportWidth) {
-        setPosition('right');
-      } else {
-        setPosition('center');
-      }
-    }
-  }, [isOpen]);
+    setMenuStyle({
+      position: 'fixed',
+      top: rect.bottom + 6,
+      right: window.innerWidth - rect.right,
+      zIndex: 99999,
+    });
+  }
+}, [isOpen]);
 
   const handleToggle = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -87,22 +85,28 @@ const ActionsDropdown = ({ actions, ariaLabel }: ActionsDropdownProps) => {
       >
         <span className="actions-dropdown__dots">&#x22EF;</span>
       </button>
-
-      {isOpen && (
-        <div className={`actions-dropdown__menu actions-dropdown__menu--${position}`}>
-          {actions.map((action, index) => (
-            <button
-              key={index}
-              type="button"
-              className={getItemClassName(action.variant)}
-              onClick={(e) => handleAction(e, action)}
-              disabled={action.disabled}
-            >
-              {action.label}
-            </button>
-          ))}
-        </div>
-      )}
+// Render menu outside parent container to avoid clipping
+      {isOpen &&
+        createPortal(
+          <div
+            className="actions-dropdown__menu"
+            style={menuStyle}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {actions.map((action, index) => (
+              <button
+                key={index}
+                type="button"
+                className={getItemClassName(action.variant)}
+                onClick={(e) => handleAction(e, action)}
+                disabled={action.disabled}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
