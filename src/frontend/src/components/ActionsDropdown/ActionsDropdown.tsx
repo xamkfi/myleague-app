@@ -24,11 +24,19 @@ const ActionsDropdown = ({ actions, ariaLabel }: ActionsDropdownProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   // Stores dropdown position styles dynamically
   const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target) &&
+        menuRef.current &&
+        !menuRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -74,7 +82,7 @@ const ActionsDropdown = ({ actions, ariaLabel }: ActionsDropdownProps) => {
     return base;
   };
 
-  return (
+return (
     <div className="actions-dropdown" ref={dropdownRef}>
       <button
         ref={triggerRef}
@@ -85,19 +93,23 @@ const ActionsDropdown = ({ actions, ariaLabel }: ActionsDropdownProps) => {
       >
         <span className="actions-dropdown__dots">&#x22EF;</span>
       </button>
+
       {/* Render menu outside parent container to avoid clipping */}
       {isOpen &&
         createPortal(
           <div
+            ref={menuRef}
             className="actions-dropdown__menu"
             style={menuStyle}
             onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             {actions.map((action, index) => (
               <button
                 key={index}
                 type="button"
                 className={getItemClassName(action.variant)}
+                onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => handleAction(e, action)}
                 disabled={action.disabled}
               >
