@@ -27,6 +27,12 @@ namespace Application.Features.Common.Feedback.Handlers
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CreateFeedbackHandler> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the CreateFeedbackHandler class.
+        /// </summary>
+        /// <param name="feedbackRepository">The repository used to access and manage feedback data.</param>
+        /// <param name="unitOfWork">Unit of work used to commit repository changes as a single transaction.</param>
+        /// <param name="logger">Logger for recording handler operations and diagnostic information.</param>
         public CreateFeedbackHandler(IFeedbackRepository feedbackRepository, IUnitOfWork unitOfWork, ILogger<CreateFeedbackHandler> logger)
         {
             _feedbackRepository = feedbackRepository;
@@ -34,6 +40,12 @@ namespace Application.Features.Common.Feedback.Handlers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Handles the CreateFeedbackCommand request
+        /// </summary>
+        /// <param name="request">The CreateFeedbackCommand with the values for the new FeedbackEntity</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>The new FeedbackEntity as a data transfer object</returns>
         public async Task<Result<FeedbackDto>> Handle(CreateFeedbackCommand request, CancellationToken cancellationToken)
         {
             try
@@ -73,10 +85,20 @@ namespace Application.Features.Common.Feedback.Handlers
                 _logger.LogInformation("Feedback creation was cancelled for title: {title}", request.Title);
                 throw;
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                _logger.LogError(ex, "Error occurred while creating the feedback: {title}", request.Title);
+                _logger.LogError(ex, "Operational error occurred while creating the feedback: {title}", request.Title);
                 return Result<FeedbackDto>.Failure("An error occurred while creating the feedback");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Invalid feedback data provided for title: {title}", request.Title);
+                return Result<FeedbackDto>.Failure("An error occurred while creating the feedback");
+            }
+            catch(Exception ex) when (ex is not SystemException)
+            {
+                _logger.LogError(ex, "Unexpected non-system error occurred while creating the feedback: {title}", request.Title);
+                throw;
             }
         }
     }

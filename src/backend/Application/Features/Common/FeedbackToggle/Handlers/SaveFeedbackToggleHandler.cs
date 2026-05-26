@@ -30,7 +30,7 @@ namespace Application.Features.Common.FeedbackToggle.Handlers
         /// <summary>
         /// Initializes a new instance of the SaveFeedbackToggleHandler class
         /// </summary>
-        /// <param name="feedbackToggleRepository"></param>
+        /// <param name="feedbackToggleRepository">The repository used to access and manage the FeedbackToggle</param>
         /// <param name="unitOfWork"></param>
         /// <param name="logger"></param>
         public SaveFeedbackToggleHandler(IFeedbackToggleRepository feedbackToggleRepository, IUnitOfWork unitOfWork, ILogger<SaveFeedbackToggleHandler> logger)

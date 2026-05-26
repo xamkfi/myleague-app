@@ -36,6 +36,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             return await _entities.AnyAsync(ft => ft.Id == id, cancellationToken);
         }
 
+        /// <summary>
+        /// Saves the FeedbackToggle
+        /// </summary>
+        /// <param name="toggle">The toggle with the values to save</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task SaveAsync(FeedbackToggleEntity toggle, CancellationToken cancellationToken = default)
         {
             try
@@ -64,6 +71,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             }
         }
 
+        /// <summary>
+        /// Gets the FeedbackToggle if it exists
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
         public async Task<FeedbackToggleEntity?> GetToggleAsync(CancellationToken cancellationToken = default)
         {
             FeedbackToggleEntity? toggle = await _entities.FirstOrDefaultAsync(cancellationToken);

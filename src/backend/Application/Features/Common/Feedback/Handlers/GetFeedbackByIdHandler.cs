@@ -28,7 +28,7 @@ namespace Application.Features.Common.Feedback.Handlers
         /// <summary>
         /// Initializes a new instance of GetFeedbackByIdHandler
         /// </summary>
-        /// <param name="feedbackRepository">The feedback repository</param>
+        /// <param name="feedbackRepository">The repository used to access and manage feedback data</param>
         /// <param name="logger">The logger</param>
         public GetFeedbackByIdHandler(IFeedbackRepository feedbackRepository, ILogger<GetFeedbackByIdHandler> logger)
         {
@@ -36,6 +36,12 @@ namespace Application.Features.Common.Feedback.Handlers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Handles the GetFeedbackById request
+        /// </summary>
+        /// <param name="request">The GetFeedbackByIdQuery request</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
         public async Task<Result<FeedbackDto>> Handle(GetFeedbackByIdQuery request, CancellationToken cancellationToken)
         {
             try
@@ -61,7 +67,7 @@ namespace Application.Features.Common.Feedback.Handlers
                 _logger.LogInformation("Get feedback operation was canceled for ID: {request.id}", request.id);
                 throw;
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Error retrieving feedback with id: {request.id}", request.id);
                 return Result<FeedbackDto>.Failure("An error occurred while retrieving the feedback");

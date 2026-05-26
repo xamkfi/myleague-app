@@ -48,7 +48,6 @@ namespace Domain.Entities.Common
         /// <param name="email">The new email to be set</param>
         public void SetEmail(string email)
         {
-            string? oldEmail = Email;
             Email = email;
         }
     } 

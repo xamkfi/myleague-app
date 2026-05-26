@@ -23,6 +23,12 @@ namespace Application.Features.Common.Feedback.Handlers
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<DeleteFeedbackHandler> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of DeleteFeedbackHandler with the specified dependencies.
+        /// </summary>
+        /// <param name="feedbackRepository">The repository used to access and manage feedback data.</param>
+        /// <param name="unitOfWork">The unit of work used to commit changes as a single transaction.</param>
+        /// <param name="logger">The logger used to record diagnostic and operational events.</param>
         public DeleteFeedbackHandler(IFeedbackRepository feedbackRepository, IUnitOfWork unitOfWork, ILogger<DeleteFeedbackHandler> logger)
         {
             _feedbackRepository = feedbackRepository;
@@ -30,6 +36,12 @@ namespace Application.Features.Common.Feedback.Handlers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Handles the DeleteFeedbackCommand
+        /// </summary>
+        /// <param name="request">The DeleteFeedbackCommand with the ID of the feedback to be deleted</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
         public async Task<Result<bool>> Handle(DeleteFeedbackCommand request,  CancellationToken cancellationToken)
         {
             try
@@ -47,7 +59,7 @@ namespace Application.Features.Common.Feedback.Handlers
 
                 return Result<bool>.Success(true);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, $"Error deleting feedback with ID: {request.id}");
                 return Result<bool>.Failure("An error occurred while deleting feedback");

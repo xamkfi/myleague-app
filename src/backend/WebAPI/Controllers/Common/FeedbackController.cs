@@ -105,7 +105,10 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<FeedbackDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FeedbackDto>>> CreateFeedback([FromBody] CreateFeedbackRequest request)
         {
-            _logger.LogInformation("Creating feedback with title: {request.Title}", request.Title);
+            string sanitizedTitleForLog = request.Title
+                .Replace("\r", string.Empty)
+                .Replace("\n", string.Empty);
+            _logger.LogInformation("Creating feedback with title: {request.Title}", sanitizedTitleForLog);
 
             var command = new CreateFeedbackCommand(request.Title, request.FeedbackBody, request.Email);
 

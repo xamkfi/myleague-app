@@ -27,6 +27,12 @@ namespace Application.Features.Common.Feedback.Handlers
     {
         private readonly IFeedbackRepository _feedbackRepository;
 
+        /// <summary>
+        /// Initializes a new instance of the GetAllFeedbackHandler
+        /// </summary>
+        /// <param name="feedbackRepository">The repository used to access and manage feedback data</param>
+        /// <param name="paginationService">The pagination service</param>
+        /// <param name="logger">The logger</param>
         public GetAllFeedbackHandler(IFeedbackRepository feedbackRepository,
             IPaginationService paginationService,
             ILogger<GetAllFeedbackQuery> logger) : base (paginationService, logger)
@@ -34,6 +40,12 @@ namespace Application.Features.Common.Feedback.Handlers
             _feedbackRepository = feedbackRepository;
         }
 
+        /// <summary>
+        /// Handles the GetAllFeedback request
+        /// </summary>
+        /// <param name="request">´The GetAllFeedbackQuery with the pagination parameters</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
         public async Task<Result<PagedResult<FeedbackListDto>>> Handle(GetAllFeedbackQuery request, CancellationToken cancellationToken)
         {
             try
@@ -60,7 +72,7 @@ namespace Application.Features.Common.Feedback.Handlers
                 _logger.LogInformation("Feedback retrieval was cancelled. Page: {page}, PageSize: {pageSize}", request.page, request.pageSize);
                 throw;
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Error while retrieving feedback");
                 return Result<PagedResult<FeedbackListDto>>.Failure("An error occurred while retrieving feedback");

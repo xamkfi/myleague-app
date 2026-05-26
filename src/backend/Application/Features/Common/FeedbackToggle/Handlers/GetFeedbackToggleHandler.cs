@@ -28,7 +28,7 @@ namespace Application.Features.Common.FeedbackToggle.Handlers
         /// <summary>
         /// Initializes a new instance of the GetFeedbackToggleHandler
         /// </summary>
-        /// <param name="feedbackToggleRepository">The FeedbackToggle repository</param>
+        /// <param name="feedbackToggleRepository">The repository used to access and manage the FeedbackToggle</param>
         /// <param name="logger">The logger</param>
         public GetFeedbackToggleHandler(IFeedbackToggleRepository feedbackToggleRepository, ILogger<GetFeedbackToggleHandler> logger)
         {
@@ -36,6 +36,12 @@ namespace Application.Features.Common.FeedbackToggle.Handlers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Handles the GetFeedbackToggle request
+        /// </summary>
+        /// <param name="query">The GetFeedbackToggle query</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
         public async Task<Result<FeedbackToggleDto>> Handle(GetFeedbackToggleQuery query, CancellationToken cancellationToken)
         {
             try
@@ -54,10 +60,10 @@ namespace Application.Features.Common.FeedbackToggle.Handlers
                     return Result<FeedbackToggleDto>.Failure("FeedbackToggle not found");
                 }
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
             {
-                _logger.LogError(ex, "Error retrieving the toggle");
-                return Result<FeedbackToggleDto>.Failure("An error occurred while retrieving the feedback toggle");
+                _logger.LogError(ex, "Retrieving the FeedbackToggle was canceled.");
+                return Result<FeedbackToggleDto>.Failure("The operation was canceled while retrieving the feedback toggle.");
             }
         }
     }
