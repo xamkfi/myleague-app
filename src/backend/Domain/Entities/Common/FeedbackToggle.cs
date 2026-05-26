@@ -28,13 +28,17 @@ namespace Domain.Entities.Common
         {
             Id = id;
             IsEnabled = isEnabled;
-            CreatedAt = DateTime.Now;
+            CreatedAt = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// Updates the state of the FeedbackToggle entity
+        /// </summary>
+        /// <param name="isEnabled">The new state</param>
         public void Update(bool isEnabled)
         {
             IsEnabled = isEnabled;
-            UpdatedAt = DateTime.Now;
+            UpdatedAt = DateTime.UtcNow;
         }
     }
 }
