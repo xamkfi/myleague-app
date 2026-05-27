@@ -462,7 +462,67 @@ namespace WebAPI.Controllers.Floorball
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
             }
 
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            // Surface validation failures and the domain error message in the `errors` list so
+            // the frontend can show a single, clear banner (e.g. "Ottelua ei voi aloittaa:
+            // molempien joukkueiden tulee olla valittuina.") without having to parse `message`.
+            List<string> errorList = result.ValidationFailures.Select(err => err.ErrorMessage).ToList();
+            if (errorList.Count == 0)
+            {
+                errorList.Add(errorMessage);
+            }
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage, errorList));
+        }
+
+        /// <summary>
+        /// Assigns (or clears) the home and away team slots on a scheduled or postponed match.
+        /// </summary>
+        /// <remarks>
+        /// Pass <c>null</c> for either side to leave the slot as "to be determined". When the
+        /// match is a playoff bracket match, the change is automatically propagated forward into
+        /// the next bracket slot (provided that next match hasn't started yet). The endpoint
+        /// rejects any attempt to change teams on a match that is already InProgress or Completed.
+        /// </remarks>
+        /// <param name="matchId">Target match.</param>
+        /// <param name="request">New home/away team assignments.</param>
+        /// <returns>The updated match DTO.</returns>
+        [HttpPut("{matchId:guid}/teams")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> AssignTeams(
+            Guid matchId,
+            [FromBody] AssignMatchTeamsRequest request)
+        {
+            _logger.LogInformation(
+                "Assigning teams on floorball match {MatchId}: home={HomeTeamId}, away={AwayTeamId}",
+                matchId, request.HomeTeamId, request.AwayTeamId);
+
+            AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(
+                matchId,
+                request.HomeTeamId,
+                request.AwayTeamId);
+
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match teams updated successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to update match teams";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            List<string> errorList = result.ValidationFailures.Select(err => err.ErrorMessage).ToList();
+            if (errorList.Count == 0)
+            {
+                errorList.Add(errorMessage);
+            }
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage, errorList));
         }
 
 

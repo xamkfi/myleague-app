@@ -198,8 +198,12 @@ public abstract class FloorballCompetition : BaseEntity
         ArgumentNullException.ThrowIfNull(match);
         if (IsCompleted)
             throw new InvalidOperationException("Cannot add a match to a completed competition.");
-        if (!_teams.Contains(match.HomeTeam) || !_teams.Contains(match.AwayTeam))
-            throw new InvalidOperationException("Both teams must be participating in this competition.");
+        // Assigned teams must be participating in this competition; unassigned (null) slots are
+        // tolerated so a fixture can be published before the playoff feeder or seeding is known.
+        if (match.HomeTeam != null && !_teams.Contains(match.HomeTeam))
+            throw new InvalidOperationException("Home team must be participating in this competition.");
+        if (match.AwayTeam != null && !_teams.Contains(match.AwayTeam))
+            throw new InvalidOperationException("Away team must be participating in this competition.");
         if (_matches.Contains(match))
             return;
         _matches.Add(match);

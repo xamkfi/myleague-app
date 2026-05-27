@@ -107,9 +107,9 @@ function MatchPanelCard({ match }: MatchPanelCardProps) {
         </span>
       )}
 
-      {/* Teams */}
-      {renderTeamRow(match.homeTeamName, match.homeTeamLogo, match.homeScore)}
-      {renderTeamRow(match.awayTeamName, match.awayTeamLogo, match.awayScore)}
+      {/* Teams. Unassigned slots fall back to "TBD" so future-scheduled fixtures still render. */}
+      {renderTeamRow(match.homeTeamName ?? 'TBD', match.homeTeamLogo, match.homeScore)}
+      {renderTeamRow(match.awayTeamName ?? 'TBD', match.awayTeamLogo, match.awayScore)}
 
       {/* Venue */}
       {match.venue && (

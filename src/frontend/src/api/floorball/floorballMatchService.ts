@@ -1,10 +1,11 @@
-import type { 
+import type {
   ApiResponse,
   PaginatedApiResponse,
   FloorballMatchDto,
   CreateFloorballMatchRequest,
   UpdateFloorballMatchRequest,
-  GetFloorballMatchesRequest
+  GetFloorballMatchesRequest,
+  AssignMatchTeamsRequest
 } from '../../types/floorball/floorballTypes';
 import type { FloorballPosition } from '../../types/floorball/floorballTypes';
 import { authFetch } from '../utils/authFetch';
@@ -349,6 +350,46 @@ export const floorballMatchService = {
       return apiResponse;
     } catch (error) {
       console.error('Error in floorballMatchService.start:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Assign or clear the home/away team slots on a scheduled (or postponed) match. Pass
+   * `null` for either side to reset that slot back to "to be determined". When the match
+   * is a playoff bracket match the change is also automatically propagated forward to the
+   * downstream bracket slot (provided the next match has not started yet).
+   *
+   * Throws on validation failure / 4xx / 5xx with the server's error message so the
+   * caller can surface it directly in a toast or banner.
+   */
+  assignTeams: async (
+    id: string,
+    payload: AssignMatchTeamsRequest
+  ): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${id}/teams`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to update match teams');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || apiResponse.message || 'Failed to update match teams');
+      }
+
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.assignTeams:', error);
       throw error;
     }
   },

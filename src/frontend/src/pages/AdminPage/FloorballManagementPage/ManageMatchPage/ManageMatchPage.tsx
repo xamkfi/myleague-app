@@ -21,6 +21,7 @@ import OfficialsSelectorSection from './components/OfficialsSelectorSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
 import BulkSaveDialog, { type BulkSavePayload } from './components/BulkSaveDialog';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import AssignTeamsDialog from '../../../../components/AssignTeamsDialog/AssignTeamsDialog';
 import type { EventGroup, ProcessedEvent } from './components/types';
 import { floorballRefereeService } from '../../../../api/floorball/floorballRefereeService';
 
@@ -811,7 +812,24 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             canEndPeriod={periodManagement.canEndPeriod}
             getPeriodControlButtonText={periodManagement.getPeriodControlButtonText}
             keybindsEnabled={keybindsEnabled}
-            isStartMatchDisabled={!homeGoalieId || !awayGoalieId}
+            // Defense in depth: refuse to render an enabled "Start match" CTA whenever the
+            // backend would reject the request (missing teams, missing goalies). The page
+            // already short-circuits to an "Assign teams" placeholder when teams are
+            // unset, but we keep these checks here so the timer card stays correct even
+            // if a future refactor changes the rendering path.
+            isStartMatchDisabled={
+              !homeGoalieId ||
+              !awayGoalieId ||
+              !matchData.currentMatch.homeTeamId ||
+              !matchData.currentMatch.awayTeamId
+            }
+            startDisabledReason={
+              !matchData.currentMatch.homeTeamId || !matchData.currentMatch.awayTeamId
+                ? 'Aseta molemmat joukkueet ennen aloitusta'
+                : (!homeGoalieId || !awayGoalieId)
+                  ? 'Select goalies to start'
+                  : undefined
+            }
             overtimePeriodNumber={periodManagement.overtimePeriodNumber}
             shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
           />
@@ -1025,6 +1043,7 @@ const ManageMatchPage = (): ReactElement => {
   const [match, setMatch] = useState<FloorballMatchDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAssignTeams, setShowAssignTeams] = useState<boolean>(false);
 
   const returnTo: string = useMemo(
     () => sanitizeReturnTo(searchParams.get('returnTo')),
@@ -1084,6 +1103,8 @@ const ManageMatchPage = (): ReactElement => {
   }
 
   const isMatchFinished = match.status === 'Completed';
+  const isTeamsAssignable: boolean = match.status === 'Scheduled' || match.status === 'Postponed';
+  const isMissingTeams: boolean = !match.homeTeamId || !match.awayTeamId;
 
   return (
     <PageTemplate title="Manage match page">
@@ -1092,6 +1113,24 @@ const ManageMatchPage = (): ReactElement => {
           <div className="page-header__top">
             <h1 className="page-title-compact font-title">MATCH MANAGEMENT</h1>
             <div className="page-header__actions">
+              {/* "Assign teams" is only meaningful while the match is still Scheduled/Postponed.
+                  Show it eagerly when teams are missing (badge style), and as a secondary action
+                  when both are already set so juries can override assignments. */}
+              {isTeamsAssignable && (
+                <button
+                  type="button"
+                  className="edit-match-button"
+                  onClick={() => setShowAssignTeams(true)}
+                  title={t('floorball.matches.assignTeams.action', 'Aseta joukkueet')}
+                >
+                  <span className="edit-match-button__icon" aria-hidden="true">👥</span>
+                  <span className="edit-match-button__label">
+                    {isMissingTeams
+                      ? t('floorball.matches.assignTeams.actionMissing', 'Aseta joukkueet')
+                      : t('floorball.matches.assignTeams.actionChange', 'Muuta joukkueita')}
+                  </span>
+                </button>
+              )}
               {/* "Edit match details" navigates to a separate form that mutates schedule / teams. */}
               {/* Hide it once the match is Finished: at that point the only sanctioned recovery */}
               {/* path is "Open match" in the header, which reverts season aggregates safely.    */}
@@ -1109,8 +1148,50 @@ const ManageMatchPage = (): ReactElement => {
               )}
             </div>
           </div>
+          {isMissingTeams && isTeamsAssignable && (
+            <div className="page-header__missing-teams" role="status">
+              <i className="fas fa-info-circle" aria-hidden="true"></i>
+              {t(
+                'floorball.matches.assignTeams.missingBanner',
+                'Tällä ottelulla ei ole molempia joukkueita. Aseta joukkueet ennen ottelun aloittamista.'
+              )}
+            </div>
+          )}
         </div>
-        <ManageMatchPageWithContext match={match} setMatch={setMatch} onClose={handleClose} />
+        {isMissingTeams ? (
+          /* Without both teams the live management UI cannot meaningfully render rosters,
+              goalies, or the scoreboard. Short-circuit with a friendly empty state so the
+              user is directed to the only useful action: assign the teams first. */
+          <div className="manage-match-page__placeholder">
+            <i className="fas fa-users-slash" aria-hidden="true"></i>
+            <p>
+              {t(
+                'floorball.matches.assignTeams.placeholderBody',
+                'Otteluun ei ole vielä asetettu molempia joukkueita, joten ottelun hallintanäkymää ei voi vielä avata.'
+              )}
+            </p>
+            <button
+              type="button"
+              className="manage-match-page__placeholder-action"
+              onClick={() => setShowAssignTeams(true)}
+            >
+              <i className="fas fa-user-plus" aria-hidden="true"></i>
+              {t('floorball.matches.assignTeams.action', 'Aseta joukkueet')}
+            </button>
+          </div>
+        ) : (
+          <ManageMatchPageWithContext match={match} setMatch={setMatch} onClose={handleClose} />
+        )}
+
+        <AssignTeamsDialog
+          isOpen={showAssignTeams}
+          match={match}
+          onClose={() => setShowAssignTeams(false)}
+          onSaved={(updated) => {
+            setMatch(updated);
+            setShowAssignTeams(false);
+          }}
+        />
     </div>
     </PageTemplate>
   );

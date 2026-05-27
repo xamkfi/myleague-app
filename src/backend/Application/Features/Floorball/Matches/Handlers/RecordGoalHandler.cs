@@ -155,9 +155,10 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
                 await UpdatePlayerSeasonStatistics(secondAssistingPlayer.Id, request.ScoringTeamId, match.CompetitionId, false, true, cancellationToken);
             }
 
-            // Update team season statistics (increment goals for scoring team, goals against for opposing team)
+            // Update team season statistics (increment goals for scoring team, goals against for opposing team).
+            // Both team IDs are non-null on a started match.
             await UpdateTeamSeasonGoalStatistics(request.ScoringTeamId, match.CompetitionId, true, cancellationToken);
-            Guid opposingTeamId = request.ScoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
+            Guid opposingTeamId = (request.ScoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId)!.Value;
             await UpdateTeamSeasonGoalStatistics(opposingTeamId, match.CompetitionId, false, cancellationToken);
 
             // Update match team statistics
@@ -255,8 +256,8 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
     /// </summary>
     private async Task UpdateGoalieSeasonStatistics(FloorballMatch match, Guid scoringTeamId, CancellationToken cancellationToken)
     {
-        // Find the opposing team (the one that allowed the goal)
-        Guid opposingTeamId = scoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
+        // Find the opposing team (the one that allowed the goal). A started match has both teams set.
+        Guid opposingTeamId = (scoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId)!.Value;
 
         // Note: When a goal is scored, only the scoring team gets a shot increment
         // The opposing team's goalie stats are updated below, but not their team shot stats

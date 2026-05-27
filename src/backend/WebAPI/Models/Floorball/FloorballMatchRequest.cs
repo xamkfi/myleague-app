@@ -83,15 +83,15 @@ public record CreateFloorballMatchRequest
     public Guid? CompetitionId { get; init; }
 
     /// <summary>
-    /// Gets the home team ID
+    /// Gets the home team ID. Optional: leave null to schedule a fixture before the participant is
+    /// known (e.g. future league round, playoff slot waiting on a feeder). Use the
+    /// <c>PUT /api/FloorballMatch/{id}/teams</c> endpoint to fill it in later.
     /// </summary>
-    [Required(ErrorMessage = "Home team ID is required")]
     public Guid? HomeTeamId { get; init; }
 
     /// <summary>
-    /// Gets the away team ID
+    /// Gets the away team ID. Optional; see <see cref="HomeTeamId"/>.
     /// </summary>
-    [Required(ErrorMessage = "Away team ID is required")]
     public Guid? AwayTeamId { get; init; }
 
     /// <summary>
@@ -146,6 +146,24 @@ public record UpdateFloorballMatchRequest
     /// </summary>
     [StringLength(200, ErrorMessage = "Venue cannot exceed 200 characters")]
     public string? Venue { get; init; }
+}
+
+/// <summary>
+/// Request model for the "assign teams to a scheduled match" endpoint. Either side may be
+/// <c>null</c> to clear that slot back to "to be determined". When both are present they must
+/// reference different teams.
+/// </summary>
+public record AssignMatchTeamsRequest
+{
+    /// <summary>
+    /// New home team for the match, or <c>null</c> to clear the slot.
+    /// </summary>
+    public Guid? HomeTeamId { get; init; }
+
+    /// <summary>
+    /// New away team for the match, or <c>null</c> to clear the slot.
+    /// </summary>
+    public Guid? AwayTeamId { get; init; }
 }
 
 /// <summary>

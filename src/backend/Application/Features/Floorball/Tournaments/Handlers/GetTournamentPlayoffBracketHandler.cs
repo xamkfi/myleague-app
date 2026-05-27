@@ -68,9 +68,11 @@ public class GetTournamentPlayoffBracketHandler
             }
 
             // Resolve team logos with the same fallback the rest of the app uses (team logo > club logo).
+            // Skip slots that haven't been assigned a team yet (null) — they render as TBD.
             HashSet<Guid> teamIds = playoffMatches
-                .SelectMany(m => new[] { m.HomeTeamId, m.AwayTeamId })
-                .Where(id => id != Guid.Empty)
+                .SelectMany(m => new Guid?[] { m.HomeTeamId, m.AwayTeamId })
+                .Where(id => id.HasValue && id.Value != Guid.Empty)
+                .Select(id => id!.Value)
                 .ToHashSet();
             if (tournament.ChampionTeamId.HasValue)
             {
@@ -90,9 +92,10 @@ public class GetTournamentPlayoffBracketHandler
                 ? new Dictionary<Guid, Club>()
                 : await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
 
-            FloorballPlayoffTeamDto? ToTeamDto(Guid teamId)
+            FloorballPlayoffTeamDto? ToTeamDto(Guid? teamId)
             {
-                if (!teamLookup.TryGetValue(teamId, out FloorballTeam? team))
+                if (!teamId.HasValue || teamId.Value == Guid.Empty
+                    || !teamLookup.TryGetValue(teamId.Value, out FloorballTeam? team))
                 {
                     return null;
                 }

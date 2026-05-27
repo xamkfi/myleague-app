@@ -105,9 +105,10 @@ public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<Floor
             // Decrement season statistics
             await RemovePlayerSeasonStatistics(deletedGoal, match, cancellationToken);
 
-            // Decrement team season statistics (decrement goals for scoring team, goals against for opposing team)
+            // Decrement team season statistics (decrement goals for scoring team, goals against for opposing team).
+            // Goals can only be recorded on a started match, so both team IDs are non-null here.
             await RemoveTeamSeasonGoalStatistics(deletedGoal.TeamId, match.CompetitionId, true, cancellationToken);
-            Guid opposingTeamId = deletedGoal.TeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
+            Guid opposingTeamId = (deletedGoal.TeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId)!.Value;
             await RemoveTeamSeasonGoalStatistics(opposingTeamId, match.CompetitionId, false, cancellationToken);
 
             // Decrement match team statistics
@@ -225,8 +226,8 @@ public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<Floor
     /// </summary>
     private async Task RemoveGoalieSeasonStatistics(FloorballMatch match, Guid scoringTeamId, CancellationToken cancellationToken)
     {
-        // Find the opposing team (the one that allowed the goal)
-        Guid opposingTeamId = scoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
+        // Find the opposing team (the one that allowed the goal). A started match has both team IDs set.
+        Guid opposingTeamId = (scoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId)!.Value;
 
         // Update match team statistics for the opposing team (remove shots against)
         FloorballMatchTeamStatistics? opposingMatchStats = await _statisticsRepository.GetMatchTeamStatisticsAsync(match.Id, opposingTeamId, cancellationToken);

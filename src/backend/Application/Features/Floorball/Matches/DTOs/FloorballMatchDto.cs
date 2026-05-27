@@ -30,10 +30,10 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// </summary>
     /// <param name="Id">The unique identifier of the match</param>
     /// <param name="CompetitionId">The ID of the competition this match belongs to</param>
-    /// <param name="HomeTeamId">The ID of the home team</param>
-    /// <param name="HomeTeamName">The name of the home team</param>
-    /// <param name="AwayTeamId">The ID of the away team</param>
-    /// <param name="AwayTeamName">The name of the away team</param>
+    /// <param name="HomeTeamId">The ID of the home team, or <c>null</c> when the participant is not yet known.</param>
+    /// <param name="HomeTeamName">The name of the home team, or <c>null</c> when not yet assigned.</param>
+    /// <param name="AwayTeamId">The ID of the away team, or <c>null</c> when the participant is not yet known.</param>
+    /// <param name="AwayTeamName">The name of the away team, or <c>null</c> when not yet assigned.</param>
     /// <param name="ScheduledDateTime">The scheduled date and time of the match</param>
     /// <param name="Venue">The venue where the match will be played</param>
     /// <param name="Status">The current status of the match</param>
@@ -55,11 +55,11 @@ namespace Application.Features.Floorball.Matches.DTOs
         Guid Id,
         Guid CompetitionId,
         string CompetitionName,
-        Guid HomeTeamId,
-        string HomeTeamName,
+        Guid? HomeTeamId,
+        string? HomeTeamName,
         Uri? HomeTeamLogo,
-        Guid AwayTeamId,
-        string AwayTeamName,
+        Guid? AwayTeamId,
+        string? AwayTeamName,
         Uri? AwayTeamLogo,
         DateTime ScheduledDateTime,
         string? Venue,

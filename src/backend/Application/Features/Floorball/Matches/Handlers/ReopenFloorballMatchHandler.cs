@@ -114,8 +114,12 @@ public class ReopenFloorballMatchHandler : IRequestHandler<ReopenFloorballMatchC
             awayResult = FloorballGameResult.Tie;
         }
 
-        await UndoSingleTeamSeasonStatistics(match.HomeTeamId, match.CompetitionId, homeResult, isHomeGame: true, cancellationToken);
-        await UndoSingleTeamSeasonStatistics(match.AwayTeamId, match.CompetitionId, awayResult, isHomeGame: false, cancellationToken);
+        // A reopened match was previously Completed, which means Start() succeeded and both
+        // team IDs are populated. Skip the undo gracefully if a slot somehow ended up null.
+        if (match.HomeTeamId.HasValue)
+            await UndoSingleTeamSeasonStatistics(match.HomeTeamId.Value, match.CompetitionId, homeResult, isHomeGame: true, cancellationToken);
+        if (match.AwayTeamId.HasValue)
+            await UndoSingleTeamSeasonStatistics(match.AwayTeamId.Value, match.CompetitionId, awayResult, isHomeGame: false, cancellationToken);
     }
 
     private async Task UndoSingleTeamSeasonStatistics(Guid teamId, Guid competitionId, FloorballGameResult result, bool isHomeGame, CancellationToken cancellationToken)
@@ -175,17 +179,17 @@ public class ReopenFloorballMatchHandler : IRequestHandler<ReopenFloorballMatchC
         bool homeGoalieShutout = match.AwayScore == 0;
         bool awayGoalieShutout = match.HomeScore == 0;
 
-        if (match.HomeActiveGoalieId.HasValue)
+        if (match.HomeActiveGoalieId.HasValue && match.HomeTeamId.HasValue)
         {
             await UndoSingleGoalieGamePlayed(
-                match.HomeActiveGoalieId.Value, match.HomeTeamId, match.CompetitionId,
+                match.HomeActiveGoalieId.Value, match.HomeTeamId.Value, match.CompetitionId,
                 homeResult, matchDurationMinutes, homeGoalieShutout, cancellationToken);
         }
 
-        if (match.AwayActiveGoalieId.HasValue)
+        if (match.AwayActiveGoalieId.HasValue && match.AwayTeamId.HasValue)
         {
             await UndoSingleGoalieGamePlayed(
-                match.AwayActiveGoalieId.Value, match.AwayTeamId, match.CompetitionId,
+                match.AwayActiveGoalieId.Value, match.AwayTeamId.Value, match.CompetitionId,
                 awayResult, matchDurationMinutes, awayGoalieShutout, cancellationToken);
         }
     }

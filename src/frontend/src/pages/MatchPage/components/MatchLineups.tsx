@@ -90,6 +90,13 @@ export default function MatchLineups({ match }: { match: FloorballMatchDto }) {
         let cancelled: boolean = false;
         async function fetchRosters(): Promise<void> {
             try {
+                // Placeholder fixtures have no rosters to look up; lineup section will simply
+                // render the "not set" state for both sides until teams are assigned.
+                if (!match.homeTeamId || !match.awayTeamId) {
+                    setHomeLookup(new Map());
+                    setAwayLookup(new Map());
+                    return;
+                }
                 const [homeResponse, awayResponse] = await Promise.all([
                     floorballTeamService.getById(match.homeTeamId),
                     floorballTeamService.getById(match.awayTeamId),
@@ -186,8 +193,8 @@ export default function MatchLineups({ match }: { match: FloorballMatchDto }) {
     return (
         <div className="match-lineups-container">
             <div className="match-lineups-grid">
-                {renderTeamRoster(homeActiveRoster, match.homeTeamName)}
-                {renderTeamRoster(awayActiveRoster, match.awayTeamName)}
+                {renderTeamRoster(homeActiveRoster, match.homeTeamName ?? 'TBD')}
+                {renderTeamRoster(awayActiveRoster, match.awayTeamName ?? 'TBD')}
             </div>
         </div>
     );

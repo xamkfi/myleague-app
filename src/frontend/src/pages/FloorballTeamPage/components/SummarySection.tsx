@@ -80,8 +80,8 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                                     key={match.id}
                                     id={match.id}
                                     scheduledDateTime={match.scheduledDateTime}
-                                    homeTeamName={match.homeTeamName}
-                                    awayTeamName={match.awayTeamName}
+                                    homeTeamName={match.homeTeamName ?? 'TBD'}
+                                    awayTeamName={match.awayTeamName ?? 'TBD'}
                                     homeTeamLogo={match.homeTeamLogo || undefined}
                                     awayTeamLogo={match.awayTeamLogo || undefined}
                                     homeScore={match.homeScore}
@@ -132,8 +132,8 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               key={match.id}
                               id={match.id}
                               scheduledDateTime={match.scheduledDateTime}
-                              homeTeamName={match.homeTeamName}
-                              awayTeamName={match.awayTeamName}
+                              homeTeamName={match.homeTeamName ?? 'TBD'}
+                              awayTeamName={match.awayTeamName ?? 'TBD'}
                               homeTeamLogo={match.homeTeamLogo || undefined}
                               awayTeamLogo={match.awayTeamLogo || undefined}
                               homeScore={match.homeScore}
@@ -168,8 +168,8 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               key={match.id}
                               id={match.id}
                               scheduledDateTime={match.scheduledDateTime}
-                              homeTeamName={match.homeTeamName}
-                              awayTeamName={match.awayTeamName}
+                              homeTeamName={match.homeTeamName ?? 'TBD'}
+                              awayTeamName={match.awayTeamName ?? 'TBD'}
                               homeTeamLogo={match.homeTeamLogo || undefined}
                               awayTeamLogo={match.awayTeamLogo || undefined}
                               homeScore={match.homeScore}

@@ -258,11 +258,18 @@ export interface FloorballMatchDto {
    * generalized to FloorballCompetition (TPH base for seasons + tournaments).
    */
   competitionName: string;
-  homeTeamId: string;
-  homeTeamName: string;
+  /**
+   * ID of the home team, or `null` when the participant is not yet known
+   * (fixture scheduled in advance / playoff slot waiting on a feeder result).
+   */
+  homeTeamId: string | null;
+  /** Name of the home team, or `null` when the slot is unassigned. */
+  homeTeamName: string | null;
   homeTeamLogo: string | null;
-  awayTeamId: string;
-  awayTeamName: string;
+  /** ID of the away team, or `null` when the participant is not yet known. */
+  awayTeamId: string | null;
+  /** Name of the away team, or `null` when the slot is unassigned. */
+  awayTeamName: string | null;
   awayTeamLogo: string | null;
   scheduledDateTime: string;
   venue?: string;
@@ -328,6 +335,16 @@ export interface ChangeMatchSeasonRequest {
 export interface ChangeMatchTeamsRequest {
   homeTeamId: string;
   awayTeamId: string;
+}
+
+/**
+ * Request body for `PUT /api/FloorballMatch/{id}/teams`. Either side may be `null` to
+ * clear that slot back to "to be determined". When both are present they must reference
+ * different teams. Only allowed for matches in Scheduled or Postponed status.
+ */
+export interface AssignMatchTeamsRequest {
+  homeTeamId: string | null;
+  awayTeamId: string | null;
 }
 
 export interface ChangeMatchVenueRequest {

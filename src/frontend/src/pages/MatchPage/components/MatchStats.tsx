@@ -61,18 +61,20 @@ export default function MatchStats({ match }: MatchStatsProps) {
     );
   }
 
-  // Create empty stats if not available
+  // Create empty stats if not available. Placeholder slots (null IDs) get an empty teamId so the
+  // find() above degenerates to the fallback record, which is fine because there cannot be any
+  // recorded stats for an unassigned slot anyway.
   const homeStats = stats.find(s => s.teamId === match.homeTeamId) || {
-    teamId: match.homeTeamId,
-    teamName: match.homeTeamName,
+    teamId: match.homeTeamId ?? '',
+    teamName: match.homeTeamName ?? 'TBD',
     shotsTotal: 0,
     shotsOnGoal: 0,
     penaltyMinutes: 0
   };
-  
+
   const awayStats = stats.find(s => s.teamId === match.awayTeamId) || {
-    teamId: match.awayTeamId,
-    teamName: match.awayTeamName,
+    teamId: match.awayTeamId ?? '',
+    teamName: match.awayTeamName ?? 'TBD',
     shotsTotal: 0,
     shotsOnGoal: 0,
     penaltyMinutes: 0
