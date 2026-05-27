@@ -338,7 +338,7 @@ export interface ChangeMatchTeamsRequest {
 }
 
 /**
- * Request body for `PUT /api/FloorballMatch/{id}/teams`. Either side may be `null` to
+ * Request body for `PUT /api/floorball-matches/{id}/teams`. Either side may be `null` to
  * clear that slot back to "to be determined". When both are present they must reference
  * different teams. Only allowed for matches in Scheduled or Postponed status.
  */

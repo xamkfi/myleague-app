@@ -90,10 +90,17 @@ const EditMatchPage = () => {
 
       const changes: Promise<unknown>[] = [];
 
+      // Changing the competition (season / tournament) of an already-created match is not
+      // currently supported by the backend — the previous controller exposed a route that
+      // never existed in any controller's implementation, so the request silently 404'd. We
+      // surface that explicitly here instead of pretending the change succeeded.
       if (updatedData.competitionId && updatedData.competitionId !== matchData.competitionId) {
-        changes.push(floorballMatchService.changeCompetition(matchData.id, updatedData.competitionId));
+        throw new Error(
+          'Changing the competition (season/tournament) of an existing match is not supported. ' +
+          'Delete the match and create a new one in the target competition instead.'
+        );
       }
-      
+
       // Detect ANY change to the team slots — including clearing a slot back to TBD or filling in
       // a previously empty slot. The form treats both fields as optional, so undefined ↔ null are
       // interchangeable from the form's perspective; normalize both to null for the API.

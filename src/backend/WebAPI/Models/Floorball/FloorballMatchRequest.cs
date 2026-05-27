@@ -85,7 +85,7 @@ public record CreateFloorballMatchRequest
     /// <summary>
     /// Gets the home team ID. Optional: leave null to schedule a fixture before the participant is
     /// known (e.g. future league round, playoff slot waiting on a feeder). Use the
-    /// <c>PUT /api/FloorballMatch/{id}/teams</c> endpoint to fill it in later.
+    /// <c>PUT /api/floorball-matches/{id}/teams</c> endpoint to fill it in later.
     /// </summary>
     public Guid? HomeTeamId { get; init; }
 
