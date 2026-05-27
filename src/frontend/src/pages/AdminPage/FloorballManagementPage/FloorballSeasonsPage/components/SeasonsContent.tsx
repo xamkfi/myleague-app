@@ -4,15 +4,33 @@ import type { FloorballSeasonDto } from '../../../../../api/floorball/floorballS
 
 interface SeasonsContentProps {
   seasons: FloorballSeasonDto[];
+
+  /**
+   * Avaa kauden muokkaussivun.
+   * Tätä kutsutaan SeasonsTable-komponentista, kun käyttäjä klikkaa kauden riviä.
+   */
   onEdit: (season: FloorballSeasonDto) => void;
+
+  /**
+   * Avaa poistovahvistuksen valitulle kaudelle.
+   */
   onDelete: (season: FloorballSeasonDto) => void;
+
+  /**
+   * Aktivoi tai deaktivoi kauden nykyisen tilan mukaan.
+   */
   onActivateToggle: (season: FloorballSeasonDto) => void;
+
+  /**
+   * Merkitsee kauden valmiiksi.
+   */
   onComplete: (season: FloorballSeasonDto) => void;
+
+  /**
+   * Sisältää sen kauden id:n, jolla on parhaillaan operaatio käynnissä.
+   * Tätä käytetään esimerkiksi painikkeiden disablointiin.
+   */
   operationLoading?: string | null;
-  selectedIds: Set<string>;
-  onToggleSelect: (id: string) => void;
-  onSelectAll: () => void;
-  onClearSelection: () => void;
 }
 
 export const SeasonsContent = ({
@@ -22,10 +40,6 @@ export const SeasonsContent = ({
   onActivateToggle,
   onComplete,
   operationLoading,
-  selectedIds,
-  onToggleSelect,
-  onSelectAll,
-  onClearSelection,
 }: SeasonsContentProps) => {
   const { t } = useTranslation();
 
@@ -43,10 +57,6 @@ export const SeasonsContent = ({
           onActivateToggle={onActivateToggle}
           onComplete={onComplete}
           operationLoading={operationLoading}
-          selectedIds={selectedIds}
-          onToggleSelect={onToggleSelect}
-          onSelectAll={onSelectAll}
-          onClearSelection={onClearSelection}
         />
       )}
     </div>
