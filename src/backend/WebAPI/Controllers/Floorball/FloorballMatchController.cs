@@ -1,118 +1,58 @@
-using System.Globalization;
-using System.Linq;
 using Application.Common;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Matches.Queries;
 using Application.Features.Floorball.Teams.DTOs;
 using Domain.Common;
-using Domain.Entities.Floorball;
+using Domain.Enums.Floorball;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
-using System.Collections.Concurrent;
 using WebAPI.Models.Floorball;
+using WebAPI.Services;
 
 namespace WebAPI.Controllers.Floorball
 {
     /// <summary>
     /// Controller for managing floorball matches
     /// </summary>
-    [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    public class FloorballMatchController : ControllerBase
+    public class FloorballMatchController : BaseApiController
     {
         private readonly IMediator _mediator;
         private readonly ILogger<FloorballMatchController> _logger;
-        private static readonly ConcurrentDictionary<string, DateTime> _eventRateLimits = new();
-        private static readonly TimeSpan _rateLimitTtl = TimeSpan.FromHours(24);
+        private readonly IMatchEventRateLimiter _rateLimiter;
 
         /// <summary>
         /// Initializes new instance of FloorballMatchController class
         /// </summary>
-        /// <param name="mediator"></param>
-        /// <param name="logger"></param>
-        public FloorballMatchController(IMediator mediator, ILogger<FloorballMatchController> logger)
+        public FloorballMatchController(
+            IMediator mediator,
+            ILogger<FloorballMatchController> logger,
+            IMatchEventRateLimiter rateLimiter)
         {
             _mediator = mediator;
             _logger = logger;
-        }
-
-
-        /// <summary>
-        /// Checks if the provided rate-limit window has been exceeded for a given key
-        /// </summary>
-        /// <param name="key">The key to check</param>
-        /// <param name="window">The window of time to check</param>
-        private bool IsRateLimited(string key, TimeSpan window)
-        {
-            DateTime now = DateTime.UtcNow;
-            if (_eventRateLimits.TryGetValue(key, out DateTime last) && now - last < window)
-            {
-                return true;
-            }
-            _eventRateLimits[key] = now;
-            CleanupRateLimitCache(now);
-            return false;
-        }
-
-        /// <summary>
-        /// Cleans up the rate limit cache by removing entries that are older than 24 hours
-        /// </summary>
-        /// <param name="now">The current time</param>
-        private void CleanupRateLimitCache(DateTime now)
-        {
-            foreach (KeyValuePair<string, DateTime> entry in _eventRateLimits)
-            {
-                if (now - entry.Value > _rateLimitTtl)
-                {
-                    _eventRateLimits.TryRemove(entry.Key, out _);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Converts a failed <see cref="Result{T}"/> into an HTTP response. Preserves the
-        /// detailed validation messages from <see cref="Result{T}.GetAllErrors"/> so the
-        /// client can show a specific reason instead of just "Validation failed".
-        /// </summary>
-        private ActionResult<ApiResponse<TResponse>> ToErrorResponse<TResult, TResponse>(
-            Result<TResult> result,
-            string defaultMessage)
-        {
-            string topMessage = result.Error ?? defaultMessage;
-            List<string> errors = result.GetAllErrors().ToList();
-            if (errors.Count == 0)
-            {
-                errors.Add(topMessage);
-            }
-
-            ApiResponse<TResponse> body = ApiResponse<TResponse>.ErrorResponse(topMessage, errors);
-
-            if (topMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(body);
-            }
-
-            return BadRequest(body);
+            _rateLimiter = rateLimiter;
         }
 
         /// <summary>
         /// Get all floorball matches with pagination and filtering
         /// </summary>
-        /// <param name="request">Query parameters for pagination and filtering</param>
-        /// <returns>Paginated list of floorball matches</returns>
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballMatchDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballMatchDto>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<PaginatedApiResponse<FloorballMatchDto>>> GetAllMatches([FromQuery] GetFloorballMatchesRequest request)
+        public async Task<ActionResult<PaginatedApiResponse<FloorballMatchDto>>> GetAllMatches(
+            [FromQuery] GetFloorballMatchesRequest request,
+            CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Getting all floorball matches with pagination - Page: {Page}, PageSize: {PageSize}, SortOrder: {SortOrder}", request.Page, request.PageSize, request.SortOrder);
+            _logger.LogInformation(
+                "Getting all floorball matches with pagination - Page: {Page}, PageSize: {PageSize}, SortOrder: {SortOrder}",
+                request.Page, request.PageSize, request.SortOrder);
 
             GetAllFloorballMatchesQuery query = new GetAllFloorballMatchesQuery(
                 request.Page,
@@ -128,11 +68,12 @@ namespace WebAPI.Controllers.Floorball
                 request.CompetitionType
             );
 
-            Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query);
+            Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query, cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
-                return Ok(PaginatedApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Floorball matches retrieved successfully"));
+                return Ok(PaginatedApiResponse<FloorballMatchDto>.SuccessResponse(
+                    result.Data, "Floorball matches retrieved successfully"));
             }
 
             string errorMessage = result.Error ?? result.GetErrorsString();
@@ -142,23 +83,23 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Get a floorball match by ID
         /// </summary>
-        /// <param name="id">Match ID</param>
-        /// <returns></returns>
         [HttpGet("by-id/{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> GetMatchById(Guid id)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> GetMatchById(
+            Guid id,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Getting floorball match with ID of: {id}", id);
 
-            GetFloorballMatchByIdQuery query = new GetFloorballMatchByIdQuery(id);
-
-            Result<FloorballMatchDto> result = await _mediator.Send(query);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new GetFloorballMatchByIdQuery(id), cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Floorball match retrieved successfully"));
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(
+                    result.Data, "Floorball match retrieved successfully"));
             }
 
             string errorMessage = result.Error ?? "Floorball match not found";
@@ -173,25 +114,26 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Get floorball matches with season ID
         /// </summary>
-        /// <param name="competitionId">Season ID</param>
-        /// <returns></returns>
         [HttpGet("by-competitionId/{competitionId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetMatchBySeason(Guid competitionId)
+        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetMatchBySeason(
+            Guid competitionId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Getting floorball matches with season ID of: {competitionId}", competitionId);
 
-            GetFloorballMatchesBySeasonQuery query = new GetFloorballMatchesBySeasonQuery(competitionId);
-
-            Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(query);
+            Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(
+                new GetFloorballMatchesBySeasonQuery(competitionId), cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
                 List<FloorballMatchDto> matchList = result.Data.ToList();
-                return Ok(ApiResponse<List<FloorballMatchDto>>.SuccessResponse(matchList, "Retrieved floorball matches with season ID successfully"));
+                return Ok(ApiResponse<List<FloorballMatchDto>>.SuccessResponse(
+                    matchList, "Retrieved floorball matches with season ID successfully"));
             }
+
             string errorMessage = result.Error ?? "Failed to retrieve floorball matches";
             return BadRequest(ApiResponse<List<FloorballMatchDto>>.ErrorResponse(errorMessage));
         }
@@ -199,14 +141,14 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Get floorball matches with team ID
         /// </summary>
-        /// <param name="teamId">Team ID to filter matches</param>
-        /// <param name="request">Query parameters for pagination and date filtering</param>
-        /// <returns></returns>
         [HttpGet("by-team/{teamId:guid}")]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballMatchDto>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballMatchDto>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<PaginatedApiResponse<FloorballMatchDto>>> GetMatchByTeam(Guid teamId, [FromQuery] GetTeamMatchesRequest request)
+        public async Task<ActionResult<PaginatedApiResponse<FloorballMatchDto>>> GetMatchByTeam(
+            Guid teamId,
+            [FromQuery] GetTeamMatchesRequest request,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Getting floorball match with team ID of: {teamId}", teamId);
 
@@ -216,14 +158,16 @@ namespace WebAPI.Controllers.Floorball
                 TeamId: teamId,
                 StartDate: request.StartDate,
                 EndDate: request.EndDate
-                );
+            );
 
-            Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query);
+            Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query, cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
-                return Ok(PaginatedApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Retrieved floorball matches with team ID successfully"));
+                return Ok(PaginatedApiResponse<FloorballMatchDto>.SuccessResponse(
+                    result.Data, "Retrieved floorball matches with team ID successfully"));
             }
+
             string errorMessage = result.Error ?? "Failed to retrieve floorball matches with team ID";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
@@ -235,24 +179,24 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Get today's floorball matches with team ID
         /// </summary>
-        /// <param name="teamId">Team ID to filter matches</param>
-        /// <returns></returns>
         [HttpGet("by-team/{teamId:guid}/today")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballMatchDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetTodaysMatchesByTeam(Guid teamId)
+        public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetTodaysMatchesByTeam(
+            Guid teamId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Getting today's floorball match with team ID of: {teamId}", teamId);
 
-            GetTodaysMatchesByTeamQuery query = new GetTodaysMatchesByTeamQuery(teamId);
-
-            Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(query);
+            Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(
+                new GetTodaysMatchesByTeamQuery(teamId), cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
-                var matches = result.Data.ToList();
-                return Ok(ApiResponse<List<FloorballMatchDto>>.SuccessResponse(matches, "Retrieved today's floorball matches with team ID successfully"));
+                List<FloorballMatchDto> matches = result.Data.ToList();
+                return Ok(ApiResponse<List<FloorballMatchDto>>.SuccessResponse(
+                    matches, "Retrieved today's floorball matches with team ID successfully"));
             }
 
             string errorMessage = result.Error ?? "Failed to retrieve today's floorball matches with team ID";
@@ -267,27 +211,29 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Creates new floorball match
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> CreateMatch([FromBody] CreateFloorballMatchRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> CreateMatch(
+            [FromBody] CreateFloorballMatchRequest request,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Creating floorball match {home} vs {away}", request.HomeTeamId, request.AwayTeamId);
 
             if (!DateTime.TryParse(request.ScheduledDateTime, out DateTime scheduledDateTime))
+            {
                 return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse("Invalid scheduled date and time format"));
+            }
 
-            Domain.Enums.Floorball.FloorballTournamentStage? stage = null;
+            FloorballTournamentStage? stage = null;
             if (!string.IsNullOrWhiteSpace(request.TournamentStage))
             {
-                if (!Enum.TryParse(request.TournamentStage, true, out Domain.Enums.Floorball.FloorballTournamentStage parsedStage))
+                if (!Enum.TryParse(request.TournamentStage, true, out FloorballTournamentStage parsedStage))
                 {
                     return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(
-                        $"Invalid tournament stage '{request.TournamentStage}'. Valid values: {string.Join(", ", Enum.GetNames(typeof(Domain.Enums.Floorball.FloorballTournamentStage)))}"));
+                        $"Invalid tournament stage '{request.TournamentStage}'. Valid values: {string.Join(", ", Enum.GetNames<FloorballTournamentStage>())}"));
                 }
                 stage = parsedStage;
             }
@@ -303,7 +249,7 @@ namespace WebAPI.Controllers.Floorball
                 stage
             );
 
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(command, cancellationToken);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -311,45 +257,31 @@ namespace WebAPI.Controllers.Floorball
                     nameof(GetMatchById),
                     new { id = result.Data.Id },
                     ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Floorball match created successfully")
-                    );
+                );
             }
 
-            string errorMessage = result.Error ?? "Failed to create floorball match";
-            List<string> errorList = result.ValidationFailures.Select(err => err.ErrorMessage).ToList();
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage, errorList));
+            return ToErrorResponse(result, "Failed to create floorball match");
         }
 
         /// <summary>
         /// Completes given match
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [HttpPut("complete-match/{id:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> CompleteMatch(Guid id)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> CompleteMatch(
+            Guid id,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Completing floorball match with ID: {id}", id);
 
-            CompleteFloorballMatchCommand command = new CompleteFloorballMatchCommand(id);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new CompleteFloorballMatchCommand(id), cancellationToken);
 
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
-
-            if(result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Completed floorball match successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to complete floorball match";
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Completed floorball match successfully", "Failed to complete floorball match");
         }
 
         /// <summary>
@@ -364,39 +296,30 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ReopenMatch(Guid id)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ReopenMatch(
+            Guid id,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Reopening floorball match with ID: {id}", id);
 
-            ReopenFloorballMatchCommand command = new ReopenFloorballMatchCommand(id);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new ReopenFloorballMatchCommand(id), cancellationToken);
 
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Reopened floorball match successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to reopen floorball match";
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Reopened floorball match successfully", "Failed to reopen floorball match");
         }
 
         /// <summary>
         /// Updates an existing floorball match
         /// </summary>
-        /// <param name="request">Update match request</param>
-        /// <returns>Updated match details</returns>
-		[HttpPut]
+        [HttpPut]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> UpdateMatch([FromBody] UpdateFloorballMatchRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> UpdateMatch(
+            [FromBody] UpdateFloorballMatchRequest request,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Updating floorball match with ID: {id}", request.Id);
 
@@ -417,60 +340,34 @@ namespace WebAPI.Controllers.Floorball
                 request.Venue
             );
 
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(command, cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Floorball match updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update floorball match";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Floorball match updated successfully", "Failed to update floorball match");
         }
 
         /// <summary>
         /// Starts a floorball match
         /// </summary>
-        /// <param name="id">Match ID</param>
-        /// <returns>Started match details</returns>
         [HttpPut("start-match/{id:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> StartMatch(Guid id)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> StartMatch(
+            Guid id,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting floorball match with ID: {id}", id);
 
-            StartFloorballMatchCommand command = new StartFloorballMatchCommand(id);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new StartFloorballMatchCommand(id), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Floorball match started successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to start floorball match";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            // Surface validation failures and the domain error message in the `errors` list so
-            // the frontend can show a single, clear banner (e.g. "Ottelua ei voi aloittaa:
-            // molempien joukkueiden tulee olla valittuina.") without having to parse `message`.
-            List<string> errorList = result.ValidationFailures.Select(err => err.ErrorMessage).ToList();
-            if (errorList.Count == 0)
-            {
-                errorList.Add(errorMessage);
-            }
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage, errorList));
+            // ToErrorResponse already surfaces validation failures and the domain error message
+            // in the `errors` list so the frontend can show a single clear banner (e.g.
+            // "Ottelua ei voi aloittaa: molempien joukkueiden tulee olla valittuina.") without
+            // having to parse `message`.
+            return HandleResult(result, "Floorball match started successfully", "Failed to start floorball match");
         }
 
         /// <summary>
@@ -482,9 +379,6 @@ namespace WebAPI.Controllers.Floorball
         /// the next bracket slot (provided that next match hasn't started yet). The endpoint
         /// rejects any attempt to change teams on a match that is already InProgress or Completed.
         /// </remarks>
-        /// <param name="matchId">Target match.</param>
-        /// <param name="request">New home/away team assignments.</param>
-        /// <returns>The updated match DTO.</returns>
         [HttpPut("{matchId:guid}/teams")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
@@ -493,7 +387,8 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> AssignTeams(
             Guid matchId,
-            [FromBody] AssignMatchTeamsRequest request)
+            [FromBody] AssignMatchTeamsRequest request,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation(
                 "Assigning teams on floorball match {MatchId}: home={HomeTeamId}, away={AwayTeamId}",
@@ -504,45 +399,31 @@ namespace WebAPI.Controllers.Floorball
                 request.HomeTeamId,
                 request.AwayTeamId);
 
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(command, cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match teams updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update match teams";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            List<string> errorList = result.ValidationFailures.Select(err => err.ErrorMessage).ToList();
-            if (errorList.Count == 0)
-            {
-                errorList.Add(errorMessage);
-            }
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Match teams updated successfully", "Failed to update match teams");
         }
 
-
         /// <summary>
-        /// Records a goal in a floorball match, with 1 second rate limit
+        /// Records a goal in a floorball match. Subject to a per-(match, scoring player) rate
+        /// limit (see <see cref="MatchEventRateLimits.GoalWindow"/>) to swallow accidental
+        /// double-clicks from the live match management UI.
         /// </summary>
-        /// <param name="request">Goal recording request</param>
-        /// <returns>Updated match details</returns>
         [HttpPost("record-goal")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordGoal([FromBody] RecordGoalRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordGoal(
+            [FromBody] RecordGoalRequest request,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Recording goal for match ID: {matchId}", request.MatchId);
 
             string rateKey = $"{request.MatchId}:goal:{request.ScoringTeamId}:{request.ScoringPlayerId}";
-            if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(50)))
+            if (_rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.GoalWindow))
             {
                 return StatusCode(StatusCodes.Status429TooManyRequests,
                     ApiResponse<FloorballMatchDto>.ErrorResponse("Too many goal events; please wait a moment."));
@@ -560,31 +441,38 @@ namespace WebAPI.Controllers.Floorball
                 request.GoalType
             );
 
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(command, cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Goal recorded successfully"));
-            }
-
-            return ToErrorResponse<FloorballMatchDto, FloorballMatchDto>(result, "Failed to record goal");
+            return HandleResult(result, "Goal recorded successfully", "Failed to record goal");
         }
 
         /// <summary>
-        /// Records a penalty in a floorball match, with 1 second rate limit
+        /// Records a penalty in a floorball match. Subject to the same kind of per-event rate
+        /// limit as <see cref="RecordGoal"/>.
         /// </summary>
         [HttpPost("record-penalty")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordPenalty([FromBody] RecordPenaltyEventRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordPenalty(
+            [FromBody] RecordPenaltyEventRequest request,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Recording penalty for match ID: {matchId}", request.MatchId);
 
+            // Validate enum input up front so a bad value yields a clean 400 instead of a 500
+            // from a thrown ArgumentException inside the controller body.
+            if (!Enum.TryParse(request.PenaltyType, ignoreCase: true, out FloorballPenaltyType penaltyType))
+            {
+                return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(
+                    $"Invalid penalty type '{request.PenaltyType}'. Valid values: {string.Join(", ", Enum.GetNames<FloorballPenaltyType>())}"));
+            }
+
             string rateKey = $"{request.MatchId}:penalty:{request.TeamId}:{request.PlayerId}";
-            if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(50)))
+            if (_rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.PenaltyWindow))
             {
                 return StatusCode(StatusCodes.Status429TooManyRequests,
                     ApiResponse<FloorballMatchDto>.ErrorResponse("Too many penalty events; please wait a moment."));
@@ -594,45 +482,41 @@ namespace WebAPI.Controllers.Floorball
                 request.MatchId,
                 request.TeamId,
                 request.PlayerId,
-                (Domain.Enums.Floorball.FloorballPenaltyType)Enum.Parse(typeof(Domain.Enums.Floorball.FloorballPenaltyType), request.PenaltyType),
+                penaltyType,
                 request.DurationMinutes,
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.Description ?? string.Empty);
 
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(command, cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Penalty recorded successfully"));
-            }
-
-            return ToErrorResponse<FloorballMatchDto, FloorballMatchDto>(result, "Failed to record penalty");
+            return HandleResult(result, "Penalty recorded successfully", "Failed to record penalty");
         }
 
         /// <summary>
-        /// Records a save in a floorball match, with 250ms rate limit
+        /// Records one or more saves in a floorball match. The single-save flow is rate-limited
+        /// (see <see cref="MatchEventRateLimits.SaveWindow"/>); bulk backfills (count &gt; 1)
+        /// bypass the limiter because they are an explicit operator action via the bulk dialog.
         /// </summary>
         [HttpPost("record-save")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordSave([FromBody] RecordSaveEventRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordSave(
+            [FromBody] RecordSaveEventRequest request,
+            CancellationToken cancellationToken)
         {
             int saveCount = request.Count < 1 ? 1 : request.Count;
             _logger.LogInformation(
                 "Recording {Count} save(s) for match ID: {matchId}", saveCount, request.MatchId);
 
-            // Rate-limit the live single-save flow only. Bulk backfills (count > 1) are an
-            // explicit operator action via the bulk dialog, so blocking them with a 429
-            // would defeat the feature's purpose; the handler still records each save as a
-            // distinct event inside one transaction.
             if (saveCount == 1)
             {
                 string rateKey = $"{request.MatchId}:save:{request.TeamId}:{request.PlayerId}";
-                if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(250)))
+                if (_rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.SaveWindow))
                 {
                     return StatusCode(StatusCodes.Status429TooManyRequests,
                         ApiResponse<FloorballMatchDto>.ErrorResponse("Too many save events; please wait a moment."));
@@ -649,14 +533,9 @@ namespace WebAPI.Controllers.Floorball
                 request.WasInShootout,
                 saveCount);
 
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(command, cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Save recorded successfully"));
-            }
-
-            return ToErrorResponse<FloorballMatchDto, FloorballMatchDto>(result, "Failed to record save");
+            return HandleResult(result, "Save recorded successfully", "Failed to record save");
         }
 
         /// <summary>
@@ -665,28 +544,20 @@ namespace WebAPI.Controllers.Floorball
         [HttpPost("{matchId:guid}/period/{periodNumber:int}/start")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> StartPeriod(Guid matchId, int periodNumber)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> StartPeriod(
+            Guid matchId,
+            int periodNumber,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting period {period} for match ID: {matchId}", periodNumber, matchId);
 
-            StartPeriodCommand command = new StartPeriodCommand(matchId, periodNumber);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new StartPeriodCommand(matchId, periodNumber), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Period started successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to start period";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Period started successfully", "Failed to start period");
         }
 
         /// <summary>
@@ -695,27 +566,20 @@ namespace WebAPI.Controllers.Floorball
         [HttpPost("{matchId:guid}/period/{periodNumber:int}/end")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> EndPeriod(Guid matchId, int periodNumber)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> EndPeriod(
+            Guid matchId,
+            int periodNumber,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Ending period {period} for match ID: {matchId}", periodNumber, matchId);
 
-            EndPeriodCommand command = new EndPeriodCommand(matchId, periodNumber);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new EndPeriodCommand(matchId, periodNumber), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Period ended successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to end period";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Period ended successfully", "Failed to end period");
         }
 
         /// <summary>
@@ -724,27 +588,20 @@ namespace WebAPI.Controllers.Floorball
         [HttpDelete("{matchId:guid}/goal/{goalEventId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> DeleteGoal(Guid matchId, Guid goalEventId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> DeleteGoal(
+            Guid matchId,
+            Guid goalEventId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting goal {goalEventId} for match ID: {matchId}", goalEventId, matchId);
 
-            DeleteGoalCommand command = new DeleteGoalCommand(matchId, goalEventId);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new DeleteGoalCommand(matchId, goalEventId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Goal deleted successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to delete goal";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Goal deleted successfully", "Failed to delete goal");
         }
 
         /// <summary>
@@ -753,27 +610,20 @@ namespace WebAPI.Controllers.Floorball
         [HttpDelete("{matchId:guid}/penalty/{penaltyEventId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> DeletePenalty(Guid matchId, Guid penaltyEventId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> DeletePenalty(
+            Guid matchId,
+            Guid penaltyEventId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting penalty {penaltyEventId} for match ID: {matchId}", penaltyEventId, matchId);
 
-            DeletePenaltyCommand command = new DeletePenaltyCommand(matchId, penaltyEventId);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new DeletePenaltyCommand(matchId, penaltyEventId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Penalty deleted successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to delete penalty";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Penalty deleted successfully", "Failed to delete penalty");
         }
 
         /// <summary>
@@ -782,27 +632,20 @@ namespace WebAPI.Controllers.Floorball
         [HttpDelete("{matchId:guid}/save/{saveEventId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> DeleteSave(Guid matchId, Guid saveEventId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> DeleteSave(
+            Guid matchId,
+            Guid saveEventId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting save {saveEventId} for match ID: {matchId}", saveEventId, matchId);
 
-            DeleteSaveCommand command = new DeleteSaveCommand(matchId, saveEventId);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new DeleteSaveCommand(matchId, saveEventId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Save deleted successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to delete save";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Save deleted successfully", "Failed to delete save");
         }
 
         /// <summary>
@@ -811,27 +654,19 @@ namespace WebAPI.Controllers.Floorball
         [HttpPost("{matchId:guid}/overtime")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordOvertime(Guid matchId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordOvertime(
+            Guid matchId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Recording overtime for match ID: {matchId}", matchId);
 
-            RecordOvertimeCommand command = new RecordOvertimeCommand(matchId);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new RecordOvertimeCommand(matchId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Overtime recorded successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to record overtime";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Overtime recorded successfully", "Failed to record overtime");
         }
 
         /// <summary>
@@ -840,27 +675,19 @@ namespace WebAPI.Controllers.Floorball
         [HttpPost("{matchId:guid}/shootout")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordShootout(Guid matchId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordShootout(
+            Guid matchId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Recording shootout for match ID: {matchId}", matchId);
 
-            RecordShootoutCommand command = new RecordShootoutCommand(matchId);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new RecordShootoutCommand(matchId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Shootout recorded successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to record shootout";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Shootout recorded successfully", "Failed to record shootout");
         }
 
         /// <summary>
@@ -869,27 +696,19 @@ namespace WebAPI.Controllers.Floorball
         [HttpPost("{matchId:guid}/postpone")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> Postpone(Guid matchId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> Postpone(
+            Guid matchId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Postponing match ID: {matchId}", matchId);
 
-            PostponeMatchCommand command = new PostponeMatchCommand(matchId);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new PostponeMatchCommand(matchId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match postponed successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to postpone match";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Match postponed successfully", "Failed to postpone match");
         }
 
         /// <summary>
@@ -898,27 +717,19 @@ namespace WebAPI.Controllers.Floorball
         [HttpPost("{matchId:guid}/cancel")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> Cancel(Guid matchId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> Cancel(
+            Guid matchId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Canceling match ID: {matchId}", matchId);
 
-            CancelMatchCommand command = new CancelMatchCommand(matchId);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new CancelMatchCommand(matchId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match canceled successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to cancel match";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Match canceled successfully", "Failed to cancel match");
         }
 
         /// <summary>
@@ -933,25 +744,21 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> DeleteMatch(Guid matchId)
+        public async Task<ActionResult<ApiResponse>> DeleteMatch(
+            Guid matchId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting match ID: {matchId}", matchId);
 
-            DeleteFloorballMatchCommand command = new DeleteFloorballMatchCommand(matchId);
-            Result result = await _mediator.Send(command);
+            Result result = await _mediator.Send(
+                new DeleteFloorballMatchCommand(matchId), cancellationToken);
 
             if (result.IsSuccess)
             {
                 return Ok(ApiResponse.SuccessResponse("Match deleted successfully"));
             }
 
-            string errorMessage = result.Error ?? "Failed to delete match";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+            return ToErrorResponse(result, "Failed to delete match");
         }
 
         /// <summary>
@@ -960,33 +767,19 @@ namespace WebAPI.Controllers.Floorball
         [HttpPost("{matchId:guid}/reactivate")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> Reactivate(Guid matchId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> Reactivate(
+            Guid matchId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Reactivating match ID: {matchId}", matchId);
 
-            ReactivateMatchCommand command = new ReactivateMatchCommand(matchId);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new ReactivateMatchCommand(matchId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Match reactivated successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to reactivate match";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            if (errorMessage.Contains("Can only reactivate", StringComparison.OrdinalIgnoreCase))
-            {
-                return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Match reactivated successfully", "Failed to reactivate match");
         }
 
         /// <summary>
@@ -997,18 +790,21 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> AddOfficial(Guid matchId, [FromBody] AddOfficialToMatchRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> AddOfficial(
+            Guid matchId,
+            [FromBody] AddOfficialToMatchRequest request,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Adding official {refereeId} to match ID: {matchId}", request.RefereeId, matchId);
 
-            // Fetch current match to append
-            Result<FloorballMatchDto> match = await _mediator.Send(new GetFloorballMatchByIdQuery(matchId));
+            // Fetch current match to compute the appended officials list. NOTE: ideally this
+            // should live behind a single AddOfficialToMatchCommand handler so the controller
+            // doesn't issue two mediator calls — that's planned for Phase 2.
+            Result<FloorballMatchDto> match = await _mediator.Send(
+                new GetFloorballMatchByIdQuery(matchId), cancellationToken);
             if (!match.IsSuccess || match.Data == null)
             {
-                string err = match.Error ?? "Match not found";
-                if (err.Contains("not found", StringComparison.OrdinalIgnoreCase))
-                    return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(err));
-                return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(err));
+                return ToErrorResponse(match, "Match not found");
             }
 
             List<Guid> currentOfficials = match.Data.Officials?.ToList() ?? new List<Guid>();
@@ -1017,21 +813,10 @@ namespace WebAPI.Controllers.Floorball
                 currentOfficials.Add(request.RefereeId);
             }
 
-            UpdateMatchOfficialsCommand command = new UpdateMatchOfficialsCommand(matchId, currentOfficials);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new UpdateMatchOfficialsCommand(matchId, currentOfficials), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Official added successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to add official";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Official added successfully", "Failed to add official");
         }
 
         /// <summary>
@@ -1042,25 +827,18 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> UpdateOfficials(Guid matchId, [FromBody] FloorballMatchOfficialsRequest request)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> UpdateOfficials(
+            Guid matchId,
+            [FromBody] FloorballMatchOfficialsRequest request,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Updating officials for match ID: {matchId}", matchId);
 
-            UpdateMatchOfficialsCommand command = new UpdateMatchOfficialsCommand(matchId, request.Officials ?? Array.Empty<Guid>());
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new UpdateMatchOfficialsCommand(matchId, request.Officials ?? Array.Empty<Guid>()),
+                cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Officials updated successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to update officials";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Officials updated successfully", "Failed to update officials");
         }
 
         /// <summary>
@@ -1071,25 +849,17 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RemoveOfficial(Guid matchId, Guid refereeId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RemoveOfficial(
+            Guid matchId,
+            Guid refereeId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Removing official {refereeId} from match ID: {matchId}", refereeId, matchId);
 
-            RemoveOfficialFromMatchCommand command = new RemoveOfficialFromMatchCommand(matchId, refereeId);
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new RemoveOfficialFromMatchCommand(matchId, refereeId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Official removed successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to remove official";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Official removed successfully", "Failed to remove official");
         }
 
         /// <summary>
@@ -1100,40 +870,32 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> SetReferee(Guid matchId, Guid refereeId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> SetReferee(
+            Guid matchId,
+            Guid refereeId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Setting referee {refereeId} for match ID: {matchId}", refereeId, matchId);
 
-            UpdateMatchOfficialsCommand command = new UpdateMatchOfficialsCommand(matchId, new[] { refereeId });
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new UpdateMatchOfficialsCommand(matchId, new[] { refereeId }), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Referee set successfully"));
-            }
-
-            string? errorMessage = result.Error ?? "Failed to set referee";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Referee set successfully", "Failed to set referee");
         }
 
         /// <summary>
         /// Changes the active goalie for a team in a match
         /// </summary>
-        /// <param name="matchId">The ID of the match</param>
-        /// <param name="teamId">The ID of the team</param>
-        /// <param name="goalieId">The ID of the new goalie</param>
-        /// <returns>Updated match details</returns>
         [HttpPut("{matchId:guid}/team/{teamId:guid}/goalie/{goalieId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeGoalie(Guid matchId, Guid teamId, Guid goalieId)
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ChangeGoalie(
+            Guid matchId,
+            Guid teamId,
+            Guid goalieId,
+            CancellationToken cancellationToken)
         {
             _logger.LogInformation("Changing goalie for match {matchId}, team {teamId} to {goalieId}", matchId, teamId, goalieId);
 
@@ -1144,30 +906,15 @@ namespace WebAPI.Controllers.Floorball
                 GoalieId = goalieId
             };
 
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(command, cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Goalie changed successfully"));
-            }
-            
-            string errorMessage = result.Error ?? "Failed to change goalie";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Goalie changed successfully", "Failed to change goalie");
         }
 
         /// <summary>
         /// Replaces the active field player lineup (and optionally the active goalie) for a single
         /// team in a match. Used by the match-management UI's "Edit lineup" dialog.
         /// </summary>
-        /// <param name="matchId">The ID of the match.</param>
-        /// <param name="teamId">The ID of the team whose lineup is being updated.</param>
-        /// <param name="request">Player IDs and optional goalie ID.</param>
-        /// <returns>Updated match details.</returns>
         [HttpPut("{matchId:guid}/team/{teamId:guid}/active-roster")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
@@ -1176,7 +923,8 @@ namespace WebAPI.Controllers.Floorball
         public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> SetActiveRoster(
             Guid matchId,
             Guid teamId,
-            [FromBody] SetMatchActiveRosterRequest request)
+            [FromBody] SetMatchActiveRosterRequest request,
+            CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -1203,20 +951,9 @@ namespace WebAPI.Controllers.Floorball
                 GoalieId = request.GoalieId,
             };
 
-            Result<FloorballMatchDto> result = await _mediator.Send(command);
+            Result<FloorballMatchDto> result = await _mediator.Send(command, cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Active roster updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update active roster";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Active roster updated successfully", "Failed to update active roster");
         }
     }
 }
