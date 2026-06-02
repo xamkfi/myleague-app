@@ -1,13 +1,13 @@
 import { API_URL } from "../../../constants/config";
 import type { ApiResponse } from "../../../types/common/apiResponseType";
-import type { FeedbackEntity } from "../../../types/feedback/feedbackTypes";
+import type { FeedbackDto } from "../../../types/feedback/feedbackTypes";
 import { authFetch } from "../../utils/authFetch";
 
 
 export const createFeedbackService = {
     create: async(
-        data: Omit<FeedbackEntity, 'id'>
-    ): Promise<FeedbackEntity> => {
+        data: Omit<FeedbackDto, 'id'>
+    ): Promise<FeedbackDto> => {
         const response = await authFetch(`${API_URL}/Feedback`, {
             method: 'POST',
             headers: {
@@ -19,7 +19,7 @@ export const createFeedbackService = {
             throw new Error("Failed to create feedback");
         }
 
-        const apiResponse: ApiResponse<FeedbackEntity> = await response.json();
+        const apiResponse: ApiResponse<FeedbackDto> = await response.json();
         if(!apiResponse.success){
             throw new Error(apiResponse.errors?.join(',') || "Failed to create feedback");
         }

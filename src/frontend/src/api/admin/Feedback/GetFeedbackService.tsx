@@ -3,14 +3,14 @@ import type { ApiResponse } from "../../../types/common/apiResponseType";
 import type {
     GetFeedbackRequest,
     PaginatedApiResponse,
-    FeedbackEntity,
+    FeedbackDto,
 } from "../../../types/feedback/feedbackTypes";
 import { authFetch } from "../../utils/authFetch";
 
 export const getFeedbackService = {
     getAll: async (
         params?: GetFeedbackRequest,
-    ): Promise<PaginatedApiResponse<FeedbackEntity>> => {
+    ): Promise<PaginatedApiResponse<FeedbackDto>> => {
         const searchParams = new URLSearchParams();
 
         if (params?.page) searchParams.append("page", params.page.toString());
@@ -23,7 +23,7 @@ export const getFeedbackService = {
             throw new Error("Failed to fetch feedback");
         }
 
-        const apiResponse: PaginatedApiResponse<FeedbackEntity> =
+        const apiResponse: PaginatedApiResponse<FeedbackDto> =
             await response.json();
 
         if (!apiResponse.success) {
@@ -35,13 +35,13 @@ export const getFeedbackService = {
 
     getById: async (
         id: string
-    ) : Promise<FeedbackEntity> => {
+    ) : Promise<FeedbackDto> => {
         const response = await authFetch(`${API_URL}/Feedback/${id}`);
         if(!response.ok) {
             throw new Error("Failed to fetch feedback");
         }
 
-        const apiResponse: ApiResponse<FeedbackEntity> = await response.json();
+        const apiResponse: ApiResponse<FeedbackDto> = await response.json();
         if(!apiResponse.success) {
             throw new Error(apiResponse.errors?.join(',') || 'Failed to fetch feedback');
         }

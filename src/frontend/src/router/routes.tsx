@@ -5,6 +5,7 @@ import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
 import RouteErrorBoundary from '../components/RouteErrorBoundary/RouteErrorBoundary';
 import SuspenseWrapper from './SuspenseWrapper';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
+import FeedbackManagementPage from '../pages/AdminPage/FeedbackPage/FeedbackManagementPage';
 
 // Public pages
 const HomePage = lazyWithRetry(() => import('../pages/HomePage/HomePage'));
@@ -395,6 +396,15 @@ export const routes: RouteObject[] = [
   {
     path: '/league/:id',
     element: <SuspenseWrapper><LeaguePage /></SuspenseWrapper>
+  },
+  {
+    path: '/admin/feedback',
+    children: [
+      {
+        index: true,
+        element: <ProtectedRoute><SuspenseWrapper><FeedbackManagementPage/></SuspenseWrapper></ProtectedRoute>
+      }
+    ]
   }
     ]
   }

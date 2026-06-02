@@ -20,8 +20,9 @@ export interface PaginatedApiResponse<T> {
     errors: string[];
 }
 
-export interface FeedbackEntity {
+export interface FeedbackDto {
     id: string;
+    title: string;
     feedbackBody: string;
     email?: string | null;
     createdAt: string;
