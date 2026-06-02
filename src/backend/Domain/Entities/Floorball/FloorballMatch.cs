@@ -159,6 +159,25 @@ public class FloorballMatch : BaseEntity
     private readonly List<FloorballPeriodScore> _periodScores = new();
 
     /// <summary>
+    /// Gets the active field player lineup entries for both teams. Goalies are stored separately
+    /// on <see cref="HomeActiveGoalieId"/> and <see cref="AwayActiveGoalieId"/>.
+    /// </summary>
+    public IReadOnlyCollection<FloorballMatchActivePlayer> ActivePlayers => _activePlayers.AsReadOnly();
+    private readonly List<FloorballMatchActivePlayer> _activePlayers = new();
+
+    /// <summary>
+    /// Gets the active field player IDs for the home team.
+    /// </summary>
+    public IReadOnlyCollection<Guid> HomeActivePlayerIds =>
+        _activePlayers.Where(p => p.TeamId == HomeTeamId).Select(p => p.PlayerId).ToList().AsReadOnly();
+
+    /// <summary>
+    /// Gets the active field player IDs for the away team.
+    /// </summary>
+    public IReadOnlyCollection<Guid> AwayActivePlayerIds =>
+        _activePlayers.Where(p => p.TeamId == AwayTeamId).Select(p => p.PlayerId).ToList().AsReadOnly();
+
+    /// <summary>
     /// Private constructor for EF Core
     /// </summary>
     private FloorballMatch()
@@ -175,6 +194,7 @@ public class FloorballMatch : BaseEntity
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
+        _activePlayers = new List<FloorballMatchActivePlayer>();
         Competition = null!; // EF Core will set this
         HomeTeam = null!;
         AwayTeam = null!;
@@ -266,6 +286,7 @@ public class FloorballMatch : BaseEntity
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
+        _activePlayers = new List<FloorballMatchActivePlayer>();
         for (int i = 1; i <= MatchRules.NumberOfPeriods; i++)
         {
             _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
@@ -423,6 +444,10 @@ public class FloorballMatch : BaseEntity
         if (secondaryAssistingPlayer != null)
             ValidatePlayerOnRoster(scoringTeam, secondaryAssistingPlayer.Id, "Secondary assisting player");
 
+        FloorballGoalType? mappedGoalType = goalType.HasValue
+            ? (FloorballGoalType)goalType.Value
+            : null;
+
         FloorballGoal goalEvent = new FloorballGoal(
             matchId: Id,
             scoringTeam.Id,
@@ -431,7 +456,7 @@ public class FloorballMatch : BaseEntity
             secondaryAssistingPlayer?.Id,
             periodNumber,
             timeInSeconds,
-            null,
+            mappedGoalType,
             description);
 
         _events.Add(goalEvent);
@@ -464,8 +489,11 @@ public class FloorballMatch : BaseEntity
 
         if (periodNumber < 1 || periodNumber > _periodScores.Count)
             throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {_periodScores.Count}.");
-        if (timeInSeconds < 0 || timeInSeconds > 1200)
-            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
+        // Only enforce a non-negative floor on the timestamp: the match clock runs
+        // continuously across periods so any per-period upper bound would be wrong
+        // (e.g. a penalty in period 2 of a 15-minute match has time >= 900s).
+        if (timeInSeconds < 0)
+            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be non-negative.");
         if (minutes <= 0)
             throw new ArgumentOutOfRangeException(nameof(minutes), "Penalty minutes must be positive.");
 
@@ -681,6 +709,22 @@ public class FloorballMatch : BaseEntity
     }
 
     /// <summary>
+    /// Reopens a previously completed match back into the InProgress state so the operator can
+    /// continue recording events or correct mistakes (e.g. when the match was finished by
+    /// accident). The caller is responsible for reverting any per-match aggregates that were
+    /// applied at completion time (team/player/goalie season statistics, playoff propagation,
+    /// tournament championship) — see <c>ReopenFloorballMatchHandler</c>.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not completed.</exception>
+    public void ReopenFromCompleted()
+    {
+        if (Status != FloorballMatchStatus.Completed)
+            throw new InvalidOperationException($"Can only reopen a completed match. Current status: {Status}.");
+
+        Status = FloorballMatchStatus.InProgress;
+    }
+
+    /// <summary>
     /// Deletes a goal event from the match
     /// </summary>
     /// <param name="goalEventId">The ID of the goal event to delete</param>
@@ -807,6 +851,65 @@ public class FloorballMatch : BaseEntity
             return AwayActiveGoalieId;
         else
             throw new ArgumentException("Team is not participating in this match.", nameof(teamId));
+    }
+
+    /// <summary>
+    /// Replaces the active field player lineup for a single team and optionally updates the active
+    /// goalie in the same operation. Each selection carries the per-match role (Forward, Center
+    /// or Defender) so the same player can be deployed differently across matches without
+    /// mutating their player profile. Players are validated against the team's full roster but
+    /// are not required to be marked active in their player profile (that flag governs season
+    /// eligibility, not per-match availability). The goalie, when supplied, is also validated
+    /// against the roster.
+    /// </summary>
+    /// <param name="teamId">Team to update (must be home or away).</param>
+    /// <param name="selections">Player selections (player ID + per-match role). Pass an empty collection to clear the lineup.</param>
+    /// <param name="goalieId">Optional goalie player ID. Pass <c>null</c> to leave the current goalie untouched.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match status disallows lineup changes.</exception>
+    /// <exception cref="ArgumentException">Thrown when the team is not part of this match, or any provided player is invalid.</exception>
+    public void SetActiveRoster(Guid teamId, IEnumerable<ActivePlayerSelection> selections, Guid? goalieId)
+    {
+        ArgumentNullException.ThrowIfNull(selections);
+
+        if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException($"Cannot change active roster when match status is {Status}.");
+
+        FloorballTeam team;
+        if (teamId == HomeTeamId)
+            team = HomeTeam;
+        else if (teamId == AwayTeamId)
+            team = AwayTeam;
+        else
+            throw new ArgumentException("Team is not participating in this match.", nameof(teamId));
+
+        // De-duplicate by player ID — if the same player appears twice with different roles,
+        // the first entry wins (callers should not send duplicates, but we tolerate it).
+        List<ActivePlayerSelection> distinctSelections = selections
+            .GroupBy(s => s.PlayerId)
+            .Select(g => g.First())
+            .ToList();
+
+        if (distinctSelections.Any(s => s.PlayerId == Guid.Empty))
+            throw new ArgumentException("Player IDs cannot contain Guid.Empty.", nameof(selections));
+
+        foreach (ActivePlayerSelection selection in distinctSelections)
+        {
+            ValidatePlayerOnRoster(team, selection.PlayerId, "Active player");
+        }
+
+        if (goalieId.HasValue && distinctSelections.Any(s => s.PlayerId == goalieId.Value))
+            throw new ArgumentException("A player cannot be both an active field player and the active goalie.", nameof(selections));
+
+        _activePlayers.RemoveAll(p => p.TeamId == teamId);
+        foreach (ActivePlayerSelection selection in distinctSelections)
+        {
+            _activePlayers.Add(new FloorballMatchActivePlayer(Id, teamId, selection.PlayerId, selection.Position));
+        }
+
+        if (goalieId.HasValue)
+        {
+            SetActiveGoalie(teamId, goalieId.Value);
+        }
     }
 
     /// <summary>

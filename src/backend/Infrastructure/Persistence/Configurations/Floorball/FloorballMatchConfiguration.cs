@@ -116,6 +116,19 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .HasField("_periodScores")
                 .EnableLazyLoading(false);
 
+            // Configure relationship with active players (per-match field player lineup)
+            builder.HasMany(m => m.ActivePlayers)
+                .WithOne()
+                .HasForeignKey(p => p.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Navigation(m => m.ActivePlayers)
+                .HasField("_activePlayers")
+                .EnableLazyLoading(false);
+
+            builder.Ignore(m => m.HomeActivePlayerIds);
+            builder.Ignore(m => m.AwayActivePlayerIds);
+
             // Ignore computed collections so EF doesn't treat them as navigations
             builder.Ignore(m => m.GoalEvents);
             builder.Ignore(m => m.PenaltyEvents);

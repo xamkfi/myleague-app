@@ -119,6 +119,9 @@
       "overtime": "Went to overtime",
       "shootout": "Went to shootout"
     },
+    "lineups": {
+      "notSet": "The match lineup has not been set yet."
+    },
     "stats": {
       "title": "Team Statistics",
       "shotsOnTarget": "Shots on Target",
@@ -642,7 +645,9 @@
         "loadFailed": "Failed to load teams",
         "selectTeam": "Please select a team",
         "invalidJerseyNumber": "Jersey number must be between 1 and 99"
-      }
+      },
+      "requestedJerseyTooltip": "Requested #{{requested}} during import but it was taken; assigned #{{assigned}} instead. Pick a different number to clear this notice.",
+      "requestedJerseyBadge": "requested #{{requested}}"
     },
     "divisions": {
       "men": "Men",
@@ -764,6 +769,121 @@
       "createTitle": "Create New Tournament",
       "noTournaments": "No tournaments found",
       "noGroups": "No groups",
+      "import": {
+        "button": "Import from JSON",
+        "buttonTooltip": "Create a tournament by uploading a JSON file (myleague format).",
+        "title": "Import tournament from JSON",
+        "dropzone": "Drop a JSON file here, or click to choose.",
+        "chooseFile": "Choose file",
+        "downloadSample": "Download sample JSON",
+        "invalidTitle": "JSON validation failed",
+        "invalidJson": "File is not valid JSON: {{msg}}",
+        "tournamentName": "Tournament name",
+        "tournamentVenue": "Venue",
+        "tournamentVenuePlaceholder": "e.g. Kampparit Areena",
+        "tournamentVenueHint": "Pre-filled from the JSON when available. Used as the tournament venue and as the default location for matches.",
+        "tournamentCategory": "Tournament type",
+        "tournamentCategoryHint": "Applied to newly created teams (existing teams keep their category).",
+        "previewNote": "Existing clubs/teams (matched by name) are reused. Only missing ones are created.",
+        "autoRevert": "Automatically revert if any step fails",
+        "startImport": "Start import",
+        "starting": "Starting...",
+        "successTitle": "Import complete",
+        "failedTitle": "Import failed",
+        "failedNote": "{{count}} entities were created before the failure. You can revert them.",
+        "aborted": "Import was cancelled by the user.",
+        "unknownError": "Import failed for an unknown reason.",
+        "revertStart": "Reverting created entities...",
+        "revertAll": "Revert all changes",
+        "reverting": "Reverting...",
+        "revertedTitle": "Revert complete",
+        "revertedSummary": "Removed {{deleted}} item(s). {{failed}} failure(s) — check the log.",
+        "openTournament": "Open tournament",
+        "counts": {
+          "clubs": "Clubs",
+          "divisions": "Divisions",
+          "teams": "Teams",
+          "players": "Players",
+          "tournament": "Tournament",
+          "groups": "Groups",
+          "assignments": "Group assignments",
+          "matches": "Matches",
+          "playoffSlots": "Playoff slots"
+        },
+        "phases": {
+          "players": "Players"
+        },
+        "playerRosterNote": "Player rosters (if included in the JSON) are created and added to teams automatically. Existing players (matched by name) are reused.",
+        "playoffSlotsNote": "Playoff slots will appear as placeholder \"TBD vs TBD\" rows in the schedule. The real teams are filled in automatically when the playoff stage is started.",
+        "playoffSlotsIgnoredNote": "Playoffs are disabled for this import — the {{count}} playoff slot(s) in the JSON will be ignored.",
+        "hasPlayoffStage": "Tournament has a playoff stage",
+        "hasPlayoffStageHintOn": "Standard bracket rules apply: 2/4/8 teams must qualify for the playoffs (teamsAdvancingPerGroup × group count).",
+        "hasPlayoffStageHintOff": "Group-stage-only tournament: any number of teams per group is fine and the playoff schedule (if any) will be ignored.",
+        "aiHelp": {
+          "title": "Don't have a JSON file yet? Generate one with AI",
+          "step1": "Copy the prompt below with the \"Copy prompt\" button (or download it if copying is blocked).",
+          "step2": "Open ChatGPT, Claude, Gemini or another vision-capable AI and paste the prompt (Ctrl/Cmd + V).",
+          "step3": "Attach a screenshot / photo of the tournament schedule (and roster sheets if you have them) and send the message.",
+          "step4": "Save the AI's response as a .json file and drop it into the area above.",
+          "copyPrompt": "Copy AI prompt to clipboard",
+          "downloadPrompt": "Download AI prompt as .txt",
+          "copiedToast": "Prompt copied to clipboard. Paste it into your AI chat (Ctrl/Cmd + V) and attach the schedule image.",
+          "downloadedToast": "Prompt downloaded as a .txt file. Open it, copy the contents, and paste them into your AI chat.",
+          "errorToast": "Could not copy or download the prompt. Please try the \"Download\" button again."
+        }
+      },
+      "playoffSchedule": {
+        "title": "Planned playoff matches",
+        "hint": "Teams are filled in automatically after the group stage finishes.",
+        "toggleShow": "Show playoff schedule ({{count}} matches)",
+        "toggleHide": "Hide playoff schedule",
+        "tbd": "TBD",
+        "placeholderTooltip": "This is a planned playoff slot. The actual match will be generated when the group stage finishes.",
+        "rounds": {
+          "qf": "QF",
+          "sf": "SF",
+          "thirdPlace": "3rd place",
+          "final": "Final"
+        }
+      },
+      "playoffScheduleManager": {
+        "title": "Planned playoff schedule",
+        "hint": "Set the kickoff time and optional venue for every playoff round. Teams are filled in automatically when the playoff stage is started; the slots appear as \"TBD vs TBD\" placeholders in the schedule meanwhile.",
+        "lockedHint": "The playoff bracket has been generated, so the planned schedule is no longer editable. Edit individual matches in the matches list instead.",
+        "disabledHint": "This tournament does not have a playoff stage enabled. Enable it on the Tournament Details tab to plan playoff matches.",
+        "fillSuggested": "Fill in missing slots",
+        "fillSuggestedTooltip": "Add the missing bracket slots based on the configured tournament rules.",
+        "savedSuccess": "Playoff schedule saved.",
+        "empty": "No playoff slots planned yet.",
+        "errors": {
+          "unsupportedSize": "Cannot suggest a layout: TeamsAdvancingPerGroup × group count must equal 2, 4 or 8 (current: {{count}}).",
+          "missingTime": "Every playoff slot must have a kickoff time.",
+          "duplicateSlot": "Duplicate playoff slots detected: {{slots}}"
+        },
+        "fields": {
+          "round": "Round",
+          "order": "Order",
+          "scheduledDateTime": "Date & time",
+          "venue": "Venue (optional)"
+        },
+        "placeholders": {
+          "venue": "e.g. Court 1"
+        },
+        "rounds": {
+          "QuarterFinal": "Quarterfinal",
+          "SemiFinal": "Semifinal",
+          "ThirdPlaceMatch": "3rd place match",
+          "Final": "Final"
+        },
+        "addRound": {
+          "QuarterFinal": "Add Quarterfinal",
+          "SemiFinal": "Add Semifinal",
+          "ThirdPlaceMatch": "Add 3rd place match",
+          "Final": "Add Final"
+        },
+        "removeRowAriaLabel": "Remove this playoff slot",
+        "removeRowTooltip": "Remove this playoff slot from the schedule"
+      },
       "matchesInProgress_one": "{{count}} match in progress",
       "matchesInProgress_other": "{{count}} matches in progress",
       "showOngoingOnly": "Show Ongoing Only",
@@ -818,6 +938,7 @@
         "startPlayoffStage": "Start Playoff",
         "complete": "Complete Tournament",
         "cancel": "Cancel Tournament",
+        "delete": "Delete Tournament",
         "moreActions": "More actions",
         "matchesLoadError": "Failed to load match status — preconditions cannot be verified. Check match progress before triggering lifecycle actions.",
         "startGroupStageSuccess": "Group stage started successfully.",
@@ -836,7 +957,8 @@
           "startGroupStage": "Marks the tournament as active and exposes matches on public pages.",
           "startPlayoffStage": "Calculates group standings, builds the playoff bracket and schedules playoff matches. Requires all group-stage matches to be completed.",
           "complete": "Closes the tournament. Requires all matches to be completed first.",
-          "cancel": "Cancels the tournament. This action is final and cannot be undone."
+          "cancel": "Cancels the tournament. This action is final and cannot be undone.",
+          "delete": "Permanently deletes the tournament. This action cannot be undone."
         },
         "disabled": {
           "noGroups": "Add at least one group before starting the group stage.",
@@ -877,13 +999,20 @@
             "description": "Cancels the tournament. This is a final action and cannot be undone without database surgery. Match data is preserved but the tournament is marked cancelled.",
             "confirm": "Yes, cancel tournament",
             "acknowledge": "I understand that cancelling the tournament is a final action."
+          },
+          "delete": {
+            "title": "Delete tournament",
+            "description": "Permanently deletes tournament \"{{name}}\". All groups, team assignments and matches are removed and the action cannot be undone.",
+            "confirm": "Yes, delete tournament",
+            "acknowledge": "I understand that deleting the tournament is a final action."
           }
         }
       },
       "actions": {
         "menu": "Tournament actions menu",
         "manageMatches": "Manage tournament matches",
-        "bulkDelete": "Delete ({{count}})"
+        "bulkDelete": "Delete ({{count}})",
+        "openEdit": "Open and edit tournament"
       },
       "errors": {
         "networkError": "Network error. Please check your connection and try again.",
@@ -1124,13 +1253,70 @@
         "message": "Are you sure you want to reactivate this match? This will set the match back to Scheduled status.",
         "confirm": "Yes, Reactivate Match"
       },
+      "manage": {
+        "finished": "FINISHED",
+        "reopenMatch": "Open match",
+        "reopenMatchTitle": "Reopen this match for editing",
+        "matchOfficials": "MATCH OFFICIALS",
+        "addReferee": "Add referee",
+        "removeReferee": "Remove referee",
+        "selectReferee": "SELECT REFEREE",
+        "saving": "Saving...",
+        "noOfficials": "No officials assigned.",
+        "confirmReopen": {
+          "title": "Reopen match for editing",
+          "message": "Are you sure you want to reopen this match? It will move back to In progress so you can edit events or continue play (e.g. if the match was finished by accident).",
+          "warning": "Per-match team, player and goalie season aggregates will be reverted. Statistics will be recalculated when you finish the match again.",
+          "confirm": "Yes, reopen match"
+        }
+      },
       "cancelling": "Cancelling...",
       "reactivating": "Reactivating...",
       "creating": "Creating...",
       "updating": "Updating...",
       "createMatch": "Create Match",
       "updateMatch": "Update Match",
-      "matchCount": "match(es)"
+      "matchCount": "match(es)",
+      "lineup": {
+        "activeLineup": "Active lineup",
+        "editLineup": "Edit lineup",
+        "editLineupTitle": "Edit active lineup",
+        "homeTeam": "Home team",
+        "awayTeam": "Away team",
+        "playerCount_one": "{{count}} player",
+        "playerCount_other": "{{count}} players",
+        "playerCount": "{{count}} players",
+        "noPlayersSelected": "No players selected. Click \"Edit lineup\" to set the lineup.",
+        "goalkeeper": "Goalkeeper",
+        "selectGoalkeeper": "Select goalkeeper",
+        "selectGoalkeeperRequired": "Goalkeeper is required to start the match",
+        "noGoalkeeper": "No goalkeeper selected (required to start match)",
+        "players": "Field players",
+        "player": "Player",
+        "position": "Position",
+        "searchPlayers": "Search players by name...",
+        "allPositions": "All positions",
+        "fieldPlayers": "Field players",
+        "goalkeepersOnly": "Goalkeepers",
+        "noPlayersFound": "No players match the current filters.",
+        "noAvailablePlayers": "No available players match the current filters.",
+        "noTeamPlayers": "Team has no players.",
+        "noPlayersInLineup": "No players in lineup yet — add from the list below.",
+        "selectedPlayers": "Selected players",
+        "selectedCount": "{{count}} selected",
+        "addPlayer": "Add",
+        "removePlayer": "Remove from lineup",
+        "action": "Action",
+        "defenders": "Defenders",
+        "forwards": "Forwards",
+        "noDefenders": "No defenders selected.",
+        "noForwards": "No forwards selected.",
+        "addAs": {
+          "Defender": "Defender",
+          "Forward": "Forward"
+        },
+        "saveLineup": "Save lineup"
+      }
     }
   },
   "roster": {
@@ -1189,6 +1375,10 @@
     "create": "Create",
     "close": "Close",
     "processing": "Processing...",
+    "saving": "Saving...",
+    "clearSelection": "Clear",
+    "clearSearch": "Clear search",
+    "status": "Status",
     "pagination": {
       "previous": "Previous",
       "next": "Next",
@@ -1224,6 +1414,7 @@
       "noStats": "No statistics available",
       "noStatsDesc": "Team statistics are not available for this season.",
       "currentSeason": "Current Season",
+      "allCompetitions": "All competitions (season + tournaments)",
       "overallRecord": "Overall Record",
       "gamesPlayed": "Games Played",
       "wins": "Wins",

@@ -55,6 +55,17 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
+    public async Task<List<FloorballTeamSeasonStatistics>> GetTeamSeasonStatisticsForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+    {
+        return await _context.FloorballTeamSeasonStatistics
+            .Include(x => x.Team)
+            .Include(x => x.Competition)
+            .Where(s => s.TeamId == teamId)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task SaveTeamSeasonStatisticsAsync(FloorballTeamSeasonStatistics statistics, CancellationToken cancellationToken = default)
     {
         FloorballTeamSeasonStatistics? existing = await GetTeamSeasonStatisticsAsync(statistics.TeamId, statistics.CompetitionId, cancellationToken);
@@ -101,6 +112,18 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
             .OrderByDescending(s => s.Points)
             .ThenByDescending(s => s.Goals)
             .ThenByDescending(s => s.Assists)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<List<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+    {
+        return await _context.FloorballPlayerSeasonStatistics
+            .Include(x => x.Player)
+            .Include(x => x.Team)
+            .Include(x => x.Competition)
+            .Where(s => s.TeamId == teamId)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }

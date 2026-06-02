@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Floorball;
+using Domain.ValueObjects.Floorball;
 using MyLeague.Infrastructure.Persistence.Extensions;
 using MyLeague.Infrastructure.Persistence.Configurations.Floorball;
 using System.Reflection;
@@ -76,6 +77,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// Gets or sets the FloorballPeriodScores DbSet.
         /// </summary>
         public DbSet<FloorballPeriodScore> FloorballPeriodScores { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballMatchActivePlayers DbSet (per-match field player lineups).
+        /// </summary>
+        public DbSet<FloorballMatchActivePlayer> FloorballMatchActivePlayers { get; set; }
 
         /// <summary>
         /// Gets or sets the FloorballMatchEvents DbSet.
@@ -182,6 +188,12 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             // Set default schema for all Floorball entities
             modelBuilder.HasDefaultSchema("floorball");
 
+            // PlayoffScheduleSlot is a value object persisted as JSON inside a single column on
+            // FloorballTournament (see FloorballTournamentConfiguration). EF Core's convention
+            // would otherwise discover it as an entity via the List<PlayoffScheduleSlot> backing
+            // field and demand a primary key — ignore it explicitly to disable that.
+            modelBuilder.Ignore<PlayoffScheduleSlot>();
+
             // Apply only Floorball configurations to avoid cross-context conflicts
             modelBuilder.ApplyConfiguration(new FloorballPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamConfiguration());
@@ -191,6 +203,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballTournamentConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballRefereeConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballMatchActivePlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchEventConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamManagerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballGoalConfiguration());

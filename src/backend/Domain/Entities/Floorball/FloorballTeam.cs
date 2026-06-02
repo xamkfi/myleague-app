@@ -111,8 +111,8 @@ public class FloorballTeam : BaseEntity
         string name, 
         Guid? divisionId, 
         Club club,
-        string homeArena,
-        string primaryJerseyColor,
+        string? homeArena,
+        string? primaryJerseyColor,
         TeamCategory teamCategory,
         string? secondaryJerseyColor = null,
         string? shortName = null,
@@ -120,14 +120,8 @@ public class FloorballTeam : BaseEntity
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(club);
-        ArgumentNullException.ThrowIfNull(homeArena);
-        ArgumentNullException.ThrowIfNull(primaryJerseyColor);
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Team name cannot be null or empty.", nameof(name));
-        if (string.IsNullOrWhiteSpace(homeArena))
-            throw new ArgumentException("Home arena cannot be null or empty.", nameof(homeArena));
-        if (string.IsNullOrWhiteSpace(primaryJerseyColor))
-            throw new ArgumentException("Primary jersey color cannot be null or empty.", nameof(primaryJerseyColor));
         Id = Guid.NewGuid();
 
         Name = name;
@@ -138,8 +132,10 @@ public class FloorballTeam : BaseEntity
         Division = default!;
         Club = club;
         ClubId = club.Id;
-        HomeArena = homeArena;
-        PrimaryJerseyColor = primaryJerseyColor;
+        // HomeArena and PrimaryJerseyColor are optional metadata. Tournament-only teams often
+        // have no permanent home arena, so we store an empty string rather than reject the team.
+        HomeArena = homeArena ?? string.Empty;
+        PrimaryJerseyColor = primaryJerseyColor ?? string.Empty;
         SecondaryJerseyColor = secondaryJerseyColor ?? string.Empty;
         TeamCategory = teamCategory;
         LogoUrl = logoUrl;
@@ -196,28 +192,21 @@ public class FloorballTeam : BaseEntity
     /// <summary>
     /// Updates the team's home arena
     /// </summary>
-    /// <param name="homeArena">The new home arena</param>
-    /// <exception cref="ArgumentException">Thrown when the home arena is invalid</exception>
-    public void UpdateHomeArena(string homeArena)
+    /// <param name="homeArena">The new home arena (nullable — empty stored as empty string)</param>
+    public void UpdateHomeArena(string? homeArena)
     {
-        if (string.IsNullOrWhiteSpace(homeArena))
-            throw new ArgumentException("Home arena cannot be null or empty.", nameof(homeArena));
-
-        HomeArena = homeArena;
+        HomeArena = homeArena ?? string.Empty;
     }
-    
-    /// <summary>
-    /// Updates the team's jersey colors
-    /// </summary>
-    /// <param name="primaryColor">The new primary jersey color</param>
-    /// <param name="secondaryColor">The new secondary jersey color</param>
-    /// <exception cref="ArgumentException">Thrown when the primary color is invalid</exception>
-    public void UpdateJerseyColors(string primaryColor, string secondaryColor)
-    {
-        if (string.IsNullOrWhiteSpace(primaryColor))
-            throw new ArgumentException("Primary jersey color cannot be null or empty.", nameof(primaryColor));
 
-        PrimaryJerseyColor = primaryColor;
+    /// <summary>
+    /// Updates the team's jersey colors. Both colors are optional metadata; an empty/null value
+    /// is stored as an empty string rather than rejected.
+    /// </summary>
+    /// <param name="primaryColor">The new primary jersey color (nullable)</param>
+    /// <param name="secondaryColor">The new secondary jersey color (nullable)</param>
+    public void UpdateJerseyColors(string? primaryColor, string? secondaryColor)
+    {
+        PrimaryJerseyColor = primaryColor ?? string.Empty;
         SecondaryJerseyColor = secondaryColor ?? string.Empty;
     }
 
@@ -254,18 +243,29 @@ public class FloorballTeam : BaseEntity
     /// </summary>
     /// <param name="player">The player to add</param>
     /// <param name="position">The player's position in the team</param>
-    /// <param name="jerseyNumber">The player's jersey number</param>
+    /// <param name="jerseyNumber">The player's actually-assigned jersey number</param>
+    /// <param name="requestedJerseyNumber">
+    /// The jersey number the caller originally wanted. When it differs from
+    /// <paramref name="jerseyNumber"/>, the resulting roster entry is flagged via
+    /// <see cref="FloorballTeamPlayer.HasJerseyNumberSubstituted"/> so the roster UI can
+    /// highlight it for admin review. Pass <c>null</c> (or the same value as
+    /// <paramref name="jerseyNumber"/>) when there was no substitution.
+    /// </param>
     /// <exception cref="InvalidOperationException">Thrown when the player is already in the roster</exception>
-    public void AddPlayer(FloorballPlayer player, FloorballPosition position, int? jerseyNumber = null)
+    public void AddPlayer(
+        FloorballPlayer player,
+        FloorballPosition position,
+        int? jerseyNumber = null,
+        int? requestedJerseyNumber = null)
     {
         ArgumentNullException.ThrowIfNull(player);
         if (_roster.Count > 0 && _roster.Any(p => p.PlayerId == player.Id))
             throw new InvalidOperationException($"Player with ID {player.Id} is already in the roster.");
         if (jerseyNumber.HasValue && _roster.Count > 0 && _roster.Any(p => p.JerseyNumber == jerseyNumber))
             throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
-        var teamPlayer = new FloorballTeamPlayer(Id, player.Id, position, jerseyNumber);
+        var teamPlayer = new FloorballTeamPlayer(Id, player.Id, position, jerseyNumber, requestedJerseyNumber);
         _roster.Add(teamPlayer);
-        
+
     }
 
     /// <summary>

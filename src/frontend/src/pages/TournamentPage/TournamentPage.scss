@@ -194,6 +194,86 @@
     }
   }
 
+  &__group-nav {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'sm');
+    padding: map.get($spacing, 'md');
+    background: $color-white;
+    border: 1px solid rgba($color-blue-deep, 0.12);
+    border-radius: map.get($border-radius, 'lg');
+    box-shadow: $box-shadow-drop-1;
+  }
+
+  &__group-nav-label {
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'bold');
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba($color-blue-deep, 0.65);
+  }
+
+  &__subtabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'sm');
+  }
+
+  &__subtab {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 4.5rem;
+    min-height: 3rem;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'lg');
+    background: $color-white;
+    border: 1px solid rgba($color-blue-deep, 0.18);
+    color: $color-blue-deep;
+    border-radius: map.get($border-radius, 'lg');
+    cursor: pointer;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: map.get($font-sizes, 'md');
+    transition: all 0.2s ease;
+    box-shadow: $box-shadow-drop-1;
+
+    &:hover {
+      background: rgba($color-blue-secondary, 0.08);
+      border-color: rgba($color-blue-deep, 0.35);
+    }
+
+    &--active {
+      background: $color-blue-deep;
+      color: $color-white;
+      border-color: $color-blue-deep;
+      font-weight: map.get($font-weights, 'bold');
+      box-shadow: $box-shadow-drop-1;
+
+      &:hover {
+        background: $color-blue-deep;
+        color: $color-white;
+      }
+
+      .tournament-page__subtab-secondary {
+        color: rgba($color-white, 0.85);
+      }
+    }
+  }
+
+  &__subtab-primary {
+    line-height: 1.1;
+    font-family: $font-family-display;
+    letter-spacing: 0.04em;
+  }
+
+  &__subtab-secondary {
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'medium');
+    color: rgba($color-blue-deep, 0.65);
+    line-height: 1.2;
+  }
+
   &__group-block {
     background: $color-white;
     border-radius: map.get($border-radius, 'lg');
@@ -253,6 +333,17 @@
       width: 72px;
       height: 72px;
       font-size: 2.25rem;
+    }
+
+    &__subtabs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+      width: 100%;
+    }
+
+    &__subtab {
+      width: 100%;
+      min-height: 3.25rem;
     }
   }
 }

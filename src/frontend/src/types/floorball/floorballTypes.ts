@@ -3,7 +3,18 @@ export enum FloorballPosition {
   None = 'None',
   Goalkeeper = 'Goalkeeper',
   Defender = 'Defender',
-  Forward = 'Forward'
+  Forward = 'Forward',
+  Center = 'Center'
+}
+
+/**
+ * Single entry in a team's active field player lineup for a specific match. Mirrors the
+ * backend `FloorballActiveLineupPlayerDto` and is used by the lineup UI to group players
+ * by per-match role (defender / forward / center).
+ */
+export interface FloorballActiveLineupPlayer {
+  playerId: string;
+  position: FloorballPosition;
 }
 
 export enum TeamCategory {
@@ -50,6 +61,14 @@ export interface FloorballTeamPlayer {
   playerName: string;
   position: FloorballPosition;
   jerseyNumber?: number;
+  /**
+   * The jersey number originally requested for this player when the assigned
+   * {@link jerseyNumber} is a substitute (e.g. import had to pick the next free
+   * number). `null` / `undefined` means the assigned number matches the requested
+   * one and no admin review is needed. Drives the "needs review" highlight on the
+   * roster page; cleared automatically when the admin changes the number.
+   */
+  requestedJerseyNumber?: number | null;
   isActive: boolean;
   age?: number;
   gamesPlayed: number;
@@ -122,8 +141,10 @@ export interface FloorballTeamRequest {
   name: string;
   divisionId?: string;
   clubId: string;
-  homeArena: string;
-  primaryJerseyColor: string;
+  /** Optional — tournament-only teams often have no permanent home arena. */
+  homeArena?: string;
+  /** Optional. */
+  primaryJerseyColor?: string;
   category?: TeamCategory;
   secondaryJerseyColor?: string;
   logoUrl?: string;
@@ -137,6 +158,8 @@ export interface FloorballTeamPlayerDto {
   playerName: string;
   position: FloorballPosition;
   jerseyNumber?: number;
+  /** See {@link FloorballTeamPlayer.requestedJerseyNumber}. */
+  requestedJerseyNumber?: number | null;
   isActive: boolean;
   gamesPlayed: number;
   goals: number;
@@ -155,6 +178,21 @@ export interface AddPlayerToTeamRequest {
   jerseyNumber?: number;
 }
 
+/**
+ * Floorball goal type. Mirrors the backend `Domain.Enums.Floorball.FloorballGoalType` enum.
+ * Values are numeric so they can be sent over the wire in command payloads without ambiguity.
+ */
+export enum FloorballGoalType {
+  Regular = 0,
+  PowerPlay = 1,
+  ShortHanded = 2,
+  EmptyNet = 3,
+  PenaltyShot = 4,
+  OwnGoal = 5,
+  Overtime = 6,
+  Shootout = 7
+}
+
 // Match Event types
 export interface FloorballGoalEventDto {
   id: string;
@@ -169,6 +207,14 @@ export interface FloorballGoalEventDto {
   playerName?: string;
   assisterName?: string;
   secondaryAssisterName?: string;
+  /**
+   * Type of goal scored. `null`/`undefined` means the goal was recorded without a
+   * specific type (treated as a regular even-strength goal). Backend serializes
+   * the enum as its string name (e.g. `"PenaltyShot"`) via
+   * `JsonStringEnumConverter`, but command payloads use the numeric form, so we
+   * accept either at the type level.
+   */
+  goalType?: FloorballGoalType | number | string | null;
 }
 
 export interface FloorballPenaltyEventDto {
@@ -234,6 +280,16 @@ export interface FloorballMatchDto {
   penaltyEvents: FloorballPenaltyEventDto[];
   saveEvents: FloorballSaveEventDto[];
   matchRules: FloorballMatchRules;
+  /**
+   * Active field players for the home team in this match, each with the per-match role
+   * (Forward/Center/Defender). Goalies are tracked separately via
+   * {@link FloorballMatchDto.homeActiveGoalieId}.
+   */
+  homeActivePlayers: FloorballActiveLineupPlayer[];
+  /**
+   * Active field players for the away team in this match. See {@link FloorballMatchDto.homeActivePlayers}.
+   */
+  awayActivePlayers: FloorballActiveLineupPlayer[];
   tournamentGroupId?: string | null;
   tournamentStage?: string | null;
   /**

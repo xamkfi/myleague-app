@@ -216,6 +216,46 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
     }
 
     /// <summary>
+    /// Reverts a previous <see cref="RecordGamePlayed"/> call. Used when a Completed match this
+    /// goalie was active in is reopened back to InProgress, so the per-match aggregates
+    /// (games played/started, win/loss/tie, shutouts, minutes) do not double-count once the
+    /// match is finished again. Save/shot/goal totals are excluded because they are not
+    /// touched by <see cref="RecordGamePlayed"/>.
+    /// </summary>
+    /// <param name="wasStarter">Whether the goalie was recorded as starter at completion time.</param>
+    /// <param name="gameResult">The result that was applied when the match was completed.</param>
+    /// <param name="minutesPlayed">Minutes that were added on completion.</param>
+    /// <param name="wasShutout">Whether the goalie was credited with a shutout on completion.</param>
+    public void UndoGamePlayed(bool wasStarter, FloorballGameResult gameResult, int minutesPlayed, bool wasShutout = false)
+    {
+        if (minutesPlayed < 0)
+            throw new ArgumentException("Minutes played cannot be negative.", nameof(minutesPlayed));
+
+        if (GamesPlayed > 0) GamesPlayed--;
+        if (wasStarter && GamesStarted > 0) GamesStarted--;
+
+        switch (gameResult)
+        {
+            case FloorballGameResult.Win:
+                if (Wins > 0) Wins--;
+                break;
+            case FloorballGameResult.Loss:
+                if (Losses > 0) Losses--;
+                break;
+            case FloorballGameResult.Tie:
+                if (Ties > 0) Ties--;
+                break;
+            default:
+                throw new ArgumentException($"Invalid game result: {gameResult}", nameof(gameResult));
+        }
+
+        if (wasShutout && Shutouts > 0) Shutouts--;
+
+        MinutesPlayed = Math.Max(0, MinutesPlayed - minutesPlayed);
+        UpdateGoalsAgainstAverage();
+    }
+
+    /// <summary>
     /// Records saves and shots faced by this goalie
     /// </summary>
     /// <param name="saves">Number of saves made (can be negative for decrementing)</param>

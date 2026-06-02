@@ -142,6 +142,7 @@ export const useMatchEvents = ({
             IsShootout?: boolean;
             AssisterId?: string;
             SecondaryAssisterId?: string;
+            GoalType?: number | string | null;
             // Handle camelCase field names from JSON serialization
             eventId?: string;
             matchId?: string;
@@ -155,6 +156,7 @@ export const useMatchEvents = ({
             isShootout?: boolean;
             assisterId?: string;
             secondaryAssisterId?: string;
+            goalType?: number | string | null;
           };
           
           // Handle both PascalCase and camelCase field names
@@ -184,6 +186,7 @@ export const useMatchEvents = ({
           const isOvertime = goalData.IsOvertime ?? goalData.isOvertime ?? false;
           const isShootout = goalData.IsShootout ?? goalData.isShootout ?? false;
           const assisterId = goalData.AssisterId ?? goalData.assisterId;
+          const goalType = goalData.GoalType ?? goalData.goalType ?? null;
           
           return {
             id: `goal-${teamId}-${playerId}-${periodNumber}-${timeInSeconds}`,
@@ -200,7 +203,8 @@ export const useMatchEvents = ({
             timeInSeconds: timeInSeconds,
             timestamp: new Date(event.occurredOn),
             wasInOvertime: isOvertime,
-            wasInShootout: isShootout
+            wasInShootout: isShootout,
+            goalType: goalType
           };
         } 
         // Handle penalty events

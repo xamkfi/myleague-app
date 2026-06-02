@@ -28,6 +28,21 @@
       z-index: 10;
       position: relative;
     }
+
+    // Placeholder rows (e.g. pre-defined playoff slots whose real match hasn't been generated
+    // yet) are muted and non-interactive — they exist only to advertise the planned kickoff
+    // time, not as a clickable destination.
+    &.match-row--placeholder {
+      opacity: 0.7;
+      font-style: italic;
+
+      &:hover {
+        cursor: default;
+        background-color: transparent;
+        box-shadow: 0 0 0px rgba(0, 0, 0, 0);
+        transform: scale(1);
+      }
+    }
   
 }
 

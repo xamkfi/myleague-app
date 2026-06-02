@@ -544,7 +544,6 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                                 .HasColumnType("character varying(50)");
 
                             b1.Property<string>("Email")
-                                .IsRequired()
                                 .HasMaxLength(255)
                                 .HasColumnType("character varying(255)");
 

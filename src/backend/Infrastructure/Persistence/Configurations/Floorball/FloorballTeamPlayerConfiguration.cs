@@ -31,7 +31,13 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .HasConversion<string>();
             
             builder.Property(p => p.JerseyNumber);
-            
+
+            builder.Property(p => p.RequestedJerseyNumber);
+
+            // HasJerseyNumberSubstituted is a computed property on the domain entity (derived
+            // from JerseyNumber vs RequestedJerseyNumber), so EF must not map it as a column.
+            builder.Ignore(p => p.HasJerseyNumberSubstituted);
+
             builder.Property(p => p.IsActive)
                 .IsRequired();
             

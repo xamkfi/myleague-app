@@ -6,18 +6,26 @@ import {
   FloorballMatchStatus,
   type FloorballMatchDto,
 } from '../../../../../../types/floorball/floorballTypes';
+import type { FloorballTournamentDto } from '../../../../../../types/floorball/tournamentTypes';
 import ErrorPopup from '../../../../../../components/ErrorPopup/ErrorPopup';
 import SearchField from '../../../../../../components/SearchField/SearchField';
+import PlannedPlayoffSchedule from '../../../../../../components/PlannedPlayoffSchedule';
 import StatusTabs, {
   type MatchTab,
   type StatusCounts,
 } from '../../../MatchManagementPage/components/StatusTabs/StatusTabs';
-import StatsBar from '../../../MatchManagementPage/components/StatsBar/StatsBar';
 import MatchTable from '../../../MatchManagementPage/components/MatchTable/MatchTable';
+import PlayoffScheduleManager from './PlayoffScheduleManager';
 import './TournamentMatchesTab.scss';
 
 interface TournamentMatchesTabProps {
-  tournamentId: string;
+  tournament: FloorballTournamentDto;
+  /**
+   * Called whenever the playoff schedule editor saves a new schedule, so the parent page can
+   * refresh its locally-cached tournament DTO (used by other tabs) without re-fetching from the
+   * server. The PUT response already carries the up-to-date entity.
+   */
+  onTournamentUpdated?: (tournament: FloorballTournamentDto) => void;
 }
 
 const TAB_TO_STATUS: Record<MatchTab, FloorballMatchStatus | undefined> = {
@@ -30,9 +38,23 @@ const TAB_TO_STATUS: Record<MatchTab, FloorballMatchStatus | undefined> = {
 
 const PAGE_SIZE: number = 50;
 
-const TournamentMatchesTab = ({ tournamentId }: TournamentMatchesTabProps): ReactElement => {
+const TournamentMatchesTab = ({ tournament, onTournamentUpdated }: TournamentMatchesTabProps): ReactElement => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const tournamentId: string = tournament.id;
+
+  // The planned playoff slots only make sense when (a) the active filter would surface scheduled
+  // matches and (b) the tournament hasn't yet generated its real bracket. Once the bracket exists
+  // the real matches show up in the table below, so the placeholders would just duplicate rows.
+  const isPlayoffStageRunningOrCompleted: boolean = useMemo(() => {
+    return tournament.tournamentStatus === 'PlayoffStage' || tournament.tournamentStatus === 'Completed';
+  }, [tournament.tournamentStatus]);
+
+  const handleSchedulePersisted = useCallback((updated: FloorballTournamentDto): void => {
+    if (onTournamentUpdated) {
+      onTournamentUpdated(updated);
+    }
+  }, [onTournamentUpdated]);
 
   const [searchInput, setSearchInput] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -120,10 +142,20 @@ const TournamentMatchesTab = ({ tournamentId }: TournamentMatchesTabProps): Reac
     [tournamentId]
   );
 
-  const createMatchPath: string = useMemo(() => {
-    const returnTo: string = `/admin/floorball/tournaments/${tournamentId}/edit?tab=matches`;
-    return `/admin/floorball/tournaments/matches/create?competitionId=${tournamentId}&returnTo=${encodeURIComponent(returnTo)}`;
-  }, [tournamentId]);
+  /**
+   * Where the manage-match view should send the user when they hit Close. Used both by the
+   * "Create match" deep link and by every "Open match" row action below so the user stays in
+   * their tournament edit flow instead of being dumped on the global match list.
+   */
+  const tournamentEditReturnTo: string = useMemo(
+    () => `/admin/floorball/tournaments/${tournamentId}/edit?tab=matches`,
+    [tournamentId]
+  );
+
+  const createMatchPath: string = useMemo(
+    () => `/admin/floorball/tournaments/matches/create?competitionId=${tournamentId}&returnTo=${encodeURIComponent(tournamentEditReturnTo)}`,
+    [tournamentId, tournamentEditReturnTo]
+  );
 
   const handleManageAll = useCallback((): void => {
     navigate(manageAllPath);
@@ -135,9 +167,9 @@ const TournamentMatchesTab = ({ tournamentId }: TournamentMatchesTabProps): Reac
 
   const handleOpenMatch = useCallback(
     (match: FloorballMatchDto): void => {
-      navigate(`/admin/floorball/matches/manage/${match.id}`);
+      navigate(`/admin/floorball/matches/manage/${match.id}?returnTo=${encodeURIComponent(tournamentEditReturnTo)}`);
     },
-    [navigate]
+    [navigate, tournamentEditReturnTo]
   );
 
   const handleNavigateToFullManagement = useCallback(
@@ -152,19 +184,17 @@ const TournamentMatchesTab = ({ tournamentId }: TournamentMatchesTabProps): Reac
   return (
     <div className="tmt">
       <div className="tmt__action-row">
-        <button type="button" className="btn btn-secondary" onClick={handleManageAll}>
-          <i className="fas fa-tasks" aria-hidden="true"></i>{' '}
+        <button type="button" className="tmt__btn" onClick={handleManageAll}>
+          <i className="fas fa-tasks" aria-hidden="true"></i>
           {t('floorball.tournaments.actions.manageMatches', 'Manage tournament matches')}
         </button>
-        <button type="button" className="btn btn-primary" onClick={handleCreateNew}>
-          <i className="fas fa-plus" aria-hidden="true"></i>{' '}
+        <button type="button" className="tmt__btn" onClick={handleCreateNew}>
+          <i className="fas fa-plus" aria-hidden="true"></i>
           {t('floorball.tournaments.matchesTab.createNew', 'Create new match')}
         </button>
       </div>
 
       <ErrorPopup message={error} />
-
-      <StatsBar stats={statusCounts} isSeasonFiltered={false} />
 
       <div className="tmt__filters">
         <SearchField
@@ -182,6 +212,13 @@ const TournamentMatchesTab = ({ tournamentId }: TournamentMatchesTabProps): Reac
         counts={statusCounts}
       />
 
+      {/* Show "TBD vs TBD" rows above the match list only on tabs where they belong (everything
+          except in-progress/completed/cancelled — those filters never apply to placeholders) so
+          admins see the same future-program timeline that public visitors see. */}
+      {!isPlayoffStageRunningOrCompleted && (activeStatusTab === 'all' || activeStatusTab === 'scheduled') && (
+        <PlannedPlayoffSchedule tournament={tournament} />
+      )}
+
       {isEmpty ? (
         <div className="tmt__empty">
           <i className="fas fa-calendar-times" aria-hidden="true"></i>
@@ -191,7 +228,7 @@ const TournamentMatchesTab = ({ tournamentId }: TournamentMatchesTabProps): Reac
               'No matches have been added to this tournament yet.'
             )}
           </p>
-          <button type="button" className="btn btn-primary" onClick={handleCreateNew}>
+          <button type="button" className="tmt__btn" onClick={handleCreateNew}>
             <i className="fas fa-plus" aria-hidden="true"></i>{' '}
             {t('floorball.tournaments.matchesTab.createFirst', 'Create the first match')}
           </button>
@@ -207,9 +244,15 @@ const TournamentMatchesTab = ({ tournamentId }: TournamentMatchesTabProps): Reac
             onStartMatch={handleNavigateToFullManagement}
             onCancelMatch={handleNavigateToFullManagement}
             onReactivateMatch={handleNavigateToFullManagement}
+            // Tournament edit page surfaces a single concern (open this match) — the row
+            // click handler already navigates to the match management view, so the per-row
+            // dropdown menu is redundant noise here.
+            hideActions
           />
         </div>
       )}
+
+      <PlayoffScheduleManager tournament={tournament} onUpdated={handleSchedulePersisted} />
     </div>
   );
 };

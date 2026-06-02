@@ -40,7 +40,17 @@
   .timer-controls {
     display: flex;
     gap: 4px;
-    flex-wrap: nowrap; /* keep controls on one row */
+    /* Allow the row to wrap onto multiple lines on narrow viewports. The previous
+     * `nowrap` value was deliberate (keeps the chip row visually identical at default
+     * widths), but it made the controls overflow the timer card whenever the manage
+     * match layout switched to its narrow / sidebar-collapsed-with-narrow-window mode.
+     * Wrapping is preferred over horizontal overflow because every button is a real
+     * click target — if they slid behind the card edge users couldn't reach the
+     * +1 min / End period buttons. `min-width: 0` on the parent flex item ensures the
+     * controls receive their fair share of space rather than being forced wider than
+     * the card. */
+    flex-wrap: wrap;
+    max-width: 100%;
     justify-content: center;
     align-items: center;
 
@@ -133,6 +143,11 @@
   .timer-button.set-time img { width: 16px; height: 16px; }
 
   .timer-adjustments {
+    /* Required so the adjustment group can shrink within a wrapped `.timer-controls`
+     * row instead of forcing the parent to stay wide enough to fit all 8 inner
+     * buttons inline. */
+    min-width: 0;
+    max-width: 100%;
 
     .adjustment-group {
       display: flex;
@@ -145,7 +160,10 @@
       .adjustment-buttons {
         display: flex;
         gap: 4px;
-        flex-wrap: nowrap;
+        /* Inner buttons now also wrap so very narrow viewports don't overflow the
+         * timer card — pairs the `flex-wrap: wrap` we added to the outer
+         * `.timer-controls` and keeps every adjustment button reachable. */
+        flex-wrap: wrap;
         justify-content: center;
         align-items: center;
       }

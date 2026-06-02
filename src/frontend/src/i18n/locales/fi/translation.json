@@ -43,6 +43,9 @@
       "overtime": "Jatkoaika",
       "shootout": "Voittomaalikilpailu"
     },
+    "lineups": {
+      "notSet": "Ottelun kokoonpanoa ei ole vielä asetettu."
+    },
     "stats": {
       "title": "Joukkuetilastot",
       "shotsOnTarget": "Laukaukset maalia kohti",
@@ -642,7 +645,9 @@
         "loadFailed": "Joukkueiden lataus epäonnistui",
         "selectTeam": "Valitse joukkue",
         "invalidJerseyNumber": "Pelinumeron täytyy olla välillä 1-99"
-      }
+      },
+      "requestedJerseyTooltip": "Tuonnissa pyydettiin pelinumeroa #{{requested}}, mutta se oli varattu — pelaajalle annettiin #{{assigned}}. Vaihda numeroa poistaaksesi tämä huomautus.",
+      "requestedJerseyBadge": "pyydetty #{{requested}}"
     },
     "divisions": {
       "men": "Miehet",
@@ -764,6 +769,121 @@
       "createTitle": "Luo Uusi Turnaus",
       "noTournaments": "Turnauksia ei löytynyt",
       "noGroups": "Ei lohkoja",
+      "import": {
+        "button": "Tuo JSON-tiedostosta",
+        "buttonTooltip": "Luo turnaus lähettämällä JSON-tiedosto (myleague-muoto).",
+        "title": "Tuo turnaus JSON-tiedostosta",
+        "dropzone": "Pudota JSON-tiedosto tähän tai napsauta valitaksesi.",
+        "chooseFile": "Valitse tiedosto",
+        "downloadSample": "Lataa esimerkki-JSON",
+        "invalidTitle": "JSON-tiedoston tarkistus epäonnistui",
+        "invalidJson": "Tiedosto ei ole kelvollinen JSON: {{msg}}",
+        "tournamentName": "Turnauksen nimi",
+        "tournamentVenue": "Pelipaikka",
+        "tournamentVenuePlaceholder": "esim. Kampparit Areena",
+        "tournamentVenueHint": "Esitäytetään JSON-tiedostosta, jos arvo löytyy. Käytetään turnauksen pelipaikkana ja oletuksena otteluiden sijaintina.",
+        "tournamentCategory": "Turnauksen tyyppi",
+        "tournamentCategoryHint": "Käytetään luotaviin joukkueisiin (olemassa olevat säilyttävät oman tyyppinsä).",
+        "previewNote": "Olemassa olevat seurat/joukkueet (haku nimellä) käytetään uudelleen. Vain puuttuvat luodaan.",
+        "autoRevert": "Peruuta automaattisesti, jos jokin vaihe epäonnistuu",
+        "startImport": "Aloita tuonti",
+        "starting": "Käynnistetään...",
+        "successTitle": "Tuonti valmis",
+        "failedTitle": "Tuonti epäonnistui",
+        "failedNote": "{{count}} kohdetta luotiin ennen virhettä. Voit perua ne.",
+        "aborted": "Käyttäjä peruutti tuonnin.",
+        "unknownError": "Tuonti epäonnistui tuntemattomasta syystä.",
+        "revertStart": "Perutaan luotuja kohteita...",
+        "revertAll": "Peru kaikki muutokset",
+        "reverting": "Perutaan...",
+        "revertedTitle": "Peruutus valmis",
+        "revertedSummary": "Poistettu {{deleted}} kohdetta. {{failed}} epäonnistunutta — katso loki.",
+        "openTournament": "Avaa turnaus",
+        "counts": {
+          "clubs": "Seurat",
+          "divisions": "Divisioonat",
+          "teams": "Joukkueet",
+          "players": "Pelaajat",
+          "tournament": "Turnaus",
+          "groups": "Lohkot",
+          "assignments": "Lohkoon liitokset",
+          "matches": "Ottelut",
+          "playoffSlots": "Pudotuspeliotteluiden paikat"
+        },
+        "phases": {
+          "players": "Pelaajat"
+        },
+        "playerRosterNote": "Pelaajakokoonpanot (jos mukana JSONissa) luodaan ja liitetään joukkueisiin automaattisesti. Olemassa olevia pelaajia (nimen mukaan) käytetään uudelleen.",
+        "playoffSlotsNote": "Pudotuspeliotteluiden paikat näkyvät otteluohjelmassa \"TBD vs TBD\" -paikanvarauksina. Oikeat joukkueet täydennetään automaattisesti, kun pudotuspelivaihe käynnistetään.",
+        "playoffSlotsIgnoredNote": "Pudotuspelit on poistettu käytöstä tästä tuonnista — JSONin {{count}} pudotuspelipaikkaa ohitetaan.",
+        "hasPlayoffStage": "Turnauksessa on pudotuspelivaihe",
+        "hasPlayoffStageHintOn": "Käytössä vakio-pudotuspelisäännöt: lohkovaiheen jälkeen pudotuspeleihin pitää saada 2, 4 tai 8 joukkuetta (lohkosta jatkavat × lohkojen määrä).",
+        "hasPlayoffStageHintOff": "Pelkkä lohkovaihe: lohkossa voi olla mikä tahansa määrä joukkueita ja JSONin pudotuspeliaikataulu (jos sellainen on) ohitetaan.",
+        "aiHelp": {
+          "title": "Ei vielä JSON-tiedostoa? Generoi sellainen tekoälyllä",
+          "step1": "Kopioi alla oleva prompti \"Kopioi prompti\" -napilla (tai lataa se tiedostona, jos kopiointi ei onnistu).",
+          "step2": "Avaa ChatGPT, Claude, Gemini tai muu kuvia tukeva tekoäly ja liitä prompti (Ctrl/Cmd + V).",
+          "step3": "Liitä viestiin kuvakaappaus tai valokuva turnauksen otteluohjelmasta (ja mahdollisista joukkueiden rosterilistoista) ja lähetä viesti.",
+          "step4": "Tallenna tekoälyn vastaus .json-tiedostona ja pudota se yllä olevaan alueeseen.",
+          "copyPrompt": "Kopioi AI-prompti leikepöydälle",
+          "downloadPrompt": "Lataa AI-prompti .txt-tiedostona",
+          "copiedToast": "Prompti kopioitu leikepöydälle. Liitä se AI-keskusteluun (Ctrl/Cmd + V) ja lisää otteluohjelman kuva mukaan.",
+          "downloadedToast": "Prompti ladattiin .txt-tiedostona. Avaa tiedosto, kopioi sisältö ja liitä se AI-keskusteluun.",
+          "errorToast": "Promptia ei voitu kopioida eikä ladata. Yritä uudelleen \"Lataa\"-napilla."
+        }
+      },
+      "playoffSchedule": {
+        "title": "Suunnitellut pudotuspeliottelut",
+        "hint": "Joukkueet täydennetään automaattisesti lohkovaiheen päätyttyä.",
+        "toggleShow": "Näytä pudotuspeliaikataulu ({{count}} ottelua)",
+        "toggleHide": "Piilota pudotuspeliaikataulu",
+        "tbd": "TBD",
+        "placeholderTooltip": "Tämä on suunniteltu pudotuspeliotteluiden paikka. Varsinainen ottelu luodaan, kun lohkovaihe päättyy.",
+        "rounds": {
+          "qf": "PF",
+          "sf": "VE",
+          "thirdPlace": "Pronssiottelu",
+          "final": "Finaali"
+        }
+      },
+      "playoffScheduleManager": {
+        "title": "Suunniteltu pudotuspeliaikataulu",
+        "hint": "Aseta jokaiselle pudotuspelikierrokselle alkamisaika ja halutessasi pelipaikka. Joukkueet täydennetään automaattisesti, kun pudotuspelivaihe käynnistetään; tällä välin paikat näkyvät otteluohjelmassa \"TBD vs TBD\" -paikanvarauksina.",
+        "lockedHint": "Pudotuspelikaavio on jo luotu, joten suunniteltua aikataulua ei voi enää muokata. Muokkaa yksittäisiä otteluita otteluluettelosta.",
+        "disabledHint": "Tällä turnauksella ei ole pudotuspelivaihetta käytössä. Ota se käyttöön Turnauksen tiedot -välilehdellä voidaksesi suunnitella pudotuspeliotteluita.",
+        "fillSuggested": "Täytä puuttuvat paikat",
+        "fillSuggestedTooltip": "Lisää puuttuvat pudotuspelipaikat turnauksen sääntöjen mukaan.",
+        "savedSuccess": "Pudotuspeliaikataulu tallennettu.",
+        "empty": "Pudotuspelipaikkoja ei ole vielä suunniteltu.",
+        "errors": {
+          "unsupportedSize": "Aikataulua ei voi ehdottaa: jatkoonpääsijät × lohkojen määrä pitää olla 2, 4 tai 8 (nyt: {{count}}).",
+          "missingTime": "Jokaisella pudotuspelipaikalla pitää olla alkamisaika.",
+          "duplicateSlot": "Päällekkäisiä pudotuspelipaikkoja: {{slots}}"
+        },
+        "fields": {
+          "round": "Kierros",
+          "order": "Järjestys",
+          "scheduledDateTime": "Päivä ja kellonaika",
+          "venue": "Pelipaikka (valinnainen)"
+        },
+        "placeholders": {
+          "venue": "esim. Kenttä 1"
+        },
+        "rounds": {
+          "QuarterFinal": "Puolivälierä",
+          "SemiFinal": "Välierä",
+          "ThirdPlaceMatch": "Pronssiottelu",
+          "Final": "Finaali"
+        },
+        "addRound": {
+          "QuarterFinal": "Lisää puolivälierä",
+          "SemiFinal": "Lisää välierä",
+          "ThirdPlaceMatch": "Lisää pronssiottelu",
+          "Final": "Lisää finaali"
+        },
+        "removeRowAriaLabel": "Poista tämä pudotuspelipaikka",
+        "removeRowTooltip": "Poista tämä pudotuspelipaikka aikataulusta"
+      },
       "matchesInProgress_one": "{{count}} ottelu käynnissä",
       "matchesInProgress_other": "{{count}} ottelua käynnissä",
       "showOngoingOnly": "Näytä Vain Käynnissä Olevat",
@@ -818,6 +938,7 @@
         "startPlayoffStage": "Aloita Pudotuspelit",
         "complete": "Päätä Turnaus",
         "cancel": "Peru Turnaus",
+        "delete": "Poista turnaus",
         "moreActions": "Lisätoiminnot",
         "matchesLoadError": "Otteluiden tilan lataaminen epäonnistui — esiehtoja ei voida vahvistaa. Tarkista ottelujen tilanne ennen lifecycle-toimintoja.",
         "startGroupStageSuccess": "Alkulohkot aloitettu onnistuneesti.",
@@ -836,7 +957,8 @@
           "startGroupStage": "Merkitsee turnauksen aktiiviseksi ja paljastaa ottelut yleisösivuilla.",
           "startPlayoffStage": "Laskee sarjataulukot, luo pudotuspelikaavion ja aikatauluttaa pudotuspeliottelut. Vaatii, että kaikki alkulohkojen ottelut on pelattu.",
           "complete": "Sulkee turnauksen. Vaatii että kaikki ottelut on pelattu loppuun.",
-          "cancel": "Peruu turnauksen. Toiminto on lopullinen eikä sitä voi peruuttaa."
+          "cancel": "Peruu turnauksen. Toiminto on lopullinen eikä sitä voi peruuttaa.",
+          "delete": "Poistaa turnauksen pysyvästi. Toimintoa ei voi peruuttaa."
         },
         "disabled": {
           "noGroups": "Lisää ainakin yksi lohko, jotta voit aloittaa alkulohkot.",
@@ -877,13 +999,20 @@
             "description": "Peruu turnauksen. Tämä on lopullinen toiminto, eikä sitä voi peruuttaa ilman tietokantatoimia. Otteluiden tiedot säilyvät, mutta turnaus merkitään peruutetuksi.",
             "confirm": "Kyllä, peru turnaus",
             "acknowledge": "Ymmärrän, että turnauksen peruminen on lopullinen toiminto."
+          },
+          "delete": {
+            "title": "Poista turnaus",
+            "description": "Poistaa turnauksen \"{{name}}\" pysyvästi. Kaikki turnauksen lohkot, joukkueliitokset ja ottelut poistetaan eikä toimintoa voi peruuttaa.",
+            "confirm": "Kyllä, poista turnaus",
+            "acknowledge": "Ymmärrän, että turnauksen poistaminen on lopullinen toiminto."
           }
         }
       },
       "actions": {
         "menu": "Turnauksen toimintovalikko",
         "manageMatches": "Hallitse turnauksen otteluita",
-        "bulkDelete": "Poista ({{count}})"
+        "bulkDelete": "Poista ({{count}})",
+        "openEdit": "Avaa ja muokkaa turnausta"
       },
       "errors": {
         "networkError": "Verkkovirhe. Tarkista yhteytesi ja yritä uudelleen.",
@@ -1125,13 +1254,70 @@
         "message": "Haluatko varmasti aktivoida tämän ottelun uudelleen? Ottelu palautetaan aikataulutetuksi.",
         "confirm": "Kyllä, aktivoi uudelleen"
       },
+      "manage": {
+        "finished": "PÄÄTTYNYT",
+        "reopenMatch": "Avaa ottelu",
+        "reopenMatchTitle": "Avaa ottelu uudelleen muokattavaksi",
+        "matchOfficials": "OTTELUN TUOMARIT",
+        "addReferee": "Lisää tuomari",
+        "removeReferee": "Poista tuomari",
+        "selectReferee": "VALITSE TUOMARI",
+        "saving": "Tallennetaan...",
+        "noOfficials": "Ei valittuja tuomareita.",
+        "confirmReopen": {
+          "title": "Avaa ottelu muokattavaksi",
+          "message": "Haluatko varmasti avata tämän ottelun uudelleen? Ottelu siirretään takaisin Käynnissä-tilaan, jolloin voit muokata ottelutapahtumia tai jatkaa peliä (esim. jos ottelu päättyi vahingossa).",
+          "warning": "Ottelukohtaiset joukkue-, pelaaja- ja maalivahtitilastot perutaan ja päivitetään uudelleen, kun ottelu päätetään seuraavan kerran.",
+          "confirm": "Kyllä, avaa ottelu"
+        }
+      },
       "cancelling": "Peruutetaan...",
       "reactivating": "Aktivoidaan uudelleen...",
       "creating": "Luodaan...",
       "updating": "Päivitetään...",
       "createMatch": "Luo ottelu",
       "updateMatch": "Päivitä ottelu",
-      "matchCount": "ottelua"
+      "matchCount": "ottelua",
+      "lineup": {
+        "activeLineup": "Aktiivinen kentällinen",
+        "editLineup": "Muokkaa kentällisiä",
+        "editLineupTitle": "Muokkaa aktiivista kentällistä",
+        "homeTeam": "Kotijoukkue",
+        "awayTeam": "Vierasjoukkue",
+        "playerCount_one": "{{count}} pelaaja",
+        "playerCount_other": "{{count}} pelaajaa",
+        "playerCount": "{{count}} pelaajaa",
+        "noPlayersSelected": "Ei valittuja kenttäpelaajia. Avaa \"Muokkaa kentällistä\" asettaaksesi kentällisen.",
+        "goalkeeper": "Maalivahti",
+        "selectGoalkeeper": "Valitse maalivahti",
+        "selectGoalkeeperRequired": "Maalivahti on pakollinen ottelun aloittamiseksi",
+        "noGoalkeeper": "Maalivahtia ei ole valittu (vaaditaan ottelun aloittamiseksi)",
+        "players": "Kenttäpelaajat",
+        "player": "Pelaaja",
+        "position": "Pelipaikka",
+        "searchPlayers": "Hae pelaajia nimellä...",
+        "allPositions": "Kaikki pelipaikat",
+        "fieldPlayers": "Kenttäpelaajat",
+        "goalkeepersOnly": "Maalivahdit",
+        "noPlayersFound": "Yksikään pelaaja ei vastaa hakuehtoja.",
+        "noAvailablePlayers": "Hakuehtoihin sopivia pelaajia ei ole enää lisättävissä.",
+        "noTeamPlayers": "Joukkueessa ei ole pelaajia.",
+        "noPlayersInLineup": "Kentällistä ei ole vielä valittu — lisää pelaajia alla olevasta listasta.",
+        "selectedPlayers": "Valitut pelaajat",
+        "selectedCount": "{{count}} valittu",
+        "addPlayer": "Lisää",
+        "removePlayer": "Poista kentälliseltä",
+        "action": "Toiminto",
+        "defenders": "Puolustajat",
+        "forwards": "Hyökkääjät",
+        "noDefenders": "Ei valittuja puolustajia.",
+        "noForwards": "Ei valittuja hyökkääjiä.",
+        "addAs": {
+          "Defender": "Puolustaja",
+          "Forward": "Hyökkääjä"
+        },
+        "saveLineup": "Tallenna kentällinen"
+      }
     }
   },
   "common": {
@@ -1169,6 +1355,11 @@
     "create": "Luo",
     "close": "Sulje",
     "processing": "Käsitellään...",
+    "saving": "Tallennetaan...",
+    "clearSelection": "Tyhjennä valinta",
+    "clearSearch": "Tyhjennä haku",
+    "selectAll": "Valitse kaikki",
+    "status": "Tila",
     "pagination": {
       "previous": "Edellinen",
       "next": "Seuraava",
@@ -1204,6 +1395,7 @@
       "noStats": "Tilastoja ei saatavilla",
       "noStatsDesc": "Joukkueen tilastot eivät ole saatavilla tälle kaudelle.",
       "currentSeason": "Nykyinen kausi",
+      "allCompetitions": "Kaikki kilpailut (kausi + turnaukset)",
       "overallRecord": "Kokonaistilanne",
       "gamesPlayed": "Pelatut pelit",
       "wins": "Voitot",

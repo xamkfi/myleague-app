@@ -6,6 +6,7 @@ import type {
   UpdateFloorballMatchRequest,
   GetFloorballMatchesRequest
 } from '../../types/floorball/floorballTypes';
+import type { FloorballPosition } from '../../types/floorball/floorballTypes';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
@@ -292,6 +293,35 @@ export const floorballMatchService = {
   },
 
   /**
+   * Permanently delete a floorball match. Only allowed for matches still in the
+   * Scheduled state (server enforces this). Used by the tournament JSON import
+   * revert flow to remove freshly created matches.
+   */
+  delete: async (id: string): Promise<ApiResponse<void>> => {
+    try {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${id}`, {
+        method: 'DELETE',
+      });
+
+      const apiResponse: ApiResponse<void> = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete floorball match');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete floorball match');
+      }
+
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.delete:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Start a floorball match
    */
   start: async (id: string): Promise<ApiResponse<FloorballMatchDto>> => {
@@ -352,6 +382,41 @@ export const floorballMatchService = {
       return apiResponse;
     } catch (error) {
       console.error('Error in floorballMatchService.complete:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Reopen a previously completed floorball match. Reverts the per-match aggregates that the
+   * backend applied at completion time (team / player / goalie season stats) and moves the
+   * status back to InProgress so the operator can keep editing events or finish the match
+   * again. The backend rejects this for playoff matches.
+   */
+  reopen: async (id: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      console.log('Reopening match with ID:', id);
+
+      const response = await authFetch(`${API_URL}/FloorballMatch/reopen-match/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to reopen floorball match');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to reopen floorball match');
+      }
+
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.reopen:', error);
       throw error;
     }
   },
@@ -520,6 +585,45 @@ export const floorballMatchService = {
       return apiResponse;
     } catch (error) {
       console.error('Error in floorballMatchService.changeGoalie:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Replaces the active field player lineup for a team in a match. Each entry in
+   * `payload.players` carries the per-match role (Forward, Center or Defender). Optionally
+   * updates the goalie in the same operation; pass `goalieId: null` to leave the existing
+   * goalie untouched.
+   */
+  setActiveRoster: async (
+    matchId: string,
+    teamId: string,
+    payload: { players: { playerId: string; position: FloorballPosition }[]; goalieId: string | null }
+  ): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await authFetch(`${API_URL}/FloorballMatch/${matchId}/team/${teamId}/active-roster`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          players: payload.players,
+          goalieId: payload.goalieId,
+        }),
+      });
+
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to update active roster');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to update active roster');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.setActiveRoster:', error);
       throw error;
     }
   },

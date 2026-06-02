@@ -77,8 +77,10 @@ const CreateTournamentPage = () => {
 
       const startDate = new Date(formData.startDate);
       const endDate = new Date(formData.endDate);
+      // Same-day tournaments are valid (e.g. a Saturday one-day cup), so only reject when the
+      // range is actually inverted. The HTML input also enforces this via `min={startDate}`.
       if (endDate < startDate) {
-        throw new Error(t('floorball.tournaments.validation.endDateAfterStart', 'End date must be after start date'));
+        throw new Error(t('floorball.tournaments.validation.endDateNotBeforeStart', 'End date cannot be before start date'));
       }
 
       const result = await floorballTournamentService.create(formData);

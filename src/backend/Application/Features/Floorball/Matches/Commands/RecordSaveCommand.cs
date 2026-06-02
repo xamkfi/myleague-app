@@ -11,15 +11,12 @@ using MediatR;
 namespace Application.Features.Floorball.Matches.Commands
 {
     /// <summary>
-    /// Command for recording a save in a non-event-sourced floorball match
+    /// Command for recording one or more saves in a floorball match. <see cref="Count"/>
+    /// defaults to 1 to preserve single-save call sites; values greater than 1 are used by
+    /// the bulk backfill flow (recorder missed marking individual saves during play) and
+    /// produce <c>Count</c> distinct save events at the same (period, time) coordinate
+    /// inside a single transaction.
     /// </summary>
-    /// <param name="MatchId"></param>
-    /// <param name="TeamId"></param>
-    /// <param name="GoalieId"></param>
-    /// <param name="PeriodNumber"></param>
-    /// <param name="TimeInSeconds"></param>
-    /// <param name="WasInOvertime"></param>
-    /// <param name="WasInShootout"></param>
     public record RecordSaveCommand(
         Guid MatchId,
         Guid TeamId,
@@ -27,7 +24,8 @@ namespace Application.Features.Floorball.Matches.Commands
         int PeriodNumber,
         int TimeInSeconds,
         bool WasInOvertime,
-        bool WasInShootout) : IRequest<Result<FloorballMatchDto>>;
+        bool WasInShootout,
+        int Count = 1) : IRequest<Result<FloorballMatchDto>>;
 }
 
 

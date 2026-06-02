@@ -1,8 +1,40 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Domain.Enums.Floorball;
 
 namespace WebAPI.Models.Floorball
 {
+    /// <summary>
+    /// One pre-defined playoff bracket slot. Sent by the tournament import flow so the
+    /// schedule view can show "TBD vs TBD" placeholders before the bracket is generated.
+    /// </summary>
+    public class PlayoffScheduleSlotRequest
+    {
+        /// <summary>
+        /// Bracket round (QuarterFinal, SemiFinal, ThirdPlaceMatch, Final).
+        /// </summary>
+        [Required]
+        public FloorballPlayoffRound Round { get; set; }
+
+        /// <summary>
+        /// 0-based position within the round (QF1 = 0, QF2 = 1, …).
+        /// </summary>
+        [Required]
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Kickoff time (UTC).
+        /// </summary>
+        [Required]
+        public DateTime ScheduledDateTime { get; set; }
+
+        /// <summary>
+        /// Optional venue / court label.
+        /// </summary>
+        public string? Venue { get; set; }
+    }
+
     /// <summary>
     /// Request model for creating a floorball tournament
     /// </summary>
@@ -101,6 +133,14 @@ namespace WebAPI.Models.Floorball
         /// Whether the tournament includes a third-place match. Default: false.
         /// </summary>
         public bool HasThirdPlaceMatch { get; set; } = false;
+
+        /// <summary>
+        /// Optional pre-defined playoff bracket schedule. When provided, the StartPlayoffStage
+        /// action uses these times for the generated matches instead of auto-scheduling. The
+        /// schedule is also surfaced as placeholder "TBD vs TBD" rows on the public tournament
+        /// page so end-users see the full match program from day one.
+        /// </summary>
+        public List<PlayoffScheduleSlotRequest>? PlayoffSchedule { get; set; }
     }
 
     /// <summary>

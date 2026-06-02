@@ -1,40 +1,41 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
 .penalty-record-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 16px;
 }
 
 .penalty-record-modal {
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  display: inline-block;
-  width: auto;
-  min-width: 420px;
-  max-height: 90vh;
+  background: $color-neutral-white;
+  border-radius: 12px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
+  width: min(560px, 100%);
+  max-height: calc(100vh - 32px);
   overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .penalty-record-modal__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 20px 24px;
+  border-bottom: 1px solid $color-neutral-medium-grey;
 
   h3 {
     margin: 0;
     font-size: 18px;
-    line-height: 32px;
-    font-weight: 500;
-    color: #1e293b;
+    line-height: 24px;
+    font-weight: 600;
+    color: $color-text-primary;
   }
 }
 
@@ -43,169 +44,255 @@
   border: none;
   font-size: 22px;
   cursor: pointer;
-  color: #6b7280;
+  color: $color-neutral-dark-grey;
   padding: 0;
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-neutral-light-grey;
+    color: $color-text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .penalty-record-modal__body {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 
   .event-form.penalty-form {
     background: transparent;
     border: none;
     padding: 0;
     margin: 0;
-
-    .form-row {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    label {
-      font-size: 16px;
-      line-height: 24px;
-      font-weight: 400;
-      color: #1e293b;
-    }
-
-    select {
-      width: 372px;
-      height: 40px;
-      padding: 8px 16px;
-      border-radius: 4px;
-      background: #f3f4f6;
-      border: 1px solid #d1d5db;
-      font-size: 16px;
-      line-height: 24px;
-      color: #1e293b;
-
-      &.is-placeholder {
-        color: #6b7280;
-        font-size: 14px;
-        line-height: 24px;
-        font-weight: 400;
-      }
-
-      option {
-        color: #1e293b;
-      }
-      option[disabled] {
-        color: #6b7280;
-      }
-    }
-
-    .time-input-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 372px;
-
-      .time-input {
-        width: auto;
-        height: 40px;
-        padding: 8px 16px;
-        border-radius: 4px;
-        background: #f3f4f6;
-        border: 1px solid #d1d5db;
-        font-size: 16px;
-        line-height: 24px;
-        color: #1e293b;
-        text-align: center;
-
-        &.time-input-minutes {
-          flex: 1;
-          min-width: 80px;
-        }
-
-        &.time-input-seconds {
-          flex: 1;
-          min-width: 80px;
-        }
-
-        // Remove spinner arrows
-        &::-webkit-inner-spin-button,
-        &::-webkit-outer-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
-        }
-        -moz-appearance: textfield;
-      }
-
-      .time-separator {
-        font-size: 20px;
-        font-weight: 600;
-        color: #1e293b;
-      }
-    }
-
-    .time-input {
-      width: 372px;
-      height: 40px;
-      padding: 8px 16px;
-      border-radius: 4px;
-      background: #f3f4f6;
-      border: 1px solid #d1d5db;
-      font-size: 16px;
-      line-height: 24px;
-      color: #1e293b;
-    }
-    
-    .description-input {
-      width: 100%;
-      min-height: 80px;
-      padding: 10px 12px;
-      border-radius: 4px;
-      border: 1px solid #d1d5db;
-      background: #f9fafb;
-      font-size: 14px;
-      line-height: 20px;
-      color: #1e293b;
-      resize: vertical;
-    }
-  }
-}
-
-.event-form {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
-
-  .form-actions {
     display: flex;
-    gap: 12px;
-    justify-content: flex-start;
-    align-items: center;
-
-    .cancel-btn {
-      color: #dc3545;
-      background: transparent;
-      border: 1px solid #d1d5db;
-      font-weight: 600;
-      cursor: pointer;
-      border-radius: 4px;
-      padding: 8px 12px;
-    }
-
-    .submit-btn {
-      margin-left: auto;
-      font-weight: 700;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
-      padding: 8px 12px;
-    }
+    flex-direction: column;
+    gap: 20px;
   }
 }
 
+.penalty-record-modal .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 
+  @media (max-width: 520px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.penalty-record-modal .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  &--description {
+    /* The description field stretches across both columns so the textarea has enough room. */
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: $color-text-primary;
+
+    .field-hint {
+      font-weight: 400;
+      color: $color-neutral-dark-grey;
+    }
+  }
+
+  .select-field,
+  .time-input-group,
+  .description-input {
+    width: 100%;
+  }
+}
+
+.penalty-record-modal .select-field {
+  height: 40px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: $color-neutral-light-grey;
+  border: 1px solid #d1d5db;
+  font-size: 15px;
+  line-height: 24px;
+  color: $color-text-primary;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-neutral-white;
+    border-color: $color-neutral-dark-grey;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $color-blue-deep;
+    background: $color-neutral-white;
+    box-shadow: 0 0 0 3px rgba(47, 96, 186, 0.15);
+  }
+
+  &.is-placeholder {
+    color: $color-neutral-dark-grey;
+    font-weight: 400;
+  }
+
+  option {
+    color: $color-text-primary;
+  }
+
+  option[disabled] {
+    color: $color-neutral-dark-grey;
+  }
+}
+
+.penalty-record-modal .time-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .time-input {
+    flex: 1;
+    height: 40px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: $color-neutral-light-grey;
+    border: 1px solid #d1d5db;
+    font-size: 16px;
+    line-height: 24px;
+    color: $color-text-primary;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    min-width: 0;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: $color-neutral-white;
+      border-color: $color-neutral-dark-grey;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-deep;
+      background: $color-neutral-white;
+      box-shadow: 0 0 0 3px rgba(47, 96, 186, 0.15);
+    }
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    -moz-appearance: textfield;
+  }
+
+  .time-separator {
+    font-size: 20px;
+    font-weight: 700;
+    color: $color-neutral-dark-grey;
+    user-select: none;
+  }
+}
+
+.penalty-record-modal .description-input {
+  min-height: 88px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: $color-neutral-light-grey;
+  font-size: 14px;
+  line-height: 20px;
+  color: $color-text-primary;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-neutral-white;
+    border-color: $color-neutral-dark-grey;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $color-blue-deep;
+    background: $color-neutral-white;
+    box-shadow: 0 0 0 3px rgba(47, 96, 186, 0.15);
+  }
+}
+
+.penalty-record-modal .description-counter {
+  align-self: flex-end;
+  font-size: 12px;
+  color: $color-neutral-dark-grey;
+  font-variant-numeric: tabular-nums;
+}
+
+.penalty-record-modal .field-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.penalty-record-modal .form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+
+  .cancel-btn,
+  .submit-btn {
+    height: 40px;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 24px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .cancel-btn {
+    color: $color-red-primary;
+    background: transparent;
+    border: 1px solid $color-red-primary;
+
+    &:hover:not(:disabled) {
+      background: rgba(215, 68, 64, 0.08);
+    }
+  }
+
+  .submit-btn {
+    background: $color-blue-deep;
+    color: $color-neutral-white;
+    border: 1px solid $color-blue-deep;
+
+    &:hover:not(:disabled) {
+      /* `filter: brightness(...)` keeps us forward-compatible with Dart Sass 3 (which
+       * removes `darken()`) without requiring a `@use 'sass:color'` import here. */
+      filter: brightness(0.92);
+    }
+  }
+}

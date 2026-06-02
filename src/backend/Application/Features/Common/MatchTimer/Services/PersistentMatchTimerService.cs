@@ -105,17 +105,11 @@ namespace Application.Features.Common.MatchTimer.Services
                     return;
                 }
 
-                // If period changed, reset timer to 0:00 for new period
-                if (periodNumber.HasValue && 
-                    timerState.PeriodNumber.HasValue &&
-                    timerState.PeriodNumber.Value != periodNumber.Value)
-                {
-                    _logger.LogInformation(
-                        "Period changed from {OldPeriod} to {NewPeriod}, resetting timer for match {MatchId}",
-                        timerState.PeriodNumber, periodNumber, matchId);
-                    
-                    timerState.Reset();
-                }
+                // NOTE: We intentionally do NOT reset the timer when the period number
+                // changes. The match clock is continuous across periods (e.g. period 2
+                // begins at the elapsed-second mark where period 1 ended), so resetting
+                // here would break that contract. The frontend captures each period's
+                // start offset for the Reset button to use.
 
                 // Set/keep initial started-at only if never started before or was reset
                 if (timerState.StartedAt == null)

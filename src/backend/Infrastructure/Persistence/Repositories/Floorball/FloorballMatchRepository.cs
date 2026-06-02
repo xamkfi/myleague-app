@@ -34,6 +34,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
                 .Include(m => m.PeriodScores)
+                .Include(m => m.ActivePlayers)
                 .Include(m => m.Events)
                 .FirstOrDefaultAsync(m => m.Id == id) ?? throw new KeyNotFoundException($"Match with ID {id} not found.");
         }
@@ -431,6 +432,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 _dbContext.Entry(periodScore).State = EntityState.Modified;
             }
 
+            // Ensure ActivePlayer additions/removals are tracked. Existing rows can stay Unchanged
+            // because the entity is immutable; new rows get Added by EF when attached via
+            // navigation, deletions are handled by Remove().
+            foreach (FloorballMatchActivePlayer activePlayer in match.ActivePlayers)
+            {
+                Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<FloorballMatchActivePlayer> entry = _dbContext.Entry(activePlayer);
+                if (entry.State == EntityState.Detached)
+                {
+                    entry.State = EntityState.Added;
+                }
+            }
+
             await Task.CompletedTask;
         }
 
@@ -445,6 +458,49 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             {
                 await DeleteAsync(match);
             }
+        }
+
+        /// <inheritdoc />
+        public async Task<int> DeleteAllByCompetitionIdAsync(Guid competitionId, CancellationToken cancellationToken = default)
+        {
+            // Snapshot the match ids once so all the follow-up cleanups operate on the same set,
+            // even if something is concurrently inserted (unlikely for a Draft tournament being
+            // deleted, but cheap insurance).
+            Guid[] matchIds = await _entities
+                .AsNoTracking()
+                .Where(m => m.CompetitionId == competitionId)
+                .Select(m => m.Id)
+                .ToArrayAsync(cancellationToken);
+
+            if (matchIds.Length == 0)
+            {
+                return 0;
+            }
+
+            // 1) FloorballMatchTeamStatistics has no DB-level FK to FloorballMatch (the navigation
+            //    is Ignored in the EF configuration so EF never creates one). Without this manual
+            //    cleanup the rows would be orphaned after we drop the matches.
+            await _dbContext.FloorballMatchTeamStatistics
+                .Where(s => matchIds.Contains(s.MatchId))
+                .ExecuteDeleteAsync(cancellationToken);
+
+            // 2) Match.NextMatchId is a RESTRICT self-reference used by the playoff bracket. Null
+            //    it out first so the subsequent bulk DELETE doesn't fail when bracket parents
+            //    reference bracket children we're about to remove.
+            await _entities
+                .Where(m => m.CompetitionId == competitionId && m.NextMatchId != null)
+                .ExecuteUpdateAsync(
+                    setters => setters.SetProperty(m => m.NextMatchId, _ => (Guid?)null),
+                    cancellationToken);
+
+            // 3) Now wipe the matches. The DB cascades to FloorballPeriodScores,
+            //    FloorballMatchEvents (and its TPH subtypes Goals/Penalties/Saves), and the
+            //    FloorballMatchOfficial join table.
+            int deleted = await _entities
+                .Where(m => m.CompetitionId == competitionId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return deleted;
         }
 
         /// <summary>

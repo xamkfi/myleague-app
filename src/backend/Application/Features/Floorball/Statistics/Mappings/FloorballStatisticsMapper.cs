@@ -30,6 +30,14 @@ namespace Application.Features.Floorball.Statistics.Mappings;
 public static class FloorballStatisticsMapper
 {
     /// <summary>
+    /// Sentinel competition ID embedded into aggregated DTOs. We pick <see cref="Guid.Empty"/>
+    /// instead of one of the source competition IDs because the aggregated row is synthetic and
+    /// must not be mistaken for a real <see cref="FloorballCompetition"/> by the frontend (e.g.
+    /// when building links to /league/{competitionId}).
+    /// </summary>
+    public static readonly Guid AggregatedCompetitionId = Guid.Empty;
+
+    /// <summary>
     /// Converts FloorballTeamSeasonStatistics entity to DTO
     /// </summary>
     /// <param name="entity">The statistics entity</param>
@@ -72,6 +80,128 @@ public static class FloorballStatisticsMapper
             AwayWins = entity.AwayWins,
             AwayLosses = entity.AwayLosses
         };
+    }
+
+    /// <summary>
+    /// Aggregates <paramref name="rows"/> (a team's per-competition statistics rows) into a single
+    /// "career-style" DTO. Sums all counter columns (games, wins, losses, goals, shots, ...) and
+    /// recomputes the percentage fields from those summed counters so a shot percentage that
+    /// looked correct in any individual row still adds up across the season + tournaments.
+    ///
+    /// Pass a non-null <paramref name="seasonName"/> to override the synthetic season label that
+    /// would otherwise show the source competition's name (we use this to display "Yhteensä" on
+    /// the team page).
+    /// </summary>
+    public static FloorballTeamSeasonStatisticsDto AggregateTeamStatistics(
+        Guid teamId,
+        IReadOnlyCollection<FloorballTeamSeasonStatistics> rows,
+        string teamName,
+        Uri? teamLogo,
+        string? seasonName = null)
+    {
+        FloorballTeamSeasonStatisticsDto dto = new FloorballTeamSeasonStatisticsDto
+        {
+            Id = Guid.Empty,
+            TeamId = teamId,
+            CompetitionId = AggregatedCompetitionId,
+            TeamName = teamName,
+            TeamLogo = teamLogo,
+            SeasonName = seasonName ?? string.Empty,
+            LastFiveForm = Array.Empty<Domain.Enums.Floorball.FloorballGameResult>()
+        };
+
+        foreach (FloorballTeamSeasonStatistics row in rows)
+        {
+            dto.GamesPlayed += row.GamesPlayed;
+            dto.Wins += row.Wins;
+            dto.Losses += row.Losses;
+            dto.Ties += row.Ties;
+            dto.Points += row.Points;
+            dto.GoalsFor += row.GoalsFor;
+            dto.GoalsAgainst += row.GoalsAgainst;
+            dto.ShotsFor += row.ShotsFor;
+            dto.ShotsAgainst += row.ShotsAgainst;
+            dto.PowerPlayGoals += row.PowerPlayGoals;
+            dto.PowerPlayOpportunities += row.PowerPlayOpportunities;
+            dto.ShortHandedGoals += row.ShortHandedGoals;
+            dto.PenaltyKillOpportunities += row.PenaltyKillOpportunities;
+            dto.PenaltyMinutes += row.PenaltyMinutes;
+            dto.FaceoffWins += row.FaceoffWins;
+            dto.FaceoffAttempts += row.FaceoffAttempts;
+            dto.HomeWins += row.HomeWins;
+            dto.HomeLosses += row.HomeLosses;
+            dto.AwayWins += row.AwayWins;
+            dto.AwayLosses += row.AwayLosses;
+        }
+
+        dto.GoalDifference = dto.GoalsFor - dto.GoalsAgainst;
+        dto.ShotPercentage = dto.ShotsFor > 0 ? (decimal)dto.GoalsFor / dto.ShotsFor * 100m : 0m;
+        dto.PowerPlayPercentage = dto.PowerPlayOpportunities > 0
+            ? (decimal)dto.PowerPlayGoals / dto.PowerPlayOpportunities * 100m
+            : 0m;
+        // Mirror FloorballTeamSeasonStatistics.UpdateAfterMatch's PK% formula so the aggregated
+        // value is consistent with what each row would show on its own.
+        dto.PenaltyKillPercentage = dto.PenaltyKillOpportunities > 0
+            ? (decimal)(dto.PenaltyKillOpportunities - (dto.GoalsAgainst - dto.PowerPlayGoals)) / dto.PenaltyKillOpportunities * 100m
+            : 0m;
+        dto.FaceoffPercentage = dto.FaceoffAttempts > 0
+            ? (decimal)dto.FaceoffWins / dto.FaceoffAttempts * 100m
+            : 0m;
+
+        return dto;
+    }
+
+    /// <summary>
+    /// Aggregates <paramref name="rows"/> (per-competition stats rows for a single player on a
+    /// single team) into a single DTO. Counters are summed; percentage fields are recomputed
+    /// from the summed counters. The synthetic row uses a stable surrogate key so the consumer
+    /// (React tables) gets a deterministic React key even though no real entity exists.
+    /// </summary>
+    public static FloorballPlayerSeasonStatisticsDto AggregatePlayerStatistics(
+        Guid playerId,
+        Guid teamId,
+        string playerName,
+        string teamName,
+        string? teamLogo,
+        IReadOnlyCollection<FloorballPlayerSeasonStatistics> rows)
+    {
+        FloorballPlayerSeasonStatisticsDto dto = new FloorballPlayerSeasonStatisticsDto
+        {
+            Id = Guid.Empty,
+            PlayerId = playerId,
+            TeamId = teamId,
+            CompetitionId = AggregatedCompetitionId,
+            PlayerName = playerName,
+            TeamName = teamName,
+            TeamLogo = teamLogo,
+            SeasonName = string.Empty
+        };
+
+        foreach (FloorballPlayerSeasonStatistics row in rows)
+        {
+            dto.GamesPlayed += row.GamesPlayed;
+            dto.Goals += row.Goals;
+            dto.Assists += row.Assists;
+            dto.Points += row.Points;
+            dto.PenaltyMinutes += row.PenaltyMinutes;
+            dto.PlusMinusRating += row.PlusMinusRating;
+            dto.ShotsOnGoal += row.ShotsOnGoal;
+            dto.PowerPlayGoals += row.PowerPlayGoals;
+            dto.PowerPlayAssists += row.PowerPlayAssists;
+            dto.ShortHandedGoals += row.ShortHandedGoals;
+            dto.ShortHandedAssists += row.ShortHandedAssists;
+            dto.GameWinningGoals += row.GameWinningGoals;
+            dto.OvertimeGoals += row.OvertimeGoals;
+            dto.FaceoffWins += row.FaceoffWins;
+            dto.FaceoffAttempts += row.FaceoffAttempts;
+        }
+
+        dto.ShotPercentage = dto.ShotsOnGoal > 0 ? (decimal)dto.Goals / dto.ShotsOnGoal * 100m : 0m;
+        dto.FaceoffPercentage = dto.FaceoffAttempts > 0
+            ? (decimal)dto.FaceoffWins / dto.FaceoffAttempts * 100m
+            : 0m;
+
+        return dto;
     }
 
     /// <summary>

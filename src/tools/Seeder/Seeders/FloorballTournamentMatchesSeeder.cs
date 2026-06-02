@@ -84,7 +84,7 @@ public static class FloorballTournamentMatchesSeeder
             // Cache existing tournament matches once per tournament for idempotency.
             HashSet<(Guid Home, Guid Away)> existingPairs = await LoadExistingMatchPairsAsync(http, jsonOptions, tournament.Id);
 
-            // Cache full team rosters (with Position) so we can pick goalies / skaters for completion simulation.
+            // Cache full team rosters (with Position) so we can pick goalies / field players for completion simulation.
             Dictionary<Guid, FloorballTeamDto> rosterCache = new Dictionary<Guid, FloorballTeamDto>();
 
             for (int i = 0; i < plans.Count; i++)
@@ -316,11 +316,11 @@ public static class FloorballTournamentMatchesSeeder
             return;
         }
 
-        List<Guid> homeSkaters = PickSkaters(homeTeam);
-        List<Guid> awaySkaters = PickSkaters(awayTeam);
-        if (homeSkaters.Count == 0 || awaySkaters.Count == 0)
+        List<Guid> homeFieldPlayers = PickFieldPlayers(homeTeam);
+        List<Guid> awayFieldPlayers = PickFieldPlayers(awayTeam);
+        if (homeFieldPlayers.Count == 0 || awayFieldPlayers.Count == 0)
         {
-            Console.WriteLine($"  Skipping simulation for {plan.HomeTeamName} vs {plan.AwayTeamName}: no skaters on roster.");
+            Console.WriteLine($"  Skipping simulation for {plan.HomeTeamName} vs {plan.AwayTeamName}: no field players on roster.");
             return;
         }
 
@@ -337,8 +337,8 @@ public static class FloorballTournamentMatchesSeeder
         int homeGoals = rng.Next(0, totalGoals + 1);
         int awayGoals = totalGoals - homeGoals;
 
-        await RecordGoalsAsync(http, match.Id, match.HomeTeamId, homeSkaters, homeGoals, rng);
-        await RecordGoalsAsync(http, match.Id, match.AwayTeamId, awaySkaters, awayGoals, rng);
+        await RecordGoalsAsync(http, match.Id, match.HomeTeamId, homeFieldPlayers, homeGoals, rng);
+        await RecordGoalsAsync(http, match.Id, match.AwayTeamId, awayFieldPlayers, awayGoals, rng);
 
         // Complete the match.
         HttpResponseMessage completeResp = await http.PutAsync($"api/floorballmatch/complete-match/{match.Id}", content: null);
@@ -357,15 +357,15 @@ public static class FloorballTournamentMatchesSeeder
         HttpClient http,
         Guid matchId,
         Guid teamId,
-        List<Guid> skaters,
+        List<Guid> fieldPlayers,
         int goalCount,
         Random rng)
     {
         for (int g = 0; g < goalCount; g++)
         {
-            Guid scorerId = skaters[rng.Next(skaters.Count)];
-            Guid? assistId = skaters.Count > 1 && rng.Next(0, 100) < 70
-                ? skaters.Where(s => s != scorerId).Skip(rng.Next(skaters.Count - 1)).FirstOrDefault()
+            Guid scorerId = fieldPlayers[rng.Next(fieldPlayers.Count)];
+            Guid? assistId = fieldPlayers.Count > 1 && rng.Next(0, 100) < 70
+                ? fieldPlayers.Where(p => p != scorerId).Skip(rng.Next(fieldPlayers.Count - 1)).FirstOrDefault()
                 : null;
 
             int periodNumber = rng.Next(1, 4); // 1..3
@@ -403,7 +403,7 @@ public static class FloorballTournamentMatchesSeeder
         return goalie?.PlayerId;
     }
 
-    private static List<Guid> PickSkaters(FloorballTeamDto team)
+    private static List<Guid> PickFieldPlayers(FloorballTeamDto team)
     {
         return team.Roster
             .Where(p => p.Position != FloorballPosition.Goalkeeper)

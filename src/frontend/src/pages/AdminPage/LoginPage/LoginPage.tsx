@@ -43,9 +43,9 @@ function LoginPage() {
       setSuccessMessage(t('auth.codeSent', 'A login code has been sent to your email.'));
       setStep('code');
 
-      // In development, auto-fill the code field
-      if (result.devCode) {
-        setCode(result.devCode);
+      // Auto-fill the code field when the backend AutoFillLoginCode flag is enabled
+      if (result.autoFillCode) {
+        setCode(result.autoFillCode);
       }
     } catch (err: unknown) {
       setError(parseApiError(err));

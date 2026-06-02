@@ -184,12 +184,35 @@ The provisioning scripts automatically configure the following authentication se
 | `AzureCommunicationServices__ConnectionString` | Auto from ACS module | ACS connection string |
 | `AzureCommunicationServices__SenderAddress` | Auto from ACS domain | Email sender (DoNotReply@...) |
 | `Seed__AdminEmail` | Prompted during provisioning | Initial admin user email |
+| `LoginCode__AutoFillLoginCode` | Manual (default `false`) | When `true`, the `/api/Auth/login` response includes the generated code so the admin login page auto-fills it (skips checking email). Convenient for internal/test environments. **Must stay `false` in any publicly reachable production environment** -- it exposes the login code to anyone who can call the endpoint with a known email. |
 
 **JWT Secret Key Requirements:**
 - Must be at least 32 characters
 - Used for HMAC-SHA256 token signing
 - Should be unique per environment
 - Keep it secret -- do not commit to source control
+
+### Toggling the login-code auto-fill flag in Azure
+
+The backend reads `LoginCode:AutoFillLoginCode` from configuration. To turn it on/off for an
+existing App Service without redeploying:
+
+```bash
+# Enable auto-fill (returns the login code in the /api/Auth/login response)
+az webapp config appsettings set \
+  --resource-group myleague-dev-rg \
+  --name myleague-dev-api \
+  --settings LoginCode__AutoFillLoginCode=true
+
+# Disable it (default, code is only delivered via email)
+az webapp config appsettings set \
+  --resource-group myleague-dev-rg \
+  --name myleague-dev-api \
+  --settings LoginCode__AutoFillLoginCode=false
+```
+
+Changing an app setting restarts the App Service automatically. Note the double underscore --
+that is the .NET configuration convention for nested sections (`LoginCode:AutoFillLoginCode`).
 
 ## Manual Deployment
 

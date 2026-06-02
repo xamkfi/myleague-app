@@ -351,6 +351,11 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="playerId">Player ID</param>
         /// <param name="position">Player position</param>
         /// <param name="jerseyNumber">Player jersey number (optional)</param>
+        /// <param name="requestedJerseyNumber">
+        /// The jersey number originally requested by the caller. When it differs from
+        /// <paramref name="jerseyNumber"/>, the roster entry is flagged so the admin UI can
+        /// highlight the row for review. Pass <c>null</c> when there was no substitution.
+        /// </param>
         /// <returns>Updated team details</returns>
         [HttpPost("{teamId:guid}/players/{playerId:guid}")]
         [Authorize]
@@ -358,19 +363,21 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballTeamDto>>> AddPlayerToTeam(
-            Guid teamId, 
+            Guid teamId,
             Guid playerId,
             [FromQuery] FloorballPosition position,
-            [FromQuery] int? jerseyNumber = null)
+            [FromQuery] int? jerseyNumber = null,
+            [FromQuery] int? requestedJerseyNumber = null)
         {
-            _logger.LogInformation("Adding player {playerId} to team {teamId} with position {position}", 
+            _logger.LogInformation("Adding player {playerId} to team {teamId} with position {position}",
                 playerId, teamId, position);
 
             AddPlayerToTeamCommand command = new AddPlayerToTeamCommand(
                 teamId,
                 playerId,
                 position,
-                jerseyNumber);
+                jerseyNumber,
+                requestedJerseyNumber);
 
             Result<FloorballTeamDto> result = await _mediator.Send(command);
 

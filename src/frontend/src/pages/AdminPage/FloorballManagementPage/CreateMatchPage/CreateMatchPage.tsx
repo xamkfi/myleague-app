@@ -4,7 +4,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
-import { floorballRefereeService, type FloorballRefereeDto } from '../../../../api/floorball/floorballRefereeService';
 import { floorballTournamentService } from '../../../../api/floorball/floorballTournamentService';
 import type {
   FloorballTournamentDto,
@@ -35,13 +34,17 @@ interface TeamOption {
 
 const safeReturnTo = (raw: string | null): string | null => {
   if (!raw) return null;
+
   let decoded: string;
+
   try {
     decoded = decodeURIComponent(raw);
   } catch {
     return null;
   }
+
   if (!decoded.startsWith('/admin/')) return null;
+
   return decoded;
 };
 
@@ -54,13 +57,15 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
   const isTournament = mode === 'tournament';
 
   const lockedCompetitionIdFromUrl: string = searchParams.get('competitionId') ?? '';
+
   const returnToTarget: string | null = useMemo(
     () => safeReturnTo(searchParams.get('returnTo')),
     [searchParams]
   );
+
   const isCompetitionLocked: boolean = lockedCompetitionIdFromUrl.length > 0;
 
-  // ── Data loading (competitions) ──────────────────────────────────────
+  // ── Data loading: competitions ───────────────────────────────────────
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
   const [tournaments, setTournaments] = useState<FloorballTournamentDto[]>([]);
   const [loadingCompetitions, setLoadingCompetitions] = useState(true);
@@ -69,17 +74,12 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
   const [selectedTournament, setSelectedTournament] = useState<FloorballTournamentDto | null>(null);
   const [loadingCompetitionDetails, setLoadingCompetitionDetails] = useState(false);
 
-  // ── Referees ─────────────────────────────────────────────────────────
-  const [referees, setReferees] = useState<FloorballRefereeDto[]>([]);
-  const [loadingReferees, setLoadingReferees] = useState(true);
-
   // ── Form state ───────────────────────────────────────────────────────
   const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>(lockedCompetitionIdFromUrl);
   const [selectedDivisionId, setSelectedDivisionId] = useState('');
   const [selectedGroupId, setSelectedGroupId] = useState('');
   const [homeTeamId, setHomeTeamId] = useState('');
   const [awayTeamId, setAwayTeamId] = useState('');
-  const [refereeId, setRefereeId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [hoursInput, setHoursInput] = useState('');
   const [minutesInput, setMinutesInput] = useState('');
@@ -90,18 +90,21 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // ── Load competitions (seasons or tournaments depending on mode) ─────
+  // ── Load competitions: seasons or tournaments depending on mode ──────
   useEffect(() => {
     const load = async () => {
       try {
         setLoadingCompetitions(true);
+
         if (isTournament) {
           const response = await floorballTournamentService.getAll();
+
           if (response.success && response.data) {
             setTournaments(response.data);
           }
         } else {
           const response = await floorballSeasonService.getAll();
+
           if (response.success && response.data) {
             setSeasons(response.data);
           }
@@ -112,26 +115,9 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
         setLoadingCompetitions(false);
       }
     };
+
     load();
   }, [isTournament]);
-
-  // ── Load referees ────────────────────────────────────────────────────
-  useEffect(() => {
-    const loadReferees = async () => {
-      try {
-        setLoadingReferees(true);
-        const response = await floorballRefereeService.getAll({ page: 1, pageSize: 100 });
-        if (response.success && response.data) {
-          setReferees(response.data);
-        }
-      } catch {
-        console.error('Failed to load referees');
-      } finally {
-        setLoadingReferees(false);
-      }
-    };
-    loadReferees();
-  }, []);
 
   // ── Load selected competition details ────────────────────────────────
   useEffect(() => {
@@ -142,22 +128,27 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
     }
 
     let cancelled = false;
+
     const loadDetails = async () => {
       try {
         setLoadingCompetitionDetails(true);
+
         if (isTournament) {
           const response = await floorballTournamentService.getById(selectedCompetitionId);
+
           if (!cancelled && response.success && response.data) {
             setSelectedTournament(response.data);
           }
         } else {
           const response = await floorballSeasonService.getById(selectedCompetitionId);
+
           if (!cancelled && response.success && response.data) {
             setSelectedSeason(response.data);
           }
         }
       } catch {
         console.error('Failed to load competition details');
+
         if (!cancelled) {
           setSelectedSeason(null);
           setSelectedTournament(null);
@@ -168,7 +159,9 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
         }
       }
     };
+
     loadDetails();
+
     return () => {
       cancelled = true;
     };
@@ -185,7 +178,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
     return selectedTournament?.groups ?? [];
   }, [isTournament, selectedTournament]);
 
-  // Auto-select the only available division/group
+  // Auto-select the only available division/group.
   useEffect(() => {
     if (isTournament) {
       if (tournamentGroups.length === 1) {
@@ -227,17 +220,31 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
   const teamsAvailable = useMemo<TeamOption[]>(() => {
     if (isTournament) {
       const group = tournamentGroups.find((g) => g.id === selectedGroupId);
+
       if (!group) return [];
-      return group.teams.map((team) => ({ id: team.teamId, name: team.teamName }));
+
+      return group.teams.map((team) => ({
+        id: team.teamId,
+        name: team.teamName,
+      }));
     }
 
     if (!selectedSeason?.teams || !selectedDivisionId) return [];
-    const sd = selectedSeason.seasonDivisions?.find((d) => d.divisionId === selectedDivisionId);
-    if (!sd?.teamIds) return [];
-    const teamIdSet = new Set(sd.teamIds);
+
+    const seasonDivision = selectedSeason.seasonDivisions?.find(
+      (division) => division.divisionId === selectedDivisionId
+    );
+
+    if (!seasonDivision?.teamIds) return [];
+
+    const teamIdSet = new Set(seasonDivision.teamIds);
+
     return selectedSeason.teams
       .filter((team: FloorballTeam) => teamIdSet.has(team.id))
-      .map((team: FloorballTeam) => ({ id: team.id, name: team.name }));
+      .map((team: FloorballTeam) => ({
+        id: team.id,
+        name: team.name,
+      }));
   }, [isTournament, tournamentGroups, selectedGroupId, selectedSeason, selectedDivisionId]);
 
   const availableAwayTeams = useMemo(
@@ -245,31 +252,34 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
     [teamsAvailable, homeTeamId]
   );
 
-  // Helpers
+  // ── Helpers ──────────────────────────────────────────────────────────
   const getDivisionName = useCallback(
-    (divisionId: string): string => divisions.find((d) => d.id === divisionId)?.name ?? divisionId,
+    (divisionId: string): string => divisions.find((division) => division.id === divisionId)?.name ?? divisionId,
     [divisions]
   );
 
-  // ── Date/time helpers ────────────────────────────────────────────────
   const handleHoursChange = (value: string) => {
-    const num = parseInt(value);
-    if (value === '' || (num >= 0 && num <= 23 && value.length <= 2)) {
+    const parsedValue = parseInt(value, 10);
+
+    if (value === '' || (parsedValue >= 0 && parsedValue <= 23 && value.length <= 2)) {
       setHoursInput(value);
     }
   };
 
   const handleMinutesChange = (value: string) => {
-    const num = parseInt(value);
-    if (value === '' || (num >= 0 && num <= 59 && value.length <= 2)) {
+    const parsedValue = parseInt(value, 10);
+
+    if (value === '' || (parsedValue >= 0 && parsedValue <= 59 && value.length <= 2)) {
       setMinutesInput(value);
     }
   };
 
   const buildScheduledDateTime = (): string => {
     if (!selectedDate || !hoursInput || !minutesInput) return '';
+
     const date = new Date(selectedDate);
-    date.setHours(parseInt(hoursInput), parseInt(minutesInput), 0, 0);
+    date.setHours(parseInt(hoursInput, 10), parseInt(minutesInput, 10), 0, 0);
+
     return date.toISOString();
   };
 
@@ -291,47 +301,51 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
       );
       return;
     }
+
     if (isTournament) {
       if (!selectedGroupId) {
         setError(t('floorball.matches.validation.groupRequired', 'Please select a group.'));
         return;
       }
-    } else {
-      if (!selectedDivisionId) {
-        setError(t('floorball.matches.validation.divisionRequired', 'Please select a division.'));
-        return;
-      }
+    } else if (!selectedDivisionId) {
+      setError(t('floorball.matches.validation.divisionRequired', 'Please select a division.'));
+      return;
     }
+
     if (!homeTeamId) {
       setError(t('floorball.matches.validation.homeTeamRequired', 'Please select a home team.'));
       return;
     }
+
     if (!awayTeamId) {
       setError(t('floorball.matches.validation.awayTeamRequired', 'Please select an away team.'));
       return;
     }
+
     if (homeTeamId === awayTeamId) {
       setError(t('floorball.matches.validation.sameTeam', 'Home and away team cannot be the same.'));
       return;
     }
+
     if (!selectedDate || !hoursInput || !minutesInput) {
       setError(t('floorball.matches.validation.dateTimeRequired', 'Please enter a valid date and time.'));
       return;
     }
 
     const scheduledDateTime = buildScheduledDateTime();
+
     if (!scheduledDateTime) {
       setError(t('floorball.matches.validation.dateTimeRequired', 'Please enter a valid date and time.'));
       return;
     }
 
     setLoading(true);
+
     try {
       const matchData: CreateFloorballMatchRequest = {
         competitionId: selectedCompetitionId,
         homeTeamId,
         awayTeamId,
-        refereeId: refereeId || undefined,
         scheduledDateTime,
         venue: venue || undefined,
         ...(isTournament && {
@@ -341,9 +355,12 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
       };
 
       const response = await floorballMatchService.create(matchData);
+
       if (response.success) {
         setSuccessMessage(t('floorball.matches.created', 'Match created successfully!'));
+
         const successPath: string = returnToTarget ?? listPath;
+
         setTimeout(() => navigate(successPath), 1500);
       }
     } catch (err) {
@@ -354,7 +371,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
     }
   };
 
-  // ── Render ───────────────────────────────────────────────────────────
+  // ── Render values ────────────────────────────────────────────────────
   const pageTitle = isTournament
     ? t('floorball.matches.create.tournamentTitle', 'Create Tournament Match')
     : t('floorball.matches.create.seasonTitle', 'Create Season Match');
@@ -379,13 +396,20 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
 
   const competitions = isTournament ? tournaments : seasons;
 
-  const hasGroupsOrDivisions = isTournament ? tournamentGroups.length > 0 : seasonDivisions.length > 0;
-  const subdivisionResolved = isTournament ? !!selectedGroupId : !!selectedDivisionId;
+  const hasGroupsOrDivisions = isTournament
+    ? tournamentGroups.length > 0
+    : seasonDivisions.length > 0;
+
+  const subdivisionResolved = isTournament
+    ? !!selectedGroupId
+    : !!selectedDivisionId;
 
   return (
     <PageTemplate title={pageTitle}>
       {successMessage && (
-        <div className="cm-success-toast"><p>{successMessage}</p></div>
+        <div className="cm-success-toast">
+          <p>{successMessage}</p>
+        </div>
       )}
 
       <div className="cm-container">
@@ -404,6 +428,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                 <label htmlFor="cm-competition">
                   {competitionLabel} *
                 </label>
+
                 <select
                   id="cm-competition"
                   value={selectedCompetitionId}
@@ -420,22 +445,24 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                   }
                 >
                   <option value="">{competitionPlaceholder}</option>
-                  {competitions.map((c) => (
-                    <option key={c.id} value={c.id}>
+
+                  {competitions.map((competition) => (
+                    <option key={competition.id} value={competition.id}>
                       {isTournament
-                        ? c.name
-                        : `${(c as FloorballSeasonDto).name}` +
-                          ((c as FloorballSeasonDto).isActive ? ' (Active)' : '') +
-                          ((c as FloorballSeasonDto).isCompleted ? ' (Completed)' : '')}
+                        ? competition.name
+                        : `${(competition as FloorballSeasonDto).name}` +
+                          ((competition as FloorballSeasonDto).isActive ? ' (Active)' : '') +
+                          ((competition as FloorballSeasonDto).isCompleted ? ' (Completed)' : '')}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Division / Group — only show when a competition is selected */}
+              {/* Division / Group: only show when a competition is selected */}
               {selectedCompetitionId && loadingCompetitionDetails && (
                 <div className="cm-field">
                   <label>{subdivisionLabel} *</label>
+
                   <div className="cm-field__info">
                     <i className="fas fa-spinner fa-spin"></i>
                     {isTournament
@@ -448,6 +475,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
               {selectedCompetitionId && !loadingCompetitionDetails && isTournament && (
                 <div className="cm-field">
                   <label htmlFor="cm-group">{subdivisionLabel} *</label>
+
                   {!hasGroupsOrDivisions ? (
                     <div className="cm-field__info cm-field__info--warning">
                       <i className="fas fa-exclamation-triangle"></i>
@@ -460,7 +488,9 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                     <div className="cm-field__auto-filled">
                       <i className="fas fa-check-circle"></i>
                       <span>{tournamentGroups[0].name}</span>
-                      <span className="cm-field__auto-tag">{t('common.autoSelected', 'Auto-selected')}</span>
+                      <span className="cm-field__auto-tag">
+                        {t('common.autoSelected', 'Auto-selected')}
+                      </span>
                     </div>
                   ) : (
                     <select
@@ -470,10 +500,13 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                       required
                       disabled={loading}
                     >
-                      <option value="">{t('floorball.matches.placeholders.selectGroup', '-- Select a group --')}</option>
-                      {tournamentGroups.map((g) => (
-                        <option key={g.id} value={g.id}>
-                          {g.name} ({g.teams.length} {t('floorball.tournaments.teams', 'teams')})
+                      <option value="">
+                        {t('floorball.matches.placeholders.selectGroup', '-- Select a group --')}
+                      </option>
+
+                      {tournamentGroups.map((group) => (
+                        <option key={group.id} value={group.id}>
+                          {group.name} ({group.teams.length} {t('floorball.tournaments.teams', 'teams')})
                         </option>
                       ))}
                     </select>
@@ -484,6 +517,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
               {selectedCompetitionId && !loadingCompetitionDetails && !isTournament && (
                 <div className="cm-field">
                   <label htmlFor="cm-division">{subdivisionLabel} *</label>
+
                   {seasonDivisions.length === 0 ? (
                     <div className="cm-field__info cm-field__info--warning">
                       <i className="fas fa-exclamation-triangle"></i>
@@ -496,7 +530,9 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                     <div className="cm-field__auto-filled">
                       <i className="fas fa-check-circle"></i>
                       <span>{getDivisionName(seasonDivisions[0].divisionId)}</span>
-                      <span className="cm-field__auto-tag">{t('common.autoSelected', 'Auto-selected')}</span>
+                      <span className="cm-field__auto-tag">
+                        {t('common.autoSelected', 'Auto-selected')}
+                      </span>
                     </div>
                   ) : (
                     <select
@@ -506,10 +542,14 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                       required
                       disabled={loading}
                     >
-                      <option value="">{t('floorball.matches.placeholders.selectDivision', '-- Select a division --')}</option>
-                      {seasonDivisions.map((sd) => (
-                        <option key={sd.divisionId} value={sd.divisionId}>
-                          {getDivisionName(sd.divisionId)} ({sd.teamCount} {t('floorball.seasons.teams', 'teams')})
+                      <option value="">
+                        {t('floorball.matches.placeholders.selectDivision', '-- Select a division --')}
+                      </option>
+
+                      {seasonDivisions.map((seasonDivision) => (
+                        <option key={seasonDivision.divisionId} value={seasonDivision.divisionId}>
+                          {getDivisionName(seasonDivision.divisionId)} ({seasonDivision.teamCount}{' '}
+                          {t('floorball.seasons.teams', 'teams')})
                         </option>
                       ))}
                     </select>
@@ -518,7 +558,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
               )}
             </div>
 
-            {/* Teams Selection — only show when division/group is resolved */}
+            {/* Teams Selection: only show when division/group is resolved */}
             {subdivisionResolved && (
               <div className="cm-section">
                 <h3 className="cm-section__title">
@@ -545,19 +585,28 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                       <label htmlFor="cm-home-team">
                         {t('floorball.matches.fields.homeTeam', 'Home Team')} *
                       </label>
+
                       <select
                         id="cm-home-team"
                         value={homeTeamId}
                         onChange={(e) => {
                           setHomeTeamId(e.target.value);
-                          if (e.target.value === awayTeamId) setAwayTeamId('');
+
+                          if (e.target.value === awayTeamId) {
+                            setAwayTeamId('');
+                          }
                         }}
                         required
                         disabled={loading}
                       >
-                        <option value="">{t('floorball.matches.placeholders.selectHomeTeam', '-- Select home team --')}</option>
+                        <option value="">
+                          {t('floorball.matches.placeholders.selectHomeTeam', '-- Select home team --')}
+                        </option>
+
                         {teamsAvailable.map((team) => (
-                          <option key={team.id} value={team.id}>{team.name}</option>
+                          <option key={team.id} value={team.id}>
+                            {team.name}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -570,6 +619,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                       <label htmlFor="cm-away-team">
                         {t('floorball.matches.fields.awayTeam', 'Away Team')} *
                       </label>
+
                       <select
                         id="cm-away-team"
                         value={awayTeamId}
@@ -577,9 +627,14 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                         required
                         disabled={loading || !homeTeamId}
                       >
-                        <option value="">{t('floorball.matches.placeholders.selectAwayTeam', '-- Select away team --')}</option>
+                        <option value="">
+                          {t('floorball.matches.placeholders.selectAwayTeam', '-- Select away team --')}
+                        </option>
+
                         {availableAwayTeams.map((team) => (
-                          <option key={team.id} value={team.id}>{team.name}</option>
+                          <option key={team.id} value={team.id}>
+                            {team.name}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -599,6 +654,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                 <label>
                   {t('floorball.matches.fields.dateTime', 'Date & Time')} *
                 </label>
+
                 <div className="cm-datetime">
                   <input
                     type="date"
@@ -608,6 +664,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                     disabled={loading}
                     className="cm-datetime__date"
                   />
+
                   <div className="cm-datetime__time">
                     <input
                       type="number"
@@ -620,7 +677,9 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                       disabled={loading}
                       className="cm-datetime__input"
                     />
+
                     <span className="cm-datetime__sep">:</span>
+
                     <input
                       type="number"
                       placeholder="MM"
@@ -639,8 +698,11 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
               <div className="cm-field">
                 <label htmlFor="cm-venue">
                   {t('floorball.matches.fields.venue', 'Venue')}
-                  <span className="cm-optional">{t('common.optional', '(optional)')}</span>
+                  <span className="cm-optional">
+                    {t('common.optional', '(optional)')}
+                  </span>
                 </label>
+
                 <input
                   type="text"
                   id="cm-venue"
@@ -649,36 +711,6 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                   placeholder={t('floorball.matches.placeholders.venue', 'Enter venue name')}
                   disabled={loading}
                 />
-              </div>
-            </div>
-
-            {/* Referee */}
-            <div className="cm-section">
-              <h3 className="cm-section__title">
-                <i className="fas fa-id-badge"></i>
-                {t('floorball.matches.sections.referee', 'Referee')}
-              </h3>
-
-              <div className="cm-field">
-                <label htmlFor="cm-referee">
-                  {t('floorball.matches.fields.referee', 'Referee')}
-                  <span className="cm-optional">{t('common.optional', '(optional)')}</span>
-                </label>
-                <select
-                  id="cm-referee"
-                  value={refereeId}
-                  onChange={(e) => setRefereeId(e.target.value)}
-                  disabled={loading || loadingReferees}
-                >
-                  <option value="">{loadingReferees ? t('common.loading', 'Loading...') : t('floorball.matches.placeholders.noReferee', '-- No referee (assign later) --')}</option>
-                  {referees.map((ref) => (
-                    <option key={ref.id} value={ref.id}>{ref.person?.fullName ?? ref.id}</option>
-                  ))}
-                </select>
-                <p className="cm-field__hint">
-                  <i className="fas fa-info-circle"></i>
-                  {t('floorball.matches.refereeHint', 'You can assign a referee later from the match details page.')}
-                </p>
               </div>
             </div>
 
@@ -692,6 +724,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
               >
                 {t('common.cancel', 'Cancel')}
               </button>
+
               <button
                 type="submit"
                 className="btn btn-primary"
@@ -704,9 +737,15 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
                 }
               >
                 {loading ? (
-                  <><i className="fas fa-spinner fa-spin"></i> {t('common.creating', 'Creating...')}</>
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i>
+                    {t('common.creating', 'Creating...')}
+                  </>
                 ) : (
-                  <><i className="fas fa-plus"></i> {t('floorball.matches.create.submit', 'Create Match')}</>
+                  <>
+                    <i className="fas fa-plus"></i>
+                    {t('floorball.matches.create.submit', 'Create Match')}
+                  </>
                 )}
               </button>
             </div>

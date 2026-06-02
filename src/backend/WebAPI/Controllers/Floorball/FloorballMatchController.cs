@@ -353,6 +353,39 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Reopens a previously completed floorball match back to InProgress so the operator can
+        /// correct mistakes or continue recording events. Per-match aggregates that were applied
+        /// at completion time (team / player / goalie season stats) are reverted in the handler.
+        /// Playoff matches are rejected because bracket propagation rollback is not supported.
+        /// </summary>
+        [HttpPut("reopen-match/{id:guid}")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> ReopenMatch(Guid id)
+        {
+            _logger.LogInformation("Reopening floorball match with ID: {id}", id);
+
+            ReopenFloorballMatchCommand command = new ReopenFloorballMatchCommand(id);
+
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Reopened floorball match successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to reopen floorball match";
+
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Updates an existing floorball match
         /// </summary>
         /// <param name="request">Update match request</param>
@@ -505,7 +538,7 @@ namespace WebAPI.Controllers.Floorball
                 request.DurationMinutes,
                 request.PeriodNumber,
                 request.TimeInSeconds,
-                string.Empty);
+                request.Description ?? string.Empty);
 
             Result<FloorballMatchDto> result = await _mediator.Send(command);
 
@@ -528,13 +561,22 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordSave([FromBody] RecordSaveEventRequest request)
         {
-            _logger.LogInformation("Recording save for match ID: {matchId}", request.MatchId);
+            int saveCount = request.Count < 1 ? 1 : request.Count;
+            _logger.LogInformation(
+                "Recording {Count} save(s) for match ID: {matchId}", saveCount, request.MatchId);
 
-            string rateKey = $"{request.MatchId}:save:{request.TeamId}:{request.PlayerId}";
-            if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(250)))
+            // Rate-limit the live single-save flow only. Bulk backfills (count > 1) are an
+            // explicit operator action via the bulk dialog, so blocking them with a 429
+            // would defeat the feature's purpose; the handler still records each save as a
+            // distinct event inside one transaction.
+            if (saveCount == 1)
             {
-                return StatusCode(StatusCodes.Status429TooManyRequests,
-                    ApiResponse<FloorballMatchDto>.ErrorResponse("Too many save events; please wait a moment."));
+                string rateKey = $"{request.MatchId}:save:{request.TeamId}:{request.PlayerId}";
+                if (IsRateLimited(rateKey, TimeSpan.FromMilliseconds(250)))
+                {
+                    return StatusCode(StatusCodes.Status429TooManyRequests,
+                        ApiResponse<FloorballMatchDto>.ErrorResponse("Too many save events; please wait a moment."));
+                }
             }
 
             RecordSaveCommand command = new RecordSaveCommand(
@@ -544,7 +586,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.WasInOvertime,
-                request.WasInShootout);
+                request.WasInShootout,
+                saveCount);
 
             Result<FloorballMatchDto> result = await _mediator.Send(command);
 
@@ -819,6 +862,39 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Permanently deletes a floorball match. Only allowed for matches still in the
+        /// <see cref="Domain.Enums.Floorball.FloorballMatchStatus.Scheduled"/> state — matches
+        /// that have started, finished, or been cancelled cannot be deleted because they
+        /// carry recorded events and statistics. Used by the tournament JSON import revert flow.
+        /// </summary>
+        [HttpDelete("{matchId:guid}")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse>> DeleteMatch(Guid matchId)
+        {
+            _logger.LogInformation("Deleting match ID: {matchId}", matchId);
+
+            DeleteFloorballMatchCommand command = new DeleteFloorballMatchCommand(matchId);
+            Result result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+            {
+                return Ok(ApiResponse.SuccessResponse("Match deleted successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to delete match";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
         /// Reactivates a cancelled floorball match back to Scheduled status
         /// </summary>
         [HttpPost("{matchId:guid}/reactivate")]
@@ -1016,6 +1092,65 @@ namespace WebAPI.Controllers.Floorball
             }
             
             string errorMessage = result.Error ?? "Failed to change goalie";
+            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            }
+
+            return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+        }
+
+        /// <summary>
+        /// Replaces the active field player lineup (and optionally the active goalie) for a single
+        /// team in a match. Used by the match-management UI's "Edit lineup" dialog.
+        /// </summary>
+        /// <param name="matchId">The ID of the match.</param>
+        /// <param name="teamId">The ID of the team whose lineup is being updated.</param>
+        /// <param name="request">Player IDs and optional goalie ID.</param>
+        /// <returns>Updated match details.</returns>
+        [HttpPut("{matchId:guid}/team/{teamId:guid}/active-roster")]
+        [Authorize]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> SetActiveRoster(
+            Guid matchId,
+            Guid teamId,
+            [FromBody] SetMatchActiveRosterRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(ApiResponse<FloorballMatchDto>.ErrorResponse("Request body is required."));
+            }
+
+            string? sanitizedGoalieIdForLog = request.GoalieId?.ToString()
+                .Replace("\r", string.Empty, StringComparison.Ordinal)
+                .Replace("\n", string.Empty, StringComparison.Ordinal);
+
+            _logger.LogInformation(
+                "Updating active roster for match {matchId}, team {teamId} ({playerCount} players, goalie={goalieId})",
+                matchId, teamId, request.Players?.Count ?? 0, sanitizedGoalieIdForLog);
+
+            SetMatchActiveRosterCommand command = new SetMatchActiveRosterCommand
+            {
+                MatchId = matchId,
+                TeamId = teamId,
+                Players = request.Players?.Select(p => new ActivePlayerInput
+                {
+                    PlayerId = p.PlayerId,
+                    Position = p.Position,
+                }).ToList() ?? new List<ActivePlayerInput>(),
+                GoalieId = request.GoalieId,
+            };
+
+            Result<FloorballMatchDto> result = await _mediator.Send(command);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(result.Data, "Active roster updated successfully"));
+            }
+
+            string errorMessage = result.Error ?? "Failed to update active roster";
             if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
                 return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));

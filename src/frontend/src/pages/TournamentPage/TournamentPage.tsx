@@ -4,6 +4,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import MatchesList from '../../components/MatchesList/MatchesList';
+import PlannedPlayoffSchedule from '../../components/PlannedPlayoffSchedule';
 import TournamentGroupStandingsTable from '../../components/TournamentGroupStandingsTable/TournamentGroupStandingsTable';
 import TournamentBracket from '../../components/TournamentBracket/TournamentBracket';
 import { floorballTournamentService } from '../../api/floorball/floorballTournamentService';
@@ -21,6 +22,10 @@ import type {
   FloorballTournamentGroupDto,
   FloorballPlayoffBracketDto
 } from '../../types/floorball/tournamentTypes';
+import {
+  formatTournamentGroupLabel,
+  formatTournamentGroupTabLabel
+} from '../../utils/tournamentGroupLabel';
 import './TournamentPage.scss';
 
 type TabType = 'summary' | 'groups' | 'playoffs' | 'statistics' | 'results' | 'fixtures';
@@ -84,12 +89,17 @@ function TournamentPage() {
   };
 
   const [activeTab, setActiveTab] = useState<TabType>(getInitialTab);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(
+    () => searchParams.get('group')
+  );
 
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam && VALID_TABS.includes(tabParam as TabType)) {
       setActiveTab(tabParam as TabType);
     }
+    const groupParam = searchParams.get('group');
+    setSelectedGroupId(groupParam);
   }, [searchParams]);
 
   const [tournament, setTournament] = useState<FloorballTournamentDto | null>(null);
@@ -112,8 +122,17 @@ function TournamentPage() {
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    setSearchParams({ tab });
+    const next: Record<string, string> = { tab };
+    if (tab === 'groups' && selectedGroupId) {
+      next.group = selectedGroupId;
+    }
+    setSearchParams(next);
     setCurrentPage(1);
+  };
+
+  const handleGroupChange = (groupId: string) => {
+    setSelectedGroupId(groupId);
+    setSearchParams({ tab: 'groups', group: groupId });
   };
 
   // Fetch tournament details
@@ -266,6 +285,26 @@ function TournamentPage() {
     return tournament.groups.slice().sort((a, b) => a.order - b.order);
   }, [tournament]);
 
+  const activeGroup = useMemo<FloorballTournamentGroupDto | null>(() => {
+    if (sortedGroups.length === 0) return null;
+    if (selectedGroupId) {
+      const match = sortedGroups.find((g) => g.id === selectedGroupId);
+      if (match) return match;
+    }
+    return sortedGroups[0];
+  }, [sortedGroups, selectedGroupId]);
+
+  useEffect(() => {
+    if (activeTab !== 'groups') return;
+    if (sortedGroups.length === 0) return;
+    const exists = selectedGroupId && sortedGroups.some((g) => g.id === selectedGroupId);
+    if (!exists) {
+      const fallbackId = sortedGroups[0].id;
+      setSelectedGroupId(fallbackId);
+      setSearchParams({ tab: 'groups', group: fallbackId });
+    }
+  }, [activeTab, sortedGroups, selectedGroupId, setSearchParams]);
+
   const tabs: { key: TabType; label: string }[] = [
     { key: 'summary', label: t('leaguePage.tabs.summary', 'Yhteenveto') },
     { key: 'groups', label: t('tournaments.tabs.groups', 'Lohkot') },
@@ -374,16 +413,54 @@ function TournamentPage() {
     const teamsAdvancingPerGroup = tournament.tournamentRules?.hasPlayoffStage
       ? tournament.tournamentRules?.teamsAdvancingPerGroup ?? 0
       : 0;
+    const currentGroup = activeGroup ?? sortedGroups[0];
+    const groupWord = t('tournaments.group', 'Lohko');
+    const hasMultipleGroups = sortedGroups.length > 1;
     return (
       <div className="tournament-page__content">
-        {sortedGroups.map((group) => (
-          <GroupSection
-            key={group.id}
-            competitionId={id}
-            group={group}
-            teamsAdvancingPerGroup={teamsAdvancingPerGroup}
-          />
-        ))}
+        {hasMultipleGroups && (
+          <div className="tournament-page__group-nav">
+            <span className="tournament-page__group-nav-label" id="tournament-group-nav-label">
+              {t('tournaments.selectGroup', 'Valitse lohko')}
+            </span>
+            <nav
+              className="tournament-page__subtabs"
+              aria-labelledby="tournament-group-nav-label"
+            >
+              {sortedGroups.map((group) => {
+                const isActive = currentGroup.id === group.id;
+                const tabLabel = formatTournamentGroupTabLabel(group.name, groupWord);
+                const fullLabel = formatTournamentGroupLabel(group.name, groupWord);
+                return (
+                  <button
+                    key={group.id}
+                    type="button"
+                    className={`tournament-page__subtab ${
+                      isActive ? 'tournament-page__subtab--active' : ''
+                    }`}
+                    onClick={() => handleGroupChange(group.id)}
+                    aria-pressed={isActive}
+                    aria-label={fullLabel}
+                    title={fullLabel}
+                  >
+                    <span className="tournament-page__subtab-primary">{tabLabel}</span>
+                    {tabLabel !== fullLabel && (
+                      <span className="tournament-page__subtab-secondary">{fullLabel}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        )}
+        <GroupSection
+          key={currentGroup.id}
+          competitionId={id}
+          group={currentGroup}
+          groupDisplayName={formatTournamentGroupLabel(currentGroup.name, groupWord)}
+          teamsAdvancingPerGroup={teamsAdvancingPerGroup}
+          showTitle={!hasMultipleGroups}
+        />
       </div>
     );
   };
@@ -473,16 +550,25 @@ function TournamentPage() {
       case 'results':
       case 'fixtures':
         return (
-          <MatchesList
-            variant={activeTab}
-            matchesLoading={matchesLoading}
-            matchesError={matchesError}
-            matches={matches}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            handlePageChange={handlePageChange}
-            groupingMode="none"
-          />
+          <>
+            <MatchesList
+              variant={activeTab}
+              matchesLoading={matchesLoading}
+              matchesError={matchesError}
+              matches={matches}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              handlePageChange={handlePageChange}
+              groupingMode="none"
+            />
+            {activeTab === 'fixtures' && (
+              <PlannedPlayoffSchedule
+                tournament={tournament}
+                collapsible
+                afterMatchList
+              />
+            )}
+          </>
         );
       default:
         return null;
@@ -546,12 +632,18 @@ function TournamentPage() {
 interface GroupSectionProps {
   competitionId: string;
   group: FloorballTournamentGroupDto;
+  groupDisplayName: string;
   teamsAdvancingPerGroup: number;
+  showTitle: boolean;
 }
 
-function GroupSection({ competitionId, group, teamsAdvancingPerGroup }: GroupSectionProps) {
-  const { t } = useTranslation();
-
+function GroupSection({
+  competitionId,
+  group,
+  groupDisplayName,
+  teamsAdvancingPerGroup,
+  showTitle
+}: GroupSectionProps) {
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -597,13 +689,13 @@ function GroupSection({ competitionId, group, teamsAdvancingPerGroup }: GroupSec
 
   return (
     <div className="tournament-page__group-block">
-      <h2 className="tournament-page__group-block-title">
-        {t('tournaments.group', 'Lohko')} {group.name}
-      </h2>
+      {showTitle && (
+        <h2 className="tournament-page__group-block-title">{groupDisplayName}</h2>
+      )}
 
       <TournamentGroupStandingsTable
         groupId={group.id}
-        groupName={group.name}
+        groupName={groupDisplayName}
         teamsAdvancingPerGroup={teamsAdvancingPerGroup}
       />
 

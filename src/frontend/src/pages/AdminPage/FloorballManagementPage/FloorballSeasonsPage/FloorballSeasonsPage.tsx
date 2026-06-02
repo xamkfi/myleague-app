@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
-import BulkActionsBar from '../../../../components/BulkActionsBar/BulkActionsBar';
 import '../../../../styles/AdminTable.scss';
 import './FloorballSeasonsPage.scss';
 import { useSeasonsManagement } from './hooks/useSeasonsManagement';
@@ -12,12 +11,13 @@ import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { LoadingState } from './components/LoadingState';
 import { SeasonsContent } from './components/SeasonsContent';
 import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
-import { floorballSeasonService } from '../../../../api/floorball/floorballSeasonService';
+import { ConfirmCompleteSeasonModal } from './components/ConfirmCompleteSeasonModal';
+import type { FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 
 const FloorballSeasonsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  
+
   const {
     // Data
     seasons,
@@ -26,14 +26,14 @@ const FloorballSeasonsPage = () => {
     operationLoading,
     selectedSeason,
     uniqueDivisions,
-    
+
     // Filter states
     showActiveOnly,
     divisionFilter,
-    
+
     // Modal states
     showDeleteModal,
-    
+
     // Actions
     setDivisionFilter,
     handleShowActiveOnlyChange,
@@ -42,72 +42,62 @@ const FloorballSeasonsPage = () => {
     handleCompleteSeason,
     openDeleteModal,
     closeModals,
-    loadSeasons
   } = useSeasonsManagement();
 
-  // Selection state
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  /**
+   * Tämä state pitää muistissa kauden, jota käyttäjä yrittää päättää.
+   * Jos arvo on null, complete-vahvistusmodaalia ei näytetä.
+   */
+  const [seasonToComplete, setSeasonToComplete] =
+    useState<FloorballSeasonDto | null>(null);
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+  /**
+   * Keskitetty edit-navigointi.
+   * Näin SeasonsContent ja SeasonsTable eivät tiedä reittirakenteesta liikaa.
+   */
+  const handleEditSeason = (seasonId: string): void => {
+    navigate(`/admin/floorball/seasons/${seasonId}/edit`);
   };
 
-  const selectAll = () => {
-    setSelectedIds(new Set(seasons.map((s) => s.id)));
+  /**
+   * Avaa vahvistusmodaalin seasonin päättämistä varten.
+   * Tässä tehdään myös kevyt tarkistus, ettei päättynyttä tai epäaktiivista kautta
+   * yritetä päättää uudestaan käyttöliittymästä käsin.
+   */
+  const openCompleteSeasonModal = (season: FloorballSeasonDto): void => {
+    if (season.isCompleted || !season.isActive) return;
+
+    setSeasonToComplete(season);
   };
 
-  const clearSelection = () => {
-    setSelectedIds(new Set());
+  /**
+   * Sulkee complete-vahvistusmodaalin.
+   * Jos operaatio on juuri käynnissä, sulkeminen estetään,
+   * jotta käyttäjä ei katkaise käyttöliittymän tilaa kesken tallennuksen.
+   */
+  const closeCompleteSeasonModal = (): void => {
+    if (operationLoading === seasonToComplete?.id) return;
+
+    setSeasonToComplete(null);
   };
 
-  // Bulk actions
-  const handleBulkActivate = async () => {
+  /**
+   * Suorittaa varsinaisen kauden päättämisen vasta käyttäjän vahvistuksen jälkeen.
+   * Vanhaa handleCompleteSeason-funktiota ei poisteta, vaan sitä käytetään turvallisemmin
+   * modaalin confirm-painikkeen takana.
+   */
+  const confirmCompleteSeason = async (): Promise<void> => {
+    if (!seasonToComplete) return;
+
     try {
-      for (const id of selectedIds) {
-        const season = seasons.find((s) => s.id === id);
-        if (season && !season.isActive && !season.isCompleted) {
-          await floorballSeasonService.activate(id);
-        }
-      }
-      setSelectedIds(new Set());
-      await loadSeasons();
+      await Promise.resolve(handleCompleteSeason(seasonToComplete));
+      setSeasonToComplete(null);
     } catch (err) {
-      console.error('Bulk activate failed:', err);
-    }
-  };
-
-  const handleBulkDeactivate = async () => {
-    try {
-      for (const id of selectedIds) {
-        const season = seasons.find((s) => s.id === id);
-        if (season && season.isActive && !season.isCompleted) {
-          await floorballSeasonService.deactivate(id);
-        }
-      }
-      setSelectedIds(new Set());
-      await loadSeasons();
-    } catch (err) {
-      console.error('Bulk deactivate failed:', err);
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    try {
-      for (const id of selectedIds) {
-        await floorballSeasonService.delete(id);
-      }
-      setSelectedIds(new Set());
-      await loadSeasons();
-    } catch (err) {
-      console.error('Bulk delete failed:', err);
+      /**
+       * Jos hookin sisäinen complete-toiminto joskus heittää virheen,
+       * modaali jätetään auki, jotta käyttäjä voi yrittää uudelleen tai peruuttaa.
+       */
+      console.error('Complete season failed:', err);
     }
   };
 
@@ -122,7 +112,6 @@ const FloorballSeasonsPage = () => {
   return (
     <PageTemplate title={t('floorball.seasons.title', 'Manage Seasons')}>
       <div className="floorball-seasons-container">
-
         <SeasonsPageHeader
           seasonsCount={seasons.length}
           onCreateSeason={() => navigate('/admin/floorball/seasons/create')}
@@ -139,52 +128,35 @@ const FloorballSeasonsPage = () => {
           uniqueDivisions={uniqueDivisions}
         />
 
-        {/* Bulk Actions Bar */}
-        <BulkActionsBar
-          selectedCount={selectedIds.size}
-          totalCount={seasons.length}
-          onSelectAll={selectAll}
-          onClearSelection={clearSelection}
-          actions={[
-            {
-              label: t('floorball.seasons.actions.bulkActivate', 'Activate ({{count}})', { count: selectedIds.size }),
-              onClick: handleBulkActivate,
-              variant: 'status',
-            },
-            {
-              label: t('floorball.seasons.actions.bulkDeactivate', 'Deactivate ({{count}})', { count: selectedIds.size }),
-              onClick: handleBulkDeactivate,
-              variant: 'status',
-            },
-            {
-              label: t('floorball.seasons.actions.bulkDelete', 'Delete ({{count}})', { count: selectedIds.size }),
-              onClick: handleBulkDelete,
-              variant: 'danger',
-            },
-          ]}
-        />
-
+        {/*
+          BulkActionsBar on poistettu, koska season-listauksessa ei enää käytetä multiselectiä.
+          Complete-toiminto puolestaan ohjataan nyt vahvistusmodaalin kautta.
+        */}
         <div className="admin-table__wrapper">
           <SeasonsContent
             seasons={seasons}
-            onEdit={(season) => navigate(`/admin/floorball/seasons/${season.id}/edit`)}
+            onEdit={(season) => handleEditSeason(season.id)}
             onDelete={openDeleteModal}
             onActivateToggle={handleActivateToggle}
-            onComplete={handleCompleteSeason}
+            onComplete={openCompleteSeasonModal}
             operationLoading={operationLoading}
-            selectedIds={selectedIds}
-            onToggleSelect={toggleSelect}
-            onSelectAll={selectAll}
-            onClearSelection={clearSelection}
           />
         </div>
 
-        {/* Delete Modal */}
         {showDeleteModal && selectedSeason && (
           <ConfirmDeleteModal
             season={selectedSeason}
             onConfirm={handleDeleteSeason}
             onCancel={closeModals}
+          />
+        )}
+
+        {seasonToComplete && (
+          <ConfirmCompleteSeasonModal
+            season={seasonToComplete}
+            loading={operationLoading === seasonToComplete.id}
+            onConfirm={confirmCompleteSeason}
+            onCancel={closeCompleteSeasonModal}
           />
         )}
       </div>

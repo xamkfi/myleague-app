@@ -163,7 +163,30 @@ public interface IFloorballMatchRepository
     /// </summary>
     /// <param name="id">The ID of the match to delete</param>
     Task DeleteAsync(Guid id);
-    
+
+    /// <summary>
+    /// Bulk-deletes every match (and its directly dependent rows) that belongs to the given
+    /// competition. Used by the tournament-delete handler when a Draft tournament is removed so
+    /// that the <c>FloorballMatch.TournamentGroupId</c> RESTRICT FK doesn't block the cascade
+    /// from <c>FloorballCompetition → FloorballTournamentGroup</c>.
+    ///
+    /// Implementation must:
+    ///   • Clean up <c>FloorballMatchTeamStatistics</c> rows manually (no DB-level FK because
+    ///     the Match navigation is <c>Ignored</c> in the EF configuration).
+    ///   • Break any <c>NextMatchId</c> self-references first so the bracket can collapse from
+    ///     either end without tripping the self-reference RESTRICT FK.
+    ///   • Issue a single bulk <c>DELETE</c> for the match rows themselves, letting the DB cascade
+    ///     events / period scores / officials via the configured Cascade FKs.
+    ///
+    /// Runs outside the change tracker (uses <c>ExecuteDeleteAsync</c>) and persists immediately —
+    /// callers do NOT need to follow up with <c>SaveChangesAsync</c> for this specific operation,
+    /// but should still call it for any other tracked changes.
+    /// </summary>
+    /// <param name="competitionId">Competition (tournament / season) id whose matches should be wiped.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Number of <c>FloorballMatch</c> rows deleted.</returns>
+    Task<int> DeleteAllByCompetitionIdAsync(Guid competitionId, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Checks if a floorball match exists
     /// </summary>

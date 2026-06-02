@@ -2,6 +2,7 @@ import React from 'react';
 import './MatchRow.scss';
 import ResultUnknown from '../MatchResultIcons/ResultUnknown';
 import { formatMatchDateTime } from '../../utils/helpers';
+import { FloorballMatchStatus } from '../../types/floorball/floorballTypes';
 import { useNavigate } from 'react-router-dom';
 
 export interface MatchRowProps {
@@ -18,6 +19,21 @@ export interface MatchRowProps {
   statusComponent?: React.ReactNode;
   onClick?: () => void;
   className?: string;
+  /**
+   * Match lifecycle status. Drives whether the score column shows numeric values
+   * (including 0-0 for live matches that just started) or placeholder dashes for
+   * matches that have not started yet. Defaults to `Scheduled` for callers that
+   * don't have status info (e.g. planned playoff slots).
+   */
+  status?: FloorballMatchStatus;
+  /**
+   * Marks the row as a non-clickable placeholder (e.g. a pre-defined playoff slot whose
+   * real match hasn't been generated yet). Disables navigation, mutes the row visually
+   * and surfaces an explanatory tooltip when supplied.
+   */
+  isPlaceholder?: boolean;
+  /** Tooltip text shown on hover when `isPlaceholder` is true. */
+  placeholderTooltip?: string;
 }
 
 export default function MatchRow({
@@ -32,24 +48,38 @@ export default function MatchRow({
   periodCount = 3,
   periodScores,
   statusComponent,
-  className = ''
+  className = '',
+  status = FloorballMatchStatus.Scheduled,
+  isPlaceholder = false,
+  placeholderTooltip
 }: MatchRowProps) {
   const [formattedDate, formattedTime] = formatMatchDateTime(scheduledDateTime);
   const computedPeriodCount = periodScores ? Math.max(...Object.keys(periodScores).map(k => Number(k))) : periodCount;
   const periods = Array.from({ length: computedPeriodCount }, (_, i) => i + 1);
   const navigate = useNavigate();
 
-  const homeWon = homeScore > awayScore;
-  const awayWon = awayScore > homeScore;
+  // Once a match has started (live) or finished, always show the numeric score so
+  // viewers immediately see that the match is underway — even when it's still 0-0.
+  // Matches that haven't started yet keep the dash placeholder.
+  const hasStarted =
+    status === FloorballMatchStatus.InProgress || status === FloorballMatchStatus.Completed;
+
+  const homeWon = hasStarted && homeScore > awayScore;
+  const awayWon = hasStarted && awayScore > homeScore;
 
   const handleClick = () => {
+    if (isPlaceholder) {
+      return;
+    }
     navigate(`/match/${id}`);
   };
 
   return (
     <div
-      className={`match-row ${className}`}
+      className={`match-row ${isPlaceholder ? 'match-row--placeholder' : ''} ${className}`.trim()}
       onClick={handleClick}
+      title={isPlaceholder ? placeholderTooltip : undefined}
+      aria-disabled={isPlaceholder || undefined}
     >
       {/* Date */}
       <div className="match-row-date">
@@ -77,10 +107,10 @@ export default function MatchRow({
       {/* Total score */}
       <div className="match-row-total-score-container">
         <div className={`match-row-home-total-score ${homeWon ? 'match-row-score-winner' : ''}`}>
-          {homeScore > 0 ? homeScore : '-'}
+          {hasStarted ? homeScore : '-'}
         </div>
         <div className={`match-row-away-total-score ${awayWon ? 'match-row-score-winner' : ''}`}>
-          {awayScore > 0 ? awayScore : '-'}
+          {hasStarted ? awayScore : '-'}
         </div>
       </div>
 

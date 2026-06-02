@@ -35,28 +35,14 @@
 }
 
 .actions-dropdown__menu {
-  position: absolute;
-  top: calc(100% + 0.35rem);
   min-width: 160px;
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
   padding: 0.35rem 0;
-  z-index: 20;
-
-  &--left {
-    right: 0;
-  }
-
-  &--right {
-    left: 0;
-  }
-
-  &--center {
-    left: 50%;
-    transform: translateX(-50%);
-  }
+  // Keep dropdown above other UI elements
+  z-index: 99999;
 }
 
 .actions-dropdown__item {

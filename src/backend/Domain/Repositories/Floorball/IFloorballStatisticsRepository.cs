@@ -36,6 +36,17 @@ public interface IFloorballStatisticsRepository
     Task<List<FloorballTeamSeasonStatistics>> GetTeamStandingsAsync(Guid competitionId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all team season statistics rows the team has accumulated across every competition
+    /// they have participated in (regular seasons + tournaments). Used to build aggregated
+    /// "career style" team statistics on the team page so tournament games and points are not
+    /// dropped just because the team page is keyed on the regular season.
+    /// </summary>
+    /// <param name="teamId">The team ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Per-competition team season statistics rows for the team</returns>
+    Task<List<FloorballTeamSeasonStatistics>> GetTeamSeasonStatisticsForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds or updates team season statistics
     /// </summary>
     /// <param name="statistics">The statistics to save</param>
@@ -73,6 +84,16 @@ public interface IFloorballStatisticsRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Collection of player season statistics for the team</returns>
     Task<List<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsByTeamAndCompetitionAsync(Guid teamId, Guid competitionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets every per-player season statistics row that belongs to <paramref name="teamId"/>
+    /// across all competitions the team has played in. Callers typically aggregate the rows by
+    /// player ID to surface tournament games / points on the team roster view.
+    /// </summary>
+    /// <param name="teamId">The team ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Per-competition player season statistics rows for the team</returns>
+    Task<List<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets top scorers for a specific competition

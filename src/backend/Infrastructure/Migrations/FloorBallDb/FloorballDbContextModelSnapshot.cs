@@ -373,6 +373,63 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.ToTable("FloorballMatches", "floorball");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatchActivePlayer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasComment("Unique identifier for the entity");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was created");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the match this lineup entry belongs to");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasComment("ID of the player marked as an active field player");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasComment("Per-match field role: Forward, Center or Defender");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid")
+                        .HasComment("Team ID (always equals the match's HomeTeamId or AwayTeamId)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("UTC timestamp when the entity was last updated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_FloorballMatchActivePlayer_CreatedAt");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("UpdatedAt")
+                        .HasDatabaseName("IX_FloorballMatchActivePlayer_UpdatedAt")
+                        .HasFilter("\"UpdatedAt\" IS NOT NULL");
+
+                    b.HasIndex("CreatedAt", "UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_FloorballMatchActivePlayer_Audit");
+
+                    b.HasIndex("MatchId", "TeamId")
+                        .HasDatabaseName("IX_FloorballMatchActivePlayer_Match_Team");
+
+                    b.HasIndex("MatchId", "TeamId", "PlayerId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballMatchActivePlayer_Match_Team_Player");
+
+                    b.ToTable("FloorballMatchActivePlayers", "floorball");
+                });
+
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatchEvent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1039,6 +1096,9 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("RequestedJerseyNumber")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("TeamId")
                         .HasColumnType("uuid");
 
@@ -1376,6 +1436,10 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("_playoffSchedule")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("PlayoffSchedule");
+
                     b.HasDiscriminator().HasValue("Tournament");
                 });
 
@@ -1667,6 +1731,21 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Navigation("HomeTeam");
 
                     b.Navigation("MatchRules")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatchActivePlayer", b =>
+                {
+                    b.HasOne("Domain.Entities.Floorball.FloorballMatch", null)
+                        .WithMany("ActivePlayers")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Floorball.FloorballPlayer", null)
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -1966,6 +2045,8 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballMatch", b =>
                 {
+                    b.Navigation("ActivePlayers");
+
                     b.Navigation("Events");
 
                     b.Navigation("PeriodScores");

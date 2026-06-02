@@ -111,11 +111,28 @@ namespace Application.Features.Common.Persons.Mappings
 
 
         /// <summary>
-        /// Maps an AddressDto to an Address value object
+        /// Maps an AddressDto to an Address value object.
+        ///
+        /// Returns <c>null</c> when the DTO has no actionable data (every part is blank). EF Core
+        /// stores the owned-type Address as all-NULL columns in that case, mirroring the same
+        /// "empty block → no row" convention used by <c>ToContactInfo</c>. This keeps tournament
+        /// imports that never carry address info from triggering "Country is required" errors.
         /// </summary>
         public static Address? ToAddress(AddressDto? dto)
         {
             if (dto == null) return null;
+
+            bool hasAny =
+                !string.IsNullOrWhiteSpace(dto.Street1) ||
+                !string.IsNullOrWhiteSpace(dto.Street2) ||
+                !string.IsNullOrWhiteSpace(dto.City) ||
+                !string.IsNullOrWhiteSpace(dto.PostalCode) ||
+                !string.IsNullOrWhiteSpace(dto.Country);
+            if (!hasAny)
+            {
+                return null;
+            }
+
             return new Address(
                 dto.Street1,
                 dto.City,
@@ -141,15 +158,28 @@ namespace Application.Features.Common.Persons.Mappings
         }
 
         /// <summary>
-        /// Maps a ContactInfoDto to a ContactInfo value object
+        /// Maps a ContactInfoDto to a ContactInfo value object.
+        ///
+        /// Returns <c>null</c> when the DTO has no actionable data (no email AND no phones).
+        /// EF Core treats a null owned-type instance as "all columns NULL", which keeps the DB
+        /// row tidy for tournament-imported players that don't carry contact details at all.
         /// </summary>
         public static ContactInfo? ToContactInfo(ContactInfoDto? dto)
         {
             if (dto == null) return null;
+
+            bool hasEmail = !string.IsNullOrWhiteSpace(dto.Email);
+            bool hasPhone = !string.IsNullOrWhiteSpace(dto.Phone);
+            bool hasAltPhone = !string.IsNullOrWhiteSpace(dto.AlternativePhone);
+            if (!hasEmail && !hasPhone && !hasAltPhone)
+            {
+                return null;
+            }
+
             return new ContactInfo(
-                dto.Email ?? string.Empty,
-                dto.Phone,
-                dto.AlternativePhone
+                hasEmail ? dto.Email : null,
+                hasPhone ? dto.Phone : null,
+                hasAltPhone ? dto.AlternativePhone : null
             );
         }
 

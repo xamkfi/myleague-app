@@ -95,6 +95,52 @@
         }
       }
 
+      .reopen-match-button,
+      .close-modal-button {
+        box-sizing: border-box;
+        height: 40px;
+        padding: 8px 16px;
+        background: #FBFBFD;
+        color: $color-neutral-black;
+        border: 1px solid $color-neutral-medium-grey;
+        border-radius: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+        &:hover {
+          background: #fff;
+          border-color: $color-neutral-black;
+        }
+
+        &:focus-visible {
+          outline: 2px solid $color-blue-deep;
+          outline-offset: 2px;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+
+      .reopen-match-button {
+        // Slight emphasis so users notice they can recover an accidentally finished match
+        color: $color-blue-deep;
+        border-color: $color-blue-deep;
+
+        &:hover {
+          background: #fff;
+          border-color: $color-blue-deep;
+        }
+      }
+
     }
 
     .swap-sides-button {

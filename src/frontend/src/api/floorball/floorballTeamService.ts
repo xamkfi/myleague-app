@@ -68,18 +68,32 @@ export const floorballTeamService = {
       },
       body: JSON.stringify(data),
     });
-    
-    if (!response.ok) {
-      throw new Error('Failed to create floorball team');
+
+    // Read the body regardless of status so server-side validation messages reach the caller.
+    let apiResponse: ApiResponse<FloorballTeam> | null = null;
+    try {
+      apiResponse = await response.json();
+    } catch {
+      apiResponse = null;
     }
-    
-    const apiResponse: ApiResponse<FloorballTeam> = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(
+        apiResponse ?? response,
+        `Failed to create floorball team (HTTP ${response.status})`,
+      );
+      throw new Error(errorMessage);
+    }
+
+    if (!apiResponse) {
+      throw new Error('Failed to create floorball team — empty response body.');
+    }
+
     if (!apiResponse.success) {
       const errorMessage = await parseErrorResponse(apiResponse, 'Failed to create floorball team');
-
       throw new Error(errorMessage || 'Failed to create floorball team');
     }
-    
+
     return apiResponse.data;
   },
 
@@ -145,15 +159,25 @@ export const floorballTeamService = {
    * Add a player to a team with position and jersey number
    */
   addPlayerToTeam: async (
-    teamId: string, 
-    playerId: string, 
-    position: FloorballPosition, 
-    jerseyNumber?: number
+    teamId: string,
+    playerId: string,
+    position: FloorballPosition,
+    jerseyNumber?: number,
+    /**
+     * Optional originally-requested jersey number. Set this when the caller wanted a
+     * specific number but had to substitute another (e.g. the tournament import flow
+     * picks the next free number on a conflict). The backend stores it so the roster
+     * UI can highlight the row for admin review.
+     */
+    requestedJerseyNumber?: number
   ): Promise<FloorballTeam> => {
     const searchParams = new URLSearchParams();
     searchParams.append('position', position);
     if (jerseyNumber !== undefined) {
       searchParams.append('jerseyNumber', jerseyNumber.toString());
+    }
+    if (requestedJerseyNumber !== undefined && requestedJerseyNumber !== jerseyNumber) {
+      searchParams.append('requestedJerseyNumber', requestedJerseyNumber.toString());
     }
 
     const response = await authFetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}?${searchParams.toString()}`, {

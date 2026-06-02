@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { PersonFormData, EnhancedPersonFormData, Person } from '../../../../../types/admin/personTypes';
-import { PersonRole } from '../../../../../types/admin/personTypes';
+import {
+  PersonRole,
+  EMPTY_PERSON_FORM_ADDRESS,
+  EMPTY_PERSON_FORM_CONTACT_INFO,
+  toPersonFormAddress,
+  toPersonFormContactInfo,
+} from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
 import { floorballPlayerService } from '../../../../../api/floorball/floorballPlayerService';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
@@ -64,18 +70,8 @@ const PersonForm = ({
       birthDate: '',
       isRegistered: false,
       role: PersonRole.User,
-      address: {
-        street1: '',
-        street2: null,
-        city: '',
-        postalCode: '',
-        country: ''
-      },
-      contactInfo: {
-        email: '',
-        phone: '',
-        alternativePhone: null
-      },
+      address: { ...EMPTY_PERSON_FORM_ADDRESS },
+      contactInfo: { ...EMPTY_PERSON_FORM_CONTACT_INFO },
       teamId: undefined,
       position: undefined,
       jerseyNumber: undefined
@@ -85,8 +81,8 @@ const PersonForm = ({
       return {
         ...defaultData,
         ...initialData,
-        address: { ...defaultData.address, ...initialData.address },
-        contactInfo: { ...defaultData.contactInfo, ...initialData.contactInfo }
+        address: toPersonFormAddress(initialData.address ?? defaultData.address),
+        contactInfo: toPersonFormContactInfo(initialData.contactInfo ?? defaultData.contactInfo),
       };
     }
     
@@ -121,18 +117,8 @@ const PersonForm = ({
           birthDate: formattedDate,
           isRegistered: person.isRegistered,
           role: person.role,
-          address: person.address || {
-            street1: '',
-            street2: null,
-            city: '',
-            postalCode: '',
-            country: ''
-          },
-          contactInfo: person.contactInfo || {
-            email: '',
-            phone: '',
-            alternativePhone: null
-          },
+          address: toPersonFormAddress(person.address),
+          contactInfo: toPersonFormContactInfo(person.contactInfo),
           teamId: undefined,
           position: undefined,
           jerseyNumber: undefined

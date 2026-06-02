@@ -86,7 +86,10 @@ public static class FloorballTeamMapper
                     Goals: p.Goals,
                     Assists: p.Assists,
                     PenaltyMinutes: p.PenaltyMinutes,
-                    Age: age
+                    Age: age,
+                    // Only surface when there's actually a mismatch — the UI uses this to drive
+                    // the "needs admin review" highlight on the roster page.
+                    RequestedJerseyNumber: p.HasJerseyNumberSubstituted ? p.RequestedJerseyNumber : null
                 );
             }).ToList().AsReadOnly()
         );
@@ -140,7 +143,7 @@ public static class FloorballTeamMapper
             club,
             command.HomeArena,
             command.PrimaryJerseyColor,
-            command.TeamCategory,
+            command.TeamCategory ?? Domain.Enums.Common.TeamCategory.Adult,
             command.SecondaryJerseyColor,
             command.ShortName
         );
@@ -163,8 +166,12 @@ public static class FloorballTeamMapper
         team.UpdateName(command.Name);
         team.UpdateDivision(command.DivisionId);
         team.UpdateHomeArena(command.HomeArena);
-        team.UpdateJerseyColors(command.PrimaryJerseyColor, command.SecondaryJerseyColor!);
+        team.UpdateJerseyColors(command.PrimaryJerseyColor, command.SecondaryJerseyColor);
         team.UpdateShortName(command.ShortName);
+        if (command.TeamCategory.HasValue)
+        {
+            team.UpdateTeamCategory(command.TeamCategory.Value);
+        }
         
         // Update logo URL
         Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;

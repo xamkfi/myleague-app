@@ -16,7 +16,7 @@ import type {
 } from '../../../../../types/floorball/tournamentTypes';
 import { type FloorballTeam, TeamCategory, type FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 import TournamentBracket from '../../../../../components/TournamentBracket/TournamentBracket';
-import TournamentLifecycleBar, { type LifecycleAction } from './components/TournamentLifecycleBar';
+import TournamentLifecycleBar, { type LifecycleAction, type LifecycleMoreAction } from './components/TournamentLifecycleBar';
 import TournamentLifecycleConfirmModal from './components/TournamentLifecycleConfirmModal';
 import TournamentMatchesTab from './components/TournamentMatchesTab';
 import '../../FloorballSeasonsPage/EditSeasonPage/EditSeasonPage.scss';
@@ -500,6 +500,25 @@ const EditTournamentPage = () => {
     }
   };
 
+  // ── Non-lifecycle "more" actions (delete) ──
+  // Kept separate from `handleLifecycleAction` because deleting hits a different API and the
+  // happy path navigates the user back to the tournaments list rather than re-fetching the
+  // (now non-existent) tournament.
+  const handleLifecycleMoreAction = async (action: LifecycleMoreAction): Promise<void> => {
+    if (!competitionId) return;
+    if (action !== 'delete') return;
+    setLifecycleLoading(true);
+    setError(null);
+    try {
+      await floorballTournamentService.delete(competitionId);
+      navigate('/admin/floorball/tournaments');
+    } catch (err) {
+      setError(parseApiError(err));
+    } finally {
+      setLifecycleLoading(false);
+    }
+  };
+
   // ── Computed ──
   const allTournamentTeamIds = useMemo(() => {
     const ids = new Set<string>();
@@ -556,7 +575,7 @@ const EditTournamentPage = () => {
       )}
 
       <div className="edit-season-container">
-        <div className="edit-season-back edit-season-back--with-actions">
+        <div className="edit-season-back">
           <button
             type="button"
             className="back-button"
@@ -564,22 +583,6 @@ const EditTournamentPage = () => {
           >
             <span aria-hidden="true">&larr;</span>{' '}
             {t('floorball.tournaments.backToList', 'Back to Tournaments')}
-          </button>
-          <button
-            type="button"
-            className="back-button back-button--primary"
-            onClick={() =>
-              navigate(`/admin/floorball/tournaments/matches?competitionId=${tournament.id}`)
-            }
-            title={t(
-              'floorball.tournaments.actions.manageMatches',
-              'Hallitse turnauksen otteluita'
-            )}
-          >
-            {t(
-              'floorball.tournaments.actions.manageMatches',
-              'Hallitse turnauksen otteluita'
-            )}
           </button>
         </div>
         {/* Tab Navigation */}
@@ -629,6 +632,7 @@ const EditTournamentPage = () => {
                 matchesError={matchesError}
                 loading={lifecycleLoading}
                 onAction={handleLifecycleAction}
+                onMoreAction={handleLifecycleMoreAction}
               />
 
               <form onSubmit={handleSubmit} className="edit-season-form">
@@ -1179,7 +1183,10 @@ const EditTournamentPage = () => {
           )}
 
           {activeTab === 'matches' && (
-            <TournamentMatchesTab tournamentId={tournament.id} />
+            <TournamentMatchesTab
+              tournament={tournament}
+              onTournamentUpdated={(updated): void => setTournament(updated)}
+            />
           )}
 
           {activeTab === 'bracket' && showBracketTab && (
@@ -1196,7 +1203,14 @@ const EditTournamentPage = () => {
                 </div>
               )}
               {!bracketLoading && !bracketError && bracket && bracket.rounds.length > 0 && (
-                <TournamentBracket bracket={bracket} compact linkMode="admin" />
+                <TournamentBracket
+                  bracket={bracket}
+                  compact
+                  linkMode="admin"
+                  /* Keep the user inside the tournament edit context when they Close the */
+                  /* match-management view they just opened from the bracket.            */
+                  adminReturnTo={`/admin/floorball/tournaments/${competitionId}/edit?tab=bracket`}
+                />
               )}
               {!bracketLoading && !bracketError && (!bracket || bracket.rounds.length === 0) && (
                 <div style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>

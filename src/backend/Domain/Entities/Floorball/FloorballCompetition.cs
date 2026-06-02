@@ -77,8 +77,10 @@ public abstract class FloorballCompetition : BaseEntity
         ArgumentNullException.ThrowIfNull(name);
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Competition name cannot be null or empty.", nameof(name));
-        if (endDate <= startDate)
-            throw new ArgumentException("End date must be after start date.", nameof(endDate));
+        // Same-day competitions are allowed (one-day tournaments are common); only reject when
+        // the range is inverted.
+        if (endDate < startDate)
+            throw new ArgumentException("End date cannot be before start date.", nameof(endDate));
 
         Id = Guid.NewGuid();
         Name = name;
@@ -100,8 +102,8 @@ public abstract class FloorballCompetition : BaseEntity
             throw new InvalidOperationException("Cannot update a completed competition.");
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Competition name cannot be null or empty.", nameof(name));
-        if (endDate <= startDate)
-            throw new ArgumentException("End date must be after start date.", nameof(endDate));
+        if (endDate < startDate)
+            throw new ArgumentException("End date cannot be before start date.", nameof(endDate));
 
         Name = name;
         StartDate = startDate;
@@ -115,8 +117,8 @@ public abstract class FloorballCompetition : BaseEntity
     {
         if (IsCompleted)
             throw new InvalidOperationException("Cannot update a completed competition.");
-        if (endDate <= startDate)
-            throw new ArgumentException("End date must be after start date.", nameof(endDate));
+        if (endDate < startDate)
+            throw new ArgumentException("End date cannot be before start date.", nameof(endDate));
 
         StartDate = startDate;
         EndDate = endDate;

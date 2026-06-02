@@ -1,0 +1,530 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
+.eard-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 24px;
+}
+
+.eard-dialog {
+  background: $color-white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: min(1200px, 100%);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.eard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid $color-neutral-medium-grey;
+
+  &__title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: 18px;
+    color: $color-neutral-black;
+  }
+
+  &__close {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: $color-neutral-dark-grey;
+    font-size: 18px;
+    padding: 4px 8px;
+    border-radius: 4px;
+
+    &:hover:not(:disabled) {
+      background: $color-neutral-light-grey;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.eard-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.eard-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 8px;
+  background: $color-neutral-white;
+  min-width: 0;
+
+  &__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  &__team {
+    margin: 0;
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: 16px;
+    color: $color-neutral-black;
+  }
+
+  &__count {
+    color: $color-neutral-dark-grey;
+    font-size: 12px;
+  }
+}
+
+.eard-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__label {
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: 13px;
+    color: $color-neutral-black;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__select {
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: 4px;
+    background: $color-white;
+    font-family: $font-family-body;
+    font-size: 14px;
+    color: $color-neutral-black;
+
+    &:focus {
+      outline: 2px solid $color-blue-deep;
+      outline-offset: -2px;
+    }
+  }
+
+  &__warning {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: $color-yellow-muted;
+    font-size: 12px;
+
+    i {
+      font-size: 12px;
+    }
+  }
+}
+
+.eard-required-marker {
+  color: $color-red-primary;
+  font-weight: map.get($font-weights, 'bold');
+}
+
+.eard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: $color-neutral-dark-grey;
+  }
+
+  &__count {
+    color: $color-blue-deep;
+    font-size: 12px;
+    font-weight: map.get($font-weights, 'medium');
+  }
+}
+
+.eard-role-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eard-role-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 6px;
+  background: $color-neutral-white;
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: map.get($font-weights, 'semibold');
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: $color-neutral-dark-grey;
+  }
+
+  &__title {
+    color: $color-neutral-black;
+  }
+
+  &__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: $color-blue-deep;
+    color: $color-white;
+    font-size: 11px;
+    font-weight: map.get($font-weights, 'semibold');
+  }
+
+  &__empty {
+    padding: 6px 0 2px;
+    color: $color-neutral-dark-grey;
+    font-size: 12px;
+    font-style: italic;
+  }
+}
+
+.eard-selected-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.eard-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 4px 10px;
+  background: $color-neutral-light-grey;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 999px;
+  font-size: 12px;
+  font-family: $font-family-body;
+  color: $color-neutral-black;
+
+  &__jersey {
+    color: $color-blue-deep;
+    font-weight: map.get($font-weights, 'semibold');
+  }
+
+  &__name {
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__remove {
+    border: none;
+    background: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: $color-red-primary;
+      color: $color-white;
+    }
+  }
+}
+
+.eard-selected-empty {
+  padding: 12px;
+  text-align: center;
+  color: $color-neutral-dark-grey;
+  font-size: 12px;
+  font-style: italic;
+  background: $color-neutral-white;
+  border: 1px dashed $color-neutral-medium-grey;
+  border-radius: 4px;
+}
+
+.eard-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.eard-filters {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+
+  &__search {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+
+    i:first-child {
+      position: absolute;
+      left: 10px;
+      color: $color-placeholder;
+      font-size: 12px;
+    }
+
+    input {
+      width: 100%;
+      height: 36px;
+      padding: 0 32px 0 30px;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: 4px;
+      background: $color-white;
+      font-family: $font-family-body;
+      font-size: 13px;
+
+      &:focus {
+        outline: 2px solid $color-blue-deep;
+        outline-offset: -2px;
+      }
+    }
+  }
+
+  &__clear {
+    position: absolute;
+    right: 8px;
+    border: none;
+    background: transparent;
+    color: $color-neutral-dark-grey;
+    cursor: pointer;
+    padding: 4px;
+
+    &:hover {
+      color: $color-neutral-black;
+    }
+  }
+
+  &__category {
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: 4px;
+    background: $color-white;
+    font-family: $font-family-body;
+    font-size: 13px;
+    min-width: 140px;
+  }
+}
+
+.eard-table-wrapper {
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 4px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.eard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: $font-family-body;
+  font-size: 13px;
+
+  thead {
+    position: sticky;
+    top: 0;
+    background: $color-neutral-light-grey;
+    z-index: 1;
+  }
+
+  th,
+  td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid $color-neutral-medium-grey;
+    vertical-align: middle;
+  }
+
+  th {
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-neutral-dark-grey;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: $color-neutral-white;
+  }
+
+  &__jersey {
+    width: 60px;
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-deep;
+  }
+
+  &__action {
+    width: 220px;
+    text-align: right;
+  }
+}
+
+.eard-add-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.eard-empty {
+  padding: 32px;
+  text-align: center;
+  color: $color-neutral-dark-grey;
+  font-size: 13px;
+}
+
+.eard-player-name {
+  font-weight: map.get($font-weights, 'medium');
+}
+
+.eard-position-badge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: $color-neutral-light-grey;
+  color: $color-neutral-dark-grey;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.eard-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid $color-neutral-medium-grey;
+  background: $color-neutral-white;
+}
+
+.eard-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 4px;
+  font-family: $font-family-body;
+  font-weight: map.get($font-weights, 'semibold');
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  &--ghost {
+    background: $color-white;
+    color: $color-neutral-dark-grey;
+    border-color: $color-neutral-medium-grey;
+
+    &:hover:not(:disabled) {
+      background: $color-neutral-light-grey;
+    }
+  }
+
+  &--primary {
+    background: $color-blue-deep;
+    color: $color-white;
+    border-color: $color-blue-deep;
+
+    &:hover:not(:disabled) {
+      background: $color-blue-darkest;
+      border-color: $color-blue-darkest;
+    }
+  }
+
+  &--sm {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  &--add {
+    border-color: transparent;
+    color: $color-white;
+  }
+
+  &--add-defender {
+    background: #1f6feb;
+
+    &:hover:not(:disabled) {
+      background: #1158c7;
+    }
+  }
+
+  &--add-forward {
+    background: #d97706;
+
+    &:hover:not(:disabled) {
+      background: #b8620b;
+    }
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .eard-body {
+    grid-template-columns: 1fr;
+  }
+}

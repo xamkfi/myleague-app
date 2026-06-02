@@ -14,5 +14,5 @@ namespace Application.Features.Common.Shared.DTOs;
         string? Street2,
         string? City,
         string? PostalCode,
-        string Country);
+        string? Country);
 

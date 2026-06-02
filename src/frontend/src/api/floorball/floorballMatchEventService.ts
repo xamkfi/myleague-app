@@ -16,6 +16,12 @@ export interface FloorballGoalEventDto {
   timeInSeconds: number;
   wasInOvertime: boolean;
   wasInShootout: boolean;
+  /**
+   * Optional goal type. The backend's `JsonStringEnumConverter` serializes the
+   * `FloorballGoalType` enum as its string name (e.g. `"PenaltyShot"`), so the
+   * type allows either form depending on the request path.
+   */
+  goalType?: number | string | null;
 }
 
 export interface FloorballPenaltyEventDto {
@@ -44,6 +50,11 @@ export interface RecordGoalEventRequest {
   timeInSeconds: number;
   wasInOvertime: boolean;
   wasInShootout: boolean;
+  /**
+   * Optional goal type as numeric `FloorballGoalType` enum value. Omitted means
+   * "no specific type" which the backend treats as a regular goal.
+   */
+  goalType?: number;
 }
 
 export interface RecordPenaltyEventRequest {
@@ -67,6 +78,13 @@ export interface RecordSaveEventRequest {
   timeInSeconds: number;
   wasInOvertime: boolean;
   wasInShootout: boolean;
+  /**
+   * Number of save events to record at the supplied (period, time) coordinate. Defaults to
+   * `1` (single save). Values greater than 1 are interpreted by the backend as a bulk
+   * backfill: rate limiting is skipped and all `count` events are written in a single
+   * transaction. Used by the bulk save dialog.
+   */
+  count?: number;
 }
 
 export interface UpdateGoalEventRequest extends RecordGoalEventRequest {
@@ -87,6 +105,11 @@ export interface FloorballGoalEventDto {
   timeInSeconds: number;
   wasInOvertime: boolean;
   wasInShootout: boolean;
+  /**
+   * Optional goal type. Backend's `JsonStringEnumConverter` serializes the
+   * enum as its string name (e.g. `"PenaltyShot"`).
+   */
+  goalType?: number | string | null;
 }
 
 export interface FloorballPenaltyEventDto {
@@ -158,7 +181,8 @@ export const floorballMatchEventService = {
           isOvertime: g.wasInOvertime,
           isShootout: g.wasInShootout,
           assisterId: g.assisterId,
-          secondaryAssisterId: g.secondaryAssisterId
+          secondaryAssisterId: g.secondaryAssisterId,
+          goalType: g.goalType ?? null
         }
       }));
 
@@ -243,7 +267,7 @@ export const floorballMatchEventService = {
         periodNumber: data.periodNumber,
         timeInSeconds: data.timeInSeconds,
         description: '',
-        goalType: null
+        goalType: data.goalType ?? null
       };
 
       const response = await authFetch(`${API_URL}/FloorballMatch/record-goal`, {
@@ -308,7 +332,8 @@ export const floorballMatchEventService = {
         periodNumber: data.periodNumber,
         timeInSeconds: data.timeInSeconds,
         wasInOvertime: data.wasInOvertime,
-        wasInShootout: data.wasInShootout
+        wasInShootout: data.wasInShootout,
+        count: data.count && data.count > 1 ? data.count : 1,
       };
 
       const response = await authFetch(`${API_URL}/FloorballMatch/record-save`, {
