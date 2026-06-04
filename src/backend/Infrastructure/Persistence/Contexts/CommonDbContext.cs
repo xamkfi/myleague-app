@@ -1,11 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using Application.Interfaces.Common;
-using Domain.Entities.Common;
 using Microsoft.EntityFrameworkCore;
-using MyLeague.Infrastructure.Persistence.Configurations.Common;
+using Domain.Entities.Common;
 using MyLeague.Infrastructure.Persistence.Extensions;
+using MyLeague.Infrastructure.Persistence.Configurations.Common;
+using Application.Interfaces.Common;
 
 namespace MyLeague.Infrastructure.Persistence.Contexts
 {
@@ -20,7 +17,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// Initializes a new instance of the <see cref="CommonDbContext"/> class.
         /// </summary>
         /// <param name="options">The options to be used by the DbContext.</param>
-        public CommonDbContext(DbContextOptions<CommonDbContext> options) : base(options) { }
+        public CommonDbContext(DbContextOptions<CommonDbContext> options) : base(options) {}
 
         /// <summary>
         /// Gets or sets the Persons DbSet.
@@ -43,6 +40,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<NewsArticle> NewsArticles { get; set; }
 
         /// <summary>
+        /// Gets or sets the PageContents DbSet.
+        /// </summary>
+        public DbSet<PageContent> PageContents { get; set; }
+
+        /// <summary>
         /// Gets or sets the Divisions DbSet.
         /// </summary>
         public DbSet<Division> Divisions { get; set; }
@@ -56,11 +58,6 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// Gets or sets the TimerStates DbSet.
         /// </summary>
         public DbSet<TimerState> TimerStates { get; set; }
-
-        /// <summary>
-        /// Gets or sets the PageContents DbSet.
-        /// </summary>
-        public DbSet<PageContent> PageContents { get; set; }
 
         /// <summary>
         /// Saves changes to the database with domain event dispatching.
@@ -78,13 +75,14 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         }
 
         /// <summary>
-        /// Saves changes without dispatching domain events (used internally to prevent recursion).
+        /// Saves changes without dispatching domain events.
         /// </summary>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>The number of state entries written to the database</returns>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The number of state entries written to the database.</returns>
         internal async Task<int> SaveChangesWithoutEventsAsync(CancellationToken cancellationToken = default)
         {
             _isDispatchingEvents = true;
+
             try
             {
                 return await base.SaveChangesAsync(cancellationToken);
@@ -111,10 +109,10 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new ClubConfiguration());
             modelBuilder.ApplyConfiguration(new NewsArticleConfiguration());
+            modelBuilder.ApplyConfiguration(new PageContentConfiguration());
             modelBuilder.ApplyConfiguration(new DivisionConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             modelBuilder.ApplyConfiguration(new TimerStateConfiguration());
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(CommonDbContext).Assembly);
         }
     }
 }

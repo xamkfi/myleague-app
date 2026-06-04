@@ -5,7 +5,7 @@ using Domain.Entities.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.Persistence.Configurations.Common;
+namespace MyLeague.Infrastructure.Persistence.Configurations.Common;
 
 public class PageContentConfiguration : IEntityTypeConfiguration<PageContent>
 {
