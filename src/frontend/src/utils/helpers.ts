@@ -1,3 +1,6 @@
+import type { RuleItem } from "../types/admin/ruleTypes";
+import DOMPurify from "dompurify";
+
 /**
  * Formats a date string to a localized format in UTC (D.M.YYYY)
  * @param dateString Date string to format (can be null)
@@ -85,4 +88,37 @@ export function truncateText(text: string, maxLength: number): string {
  */
 export function generateId(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
-} 
+} export const createRuleBlock = (
+  html: string,
+  category: string,
+  ruleId?: string,
+): string => {
+  const sanitizedHtml = DOMPurify.sanitize(html).trim();
+
+  const plainText = sanitizedHtml
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+
+  if (!plainText) return "";
+
+  const id = ruleId ?? crypto.randomUUID();
+
+  return `<div class="rules-item" data-rule-id="${id}" data-rule-category="${category}">${sanitizedHtml}</div>`;
+};
+
+export const parseRulesFromHtml = (html: string): RuleItem[] => {
+  if (!html.trim()) return [];
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = html;
+
+  return Array.from(wrapper.querySelectorAll(".rules-item")).map((rule) => ({
+    id: rule.getAttribute("data-rule-id") || crypto.randomUUID(),
+    html: rule.innerHTML,
+    text:
+      (rule.textContent || "").replace(/\u00A0/g, " ").trim() ||
+      "Untitled rule",
+    category: rule.getAttribute("data-rule-category") || "general",
+  }));
+};

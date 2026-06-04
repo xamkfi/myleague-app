@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useInProgressMatches } from '../../hooks/useInProgressMatches';
 import LiveDot from '../LiveDot/LiveDot';
 import './AdminNavBar.scss';
+import RulesIcon from '../../assets/adminIcons/Rules.svg';
 import PersonsIcon from '../../assets/adminIcons/Persons.svg';
 import NewsIcon from '../../assets/adminIcons/News.svg';
 import SportsIcon from '../../assets/adminIcons/Sports.svg';
@@ -93,6 +94,12 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
               <Link to="/admin/news" title={collapsed ? t('admin.actions.news', 'News') : undefined}>
                 <img src={NewsIcon} alt="News" className="icon" />
                 {!collapsed && <span>{t('admin.actions.news', 'News')}</span>}
+              </Link>
+            </li>
+            <li className={`admin-navbar-item ${isActive('/admin/rules') ? 'active' : ''}`}>
+              <Link to="/admin/rules" title={collapsed ? t('admin.actions.rules', 'Rules') : undefined}>
+                <img src={RulesIcon} alt="Rules" className="icon" />
+                {!collapsed && <span>{t('admin.actions.rules', 'Rules')}</span>}
               </Link>
             </li>
             <li className={`admin-navbar-item ${isActive('/admin/divisions') ? 'active' : ''}`}>

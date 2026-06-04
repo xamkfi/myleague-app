@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MyLeague.Infrastructure.Migrations.CommonDb
+namespace MyLeague.Infrastructure.Migrations
 {
     [DbContext(typeof(CommonDbContext))]
-    partial class CommonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260408150856_AddPageContent")]
+    partial class AddPageContent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1868,6 +1871,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                                 .HasColumnType("character varying(50)");
 
                             b1.Property<string>("Email")
+                                .IsRequired()
                                 .HasMaxLength(255)
                                 .HasColumnType("character varying(255)");
 

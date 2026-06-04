@@ -156,6 +156,60 @@
     "fi": "Suomi",
     "switchLanguage": "Vaihda kieli"
   },
+  "rules": {
+  "defaultTitle": "Säännöt",
+  "loading": "Ladataan sääntöjä...",
+  "loadFailed": "Sääntöjen lataaminen epäonnistui.",
+  "admin": {
+    "pageTitle": "Sääntöjen hallinta",
+    "managementTitle": "Sääntöjen hallinta",
+    "managementDescription": "Julkaise sääntöjä julkiselle sääntösivulle.",
+    "loadFailed": "Sääntöjen sisällön lataaminen epäonnistui.",
+    "noPublishedRules": "Julkaistuja sääntöjä ei ole.",
+    "typeRuleToAdd": "Kirjoita lisättävä sääntö.",
+    "addRuleBeforeSaving": "Lisää ensin sääntö ennen tallennusta.",
+    "rulesPublishedSuccessfully": "Säännöt julkaistiin onnistuneesti!",
+    "saveFailed": "Sääntöjen tallentaminen epäonnistui.",
+    "lastUpdate": "Viimeisin päivitys",
+    "noRulesAddedYet": "Sääntöjä ei ole vielä lisätty.",
+    "editor": "Muokkaaja",
+    "unknown": "Tuntematon",
+    "ruleUpdatedSuccessfully": "Sääntö päivitettiin onnistuneesti!",
+    "updateRuleFailed": "Säännön päivittäminen epäonnistui.",
+    "confirmDeleteRule": "Haluatko varmasti poistaa tämän säännön: {{ruleName}}?",
+    "ruleDeletedSuccessfully": "Sääntö poistettiin onnistuneesti!",
+    "deleteRuleFailed": "Säännön poistaminen epäonnistui.",
+    "editRule": "Muokkaa sääntöä",
+    "saveRule": "Tallenna sääntö",
+    "saving": "Tallennetaan...",
+    "searchPlaceholder": "Hae sääntöjä...",
+    "publish": "Julkaise",
+    "publishing": "Julkaistaan...",
+    "addRule": "Lisää uusi sääntö",
+    "createRuleTitle": "Määritä uusi sääntö",
+    "createRuleDescription": "Kirjoita säännön sisältö ennen sen lisäämistä esikatseluun.",
+    "typeRulePlaceholder": "Kirjoita tähän...",
+    "preview": "Esikatselu",
+    "noPreviewRules": "Ei sääntöjä esikatseltavaksi.",
+    "publishedRules": "Julkaistut säännöt",
+    "allCategories": "Kaikki kategoriat",
+    "category": "Kategoria",
+    "categories": {
+      "general": "Yleinen",
+      "fees": "Maksut",
+      "validation": "Validointi",
+      "calculation": "Laskenta"
+    },
+    "editRuleTitle": "Muokkaa sääntöä",
+    "editRuleDescription": "Päivitä sääntö ennen sen siirtämistä esikatseluun.",
+    "selectCategory": "Valitse kategoria",
+    "rule": "Sääntö",
+    "subtitle": "Hallitse sääntöjä",
+    "confirmPublish": "Haluatko varmasti julkaista säännöt?",
+    "confirmDiscardChanges": "Sinulla on tallentamattomia muutoksia."
+  }
+},
+
   "admin": {
     "title": "Hallintapaneeli",
     "database": "Tietokanta",
@@ -178,7 +232,9 @@
       "clubs": "Seurat",
       "manageClubs": "Hallitse seuroja",
       "users": "Järjestelmäkäyttäjät",
-      "manageUsers": "Hallitse järjestelmäkäyttäjiä"
+      "manageUsers": "Hallitse järjestelmäkäyttäjiä",
+      "rules": "Säännöt",
+      "manageRules": "Hallitse sääntöjä"
     },
     "users": {
       "title": "Järjestelmäkäyttäjät",
@@ -1358,7 +1414,6 @@
     "saving": "Tallennetaan...",
     "clearSelection": "Tyhjennä valinta",
     "clearSearch": "Tyhjennä haku",
-    "selectAll": "Valitse kaikki",
     "status": "Tila",
     "pagination": {
       "previous": "Edellinen",

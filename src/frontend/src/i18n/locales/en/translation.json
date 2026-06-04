@@ -156,6 +156,59 @@
       "cancelled": "Cancelled"
     }
   },
+  "rules": {
+  "defaultTitle": "Rules",
+  "loading": "Loading rules...",
+  "loadFailed": "Failed to load rules.",
+  "admin": {
+    "pageTitle": "Rules management",
+    "managementTitle": "Rules management",
+    "managementDescription": "Publish rules to the public rules page.",
+    "loadFailed": "Failed to load rules content.",
+    "noPublishedRules": "No published rules.",
+    "typeRuleToAdd": "Type to add rules.",
+    "addRuleBeforeSaving": "Add a rule first before saving.",
+    "rulesPublishedSuccessfully": "Rules published successfully!",
+    "saveFailed": "Failed to save rules.",
+    "lastUpdate": "Last update",
+    "noRulesAddedYet": "No rules added yet.",
+    "editor": "Editor",
+    "unknown": "Unknown",
+    "ruleUpdatedSuccessfully": "Rule updated successfully!",
+    "updateRuleFailed": "Failed to update rule.",
+    "confirmDeleteRule": "Are you sure you want to delete this rule: {{ruleName}}?",
+    "ruleDeletedSuccessfully": "Rule deleted successfully!",
+    "deleteRuleFailed": "Failed to delete rule.",
+    "editRule": "Edit rule",
+    "saveRule": "Save rule",
+    "saving": "Saving...",
+    "searchPlaceholder": "Search rules...",
+    "publish": "Publish",
+    "publishing": "Publishing...",
+    "addRule": "Add new rule",
+    "createRuleTitle": "Configure new rule",
+    "createRuleDescription": "Write the rule content before adding it to preview.",
+    "typeRulePlaceholder": "Type here...",
+    "preview": "Preview",
+    "noPreviewRules": "No rules to preview.",
+    "publishedRules": "Published rules",
+    "allCategories": "All Categories",
+    "category": "Category",
+    "categories": {
+      "general": "General",
+      "fees": "Fees & Charges",
+      "validation": "Validation",
+      "calculation": "Calculation"
+    },
+    "editRuleTitle": "Edit rule",
+    "editRuleDescription": "Update the rule before moving it to preview.",
+    "selectCategory": "Select category",
+    "rule": "Rule",
+    "subtitle": "Manage Rules",
+    "confirmPublish": "Are you sure you want to publish the rules?",
+    "confirmDiscardChanges": "You have unsaved changes."
+  }
+},
   "admin": {
     "title": "Admin Dashboard",
     "database": "Database",
@@ -178,7 +231,9 @@
       "clubs": "Clubs",
       "manageClubs": "Manage clubs",
       "users": "System Users",
-      "manageUsers": "Manage system users"
+      "manageUsers": "Manage system users",
+      "rules": "Rules",
+      "manageRules": "Manage rules"
     },
     "users": {
       "title": "System Users",

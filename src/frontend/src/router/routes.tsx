@@ -36,6 +36,9 @@ const VerifyEmailPage = lazyWithRetry(() => import('../pages/AdminPage/VerifyEma
 const AdminPage = lazyWithRetry(() => import('../pages/AdminPage/AdminPage'));
 const UsersPage = lazyWithRetry(() => import('../pages/AdminPage/UsersPage/UsersPage'));
 const PersonsPage = lazyWithRetry(() => import('../pages/AdminPage/PersonsPage/PersonsPage'));
+const RulesManagementPage = lazyWithRetry(
+  () => import('../pages/AdminPage/RulesPage/RulesManagementPage')
+);
 const PersonForm = lazyWithRetry(() =>
   import('../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm').then((m) => ({ default: m.default as ComponentType<unknown> }))
 );
@@ -110,8 +113,20 @@ export const routes: RouteObject[] = [
         path: ':id/edit',
         element: <ProtectedRoute><SuspenseWrapper><EditClubPage /></SuspenseWrapper></ProtectedRoute>
       }
+
     ]
   },
+  
+      {
+        path: '/admin/rules',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper>
+              <RulesManagementPage />
+            </SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
   {
     path: '/admin/users',
     children: [
