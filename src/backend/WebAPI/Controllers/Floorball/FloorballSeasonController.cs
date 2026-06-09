@@ -118,7 +118,7 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballSeasonDto>>> CreateSeason([FromBody] CreateFloorballSeasonRequest request)
         {
-            _logger.LogInformation("Creating floorball season: {name}", request.Name);
+            _logger.LogInformation("Creating floorball season: {name}", SanitizeForLog(request.Name));
 
             if (!DateTime.TryParse(request.StartDate, out DateTime startDate) || !DateTime.TryParse(request.EndDate, out DateTime endDate))
             {

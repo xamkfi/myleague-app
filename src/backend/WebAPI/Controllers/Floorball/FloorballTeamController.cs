@@ -120,7 +120,7 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<FloorballTeamNameDto>>>> GetTeamNames([FromQuery] string? nameFilter)
         {
-            _logger.LogInformation("Getting floorball team names filtered by: {nameFilter}", nameFilter);
+            _logger.LogInformation("Getting floorball team names filtered by: {nameFilter}", SanitizeForLog(nameFilter));
 
             Result<List<FloorballTeamNameDto>> result = await _mediator.Send(new GetTeamNamesQuery(nameFilter));
 
@@ -138,8 +138,12 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballTeamSummaryDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<FloorballTeamSummaryDto>>> GetAllTeamsWithoutRoster([FromQuery] GetAllTeamsWithoutRosterRequest request)
         {
-            _logger.LogInformation("Getting all floorball teams without roster - Page: {Page}, PageSize: {PageSize}, SearchTerm: {SearchTerm}, TeamCategory: {TeamCategory}",
-                request.Page, request.PageSize, request.SearchTerm, request.TeamCategory);
+            _logger.LogInformation(
+                "Getting all floorball teams without roster - Page: {Page}, PageSize: {PageSize}, SearchTerm: {SearchTerm}, TeamCategory: {TeamCategory}",
+                request.Page,
+                request.PageSize,
+                SanitizeForLog(request.SearchTerm),
+                SanitizeForLog(request.TeamCategory));
 
             Result<PagedResult<FloorballTeamSummaryDto>> result = await _mediator.Send(new GetAllTeamsWithoutRosterQuery(
                 request.Page,
@@ -162,12 +166,13 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballTeamDto>>> CreateTeam([FromBody] FloorballTeamRequest request)
         {
-            _logger.LogInformation("Creating floorball team: {name}", request.Name);
+            _logger.LogInformation("Creating floorball team: {name}", SanitizeForLog(request.Name));
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state for team creation: {errors}",
-                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                _logger.LogWarning(
+                    "Invalid model state for team creation: {errors}",
+                    SanitizeForLog(string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
                 return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
@@ -213,8 +218,9 @@ namespace WebAPI.Controllers.Floorball
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state for team update: {errors}",
-                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                _logger.LogWarning(
+                    "Invalid model state for team update: {errors}",
+                    SanitizeForLog(string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
                 return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
@@ -280,8 +286,11 @@ namespace WebAPI.Controllers.Floorball
             [FromQuery] int? jerseyNumber = null,
             [FromQuery] int? requestedJerseyNumber = null)
         {
-            _logger.LogInformation("Adding player {playerId} to team {teamId} with position {position}",
-                playerId, teamId, position);
+            _logger.LogInformation(
+                "Adding player {playerId} to team {teamId} with position {position}",
+                playerId,
+                teamId,
+                SanitizeForLog(position));
 
             Result<FloorballTeamDto> result = await _mediator.Send(new AddPlayerToTeamCommand(
                 teamId,
@@ -330,8 +339,13 @@ namespace WebAPI.Controllers.Floorball
             Guid playerId,
             [FromBody] UpdateFloorballTeamPlayerRequest request)
         {
-            _logger.LogInformation("Updating player {playerId} in team {teamId} with position {position}, jersey {jerseyNumber}, active {isActive}",
-                playerId, teamId, request.Position, request.JerseyNumber, request.IsActive);
+            _logger.LogInformation(
+                "Updating player {playerId} in team {teamId} with position {position}, jersey {jerseyNumber}, active {isActive}",
+                playerId,
+                teamId,
+                SanitizeForLog(request.Position),
+                request.JerseyNumber,
+                request.IsActive);
 
             Result<FloorballTeamPlayerDto> result = await _mediator.Send(new UpdateTeamPlayerCommand(
                 teamId,

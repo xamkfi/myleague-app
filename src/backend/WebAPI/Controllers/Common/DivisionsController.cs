@@ -109,7 +109,10 @@ public class DivisionsController : BaseApiController
             return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(message, new List<string> { message }));
         }
 
-        _logger.LogInformation("Creating new division: {DivisionName} for {SportType}", request.Name, request.SportType);
+        _logger.LogInformation(
+            "Creating new division: {DivisionName} for {SportType}",
+            SanitizeForLog(request.Name),
+            SanitizeForLog(request.SportType));
 
         Result<DivisionDto> result = await _mediator.Send(new CreateDivisionCommand(
             request.Name,

@@ -81,7 +81,7 @@ public class ClubsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<ClubDto>>> CreateClub([FromBody] CreateClubRequest request)
     {
-        _logger.LogInformation("Creating new club: {ClubName}", request.Name);
+        _logger.LogInformation("Creating new club: {ClubName}", SanitizeForLog(request.Name));
 
         CreateClubCommand command = new CreateClubCommand(
             request.Name,
@@ -119,7 +119,7 @@ public class ClubsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<string>>> UploadImage([FromForm] IFormFile file)
     {
-        _logger.LogInformation("Uploading club logo: {FileName}", file?.FileName);
+        _logger.LogInformation("Uploading club logo: {FileName}", SanitizeForLog(file?.FileName));
 
         if (file == null || file.Length == 0)
         {
@@ -130,7 +130,7 @@ public class ClubsController : BaseApiController
         string[] allowedContentTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
         if (!allowedContentTypes.Contains(file.ContentType.ToLower()))
         {
-            _logger.LogWarning("Club logo upload failed: Invalid file type {ContentType}", file.ContentType);
+            _logger.LogWarning("Club logo upload failed: Invalid file type {ContentType}", SanitizeForLog(file.ContentType));
             return BadRequest(ApiResponse<string>.ErrorResponse($"Invalid file type. Allowed types: {string.Join(", ", allowedContentTypes)}"));
         }
 
@@ -260,7 +260,7 @@ public class ClubsController : BaseApiController
             return BadRequest(ApiResponse<List<ClubDto>>.ErrorResponse("Name parameter is required"));
         }
 
-        _logger.LogInformation("Searching clubs by name: {Name}", name);
+        _logger.LogInformation("Searching clubs by name: {Name}", SanitizeForLog(name));
 
         GetClubsByNameQuery query = new GetClubsByNameQuery(name);
         Result<IEnumerable<ClubDto>> result = await _mediator.Send(query);

@@ -37,7 +37,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<GlobalSearchResultDto>>> GlobalSearch([FromQuery] string term)
         {
-            _logger.LogInformation("Performing global search with term: {SearchTerm}", term);
+            _logger.LogInformation("Performing global search with term: {SearchTerm}", SanitizeForLog(term));
 
             Result<GlobalSearchResultDto> result = await _mediator.Send(new GlobalSearchQuery(term));
 

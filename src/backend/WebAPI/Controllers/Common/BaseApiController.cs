@@ -230,6 +230,22 @@ public abstract class BaseApiController : ControllerBase
         return BadRequest(body);
     }
 
+    /// <summary>
+    /// Strips newline characters from a user-provided value before writing it to logs.
+    /// Mitigates log-forging when request fields are included in structured log parameters.
+    /// </summary>
+    protected static string SanitizeForLog(object? value)
+    {
+        if (value is null)
+        {
+            return "null";
+        }
+
+        return value.ToString()!
+            .Replace("\r", string.Empty, StringComparison.Ordinal)
+            .Replace("\n", string.Empty, StringComparison.Ordinal);
+    }
+
     private static bool IsNotFoundMessage(string message) =>
         message.Contains("not found", StringComparison.OrdinalIgnoreCase);
 }

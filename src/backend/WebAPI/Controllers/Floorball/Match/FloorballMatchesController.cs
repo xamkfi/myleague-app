@@ -50,7 +50,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation(
                 "Getting all floorball matches with pagination - Page: {Page}, PageSize: {PageSize}, SortOrder: {SortOrder}",
-                request.Page, request.PageSize, request.SortOrder);
+                request.Page, request.PageSize, SanitizeForLog(request.SortOrder));
 
             GetAllFloorballMatchesQuery query = new GetAllFloorballMatchesQuery(
                 request.Page,
@@ -167,7 +167,10 @@ namespace WebAPI.Controllers.Floorball
             [FromBody] CreateFloorballMatchRequest request,
             CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Creating floorball match {home} vs {away}", request.HomeTeamId, request.AwayTeamId);
+            _logger.LogInformation(
+                "Creating floorball match {home} vs {away}",
+                SanitizeForLog(request.HomeTeamId),
+                SanitizeForLog(request.AwayTeamId));
 
             if (!DateTime.TryParse(request.ScheduledDateTime, out DateTime scheduledDateTime))
             {

@@ -111,7 +111,7 @@ namespace WebAPI.Controllers.Health
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Health check for tag {Tag} failed with exception", tag);
+                _logger.LogError(ex, "Health check for tag {Tag} failed with exception", SanitizeForLog(tag));
                 return StatusCode((int)HttpStatusCode.InternalServerError, new
                 {
                     Tag = tag,

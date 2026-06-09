@@ -154,8 +154,13 @@ namespace WebAPI.Controllers.Floorball
             [FromQuery] string? searchTerm = null,
             [FromQuery] int? licenseExpiringWithinDays = null)
         {
-            _logger.LogInformation("Getting all floorball referees - Page: {Page}, PageSize: {PageSize}, IsActive: {IsActive}, SearchTerm: {SearchTerm}, LicenseExpiringWithinDays: {LicenseExpiringWithinDays}",
-                page, pageSize, isActive, searchTerm, licenseExpiringWithinDays);
+            _logger.LogInformation(
+                "Getting all floorball referees - Page: {Page}, PageSize: {PageSize}, IsActive: {IsActive}, SearchTerm: {SearchTerm}, LicenseExpiringWithinDays: {LicenseExpiringWithinDays}",
+                page,
+                pageSize,
+                isActive,
+                SanitizeForLog(searchTerm),
+                licenseExpiringWithinDays);
 
             Result<PagedResult<FloorballRefereeDto>> result = await _mediator.Send(
                 new GetAllFloorballRefereesQuery(page, pageSize, isActive, searchTerm, licenseExpiringWithinDays));

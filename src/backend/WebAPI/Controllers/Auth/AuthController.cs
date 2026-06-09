@@ -50,7 +50,7 @@ public class AuthController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse>> Login([FromBody] LoginRequest request)
     {
-        _logger.LogInformation("Login code requested for email: {Email}", request.Email);
+        _logger.LogInformation("Login code requested for email: {Email}", SanitizeForLog(request.Email));
 
         RequestLoginCodeCommand command = new(request.Email);
         Result<string?> result = await _mediator.Send(command);
@@ -64,7 +64,7 @@ public class AuthController : BaseApiController
             {
                 _logger.LogWarning(
                     "AutoFillLoginCode is enabled - returning login code to client for {Email}. Disable this in production.",
-                    request.Email);
+                    SanitizeForLog(request.Email));
 
                 return Ok(ApiResponse<object>.SuccessResponse(
                     new { autoFillCode = result.Data },
@@ -89,7 +89,7 @@ public class AuthController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<AuthTokenDto>>> Verify([FromBody] VerifyCodeRequest request)
     {
-        _logger.LogInformation("Login code verification for email: {Email}", request.Email);
+        _logger.LogInformation("Login code verification for email: {Email}", SanitizeForLog(request.Email));
 
         VerifyLoginCodeCommand command = new(request.Email, request.Code);
         Result<AuthTokenDto> result = await _mediator.Send(command);

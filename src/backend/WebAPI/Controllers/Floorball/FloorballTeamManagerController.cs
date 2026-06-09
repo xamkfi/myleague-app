@@ -46,8 +46,9 @@ namespace WebAPI.Controllers.Floorball
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state for team manager creation: {errors}",
-                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                _logger.LogWarning(
+                    "Invalid model state for team manager creation: {errors}",
+                    SanitizeForLog(string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
                 return BadRequest(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
@@ -77,8 +78,9 @@ namespace WebAPI.Controllers.Floorball
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state for team manager update: {errors}",
-                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                _logger.LogWarning(
+                    "Invalid model state for team manager update: {errors}",
+                    SanitizeForLog(string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
                 return BadRequest(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)

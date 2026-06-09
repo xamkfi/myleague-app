@@ -91,7 +91,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<NewsArticleDto>>> CreateNews([FromBody] CreateNewsArticleRequest request)
         {
-            _logger.LogInformation("Creating new news article with title: {Title}", request.Title);
+            _logger.LogInformation("Creating new news article with title: {Title}", SanitizeForLog(request.Title));
 
             var command = new CreateNewsArticleCommand(
                 request.Title,
@@ -226,7 +226,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<bool>>> AddNewsTag(Guid id, [FromBody] AddNewsArticleTagRequest request)
         {
-            _logger.LogInformation("Adding tag '{Tag}' to news article with ID: {NewsId}", request.Tag, id);
+            _logger.LogInformation("Adding tag '{Tag}' to news article with ID: {NewsId}", SanitizeForLog(request.Tag), id);
 
             var command = new AddNewsArticleTagCommand(id, request.Tag);
             Result<bool> result = await _mediator.Send(command);
@@ -248,7 +248,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<bool>>> RemoveNewsTag(Guid id, [FromBody] RemoveNewsArticleTagRequest request)
         {
-            _logger.LogInformation("Removing tag '{Tag}' from news article with ID: {NewsId}", request.Tag, id);
+            _logger.LogInformation("Removing tag '{Tag}' from news article with ID: {NewsId}", SanitizeForLog(request.Tag), id);
 
             var command = new RemoveNewsArticleTagCommand(id, request.Tag);
             Result<bool> result = await _mediator.Send(command);
@@ -267,7 +267,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> SearchNews([FromQuery] SearchNewsArticlesRequest request)
         {
-            _logger.LogInformation("Searching news articles with term: {SearchTerm}", request.SearchTerm);
+            _logger.LogInformation("Searching news articles with term: {SearchTerm}", SanitizeForLog(request.SearchTerm));
 
             var query = new SearchNewsArticlesQuery(request.SearchTerm);
             Result<IEnumerable<NewsArticleListDto>> result = await _mediator.Send(query);
@@ -303,7 +303,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetNewsByCategory(string category)
         {
-            _logger.LogInformation("Getting news articles by category: {Category}", category);
+            _logger.LogInformation("Getting news articles by category: {Category}", SanitizeForLog(category));
 
             var query = new GetNewsArticlesByCategoryQuery(category);
             Result<IEnumerable<NewsArticleListDto>> result = await _mediator.Send(query);
@@ -321,7 +321,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetNewsByTag(string tag)
         {
-            _logger.LogInformation("Getting news articles by tag: {Tag}", tag);
+            _logger.LogInformation("Getting news articles by tag: {Tag}", SanitizeForLog(tag));
 
             var query = new GetNewsArticlesByTagQuery(tag);
             Result<IEnumerable<NewsArticleListDto>> result = await _mediator.Send(query);
@@ -339,7 +339,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetNewsByAuthor(string author)
         {
-            _logger.LogInformation("Getting news articles by author: {Author}", author);
+            _logger.LogInformation("Getting news articles by author: {Author}", SanitizeForLog(author));
 
             var query = new GetNewsArticlesByAuthorQuery(author);
             Result<IEnumerable<NewsArticleListDto>> result = await _mediator.Send(query);
@@ -393,7 +393,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> UploadImage([FromForm] IFormFile file)
         {
-            _logger.LogInformation("Uploading image: {FileName}", file?.FileName);
+            _logger.LogInformation("Uploading image: {FileName}", SanitizeForLog(file?.FileName));
 
             if (file == null || file.Length == 0)
             {
@@ -405,7 +405,7 @@ namespace WebAPI.Controllers.Common
             string[] allowedContentTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
             if (!allowedContentTypes.Contains(file.ContentType.ToLower()))
             {
-                _logger.LogWarning("Image upload failed: Invalid file type {ContentType}", file.ContentType);
+                _logger.LogWarning("Image upload failed: Invalid file type {ContentType}", SanitizeForLog(file.ContentType));
                 return BadRequest(ApiResponse<string>.ErrorResponse($"Invalid file type. Allowed types: {string.Join(", ", allowedContentTypes)}"));
             }
 
@@ -458,7 +458,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> DeleteImage([FromQuery] string url)
         {
-            _logger.LogInformation("Deleting image: {url}", url);
+            _logger.LogInformation("Deleting image: {url}", SanitizeForLog(url));
 
             if (url == null)
             {
@@ -468,7 +468,7 @@ namespace WebAPI.Controllers.Common
             
             if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? imageUri))
             {
-                _logger.LogError("Failed to parse URL: '{url}'", url);
+                _logger.LogError("Failed to parse URL: '{url}'", SanitizeForLog(url));
                 return BadRequest(ApiResponse<string>.ErrorResponse($"Invalid URL format: {url}"));
             }
 

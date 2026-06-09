@@ -171,7 +171,7 @@ namespace WebAPI.Controllers.Floorball.Match
         {
             _logger.LogInformation(
                 "Assigning teams on floorball match {MatchId}: home={HomeTeamId}, away={AwayTeamId}",
-                matchId, request.HomeTeamId, request.AwayTeamId);
+                matchId, SanitizeForLog(request.HomeTeamId), SanitizeForLog(request.AwayTeamId));
 
             AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(
                 matchId,

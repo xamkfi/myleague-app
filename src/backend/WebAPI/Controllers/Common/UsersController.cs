@@ -84,7 +84,7 @@ public class UsersController : BaseApiController
             return BadRequest(ApiResponse<UserDto>.ErrorResponse("Email parameter is required"));
         }
 
-        _logger.LogInformation("Getting user by email: {Email}", email);
+        _logger.LogInformation("Getting user by email: {Email}", SanitizeForLog(email));
 
         GetUserByEmailQuery query = new(email);
         Result<UserDto> result = await _mediator.Send(query);
@@ -122,7 +122,7 @@ public class UsersController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] CreateUserRequest request)
     {
-        _logger.LogInformation("Creating new user: {Email}", request.Email);
+        _logger.LogInformation("Creating new user: {Email}", SanitizeForLog(request.Email));
 
         CreateUserCommand command = new(request.Email, request.PersonId, request.Role);
         Result<UserDto> result = await _mediator.Send(command);

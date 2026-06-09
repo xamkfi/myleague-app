@@ -96,7 +96,7 @@ namespace WebAPI.Controllers.Common
                 return BadRequest(ApiResponse<PersonDto>.ErrorResponse("Email parameter is required"));
             }
 
-            _logger.LogInformation("Getting person by email: {Email}", email);
+            _logger.LogInformation("Getting person by email: {Email}", SanitizeForLog(email));
 
             GetPersonByEmailQuery query = new GetPersonByEmailQuery(email);
             Result<PersonDto> result = await _mediator.Send(query);
@@ -125,7 +125,7 @@ namespace WebAPI.Controllers.Common
                 return BadRequest(PaginatedApiResponse<PersonDto>.ErrorResponse("Name parameter is required"));
             }
 
-            _logger.LogInformation("Searching persons by name: {Name} - Page: {Page}, PageSize: {PageSize}", name, page, pageSize);
+            _logger.LogInformation("Searching persons by name: {Name} - Page: {Page}, PageSize: {PageSize}", SanitizeForLog(name), page, pageSize);
 
             SearchPersonByNameQuery query = new SearchPersonByNameQuery(name, page, pageSize);
             Result<PagedResult<PersonDto>> result = await _mediator.Send(query);
@@ -145,7 +145,10 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> CreatePerson([FromBody] CreatePersonRequest request)
         {
-            _logger.LogInformation("Creating new person: {FirstName} {LastName}", request.FirstName, request.LastName);
+            _logger.LogInformation(
+                "Creating new person: {FirstName} {LastName}",
+                SanitizeForLog(request.FirstName),
+                SanitizeForLog(request.LastName));
 
             // Parse BirthDate if provided
             DateTime? birthDateUtc = null;
@@ -341,7 +344,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePersonRole(Guid id, [FromBody] Domain.Enums.Common.PersonRole role)
         {
-            _logger.LogInformation("Updating person role with Id: {Id} to {Role}", id, role);
+            _logger.LogInformation("Updating person role with Id: {Id} to {Role}", id, SanitizeForLog(role));
 
             UpdatePersonRoleCommand command = new UpdatePersonRoleCommand(id, role);
             Result<PersonDto> result = await _mediator.Send(command);

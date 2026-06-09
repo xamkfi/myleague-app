@@ -114,10 +114,7 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballTournamentDto>>> CreateTournament([FromBody] CreateFloorballTournamentRequest request)
         {
-            string sanitizedTournamentNameForLog = (request.Name ?? string.Empty)
-                .Replace("\r", string.Empty)
-                .Replace("\n", string.Empty);
-            _logger.LogInformation("Creating floorball tournament: {name}", sanitizedTournamentNameForLog);
+            _logger.LogInformation("Creating floorball tournament: {name}", SanitizeForLog(request.Name));
 
             IReadOnlyList<PlayoffScheduleSlotInput>? scheduleSlots = MapPlayoffSchedule(request.PlayoffSchedule);
 
@@ -378,7 +375,10 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballTournamentDto>>> AddGroupToTournament(Guid competitionId, [FromBody] AddGroupToTournamentRequest request)
         {
-            _logger.LogInformation("Adding group '{groupName}' to floorball tournament with ID: {competitionId}", request.GroupName, competitionId);
+            _logger.LogInformation(
+                "Adding group '{groupName}' to floorball tournament with ID: {competitionId}",
+                SanitizeForLog(request.GroupName),
+                competitionId);
 
             AddGroupToTournamentCommand command = new AddGroupToTournamentCommand(competitionId, request.GroupName);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
