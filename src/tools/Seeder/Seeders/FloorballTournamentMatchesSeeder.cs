@@ -178,7 +178,13 @@ public static class FloorballTournamentMatchesSeeder
             int countOnPage = 0;
             foreach (FloorballMatchDto m in listApi.Data)
             {
-                pairs.Add((m.HomeTeamId, m.AwayTeamId));
+                // Match team IDs are nullable to support placeholder fixtures. Skip rows where
+                // either side is unassigned because they can never collide with a (home, away) pair
+                // we'd generate from concrete teams.
+                if (m.HomeTeamId.HasValue && m.AwayTeamId.HasValue)
+                {
+                    pairs.Add((m.HomeTeamId.Value, m.AwayTeamId.Value));
+                }
                 countOnPage++;
             }
 
@@ -300,8 +306,17 @@ public static class FloorballTournamentMatchesSeeder
         Dictionary<Guid, FloorballTeamDto> rosterCache,
         Random rng)
     {
-        FloorballTeamDto? homeTeam = await GetTeamWithRosterAsync(http, jsonOptions, match.HomeTeamId, rosterCache);
-        FloorballTeamDto? awayTeam = await GetTeamWithRosterAsync(http, jsonOptions, match.AwayTeamId, rosterCache);
+        // Seeder operates on freshly created matches that always have both teams set.
+        if (!match.HomeTeamId.HasValue || !match.AwayTeamId.HasValue)
+        {
+            Console.WriteLine($"  Skipping simulation for {plan.HomeTeamName} vs {plan.AwayTeamName}: match is missing a team assignment.");
+            return;
+        }
+        Guid homeTeamId = match.HomeTeamId.Value;
+        Guid awayTeamId = match.AwayTeamId.Value;
+
+        FloorballTeamDto? homeTeam = await GetTeamWithRosterAsync(http, jsonOptions, homeTeamId, rosterCache);
+        FloorballTeamDto? awayTeam = await GetTeamWithRosterAsync(http, jsonOptions, awayTeamId, rosterCache);
         if (homeTeam == null || awayTeam == null)
         {
             Console.WriteLine($"  Skipping simulation for {plan.HomeTeamName} vs {plan.AwayTeamName}: missing team rosters.");
@@ -325,8 +340,8 @@ public static class FloorballTournamentMatchesSeeder
         }
 
         // Assign goalies (idempotent — endpoint accepts both Scheduled and InProgress states).
-        await SetActiveGoalieAsync(http, match.Id, match.HomeTeamId, homeGoalieId.Value);
-        await SetActiveGoalieAsync(http, match.Id, match.AwayTeamId, awayGoalieId.Value);
+        await SetActiveGoalieAsync(http, match.Id, homeTeamId, homeGoalieId.Value);
+        await SetActiveGoalieAsync(http, match.Id, awayTeamId, awayGoalieId.Value);
 
         // Start the match.
         HttpResponseMessage startResp = await http.PutAsync($"api/floorballmatch/start-match/{match.Id}", content: null);
@@ -337,8 +352,8 @@ public static class FloorballTournamentMatchesSeeder
         int homeGoals = rng.Next(0, totalGoals + 1);
         int awayGoals = totalGoals - homeGoals;
 
-        await RecordGoalsAsync(http, match.Id, match.HomeTeamId, homeFieldPlayers, homeGoals, rng);
-        await RecordGoalsAsync(http, match.Id, match.AwayTeamId, awayFieldPlayers, awayGoals, rng);
+        await RecordGoalsAsync(http, match.Id, homeTeamId, homeFieldPlayers, homeGoals, rng);
+        await RecordGoalsAsync(http, match.Id, awayTeamId, awayFieldPlayers, awayGoals, rng);
 
         // Complete the match.
         HttpResponseMessage completeResp = await http.PutAsync($"api/floorballmatch/complete-match/{match.Id}", content: null);

@@ -2,16 +2,15 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Net;
+using WebAPI.Controllers.Common;
 
 namespace WebAPI.Controllers.Health
 {
     /// <summary>
     /// Controller for health check endpoints
     /// </summary>
-    [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    public class HealthController : ControllerBase
+    public class HealthController : BaseApiController
     {
         private readonly HealthCheckService _healthCheckService;
         private readonly ILogger<HealthController> _logger;
@@ -112,7 +111,7 @@ namespace WebAPI.Controllers.Health
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Health check for tag {Tag} failed with exception", tag);
+                _logger.LogError(ex, "Health check for tag {Tag} failed with exception", SanitizeForLog(tag));
                 return StatusCode((int)HttpStatusCode.InternalServerError, new
                 {
                     Tag = tag,

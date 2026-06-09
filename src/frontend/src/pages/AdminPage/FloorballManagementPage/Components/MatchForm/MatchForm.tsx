@@ -109,17 +109,26 @@ const MatchForm = ({
       };
       setInitialSeasonOptions([competitionOption]);
 
-      const homeTeamOption = {
-        id: initialData.homeTeamId,
-        name: initialData.homeTeamName,
-      };
-      setInitialHomeTeamOptions([homeTeamOption]);
+      // Only seed the team dropdowns with the existing selection when the match actually has a
+      // team assigned. For placeholder fixtures (homeTeamId/awayTeamId === null) the dropdowns
+      // start empty so the user can pick a team for the first time.
+      if (initialData.homeTeamId && initialData.homeTeamName) {
+        setInitialHomeTeamOptions([{
+          id: initialData.homeTeamId,
+          name: initialData.homeTeamName,
+        }]);
+      } else {
+        setInitialHomeTeamOptions([]);
+      }
 
-      const awayTeamOption = {
-        id: initialData.awayTeamId,
-        name: initialData.awayTeamName,
-      };
-      setInitialAwayTeamOptions([awayTeamOption]);
+      if (initialData.awayTeamId && initialData.awayTeamName) {
+        setInitialAwayTeamOptions([{
+          id: initialData.awayTeamId,
+          name: initialData.awayTeamName,
+        }]);
+      } else {
+        setInitialAwayTeamOptions([]);
+      }
     } else {
       setInitialSeasonOptions([]);
       setInitialHomeTeamOptions([]);
@@ -176,8 +185,9 @@ const MatchForm = ({
 
       setFormData({
         competitionId: initialData.competitionId,
-        homeTeamId: initialData.homeTeamId,
-        awayTeamId: initialData.awayTeamId,
+        // Convert nulls (placeholder slots) to undefined so the dropdown stays unselected.
+        homeTeamId: initialData.homeTeamId ?? undefined,
+        awayTeamId: initialData.awayTeamId ?? undefined,
         refereeId: undefined,
         scheduledDateTime: initialData.scheduledDateTime,
         venue: initialData.venue || '',
@@ -474,11 +484,17 @@ const MatchForm = ({
           </div>
         </div>
 
+        {/*
+          Teams are optional at create-time: an admin may publish the fixture before knowing the
+          participants (future league round, playoff slot waiting on a feeder). The "Assign teams"
+          flow is used later to fill the slots in. We keep the visual label (no asterisk) and add a
+          small helper sentence so users understand the new behavior.
+        */}
         <div className="form-group create-match-form-row">
-          <label htmlFor="homeTeam">Home Team *</label>
+          <label htmlFor="homeTeam">{t('floorball.matches.homeTeamLabel', 'Home Team')}</label>
           <div className="input-wrapper">
             <SearchableInfiniteDropdown
-              placeholder="Select Home Team"
+              placeholder={t('floorball.matches.homeTeamPlaceholder', 'Select Home Team (optional)')}
               value={formData.homeTeamId}
               onChange={(value) =>
                 setFormData((prev) => ({
@@ -489,17 +505,16 @@ const MatchForm = ({
               onSearch={searchHomeTeamsWithInitial}
               searchPlaceholder="Search teams..."
               emptyMessage="No teams found"
-              required
               loadInitialDataOnMount={mode === 'edit'}
             />
           </div>
         </div>
 
         <div className="form-group create-match-form-row">
-          <label htmlFor="awayTeam">Away Team *</label>
+          <label htmlFor="awayTeam">{t('floorball.matches.awayTeamLabel', 'Away Team')}</label>
           <div className="input-wrapper">
             <SearchableInfiniteDropdown
-              placeholder="Select Away Team"
+              placeholder={t('floorball.matches.awayTeamPlaceholder', 'Select Away Team (optional)')}
               value={formData.awayTeamId}
               onChange={(value) =>
                 setFormData((prev) => ({
@@ -510,10 +525,16 @@ const MatchForm = ({
               onSearch={searchAwayTeamsWithInitial}
               searchPlaceholder="Search teams..."
               emptyMessage="No teams found"
-              required
               loadInitialDataOnMount={mode === 'edit'}
             />
           </div>
+        </div>
+
+        <div className="form-help-text">
+          {t(
+            'floorball.matches.teamsOptionalHint',
+            'Voit luoda ottelun ilman joukkueita ja asettaa ne myöhemmin "Aseta joukkueet" -toiminnolla.'
+          )}
         </div>
 
         <div className="form-group create-match-form-row">

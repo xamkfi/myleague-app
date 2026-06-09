@@ -159,13 +159,13 @@ export default function FixturesSection({
                       {match.homeTeamLogo && (
                         <img src={match.homeTeamLogo} alt="" className="schedule-match__team-logo" />
                       )}
-                      <span className="schedule-match__team-name">{match.homeTeamName}</span>
+                      <span className="schedule-match__team-name">{match.homeTeamName ?? 'TBD'}</span>
                     </div>
                     <div className={`schedule-match__team ${awayWon ? 'schedule-match__team--winner' : ''}`}>
                       {match.awayTeamLogo && (
                         <img src={match.awayTeamLogo} alt="" className="schedule-match__team-logo" />
                       )}
-                      <span className="schedule-match__team-name">{match.awayTeamName}</span>
+                      <span className="schedule-match__team-name">{match.awayTeamName ?? 'TBD'}</span>
                     </div>
                   </div>
 

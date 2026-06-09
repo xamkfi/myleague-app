@@ -174,9 +174,11 @@ const MatchTable = ({
             >
               <td>
                 <div className="match-table__teams">
-                  <span className="admin-table__name">{match.homeTeamName}</span>
+                  {/* Placeholder fixtures (not yet assigned) render as "TBD" so the row is still
+                      navigable to the edit/assign-teams flow. */}
+                  <span className="admin-table__name">{match.homeTeamName ?? 'TBD'}</span>
                   <span className="match-table__vs">vs</span>
-                  <span className="admin-table__name">{match.awayTeamName}</span>
+                  <span className="admin-table__name">{match.awayTeamName ?? 'TBD'}</span>
                 </div>
               </td>
 

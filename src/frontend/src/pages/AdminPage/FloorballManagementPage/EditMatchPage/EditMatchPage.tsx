@@ -90,16 +90,32 @@ const EditMatchPage = () => {
 
       const changes: Promise<unknown>[] = [];
 
+      // Changing the competition (season / tournament) of an already-created match is not
+      // currently supported by the backend — the previous controller exposed a route that
+      // never existed in any controller's implementation, so the request silently 404'd. We
+      // surface that explicitly here instead of pretending the change succeeded.
       if (updatedData.competitionId && updatedData.competitionId !== matchData.competitionId) {
-        changes.push(floorballMatchService.changeCompetition(matchData.id, updatedData.competitionId));
+        throw new Error(
+          'Changing the competition (season/tournament) of an existing match is not supported. ' +
+          'Delete the match and create a new one in the target competition instead.'
+        );
       }
-      
-      if (
-        updatedData.homeTeamId &&
-        updatedData.awayTeamId &&
-        (updatedData.homeTeamId !== matchData.homeTeamId || updatedData.awayTeamId !== matchData.awayTeamId)
-      ) {
-        changes.push(floorballMatchService.changeTeams(matchData.id, updatedData.homeTeamId, updatedData.awayTeamId));
+
+      // Detect ANY change to the team slots — including clearing a slot back to TBD or filling in
+      // a previously empty slot. The form treats both fields as optional, so undefined ↔ null are
+      // interchangeable from the form's perspective; normalize both to null for the API.
+      const normalizedHome: string | null = updatedData.homeTeamId ?? null;
+      const normalizedAway: string | null = updatedData.awayTeamId ?? null;
+      const homeChanged: boolean = normalizedHome !== (matchData.homeTeamId ?? null);
+      const awayChanged: boolean = normalizedAway !== (matchData.awayTeamId ?? null);
+      if (homeChanged || awayChanged) {
+        // Route through the new AssignMatchTeams endpoint so the backend can propagate the change
+        // forward through the playoff bracket where applicable. Works for the "create with no
+        // teams → fill them in later" flow as well as for jury overrides.
+        changes.push(floorballMatchService.assignTeams(matchData.id, {
+          homeTeamId: normalizedHome,
+          awayTeamId: normalizedAway,
+        }));
       }
       
       if (updatedData.venue !== matchData.venue) {

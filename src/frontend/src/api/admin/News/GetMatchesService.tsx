@@ -71,7 +71,7 @@ export const getMatchesService = {
     if (params?.status !== undefined) searchParams.append('status', params.status.toString());
     if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
 
-    const url = `${API_URL}/FloorballMatch${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const url = `${API_URL}/floorball-matches${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
     const response = await authFetch(url);
     
     if (!response.ok) {
@@ -87,7 +87,7 @@ export const getMatchesService = {
   },
 
   getById: async (id: string): Promise<FloorballMatch> => {
-    const response = await authFetch(`${API_URL}/FloorballMatch/${id}`);
+    const response = await authFetch(`${API_URL}/floorball-matches/by-id/${id}`);
     if (!response.ok) {
       throw new Error('Failed to fetch match');
     }
@@ -99,7 +99,7 @@ export const getMatchesService = {
   },
 
   create: async (data: Omit<FloorballMatch, 'id'>): Promise<FloorballMatch> => {
-    const response = await authFetch(`${API_URL}/FloorballMatch`, {
+    const response = await authFetch(`${API_URL}/floorball-matches`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -117,12 +117,13 @@ export const getMatchesService = {
   },
 
   update: async (id: string, data: Partial<FloorballMatch>): Promise<FloorballMatch> => {
-    const response = await authFetch(`${API_URL}/FloorballMatch/${id}`, {
+    // Backend's UpdateFloorballMatchCommand expects the match id in the body, not in the URL.
+    const response = await authFetch(`${API_URL}/floorball-matches`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, id }),
     });
     if (!response.ok) {
       throw new Error('Failed to update match');
@@ -135,7 +136,7 @@ export const getMatchesService = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const response = await authFetch(`${API_URL}/FloorballMatch/${id}`, {
+    const response = await authFetch(`${API_URL}/floorball-matches/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {

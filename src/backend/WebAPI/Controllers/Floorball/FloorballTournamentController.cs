@@ -9,6 +9,7 @@ using Application.Features.Floorball.Tournaments.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 using WebAPI.Models.Floorball;
 
@@ -17,10 +18,8 @@ namespace WebAPI.Controllers.Floorball
     /// <summary>
     /// Controller for managing floorball tournaments
     /// </summary>
-    [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    public class FloorballTournamentController : ControllerBase
+    public class FloorballTournamentController : BaseApiController
     {
         private readonly IMediator _mediator;
         private readonly ILogger<FloorballTournamentController> _logger;
@@ -64,13 +63,7 @@ namespace WebAPI.Controllers.Floorball
             GetAllFloorballTournamentsQuery query = new GetAllFloorballTournamentsQuery();
             Result<List<FloorballTournamentDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballTournamentDto>>.SuccessResponse(result.Data.ToList(), "Floorball tournaments retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve floorball tournaments";
-            return BadRequest(ApiResponse<List<FloorballTournamentDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Floorball tournaments retrieved successfully", "Failed to retrieve floorball tournaments");
         }
 
         /// <summary>
@@ -87,13 +80,7 @@ namespace WebAPI.Controllers.Floorball
             GetActiveFloorballTournamentsQuery query = new GetActiveFloorballTournamentsQuery();
             Result<List<FloorballTournamentDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballTournamentDto>>.SuccessResponse(result.Data.ToList(), "Active floorball tournaments retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve active floorball tournaments";
-            return BadRequest(ApiResponse<List<FloorballTournamentDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Active floorball tournaments retrieved successfully", "Failed to retrieve active floorball tournaments");
         }
 
         /// <summary>
@@ -112,18 +99,7 @@ namespace WebAPI.Controllers.Floorball
             GetFloorballTournamentByIdQuery query = new GetFloorballTournamentByIdQuery(competitionId);
             Result<FloorballTournamentDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Floorball tournament retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve floorball tournament";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Floorball tournament retrieved successfully", "Failed to retrieve floorball tournament");
         }
 
         /// <summary>
@@ -138,10 +114,7 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballTournamentDto>>> CreateTournament([FromBody] CreateFloorballTournamentRequest request)
         {
-            string sanitizedTournamentNameForLog = (request.Name ?? string.Empty)
-                .Replace("\r", string.Empty)
-                .Replace("\n", string.Empty);
-            _logger.LogInformation("Creating floorball tournament: {name}", sanitizedTournamentNameForLog);
+            _logger.LogInformation("Creating floorball tournament: {name}", SanitizeForLog(request.Name));
 
             IReadOnlyList<PlayoffScheduleSlotInput>? scheduleSlots = MapPlayoffSchedule(request.PlayoffSchedule);
 
@@ -169,7 +142,7 @@ namespace WebAPI.Controllers.Floorball
 
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
+            if (result.IsSuccess && result.Data is not null)
             {
                 return CreatedAtAction(
                     nameof(GetTournamentById),
@@ -178,10 +151,7 @@ namespace WebAPI.Controllers.Floorball
                 );
             }
 
-            string errorMessage = result.Error ?? "Failed to create floorball tournament";
-            List<string> errorList = result.GetAllErrors().ToList();
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+            return ToErrorResponse(result, "Failed to create floorball tournament");
         }
 
         /// <summary>
@@ -227,20 +197,7 @@ namespace WebAPI.Controllers.Floorball
 
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Floorball tournament updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update floorball tournament";
-            List<string> errorList = result.GetAllErrors().ToList();
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Floorball tournament updated successfully", "Failed to update floorball tournament");
         }
 
         /// <summary>
@@ -261,18 +218,7 @@ namespace WebAPI.Controllers.Floorball
             DeleteFloorballTournamentCommand command = new DeleteFloorballTournamentCommand(competitionId);
             Result result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse.SuccessResponse("Floorball tournament deleted successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to delete floorball tournament";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+            return HandleVoidResult(result, "Floorball tournament deleted successfully", "Failed to delete floorball tournament");
         }
 
         /// <summary>
@@ -293,18 +239,7 @@ namespace WebAPI.Controllers.Floorball
             StartTournamentGroupStageCommand command = new StartTournamentGroupStageCommand(competitionId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Tournament group stage started successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to start tournament group stage";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Tournament group stage started successfully", "Failed to start tournament group stage");
         }
 
         /// <summary>
@@ -340,22 +275,7 @@ namespace WebAPI.Controllers.Floorball
                 new UpdateTournamentPlayoffScheduleCommand(competitionId, slots);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(
-                    result.Data,
-                    "Tournament playoff schedule updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update tournament playoff schedule";
-            List<string> errorList = result.GetAllErrors().ToList();
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Tournament playoff schedule updated successfully", "Failed to update tournament playoff schedule");
         }
 
         /// <summary>
@@ -376,18 +296,7 @@ namespace WebAPI.Controllers.Floorball
             StartTournamentPlayoffStageCommand command = new StartTournamentPlayoffStageCommand(competitionId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Tournament playoff stage started successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to start tournament playoff stage";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Tournament playoff stage started successfully", "Failed to start tournament playoff stage");
         }
 
         /// <summary>
@@ -407,18 +316,7 @@ namespace WebAPI.Controllers.Floorball
             GetTournamentPlayoffBracketQuery query = new GetTournamentPlayoffBracketQuery(competitionId);
             Result<FloorballPlayoffBracketDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballPlayoffBracketDto>.SuccessResponse(result.Data, "Tournament playoff bracket retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve tournament playoff bracket";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballPlayoffBracketDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballPlayoffBracketDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Tournament playoff bracket retrieved successfully", "Failed to retrieve tournament playoff bracket");
         }
 
         /// <summary>
@@ -439,20 +337,7 @@ namespace WebAPI.Controllers.Floorball
             CompleteTournamentCommand command = new CompleteTournamentCommand(competitionId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Floorball tournament completed successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to complete floorball tournament";
-            List<string> errorList = result.GetAllErrors().ToList();
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Floorball tournament completed successfully", "Failed to complete floorball tournament");
         }
 
         /// <summary>
@@ -473,20 +358,7 @@ namespace WebAPI.Controllers.Floorball
             CancelTournamentCommand command = new CancelTournamentCommand(competitionId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Floorball tournament cancelled successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to cancel floorball tournament";
-            List<string> errorList = result.GetAllErrors().ToList();
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Floorball tournament cancelled successfully", "Failed to cancel floorball tournament");
         }
 
         /// <summary>
@@ -503,25 +375,15 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballTournamentDto>>> AddGroupToTournament(Guid competitionId, [FromBody] AddGroupToTournamentRequest request)
         {
-            _logger.LogInformation("Adding group '{groupName}' to floorball tournament with ID: {competitionId}", request.GroupName, competitionId);
+            _logger.LogInformation(
+                "Adding group '{groupName}' to floorball tournament with ID: {competitionId}",
+                SanitizeForLog(request.GroupName),
+                competitionId);
 
             AddGroupToTournamentCommand command = new AddGroupToTournamentCommand(competitionId, request.GroupName);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Group added to tournament successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to add group to tournament";
-            List<string> errorList = result.GetAllErrors().ToList();
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Group added to tournament successfully", "Failed to add group to tournament");
         }
 
         /// <summary>
@@ -543,20 +405,7 @@ namespace WebAPI.Controllers.Floorball
             RemoveGroupFromTournamentCommand command = new RemoveGroupFromTournamentCommand(competitionId, groupId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Group removed from tournament successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to remove group from tournament";
-            List<string> errorList = result.GetAllErrors().ToList();
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Group removed from tournament successfully", "Failed to remove group from tournament");
         }
 
         /// <summary>
@@ -579,20 +428,7 @@ namespace WebAPI.Controllers.Floorball
             AddTeamToTournamentGroupCommand command = new AddTeamToTournamentGroupCommand(competitionId, groupId, request.TeamId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Team added to tournament group successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to add team to tournament group";
-            List<string> errorList = result.GetAllErrors().ToList();
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Team added to tournament group successfully", "Failed to add team to tournament group");
         }
 
         /// <summary>
@@ -615,20 +451,7 @@ namespace WebAPI.Controllers.Floorball
             RemoveTeamFromTournamentGroupCommand command = new RemoveTeamFromTournamentGroupCommand(competitionId, groupId, teamId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTournamentDto>.SuccessResponse(result.Data, "Team removed from tournament group successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to remove team from tournament group";
-            List<string> errorList = result.GetAllErrors().ToList();
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTournamentDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Team removed from tournament group successfully", "Failed to remove team from tournament group");
         }
     }
 }

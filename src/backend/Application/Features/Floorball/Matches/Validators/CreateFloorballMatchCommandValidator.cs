@@ -14,14 +14,20 @@ public class CreateFloorballMatchCommandValidator : AbstractValidator<CreateFloo
             .NotEmpty().WithMessage("Competition ID is required")
             .NotEqual(Guid.Empty).WithMessage("Competition ID cannot be empty");
 
-        RuleFor(x => x.HomeTeamId)
-            .NotEmpty().WithMessage("Home team ID is required")
-            .NotEqual(Guid.Empty).WithMessage("Home team ID cannot be empty");
+        // Teams are optional at creation: fixtures can be published before the participants are
+        // known (future league round, playoff slot before feeders resolve). When supplied each
+        // team ID must still be non-empty, and the two sides cannot point at the same team.
+        RuleFor(x => x.HomeTeamId!.Value)
+            .NotEqual(Guid.Empty).WithMessage("Home team ID cannot be empty")
+            .When(x => x.HomeTeamId.HasValue);
+
+        RuleFor(x => x.AwayTeamId!.Value)
+            .NotEqual(Guid.Empty).WithMessage("Away team ID cannot be empty")
+            .When(x => x.AwayTeamId.HasValue);
 
         RuleFor(x => x.AwayTeamId)
-            .NotEmpty().WithMessage("Away team ID is required")
-            .NotEqual(Guid.Empty).WithMessage("Away team ID cannot be empty")
-            .NotEqual(x => x.HomeTeamId).WithMessage("Away team must be different from home team");
+            .NotEqual(x => x.HomeTeamId).WithMessage("Away team must be different from home team")
+            .When(x => x.HomeTeamId.HasValue && x.AwayTeamId.HasValue);
 
         //TODO: Temporary disable for old data import
         //RuleFor(x => x.ScheduledDateTime)

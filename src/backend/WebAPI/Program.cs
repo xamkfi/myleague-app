@@ -5,6 +5,7 @@ using MyLeague.Infrastructure.DependencyInjections;
 using MyLeague.Infrastructure.SignalR;
 using WebAPI.Middlewares;
 using WebAPI.DependencyInjections;
+using WebAPI.Services;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -150,6 +151,9 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// Register WebAPI-layer services
+builder.Services.AddSingleton<IMatchEventRateLimiter, MatchEventRateLimiter>();
 
 // Register application services
 builder.Services.AddApplication();

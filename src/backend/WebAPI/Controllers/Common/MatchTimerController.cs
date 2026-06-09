@@ -12,11 +12,9 @@ namespace WebAPI.Controllers.Common
     /// <summary>
     /// Controller for managing match timers with RESTful routes
     /// </summary>
-    [ApiController]
     [Authorize]
     [Route("api/matches/{matchId:guid}/timer")]
-    [Produces("application/json")]
-    public class MatchTimerController : ControllerBase
+    public class MatchTimerController : BaseApiController
     {
         private readonly IMatchTimerService _timerService;
         private readonly ILogger<MatchTimerController> _logger;

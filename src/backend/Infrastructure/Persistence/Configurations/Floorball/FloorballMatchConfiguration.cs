@@ -70,12 +70,15 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                     .HasDefaultValue(true);
             });
 
-            // Configure foreign key relationships with navigation properties within the same context
+            // Home and away team IDs are nullable so future fixtures can be published before the
+            // participants are known (e.g. season league round 12 announced in August, or playoff
+            // slots whose feeder match hasn't completed yet). Start() in the domain layer enforces
+            // that both slots are filled before a match can transition to InProgress.
             builder.Property(m => m.HomeTeamId)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(m => m.AwayTeamId)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(m => m.CompetitionId)
                 .IsRequired();
@@ -89,11 +92,13 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.HasOne(m => m.HomeTeam)
                 .WithMany()
                 .HasForeignKey(m => m.HomeTeamId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(m => m.AwayTeam)
                 .WithMany()
                 .HasForeignKey(m => m.AwayTeamId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Configure the relationship with referees using a simple many-to-many join table

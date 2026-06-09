@@ -110,8 +110,8 @@ export default function MatchesList({
       key={match.id}
       id={match.id}
       scheduledDateTime={match.scheduledDateTime}
-      homeTeamName={match.homeTeamName}
-      awayTeamName={match.awayTeamName}
+      homeTeamName={match.homeTeamName ?? t('match.tbd', 'TBD')}
+      awayTeamName={match.awayTeamName ?? t('match.tbd', 'TBD')}
       homeTeamLogo={match.homeTeamLogo || undefined}
       awayTeamLogo={match.awayTeamLogo || undefined}
       homeScore={match.homeScore}
@@ -124,7 +124,9 @@ export default function MatchesList({
           {checkIfTeamWon(match) ? 'W' : 'L'}
         </span>
       ) : undefined}
-      onClick={() => navigateToTeamPage(match.homeTeamId)}
+      // When the home team is not yet assigned (placeholder fixture), the row should still be
+      // clickable but should not navigate anywhere — fall back to a no-op via empty string.
+      onClick={() => match.homeTeamId && navigateToTeamPage(match.homeTeamId)}
     />
   );
 

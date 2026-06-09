@@ -240,26 +240,34 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 
             foreach (FloorballMatch match in matches)
             {
+                // Standings only count matches where both participants are known. Skip placeholder
+                // entries gracefully so future fixtures don't crash this query.
+                if (!match.HomeTeamId.HasValue || !match.AwayTeamId.HasValue)
+                    continue;
+
+                Guid homeId = match.HomeTeamId.Value;
+                Guid awayId = match.AwayTeamId.Value;
+
                 // Home team won
                 if (match.HomeScore > match.AwayScore)
                 {
-                    teamPoints[match.HomeTeamId] += 3;
+                    teamPoints[homeId] += 3;
                 }
                 // Away team won
                 else if (match.AwayScore > match.HomeScore)
                 {
-                    teamPoints[match.AwayTeamId] += 3;
+                    teamPoints[awayId] += 3;
                 }
                 // Draw
                 else
                 {
-                    teamPoints[match.HomeTeamId] += 1;
-                    teamPoints[match.AwayTeamId] += 1;
+                    teamPoints[homeId] += 1;
+                    teamPoints[awayId] += 1;
                 }
 
                 // Update goal difference
-                teamGoalDifference[match.HomeTeamId] += match.HomeScore - match.AwayScore;
-                teamGoalDifference[match.AwayTeamId] += match.AwayScore - match.HomeScore;
+                teamGoalDifference[homeId] += match.HomeScore - match.AwayScore;
+                teamGoalDifference[awayId] += match.AwayScore - match.HomeScore;
             }
 
             // Sort teams by points and goal difference

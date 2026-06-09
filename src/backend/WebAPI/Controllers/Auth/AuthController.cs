@@ -8,6 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using WebAPI.Controllers.Common;
 using WebAPI.Models.Auth;
 using WebAPI.Models.Common;
 
@@ -16,10 +17,8 @@ namespace WebAPI.Controllers.Auth;
 /// <summary>
 /// Controller for passwordless email authentication
 /// </summary>
-[ApiController]
 [Route("api/[controller]")]
-[Produces("application/json")]
-public class AuthController : ControllerBase
+public class AuthController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<AuthController> _logger;
@@ -51,7 +50,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse>> Login([FromBody] LoginRequest request)
     {
-        _logger.LogInformation("Login code requested for email: {Email}", request.Email);
+        _logger.LogInformation("Login code requested for email: {Email}", SanitizeForLog(request.Email));
 
         RequestLoginCodeCommand command = new(request.Email);
         Result<string?> result = await _mediator.Send(command);
@@ -65,7 +64,7 @@ public class AuthController : ControllerBase
             {
                 _logger.LogWarning(
                     "AutoFillLoginCode is enabled - returning login code to client for {Email}. Disable this in production.",
-                    request.Email);
+                    SanitizeForLog(request.Email));
 
                 return Ok(ApiResponse<object>.SuccessResponse(
                     new { autoFillCode = result.Data },
@@ -90,7 +89,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<AuthTokenDto>>> Verify([FromBody] VerifyCodeRequest request)
     {
-        _logger.LogInformation("Login code verification for email: {Email}", request.Email);
+        _logger.LogInformation("Login code verification for email: {Email}", SanitizeForLog(request.Email));
 
         VerifyLoginCodeCommand command = new(request.Email, request.Code);
         Result<AuthTokenDto> result = await _mediator.Send(command);
@@ -136,16 +135,9 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse>> Logout([FromBody] LogoutRequest request)
     {
-        RevokeTokenCommand command = new(request.RefreshToken);
-        Result<bool> result = await _mediator.Send(command);
+        Result<bool> result = await _mediator.Send(new RevokeTokenCommand(request.RefreshToken));
 
-        if (result.IsSuccess)
-        {
-            return Ok(ApiResponse.SuccessResponse("Logged out successfully."));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+        return HandleVoidResult(result, "Logged out successfully.", "Failed to log out");
     }
 
     /// <summary>
@@ -163,16 +155,9 @@ public class AuthController : ControllerBase
     {
         _logger.LogInformation("Admin email verification attempted");
 
-        VerifyAdminEmailCommand command = new(request.Token);
-        Result<bool> result = await _mediator.Send(command);
+        Result<bool> result = await _mediator.Send(new VerifyAdminEmailCommand(request.Token));
 
-        if (result.IsSuccess)
-        {
-            return Ok(ApiResponse.SuccessResponse("Email verified successfully. Your account is now active."));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+        return HandleVoidResult(result, "Email verified successfully. Your account is now active.", "Email verification failed");
     }
 
     /// <summary>
@@ -193,10 +178,9 @@ public class AuthController : ControllerBase
             return Unauthorized(ApiResponse<UserDto>.ErrorResponse("Invalid token."));
         }
 
-        GetUserByIdQuery query = new(userId);
-        Result<UserDto> result = await _mediator.Send(query);
+        Result<UserDto> result = await _mediator.Send(new GetUserByIdQuery(userId));
 
-        if (result.IsSuccess && result.Data != null)
+        if (result.IsSuccess && result.Data is not null)
         {
             return Ok(ApiResponse<UserDto>.SuccessResponse(result.Data, "User retrieved successfully."));
         }

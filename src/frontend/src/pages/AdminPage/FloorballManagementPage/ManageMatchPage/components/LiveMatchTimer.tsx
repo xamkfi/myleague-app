@@ -23,6 +23,13 @@ interface LiveMatchTimerProps {
   isStartMatchDisabled: boolean;
   overtimePeriodNumber: number;
   shootoutPeriodNumber: number;
+  /**
+   * Optional human-readable reason that the Start Match button is disabled. Used as the
+   * button label fallback and as its `title` attribute so the operator always sees *why*
+   * the action is unavailable. When omitted we fall back to the legacy "Select goalies to
+   * start" copy for backwards compatibility.
+   */
+  startDisabledReason?: string;
 }
 
 const LiveMatchTimer = ({
@@ -41,6 +48,7 @@ const LiveMatchTimer = ({
   isStartMatchDisabled,
   overtimePeriodNumber,
   shootoutPeriodNumber,
+  startDisabledReason,
 }: LiveMatchTimerProps) => {
   const {
     currentPeriod,
@@ -134,8 +142,11 @@ const LiveMatchTimer = ({
                   onClick={onStartMatch}
                   disabled={loading || isStartMatchDisabled}
                   className="start-match-btn"
+                  title={isStartMatchDisabled ? (startDisabledReason ?? 'Select goalies to start') : undefined}
                 >
-                  {isStartMatchDisabled ? 'Select goalies to start' : 'Start Match'}
+                  {isStartMatchDisabled
+                    ? (startDisabledReason ?? 'Select goalies to start')
+                    : 'Start Match'}
                 </button>
               </div>
           ) : currentMatch.status === 'Completed' ? (
