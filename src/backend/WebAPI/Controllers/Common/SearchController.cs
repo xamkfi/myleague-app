@@ -10,10 +10,8 @@ namespace WebAPI.Controllers.Common
     /// <summary>
     /// Controller for handling global search operations across multiple entity types.
     /// </summary>
-    [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    public class SearchController : ControllerBase
+    public class SearchController : BaseApiController
     {
         private readonly IMediator _mediator;
         private readonly ILogger<SearchController> _logger;
@@ -41,16 +39,9 @@ namespace WebAPI.Controllers.Common
         {
             _logger.LogInformation("Performing global search with term: {SearchTerm}", term);
 
-            GlobalSearchQuery query = new GlobalSearchQuery(term);
-            Result<GlobalSearchResultDto> result = await _mediator.Send(query);
+            Result<GlobalSearchResultDto> result = await _mediator.Send(new GlobalSearchQuery(term));
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<GlobalSearchResultDto>.SuccessResponse(result.Data, "Search completed successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<GlobalSearchResultDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Search completed successfully", "Search failed");
         }
     }
 }

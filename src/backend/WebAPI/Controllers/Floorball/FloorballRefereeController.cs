@@ -1,7 +1,3 @@
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
 using Application.Common;
 using Application.Features.Floorball.Referees.Commands;
 using Application.Features.Floorball.Referees.DTOs;
@@ -9,8 +5,8 @@ using Application.Features.Floorball.Referees.Queries;
 using Domain.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Floorball;
@@ -20,10 +16,8 @@ namespace WebAPI.Controllers.Floorball
     /// <summary>
     /// Controller for managing floorball referees
     /// </summary>
-    [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    public class FloorballRefereeController : ControllerBase
+    public class FloorballRefereeController : BaseApiController
     {
         private readonly IMediator _mediator;
         private readonly ILogger<FloorballRefereeController> _logger;
@@ -53,15 +47,12 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Creating floorball referee for person ID: {personId}", request.PersonId);
 
-            // Validate LicenseIssueDate format
             if (!DateTime.TryParse(request.LicenseIssueDate, out DateTime licenseIssueDateUtc))
                 return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse("License issue date must be a valid date (e.g., 2020-05-05, 10-10-1990, 2020.10.25)"));
 
-            // Validate LicenseExpiryDate format
             if (!DateTime.TryParse(request.LicenseExpiryDate, out DateTime licenseExpiryDateUtc))
                 return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse("License expiry date must be a valid date (e.g., 2030-05-05, 10-10-2030, 2030.10.25)"));
 
-            // Validate that expiry date is after issue date
             if (licenseExpiryDateUtc <= licenseIssueDateUtc)
                 return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse("License expiry date must be after the issue date"));
 
@@ -72,14 +63,7 @@ namespace WebAPI.Controllers.Floorball
 
             Result<FloorballRefereeDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballRefereeDto>.SuccessResponse(result.Data, "Floorball referee created successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to create floorball referee";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-            return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Floorball referee created successfully", "Failed to create floorball referee");
         }
 
         /// <summary>
@@ -101,23 +85,20 @@ namespace WebAPI.Controllers.Floorball
             DateTime? licenseIssueDateUtc = null;
             DateTime? licenseExpiryDateUtc = null;
 
-            // Validate LicenseIssueDate format if provided
             if (!string.IsNullOrEmpty(request.LicenseIssueDate))
             {
                 if (!DateTime.TryParse(request.LicenseIssueDate, out DateTime parsedIssueDate))
                     return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse("License issue date must be a valid date (e.g., 2020-05-05, 10-10-1990, 2020.10.25)"));
-                licenseIssueDateUtc = DateTime.SpecifyKind(parsedIssueDate, DateTimeKind.Utc);  // ← ADD THIS
+                licenseIssueDateUtc = DateTime.SpecifyKind(parsedIssueDate, DateTimeKind.Utc);
             }
 
-            // Validate LicenseExpiryDate format if provided
             if (!string.IsNullOrEmpty(request.LicenseExpiryDate))
             {
                 if (!DateTime.TryParse(request.LicenseExpiryDate, out DateTime parsedExpiryDate))
                     return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse("License expiry date must be a valid date (e.g., 2030-05-05, 10-10-2030, 2030.10.25)"));
-                licenseExpiryDateUtc = DateTime.SpecifyKind(parsedExpiryDate, DateTimeKind.Utc);  // ← ADD THIS
+                licenseExpiryDateUtc = DateTime.SpecifyKind(parsedExpiryDate, DateTimeKind.Utc);
             }
 
-            // Validate that expiry date is after issue date if both are provided
             if (licenseIssueDateUtc.HasValue && licenseExpiryDateUtc.HasValue && licenseExpiryDateUtc <= licenseIssueDateUtc)
                 return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse("License expiry date must be after the issue date"));
 
@@ -130,19 +111,7 @@ namespace WebAPI.Controllers.Floorball
 
             Result<FloorballRefereeDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballRefereeDto>.SuccessResponse(result.Data, "Floorball referee updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update floorball referee";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Floorball referee updated successfully", "Failed to update floorball referee");
         }
 
         /// <summary>
@@ -160,22 +129,9 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Deleting floorball referee with ID: {id}", id);
 
-            DeleteFloorballRefereeCommand command = new DeleteFloorballRefereeCommand(id);
-            Result<FloorballRefereeDto> result = await _mediator.Send(command);
+            Result<FloorballRefereeDto> result = await _mediator.Send(new DeleteFloorballRefereeCommand(id));
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse.SuccessResponse("Floorball referee deleted successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to delete floorball referee";
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+            return HandleVoidResult(result, "Floorball referee deleted successfully", "Failed to delete floorball referee");
         }
 
         /// <summary>
@@ -198,21 +154,13 @@ namespace WebAPI.Controllers.Floorball
             [FromQuery] string? searchTerm = null,
             [FromQuery] int? licenseExpiringWithinDays = null)
         {
-            _logger.LogInformation("Getting all floorball referees - Page: {Page}, PageSize: {PageSize}, IsActive: {IsActive}, SearchTerm: {SearchTerm}, LicenseExpiringWithinDays: {LicenseExpiringWithinDays}", 
+            _logger.LogInformation("Getting all floorball referees - Page: {Page}, PageSize: {PageSize}, IsActive: {IsActive}, SearchTerm: {SearchTerm}, LicenseExpiringWithinDays: {LicenseExpiringWithinDays}",
                 page, pageSize, isActive, searchTerm, licenseExpiringWithinDays);
 
-            GetAllFloorballRefereesQuery query = new GetAllFloorballRefereesQuery(
-                page, pageSize, isActive, searchTerm, licenseExpiringWithinDays);
+            Result<PagedResult<FloorballRefereeDto>> result = await _mediator.Send(
+                new GetAllFloorballRefereesQuery(page, pageSize, isActive, searchTerm, licenseExpiringWithinDays));
 
-            Result<PagedResult<FloorballRefereeDto>> result = await _mediator.Send(query);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(PaginatedApiResponse<FloorballRefereeDto>.SuccessResponse(result.Data, "Floorball referees retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve floorball referees";
-            return StatusCode(500, PaginatedApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage));
+            return HandlePaginatedResult(result, "Floorball referees retrieved successfully", "Failed to retrieve floorball referees");
         }
 
         /// <summary>
@@ -228,21 +176,9 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting floorball referee with ID: {RefereeId}", id);
 
-            GetFloorballRefereeByIdQuery query = new GetFloorballRefereeByIdQuery(id);
-            Result<FloorballRefereeDto> result = await _mediator.Send(query);
+            Result<FloorballRefereeDto> result = await _mediator.Send(new GetFloorballRefereeByIdQuery(id));
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballRefereeDto>.SuccessResponse(result.Data, "Floorball referee retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve floorball referee";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballRefereeDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Floorball referee retrieved successfully", "Failed to retrieve floorball referee");
         }
     }
-} 
+}

@@ -68,14 +68,7 @@ namespace WebAPI.Controllers.Floorball
 
             Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query, cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(PaginatedApiResponse<FloorballMatchDto>.SuccessResponse(
-                    result.Data, "Floorball matches retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, PaginatedApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandlePaginatedResult(result, "Floorball matches retrieved successfully", "Failed to retrieve floorball matches");
         }
 
         /// <summary>
@@ -94,19 +87,7 @@ namespace WebAPI.Controllers.Floorball
             Result<FloorballMatchDto> result = await _mediator.Send(
                 new GetFloorballMatchByIdQuery(id), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballMatchDto>.SuccessResponse(
-                    result.Data, "Floorball match retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Floorball match not found";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballMatchDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Floorball match retrieved successfully", "Floorball match not found");
         }
 
         /// <summary>
@@ -125,15 +106,7 @@ namespace WebAPI.Controllers.Floorball
             Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(
                 new GetFloorballMatchesBySeasonQuery(competitionId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                List<FloorballMatchDto> matchList = result.Data.ToList();
-                return Ok(ApiResponse<List<FloorballMatchDto>>.SuccessResponse(
-                    matchList, "Retrieved floorball matches with season ID successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve floorball matches";
-            return BadRequest(ApiResponse<List<FloorballMatchDto>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, "Retrieved floorball matches with season ID successfully", "Failed to retrieve floorball matches");
         }
 
         /// <summary>
@@ -160,18 +133,7 @@ namespace WebAPI.Controllers.Floorball
 
             Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query, cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(PaginatedApiResponse<FloorballMatchDto>.SuccessResponse(
-                    result.Data, "Retrieved floorball matches with team ID successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve floorball matches with team ID";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballMatchDto>>.ErrorResponse(errorMessage));
-            }
-            return StatusCode(500, ApiResponse<List<FloorballMatchDto>>.ErrorResponse(errorMessage));
+            return HandlePaginatedResult(result, "Retrieved floorball matches with team ID successfully", "Failed to retrieve floorball matches with team ID");
         }
 
         /// <summary>
@@ -190,20 +152,7 @@ namespace WebAPI.Controllers.Floorball
             Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(
                 new GetTodaysMatchesByTeamQuery(teamId), cancellationToken);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                List<FloorballMatchDto> matches = result.Data.ToList();
-                return Ok(ApiResponse<List<FloorballMatchDto>>.SuccessResponse(
-                    matches, "Retrieved today's floorball matches with team ID successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve today's floorball matches with team ID";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballMatchDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballMatchDto>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, "Retrieved today's floorball matches with team ID successfully", "Failed to retrieve today's floorball matches with team ID");
         }
 
         /// <summary>
@@ -319,12 +268,7 @@ namespace WebAPI.Controllers.Floorball
             Result result = await _mediator.Send(
                 new DeleteFloorballMatchCommand(matchId), cancellationToken);
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse.SuccessResponse("Match deleted successfully"));
-            }
-
-            return ToErrorResponse(result, "Failed to delete match");
+            return HandleVoidResult(result, "Match deleted successfully", "Failed to delete match");
         }
     }
 }

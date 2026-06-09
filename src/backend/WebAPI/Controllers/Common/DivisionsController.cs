@@ -1,4 +1,3 @@
-using System;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +13,8 @@ namespace WebAPI.Controllers.Common;
 /// <summary>
 /// Controller for managing divisions
 /// </summary>
-[ApiController]
 [Route("api/[controller]")]
-[Produces("application/json")]
-public class DivisionsController : ControllerBase
+public class DivisionsController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<DivisionsController> _logger;
@@ -43,18 +40,10 @@ public class DivisionsController : ControllerBase
     public async Task<ActionResult<ApiResponse<List<DivisionDto>>>> GetAllDivisions()
     {
         _logger.LogInformation("Getting all divisions");
-        
-        GetAllDivisionsQuery query = new GetAllDivisionsQuery();
-        Result<IEnumerable<DivisionDto>> result = await _mediator.Send(query);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            List<DivisionDto> divisionsList = result.Data.ToList();
-            return Ok(ApiResponse<List<DivisionDto>>.SuccessResponse(divisionsList, "Divisions retrieved successfully"));
-        }
+        Result<IEnumerable<DivisionDto>> result = await _mediator.Send(new GetAllDivisionsQuery());
 
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        return StatusCode(500, ApiResponse<List<DivisionDto>>.ErrorResponse(errorMessage));
+        return HandleListResult(result, "Divisions retrieved successfully", "Failed to retrieve divisions");
     }
 
     /// <summary>
@@ -69,17 +58,10 @@ public class DivisionsController : ControllerBase
     public async Task<ActionResult<ApiResponse<DivisionDto>>> GetDivisionById(Guid id)
     {
         _logger.LogInformation("Getting division with ID: {DivisionId}", id);
-        
-        GetDivisionByIdQuery query = new GetDivisionByIdQuery(id);
-        Result<DivisionDto> result = await _mediator.Send(query);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<DivisionDto>.SuccessResponse(result.Data, "Division retrieved successfully"));
-        }
+        Result<DivisionDto> result = await _mediator.Send(new GetDivisionByIdQuery(id));
 
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        return NotFound(ApiResponse<DivisionDto>.ErrorResponse(errorMessage));
+        return HandleResult(result, "Division retrieved successfully", "Division not found");
     }
 
     /// <summary>
@@ -93,7 +75,7 @@ public class DivisionsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<List<DivisionDto>>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<DivisionDto>>>> GetDivisionsBySportType(
-        string sportType, 
+        string sportType,
         [FromQuery] bool activeOnly = false)
     {
         if (!TryParseSportType(sportType, out SportsCategory parsedSportType, out string? parseError))
@@ -102,25 +84,11 @@ public class DivisionsController : ControllerBase
         }
 
         _logger.LogInformation("Getting divisions for sport type: {SportType}, ActiveOnly: {ActiveOnly}", parsedSportType, activeOnly);
-        
-        GetDivisionsBySportTypeQuery query = new GetDivisionsBySportTypeQuery(parsedSportType, activeOnly);
-        Result<IEnumerable<DivisionDto>> result = await _mediator.Send(query);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            List<DivisionDto> divisionsList = result.Data.ToList();
-            return Ok(ApiResponse<List<DivisionDto>>.SuccessResponse(divisionsList, $"Divisions for {sportType} retrieved successfully"));
-        }
+        Result<IEnumerable<DivisionDto>> result = await _mediator.Send(
+            new GetDivisionsBySportTypeQuery(parsedSportType, activeOnly));
 
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        
-        if (errorMessage.Contains("required", StringComparison.OrdinalIgnoreCase) || 
-            errorMessage.Contains("invalid", StringComparison.OrdinalIgnoreCase))
-        {
-            return BadRequest(ApiResponse<List<DivisionDto>>.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(500, ApiResponse<List<DivisionDto>>.ErrorResponse(errorMessage));
+        return HandleListResult(result, $"Divisions for {sportType} retrieved successfully", "Failed to retrieve divisions");
     }
 
     /// <summary>
@@ -138,34 +106,26 @@ public class DivisionsController : ControllerBase
         if (request.SportType == SportsCategory.None)
         {
             const string message = "Sport type cannot be None.";
-            List<string> errors = new() { message };
-            return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(message, errors));
+            return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(message, new List<string> { message }));
         }
 
         _logger.LogInformation("Creating new division: {DivisionName} for {SportType}", request.Name, request.SportType);
 
-        CreateDivisionCommand command = new CreateDivisionCommand(
+        Result<DivisionDto> result = await _mediator.Send(new CreateDivisionCommand(
             request.Name,
             request.Description,
             request.Level,
-            request.SportType
-        );
+            request.SportType));
 
-        Result<DivisionDto> result = await _mediator.Send(command);
-
-        if (result.IsSuccess && result.Data != null)
+        if (result.IsSuccess && result.Data is not null)
         {
             return CreatedAtAction(
                 nameof(GetDivisionById),
                 new { id = result.Data.Id },
-                ApiResponse<DivisionDto>.SuccessResponse(result.Data, "Division created successfully")
-            );
+                ApiResponse<DivisionDto>.SuccessResponse(result.Data, "Division created successfully"));
         }
 
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-        return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(errorMessage, errorList));
+        return ToErrorResponse(result, "Failed to create division");
     }
 
     /// <summary>
@@ -184,29 +144,13 @@ public class DivisionsController : ControllerBase
     {
         _logger.LogInformation("Updating division with ID: {DivisionId}", id);
 
-        UpdateDivisionCommand command = new UpdateDivisionCommand(
+        Result<DivisionDto> result = await _mediator.Send(new UpdateDivisionCommand(
             id,
             request.Name,
             request.Description,
-            request.Level
-        );
+            request.Level));
 
-        Result<DivisionDto> result = await _mediator.Send(command);
-
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<DivisionDto>.SuccessResponse(result.Data, "Division updated successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        
-        // Check if it's a not found error
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse<DivisionDto>.ErrorResponse(errorMessage));
-        }
-
-        return BadRequest(ApiResponse<DivisionDto>.ErrorResponse(errorMessage));
+        return HandleResult(result, "Division updated successfully", "Failed to update division");
     }
 
     /// <summary>
@@ -223,23 +167,9 @@ public class DivisionsController : ControllerBase
     {
         _logger.LogInformation("Activating division with ID: {DivisionId}", id);
 
-        ActivateDivisionCommand command = new ActivateDivisionCommand(id);
-        Result<bool> result = await _mediator.Send(command);
+        Result<bool> result = await _mediator.Send(new ActivateDivisionCommand(id));
 
-        if (result.IsSuccess)
-        {
-            return Ok(ApiResponse.SuccessResponse("Division activated successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        // Check if it's a not found error
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
+        return HandleVoidResult(result, "Division activated successfully", "Failed to activate division");
     }
 
     /// <summary>
@@ -256,23 +186,9 @@ public class DivisionsController : ControllerBase
     {
         _logger.LogInformation("Deactivating division with ID: {DivisionId}", id);
 
-        DeactivateDivisionCommand command = new DeactivateDivisionCommand(id);
-        Result<bool> result = await _mediator.Send(command);
+        Result<bool> result = await _mediator.Send(new DeactivateDivisionCommand(id));
 
-        if (result.IsSuccess)
-        {
-            return Ok(ApiResponse.SuccessResponse("Division deactivated successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        // Check if it's a not found error
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
+        return HandleVoidResult(result, "Division deactivated successfully", "Failed to deactivate division");
     }
 
     /// <summary>
@@ -289,23 +205,9 @@ public class DivisionsController : ControllerBase
     {
         _logger.LogInformation("Deleting division with ID: {DivisionId}", id);
 
-        DeleteDivisionCommand command = new DeleteDivisionCommand(id);
-        Result<bool> result = await _mediator.Send(command);
+        Result<bool> result = await _mediator.Send(new DeleteDivisionCommand(id));
 
-        if (result.IsSuccess)
-        {
-            return Ok(ApiResponse.SuccessResponse("Division deleted successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        // Check if it's a not found error
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
+        return HandleVoidResult(result, "Division deleted successfully", "Failed to delete division");
     }
 
     private static bool TryParseSportType(string? value, out SportsCategory sportType, out string? errorMessage)
@@ -328,4 +230,4 @@ public class DivisionsController : ControllerBase
         errorMessage = null;
         return true;
     }
-} 
+}

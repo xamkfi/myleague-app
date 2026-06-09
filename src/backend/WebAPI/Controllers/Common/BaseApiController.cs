@@ -1,6 +1,8 @@
 using Application.Common;
+using Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Controllers.Common;
 
@@ -64,9 +66,147 @@ public abstract class BaseApiController : ControllerBase
     }
 
     /// <summary>
+    /// Returns 200 OK with a paginated success envelope when <paramref name="result"/> succeeded,
+    /// otherwise maps the failure to 404 or 400 (never 500 for domain/query failures).
+    /// </summary>
+    protected ActionResult<PaginatedApiResponse<T>> HandlePaginatedResult<T>(
+        Result<PagedResult<T>> result,
+        string successMessage,
+        string defaultErrorMessage)
+    {
+        if (result.IsSuccess && result.Data is not null)
+        {
+            return Ok(PaginatedApiResponse<T>.SuccessResponse(result.Data, successMessage));
+        }
+
+        return ToPaginatedErrorResponse(result, defaultErrorMessage);
+    }
+
+    /// <summary>
+    /// Returns 200 OK with a list success envelope when <paramref name="result"/> succeeded,
+    /// materialising the sequence to a <see cref="List{T}"/> for the response body.
+    /// </summary>
+    protected ActionResult<ApiResponse<List<T>>> HandleListResult<T>(
+        Result<IEnumerable<T>> result,
+        string successMessage,
+        string defaultErrorMessage)
+    {
+        if (result.IsSuccess && result.Data is not null)
+        {
+            return Ok(ApiResponse<List<T>>.SuccessResponse(result.Data.ToList(), successMessage));
+        }
+
+        return ToListErrorResponse(result, defaultErrorMessage);
+    }
+
+    /// <summary>
+    /// For mutation handlers that return <see cref="Result{T}"/> but expose a payload-free
+    /// <see cref="ApiResponse"/> on success (e.g. delete endpoints).
+    /// </summary>
+    protected ActionResult<ApiResponse> HandleVoidResult<T>(
+        Result<T> result,
+        string successMessage,
+        string defaultErrorMessage)
+    {
+        if (result.IsSuccess)
+        {
+            return Ok(ApiResponse.SuccessResponse(successMessage));
+        }
+
+        return ToVoidErrorResponse(result, defaultErrorMessage);
+    }
+
+    /// <summary>
+    /// Non-generic overload for handlers that return <see cref="Result"/> without a payload.
+    /// </summary>
+    protected ActionResult<ApiResponse> HandleVoidResult(
+        Result result,
+        string successMessage,
+        string defaultErrorMessage)
+    {
+        if (result.IsSuccess)
+        {
+            return Ok(ApiResponse.SuccessResponse(successMessage));
+        }
+
+        return ToErrorResponse(result, defaultErrorMessage);
+    }
+
+    /// <summary>
     /// Non-generic counterpart for handlers that return <see cref="Result"/> without a payload.
     /// </summary>
     protected ActionResult<ApiResponse> ToErrorResponse(Result result, string defaultMessage)
+    {
+        string topMessage = result.Error ?? defaultMessage;
+        List<string> errors = result.GetAllErrors().ToList();
+        if (errors.Count == 0)
+        {
+            errors.Add(topMessage);
+        }
+
+        ApiResponse body = new ApiResponse
+        {
+            Success = false,
+            Message = topMessage,
+            Errors = errors,
+        };
+
+        if (IsNotFoundMessage(topMessage))
+        {
+            return NotFound(body);
+        }
+
+        return BadRequest(body);
+    }
+
+    private ActionResult<PaginatedApiResponse<T>> ToPaginatedErrorResponse<T>(
+        Result<PagedResult<T>> result,
+        string defaultMessage)
+    {
+        string topMessage = result.Error ?? defaultMessage;
+        List<string> errors = result.GetAllErrors().ToList();
+        if (errors.Count == 0)
+        {
+            errors.Add(topMessage);
+        }
+
+        PaginatedApiResponse<T> body = new PaginatedApiResponse<T>
+        {
+            Success = false,
+            Message = topMessage,
+            Errors = errors,
+        };
+
+        if (IsNotFoundMessage(topMessage))
+        {
+            return NotFound(body);
+        }
+
+        return BadRequest(body);
+    }
+
+    private ActionResult<ApiResponse<List<T>>> ToListErrorResponse<T>(
+        Result<IEnumerable<T>> result,
+        string defaultMessage)
+    {
+        string topMessage = result.Error ?? defaultMessage;
+        List<string> errors = result.GetAllErrors().ToList();
+        if (errors.Count == 0)
+        {
+            errors.Add(topMessage);
+        }
+
+        ApiResponse<List<T>> body = ApiResponse<List<T>>.ErrorResponse(topMessage, errors);
+
+        if (IsNotFoundMessage(topMessage))
+        {
+            return NotFound(body);
+        }
+
+        return BadRequest(body);
+    }
+
+    private ActionResult<ApiResponse> ToVoidErrorResponse<T>(Result<T> result, string defaultMessage)
     {
         string topMessage = result.Error ?? defaultMessage;
         List<string> errors = result.GetAllErrors().ToList();

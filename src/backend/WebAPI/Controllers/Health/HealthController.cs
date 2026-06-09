@@ -2,16 +2,15 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Net;
+using WebAPI.Controllers.Common;
 
 namespace WebAPI.Controllers.Health
 {
     /// <summary>
     /// Controller for health check endpoints
     /// </summary>
-    [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    public class HealthController : ControllerBase
+    public class HealthController : BaseApiController
     {
         private readonly HealthCheckService _healthCheckService;
         private readonly ILogger<HealthController> _logger;
