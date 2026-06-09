@@ -8,7 +8,7 @@ using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 using WebAPI.Models.Floorball;
 
-namespace WebAPI.Controllers.Floorball
+namespace WebAPI.Controllers.Floorball.Match
 {
     /// <summary>
     /// Endpoints that change a single floorball match's lifecycle status (Scheduled,

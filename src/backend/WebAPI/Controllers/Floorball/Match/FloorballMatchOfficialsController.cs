@@ -8,7 +8,7 @@ using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 using WebAPI.Models.Floorball;
 
-namespace WebAPI.Controllers.Floorball
+namespace WebAPI.Controllers.Floorball.Match
 {
     /// <summary>
     /// Endpoints for managing the officials (referees) attached to a single floorball match.
