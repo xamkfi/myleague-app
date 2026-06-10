@@ -31,15 +31,25 @@ export const useMatchData = ({
   const loadTeamData = useCallback(async () => {
     try {
       setLoading(true);
-      
+
+      // ManageMatchPage is only used by admins to operate a live match, which by definition has
+      // both teams assigned. Defensively short-circuit here when a slot is still null so the
+      // hook fails loudly with a clear error rather than triggering a server roundtrip with
+      // undefined ids.
+      if (!match.homeTeamId || !match.awayTeamId) {
+        setError('Match does not have both teams assigned yet. Assign teams before managing the match.');
+        setLoading(false);
+        return;
+      }
+
       const [homeTeamData, awayTeamData] = await Promise.all([
         floorballTeamService.getById(match.homeTeamId),
         floorballTeamService.getById(match.awayTeamId)
       ]);
-      
+
       setHomeTeam(homeTeamData);
       setAwayTeam(awayTeamData);
-      
+
       // Load players for both teams
       const [homePlayersDataRaw, awayPlayersDataRaw] = await Promise.all([
         floorballPlayerService.getByTeamId(match.homeTeamId),

@@ -108,9 +108,11 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
     if (!searchTerm) {
       return matches;
     }
-    return matches.filter(match => 
-      match.homeTeamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      match.awayTeamName.toLowerCase().includes(searchTerm.toLowerCase())
+    // Placeholder fixtures (no team yet) cannot match a text query — treat them as a non-match.
+    const term: string = searchTerm.toLowerCase();
+    return matches.filter(match =>
+      (match.homeTeamName?.toLowerCase().includes(term) ?? false) ||
+      (match.awayTeamName?.toLowerCase().includes(term) ?? false)
     );
   };
 
@@ -235,7 +237,7 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                               football
                             </div>
                             <div className="match-browser__item-teams">
-                              {match.homeTeamName} {match.homeScore} - {match.awayScore} {match.awayTeamName}
+                              {match.homeTeamName ?? 'TBD'} {match.homeScore} - {match.awayScore} {match.awayTeamName ?? 'TBD'}
                             </div>
                           </div>
                           <input
@@ -279,7 +281,7 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                   <div className="match-browser__selected-chips">
                     {selectedMatches.map(match => (
                       <span key={match.id} className="match-browser__selected-chip">
-                        {match.homeTeamName} vs {match.awayTeamName}
+                        {match.homeTeamName ?? 'TBD'} vs {match.awayTeamName ?? 'TBD'}
                         <button 
                           onClick={() => handleMatchSelect(match)}
                           className="match-browser__selected-chip-remove"

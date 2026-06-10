@@ -30,6 +30,13 @@ interface TournamentBracketProps {
    * list. Ignored in `'public'` mode.
    */
   adminReturnTo?: string;
+  /**
+   * Optional handler invoked when the operator clicks the inline "Assign teams" affordance on
+   * a still-scheduled / postponed playoff card. Only rendered when `linkMode='admin'` and the
+   * caller has supplied this prop — callers typically use it to open an AssignTeamsDialog
+   * over the bracket without navigating away. When omitted the affordance is hidden.
+   */
+  onAssignTeams?: (matchId: string) => void;
 }
 
 const ROUND_DISPLAY_ORDER: FloorballPlayoffRoundKey[] = [
@@ -111,6 +118,13 @@ interface MatchCardProps {
   notStartedLabel: string;
   liveLabel: string;
   completedLabel: string;
+  /**
+   * Optional handler for the inline "Assign teams" admin affordance. When provided, an icon
+   * button is rendered on the card and clicking it short-circuits the card's own
+   * navigation `onSelect` via `stopPropagation`.
+   */
+  onAssignTeams?: (matchId: string) => void;
+  assignTeamsLabel: string;
 }
 
 function MatchCard({
@@ -120,7 +134,9 @@ function MatchCard({
   tbdLabel,
   notStartedLabel,
   liveLabel,
-  completedLabel
+  completedLabel,
+  onAssignTeams,
+  assignTeamsLabel
 }: MatchCardProps): ReactElement {
   const completed = isCompleted(match.status);
   const live = isInProgress(match.status);
@@ -158,6 +174,29 @@ function MatchCard({
         <span className={`tournament-bracket__match-status tournament-bracket__match-status--${completed ? 'completed' : live ? 'live' : 'scheduled'}`}>
           {statusLabel}
         </span>
+        {onAssignTeams && !completed && !live && (
+          <button
+            type="button"
+            className="tournament-bracket__match-assign"
+            onClick={(e) => {
+              // Don't propagate to the card's navigation handler — the operator wants to
+              // edit the team slots in place, not jump to the manage-match view.
+              e.stopPropagation();
+              onAssignTeams(match.matchId);
+            }}
+            onKeyDown={(e) => {
+              // The card itself listens for Enter/Space to navigate; intercept those keys
+              // here so triggering the button via keyboard does not also bubble up.
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+              }
+            }}
+            title={assignTeamsLabel}
+            aria-label={assignTeamsLabel}
+          >
+            <i className="fas fa-user-edit" aria-hidden="true"></i>
+          </button>
+        )}
       </div>
       <TeamSlot
         team={match.homeTeam}
@@ -183,7 +222,7 @@ function MatchCard({
   );
 }
 
-export default function TournamentBracket({ bracket, compact = false, linkMode = 'public', adminReturnTo }: TournamentBracketProps): ReactElement {
+export default function TournamentBracket({ bracket, compact = false, linkMode = 'public', adminReturnTo, onAssignTeams }: TournamentBracketProps): ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -213,6 +252,7 @@ export default function TournamentBracket({ bracket, compact = false, linkMode =
   const notStartedLabel = t('tournaments.playoffs.statusScheduled', 'Aikataulutettu');
   const liveLabel = t('tournaments.playoffs.statusLive', 'Käynnissä');
   const completedLabel = t('tournaments.playoffs.statusCompleted', 'Päättynyt');
+  const assignTeamsLabel = t('floorball.matches.assignTeams.action', 'Aseta joukkueet');
 
   if (orderedRounds.length === 0) {
     return (
@@ -270,6 +310,8 @@ export default function TournamentBracket({ bracket, compact = false, linkMode =
                     notStartedLabel={notStartedLabel}
                     liveLabel={liveLabel}
                     completedLabel={completedLabel}
+                    onAssignTeams={linkMode === 'admin' ? onAssignTeams : undefined}
+                    assignTeamsLabel={assignTeamsLabel}
                   />
                 ))}
               </div>

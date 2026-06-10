@@ -1,26 +1,21 @@
-using System;
-using System.Threading.Tasks;
-using System.Linq;
 using Application.Common;
 using Application.Features.Floorball.TeamManagers.Commands;
 using Application.Features.Floorball.TeamManagers.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using WebAPI.Models.Floorball;
+using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
+using WebAPI.Models.Floorball;
 
 namespace WebAPI.Controllers.Floorball
 {
     /// <summary>
     /// Controller for managing floorball team managers
     /// </summary>
-    [ApiController]
     [Authorize]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    public class FloorballTeamManagerController : ControllerBase
+    public class FloorballTeamManagerController : BaseApiController
     {
         private readonly IMediator _mediator;
         private readonly ILogger<FloorballTeamManagerController> _logger;
@@ -51,29 +46,19 @@ namespace WebAPI.Controllers.Floorball
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state for team manager creation: {errors}", 
-                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                _logger.LogWarning(
+                    "Invalid model state for team manager creation: {errors}",
+                    SanitizeForLog(string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
                 return BadRequest(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList()));
             }
 
-            CreateFloorballTeamManagerCommand command = new CreateFloorballTeamManagerCommand(
-                request.PersonId,
-                request.TeamId);
+            Result<FloorballTeamManagerDto> result = await _mediator.Send(
+                new CreateFloorballTeamManagerCommand(request.PersonId, request.TeamId));
 
-            Result<FloorballTeamManagerDto> result = await _mediator.Send(command);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamManagerDto>.SuccessResponse(result.Data, "Floorball team manager created successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to create floorball team manager";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-            return BadRequest(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Floorball team manager created successfully", "Failed to create floorball team manager");
         }
 
         /// <summary>
@@ -93,34 +78,19 @@ namespace WebAPI.Controllers.Floorball
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state for team manager update: {errors}", 
-                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                _logger.LogWarning(
+                    "Invalid model state for team manager update: {errors}",
+                    SanitizeForLog(string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
                 return BadRequest(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList()));
             }
 
-            UpdateFloorballTeamManagerCommand command = new UpdateFloorballTeamManagerCommand(
-                id,
-                request.IsActive);
+            Result<FloorballTeamManagerDto> result = await _mediator.Send(
+                new UpdateFloorballTeamManagerCommand(id, request.IsActive));
 
-            Result<FloorballTeamManagerDto> result = await _mediator.Send(command);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamManagerDto>.SuccessResponse(result.Data, "Floorball team manager updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update floorball team manager";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTeamManagerDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Floorball team manager updated successfully", "Failed to update floorball team manager");
         }
 
         /// <summary>
@@ -137,21 +107,9 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Deleting floorball team manager with ID: {id}", id);
 
-            DeleteFloorballTeamManagerCommand command = new DeleteFloorballTeamManagerCommand(id);
-            Result<FloorballTeamManagerDto> result = await _mediator.Send(command);
+            Result<FloorballTeamManagerDto> result = await _mediator.Send(new DeleteFloorballTeamManagerCommand(id));
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse.SuccessResponse("Floorball team manager deleted successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to delete floorball team manager";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+            return HandleVoidResult(result, "Floorball team manager deleted successfully", "Failed to delete floorball team manager");
         }
     }
-} 
+}

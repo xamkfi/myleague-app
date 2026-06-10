@@ -16,6 +16,7 @@ import type {
 } from '../../../../../types/floorball/tournamentTypes';
 import { type FloorballTeam, TeamCategory, type FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 import TournamentBracket from '../../../../../components/TournamentBracket/TournamentBracket';
+import AssignTeamsDialog from '../../../../../components/AssignTeamsDialog/AssignTeamsDialog';
 import TournamentLifecycleBar, { type LifecycleAction, type LifecycleMoreAction } from './components/TournamentLifecycleBar';
 import TournamentLifecycleConfirmModal from './components/TournamentLifecycleConfirmModal';
 import TournamentMatchesTab from './components/TournamentMatchesTab';
@@ -124,6 +125,12 @@ const EditTournamentPage = () => {
   const [bracket, setBracket] = useState<FloorballPlayoffBracketDto | null>(null);
   const [bracketLoading, setBracketLoading] = useState(false);
   const [bracketError, setBracketError] = useState<string | null>(null);
+  // Holds the match the admin chose to edit via the inline "Assign teams" affordance on
+  // the bracket. Null when the dialog is closed. We resolve the full FloorballMatchDto on
+  // demand because the bracket only carries a thin summary.
+  const [assignTeamsTarget, setAssignTeamsTarget] = useState<FloorballMatchDto | null>(null);
+  const [assignTeamsLoading, setAssignTeamsLoading] = useState<boolean>(false);
+  const [assignTeamsError, setAssignTeamsError] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -1210,6 +1217,57 @@ const EditTournamentPage = () => {
                   /* Keep the user inside the tournament edit context when they Close the */
                   /* match-management view they just opened from the bracket.            */
                   adminReturnTo={`/admin/floorball/tournaments/${competitionId}/edit?tab=bracket`}
+                  onAssignTeams={async (matchId: string) => {
+                    // The bracket DTO doesn't carry the full FloorballMatchDto, so fetch
+                    // it on demand before opening the dialog. We surface fetch errors via
+                    // the dedicated assign-teams error state instead of the page-level
+                    // bracket error so the user can still see the bracket below.
+                    try {
+                      setAssignTeamsLoading(true);
+                      setAssignTeamsError(null);
+                      const response = await floorballMatchService.getById(matchId);
+                      if (response.success && response.data) {
+                        setAssignTeamsTarget(response.data);
+                      } else {
+                        setAssignTeamsError(response.message ?? 'Failed to load match');
+                      }
+                    } catch (err: unknown) {
+                      setAssignTeamsError(err instanceof Error ? err.message : 'Failed to load match');
+                    } finally {
+                      setAssignTeamsLoading(false);
+                    }
+                  }}
+                />
+              )}
+              {assignTeamsLoading && (
+                <div style={{ padding: '12px', color: '#6b7280' }}>
+                  {t('common.loading', 'Ladataan...')}
+                </div>
+              )}
+              {assignTeamsError && (
+                <div style={{ padding: '12px', color: '#b91c1c' }}>
+                  {assignTeamsError}
+                </div>
+              )}
+              {assignTeamsTarget && (
+                <AssignTeamsDialog
+                  isOpen={true}
+                  match={assignTeamsTarget}
+                  onClose={() => setAssignTeamsTarget(null)}
+                  onSaved={async () => {
+                    setAssignTeamsTarget(null);
+                    // Refresh the bracket so any propagated downstream slot updates show up
+                    // immediately. The handler ran a SaveChanges on the backend, so a re-fetch
+                    // is the simplest path to a consistent view.
+                    if (competitionId) {
+                      try {
+                        const refreshed = await floorballTournamentService.getPlayoffBracket(competitionId);
+                        setBracket(refreshed.data);
+                      } catch (err: unknown) {
+                        setBracketError(err instanceof Error ? err.message : 'Failed to refresh bracket');
+                      }
+                    }
+                  }}
                 />
               )}
               {!bracketLoading && !bracketError && (!bracket || bracket.rounds.length === 0) && (

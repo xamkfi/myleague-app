@@ -14,10 +14,8 @@ namespace WebAPI.Controllers.Common;
 /// Controller for managing users
 /// </summary>
 [Authorize]
-[ApiController]
 [Route("api/[controller]")]
-[Produces("application/json")]
-public class UsersController : ControllerBase
+public class UsersController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<UsersController> _logger;
@@ -47,14 +45,7 @@ public class UsersController : ControllerBase
         GetAllUsersQuery query = new();
         Result<IEnumerable<UserDto>> result = await _mediator.Send(query);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            List<UserDto> userList = result.Data.ToList();
-            return Ok(ApiResponse<List<UserDto>>.SuccessResponse(userList, "Users retrieved successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        return StatusCode(500, ApiResponse<List<UserDto>>.ErrorResponse(errorMessage));
+        return HandleListResult(result, "Users retrieved successfully", "Failed to retrieve users");
     }
 
     /// <summary>
@@ -73,19 +64,7 @@ public class UsersController : ControllerBase
         GetUserByIdQuery query = new(id);
         Result<UserDto> result = await _mediator.Send(query);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<UserDto>.SuccessResponse(result.Data, "User retrieved successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse<UserDto>.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(500, ApiResponse<UserDto>.ErrorResponse(errorMessage));
+        return HandleResult(result, "User retrieved successfully", "User not found");
     }
 
     /// <summary>
@@ -105,24 +84,12 @@ public class UsersController : ControllerBase
             return BadRequest(ApiResponse<UserDto>.ErrorResponse("Email parameter is required"));
         }
 
-        _logger.LogInformation("Getting user by email: {Email}", email);
+        _logger.LogInformation("Getting user by email: {Email}", SanitizeForLog(email));
 
         GetUserByEmailQuery query = new(email);
         Result<UserDto> result = await _mediator.Send(query);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<UserDto>.SuccessResponse(result.Data, "User retrieved successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse<UserDto>.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(500, ApiResponse<UserDto>.ErrorResponse(errorMessage));
+        return HandleResult(result, "User retrieved successfully", "User not found");
     }
 
     /// <summary>
@@ -141,19 +108,7 @@ public class UsersController : ControllerBase
         GetUserByPersonIdQuery query = new(personId);
         Result<UserDto> result = await _mediator.Send(query);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<UserDto>.SuccessResponse(result.Data, "User retrieved successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse<UserDto>.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(500, ApiResponse<UserDto>.ErrorResponse(errorMessage));
+        return HandleResult(result, "User retrieved successfully", "User not found");
     }
 
     /// <summary>
@@ -167,12 +122,12 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] CreateUserRequest request)
     {
-        _logger.LogInformation("Creating new user: {Email}", request.Email);
+        _logger.LogInformation("Creating new user: {Email}", SanitizeForLog(request.Email));
 
         CreateUserCommand command = new(request.Email, request.PersonId, request.Role);
         Result<UserDto> result = await _mediator.Send(command);
 
-        if (result.IsSuccess && result.Data != null)
+        if (result.IsSuccess && result.Data is not null)
         {
             return CreatedAtAction(
                 nameof(GetUserById),
@@ -181,10 +136,7 @@ public class UsersController : ControllerBase
             );
         }
 
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-        return BadRequest(ApiResponse<UserDto>.ErrorResponse(errorMessage, errorList));
+        return ToErrorResponse(result, "Failed to create user");
     }
 
     /// <summary>
@@ -205,20 +157,7 @@ public class UsersController : ControllerBase
         UpdateUserCommand command = new(id, request.Email, request.Role, request.IsActive);
         Result<UserDto> result = await _mediator.Send(command);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<UserDto>.SuccessResponse(result.Data, "User updated successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase) ||
-            errorMessage.Contains("does not exist", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse<UserDto>.ErrorResponse(errorMessage));
-        }
-
-        return BadRequest(ApiResponse<UserDto>.ErrorResponse(errorMessage));
+        return HandleResult(result, "User updated successfully", "Failed to update user");
     }
 
     /// <summary>
@@ -239,19 +178,7 @@ public class UsersController : ControllerBase
         ResendAdminInvitationCommand command = new(id);
         Result<bool> result = await _mediator.Send(command);
 
-        if (result.IsSuccess)
-        {
-            return Ok(ApiResponse.SuccessResponse("Invitation email resent successfully."));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse.ErrorResponse(errorMessage));
-        }
-
-        return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+        return HandleVoidResult(result, "Invitation email resent successfully.", "Failed to resend invitation");
     }
 
     /// <summary>
@@ -270,19 +197,6 @@ public class UsersController : ControllerBase
         DeleteUserCommand command = new(id);
         Result<bool> result = await _mediator.Send(command);
 
-        if (result.IsSuccess)
-        {
-            return Ok(ApiResponse.SuccessResponse("User deleted successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase) ||
-            errorMessage.Contains("does not exist", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
+        return HandleVoidResult(result, "User deleted successfully", "Failed to delete user");
     }
 }

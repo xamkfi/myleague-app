@@ -303,12 +303,20 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             if (m.TournamentGroupId == null || m.Status != FloorballMatchStatus.Completed)
                 continue;
 
-            TournamentTeamAggregate home = rows.TryGetValue(m.HomeTeamId, out TournamentTeamAggregate? h)
+            // Completed matches always have both team IDs assigned; defensively skip anything that
+            // doesn't so the aggregate query can never NRE on malformed historical data.
+            if (!m.HomeTeamId.HasValue || !m.AwayTeamId.HasValue)
+                continue;
+
+            Guid homeId = m.HomeTeamId.Value;
+            Guid awayId = m.AwayTeamId.Value;
+
+            TournamentTeamAggregate home = rows.TryGetValue(homeId, out TournamentTeamAggregate? h)
                 ? h
-                : rows[m.HomeTeamId] = new TournamentTeamAggregate();
-            TournamentTeamAggregate away = rows.TryGetValue(m.AwayTeamId, out TournamentTeamAggregate? a)
+                : rows[homeId] = new TournamentTeamAggregate();
+            TournamentTeamAggregate away = rows.TryGetValue(awayId, out TournamentTeamAggregate? a)
                 ? a
-                : rows[m.AwayTeamId] = new TournamentTeamAggregate();
+                : rows[awayId] = new TournamentTeamAggregate();
 
             home.Apply(m.HomeScore, m.AwayScore);
             away.Apply(m.AwayScore, m.HomeScore);

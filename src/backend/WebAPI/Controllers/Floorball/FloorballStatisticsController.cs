@@ -10,6 +10,7 @@ using Application.Features.Floorball.Teams.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 
 namespace WebAPI.Controllers.Floorball
@@ -17,10 +18,8 @@ namespace WebAPI.Controllers.Floorball
     /// <summary>
     /// Controller for managing floorball statistics
     /// </summary>
-    [ApiController]
     [Route("api/floorball/statistics")]
-    [Produces("application/json")]
-    public class FloorballStatisticsController : ControllerBase
+    public class FloorballStatisticsController : BaseApiController
     {
         private readonly IMediator _mediator;
         private readonly ILogger<FloorballStatisticsController> _logger;
@@ -53,18 +52,7 @@ namespace WebAPI.Controllers.Floorball
             GetTeamSeasonStatisticsQuery query = new GetTeamSeasonStatisticsQuery(competitionId, teamId);
             Result<FloorballTeamSeasonStatisticsDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamSeasonStatisticsDto>.SuccessResponse(result.Data, "Team statistics retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve team statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTeamSeasonStatisticsDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballTeamSeasonStatisticsDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Team statistics retrieved successfully", "Failed to retrieve team statistics");
         }
 
         /// <summary>
@@ -85,18 +73,7 @@ namespace WebAPI.Controllers.Floorball
             GetAggregatedTeamStatisticsQuery query = new GetAggregatedTeamStatisticsQuery(teamId);
             Result<FloorballTeamSeasonStatisticsDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamSeasonStatisticsDto>.SuccessResponse(result.Data, "Aggregated team statistics retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve aggregated team statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTeamSeasonStatisticsDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballTeamSeasonStatisticsDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Aggregated team statistics retrieved successfully", "Failed to retrieve aggregated team statistics");
         }
 
         /// <summary>
@@ -117,18 +94,7 @@ namespace WebAPI.Controllers.Floorball
             GetAggregatedTeamPlayerStatisticsQuery query = new GetAggregatedTeamPlayerStatisticsQuery(teamId);
             Result<List<FloorballPlayerSeasonStatisticsDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.SuccessResponse(result.Data, "Aggregated team player statistics retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve aggregated team player statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Aggregated team player statistics retrieved successfully", "Failed to retrieve aggregated team player statistics");
         }
 
         /// <summary>
@@ -148,18 +114,7 @@ namespace WebAPI.Controllers.Floorball
             GetTeamPlayerStatisticsQuery query = new GetTeamPlayerStatisticsQuery(competitionId, teamId);
             Result<List<FloorballPlayerSeasonStatisticsDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.SuccessResponse(result.Data, "Team player statistics retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve team player statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Team player statistics retrieved successfully", "Failed to retrieve team player statistics");
         }
 
         /// <summary>
@@ -179,18 +134,7 @@ namespace WebAPI.Controllers.Floorball
             GetPlayerSeasonStatisticsQuery query = new GetPlayerSeasonStatisticsQuery(competitionId, playerId);
             Result<FloorballPlayerSeasonStatisticsDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballPlayerSeasonStatisticsDto>.SuccessResponse(result.Data, "Player statistics retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve player statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballPlayerSeasonStatisticsDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballPlayerSeasonStatisticsDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Player statistics retrieved successfully", "Failed to retrieve player statistics");
         }
 
         /// <summary>
@@ -208,18 +152,7 @@ namespace WebAPI.Controllers.Floorball
 
             Result<FloorballPlayerProfileDto> result = await _mediator.Send(query);
 
-            if(result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballPlayerProfileDto>.SuccessResponse(result.Data, "Player profile retrieved succesfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve player profile";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballPlayerProfileDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballPlayerProfileDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Player profile retrieved succesfully", "Failed to retrieve player profile");
         }
 
         /// <summary>
@@ -238,18 +171,7 @@ namespace WebAPI.Controllers.Floorball
             GetMatchStatisticsQuery query = new GetMatchStatisticsQuery(matchId);
             Result<List<FloorballMatchTeamStatisticsDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballMatchTeamStatisticsDto>>.SuccessResponse(result.Data, "Match statistics retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve match statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballMatchTeamStatisticsDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballMatchTeamStatisticsDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Match statistics retrieved successfully", "Failed to retrieve match statistics");
         }
 
         /// <summary>
@@ -269,18 +191,7 @@ namespace WebAPI.Controllers.Floorball
             GetTopScorersQuery query = new GetTopScorersQuery(competitionId, topN);
             Result<List<FloorballPlayerSeasonStatisticsDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.SuccessResponse(result.Data, $"Top {topN} scorers retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve top scorers";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, $"Top {topN} scorers retrieved successfully", "Failed to retrieve top scorers");
         }
 
         /// <summary>
@@ -299,18 +210,7 @@ namespace WebAPI.Controllers.Floorball
             GetSeasonStatisticsSummaryQuery query = new GetSeasonStatisticsSummaryQuery(competitionId);
             Result<FloorballSeasonStatisticsSummaryDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballSeasonStatisticsSummaryDto>.SuccessResponse(result.Data, "Season statistics retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve season statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballSeasonStatisticsSummaryDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballSeasonStatisticsSummaryDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Season statistics retrieved successfully", "Failed to retrieve season statistics");
         }
 
         /// <summary>
@@ -329,18 +229,7 @@ namespace WebAPI.Controllers.Floorball
             GetTeamStandingsQuery query = new GetTeamStandingsQuery(competitionId);
             Result<List<FloorballTeamSeasonStatisticsDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballTeamSeasonStatisticsDto>>.SuccessResponse(result.Data, "Team standings retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve team standings";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballTeamSeasonStatisticsDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballTeamSeasonStatisticsDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Team standings retrieved successfully", "Failed to retrieve team standings");
         }
 
         /// <summary>
@@ -359,18 +248,7 @@ namespace WebAPI.Controllers.Floorball
             GetTournamentGroupStandingsQuery query = new GetTournamentGroupStandingsQuery(groupId);
             Result<List<FloorballTournamentGroupStandingDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballTournamentGroupStandingDto>>.SuccessResponse(result.Data, "Tournament group standings retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve tournament group standings";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballTournamentGroupStandingDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballTournamentGroupStandingDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Tournament group standings retrieved successfully", "Failed to retrieve tournament group standings");
         }
 
     }

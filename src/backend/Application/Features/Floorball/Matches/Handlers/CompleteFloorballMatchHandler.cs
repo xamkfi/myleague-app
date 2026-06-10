@@ -150,11 +150,14 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
     /// </summary>
     private async Task UpdateFinalTeamSeasonStatistics(FloorballMatch match, CancellationToken cancellationToken)
     {
-        // Update home team statistics
-        await UpdateTeamMatchResult(match.HomeTeamId, match.CompetitionId, match.HomeScore, match.AwayScore, true, match, cancellationToken);
-        
-        // Update away team statistics  
-        await UpdateTeamMatchResult(match.AwayTeamId, match.CompetitionId, match.AwayScore, match.HomeScore, false, match, cancellationToken);
+        // A completed match has gone through Start() which guarantees both team IDs are populated;
+        // .Value is therefore safe here. Skip statistics gracefully if for some reason a slot is
+        // still null (e.g. a manual data edit) rather than throwing.
+        if (match.HomeTeamId.HasValue)
+            await UpdateTeamMatchResult(match.HomeTeamId.Value, match.CompetitionId, match.HomeScore, match.AwayScore, true, match, cancellationToken);
+
+        if (match.AwayTeamId.HasValue)
+            await UpdateTeamMatchResult(match.AwayTeamId.Value, match.CompetitionId, match.AwayScore, match.HomeScore, false, match, cancellationToken);
     }
 
     /// <summary>
@@ -254,10 +257,12 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             }
         }
 
-        if (match.HomeActiveGoalieId.HasValue)
-            participants.Add((match.HomeActiveGoalieId.Value, match.HomeTeamId));
-        if (match.AwayActiveGoalieId.HasValue)
-            participants.Add((match.AwayActiveGoalieId.Value, match.AwayTeamId));
+        // An active goalie can only have been set after the team was assigned, so the team ID
+        // must be non-null when the goalie ID is present.
+        if (match.HomeActiveGoalieId.HasValue && match.HomeTeamId.HasValue)
+            participants.Add((match.HomeActiveGoalieId.Value, match.HomeTeamId.Value));
+        if (match.AwayActiveGoalieId.HasValue && match.AwayTeamId.HasValue)
+            participants.Add((match.AwayActiveGoalieId.Value, match.AwayTeamId.Value));
 
         return participants;
     }
@@ -291,17 +296,17 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
         bool homeGoalieShutout = match.AwayScore == 0;
         bool awayGoalieShutout = match.HomeScore == 0;
 
-        if (match.HomeActiveGoalieId.HasValue)
+        if (match.HomeActiveGoalieId.HasValue && match.HomeTeamId.HasValue)
         {
             await UpdateSingleGoalieGamePlayed(
-                match.HomeActiveGoalieId.Value, match.HomeTeamId, match.CompetitionId,
+                match.HomeActiveGoalieId.Value, match.HomeTeamId.Value, match.CompetitionId,
                 homeResult, matchDurationMinutes, homeGoalieShutout, cancellationToken);
         }
 
-        if (match.AwayActiveGoalieId.HasValue)
+        if (match.AwayActiveGoalieId.HasValue && match.AwayTeamId.HasValue)
         {
             await UpdateSingleGoalieGamePlayed(
-                match.AwayActiveGoalieId.Value, match.AwayTeamId, match.CompetitionId,
+                match.AwayActiveGoalieId.Value, match.AwayTeamId.Value, match.CompetitionId,
                 awayResult, matchDurationMinutes, awayGoalieShutout, cancellationToken);
         }
     }
@@ -327,7 +332,10 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
                 completed.Id, completed.PlayoffRound);
             return;
         }
-        Guid loserTeamId = winnerTeamId.Value == completed.HomeTeamId ? completed.AwayTeamId : completed.HomeTeamId;
+        // Both team IDs are guaranteed non-null at this point: the match was Completed (which
+        // implies Start() succeeded and both teams were assigned), and the winnerTeamId branch
+        // above already verified at least one of HomeTeamId/AwayTeamId matched the score.
+        Guid loserTeamId = (winnerTeamId.Value == completed.HomeTeamId ? completed.AwayTeamId : completed.HomeTeamId)!.Value;
 
         // Pull all tournament matches once so both the SF→3rd-place propagation and the final
         // auto-complete check can share the lookup.

@@ -1,31 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 using Application.Common;
 using Domain.Common;
 using Application.Features.Floorball.Teams.Commands;
 using Application.Features.Floorball.Teams.DTOs;
 using Application.Features.Floorball.Teams.Queries;
+using Domain.Enums.Floorball;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using WebAPI.Models.Floorball;
+using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
-using Domain.Enums.Floorball;
-using Domain.Enums.Common;
+using WebAPI.Models.Floorball;
 
 namespace WebAPI.Controllers.Floorball
 {
     /// <summary>
     /// Controller for managing floorball teams
     /// </summary>
-    [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    public class FloorballTeamController : ControllerBase
+    public class FloorballTeamController : BaseApiController
     {
         private readonly IMediator _mediator;
         private readonly ILogger<FloorballTeamController> _logger;
@@ -54,22 +47,13 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting all floorball teams with pagination - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-            var query = new GetAllFloorballTeamsQuery(
+            Result<PagedResult<FloorballTeamDto>> result = await _mediator.Send(new GetAllFloorballTeamsQuery(
                 request.Page,
                 request.PageSize,
                 request.ClubId,
-                request.Division
-            );
+                request.Division));
 
-            Result<PagedResult<FloorballTeamDto>> result = await _mediator.Send(query);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(PaginatedApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Floorball teams retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, PaginatedApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+            return HandlePaginatedResult(result, "Floorball teams retrieved successfully", "Failed to retrieve floorball teams");
         }
 
         /// <summary>
@@ -85,21 +69,9 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting floorball team with ID: {id}", id);
 
-            GetFloorballTeamByIdQuery query = new GetFloorballTeamByIdQuery(id);
-            Result<FloorballTeamDto> result = await _mediator.Send(query);
+            Result<FloorballTeamDto> result = await _mediator.Send(new GetFloorballTeamByIdQuery(id));
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Floorball team retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve floorball team";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Floorball team retrieved successfully", "Failed to retrieve floorball team");
         }
 
         /// <summary>
@@ -114,16 +86,9 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting floorball teams for club with ID: {clubId}", clubId);
 
-            GetFloorballTeamsByClubQuery query = new GetFloorballTeamsByClubQuery(clubId);
-            Result<IEnumerable<FloorballTeamDto>> result = await _mediator.Send(query);
+            Result<IEnumerable<FloorballTeamDto>> result = await _mediator.Send(new GetFloorballTeamsByClubQuery(clubId));
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballTeamDto>>.SuccessResponse(result.Data.ToList(), "Floorball teams retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve floorball teams";
-            return BadRequest(ApiResponse<List<FloorballTeamDto>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, "Floorball teams retrieved successfully", "Failed to retrieve floorball teams");
         }
 
         /// <summary>
@@ -139,16 +104,9 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting floorball teams for division: {division}", divisionId);
 
-            GetFloorballTeamsByDivisionQuery query = new GetFloorballTeamsByDivisionQuery(divisionId);
-            Result<IEnumerable<FloorballTeamDto>> result = await _mediator.Send(query);
+            Result<IEnumerable<FloorballTeamDto>> result = await _mediator.Send(new GetFloorballTeamsByDivisionQuery(divisionId));
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballTeamDto>>.SuccessResponse(result.Data.ToList(), "Floorball teams retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve floorball teams";
-            return BadRequest(ApiResponse<List<FloorballTeamDto>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, "Floorball teams retrieved successfully", "Failed to retrieve floorball teams");
         }
 
         /// <summary>
@@ -162,18 +120,11 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<FloorballTeamNameDto>>>> GetTeamNames([FromQuery] string? nameFilter)
         {
-            _logger.LogInformation("Getting floorball team names filtered by: {nameFilter}", nameFilter);
+            _logger.LogInformation("Getting floorball team names filtered by: {nameFilter}", SanitizeForLog(nameFilter));
 
-            GetTeamNamesQuery query = new GetTeamNamesQuery(nameFilter);
-            Result<List<FloorballTeamNameDto>> result = await _mediator.Send(query);
+            Result<List<FloorballTeamNameDto>> result = await _mediator.Send(new GetTeamNamesQuery(nameFilter));
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballTeamNameDto>>.SuccessResponse(result.Data.ToList(), "Filtered team names retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve team names";
-            return BadRequest(ApiResponse<List<FloorballTeamNameDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Filtered team names retrieved successfully", "Failed to retrieve team names");
         }
 
         /// <summary>
@@ -187,25 +138,20 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballTeamSummaryDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PaginatedApiResponse<FloorballTeamSummaryDto>>> GetAllTeamsWithoutRoster([FromQuery] GetAllTeamsWithoutRosterRequest request)
         {
-            _logger.LogInformation("Getting all floorball teams without roster - Page: {Page}, PageSize: {PageSize}, SearchTerm: {SearchTerm}, TeamCategory: {TeamCategory}", 
-                request.Page, request.PageSize, request.SearchTerm, request.TeamCategory);
+            _logger.LogInformation(
+                "Getting all floorball teams without roster - Page: {Page}, PageSize: {PageSize}, SearchTerm: {SearchTerm}, TeamCategory: {TeamCategory}",
+                request.Page,
+                request.PageSize,
+                SanitizeForLog(request.SearchTerm),
+                SanitizeForLog(request.TeamCategory));
 
-            var query = new GetAllTeamsWithoutRosterQuery(
+            Result<PagedResult<FloorballTeamSummaryDto>> result = await _mediator.Send(new GetAllTeamsWithoutRosterQuery(
                 request.Page,
                 request.PageSize,
                 request.SearchTerm,
-                request.TeamCategory
-            );
+                request.TeamCategory));
 
-            Result<PagedResult<FloorballTeamSummaryDto>> result = await _mediator.Send(query);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(PaginatedApiResponse<FloorballTeamSummaryDto>.SuccessResponse(result.Data, "Floorball teams without roster retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, PaginatedApiResponse<FloorballTeamSummaryDto>.ErrorResponse(errorMessage));
+            return HandlePaginatedResult(result, "Floorball teams without roster retrieved successfully", "Failed to retrieve floorball teams without roster");
         }
 
         /// <summary>
@@ -220,19 +166,20 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballTeamDto>>> CreateTeam([FromBody] FloorballTeamRequest request)
         {
-            _logger.LogInformation("Creating floorball team: {name}", request.Name);
+            _logger.LogInformation("Creating floorball team: {name}", SanitizeForLog(request.Name));
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state for team creation: {errors}", 
-                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                _logger.LogWarning(
+                    "Invalid model state for team creation: {errors}",
+                    SanitizeForLog(string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
                 return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList()));
             }
 
-            CreateFloorballTeamCommand command = new CreateFloorballTeamCommand(
+            Result<FloorballTeamDto> result = await _mediator.Send(new CreateFloorballTeamCommand(
                 request.Name,
                 request.DivisionId,
                 request.ClubId,
@@ -240,23 +187,17 @@ namespace WebAPI.Controllers.Floorball
                 request.PrimaryJerseyColor,
                 request.Category,
                 request.SecondaryJerseyColor,
-                request.ShortName);
+                request.ShortName));
 
-            Result<FloorballTeamDto> result = await _mediator.Send(command);
-
-            if (result.IsSuccess && result.Data != null)
+            if (result.IsSuccess && result.Data is not null)
             {
                 return CreatedAtAction(
                     nameof(GetTeamById),
                     new { id = result.Data.Id },
-                    ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Floorball team created successfully")
-                );
+                    ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Floorball team created successfully"));
             }
 
-            string errorMessage = result.Error ?? "Failed to create floorball team";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage, errorList));
+            return ToErrorResponse(result, "Failed to create floorball team");
         }
 
         /// <summary>
@@ -277,15 +218,16 @@ namespace WebAPI.Controllers.Floorball
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state for team update: {errors}", 
-                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                _logger.LogWarning(
+                    "Invalid model state for team update: {errors}",
+                    SanitizeForLog(string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
                 return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList()));
             }
 
-            UpdateFloorballTeamCommand command = new UpdateFloorballTeamCommand(
+            Result<FloorballTeamDto> result = await _mediator.Send(new UpdateFloorballTeamCommand(
                 id,
                 request.Name,
                 request.DivisionId,
@@ -294,22 +236,9 @@ namespace WebAPI.Controllers.Floorball
                 request.Category,
                 request.SecondaryJerseyColor,
                 request.LogoUrl,
-                request.ShortName);
+                request.ShortName));
 
-            Result<FloorballTeamDto> result = await _mediator.Send(command);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Floorball team updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update floorball team";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Floorball team updated successfully", "Failed to update floorball team");
         }
 
         /// <summary>
@@ -327,21 +256,9 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Deleting floorball team with ID: {id}", id);
 
-            DeleteFloorballTeamCommand command = new DeleteFloorballTeamCommand(id);
-            Result result = await _mediator.Send(command);
+            Result result = await _mediator.Send(new DeleteFloorballTeamCommand(id));
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse.SuccessResponse("Floorball team deleted successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to delete floorball team";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse.ErrorResponse(errorMessage));
-            }
-
-            return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+            return HandleVoidResult(result, "Floorball team deleted successfully", "Failed to delete floorball team");
         }
 
         /// <summary>
@@ -369,25 +286,20 @@ namespace WebAPI.Controllers.Floorball
             [FromQuery] int? jerseyNumber = null,
             [FromQuery] int? requestedJerseyNumber = null)
         {
-            _logger.LogInformation("Adding player {playerId} to team {teamId} with position {position}",
-                playerId, teamId, position);
+            _logger.LogInformation(
+                "Adding player {playerId} to team {teamId} with position {position}",
+                playerId,
+                teamId,
+                SanitizeForLog(position));
 
-            AddPlayerToTeamCommand command = new AddPlayerToTeamCommand(
+            Result<FloorballTeamDto> result = await _mediator.Send(new AddPlayerToTeamCommand(
                 teamId,
                 playerId,
                 position,
                 jerseyNumber,
-                requestedJerseyNumber);
+                requestedJerseyNumber));
 
-            Result<FloorballTeamDto> result = await _mediator.Send(command);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Player added to team successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to add player to team";
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage, result.Errors.ToList()));
+            return HandleResult(result, "Player added to team successfully", "Failed to add player to team");
         }
 
         /// <summary>
@@ -405,18 +317,9 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Removing player {playerId} from team {teamId}", playerId, teamId);
 
-            RemovePlayerFromTeamCommand command = new RemovePlayerFromTeamCommand(teamId, playerId);
-            Result<FloorballTeamDto> result = await _mediator.Send(command);
+            Result<FloorballTeamDto> result = await _mediator.Send(new RemovePlayerFromTeamCommand(teamId, playerId));
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Player removed from team successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to remove player from team";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Player removed from team successfully", "Failed to remove player from team");
         }
 
         /// <summary>
@@ -432,31 +335,26 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<FloorballTeamPlayerDto>>> UpdateTeamPlayer(
-            Guid teamId, 
+            Guid teamId,
             Guid playerId,
             [FromBody] UpdateFloorballTeamPlayerRequest request)
         {
-            _logger.LogInformation("Updating player {playerId} in team {teamId} with position {position}, jersey {jerseyNumber}, active {isActive}", 
-                playerId, teamId, request.Position, request.JerseyNumber, request.IsActive);
+            _logger.LogInformation(
+                "Updating player {playerId} in team {teamId} with position {position}, jersey {jerseyNumber}, active {isActive}",
+                playerId,
+                teamId,
+                SanitizeForLog(request.Position),
+                request.JerseyNumber,
+                request.IsActive);
 
-            UpdateTeamPlayerCommand command = new UpdateTeamPlayerCommand(
+            Result<FloorballTeamPlayerDto> result = await _mediator.Send(new UpdateTeamPlayerCommand(
                 teamId,
                 playerId,
                 request.Position,
                 request.JerseyNumber,
-                request.IsActive);
+                request.IsActive));
 
-            Result<FloorballTeamPlayerDto> result = await _mediator.Send(command);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamPlayerDto>.SuccessResponse(result.Data, "Team player updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update team player";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-            return BadRequest(ApiResponse<FloorballTeamPlayerDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Team player updated successfully", "Failed to update team player");
         }
 
         /// <summary>
@@ -475,18 +373,9 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Updating teams {teamId} into division {divisionId}", teamId, divisionId);
 
-            UpdateTeamDivisionCommand command = new UpdateTeamDivisionCommand(teamId, divisionId);
-            Result<FloorballTeamDto> result = await _mediator.Send(command);
+            Result<FloorballTeamDto> result = await _mediator.Send(new UpdateTeamDivisionCommand(teamId, divisionId));
 
-            if(result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Team division updated succesfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update teams division";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Team division updated succesfully", "Failed to update teams division");
         }
 
         /// <summary>
@@ -505,22 +394,9 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Updating logo for team {teamId}", id);
 
-            UpdateFloorballTeamLogoCommand command = new UpdateFloorballTeamLogoCommand(id, logoUrl);
-            Result<FloorballTeamDto> result = await _mediator.Send(command);
+            Result<FloorballTeamDto> result = await _mediator.Send(new UpdateFloorballTeamLogoCommand(id, logoUrl));
 
-            if(result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamDto>.SuccessResponse(result.Data, "Team logo updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to update team logo";
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage));
-            }
-            return BadRequest(ApiResponse<FloorballTeamDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Team logo updated successfully", "Failed to update team logo");
         }
     }
-} 
+}

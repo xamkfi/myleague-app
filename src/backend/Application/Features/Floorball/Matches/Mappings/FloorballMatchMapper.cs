@@ -106,32 +106,37 @@ public static class FloorballMatchMapper
             })
             .ToList();
 
-        // Resolve logos with club fallback
-        Uri? homeTeamLogo = match.HomeTeam.GetEffectiveLogoUrl(homeClub?.LogoUrl);
-        Uri? awayTeamLogo = match.AwayTeam.GetEffectiveLogoUrl(awayClub?.LogoUrl);
+        // Resolve logos with club fallback. The team navigation may be null for placeholder
+        // ("to be determined") matches, in which case there is no logo to resolve.
+        Uri? homeTeamLogo = match.HomeTeam?.GetEffectiveLogoUrl(homeClub?.LogoUrl);
+        Uri? awayTeamLogo = match.AwayTeam?.GetEffectiveLogoUrl(awayClub?.LogoUrl);
 
         FloorballMatchRulesDto matchRulesDto = MapMatchRules(match.MatchRules);
 
         FloorballCompetitionType competitionType = ResolveCompetitionType(match);
 
-        List<FloorballActiveLineupPlayerDto> homeActivePlayers = match.ActivePlayers
-            .Where(p => p.TeamId == match.HomeTeamId)
-            .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
-            .ToList();
-        List<FloorballActiveLineupPlayerDto> awayActivePlayers = match.ActivePlayers
-            .Where(p => p.TeamId == match.AwayTeamId)
-            .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
-            .ToList();
+        List<FloorballActiveLineupPlayerDto> homeActivePlayers = match.HomeTeamId.HasValue
+            ? match.ActivePlayers
+                .Where(p => p.TeamId == match.HomeTeamId.Value)
+                .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
+                .ToList()
+            : new List<FloorballActiveLineupPlayerDto>();
+        List<FloorballActiveLineupPlayerDto> awayActivePlayers = match.AwayTeamId.HasValue
+            ? match.ActivePlayers
+                .Where(p => p.TeamId == match.AwayTeamId.Value)
+                .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
+                .ToList()
+            : new List<FloorballActiveLineupPlayerDto>();
 
         return new FloorballMatchDto(
             match.Id,
             match.CompetitionId,
             match.Competition?.Name ?? string.Empty,
             match.HomeTeamId,
-            match.HomeTeam.Name,
+            match.HomeTeam?.Name,
             homeTeamLogo,
             match.AwayTeamId,
-            match.AwayTeam.Name,
+            match.AwayTeam?.Name,
             awayTeamLogo,
             match.ScheduledDateTime.ToUniversalTime(),
             match.Venue,
@@ -183,10 +188,16 @@ public static class FloorballMatchMapper
 
         clubLookup ??= new Dictionary<Guid, Club>();
 
-        return matches.Select(match => 
+        return matches.Select(match =>
         {
-            clubLookup.TryGetValue(match.HomeTeam.ClubId, out Club? homeClub);
-            clubLookup.TryGetValue(match.AwayTeam.ClubId, out Club? awayClub);
+            // Team navigation may be null for placeholder matches scheduled before participants
+            // are known — skip the club lookup in that case so logo fallback simply returns null.
+            Club? homeClub = null;
+            Club? awayClub = null;
+            if (match.HomeTeam != null)
+                clubLookup.TryGetValue(match.HomeTeam.ClubId, out homeClub);
+            if (match.AwayTeam != null)
+                clubLookup.TryGetValue(match.AwayTeam.ClubId, out awayClub);
 
             return ToDto(match, new Dictionary<Guid, Person>(), homeClub, awayClub);
         });
@@ -236,14 +247,18 @@ public static class FloorballMatchMapper
             new List<FloorballPenaltyEventDto>(), // TODO: Map penalty events when needed
             new List<FloorballSaveEventDto>(),
             matchRulesDto,
-            match.ActivePlayers
-                .Where(p => p.TeamId == match.HomeTeamId)
-                .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
-                .ToList(),
-            match.ActivePlayers
-                .Where(p => p.TeamId == match.AwayTeamId)
-                .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
-                .ToList(),
+            match.HomeTeamId.HasValue
+                ? match.ActivePlayers
+                    .Where(p => p.TeamId == match.HomeTeamId.Value)
+                    .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
+                    .ToList()
+                : new List<FloorballActiveLineupPlayerDto>(),
+            match.AwayTeamId.HasValue
+                ? match.ActivePlayers
+                    .Where(p => p.TeamId == match.AwayTeamId.Value)
+                    .Select(p => new FloorballActiveLineupPlayerDto(p.PlayerId, p.Position))
+                    .ToList()
+                : new List<FloorballActiveLineupPlayerDto>(),
             match.TournamentGroupId,
             match.TournamentStage?.ToString(),
             ResolveCompetitionType(match)
@@ -261,7 +276,7 @@ public static class FloorballMatchMapper
     /// <returns>The new match entity</returns>
     /// <exception cref="ArgumentNullException">Thrown when command is null</exception>
     /// <exception cref="NotSupportedException">Thrown because FloorballMatch creation requires loaded entities</exception>
-    public static FloorballMatch ToEntity(CreateFloorballMatchCommand command, FloorballCompetition competition, FloorballTeam homeTeam, FloorballTeam awayTeam, FloorballReferee? referee = null)
+    public static FloorballMatch ToEntity(CreateFloorballMatchCommand command, FloorballCompetition competition, FloorballTeam? homeTeam, FloorballTeam? awayTeam, FloorballReferee? referee = null)
     {
         if (command == null)
             throw new ArgumentNullException(nameof(command));

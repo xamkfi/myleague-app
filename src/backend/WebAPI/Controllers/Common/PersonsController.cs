@@ -18,10 +18,8 @@ namespace WebAPI.Controllers.Common
     /// <summary>
     /// Controller for managing persons
     /// </summary>
-    [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    public class PersonsController : ControllerBase
+    public class PersonsController : BaseApiController
     {
         private readonly IMediator _mediator;
         private readonly ILogger<PersonsController> _logger;
@@ -59,27 +57,7 @@ namespace WebAPI.Controllers.Common
 
             Result<PagedResult<PersonDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(new PaginatedApiResponse<PersonDto>
-                {
-                    Success = true,
-                    Data = result.Data.Items,
-                    Message = "Persons retrieved successfully",
-                    Pagination = new PaginationMetadata
-                    {
-                        CurrentPage = result.Data.Page,
-                        TotalPages = result.Data.TotalPages,
-                        PageSize = result.Data.PageSize,
-                        TotalCount = result.Data.TotalCount,
-                        StartItem = ((result.Data.Page - 1) * result.Data.PageSize) + 1,
-                        EndItem = Math.Min(result.Data.Page * result.Data.PageSize, result.Data.TotalCount)
-                    }
-                });
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, PaginatedApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return HandlePaginatedResult(result, "Persons retrieved successfully", "Failed to retrieve persons");
         }
 
         /// <summary>
@@ -98,21 +76,7 @@ namespace WebAPI.Controllers.Common
             GetPersonByIdQuery query = new GetPersonByIdQuery(id);
             Result<PersonDto> result = await _mediator.Send(query);
 
-            if(result.IsSuccess && result.Data != null)
-            {
-                PersonDto person = result.Data;
-                return Ok(ApiResponse<PersonDto>.SuccessResponse(person, "Person retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
-            }
-            
-            return StatusCode(500, ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Person retrieved successfully", "Person not found");
         }
 
         /// <summary>
@@ -132,26 +96,12 @@ namespace WebAPI.Controllers.Common
                 return BadRequest(ApiResponse<PersonDto>.ErrorResponse("Email parameter is required"));
             }
 
-            _logger.LogInformation("Getting person by email: {Email}", email);
+            _logger.LogInformation("Getting person by email: {Email}", SanitizeForLog(email));
 
             GetPersonByEmailQuery query = new GetPersonByEmailQuery(email);
             Result<PersonDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                PersonDto person = result.Data;
-                return Ok(ApiResponse<PersonDto>.SuccessResponse(person, "Person retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
-            }
-            
-            return StatusCode(500, ApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Person retrieved successfully", "Person not found");
         }
 
         /// <summary>
@@ -175,18 +125,12 @@ namespace WebAPI.Controllers.Common
                 return BadRequest(PaginatedApiResponse<PersonDto>.ErrorResponse("Name parameter is required"));
             }
 
-            _logger.LogInformation("Searching persons by name: {Name} - Page: {Page}, PageSize: {PageSize}", name, page, pageSize);
+            _logger.LogInformation("Searching persons by name: {Name} - Page: {Page}, PageSize: {PageSize}", SanitizeForLog(name), page, pageSize);
 
             SearchPersonByNameQuery query = new SearchPersonByNameQuery(name, page, pageSize);
             Result<PagedResult<PersonDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(PaginatedApiResponse<PersonDto>.SuccessResponse(result.Data, $"Found {result.Data.TotalCount} persons matching '{name}'"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, PaginatedApiResponse<PersonDto>.ErrorResponse(errorMessage));
+            return HandlePaginatedResult(result, $"Found {result.Data?.TotalCount ?? 0} persons matching '{name}'", "Failed to search persons");
         }
 
         /// <summary>
@@ -201,7 +145,10 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> CreatePerson([FromBody] CreatePersonRequest request)
         {
-            _logger.LogInformation("Creating new person: {FirstName} {LastName}", request.FirstName, request.LastName);
+            _logger.LogInformation(
+                "Creating new person: {FirstName} {LastName}",
+                SanitizeForLog(request.FirstName),
+                SanitizeForLog(request.LastName));
 
             // Parse BirthDate if provided
             DateTime? birthDateUtc = null;
@@ -222,7 +169,7 @@ namespace WebAPI.Controllers.Common
 
             Result<PersonDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
+            if (result.IsSuccess && result.Data is not null)
             {
                 return CreatedAtAction(
                     nameof(GetPersonById),
@@ -231,10 +178,7 @@ namespace WebAPI.Controllers.Common
                 );
             }
 
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
+            return ToErrorResponse(result, "Failed to create person");
         }
 
         /// <summary>
@@ -264,22 +208,7 @@ namespace WebAPI.Controllers.Common
 
             Result<PersonDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<PersonDto>.SuccessResponse(result.Data, "Person updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
-            }
-            
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Person updated successfully", "Failed to update person");
         }
 
         /// <summary>
@@ -301,22 +230,7 @@ namespace WebAPI.Controllers.Common
             UpdatePersonBasicInfoCommand command = new UpdatePersonBasicInfoCommand(id, request.FirstName, request.LastName);
             Result<PersonDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<PersonDto>.SuccessResponse(result.Data, "Person basic information updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
-            }
-            
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Person basic information updated successfully", "Failed to update person basic information");
         }
 
         /// <summary>
@@ -345,22 +259,7 @@ namespace WebAPI.Controllers.Common
             UpdatePersonAddressCommand command = new UpdatePersonAddressCommand(id, address);
             Result<AddressDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<AddressDto>.SuccessResponse(result.Data, "Person address updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<AddressDto>.ErrorResponse(errorMessage));
-            }
-            
-            return BadRequest(ApiResponse<AddressDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Person address updated successfully", "Failed to update person address");
         }
 
         /// <summary>
@@ -387,22 +286,7 @@ namespace WebAPI.Controllers.Common
             UpdatePersonContactInfoCommand command = new UpdatePersonContactInfoCommand(id, contactInfo);
             Result<ContactInfoDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<ContactInfoDto>.SuccessResponse(result.Data, "Person contact information updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage));
-            }
-            
-            return BadRequest(ApiResponse<ContactInfoDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Person contact information updated successfully", "Failed to update person contact information");
         }
 
         /// <summary>
@@ -424,22 +308,7 @@ namespace WebAPI.Controllers.Common
             UpdatePersonRegistrationCommand command = new UpdatePersonRegistrationCommand(id, isRegistered);
             Result<PersonDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<PersonDto>.SuccessResponse(result.Data, "Person registration status updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
-            }
-            
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Person registration status updated successfully", "Failed to update person registration status");
         }
 
         /// <summary>
@@ -458,22 +327,7 @@ namespace WebAPI.Controllers.Common
             GetPersonWithTeamsQuery query = new GetPersonWithTeamsQuery(id);
             Result<PersonWithTeamsDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<PersonWithTeamsDto>.SuccessResponse(result.Data, "Person with teams retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage));
-            }
-            
-            return StatusCode(500, ApiResponse<PersonWithTeamsDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Person with teams retrieved successfully", "Person not found");
         }
 
         /// <summary>
@@ -490,27 +344,12 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<PersonDto>>> UpdatePersonRole(Guid id, [FromBody] Domain.Enums.Common.PersonRole role)
         {
-            _logger.LogInformation("Updating person role with Id: {Id} to {Role}", id, role);
+            _logger.LogInformation("Updating person role with Id: {Id} to {Role}", id, SanitizeForLog(role));
 
             UpdatePersonRoleCommand command = new UpdatePersonRoleCommand(id, role);
             Result<PersonDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<PersonDto>.SuccessResponse(result.Data, "Person role updated successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<PersonDto>.ErrorResponse(errorMessage));
-            }
-            
-            return BadRequest(ApiResponse<PersonDto>.ErrorResponse(errorMessage, errorList));
+            return HandleResult(result, "Person role updated successfully", "Failed to update person role");
         }
 
         /// <summary>
@@ -530,22 +369,7 @@ namespace WebAPI.Controllers.Common
             DeletePersonCommand command = new DeletePersonCommand(id);
             Result result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse.SuccessResponse("Person deleted successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-
-            // Check if it's a not found error
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
+            return HandleVoidResult(result, "Person deleted successfully", "Failed to delete person");
         }
     }
 }

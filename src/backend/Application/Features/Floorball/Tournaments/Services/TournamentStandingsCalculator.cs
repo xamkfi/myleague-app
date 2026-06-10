@@ -69,8 +69,14 @@ public static class TournamentStandingsCalculator
 
         foreach (FloorballMatch match in completedMatches)
         {
-            bool homeKnown = rows.TryGetValue(match.HomeTeamId, out StandingsRow? home);
-            bool awayKnown = rows.TryGetValue(match.AwayTeamId, out StandingsRow? away);
+            // A completed match always has both team IDs assigned (Start() enforces it). Defensively
+            // skip matches where a slot is somehow null instead of crashing the standings query.
+            if (!match.HomeTeamId.HasValue || !match.AwayTeamId.HasValue)
+            {
+                continue;
+            }
+            bool homeKnown = rows.TryGetValue(match.HomeTeamId.Value, out StandingsRow? home);
+            bool awayKnown = rows.TryGetValue(match.AwayTeamId.Value, out StandingsRow? away);
             if (!homeKnown && !awayKnown)
             {
                 continue;

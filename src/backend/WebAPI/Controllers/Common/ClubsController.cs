@@ -6,20 +6,18 @@ using Application.Features.Common.Clubs.Commands;
 using Application.Features.Common.Clubs.DTOs;
 using Application.Features.Common.Clubs.Queries;
 using Application.Features.Common.Images.Commands;
+using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
 using Domain.Common;
-using System.Linq;
 
 namespace WebAPI.Controllers.Club;
 
 /// <summary>
 /// Controller for managing clubs
 /// </summary>
-[ApiController]
 [Route("api/[controller]")]
-[Produces("application/json")]
-public class ClubsController : ControllerBase
+public class ClubsController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<ClubsController> _logger;
@@ -42,21 +40,14 @@ public class ClubsController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedApiResponse<ClubDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(PaginatedApiResponse<ClubDto>), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ApiResponse<ClubDto>>> GetAllClubs([FromQuery] GetClubsRequest request)
+    public async Task<ActionResult<PaginatedApiResponse<ClubDto>>> GetAllClubs([FromQuery] GetClubsRequest request)
     {
         _logger.LogInformation("Getting clubs page {Page} size {PageSize}", request.Page, request.PageSize);
         
         GetAllClubsQuery query = new GetAllClubsQuery(request.Page, request.PageSize);
         Result<PagedResult<ClubDto>> result = await _mediator.Send(query);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            PagedResult<ClubDto> paged = result.Data;
-            return Ok(PaginatedApiResponse<ClubDto>.SuccessResponse(paged, "Clubs retrieved successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        return StatusCode(500, PaginatedApiResponse<ClubDto>.ErrorResponse(errorMessage));
+        return HandlePaginatedResult(result, "Clubs retrieved successfully", "Failed to retrieve clubs");
     }
 
     /// <summary>
@@ -75,13 +66,7 @@ public class ClubsController : ControllerBase
         GetClubByIdQuery query = new GetClubByIdQuery(id);
         Result<ClubDto> result = await _mediator.Send(query);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<ClubDto>.SuccessResponse(result.Data, "Club retrieved successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        return NotFound(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
+        return HandleResult(result, "Club retrieved successfully", "Club not found");
     }
 
     /// <summary>
@@ -96,7 +81,7 @@ public class ClubsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<ClubDto>>> CreateClub([FromBody] CreateClubRequest request)
     {
-        _logger.LogInformation("Creating new club: {ClubName}", request.Name);
+        _logger.LogInformation("Creating new club: {ClubName}", SanitizeForLog(request.Name));
 
         CreateClubCommand command = new CreateClubCommand(
             request.Name,
@@ -110,7 +95,7 @@ public class ClubsController : ControllerBase
 
         Result<ClubDto> result = await _mediator.Send(command);
 
-        if (result.IsSuccess && result.Data != null)
+        if (result.IsSuccess && result.Data is not null)
         {
             return CreatedAtAction(
                 nameof(GetClubById),
@@ -119,10 +104,7 @@ public class ClubsController : ControllerBase
             );
         }
 
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-        return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage, errorList));
+        return ToErrorResponse(result, "Failed to create club");
     }
 
     /// <summary>
@@ -137,7 +119,7 @@ public class ClubsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<string>>> UploadImage([FromForm] IFormFile file)
     {
-        _logger.LogInformation("Uploading club logo: {FileName}", file?.FileName);
+        _logger.LogInformation("Uploading club logo: {FileName}", SanitizeForLog(file?.FileName));
 
         if (file == null || file.Length == 0)
         {
@@ -148,7 +130,7 @@ public class ClubsController : ControllerBase
         string[] allowedContentTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
         if (!allowedContentTypes.Contains(file.ContentType.ToLower()))
         {
-            _logger.LogWarning("Club logo upload failed: Invalid file type {ContentType}", file.ContentType);
+            _logger.LogWarning("Club logo upload failed: Invalid file type {ContentType}", SanitizeForLog(file.ContentType));
             return BadRequest(ApiResponse<string>.ErrorResponse($"Invalid file type. Allowed types: {string.Join(", ", allowedContentTypes)}"));
         }
 
@@ -170,7 +152,7 @@ public class ClubsController : ControllerBase
 
             Result<Uri> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
+            if (result.IsSuccess && result.Data is not null)
             {
                 _logger.LogInformation("Club logo uploaded successfully: {ImageUrl}", result.Data);
                 return Ok(ApiResponse<string>.SuccessResponse(result.Data.ToString(), "Image uploaded successfully"));
@@ -216,20 +198,7 @@ public class ClubsController : ControllerBase
 
         Result<ClubDto> result = await _mediator.Send(command);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<ClubDto>.SuccessResponse(result.Data, "Club updated successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        
-        // Check if it's a not found error
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
-        }
-
-        return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
+        return HandleResult(result, "Club updated successfully", "Failed to update club");
     }
 
     /// <summary>
@@ -249,20 +218,7 @@ public class ClubsController : ControllerBase
         DeleteClubCommand command = new DeleteClubCommand(id);
         Result result = await _mediator.Send(command);
 
-        if (result.IsSuccess)
-        {
-            return Ok(ApiResponse.SuccessResponse("Club deleted successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        // Check if it's a not found error
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(500, ApiResponse.ErrorResponse(errorMessage));
+        return HandleVoidResult(result, "Club deleted successfully", "Failed to delete club");
     }
 
     /// <summary>
@@ -284,20 +240,7 @@ public class ClubsController : ControllerBase
         UpdateClubLogoCommand command = new UpdateClubLogoCommand(id, logoUrl);
         Result<ClubDto> result = await _mediator.Send(command);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<ClubDto>.SuccessResponse(result.Data, "Club logo updated successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        
-        // Check if it's a not found error
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
-        }
-
-        return BadRequest(ApiResponse<ClubDto>.ErrorResponse(errorMessage));
+        return HandleResult(result, "Club logo updated successfully", "Failed to update club logo");
     }
 
     /// <summary>
@@ -317,25 +260,11 @@ public class ClubsController : ControllerBase
             return BadRequest(ApiResponse<List<ClubDto>>.ErrorResponse("Name parameter is required"));
         }
 
-        _logger.LogInformation("Searching clubs by name: {Name}", name);
+        _logger.LogInformation("Searching clubs by name: {Name}", SanitizeForLog(name));
 
         GetClubsByNameQuery query = new GetClubsByNameQuery(name);
         Result<IEnumerable<ClubDto>> result = await _mediator.Send(query);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            List<ClubDto> clubList = result.Data.ToList();
-            return Ok(ApiResponse<List<ClubDto>>.SuccessResponse(clubList, "Clubs found successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        
-        // Check if it's a not found error
-        if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return NotFound(ApiResponse<List<ClubDto>>.ErrorResponse(errorMessage));
-        }
-
-        return BadRequest(ApiResponse<List<ClubDto>>.ErrorResponse(errorMessage));
+        return HandleListResult(result, "Clubs found successfully", "Failed to search clubs");
     }
-} 
+}

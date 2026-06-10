@@ -302,7 +302,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Property<int>("AwayScore")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("AwayTeamId")
+                    b.Property<Guid?>("AwayTeamId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CompetitionId")
@@ -317,7 +317,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Property<int>("HomeScore")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("HomeTeamId")
+                    b.Property<Guid?>("HomeTeamId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("NextMatchId")
@@ -1656,8 +1656,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasOne("Domain.Entities.Floorball.FloorballTeam", "AwayTeam")
                         .WithMany()
                         .HasForeignKey("AwayTeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.Entities.Floorball.FloorballCompetition", "Competition")
                         .WithMany("Matches")
@@ -1668,8 +1667,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasOne("Domain.Entities.Floorball.FloorballTeam", "HomeTeam")
                         .WithMany()
                         .HasForeignKey("HomeTeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.Entities.Floorball.FloorballMatch", null)
                         .WithMany()

@@ -12,26 +12,35 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
   const navigate = useNavigate();
   const scheduled = formatDate(match.scheduledDateTime);
 
-  const handleTeamClick = (teamName: string) => {
+  const handleTeamClick = (teamName: string | null) => {
+    // Placeholder fixtures don't have a navigable team yet — silently ignore the click.
+    if (!teamName) return;
     navigate(`/team/${slugify(teamName)}`);
   };
+
+  // Resolve display labels once so the rest of the JSX can stay free of `?? 'TBD'` noise. The
+  // "clickable" class only applies when there's a real team to navigate to.
+  const homeName: string = match.homeTeamName ?? 'TBD';
+  const awayName: string = match.awayTeamName ?? 'TBD';
+  const homeClickable: boolean = !!match.homeTeamName;
+  const awayClickable: boolean = !!match.awayTeamName;
 
   return (
     <div className="match-header">
       <div className="teams-container">
         <div
-          className="team-section home clickable"
-          role="link"
-          tabIndex={0}
+          className={`team-section home${homeClickable ? ' clickable' : ''}`}
+          role={homeClickable ? 'link' : undefined}
+          tabIndex={homeClickable ? 0 : undefined}
           onClick={() => handleTeamClick(match.homeTeamName)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleTeamClick(match.homeTeamName); }}
         >
           <div className="team-crest">
-            {getTeamInitials(match.homeTeamName)}
+            {getTeamInitials(homeName)}
             {match.homeTeamLogo && (
-              <img 
-                src={match.homeTeamLogo} 
-                alt={`${match.homeTeamName} logo`}
+              <img
+                src={match.homeTeamLogo}
+                alt={`${homeName} logo`}
                 className="team-logo"
                 loading="lazy"
                 onError={(e) => {
@@ -41,7 +50,7 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
               />
             )}
           </div>
-          <div className="team-name">{match.homeTeamName}</div>
+          <div className="team-name">{homeName}</div>
         </div>
 
         <div className="score-container">
@@ -57,18 +66,18 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
         </div>
 
         <div
-          className="team-section away clickable"
-          role="link"
-          tabIndex={0}
+          className={`team-section away${awayClickable ? ' clickable' : ''}`}
+          role={awayClickable ? 'link' : undefined}
+          tabIndex={awayClickable ? 0 : undefined}
           onClick={() => handleTeamClick(match.awayTeamName)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleTeamClick(match.awayTeamName); }}
         >
           <div className="team-crest">
-            {getTeamInitials(match.awayTeamName)}
+            {getTeamInitials(awayName)}
             {match.awayTeamLogo && (
-              <img 
-                src={match.awayTeamLogo} 
-                alt={`${match.awayTeamName} logo`}
+              <img
+                src={match.awayTeamLogo}
+                alt={`${awayName} logo`}
                 className="team-logo"
                 loading="lazy"
                 onError={(e) => {
@@ -78,7 +87,7 @@ export default function MatchHeader({ match }: MatchHeaderProps) {
               />
             )}
           </div>
-          <div className="team-name">{match.awayTeamName}</div>
+          <div className="team-name">{awayName}</div>
         </div>
       </div>
 

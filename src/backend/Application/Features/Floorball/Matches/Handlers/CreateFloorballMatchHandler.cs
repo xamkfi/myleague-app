@@ -74,31 +74,38 @@ public class CreateFloorballMatchHandler : IRequestHandler<CreateFloorballMatchC
         {
             if (!request.CompetitionId.HasValue)
                 return Result<FloorballMatchDto>.Failure("Competition is required");
-            if (!request.HomeTeamId.HasValue)
-                return Result<FloorballMatchDto>.Failure("Home team is required");
-            if (!request.AwayTeamId.HasValue)
-                return Result<FloorballMatchDto>.Failure("Away team is required");
 
             // Fetch competition object
             FloorballCompetition? competition = await _seasonRepository.GetByIdAsync(request.CompetitionId);
-            if (competition==null)
+            if (competition == null)
             {
                 _logger.LogWarning("Attempt to create match for non-existent competition with ID: {CompetitionId}", request.CompetitionId);
                 return Result<FloorballMatchDto>.NotFound("FloorballCompetition", request.CompetitionId ?? Guid.Empty);
             }
 
-            // Fetch team objects
-            FloorballTeam? homeTeam = await _teamRepository.GetByIdAsync(request.HomeTeamId);
-            FloorballTeam? awayTeam = await _teamRepository.GetByIdAsync(request.AwayTeamId);
-            if (homeTeam==null)
+            // Teams are optional at creation: a future fixture can be scheduled before its
+            // participants are known. When a team ID is provided, however, it must resolve to an
+            // existing team — otherwise the admin has typoed an ID and we surface a NotFound.
+            FloorballTeam? homeTeam = null;
+            if (request.HomeTeamId.HasValue)
             {
-                _logger.LogWarning("Attempt to create match with non-existent home team ID: {TeamId}", request.HomeTeamId);
-                return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.HomeTeamId);
+                homeTeam = await _teamRepository.GetByIdAsync(request.HomeTeamId.Value);
+                if (homeTeam == null)
+                {
+                    _logger.LogWarning("Attempt to create match with non-existent home team ID: {TeamId}", request.HomeTeamId);
+                    return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.HomeTeamId.Value);
+                }
             }
-            if (awayTeam==null)
+
+            FloorballTeam? awayTeam = null;
+            if (request.AwayTeamId.HasValue)
             {
-                _logger.LogWarning("Attempt to create match with non-existent away team ID: {TeamId}", request.AwayTeamId);
-                return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.AwayTeamId);
+                awayTeam = await _teamRepository.GetByIdAsync(request.AwayTeamId.Value);
+                if (awayTeam == null)
+                {
+                    _logger.LogWarning("Attempt to create match with non-existent away team ID: {TeamId}", request.AwayTeamId);
+                    return Result<FloorballMatchDto>.NotFound("FloorballTeam", request.AwayTeamId.Value);
+                }
             }
 
             // Fetch referee if provided

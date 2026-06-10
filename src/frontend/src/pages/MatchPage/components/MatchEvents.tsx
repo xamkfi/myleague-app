@@ -33,6 +33,13 @@ export default function MatchEvents({ match }: MatchEventsProps) {
     let cancelled: boolean = false;
     async function fetchRosters() {
       try {
+        // Skip roster lookups for placeholder fixtures — there are no events to enrich either.
+        if (!match.homeTeamId || !match.awayTeamId) {
+          setHomeRoster([]);
+          setAwayRoster([]);
+          return;
+        }
+
         const [homeResponse, awayResponse] = await Promise.all([
           floorballTeamService.getById(match.homeTeamId),
           floorballTeamService.getById(match.awayTeamId),
@@ -142,7 +149,7 @@ export default function MatchEvents({ match }: MatchEventsProps) {
   const isHomeTeam = (teamId: string): boolean => teamId === match.homeTeamId;
 
   const getTeamShort = (teamId: string): string => {
-    const teamName: string = isHomeTeam(teamId) ? match.homeTeamName : match.awayTeamName;
+    const teamName: string = (isHomeTeam(teamId) ? match.homeTeamName : match.awayTeamName) ?? 'TBD';
     return getTeamInitials(teamName);
   };
 
@@ -153,7 +160,7 @@ export default function MatchEvents({ match }: MatchEventsProps) {
    */
   const renderTeamBadge = (teamId: string) => {
     const home: boolean = isHomeTeam(teamId);
-    const teamName: string = home ? match.homeTeamName : match.awayTeamName;
+    const teamName: string = (home ? match.homeTeamName : match.awayTeamName) ?? 'TBD';
     const teamLogo: string | null = home ? match.homeTeamLogo : match.awayTeamLogo;
     const initials: string = getTeamShort(teamId);
     const sideClass: string = home ? 'home-team' : 'away-team';
