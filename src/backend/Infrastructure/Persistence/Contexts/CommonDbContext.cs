@@ -53,6 +53,16 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// Gets or sets the TimerStates DbSet.
         /// </summary>
         public DbSet<TimerState> TimerStates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Feedbacks DbSet
+        /// </summary>
+        public DbSet<FeedbackEntity> Feedbacks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FeedbackToggles DbSet
+        /// </summary>
+        public DbSet<FeedbackToggleEntity> FeedbackToggles { get; set; }
         
         /// <summary>
         /// Saves changes to the database with domain event dispatching.
@@ -106,6 +116,8 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new DivisionConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             modelBuilder.ApplyConfiguration(new TimerStateConfiguration());
+            modelBuilder.ApplyConfiguration(new FeedbackConfiguration());
+            modelBuilder.ApplyConfiguration(new FeedbackToggleConfiguration());
         }
     }
 } 
