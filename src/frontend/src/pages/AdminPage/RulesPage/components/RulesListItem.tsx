@@ -1,93 +1,103 @@
-import DOMPurify from "dompurify";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import EditIcon from "../../../../assets/adminIcons/EditIcon.svg";
-import DeleteIcon from "../../../../assets/adminIcons/DeleteIcon.svg";
-import CancelIcon from "../../../../assets/adminIcons/CancelIcon.svg";
+import ActionsDropdown from "../../../../components/ActionsDropdown/ActionsDropdown";
 import type { RuleItem } from "../../../../types/admin/ruleTypes";
 import "./RulesListItem.scss";
 
 interface RuleListItemProps {
     rule: RuleItem;
     isSaving: boolean;
-    showCancel?: boolean;
     showActions?: boolean;
+    wordLimit?: number;
     onEdit: (rule: RuleItem) => void;
     onDelete: (rule: RuleItem) => void;
 }
 
+const normalizeRuleText = (text: string | undefined): string => {
+    return text?.replace(/\s+/g, " ").trim() || "-";
+};
+
+const limitWords = (text: string, wordLimit: number): string => {
+    const words = text.split(" ");
+
+    if (words.length <= wordLimit) {
+        return text;
+    }
+
+    return `${words.slice(0, wordLimit).join(" ")}…`;
+};
+
 export default function RulesListItem({
     rule,
     isSaving,
-    showCancel,
     showActions = true,
+    wordLimit = 10,
     onEdit,
     onDelete,
 }: Readonly<RuleListItemProps>) {
     const { t } = useTranslation();
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const fullText = useMemo(() => normalizeRuleText(rule.text), [rule.text]);
+    const words = fullText === "-" ? [] : fullText.split(" ");
+    const canExpand = words.length > wordLimit;
+    const visibleText = isExpanded ? fullText : limitWords(fullText, wordLimit);
 
     return (
-        <div className="rules-management-page__rule-row">
-            <div className="rules-management-page__rule-display-row">
-                <div className="rules-management-page__rule-display-row-left">
-                    <div
-                        className="rules-management-page__preview-box--empty rules-management-page__preview-box--inline"
-                        dangerouslySetInnerHTML={{
-                            __html: DOMPurify.sanitize(rule.html),
-                        }}
+        <tr>
+            <td>
+                <div className="admin-table__name rules-list-item__title">
+                    {visibleText}
+                </div>
+
+                {canExpand && (
+                    <button
+                        type="button"
+                        className="rules-list-item__expand-button"
+                        onClick={() => setIsExpanded((prev) => !prev)}
+                    >
+                        {isExpanded
+                            ? t("rules.admin.showLess", "Näytä vähemmän")
+                            : t("rules.admin.showMore", "Näytä lisää")}
+                    </button>
+                )}
+            </td>
+
+            <td>
+                <span className="admin-tag admin-tag--blue">
+                    {t(`rules.admin.categories.${rule.category}`, rule.category)}
+                </span>
+            </td>
+
+            <td>
+                <span className="admin-tag admin-tag--blue">
+                    {t("rules.admin.published", "Julkaistu")}
+                </span>
+            </td>
+
+            <td className="admin-table__actions-col">
+                {showActions && (
+                    <ActionsDropdown
+                        ariaLabel={t(
+                            "rules.admin.actionsMenu",
+                            "Säännön toiminnot",
+                        )}
+                        actions={[
+                            {
+                                label: t("rules.admin.editRule", "Muokkaa"),
+                                onClick: () => onEdit(rule),
+                                disabled: isSaving,
+                            },
+                            {
+                                label: t("common.delete", "Poista"),
+                                onClick: () => onDelete(rule),
+                                variant: "danger",
+                                disabled: isSaving,
+                            },
+                        ]}
                     />
-                </div>
-
-                <div className="rules-management-page__rule-category-action-buttons">
-                    <span className="rules-management-page__rule-category">
-                        <strong>{t("rules.admin.category")}: </strong>
-                        {rule.category}
-                    </span>
-
-                    {showActions && (
-                        <div className="rules-management-page__rule-actions">
-                            <button
-                                type="button"
-                                className="rules-management-page__icon-button"
-                                onClick={() => onEdit(rule)}
-                                disabled={isSaving}
-                                title={t("rules.admin.editRule")}
-                            >
-                                <img
-                                    src={EditIcon}
-                                    alt={t("rules.admin.editRule")}
-                                    width={20}
-                                />
-                            </button>
-
-                            <button
-                                type="button"
-                                className={`rules-management-page__icon-button ${
-                                    showCancel
-                                        ? "rules-management-page__icon-button--secondary"
-                                        : "rules-management-page__icon-button--danger"
-                                }`}
-                                onClick={() => onDelete(rule)}
-                                disabled={isSaving}
-                                title={
-                                    showCancel
-                                        ? t("common.cancel")
-                                        : t("common.delete")
-                                }
-                            >
-                                <img
-                                    src={showCancel ? CancelIcon : DeleteIcon}
-                                    alt={
-                                        showCancel
-                                            ? t("common.cancel")
-                                            : t("common.delete")
-                                    }
-                                    width={20}
-                                />
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+                )}
+            </td>
+        </tr>
     );
 }

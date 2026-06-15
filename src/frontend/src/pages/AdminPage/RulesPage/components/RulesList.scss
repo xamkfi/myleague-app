@@ -1,40 +1,21 @@
-.rules-management-page__preview-box {
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.5rem;
-    background: #fafafa;
+.rules-list {
+  width: 100%;
+  background: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
 }
 
-.rules-management-page__preview-box--empty {
-    padding: 0.5rem 0.5rem;
-    min-height: auto;
-}
+.rules-list__header {
+  padding: 1rem 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-bottom: none;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background: white;
 
-.rules-management-page__saved-card {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    padding: 1rem 1rem 0rem 1rem;
-    width: 100%;
-}
-
-.rules-management-page__section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-
-    label {
-        font-weight: 600;
-    }
-}
-
-.rules-management-page__scroll-area {
-    height: calc(100vh - 509px);
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding-right: 0.25rem;
-    padding-bottom: 1rem;
+  h3 {
+    margin: 0;
+    color: #111827;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
 }

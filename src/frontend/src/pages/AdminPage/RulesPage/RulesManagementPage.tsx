@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import PageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
 import Button from "../../../components/Button/Button";
 import AddIcon from "../../../assets/basicIcons/add.svg";
-import PublishIcon from "../../../assets/adminIcons/PublishIcon.svg";
 import "./RulesManagementPage.scss";
 import type {
     PageContentResponse,
@@ -15,8 +14,6 @@ import RuleForm from "./components/RulesForm";
 import RulesList from "./components/RulesList";
 import CategorySelect from "./components/CategorySelect";
 import { createRuleBlock, parseRulesFromHtml } from "../../../utils/helpers";
-import RulesSearchInput from "./components/RulesSearchInput";
-import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
 type RuleFormState = Pick<RuleItem, "html" | "category"> & {
     id: string | null;
@@ -24,10 +21,15 @@ type RuleFormState = Pick<RuleItem, "html" | "category"> & {
 
 const RULES_SLUG = "saannot";
 
+const emptyRuleFormState: RuleFormState = {
+    id: null,
+    html: "",
+    category: "general",
+};
+
 export default function RulesManagementPage() {
     const { t } = useTranslation();
 
-    const [previewHtml, setPreviewHtml] = useState<string>("");
     const [isCreateLayerOpen, setIsCreateLayerOpen] = useState<boolean>(false);
     const [filterCategory, setFilterCategory] = useState<string>("all");
     const [savedContent, setSavedContent] =
@@ -36,16 +38,8 @@ export default function RulesManagementPage() {
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const emptyRuleFormState: RuleFormState = {
-        id: null,
-        html: "",
-        category: "general",
-    };
     const [ruleFormState, setRuleFormState] =
         useState<RuleFormState>(emptyRuleFormState);
-
-    const debouncedSearchTerm = useDebouncedValue(searchTerm, 300);
 
     const pageTitle = savedContent?.title?.trim() || t("rules.defaultTitle");
 
@@ -92,7 +86,7 @@ export default function RulesManagementPage() {
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [t]);
 
     useEffect(() => {
         if (!successMessage) {
@@ -106,6 +100,16 @@ export default function RulesManagementPage() {
         return () => clearTimeout(timeout);
     }, [successMessage]);
 
+    const publishedRules = useMemo(() => {
+        return parseRulesFromHtml(savedContent?.contentHtml || "").reverse();
+    }, [savedContent]);
+
+    const filteredPublishedRules = useMemo(() => {
+        return publishedRules.filter((rule) => {
+            return filterCategory === "all" || rule.category === filterCategory;
+        });
+    }, [publishedRules, filterCategory]);
+
     const handleOpenCreateLayer = (): void => {
         setRuleFormState(emptyRuleFormState);
         setErrorMessage(null);
@@ -115,143 +119,8 @@ export default function RulesManagementPage() {
 
     const handleCloseCreateLayer = (): void => {
         setRuleFormState(emptyRuleFormState);
-        setErrorMessage("");
-        setIsCreateLayerOpen(false);
-    };
-
-    const handleAddRuleToPreview = (): void => {
-        setSuccessMessage(null);
         setErrorMessage(null);
-
-        const newRuleBlock = createRuleBlock(
-            ruleFormState.html,
-            ruleFormState.category,
-        );
-
-        if (!newRuleBlock) {
-            setErrorMessage(t("rules.admin.typeRuleToAdd"));
-            return;
-        }
-
-        const mergedPreviewHtml = previewHtml.trim()
-            ? `${previewHtml}\n${newRuleBlock}`
-            : newRuleBlock;
-
-        setPreviewHtml(mergedPreviewHtml);
-        setRuleFormState({
-            ...emptyRuleFormState,
-            category: "general",
-        });
         setIsCreateLayerOpen(false);
-    };
-
-    const previewRules = useMemo(() => {
-        return parseRulesFromHtml(previewHtml);
-    }, [previewHtml]);
-
-    const publishedRules = useMemo(() => {
-        return parseRulesFromHtml(savedContent?.contentHtml || "").reverse();
-    }, [savedContent]);
-
-    const normalizedSearchTerm =
-        debouncedSearchTerm.trim().length >= 2
-            ? debouncedSearchTerm.toLowerCase().trim()
-            : "";
-
-    const filteredPreviewRules = useMemo(() => {
-        return previewRules.filter((rule) => {
-            const matchesSearch = rule.text
-                .toLowerCase()
-                .includes(normalizedSearchTerm);
-
-            const matchesCategory =
-                filterCategory === "all" || rule.category === filterCategory;
-            return matchesSearch && matchesCategory;
-        });
-    }, [previewRules, normalizedSearchTerm, filterCategory]);
-
-    const filteredPublishedRules = useMemo(() => {
-        return publishedRules.filter((rule) => {
-            const matchesSearch = rule.text
-                .toLowerCase()
-                .includes(normalizedSearchTerm);
-
-            const matchesCategory =
-                filterCategory === "all" || rule.category === filterCategory;
-            return matchesSearch && matchesCategory;
-        });
-    }, [publishedRules, normalizedSearchTerm, filterCategory]);
-
-    const handlePublishRules = async (): Promise<void> => {
-        const confirmed = window.confirm(t("rules.admin.confirmPublish"));
-        if (!confirmed) return;
-
-        try {
-            setIsSaving(true);
-            setSuccessMessage(null);
-            setErrorMessage(null);
-
-            if (!previewHtml.trim()) {
-                setErrorMessage(t("rules.admin.noPreviewRules"));
-                return;
-            }
-
-            let baseHtml = savedContent?.contentHtml || "";
-            let appendHtml = "";
-
-            for (const previewRule of previewRules) {
-                const existsInPublished = publishedRules.some(
-                    (r) => r.id === previewRule.id,
-                );
-
-                if (existsInPublished) {
-                    const wrapper = document.createElement("div");
-                    wrapper.innerHTML = baseHtml;
-                    const target = wrapper.querySelector(
-                        `.rules-item[data-rule-id="${previewRule.id}"]`,
-                    );
-                    if (target) {
-                        const newWrapper = document.createElement("div");
-                        newWrapper.innerHTML = createRuleBlock(
-                            previewRule.html,
-                            previewRule.category,
-                            previewRule.id,
-                        );
-                        const newEl = newWrapper.firstElementChild;
-                        if (newEl) target.replaceWith(newEl);
-                    }
-                    baseHtml = wrapper.innerHTML.trim();
-                } else {
-                    appendHtml += `\n${createRuleBlock(previewRule.html, previewRule.category, previewRule.id)}`;
-                }
-            }
-
-            const mergedHtml = appendHtml
-                ? `${baseHtml}${appendHtml}`
-                : baseHtml;
-
-            const request: PageContentUpdateRequest = {
-                title: pageTitle,
-                contentHtml: mergedHtml,
-            };
-
-            const response = await pageContentService.updatePageContent(
-                RULES_SLUG,
-                request,
-            );
-
-            setSavedContent(response);
-            setPreviewHtml("");
-            setSuccessMessage(t("rules.admin.rulesPublishedSuccessfully"));
-        } catch (error) {
-            const message =
-                error instanceof Error
-                    ? error.message
-                    : t("rules.admin.saveFailed");
-            setErrorMessage(message);
-        } finally {
-            setIsSaving(false);
-        }
     };
 
     const handleStartEditRule = (rule: RuleItem): void => {
@@ -267,15 +136,11 @@ export default function RulesManagementPage() {
         setIsCreateLayerOpen(true);
     };
 
-    const handleUpdateRule = (): void => {
-        if (!ruleFormState.id) {
-            return;
-        }
-
+    const handleSaveRule = async (): Promise<void> => {
         const updatedRuleBlock = createRuleBlock(
             ruleFormState.html,
             ruleFormState.category,
-            ruleFormState.id,
+            ruleFormState.id ?? undefined,
         );
 
         if (!updatedRuleBlock) {
@@ -283,101 +148,94 @@ export default function RulesManagementPage() {
             return;
         }
 
-        const replaceRuleInHtml = (html: string): string => {
+        const confirmMessage = ruleFormState.id
+            ? t(
+                  "rules.admin.confirmUpdateRule",
+                  "Haluatko varmasti päivittää tämän säännön?",
+              )
+            : t(
+                  "rules.admin.confirmPublishSingleRule",
+                  "Haluatko varmasti julkaista tämän säännön?",
+              );
+
+        const confirmed = window.confirm(confirmMessage);
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setIsSaving(true);
+            setSuccessMessage(null);
+            setErrorMessage(null);
+
             const wrapper = document.createElement("div");
-            wrapper.innerHTML = html;
+            wrapper.innerHTML = savedContent?.contentHtml || "";
 
-            const target = wrapper.querySelector(
-                `.rules-item[data-rule-id="${ruleFormState.id}"]`,
-            );
+            if (ruleFormState.id) {
+                const target = wrapper.querySelector(
+                    `.rules-item[data-rule-id="${ruleFormState.id}"]`,
+                );
 
-            if (target) {
+                const newWrapper = document.createElement("div");
+                newWrapper.innerHTML = updatedRuleBlock;
+                const newRuleElement = newWrapper.firstElementChild;
+
+                if (target && newRuleElement) {
+                    target.replaceWith(newRuleElement);
+                } else if (newRuleElement) {
+                    wrapper.appendChild(newRuleElement);
+                }
+            } else {
                 const newWrapper = document.createElement("div");
                 newWrapper.innerHTML = updatedRuleBlock;
                 const newRuleElement = newWrapper.firstElementChild;
 
                 if (newRuleElement) {
-                    target.replaceWith(newRuleElement);
+                    wrapper.appendChild(newRuleElement);
                 }
             }
 
-            return wrapper.innerHTML.trim();
-        };
+            const request: PageContentUpdateRequest = {
+                title: pageTitle,
+                contentHtml: wrapper.innerHTML.trim(),
+            };
 
-        const existsInPreview = previewRules.some(
-            (rule) => rule.id === ruleFormState.id,
-        );
-        const existsInPublished = publishedRules.some(
-            (rule) => rule.id === ruleFormState.id,
-        );
-
-        if (existsInPreview) {
-            setPreviewHtml(replaceRuleInHtml(previewHtml));
-        } else if (existsInPublished) {
-            const publishedRule = publishedRules.find(
-                (rule) => rule.id === ruleFormState.id,
+            const response = await pageContentService.updatePageContent(
+                RULES_SLUG,
+                request,
             );
 
-            if (publishedRule) {
-                const movedToPreviewHtml = previewHtml.trim()
-                    ? `${previewHtml}\n${updatedRuleBlock}`
-                    : updatedRuleBlock;
-
-                const wrapper = document.createElement("div");
-                wrapper.innerHTML = savedContent?.contentHtml || "";
-
-                const target = wrapper.querySelector(
-                    `.rules-item[data-rule-id="${ruleFormState.id}"]`,
-                );
-
-                if (target) {
-                    target.remove();
-                }
-
-                setSavedContent((prev) =>
-                    prev
-                        ? {
-                              ...prev,
-                              contentHtml: wrapper.innerHTML.trim(),
-                          }
-                        : prev,
-                );
-
-                setPreviewHtml(movedToPreviewHtml);
-            }
+            setSavedContent(response);
+            setRuleFormState(emptyRuleFormState);
+            setIsCreateLayerOpen(false);
+            setSuccessMessage(
+                ruleFormState.id
+                    ? t(
+                          "rules.admin.ruleUpdatedSuccessfully",
+                          "Sääntö päivitettiin onnistuneesti.",
+                      )
+                    : t(
+                          "rules.admin.rulePublishedSuccessfully",
+                          "Sääntö julkaistiin onnistuneesti.",
+                      ),
+            );
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : t("rules.admin.saveFailed");
+            setErrorMessage(message);
+        } finally {
+            setIsSaving(false);
         }
-
-        setRuleFormState({
-            ...emptyRuleFormState,
-            category: "general",
-        });
-        setIsCreateLayerOpen(false);
     };
 
     const handleDeleteRule = async (rule: RuleItem): Promise<void> => {
-        const existsInPreview = previewRules.some(
-            (previewRule) => previewRule.id === rule.id,
-        );
-
-        if (existsInPreview) {
-            const confirmed = window.confirm(
-                `Are you sure you want to cancel rule: "${rule.text}"?`,
-            );
-
-            if (!confirmed) return;
-
-            const wrapper = document.createElement("div");
-            wrapper.innerHTML = previewHtml;
-            const target = wrapper.querySelector(
-                `.rules-item[data-rule-id="${rule.id}"]`,
-            );
-            if (target) target.remove();
-            setPreviewHtml(wrapper.innerHTML.trim());
-            return;
-        }
-
         const confirmed = window.confirm(
-            `Are you sure you want to delete rule: "${rule.text}"?`,
+            t(
+                "rules.admin.confirmDeleteRule",
+                `Haluatko varmasti poistaa säännön: "${rule.text}"?`,
+            ),
         );
 
         if (!confirmed) return;
@@ -422,6 +280,7 @@ export default function RulesManagementPage() {
                         </div>
                     )}
                 </div>
+
                 {!isCreateLayerOpen && (
                     <>
                         <div className="rules-management-page__topbar">
@@ -430,19 +289,6 @@ export default function RulesManagementPage() {
                             </h2>
 
                             <div className="rules-management-page__topbar-actions">
-                                {previewRules.length > 0 && (
-                                    <Button
-                                        iconLeft={PublishIcon}
-                                        rounded="pill"
-                                        onClick={handlePublishRules}
-                                        disabled={isSaving}
-                                    >
-                                        {isSaving
-                                            ? t("rules.admin.publishing")
-                                            : t("rules.admin.publish")}
-                                    </Button>
-                                )}
-
                                 <Button
                                     iconLeft={AddIcon}
                                     rounded="pill"
@@ -470,40 +316,26 @@ export default function RulesManagementPage() {
                             </p>
                         </div>
 
-                        <div className="rules-management-page__toolbar-left">
-                            <RulesSearchInput
-                                value={searchTerm}
-                                onChange={setSearchTerm}
-                                placeholder={t("rules.admin.searchPlaceholder")}
-                            />
+                        <div className="rules-management-page__filter-card">
+                            <div>
+                                <label className="rules-management-page__filter-label">
+                                    {t("rules.admin.category", "Kategoria")}
+                                </label>
 
-                            <CategorySelect
-                                value={filterCategory}
-                                onChange={setFilterCategory}
-                                includeAll
-                            />
+                                <CategorySelect
+                                    value={filterCategory}
+                                    onChange={setFilterCategory}
+                                    includeAll
+                                />
+                            </div>
                         </div>
 
                         <div className="rules-management-page__content">
                             <div className="rules-management-page__column">
                                 <RulesList
-                                    title={t("rules.admin.preview")}
-                                    rules={filteredPreviewRules}
-                                    emptyMessage={t(
-                                        "rules.admin.noPreviewRules",
-                                    )}
-                                    onEditRule={handleStartEditRule}
-                                    onDeleteRule={handleDeleteRule}
-                                    isSaving={isSaving}
-                                    showCancel={true}
-                                    isLoading={false}
-                                />
-                            </div>
-
-                            <div className="rules-management-page__column">
-                                <RulesList
                                     title={t("rules.admin.publishedRules")}
                                     rules={filteredPublishedRules}
+                                    wordLimit={10}
                                     emptyMessage={t(
                                         "rules.admin.noPublishedRules",
                                     )}
@@ -523,6 +355,11 @@ export default function RulesManagementPage() {
                         category={ruleFormState.category}
                         contentHtml={ruleFormState.html}
                         isSaving={isSaving}
+                        saveLabel={
+                            ruleFormState.id
+                                ? t("rules.admin.updateRule", "Päivitä sääntö")
+                                : t("rules.admin.publishRule", "Julkaise sääntö")
+                        }
                         onBack={handleCloseCreateLayer}
                         onCategoryChange={(value) =>
                             setRuleFormState((prev) => ({
@@ -537,11 +374,7 @@ export default function RulesManagementPage() {
                             }))
                         }
                         onCancel={handleCloseCreateLayer}
-                        onSave={
-                            ruleFormState.id
-                                ? handleUpdateRule
-                                : handleAddRuleToPreview
-                        }
+                        onSave={handleSaveRule}
                     />
                 )}
             </div>

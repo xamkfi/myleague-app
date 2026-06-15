@@ -23,18 +23,20 @@ export default function CategorySelect({
             >
                 {includeAll && (
                     <option value="all">
-                        {t("rules.admin.allCategories")}
+                        {t("rules.admin.allCategories", "Kaikki kategoriat")}
                     </option>
                 )}
                 <option value="general">
-                    {t("rules.admin.categories.general")}
+                    {t("rules.admin.categories.general", "Yleinen")}
                 </option>
-                <option value="fees">{t("rules.admin.categories.fees")}</option>
+                <option value="fees">
+                    {t("rules.admin.categories.fees", "Maksut")}
+                </option>
                 <option value="validation">
-                    {t("rules.admin.categories.validation")}
+                    {t("rules.admin.categories.validation", "Vahvistukset")}
                 </option>
                 <option value="calculation">
-                    {t("rules.admin.categories.calculation")}
+                    {t("rules.admin.categories.calculation", "Laskenta")}
                 </option>
             </select>
         </div>
