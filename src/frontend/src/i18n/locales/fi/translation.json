@@ -156,8 +156,29 @@
     "fi": "Suomi",
     "switchLanguage": "Vaihda kieli"
   },
+  "infoPages": {
+    "loadFailed": "Sivun lataus epäonnistui.",
+    "emptyContent": "Sivun sisältöä ei ole vielä julkaistu."
+  },
   "rules": {
+  "title": "Säännöt",
   "defaultTitle": "Säännöt",
+  "publicTitle": "MAHL Säännöt",
+  "publicIntro": "Tältä sivulta löydät MAHL-toimintaan liittyvät yleissäännöt, lajikohtaiset säännöt sekä muut sääntökokonaisuudet.",
+  "generalRules": "MAHL yleissääntöjä",
+  "sectionKicker": "Säännöstö",
+  "ruleCountLabel": "sääntöä",
+  "sectionTabs": "Sääntöosion valinta",
+  "selectSport": "Valitse laji",
+  "noRules": "Sääntöjä ei ole vielä lisätty.",
+  "mahlNavigation": "MAHL navigaatio",
+  "mahlNav": {
+    "summary": "Summary",
+    "finance": "Seuran talous",
+    "partners": "Kumppanuudet",
+    "responsibility": "Vastuullisuus",
+    "rules": "Säännöt"
+  },
   "loading": "Ladataan sääntöjä...",
   "loadFailed": "Sääntöjen lataaminen epäonnistui.",
   "admin": {
@@ -206,7 +227,49 @@
     "rule": "Sääntö",
     "subtitle": "Hallitse sääntöjä",
     "confirmPublish": "Haluatko varmasti julkaista säännöt?",
-    "confirmDiscardChanges": "Sinulla on tallentamattomia muutoksia."
+    "confirmDiscardChanges": "Sinulla on tallentamattomia muutoksia.",
+    "section": "Sääntöosio",
+    "allSections": "Kaikki osiot",
+    "unknownSection": "Tuntematon osio",
+    "selectSectionFirst": "Valitse ensin sääntöosio.",
+    "manageSections": "Hallitse osioita",
+    "manageRules": "Hallitse sääntöjä",
+    "sectionsTitle": "Sääntöosiot",
+    "topLevelSections": "Päävälilehdet",
+    "sportSections": "Lajikohtaiset säännöt",
+    "sortOrder": "Järjestys",
+    "sectionTitle": "Otsikko",
+    "sectionType": "Osion tyyppi",
+    "addSection": "Lisää osio",
+    "editSection": "Muokkaa sääntöosiota",
+    "createSection": "Luo osio",
+    "sectionTitleRequired": "Osion otsikko on pakollinen.",
+    "sectionSavedSuccessfully": "Sääntöosio tallennettiin onnistuneesti.",
+    "sectionSaveFailed": "Sääntöosion tallentaminen epäonnistui.",
+    "sectionDeletedSuccessfully": "Sääntöosio poistettiin onnistuneesti.",
+    "sectionDeleteFailed": "Sääntöosion poistaminen epäonnistui.",
+    "confirmDeleteSection": "Haluatko varmasti poistaa osion: {{title}}?",
+    "sportSectionHint": "Laji lisätään Lajikohtaiset säännöt -osion alle.",
+    "confirmUpdateRule": "Haluatko varmasti päivittää tämän säännön?",
+    "confirmPublishSingleRule": "Haluatko varmasti julkaista tämän säännön?",
+    "publishRule": "Julkaise sääntö",
+    "updateRule": "Päivitä sääntö",
+    "editMode": "Muokkaustila",
+    "createMode": "Luontitila",
+    "sectionTypes": {
+      "Global": "Yleissäännöt",
+      "SportGroup": "Lajikohtaiset säännöt",
+      "Sport": "Lajikohtainen laji",
+      "Validation": "Vahvistukset",
+      "Companion": "Kumppanuudet",
+      "Fee": "Maksut"
+    },
+    "table": {
+      "rule": "Sääntö",
+      "section": "Osio",
+      "order": "Järjestys",
+      "actions": "Toiminnot"
+    }
   }
 },
 
@@ -235,6 +298,37 @@
       "manageUsers": "Hallitse järjestelmäkäyttäjiä",
       "rules": "Säännöt",
       "manageRules": "Hallitse sääntöjä"
+    },
+    "siteContent": {
+      "title": "Sivuston sisällöt",
+      "titleShort": "Sisällöt",
+      "rules": "Säännöt",
+      "infoPages": {
+        "nav": "MAHL-infosivut",
+        "pageTitle": "MAHL-infosivut",
+        "subtitle": "Hallitse MAHL-osion staattisia infosivuja.",
+        "description": "Valitse sivu listasta tai pudotusvalikosta ja muokkaa sisältöä RichText-editorilla. Kuvat ja sponsorilogot lisätään suoraan sisältöön.",
+        "selectPage": "Valitse muokattava sivu",
+        "selectPlaceholder": "Valitse sivu...",
+        "edit": "Muokkaa",
+        "save": "Tallenna",
+        "saveSuccess": "Sivu tallennettu onnistuneesti.",
+        "saveFailed": "Sivun tallennus epäonnistui.",
+        "loadFailed": "Infosivujen lataus epäonnistui.",
+        "noPages": "Infosivuja ei löytynyt.",
+        "defaultContent": "Lisää sisältö tähän.",
+        "confirmDiscardChanges": "Haluatko hylätä tallentamattomat muutokset?",
+        "editMode": "Muokkaustila",
+        "previewPublic": "Avaa julkinen sivu",
+        "titleField": "Sivun otsikko",
+        "contentField": "Sivun sisältö",
+        "table": {
+          "page": "Sivu",
+          "title": "Otsikko",
+          "updated": "Viimeksi muokattu",
+          "actions": "Toiminnot"
+        }
+      }
     },
     "users": {
       "title": "Järjestelmäkäyttäjät",
@@ -1385,6 +1479,7 @@
     "save": "Tallenna",
     "deleting": "Poistetaan...",
     "cancel": "Peruuta",
+    "preview": "Esikatselu",
     "active": "Aktiivinen",
     "inactive": "Ei-aktiivinen",
     "add": "Lisää",

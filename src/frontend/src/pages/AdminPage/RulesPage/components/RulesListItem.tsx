@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ActionsDropdown from "../../../../components/ActionsDropdown/ActionsDropdown";
-import type { RuleItem } from "../../../../types/admin/ruleTypes";
+import type { RuleItem, RulesSection } from "../../../../types/admin/ruleTypes";
+import { getSectionLabel } from "../../../../utils/rulesSectionUtils";
 import "./RulesListItem.scss";
 
 interface RuleListItemProps {
     rule: RuleItem;
+    sections: RulesSection[];
     isSaving: boolean;
     showActions?: boolean;
     wordLimit?: number;
@@ -29,6 +31,7 @@ const limitWords = (text: string, wordLimit: number): string => {
 
 export default function RulesListItem({
     rule,
+    sections,
     isSaving,
     showActions = true,
     wordLimit = 10,
@@ -42,6 +45,16 @@ export default function RulesListItem({
     const words = fullText === "-" ? [] : fullText.split(" ");
     const canExpand = words.length > wordLimit;
     const visibleText = isExpanded ? fullText : limitWords(fullText, wordLimit);
+
+    const sectionLabel = useMemo(() => {
+        const section = sections.find(
+            (candidate) => candidate.id === rule.sectionId,
+        );
+
+        return section
+            ? getSectionLabel(section, sections)
+            : t("rules.admin.unknownSection", "Tuntematon osio");
+    }, [rule.sectionId, sections, t]);
 
     return (
         <tr>
@@ -63,15 +76,13 @@ export default function RulesListItem({
                 )}
             </td>
 
-            <td>
-                <span className="admin-tag admin-tag--blue">
-                    {t(`rules.admin.categories.${rule.category}`, rule.category)}
-                </span>
+            <td className="rules-list-item__meta-col">
+                <span className="admin-tag admin-tag--blue">{sectionLabel}</span>
             </td>
 
-            <td>
+            <td className="rules-list-item__meta-col">
                 <span className="admin-tag admin-tag--blue">
-                    {t("rules.admin.published", "Julkaistu")}
+                    {String(rule.order).padStart(2, "0")}
                 </span>
             </td>
 

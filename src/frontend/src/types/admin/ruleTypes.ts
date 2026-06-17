@@ -1,31 +1,48 @@
-export interface PageContentResponse {
+export type RulesSectionType =
+    | "Global"
+    | "SportGroup"
+    | "Sport"
+    | "Validation"
+    | "Companion"
+    | "Fee";
+
+export interface RulesSection {
     id: string;
-    pageSlug: string;
     title: string;
+    sortOrder: number;
+    sectionType: RulesSectionType;
+    parentSectionId: string | null;
     contentHtml: string;
     lastModifiedBy: string | null;
     updatedAt: string;
 }
 
-export interface PageContentUpdateRequest {
+export interface RulesSectionCreateRequest {
     title: string;
-    contentHtml: string;
+    sortOrder: number;
+    sectionType: RulesSectionType;
+    parentSectionId?: string | null;
 }
 
-export interface ApiResponse<T> {
-    data: T | null;
-    success: boolean;
-    message: string;
-    errors: string[];
+export interface RulesSectionUpdateRequest {
+    title: string;
+    sortOrder: number;
+    sectionType: RulesSectionType;
+    parentSectionId?: string | null;
 }
 
 export interface RuleItem {
     id: string;
     html: string;
     text: string;
-    category: string;
+    sectionId: string;
+    order: number;
 }
 
-export interface PageRuleUpdateRequest {
+export interface AddRulesSectionRuleRequest {
+    ruleHtml: string;
+}
+
+export interface UpdateRulesSectionRuleRequest {
     ruleHtml: string;
 }

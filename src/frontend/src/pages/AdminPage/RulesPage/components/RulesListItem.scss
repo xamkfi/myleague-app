@@ -4,6 +4,20 @@
   line-height: 1.5;
 }
 
+.rules-list-item__meta-col {
+  vertical-align: top;
+  width: 180px;
+}
+
+.rules-list-item__meta-col .admin-tag {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.35;
+}
+
 .rules-list-item__expand-button {
   margin-top: 0.35rem;
   padding: 0;

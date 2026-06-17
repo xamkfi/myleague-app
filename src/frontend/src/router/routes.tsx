@@ -10,7 +10,7 @@ import { lazyWithRetry } from '../utils/lazyWithRetry';
 const HomePage = lazyWithRetry(() => import('../pages/HomePage/HomePage'));
 const NewsPage = lazyWithRetry(() => import('../pages/NewsPage/NewsPage'));
 const RulesPage = lazyWithRetry(() => import('../pages/RulesPage/RulesPage'));
-const MAHLPage = lazyWithRetry(() => import('../pages/MAHLPage/MAHLPage'));
+const MahlInfoPage = lazyWithRetry(() => import('../pages/MahlInfoPage/MahlInfoPage'));
 const AgeGroupsPage = lazyWithRetry(() => import('../pages/AgeGroupsPage/AgeGroupsPage'));
 const RegisterPage = lazyWithRetry(() => import('../pages/RegisterPage/RegisterPage'));
 const TournamentsPage = lazyWithRetry(() => import('../pages/TournamentsPage/TournamentsPage'));
@@ -36,6 +36,9 @@ const VerifyEmailPage = lazyWithRetry(() => import('../pages/AdminPage/VerifyEma
 const AdminPage = lazyWithRetry(() => import('../pages/AdminPage/AdminPage'));
 const UsersPage = lazyWithRetry(() => import('../pages/AdminPage/UsersPage/UsersPage'));
 const PersonsPage = lazyWithRetry(() => import('../pages/AdminPage/PersonsPage/PersonsPage'));
+const InfoPagesManagementPage = lazyWithRetry(
+  () => import('../pages/AdminPage/InfoPagesPage/InfoPagesManagementPage')
+);
 const RulesManagementPage = lazyWithRetry(
   () => import('../pages/AdminPage/RulesPage/RulesManagementPage')
 );
@@ -118,7 +121,17 @@ export const routes: RouteObject[] = [
   },
   
       {
-        path: '/admin/rules',
+        path: '/admin/site-content/info-pages',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper>
+              <InfoPagesManagementPage />
+            </SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: '/admin/site-content/rules',
         element: (
           <ProtectedRoute>
             <SuspenseWrapper>
@@ -126,6 +139,10 @@ export const routes: RouteObject[] = [
             </SuspenseWrapper>
           </ProtectedRoute>
         )
+      },
+      {
+        path: '/admin/rules',
+        element: <Navigate to="/admin/site-content/rules" replace />
       },
   {
     path: '/admin/users',
@@ -154,7 +171,19 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/mahl',
-    element: <SuspenseWrapper><MAHLPage /></SuspenseWrapper>
+    element: <SuspenseWrapper><MahlInfoPage slug="mahl-summary" /></SuspenseWrapper>
+  },
+  {
+    path: '/mahl/seuran-talous',
+    element: <SuspenseWrapper><MahlInfoPage slug="mahl-finance" /></SuspenseWrapper>
+  },
+  {
+    path: '/mahl/kumppanuudet',
+    element: <SuspenseWrapper><MahlInfoPage slug="mahl-partners" /></SuspenseWrapper>
+  },
+  {
+    path: '/mahl/vastuullisuus',
+    element: <SuspenseWrapper><MahlInfoPage slug="mahl-responsibility" /></SuspenseWrapper>
   },
   {
     path: '/ikaryhmat',

@@ -29,6 +29,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
   const { user, logout } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [floorballDropdownOpen, setFloorballDropdownOpen] = useState(true);
+  const [siteContentDropdownOpen, setSiteContentDropdownOpen] = useState(true);
   const inProgress = useInProgressMatches();
   const totalLive: number = inProgress.totalCount;
   const seasonLive: number = inProgress.countByCompetitionType.season;
@@ -45,6 +46,10 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
 
   const isFloorballActive = () => {
     return location.pathname.startsWith('/admin/floorball');
+  };
+
+  const isSiteContentActive = () => {
+    return location.pathname.startsWith('/admin/site-content');
   };
 
   const userInitial = (user?.person?.fullName ?? user?.email ?? '?')[0].toUpperCase();
@@ -96,12 +101,6 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                 {!collapsed && <span>{t('admin.actions.news', 'News')}</span>}
               </Link>
             </li>
-            <li className={`admin-navbar-item ${isActive('/admin/rules') ? 'active' : ''}`}>
-              <Link to="/admin/rules" title={collapsed ? t('admin.actions.rules', 'Rules') : undefined}>
-                <img src={RulesIcon} alt="Rules" className="icon" />
-                {!collapsed && <span>{t('admin.actions.rules', 'Rules')}</span>}
-              </Link>
-            </li>
             <li className={`admin-navbar-item ${isActive('/admin/divisions') ? 'active' : ''}`}>
               <Link to="/admin/divisions" title={collapsed ? t('admin.actions.divisions', 'Divisions') : undefined}>
                 <img src={LeaguesIcon} alt="Divisions" className="icon" />
@@ -119,6 +118,54 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                 <img src={PersonsIcon} alt="Users" className="icon" />
                 {!collapsed && <span>{t('admin.actions.users', 'System Users')}</span>}
               </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div className="admin-navbar-section">
+          {!collapsed && (
+            <h3 className="admin-navbar-section-title">{t('admin.siteContent.title', 'Sivuston sisällöt')}</h3>
+          )}
+          <ul className="admin-navbar-menu">
+            <li className={`admin-navbar-item ${isSiteContentActive() ? 'active' : ''}`}>
+              {collapsed ? (
+                <Link to="/admin/site-content/rules" title={t('admin.siteContent.rules', 'Säännöt')}>
+                  <img src={RulesIcon} alt="Rules" className="icon" />
+                </Link>
+              ) : (
+                <div className="admin-navbar-dropdown-trigger">
+                  <Link
+                    to="/admin/site-content/rules"
+                    className="admin-navbar-dropdown-trigger-content"
+                  >
+                    <img src={RulesIcon} alt="Rules" className="icon" />
+                    <span>{t('admin.siteContent.titleShort', 'Sisällöt')}</span>
+                  </Link>
+                  <span
+                    className={`admin-navbar-dropdown-arrow ${siteContentDropdownOpen ? 'open' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSiteContentDropdownOpen(!siteContentDropdownOpen);
+                    }}
+                  >
+                    ▼
+                  </span>
+                </div>
+              )}
+              {!collapsed && siteContentDropdownOpen && (
+                <ul className="admin-navbar-submenu">
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/info-pages') ? 'active' : ''}`}>
+                    <Link to="/admin/site-content/info-pages">
+                      {t('admin.siteContent.infoPages.nav', 'MAHL-infosivut')}
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/rules') ? 'active' : ''}`}>
+                    <Link to="/admin/site-content/rules">
+                      {t('admin.siteContent.rules', 'Säännöt')}
+                    </Link>
+                  </li>
+                </ul>
+              )}
             </li>
           </ul>
         </div>

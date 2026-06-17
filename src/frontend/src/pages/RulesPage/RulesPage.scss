@@ -1,7 +1,7 @@
 .rules-page {
   width: 100%;
-  background: #f6f8fb;
-  min-height: 100vh;
+  background: transparent;
+  min-height: auto;
 }
 
 .rules-page__hero {
@@ -95,9 +95,7 @@
 }
 
 .rules-page__content-section {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 4rem 1.5rem 5rem;
+  padding: 0;
 }
 
 .rules-page__section-header {
@@ -172,6 +170,31 @@
   background: #1f4f9b;
   border-color: #1f4f9b;
   color: white;
+}
+
+.rules-page__sport-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+  max-width: 320px;
+}
+
+.rules-page__sport-filter-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.rules-page__sport-select {
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border-radius: 0.75rem;
+  border: 1px solid #d9e0ea;
+  background: white;
+  color: #172033;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .rules-page__alert,
@@ -336,7 +359,7 @@
   }
 
   .rules-page__content-section {
-    padding: 3rem 1rem 4rem;
+    padding: 1.5rem 1rem 2rem;
   }
 
   .rules-page__section-header {

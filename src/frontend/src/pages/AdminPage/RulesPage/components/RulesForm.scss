@@ -84,6 +84,29 @@
   padding: 1.5rem;
 }
 
+.rules-management-page__create-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.rules-management-page__create-field--order {
+  margin-bottom: 0;
+}
+
+.rules-management-page__order-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: white;
+  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
 .rules-management-page__create-field {
   margin-bottom: 1.25rem;
 
@@ -172,6 +195,14 @@
 @media (max-width: 768px) {
   .rules-management-page__create-layer {
     padding: 1rem;
+  }
+
+  .rules-management-page__create-row {
+    grid-template-columns: 1fr;
+  }
+
+  .rules-management-page__create-field--order {
+    margin-bottom: 1.25rem;
   }
 
   .rules-management-page__create-header {

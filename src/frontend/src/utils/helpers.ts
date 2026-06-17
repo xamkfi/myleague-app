@@ -88,10 +88,12 @@ export function truncateText(text: string, maxLength: number): string {
  */
 export function generateId(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
-} export const createRuleBlock = (
+}
+
+export const createRuleBlock = (
   html: string,
-  category: string,
   ruleId?: string,
+  order?: number,
 ): string => {
   const sanitizedHtml = DOMPurify.sanitize(html).trim();
 
@@ -103,22 +105,42 @@ export function generateId(): string {
   if (!plainText) return "";
 
   const id = ruleId ?? crypto.randomUUID();
+  const orderAttr =
+    order != null && order > 0 ? ` data-rule-order="${order}"` : "";
 
-  return `<div class="rules-item" data-rule-id="${id}" data-rule-category="${category}">${sanitizedHtml}</div>`;
+  return `<div class="rules-item" data-rule-id="${id}"${orderAttr}>${sanitizedHtml}</div>`;
 };
 
-export const parseRulesFromHtml = (html: string): RuleItem[] => {
+export const parseRulesFromHtml = (
+  html: string,
+  sectionId = "",
+): RuleItem[] => {
   if (!html.trim()) return [];
 
   const wrapper = document.createElement("div");
   wrapper.innerHTML = html;
 
-  return Array.from(wrapper.querySelectorAll(".rules-item")).map((rule) => ({
-    id: rule.getAttribute("data-rule-id") || crypto.randomUUID(),
-    html: rule.innerHTML,
-    text:
-      (rule.textContent || "").replace(/\u00A0/g, " ").trim() ||
-      "Untitled rule",
-    category: rule.getAttribute("data-rule-category") || "general",
-  }));
+  const rules = Array.from(wrapper.querySelectorAll(".rules-item")).map(
+    (rule, index) => {
+      const parsedOrder = Number.parseInt(
+        rule.getAttribute("data-rule-order") || "",
+        10,
+      );
+
+      return {
+        id: rule.getAttribute("data-rule-id") || crypto.randomUUID(),
+        html: rule.innerHTML,
+        text:
+          (rule.textContent || "").replace(/\u00A0/g, " ").trim() ||
+          "Untitled rule",
+        sectionId,
+        order:
+          Number.isFinite(parsedOrder) && parsedOrder > 0
+            ? parsedOrder
+            : index + 1,
+      };
+    },
+  );
+
+  return rules.sort((a, b) => a.order - b.order);
 };

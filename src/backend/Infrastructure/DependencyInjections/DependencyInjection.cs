@@ -22,6 +22,7 @@ using MyLeague.Infrastructure.Persistence.UnitOfWork;
 using MyLeague.Infrastructure.Services.Auth;
 using MyLeague.Infrastructure.Services.Common;
 using MyLeague.Infrastructure.Services.ImageStorage;
+using MyLeague.Infrastructure.Persistence.Seeding;
 using MyLeague.Infrastructure.Services.Seeding;
 
 namespace MyLeague.Infrastructure.DependencyInjections
@@ -71,6 +72,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     DatabaseSeeder seeder = new();
                     IWebHostEnvironment env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
                     seeder.SeedAsync(scope.ServiceProvider, env, configuration).GetAwaiter().GetResult();
+
+                    InfoPageContentSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
                 }
             }
 
@@ -80,7 +83,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
-            services.AddScoped<IPageContentRepository, PageContentRepository>();
+            services.AddScoped<IInfoPageContentRepository, InfoPageContentRepository>();
             services.AddScoped<IDivisionRepository, DivisionRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();

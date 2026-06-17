@@ -1,22 +1,24 @@
 import { useRef, useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
 import Button from "../../../../components/Button/Button";
+import RichTextEditor from "../../../../components/RichTextEditor/RichTextEditor";
 import { useTranslation } from "react-i18next";
-import CategorySelect from "./CategorySelect";
+import SectionSelect from "./SectionSelect";
 import RulePreviewModal from "./RulePreviewModal";
 import backArrow from "../../../../assets/adminIcons/backArrow.svg";
-import type { RuleItem } from "../../../../types/admin/ruleTypes";
+import type { RuleItem, RulesSection } from "../../../../types/admin/ruleTypes";
 import "./RulesForm.scss";
 
 interface RuleFormProps {
     isEditMode: boolean;
-    category: string;
+    sectionId: string;
+    sections: RulesSection[];
     contentHtml: string;
+    order: number;
     isSaving: boolean;
     saveLabel?: string;
     onBack: () => void;
-    onCategoryChange: (value: string) => void;
+    onSectionChange: (value: string) => void;
+    onOrderChange: (value: number) => void;
     onContentChange: (value: string) => void;
     onCancel: () => void;
     onSave: () => void;
@@ -30,12 +32,15 @@ const getPlainTextFromHtml = (html: string): string => {
 
 export default function RuleForm({
     isEditMode,
-    category,
+    sectionId,
+    sections,
     contentHtml,
+    order,
     isSaving,
     saveLabel,
     onBack,
-    onCategoryChange,
+    onSectionChange,
+    onOrderChange,
     onContentChange,
     onCancel,
     onSave,
@@ -45,12 +50,14 @@ export default function RuleForm({
 
     const initialFormRef = useRef({
         contentHtml,
-        category,
+        sectionId,
+        order,
     });
 
     const hasChanges =
         contentHtml !== initialFormRef.current.contentHtml ||
-        category !== initialFormRef.current.category;
+        sectionId !== initialFormRef.current.sectionId ||
+        order !== initialFormRef.current.order;
 
     const hasContent =
         contentHtml.replace(/<p><br><\/p>/g, "").trim().length > 0;
@@ -59,7 +66,8 @@ export default function RuleForm({
         id: "preview-rule",
         html: contentHtml,
         text: getPlainTextFromHtml(contentHtml),
-        category,
+        sectionId,
+        order,
     };
 
     const handleAttemptClose = (action: () => void): void => {
@@ -131,15 +139,43 @@ export default function RuleForm({
 
             <div className="rules-management-page__create-body">
                 <div className="rules-management-page__create-card">
-                    <div className="rules-management-page__create-field">
-                        <label className="rules-management-page__create-label">
-                            {t("rules.admin.category")}
-                        </label>
+                    <div className="rules-management-page__create-row">
+                        <div className="rules-management-page__create-field">
+                            <label className="rules-management-page__create-label">
+                                {t("rules.admin.section", "Sääntöosio")}
+                            </label>
 
-                        <CategorySelect
-                            value={category}
-                            onChange={onCategoryChange}
-                        />
+                            <SectionSelect
+                                sections={sections}
+                                value={sectionId}
+                                onChange={onSectionChange}
+                            />
+                        </div>
+
+                        <div className="rules-management-page__create-field rules-management-page__create-field--order">
+                            <label
+                                className="rules-management-page__create-label"
+                                htmlFor="rule-order-input"
+                            >
+                                {t("rules.admin.table.order", "Järjestys")}
+                            </label>
+
+                            <input
+                                id="rule-order-input"
+                                type="number"
+                                min={1}
+                                className="rules-management-page__order-input"
+                                value={order}
+                                onChange={(event) =>
+                                    onOrderChange(
+                                        Number.parseInt(
+                                            event.target.value,
+                                            10,
+                                        ) || 1,
+                                    )
+                                }
+                            />
+                        </div>
                     </div>
 
                     <div className="rules-management-page__create-field">
@@ -147,11 +183,13 @@ export default function RuleForm({
                             {t("rules.admin.rule")}
                         </label>
                         <div className="rules-management-page__quill-wrapper">
-                            <ReactQuill
-                                theme="snow"
+                            <RichTextEditor
                                 value={contentHtml}
                                 onChange={onContentChange}
-                                placeholder={t("rules.admin.typeRulePlaceholder")}
+                                showMatchInsert={false}
+                                placeholder={t(
+                                    "rules.admin.typeRulePlaceholder",
+                                )}
                             />
                         </div>
                     </div>

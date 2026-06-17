@@ -15,6 +15,10 @@ try {
 const buildDate = new Date().toISOString().split('T')[0]
 const appVersion = `${buildDate}.${gitSha}`
 
+const apiProxyTarget = process.env.DOCKER
+  ? 'http://webapi:8080'
+  : 'http://localhost:8080'
+
 // https://vite.dev/config/
 export default defineConfig({
   define: {
@@ -30,7 +34,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: apiProxyTarget,
         changeOrigin: true,
         secure: false
       }

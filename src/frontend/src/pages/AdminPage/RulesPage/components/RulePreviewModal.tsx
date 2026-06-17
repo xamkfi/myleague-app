@@ -1,4 +1,5 @@
 import type { RuleItem } from "../../../../types/admin/ruleTypes";
+import { formatRuleNumber } from "../../../../utils/rulesSectionUtils";
 import "./RulePreviewModal.scss";
 
 interface RulePreviewModalProps {
@@ -44,7 +45,9 @@ export default function RulePreviewModal({
 
                 <div className="rule-preview-modal__body">
                     <div className="rule-preview-modal__rule-card">
-                        <div className="rule-preview-modal__number">01.</div>
+                        <div className="rule-preview-modal__number">
+                            {formatRuleNumber(rule.order)}
+                        </div>
 
                         <div
                             className="rule-preview-modal__html"

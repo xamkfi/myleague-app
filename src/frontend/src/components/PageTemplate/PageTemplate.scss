@@ -13,6 +13,10 @@
     @media (max-width: map.get($breakpoints, 'tablet')) {
       padding-top: $mobile-navbar-height;
     }
+
+    &--full-bleed {
+      background-color: $color-blue-darkest;
+    }
   }
   
   &-content {
@@ -27,13 +31,31 @@
       width: 100%;
       max-width: $max-width-page;
     }
+
+    &--full-bleed {
+      padding: 0;
+      max-width: none;
+      margin: 0;
+
+      > * {
+        max-width: none;
+      }
+    }
     
     @media (max-width: map.get($breakpoints, 'tablet')) {
       padding: map.get($spacing, 'sm');
+
+      &.page-content--full-bleed {
+        padding: 0;
+      }
     }
     
     @media (max-width: map.get($breakpoints, 'mobile')) {
-      padding: map.get($spacing, 'xxs'); // Reduced from 'xs' to 'xxs' for better mobile width utilization
+      padding: map.get($spacing, 'xxs');
+
+      &.page-content--full-bleed {
+        padding: 0;
+      }
     }
   }
 
@@ -68,13 +90,26 @@
     > * {
       width: 100%;
     }
+
+    &--full-bleed {
+      padding: 0;
+      margin: 0;
+    }
     
     @media (max-width: map.get($breakpoints, 'tablet')) {
       padding: map.get($spacing, 'sm');
+
+      &.page-body--full-bleed {
+        padding: 0;
+      }
     }
     
     @media (max-width: map.get($breakpoints, 'mobile')) {
-      padding: map.get($spacing, 'xxs'); // Reduced from 'xs' to 'xxs' for better mobile width utilization
+      padding: map.get($spacing, 'xxs');
+
+      &.page-body--full-bleed {
+        padding: 0;
+      }
     }
   }
 }

@@ -1,88 +1,67 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
-import type { PageContentResponse } from "../../types/admin/ruleTypes";
-import { pageContentService } from "../../services/pageContentService";
+import MahlInfoLayout from "../../components/MahlInfoLayout/MahlInfoLayout";
+import type { RulesSection } from "../../types/admin/ruleTypes";
+import { rulesSectionService } from "../../services/rulesSectionService";
 import { parseRulesFromHtml } from "../../utils/helpers";
+import {
+    formatRuleNumber,
+    getChildSections,
+    getTopLevelSections,
+    sortRulesByOrder,
+} from "../../utils/rulesSectionUtils";
 import "./RulesPage.scss";
-
-const RULES_SLUG = "saannot";
-
-const mahlLinks = [
-    {
-        label: "Summary",
-        path: "/mahl",
-    },
-    {
-        label: "Seuran talous",
-        path: "/mahl/seuran-talous",
-    },
-    {
-        label: "Kumppanuudet",
-        path: "/mahl/kumppanuudet",
-    },
-    {
-        label: "Vastuullisuus",
-        path: "/mahl/vastuullisuus",
-    },
-    {
-        label: "Säännöt",
-        path: "/saannot",
-        active: true,
-    },
-];
-
-const categoryTranslationKeys: Record<string, string> = {
-    all: "rules.admin.allCategories",
-    general: "rules.admin.categories.general",
-    fees: "rules.admin.categories.fees",
-    validation: "rules.admin.categories.validation",
-    calculation: "rules.admin.categories.calculation",
-};
 
 export default function RulesPage() {
     const { t } = useTranslation();
 
-    const [pageContent, setPageContent] = useState<PageContentResponse | null>(
-        null,
-    );
+    const [sections, setSections] = useState<RulesSection[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [filterCategory, setFilterCategory] = useState<string>("all");
-
-    const translate = (key: string, defaultValue: string): string => {
-        return t(key, { defaultValue });
-    };
+    const [activeSectionId, setActiveSectionId] = useState<string>("");
+    const [activeSportSectionId, setActiveSportSectionId] = useState<string>("");
 
     useEffect(() => {
         let isMounted = true;
 
-        const loadPageContent = async (): Promise<void> => {
+        const loadSections = async (): Promise<void> => {
             try {
                 setIsLoading(true);
                 setError(null);
 
-                const response =
-                    await pageContentService.getPageContent(RULES_SLUG);
+                const loadedSections = await rulesSectionService.getAllSections();
 
                 if (!isMounted) {
                     return;
                 }
 
-                setPageContent(response);
+                setSections(loadedSections);
+
+                const topLevel = getTopLevelSections(loadedSections);
+                const firstSection = topLevel[0];
+
+                if (firstSection) {
+                    setActiveSectionId(firstSection.id);
+
+                    if (firstSection.sectionType === "SportGroup") {
+                        const sports = getChildSections(
+                            loadedSections,
+                            firstSection.id,
+                        );
+                        setActiveSportSectionId(sports[0]?.id ?? "");
+                    }
+                }
             } catch (err) {
                 if (!isMounted) {
                     return;
                 }
 
-                const message =
+                setError(
                     err instanceof Error
                         ? err.message
-                        : translate("rules.loadFailed", "Sääntöjen lataus epäonnistui.");
-
-                setError(message);
-                setPageContent(null);
+                        : t("rules.loadFailed", "Sääntöjen lataus epäonnistui."),
+                );
             } finally {
                 if (isMounted) {
                     setIsLoading(false);
@@ -90,140 +69,154 @@ export default function RulesPage() {
             }
         };
 
-        loadPageContent();
+        loadSections();
 
         return () => {
             isMounted = false;
         };
     }, [t]);
 
-    const rules = useMemo(() => {
-        return parseRulesFromHtml(pageContent?.contentHtml ?? "");
-    }, [pageContent?.contentHtml]);
+    const topLevelSections = useMemo(
+        () => getTopLevelSections(sections),
+        [sections],
+    );
 
-    const availableCategories = useMemo(() => {
-        const categories = new Set<string>();
+    const activeTopSection = useMemo(() => {
+        return topLevelSections.find(
+            (section) => section.id === activeSectionId,
+        );
+    }, [activeSectionId, topLevelSections]);
 
-        rules.forEach((rule) => {
-            if (rule.category) {
-                categories.add(rule.category);
-            }
-        });
+    const sportSections = useMemo(() => {
+        if (activeTopSection?.sectionType !== "SportGroup") {
+            return [];
+        }
 
-        return ["all", ...Array.from(categories)];
-    }, [rules]);
+        return getChildSections(sections, activeTopSection.id);
+    }, [activeTopSection, sections]);
 
-    const filteredRules = useMemo(() => {
-        return rules.filter((rule) => {
-            return filterCategory === "all" || rule.category === filterCategory;
-        });
-    }, [rules, filterCategory]);
+    useEffect(() => {
+        if (
+            activeTopSection?.sectionType === "SportGroup" &&
+            sportSections.length > 0 &&
+            !sportSections.some((section) => section.id === activeSportSectionId)
+        ) {
+            setActiveSportSectionId(sportSections[0].id);
+        }
+    }, [activeTopSection, sportSections, activeSportSectionId]);
 
-    const getCategoryLabel = (category: string): string => {
-        return t(categoryTranslationKeys[category] ?? category, {
-            defaultValue: category,
-        });
-    };
+    const contentSection = useMemo(() => {
+        if (activeTopSection?.sectionType === "SportGroup") {
+            return sportSections.find(
+                (section) => section.id === activeSportSectionId,
+            );
+        }
+
+        return activeTopSection;
+    }, [activeTopSection, activeSportSectionId, sportSections]);
+
+    const displayedRules = useMemo(() => {
+        if (!contentSection) {
+            return [];
+        }
+
+        return sortRulesByOrder(
+            parseRulesFromHtml(contentSection.contentHtml, contentSection.id),
+        );
+    }, [contentSection]);
+
+    const sectionHeading =
+        contentSection?.title ||
+        t("rules.generalRules", "MAHL yleissääntöjä");
 
     return (
-        <PageTemplate
-            title={
-                pageContent?.title ||
-                translate("rules.title", "Säännöt")
-            }
-        >
-            <main className="rules-page">
-                <section className="rules-page__hero">
-                    <div className="rules-page__hero-overlay">
-                        <div className="rules-page__hero-content">
-                            <p className="rules-page__eyebrow">MAHL</p>
-
-                            <h1 className="rules-page__title">
-                                {translate("rules.publicTitle", "MAHL Säännöt")}
-                            </h1>
-
-                            <p className="rules-page__intro">
-                                {translate(
-                                    "rules.publicIntro",
-                                    "Tältä sivulta löydät MAHL-toimintaan liittyvät yleissäännöt, maksut, tarkistukset ja laskentaperiaatteet.",
-                                )}
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
-                <nav
-                    className="rules-page__mahl-nav"
-                    aria-label={translate(
-                        "rules.mahlNavigation",
-                        "MAHL navigaatio",
-                    )}
-                >
-                    {mahlLinks.map((link) => (
-                        <Link
-                            key={link.label}
-                            to={link.path}
-                            className={
-                                link.active
-                                    ? "rules-page__mahl-nav-link rules-page__mahl-nav-link--active"
-                                    : "rules-page__mahl-nav-link"
-                            }
-                        >
-                            {link.label}
-                        </Link>
-                    ))}
-                </nav>
-
+        <PageTemplate title={t("rules.title", "Säännöt")} fullBleed>
+            <MahlInfoLayout
+                pageTitle={t("nav.mahl", "MAHL")}
+                intro={t(
+                    "rules.publicIntro",
+                    "Tältä sivulta löydät MAHL-toimintaan liittyvät yleissäännöt, lajikohtaiset säännöt sekä muut sääntökokonaisuudet.",
+                )}
+            >
                 <section className="rules-page__content-section">
                     <div className="rules-page__section-header">
                         <div>
                             <p className="rules-page__section-kicker">
-                                {translate("rules.sectionKicker", "Säännöstö")}
+                                {t("rules.sectionKicker", "Säännöstö")}
                             </p>
 
-                            <h2>
-                                {pageContent?.title ||
-                                    translate(
-                                        "rules.generalRules",
-                                        "MAHL yleissääntöjä",
-                                    )}
-                            </h2>
+                            <h2>{sectionHeading}</h2>
                         </div>
 
                         {!isLoading && (
                             <span className="rules-page__rule-count">
-                                {filteredRules.length}{" "}
-                                {translate("rules.ruleCountLabel", "sääntöä")}
+                                {displayedRules.length}{" "}
+                                {t("rules.ruleCountLabel", "sääntöä")}
                             </span>
                         )}
                     </div>
 
-                    {availableCategories.length > 2 && (
+                    {topLevelSections.length > 1 && (
                         <div
                             className="rules-page__category-tabs"
-                            aria-label={translate(
-                                "rules.categoryFilter",
-                                "Suodata sääntöjä kategorian mukaan",
+                            aria-label={t(
+                                "rules.sectionTabs",
+                                "Sääntöosion valinta",
                             )}
                         >
-                            {availableCategories.map((category) => (
+                            {topLevelSections.map((section) => (
                                 <button
-                                    key={category}
+                                    key={section.id}
                                     type="button"
                                     className={
-                                        filterCategory === category
+                                        activeSectionId === section.id
                                             ? "rules-page__category-tab rules-page__category-tab--active"
                                             : "rules-page__category-tab"
                                     }
-                                    onClick={() => setFilterCategory(category)}
+                                    onClick={() => setActiveSectionId(section.id)}
                                 >
-                                    {getCategoryLabel(category)}
+                                    {section.title}
                                 </button>
                             ))}
                         </div>
                     )}
 
-                    {error && !error.includes("not found") && (
+                    {activeTopSection?.sectionType === "SportGroup" &&
+                        sportSections.length > 0 && (
+                            <div className="rules-page__sport-filter">
+                                <label
+                                    htmlFor="rules-sport-select"
+                                    className="rules-page__sport-filter-label"
+                                >
+                                    {t(
+                                        "rules.selectSport",
+                                        "Valitse laji",
+                                    )}
+                                </label>
+
+                                <select
+                                    id="rules-sport-select"
+                                    className="rules-page__sport-select"
+                                    value={activeSportSectionId}
+                                    onChange={(event) =>
+                                        setActiveSportSectionId(
+                                            event.target.value,
+                                        )
+                                    }
+                                >
+                                    {sportSections.map((section) => (
+                                        <option
+                                            key={section.id}
+                                            value={section.id}
+                                        >
+                                            {section.title}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                    {error && (
                         <div className="rules-page__alert rules-page__alert--error">
                             {error}
                         </div>
@@ -231,33 +224,27 @@ export default function RulesPage() {
 
                     {isLoading ? (
                         <div className="rules-page__loading">
-                            {translate("rules.loading", "Ladataan sääntöjä...")}
+                            {t("rules.loading", "Ladataan sääntöjä...")}
                         </div>
-                    ) : filteredRules.length === 0 ? (
+                    ) : displayedRules.length === 0 ? (
                         <div className="rules-page__empty">
-                            {translate(
+                            {t(
                                 "rules.noRules",
                                 "Sääntöjä ei ole vielä lisätty.",
                             )}
                         </div>
                     ) : (
                         <div className="rules-page__rules-list">
-                            {filteredRules.map((rule, index) => (
+                            {displayedRules.map((rule) => (
                                 <article
                                     key={rule.id}
                                     className="rules-page__rule-card"
                                 >
                                     <div className="rules-page__rule-number">
-                                        {String(index + 1).padStart(2, "0")}.
+                                        {formatRuleNumber(rule.order)}
                                     </div>
 
                                     <div className="rules-page__rule-content">
-                                        {rule.category && (
-                                            <span className="rules-page__rule-category">
-                                                {getCategoryLabel(rule.category)}
-                                            </span>
-                                        )}
-
                                         <div
                                             className="rules-page__rule-html"
                                             dangerouslySetInnerHTML={{
@@ -270,7 +257,7 @@ export default function RulesPage() {
                         </div>
                     )}
                 </section>
-            </main>
+            </MahlInfoLayout>
         </PageTemplate>
     );
 }

@@ -40,9 +40,14 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<NewsArticle> NewsArticles { get; set; }
 
         /// <summary>
-        /// Gets or sets the PageContents DbSet.
+        /// Gets or sets the InfoPageContents DbSet.
         /// </summary>
-        public DbSet<PageContent> PageContents { get; set; }
+        public DbSet<InfoPageContent> InfoPageContents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RulesSections DbSet.
+        /// </summary>
+        public DbSet<RulesSection> RulesSections { get; set; }
 
         /// <summary>
         /// Gets or sets the Divisions DbSet.
@@ -109,7 +114,8 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new ClubConfiguration());
             modelBuilder.ApplyConfiguration(new NewsArticleConfiguration());
-            modelBuilder.ApplyConfiguration(new PageContentConfiguration());
+            modelBuilder.ApplyConfiguration(new InfoPageContentConfiguration());
+            modelBuilder.ApplyConfiguration(new RulesSectionConfiguration());
             modelBuilder.ApplyConfiguration(new DivisionConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             modelBuilder.ApplyConfiguration(new TimerStateConfiguration());

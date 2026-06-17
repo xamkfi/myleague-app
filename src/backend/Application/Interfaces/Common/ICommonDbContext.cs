@@ -5,7 +5,8 @@ namespace Application.Interfaces.Common;
 
 public interface ICommonDbContext
 {
-    DbSet<PageContent> PageContents { get; }
+    DbSet<InfoPageContent> InfoPageContents { get; }
+    DbSet<RulesSection> RulesSections { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
 

@@ -156,8 +156,29 @@
       "cancelled": "Cancelled"
     }
   },
+  "infoPages": {
+    "loadFailed": "Failed to load page.",
+    "emptyContent": "Page content has not been published yet."
+  },
   "rules": {
+  "title": "Rules",
   "defaultTitle": "Rules",
+  "publicTitle": "MAHL Rules",
+  "publicIntro": "Find MAHL general rules, sport-specific rules, and other rule sections on this page.",
+  "generalRules": "MAHL general rules",
+  "sectionKicker": "Rules",
+  "ruleCountLabel": "rules",
+  "sectionTabs": "Select rule section",
+  "selectSport": "Select sport",
+  "noRules": "No rules have been added yet.",
+  "mahlNavigation": "MAHL navigation",
+  "mahlNav": {
+    "summary": "Summary",
+    "finance": "Club finances",
+    "partners": "Partners",
+    "responsibility": "Responsibility",
+    "rules": "Rules"
+  },
   "loading": "Loading rules...",
   "loadFailed": "Failed to load rules.",
   "admin": {
@@ -206,7 +227,49 @@
     "rule": "Rule",
     "subtitle": "Manage Rules",
     "confirmPublish": "Are you sure you want to publish the rules?",
-    "confirmDiscardChanges": "You have unsaved changes."
+    "confirmDiscardChanges": "You have unsaved changes.",
+    "section": "Rule section",
+    "allSections": "All sections",
+    "unknownSection": "Unknown section",
+    "selectSectionFirst": "Select a rule section first.",
+    "manageSections": "Manage sections",
+    "manageRules": "Manage rules",
+    "sectionsTitle": "Rule sections",
+    "topLevelSections": "Top-level tabs",
+    "sportSections": "Sport-specific rules",
+    "sortOrder": "Order",
+    "sectionTitle": "Title",
+    "sectionType": "Section type",
+    "addSection": "Add section",
+    "editSection": "Edit rule section",
+    "createSection": "Create section",
+    "sectionTitleRequired": "Section title is required.",
+    "sectionSavedSuccessfully": "Rule section saved successfully.",
+    "sectionSaveFailed": "Failed to save rule section.",
+    "sectionDeletedSuccessfully": "Rule section deleted successfully.",
+    "sectionDeleteFailed": "Failed to delete rule section.",
+    "confirmDeleteSection": "Are you sure you want to delete section: {{title}}?",
+    "sportSectionHint": "The sport will appear under Sport-specific rules.",
+    "confirmUpdateRule": "Are you sure you want to update this rule?",
+    "confirmPublishSingleRule": "Are you sure you want to publish this rule?",
+    "publishRule": "Publish rule",
+    "updateRule": "Update rule",
+    "editMode": "Edit mode",
+    "createMode": "Create mode",
+    "sectionTypes": {
+      "Global": "General rules",
+      "SportGroup": "Sport-specific rules",
+      "Sport": "Sport (under sport-specific)",
+      "Validation": "Validation",
+      "Companion": "Companions",
+      "Fee": "Fees"
+    },
+    "table": {
+      "rule": "Rule",
+      "section": "Section",
+      "order": "Order",
+      "actions": "Actions"
+    }
   }
 },
   "admin": {
@@ -234,6 +297,37 @@
       "manageUsers": "Manage system users",
       "rules": "Rules",
       "manageRules": "Manage rules"
+    },
+    "siteContent": {
+      "title": "Site content",
+      "titleShort": "Content",
+      "rules": "Rules",
+      "infoPages": {
+        "nav": "MAHL info pages",
+        "pageTitle": "MAHL info pages",
+        "subtitle": "Manage static MAHL info pages.",
+        "description": "Choose a page from the list or dropdown and edit content with the RichText editor. Images and sponsor logos are added directly in the content.",
+        "selectPage": "Select page to edit",
+        "selectPlaceholder": "Select a page...",
+        "edit": "Edit",
+        "save": "Save",
+        "saveSuccess": "Page saved successfully.",
+        "saveFailed": "Failed to save page.",
+        "loadFailed": "Failed to load info pages.",
+        "noPages": "No info pages found.",
+        "defaultContent": "Add content here.",
+        "confirmDiscardChanges": "Do you want to discard unsaved changes?",
+        "editMode": "Edit mode",
+        "previewPublic": "Open public page",
+        "titleField": "Page title",
+        "contentField": "Page content",
+        "table": {
+          "page": "Page",
+          "title": "Title",
+          "updated": "Last updated",
+          "actions": "Actions"
+        }
+      }
     },
     "users": {
       "title": "System Users",
@@ -1404,6 +1498,7 @@
     "save": "Save",
     "deleting": "Deleting...",
     "cancel": "Cancel",
+    "preview": "Preview",
     "active": "Active",
     "inactive": "Inactive",
     "add": "Add",

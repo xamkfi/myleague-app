@@ -3,77 +3,132 @@ import PageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
 import Button from "../../../components/Button/Button";
 import AddIcon from "../../../assets/basicIcons/add.svg";
 import "./RulesManagementPage.scss";
-import type {
-    PageContentResponse,
-    PageContentUpdateRequest,
-    RuleItem,
-} from "../../../types/admin/ruleTypes";
-import { pageContentService } from "../../../services/pageContentService";
+import type { RuleItem, RulesSection } from "../../../types/admin/ruleTypes";
+import { rulesSectionService } from "../../../services/rulesSectionService";
 import { useTranslation } from "react-i18next";
 import RuleForm from "./components/RulesForm";
 import RulesList from "./components/RulesList";
-import CategorySelect from "./components/CategorySelect";
+import SectionSelect from "./components/SectionSelect";
+import RulesSectionList from "./components/RulesSectionList";
+import RulesSectionForm, {
+    type RulesSectionFormState,
+    type SectionCreateMode,
+} from "./components/RulesSectionForm";
 import { createRuleBlock, parseRulesFromHtml } from "../../../utils/helpers";
+import {
+    findGlobalSection,
+    findSportGroupSection,
+    getChildSections,
+    getNextRuleOrder,
+    getRuleableSections,
+    getTopLevelSections,
+    resolveRuleOrderConflict,
+    sortRulesByOrder,
+} from "../../../utils/rulesSectionUtils";
 
-type RuleFormState = Pick<RuleItem, "html" | "category"> & {
+function formatSectionDeleteError(
+    message: string,
+    t: (key: string, defaultValue: string) => string,
+): string {
+    if (message.includes("child sections")) {
+        return t(
+            "rules.admin.sectionDeleteHasChildren",
+            "Osioita ei voi poistaa ennen kuin sen lajiosiot on poistettu.",
+        );
+    }
+
+    if (message.includes("contains rules")) {
+        return t(
+            "rules.admin.sectionDeleteHasRules",
+            "Osioita ei voi poistaa ennen kuin kaikki säännöt on poistettu.",
+        );
+    }
+
+    if (message.includes("SportGroup section already exists")) {
+        return t(
+            "rules.admin.sportGroupAlreadyExists",
+            "Lajikohtaiset säännöt -ryhmä on jo olemassa. Lisää uusi laji tyypillä Laji (Sport).",
+        );
+    }
+
+    return message;
+}
+
+type RuleFormState = {
     id: string | null;
+    html: string;
+    sectionId: string;
+    order: number;
 };
 
-const RULES_SLUG = "saannot";
+type AdminPanel = "rules" | "sections";
 
-const emptyRuleFormState: RuleFormState = {
+const emptyRuleFormState = (): RuleFormState => ({
     id: null,
     html: "",
-    category: "general",
-};
+    sectionId: "",
+    order: 1,
+});
+
+const emptySectionFormState = (): RulesSectionFormState => ({
+    id: null,
+    title: "",
+    sortOrder: 1,
+    sectionType: "Global",
+    parentSectionId: null,
+});
 
 export default function RulesManagementPage() {
     const { t } = useTranslation();
 
-    const [isCreateLayerOpen, setIsCreateLayerOpen] = useState<boolean>(false);
-    const [filterCategory, setFilterCategory] = useState<string>("all");
-    const [savedContent, setSavedContent] =
-        useState<PageContentResponse | null>(null);
+    const [activePanel, setActivePanel] = useState<AdminPanel>("rules");
+    const [sections, setSections] = useState<RulesSection[]>([]);
+    const [filterSectionId, setFilterSectionId] = useState<string>("all");
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [isRuleFormOpen, setIsRuleFormOpen] = useState<boolean>(false);
+    const [isSectionFormOpen, setIsSectionFormOpen] = useState<boolean>(false);
     const [ruleFormState, setRuleFormState] =
-        useState<RuleFormState>(emptyRuleFormState);
+        useState<RuleFormState>(emptyRuleFormState());
+    const [sectionFormState, setSectionFormState] =
+        useState<RulesSectionFormState>(emptySectionFormState());
+    const [sectionCreateMode, setSectionCreateMode] =
+        useState<SectionCreateMode>("main");
 
-    const pageTitle = savedContent?.title?.trim() || t("rules.defaultTitle");
+    const loadSections = async (): Promise<void> => {
+        const loadedSections = await rulesSectionService.getAllSections();
+        setSections(loadedSections);
+
+        const ruleableSections = getRuleableSections(loadedSections);
+        const defaultSection =
+            findGlobalSection(loadedSections) ?? ruleableSections[0];
+
+        setRuleFormState((prev) => ({
+            ...prev,
+            sectionId: prev.sectionId || defaultSection?.id || "",
+        }));
+    };
 
     useEffect(() => {
         let isMounted = true;
 
-        const loadRulesContent = async (): Promise<void> => {
+        const initialize = async (): Promise<void> => {
             try {
                 setIsLoading(true);
                 setErrorMessage(null);
-
-                const response =
-                    await pageContentService.getPageContent(RULES_SLUG);
-
-                if (!isMounted) {
-                    return;
-                }
-
-                setSavedContent(response);
+                await loadSections();
             } catch (error) {
                 if (!isMounted) {
                     return;
                 }
 
-                const message =
+                setErrorMessage(
                     error instanceof Error
                         ? error.message
-                        : t("rules.admin.loadFailed");
-
-                if (message.includes("not found")) {
-                    setSavedContent(null);
-                } else {
-                    setErrorMessage(message);
-                }
+                        : t("rules.admin.loadFailed"),
+                );
             } finally {
                 if (isMounted) {
                     setIsLoading(false);
@@ -81,7 +136,7 @@ export default function RulesManagementPage() {
             }
         };
 
-        loadRulesContent();
+        initialize();
 
         return () => {
             isMounted = false;
@@ -100,47 +155,85 @@ export default function RulesManagementPage() {
         return () => clearTimeout(timeout);
     }, [successMessage]);
 
-    const publishedRules = useMemo(() => {
-        return parseRulesFromHtml(savedContent?.contentHtml || "").reverse();
-    }, [savedContent]);
+    const allRules = useMemo(() => {
+        return getRuleableSections(sections).flatMap((section) =>
+            sortRulesByOrder(
+                parseRulesFromHtml(section.contentHtml, section.id),
+            ),
+        );
+    }, [sections]);
 
-    const filteredPublishedRules = useMemo(() => {
-        return publishedRules.filter((rule) => {
-            return filterCategory === "all" || rule.category === filterCategory;
+    const filteredRules = useMemo(() => {
+        if (filterSectionId === "all") {
+            return allRules;
+        }
+
+        return allRules.filter((rule) => rule.sectionId === filterSectionId);
+    }, [allRules, filterSectionId]);
+
+    const handleOpenCreateRule = (): void => {
+        let targetSection = "";
+
+        if (filterSectionId !== "all") {
+            targetSection = filterSectionId;
+        } else {
+            const sportGroup = findSportGroupSection(sections);
+            const sportSections = sportGroup
+                ? getChildSections(sections, sportGroup.id)
+                : [];
+
+            targetSection =
+                sportSections[0]?.id ||
+                findGlobalSection(sections)?.id ||
+                getRuleableSections(sections)[0]?.id ||
+                "";
+        }
+
+        const sectionRules = allRules.filter(
+            (rule) => rule.sectionId === targetSection,
+        );
+
+        setRuleFormState({
+            ...emptyRuleFormState(),
+            sectionId: targetSection,
+            order: getNextRuleOrder(sectionRules),
         });
-    }, [publishedRules, filterCategory]);
-
-    const handleOpenCreateLayer = (): void => {
-        setRuleFormState(emptyRuleFormState);
         setErrorMessage(null);
         setSuccessMessage(null);
-        setIsCreateLayerOpen(true);
-    };
-
-    const handleCloseCreateLayer = (): void => {
-        setRuleFormState(emptyRuleFormState);
-        setErrorMessage(null);
-        setIsCreateLayerOpen(false);
+        setIsRuleFormOpen(true);
     };
 
     const handleStartEditRule = (rule: RuleItem): void => {
-        setErrorMessage(null);
-        setSuccessMessage(null);
-
         setRuleFormState({
             id: rule.id,
             html: rule.html,
-            category: rule.category,
+            sectionId: rule.sectionId || "",
+            order: rule.order,
         });
-
-        setIsCreateLayerOpen(true);
+        setErrorMessage(null);
+        setSuccessMessage(null);
+        setIsRuleFormOpen(true);
     };
 
     const handleSaveRule = async (): Promise<void> => {
+        if (!ruleFormState.sectionId) {
+            setErrorMessage(t("rules.admin.selectSectionFirst"));
+            return;
+        }
+
+        const normalizedOrder = Math.max(1, ruleFormState.order);
+        const sectionRules = allRules.filter(
+            (rule) => rule.sectionId === ruleFormState.sectionId,
+        );
+        const previousOrder = ruleFormState.id
+            ? allRules.find((rule) => rule.id === ruleFormState.id)?.order ??
+              null
+            : null;
+
         const updatedRuleBlock = createRuleBlock(
             ruleFormState.html,
-            ruleFormState.category,
             ruleFormState.id ?? undefined,
+            normalizedOrder,
         );
 
         if (!updatedRuleBlock) {
@@ -148,83 +241,80 @@ export default function RulesManagementPage() {
             return;
         }
 
-        const confirmMessage = ruleFormState.id
-            ? t(
-                  "rules.admin.confirmUpdateRule",
-                  "Haluatko varmasti päivittää tämän säännön?",
-              )
-            : t(
-                  "rules.admin.confirmPublishSingleRule",
-                  "Haluatko varmasti julkaista tämän säännön?",
-              );
+        const confirmed = window.confirm(
+            ruleFormState.id
+                ? t("rules.admin.confirmUpdateRule")
+                : t("rules.admin.confirmPublishSingleRule"),
+        );
 
-        const confirmed = window.confirm(confirmMessage);
         if (!confirmed) {
             return;
         }
 
         try {
             setIsSaving(true);
-            setSuccessMessage(null);
             setErrorMessage(null);
+            setSuccessMessage(null);
 
-            const wrapper = document.createElement("div");
-            wrapper.innerHTML = savedContent?.contentHtml || "";
+            const orderUpdates = resolveRuleOrderConflict(
+                sectionRules,
+                ruleFormState.id,
+                normalizedOrder,
+                previousOrder,
+            );
 
-            if (ruleFormState.id) {
-                const target = wrapper.querySelector(
-                    `.rules-item[data-rule-id="${ruleFormState.id}"]`,
+            for (const orderUpdate of orderUpdates) {
+                const conflictingRule = sectionRules.find(
+                    (rule) => rule.id === orderUpdate.ruleId,
                 );
 
-                const newWrapper = document.createElement("div");
-                newWrapper.innerHTML = updatedRuleBlock;
-                const newRuleElement = newWrapper.firstElementChild;
-
-                if (target && newRuleElement) {
-                    target.replaceWith(newRuleElement);
-                } else if (newRuleElement) {
-                    wrapper.appendChild(newRuleElement);
+                if (!conflictingRule) {
+                    continue;
                 }
-            } else {
-                const newWrapper = document.createElement("div");
-                newWrapper.innerHTML = updatedRuleBlock;
-                const newRuleElement = newWrapper.firstElementChild;
 
-                if (newRuleElement) {
-                    wrapper.appendChild(newRuleElement);
+                const swappedRuleBlock = createRuleBlock(
+                    conflictingRule.html,
+                    conflictingRule.id,
+                    orderUpdate.newOrder,
+                );
+
+                if (!swappedRuleBlock) {
+                    continue;
                 }
+
+                await rulesSectionService.updateRule(
+                    ruleFormState.sectionId,
+                    conflictingRule.id,
+                    { ruleHtml: swappedRuleBlock },
+                );
             }
 
-            const request: PageContentUpdateRequest = {
-                title: pageTitle,
-                contentHtml: wrapper.innerHTML.trim(),
-            };
+            if (ruleFormState.id) {
+                await rulesSectionService.updateRule(
+                    ruleFormState.sectionId,
+                    ruleFormState.id,
+                    { ruleHtml: updatedRuleBlock },
+                );
+            } else {
+                await rulesSectionService.addRule(ruleFormState.sectionId, {
+                    ruleHtml: updatedRuleBlock,
+                });
+            }
 
-            const response = await pageContentService.updatePageContent(
-                RULES_SLUG,
-                request,
-            );
-
-            setSavedContent(response);
-            setRuleFormState(emptyRuleFormState);
-            setIsCreateLayerOpen(false);
+            await loadSections();
+            setRuleFormState(emptyRuleFormState());
+            setIsRuleFormOpen(false);
             setSuccessMessage(
                 ruleFormState.id
-                    ? t(
-                          "rules.admin.ruleUpdatedSuccessfully",
-                          "Sääntö päivitettiin onnistuneesti.",
-                      )
-                    : t(
-                          "rules.admin.rulePublishedSuccessfully",
-                          "Sääntö julkaistiin onnistuneesti.",
-                      ),
+                    ? t("rules.admin.ruleUpdatedSuccessfully")
+                    : t("rules.admin.rulePublishedSuccessfully"),
             );
         } catch (error) {
-            const message =
+            setErrorMessage(
                 error instanceof Error
                     ? error.message
-                    : t("rules.admin.saveFailed");
-            setErrorMessage(message);
+                    : t("rules.admin.saveFailed"),
+            );
         } finally {
             setIsSaving(false);
         }
@@ -232,33 +322,160 @@ export default function RulesManagementPage() {
 
     const handleDeleteRule = async (rule: RuleItem): Promise<void> => {
         const confirmed = window.confirm(
-            t(
-                "rules.admin.confirmDeleteRule",
-                `Haluatko varmasti poistaa säännön: "${rule.text}"?`,
-            ),
+            t("rules.admin.confirmDeleteRule", {
+                ruleName: rule.text,
+            }),
         );
 
-        if (!confirmed) return;
+        if (!confirmed) {
+            return;
+        }
 
         try {
             setIsSaving(true);
             setErrorMessage(null);
             setSuccessMessage(null);
 
-            const response = await pageContentService.deletePageRule(
-                RULES_SLUG,
-                rule.id,
-            );
-
-            setSavedContent(response);
+            await rulesSectionService.deleteRule(rule.sectionId, rule.id);
+            await loadSections();
             setSuccessMessage(t("rules.admin.ruleDeletedSuccessfully"));
         } catch (error) {
-            const message =
+            setErrorMessage(
                 error instanceof Error
                     ? error.message
-                    : t("rules.admin.deleteRuleFailed");
+                    : t("rules.admin.deleteRuleFailed"),
+            );
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
-            setErrorMessage(message);
+    const handleOpenCreateSection = (): void => {
+        const mainTabs = getTopLevelSections(sections);
+
+        setSectionCreateMode("main");
+        setSectionFormState({
+            ...emptySectionFormState(),
+            sectionType: "Global",
+            parentSectionId: null,
+            sortOrder: mainTabs.length + 1,
+        });
+        setIsSectionFormOpen(true);
+    };
+
+    const handleOpenCreateSportSection = (): void => {
+        const sportGroup = findSportGroupSection(sections);
+
+        if (!sportGroup) {
+            setErrorMessage(
+                t(
+                    "rules.admin.createSportGroupFirst",
+                    "Luo ensin päävälilehti Lajikohtaiset säännöt, ennen kuin lisäät lajeja.",
+                ),
+            );
+            return;
+        }
+
+        setSectionCreateMode("sport");
+        setSectionFormState({
+            ...emptySectionFormState(),
+            sectionType: "Sport",
+            parentSectionId: sportGroup.id,
+            sortOrder:
+                getChildSections(sections, sportGroup.id).length + 1,
+        });
+        setErrorMessage(null);
+        setIsSectionFormOpen(true);
+    };
+
+    const handleStartEditSection = (section: RulesSection): void => {
+        setSectionFormState({
+            id: section.id,
+            title: section.title,
+            sortOrder: section.sortOrder,
+            sectionType: section.sectionType,
+            parentSectionId: section.parentSectionId,
+        });
+        setIsSectionFormOpen(true);
+    };
+
+    const handleSaveSection = async (): Promise<void> => {
+        if (!sectionFormState.title.trim()) {
+            setErrorMessage(t("rules.admin.sectionTitleRequired"));
+            return;
+        }
+
+        if (
+            sectionFormState.sectionType === "Sport" &&
+            !sectionFormState.parentSectionId
+        ) {
+            setErrorMessage(
+                t(
+                    "rules.admin.createSportGroupFirst",
+                    "Luo ensin päävälilehti Lajikohtaiset säännöt, ennen kuin lisäät lajeja.",
+                ),
+            );
+            return;
+        }
+
+        try {
+            setIsSaving(true);
+            setErrorMessage(null);
+
+            if (sectionFormState.id) {
+                await rulesSectionService.updateSection(sectionFormState.id, {
+                    title: sectionFormState.title.trim(),
+                    sortOrder: sectionFormState.sortOrder,
+                    sectionType: sectionFormState.sectionType,
+                    parentSectionId: sectionFormState.parentSectionId,
+                });
+            } else {
+                await rulesSectionService.createSection({
+                    title: sectionFormState.title.trim(),
+                    sortOrder: sectionFormState.sortOrder,
+                    sectionType: sectionFormState.sectionType,
+                    parentSectionId: sectionFormState.parentSectionId,
+                });
+            }
+
+            await loadSections();
+            setSectionFormState(emptySectionFormState());
+            setIsSectionFormOpen(false);
+            setSuccessMessage(t("rules.admin.sectionSavedSuccessfully"));
+        } catch (error) {
+            const rawMessage =
+                error instanceof Error
+                    ? error.message
+                    : t("rules.admin.sectionSaveFailed");
+
+            setErrorMessage(formatSectionDeleteError(rawMessage, t));
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeleteSection = async (section: RulesSection): Promise<void> => {
+        const confirmed = window.confirm(
+            t("rules.admin.confirmDeleteSection", { title: section.title }),
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setIsSaving(true);
+            setErrorMessage(null);
+            await rulesSectionService.deleteSection(section.id);
+            await loadSections();
+            setSuccessMessage(t("rules.admin.sectionDeletedSuccessfully"));
+        } catch (error) {
+            const rawMessage =
+                error instanceof Error
+                    ? error.message
+                    : t("rules.admin.sectionDeleteFailed");
+
+            setErrorMessage(formatSectionDeleteError(rawMessage, t));
         } finally {
             setIsSaving(false);
         }
@@ -281,7 +498,7 @@ export default function RulesManagementPage() {
                     )}
                 </div>
 
-                {!isCreateLayerOpen && (
+                {!isRuleFormOpen && !isSectionFormOpen && (
                     <>
                         <div className="rules-management-page__topbar">
                             <h2 className="rules-management-page__page-title">
@@ -290,81 +507,138 @@ export default function RulesManagementPage() {
 
                             <div className="rules-management-page__topbar-actions">
                                 <Button
-                                    iconLeft={AddIcon}
                                     rounded="pill"
-                                    onClick={handleOpenCreateLayer}
-                                    disabled={isSaving}
+                                    variant="secondary"
+                                    onClick={() =>
+                                        setActivePanel(
+                                            activePanel === "rules"
+                                                ? "sections"
+                                                : "rules",
+                                        )
+                                    }
                                 >
-                                    {t("rules.admin.addRule")}
+                                    {activePanel === "rules"
+                                        ? t(
+                                              "rules.admin.manageSections",
+                                              "Hallitse osioita",
+                                          )
+                                        : t(
+                                              "rules.admin.manageRules",
+                                              "Hallitse sääntöjä",
+                                          )}
                                 </Button>
+
+                                {activePanel === "rules" ? (
+                                    <Button
+                                        iconLeft={AddIcon}
+                                        rounded="pill"
+                                        onClick={handleOpenCreateRule}
+                                        disabled={isSaving}
+                                    >
+                                        {t("rules.admin.addRule")}
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <Button
+                                            rounded="pill"
+                                            variant="secondary"
+                                            onClick={handleOpenCreateSection}
+                                            disabled={isSaving}
+                                        >
+                                            {t(
+                                                "rules.admin.addMainSection",
+                                                "Lisää päävälilehti",
+                                            )}
+                                        </Button>
+                                        <Button
+                                            iconLeft={AddIcon}
+                                            rounded="pill"
+                                            onClick={handleOpenCreateSportSection}
+                                            disabled={isSaving}
+                                        >
+                                            {t(
+                                                "rules.admin.addSportSection",
+                                                "Lisää laji",
+                                            )}
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         </div>
 
-                        <div className="rules-management-page__meta">
-                            <p>
-                                <strong>{t("rules.admin.lastUpdate")}: </strong>
-                                {savedContent?.updatedAt
-                                    ? new Date(
-                                          savedContent.updatedAt,
-                                      ).toLocaleString()
-                                    : t("rules.admin.noRulesAddedYet")}
-                            </p>
-                            <p>
-                                <strong>{t("rules.admin.editor")}: </strong>
-                                {savedContent?.lastModifiedBy ??
-                                    t("rules.admin.unknown")}
-                            </p>
-                        </div>
+                        {activePanel === "rules" ? (
+                            <>
+                                <div className="rules-management-page__filter-card">
+                                    <div>
+                                        <label className="rules-management-page__filter-label">
+                                            {t("rules.admin.section", "Osio")}
+                                        </label>
 
-                        <div className="rules-management-page__filter-card">
-                            <div>
-                                <label className="rules-management-page__filter-label">
-                                    {t("rules.admin.category", "Kategoria")}
-                                </label>
+                                        <SectionSelect
+                                            sections={sections}
+                                            value={filterSectionId}
+                                            onChange={setFilterSectionId}
+                                            includeAll
+                                        />
+                                    </div>
+                                </div>
 
-                                <CategorySelect
-                                    value={filterCategory}
-                                    onChange={setFilterCategory}
-                                    includeAll
-                                />
-                            </div>
-                        </div>
-
-                        <div className="rules-management-page__content">
-                            <div className="rules-management-page__column">
-                                <RulesList
-                                    title={t("rules.admin.publishedRules")}
-                                    rules={filteredPublishedRules}
-                                    wordLimit={10}
-                                    emptyMessage={t(
-                                        "rules.admin.noPublishedRules",
-                                    )}
-                                    onEditRule={handleStartEditRule}
-                                    onDeleteRule={handleDeleteRule}
-                                    isSaving={isSaving}
-                                    isLoading={isLoading}
-                                />
-                            </div>
-                        </div>
+                                <div className="rules-management-page__content">
+                                    <RulesList
+                                        title={t("rules.admin.publishedRules")}
+                                        rules={filteredRules}
+                                        sections={sections}
+                                        wordLimit={10}
+                                        emptyMessage={t(
+                                            "rules.admin.noPublishedRules",
+                                        )}
+                                        onEditRule={handleStartEditRule}
+                                        onDeleteRule={handleDeleteRule}
+                                        isSaving={isSaving}
+                                        isLoading={isLoading}
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            <RulesSectionList
+                                sections={sections}
+                                isSaving={isSaving}
+                                onEdit={handleStartEditSection}
+                                onDelete={handleDeleteSection}
+                            />
+                        )}
                     </>
                 )}
 
-                {isCreateLayerOpen && (
+                {isRuleFormOpen && (
                     <RuleForm
                         isEditMode={Boolean(ruleFormState.id)}
-                        category={ruleFormState.category}
+                        sectionId={ruleFormState.sectionId}
+                        sections={sections}
                         contentHtml={ruleFormState.html}
+                        order={ruleFormState.order}
                         isSaving={isSaving}
-                        saveLabel={
-                            ruleFormState.id
-                                ? t("rules.admin.updateRule", "Päivitä sääntö")
-                                : t("rules.admin.publishRule", "Julkaise sääntö")
-                        }
-                        onBack={handleCloseCreateLayer}
-                        onCategoryChange={(value) =>
+                        onBack={() => {
+                            setRuleFormState(emptyRuleFormState());
+                            setIsRuleFormOpen(false);
+                        }}
+                        onSectionChange={(value) => {
+                            const sectionRules = allRules.filter(
+                                (rule) => rule.sectionId === value,
+                            );
+
                             setRuleFormState((prev) => ({
                                 ...prev,
-                                category: value,
+                                sectionId: value,
+                                order: prev.id
+                                    ? prev.order
+                                    : getNextRuleOrder(sectionRules),
+                            }));
+                        }}
+                        onOrderChange={(value) =>
+                            setRuleFormState((prev) => ({
+                                ...prev,
+                                order: Math.max(1, value),
                             }))
                         }
                         onContentChange={(value) =>
@@ -373,8 +647,33 @@ export default function RulesManagementPage() {
                                 html: value,
                             }))
                         }
-                        onCancel={handleCloseCreateLayer}
+                        onCancel={() => {
+                            setRuleFormState(emptyRuleFormState());
+                            setIsRuleFormOpen(false);
+                        }}
                         onSave={handleSaveRule}
+                    />
+                )}
+
+                {isSectionFormOpen && (
+                    <RulesSectionForm
+                        sections={sections}
+                        formState={sectionFormState}
+                        createMode={
+                            sectionFormState.id ? undefined : sectionCreateMode
+                        }
+                        isSaving={isSaving}
+                        onBack={() => {
+                            setSectionFormState(emptySectionFormState());
+                            setIsSectionFormOpen(false);
+                        }}
+                        onChange={(updates) =>
+                            setSectionFormState((prev) => ({
+                                ...prev,
+                                ...updates,
+                            }))
+                        }
+                        onSave={handleSaveSection}
                     />
                 )}
             </div>

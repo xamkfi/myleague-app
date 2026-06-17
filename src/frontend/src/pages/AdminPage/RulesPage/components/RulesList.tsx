@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { RuleItem } from "../../../../types/admin/ruleTypes";
+import type { RuleItem, RulesSection } from "../../../../types/admin/ruleTypes";
 import RuleListItem from "./RulesListItem";
 import "../../../../styles/AdminTable.scss";
 import "./RulesList.scss";
@@ -7,6 +7,7 @@ import "./RulesList.scss";
 interface RulesListProps {
     title: string;
     rules: RuleItem[];
+    sections: RulesSection[];
     emptyMessage: string;
     isSaving: boolean;
     isLoading: boolean;
@@ -19,6 +20,7 @@ interface RulesListProps {
 export default function RulesList({
     title,
     rules,
+    sections,
     emptyMessage,
     isSaving,
     isLoading,
@@ -48,8 +50,8 @@ export default function RulesList({
                     <thead>
                         <tr>
                             <th>{t("rules.admin.table.rule", "Sääntö")}</th>
-                            <th>{t("rules.admin.table.category", "Kategoria")}</th>
-                            <th>{t("rules.admin.table.status", "Tila")}</th>
+                            <th>{t("rules.admin.table.section", "Osio")}</th>
+                            <th>{t("rules.admin.table.order", "Järjestys")}</th>
                             <th className="admin-table__actions-col">
                                 {t("rules.admin.table.actions", "Toiminnot")}
                             </th>
@@ -59,8 +61,9 @@ export default function RulesList({
                     <tbody>
                         {rules.map((rule) => (
                             <RuleListItem
-                                key={rule.id}
+                                key={`${rule.sectionId}-${rule.id}`}
                                 rule={rule}
+                                sections={sections}
                                 isSaving={isSaving}
                                 showActions={showActions}
                                 wordLimit={wordLimit}
