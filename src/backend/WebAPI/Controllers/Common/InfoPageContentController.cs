@@ -12,10 +12,8 @@ using WebAPI.Models.Common;
 
 namespace WebAPI.Controllers.Common;
 
-[ApiController]
 [Route("api/[controller]")]
-[Produces("application/json")]
-public class InfoPageContentController : ControllerBase
+public class InfoPageContentController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<InfoPageContentController> _logger;
@@ -60,7 +58,7 @@ public class InfoPageContentController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<InfoPageContentDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<InfoPageContentDto>>> GetInfoPageContentBySlug(string slug)
     {
-        _logger.LogInformation("Getting info page content by slug: {Slug}", slug);
+        _logger.LogInformation("Getting info page content by slug: {Slug}", SanitizeForLog(slug));
 
         Result<InfoPageContentDto> result = await _mediator.Send(new GetInfoPageContentBySlugQuery(slug));
 
@@ -94,7 +92,7 @@ public class InfoPageContentController : ControllerBase
         string slug,
         [FromBody] UpdateInfoPageContentRequest request)
     {
-        _logger.LogInformation("Updating info page content with slug: {Slug}", slug);
+        _logger.LogInformation("Updating info page content with slug: {Slug}", SanitizeForLog(slug));
 
         var command = new UpdateInfoPageContentCommand(
             slug,

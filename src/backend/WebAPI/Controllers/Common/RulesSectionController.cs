@@ -9,10 +9,8 @@ using WebAPI.Models.Common;
 
 namespace WebAPI.Controllers.Common;
 
-[ApiController]
 [Route("api/[controller]")]
-[Produces("application/json")]
-public class RulesSectionController : ControllerBase
+public class RulesSectionController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<RulesSectionController> _logger;
@@ -77,7 +75,7 @@ public class RulesSectionController : ControllerBase
     public async Task<ActionResult<ApiResponse<RulesSectionDto>>> CreateSection(
         [FromBody] CreateRulesSectionRequest request)
     {
-        _logger.LogInformation("Creating rules section {Title}", request.Title);
+        _logger.LogInformation("Creating rules section {Title}", SanitizeForLog(request.Title));
 
         var command = new CreateRulesSectionCommand(
             request.Title,
@@ -197,7 +195,7 @@ public class RulesSectionController : ControllerBase
         string ruleId,
         [FromBody] UpdateRulesSectionRuleRequest request)
     {
-        _logger.LogInformation("Updating rule {RuleId} in section {SectionId}", ruleId, id);
+        _logger.LogInformation("Updating rule {RuleId} in section {SectionId}", SanitizeForLog(ruleId), id);
 
         var command = new UpdateRulesSectionRuleCommand(
             id,
@@ -230,7 +228,7 @@ public class RulesSectionController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<RulesSectionDto>>> DeleteRule(Guid id, string ruleId)
     {
-        _logger.LogInformation("Deleting rule {RuleId} from section {SectionId}", ruleId, id);
+        _logger.LogInformation("Deleting rule {RuleId} from section {SectionId}", SanitizeForLog(ruleId), id);
 
         var command = new DeleteRulesSectionRuleCommand(id, ruleId, User?.Identity?.Name);
         Result<RulesSectionDto> result = await _mediator.Send(command);

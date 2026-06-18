@@ -97,9 +97,8 @@ export const createRuleBlock = (
 ): string => {
   const sanitizedHtml = DOMPurify.sanitize(html).trim();
 
-  const plainText = sanitizedHtml
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
+  const plainText = DOMPurify.sanitize(sanitizedHtml, { ALLOWED_TAGS: [] })
+    .replace(/\u00A0/g, " ")
     .trim();
 
   if (!plainText) return "";
