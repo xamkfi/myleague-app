@@ -43,6 +43,7 @@ const NewsCreateEditPage = lazyWithRetry(() => import('../pages/AdminPage/NewsPa
 const NewsManagementPage = lazyWithRetry(() => import('../pages/AdminPage/NewsPage/NewsManagementPage'));
 const DivisionsPage = lazyWithRetry(() => import('../pages/AdminPage/DivisionsPage/DivisionsPage'));
 const DivisionFormPage = lazyWithRetry(() => import('../pages/AdminPage/DivisionsPage/DivisionFormPage'));
+const FooterContactManagementPage = lazyWithRetry(() => import('../pages/AdminPage/SiteSettingsPage/FooterContactManagementPage'));
 const ClubsManagementPage = lazyWithRetry(() => import('../pages/AdminPage/ClubPage/ClubsManagementPage'));
 const CreateClubPage = lazyWithRetry(() => import('../pages/AdminPage/ClubPage/CreateClubPage'));
 const EditClubPage = lazyWithRetry(() => import('../pages/AdminPage/ClubPage/EditClubPage'));
@@ -387,6 +388,10 @@ export const routes: RouteObject[] = [
         element: <ProtectedRoute><SuspenseWrapper><NewsCreateEditPage /></SuspenseWrapper></ProtectedRoute>
       }
     ]
+  },
+  {
+    path: '/admin/site-settings/footer-contact',
+    element: <ProtectedRoute><SuspenseWrapper><FooterContactManagementPage /></SuspenseWrapper></ProtectedRoute>
   },
   {
     path: '/match/:id',

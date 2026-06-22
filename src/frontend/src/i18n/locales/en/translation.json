@@ -159,6 +159,7 @@
   "admin": {
     "title": "Admin Dashboard",
     "database": "Database",
+    "siteSettings": "Site Settings",
     "sportsTitle": "Sports",
     "view": "Admin view",
     "navbar": {
@@ -178,7 +179,9 @@
       "clubs": "Clubs",
       "manageClubs": "Manage clubs",
       "users": "System Users",
-      "manageUsers": "Manage system users"
+      "manageUsers": "Manage system users",
+      "footerContact": "Footer contact info",
+      "manageFooterContact": "Manage footer contact information"
     },
     "users": {
       "title": "System Users",

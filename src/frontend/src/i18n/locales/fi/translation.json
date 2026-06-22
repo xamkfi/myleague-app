@@ -159,6 +159,7 @@
   "admin": {
     "title": "Hallintapaneeli",
     "database": "Tietokanta",
+    "siteSettings": "Sivuston asetukset",
     "sportsTitle": "Urheilulajit",
     "view": "Admin näkymä",
     "navbar": {
@@ -178,7 +179,9 @@
       "clubs": "Seurat",
       "manageClubs": "Hallitse seuroja",
       "users": "Järjestelmäkäyttäjät",
-      "manageUsers": "Hallitse järjestelmäkäyttäjiä"
+      "manageUsers": "Hallitse järjestelmäkäyttäjiä",
+      "footerContact": "Footerin yhteystiedot",
+      "manageFooterContact": "Hallitse footerin yhteystietoja"
     },
     "users": {
       "title": "Järjestelmäkäyttäjät",
