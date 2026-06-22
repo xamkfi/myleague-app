@@ -3,31 +3,46 @@
 
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Interfaces.Common;
+using Application.Features.Common.InfoPageContent.Mappings;
+using Domain.Repositories.Common;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Common.InfoPageContent.Queries;
 
+/// <summary>
+/// Query for retrieving info page content by slug
+/// </summary>
 public record GetInfoPageContentBySlugQuery(string Slug) : IRequest<Result<InfoPageContentDto>>;
 
+/// <summary>
+/// Handler for retrieving info page content by slug
+/// </summary>
 public class GetInfoPageContentBySlugQueryHandler
     : IRequestHandler<GetInfoPageContentBySlugQuery, Result<InfoPageContentDto>>
 {
-    private readonly ICommonDbContext _context;
+    private readonly IInfoPageContentRepository _repository;
 
-    public GetInfoPageContentBySlugQueryHandler(ICommonDbContext context)
+    /// <summary>
+    /// Initializes a new instance of the GetInfoPageContentBySlugQueryHandler class
+    /// </summary>
+    /// <param name="repository">The info page content repository</param>
+    public GetInfoPageContentBySlugQueryHandler(IInfoPageContentRepository repository)
     {
-        _context = context;
+        _repository = repository;
     }
 
+    /// <summary>
+    /// Handles the GetInfoPageContentBySlugQuery request
+    /// </summary>
+    /// <param name="request">The query containing the page slug</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The info page content as a DTO wrapped in a Result</returns>
     public async Task<Result<InfoPageContentDto>> Handle(
         GetInfoPageContentBySlugQuery request,
         CancellationToken cancellationToken)
     {
-        Domain.Entities.Common.InfoPageContent? entity = await _context.InfoPageContents
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.PageSlug == request.Slug, cancellationToken);
+        Domain.Entities.Common.InfoPageContent? entity =
+            await _repository.GetBySlugAsync(request.Slug, cancellationToken);
 
         if (entity == null)
         {
@@ -35,19 +50,6 @@ public class GetInfoPageContentBySlugQueryHandler
                 $"Info page content with slug '{request.Slug}' not found.");
         }
 
-        return Result<InfoPageContentDto>.Success(MapToDto(entity));
-    }
-
-    internal static InfoPageContentDto MapToDto(Domain.Entities.Common.InfoPageContent entity)
-    {
-        return new InfoPageContentDto
-        {
-            Id = entity.Id,
-            PageSlug = entity.PageSlug,
-            Title = entity.Title,
-            ContentHtml = entity.ContentHtml,
-            LastModifiedBy = entity.LastModifiedBy,
-            UpdatedAt = entity.UpdatedAt ?? entity.CreatedAt,
-        };
+        return Result<InfoPageContentDto>.Success(InfoPageContentMapper.ToDto(entity));
     }
 }

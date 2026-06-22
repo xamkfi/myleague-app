@@ -2,14 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Common;
 using MyLeague.Infrastructure.Persistence.Extensions;
 using MyLeague.Infrastructure.Persistence.Configurations.Common;
-using Application.Interfaces.Common;
 
 namespace MyLeague.Infrastructure.Persistence.Contexts
 {
     /// <summary>
     /// Database context for common entities in the MyLeague application.
     /// </summary>
-    public class CommonDbContext : DbContext, ICommonDbContext
+    public class CommonDbContext : DbContext
     {
         private bool _isDispatchingEvents = false;
 

@@ -3,8 +3,16 @@ using Domain.Entities.Common;
 
 namespace Application.Features.Common.RulesSection;
 
+/// <summary>
+/// Maps RulesSection entities to DTOs
+/// </summary>
 internal static class RulesSectionMapper
 {
+    /// <summary>
+    /// Maps a RulesSection entity to a DTO
+    /// </summary>
+    /// <param name="entity">The entity to map</param>
+    /// <returns>The mapped DTO</returns>
     public static RulesSectionDto ToDto(Domain.Entities.Common.RulesSection entity)
     {
         return new RulesSectionDto

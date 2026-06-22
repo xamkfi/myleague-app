@@ -5,8 +5,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MyLeague.Infrastructure.Persistence.Configurations.Common;
 
+/// <summary>
+/// Entity Framework configuration for the RulesSection entity
+/// </summary>
 public class RulesSectionConfiguration : IEntityTypeConfiguration<RulesSection>
 {
+    /// <summary>
+    /// Configures the entity mapping for RulesSection
+    /// </summary>
+    /// <param name="builder">The entity type builder</param>
     public void Configure(EntityTypeBuilder<RulesSection> builder)
     {
         builder.ToTable("RulesSections", "common");

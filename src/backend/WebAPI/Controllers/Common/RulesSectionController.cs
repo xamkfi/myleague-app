@@ -9,18 +9,30 @@ using WebAPI.Models.Common;
 
 namespace WebAPI.Controllers.Common;
 
+/// <summary>
+/// Controller for managing rules sections and their individual rules
+/// </summary>
 [Route("api/[controller]")]
 public class RulesSectionController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<RulesSectionController> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the RulesSectionController class
+    /// </summary>
+    /// <param name="mediator">The mediator for handling commands and queries</param>
+    /// <param name="logger">The logger for this controller</param>
     public RulesSectionController(IMediator mediator, ILogger<RulesSectionController> logger)
     {
         _mediator = mediator;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get all rules sections
+    /// </summary>
+    /// <returns>List of all rules sections</returns>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<RulesSectionDto>>), StatusCodes.Status200OK)]
@@ -41,6 +53,11 @@ public class RulesSectionController : BaseApiController
         return StatusCode(500, ApiResponse<IReadOnlyList<RulesSectionDto>>.ErrorResponse(errorMessage));
     }
 
+    /// <summary>
+    /// Get a rules section by ID
+    /// </summary>
+    /// <param name="id">The rules section ID</param>
+    /// <returns>Rules section details</returns>
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]
@@ -68,6 +85,11 @@ public class RulesSectionController : BaseApiController
         return StatusCode(500, ApiResponse<RulesSectionDto>.ErrorResponse(errorMessage));
     }
 
+    /// <summary>
+    /// Create a new rules section
+    /// </summary>
+    /// <param name="request">Rules section creation request</param>
+    /// <returns>Created rules section details</returns>
     [HttpPost]
     [Authorize(Roles = "SystemAdmin,ClubAdmin")]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]
@@ -97,6 +119,12 @@ public class RulesSectionController : BaseApiController
         return BadRequest(ApiResponse<RulesSectionDto>.ErrorResponse(errorMessage));
     }
 
+    /// <summary>
+    /// Update an existing rules section
+    /// </summary>
+    /// <param name="id">The rules section ID</param>
+    /// <param name="request">Updated rules section data</param>
+    /// <returns>Updated rules section details</returns>
     [HttpPut("{id:guid}")]
     [Authorize(Roles = "SystemAdmin,ClubAdmin")]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]
@@ -135,6 +163,11 @@ public class RulesSectionController : BaseApiController
         return BadRequest(ApiResponse<RulesSectionDto>.ErrorResponse(errorMessage));
     }
 
+    /// <summary>
+    /// Delete a rules section
+    /// </summary>
+    /// <param name="id">The rules section ID</param>
+    /// <returns>True if the section was deleted</returns>
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = "SystemAdmin,ClubAdmin")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
@@ -161,6 +194,12 @@ public class RulesSectionController : BaseApiController
         return BadRequest(ApiResponse<bool>.ErrorResponse(errorMessage));
     }
 
+    /// <summary>
+    /// Add a rule to a rules section
+    /// </summary>
+    /// <param name="id">The rules section ID</param>
+    /// <param name="request">Rule HTML content to add</param>
+    /// <returns>Updated rules section details</returns>
     [HttpPost("{id:guid}/rules")]
     [Authorize(Roles = "SystemAdmin,ClubAdmin")]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]
@@ -185,6 +224,13 @@ public class RulesSectionController : BaseApiController
         return BadRequest(ApiResponse<RulesSectionDto>.ErrorResponse(errorMessage));
     }
 
+    /// <summary>
+    /// Update a rule within a rules section
+    /// </summary>
+    /// <param name="id">The rules section ID</param>
+    /// <param name="ruleId">The rule identifier</param>
+    /// <param name="request">Updated rule HTML content</param>
+    /// <returns>Updated rules section details</returns>
     [HttpPut("{id:guid}/rules/{ruleId}")]
     [Authorize(Roles = "SystemAdmin,ClubAdmin")]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]
@@ -222,6 +268,12 @@ public class RulesSectionController : BaseApiController
         return BadRequest(ApiResponse<RulesSectionDto>.ErrorResponse(errorMessage));
     }
 
+    /// <summary>
+    /// Delete a rule from a rules section
+    /// </summary>
+    /// <param name="id">The rules section ID</param>
+    /// <param name="ruleId">The rule identifier</param>
+    /// <returns>Updated rules section details</returns>
     [HttpDelete("{id:guid}/rules/{ruleId}")]
     [Authorize(Roles = "SystemAdmin,ClubAdmin")]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]

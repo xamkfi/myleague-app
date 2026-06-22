@@ -4,8 +4,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MyLeague.Infrastructure.Persistence.Configurations.Common;
 
+/// <summary>
+/// Entity Framework configuration for the InfoPageContent entity
+/// </summary>
 public class InfoPageContentConfiguration : IEntityTypeConfiguration<InfoPageContent>
 {
+    /// <summary>
+    /// Configures the entity mapping for InfoPageContent
+    /// </summary>
+    /// <param name="builder">The entity type builder</param>
     public void Configure(EntityTypeBuilder<InfoPageContent> builder)
     {
         builder.ToTable("InfoPageContents", "common");

@@ -1,52 +1,72 @@
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Interfaces.Common;
-using Domain.Enums.Common;
+using Domain.Repositories.Common;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Common.RulesSection.Commands;
 
+/// <summary>
+/// Command for updating an existing rules section
+/// </summary>
 public record UpdateRulesSectionCommand(
     Guid Id,
     string Title,
     int SortOrder,
-    RulesSectionType SectionType,
+    Domain.Enums.Common.RulesSectionType SectionType,
     Guid? ParentSectionId,
     string? LastModifiedBy
 ) : IRequest<Result<RulesSectionDto>>;
 
+/// <summary>
+/// Handler for updating an existing rules section
+/// </summary>
 public class UpdateRulesSectionCommandHandler
     : IRequestHandler<UpdateRulesSectionCommand, Result<RulesSectionDto>>
 {
-    private static readonly RulesSectionType[] MainTabSectionTypes =
+    private static readonly Domain.Enums.Common.RulesSectionType[] MainTabSectionTypes =
     [
-        RulesSectionType.Global,
-        RulesSectionType.SportGroup,
-        RulesSectionType.Validation,
-        RulesSectionType.Fee,
+        Domain.Enums.Common.RulesSectionType.Global,
+        Domain.Enums.Common.RulesSectionType.SportGroup,
+        Domain.Enums.Common.RulesSectionType.Validation,
+        Domain.Enums.Common.RulesSectionType.Fee,
     ];
 
-    private readonly ICommonDbContext _context;
+    private readonly IRulesSectionRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateRulesSectionCommandHandler(ICommonDbContext context)
+    /// <summary>
+    /// Initializes a new instance of the UpdateRulesSectionCommandHandler class
+    /// </summary>
+    /// <param name="repository">The rules section repository</param>
+    /// <param name="unitOfWork">The unit of work</param>
+    public UpdateRulesSectionCommandHandler(
+        IRulesSectionRepository repository,
+        IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _repository = repository;
+        _unitOfWork = unitOfWork;
     }
 
+    /// <summary>
+    /// Handles the UpdateRulesSectionCommand request
+    /// </summary>
+    /// <param name="request">The command containing updated section data</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated rules section as a DTO wrapped in a Result</returns>
     public async Task<Result<RulesSectionDto>> Handle(
         UpdateRulesSectionCommand request,
         CancellationToken cancellationToken)
     {
-        Domain.Entities.Common.RulesSection? entity = await _context.RulesSections
-            .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        Domain.Entities.Common.RulesSection? entity = await _repository.GetByIdAsync(
+            request.Id,
+            cancellationToken);
 
         if (entity == null)
         {
             return Result<RulesSectionDto>.Failure($"Rules section with ID '{request.Id}' not found.");
         }
 
-        if (request.SectionType == RulesSectionType.Sport)
+        if (request.SectionType == Domain.Enums.Common.RulesSectionType.Sport)
         {
             if (request.ParentSectionId == null)
             {
@@ -54,15 +74,16 @@ public class UpdateRulesSectionCommandHandler
                     "Sport sections must belong under the Lajikohtaiset säännöt (SportGroup) section.");
             }
 
-            Domain.Entities.Common.RulesSection? parent = await _context.RulesSections
-                .FirstOrDefaultAsync(x => x.Id == request.ParentSectionId.Value, cancellationToken);
+            Domain.Entities.Common.RulesSection? parent = await _repository.GetByIdAsync(
+                request.ParentSectionId.Value,
+                cancellationToken);
 
             if (parent == null)
             {
                 return Result<RulesSectionDto>.Failure("Parent section not found.");
             }
 
-            if (parent.SectionType != RulesSectionType.SportGroup)
+            if (parent.SectionType != Domain.Enums.Common.RulesSectionType.SportGroup)
             {
                 return Result<RulesSectionDto>.Failure(
                     "Sport sections must belong under the Lajikohtaiset säännöt (SportGroup) section.");
@@ -89,7 +110,8 @@ public class UpdateRulesSectionCommandHandler
             request.ParentSectionId,
             request.LastModifiedBy);
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await _repository.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<RulesSectionDto>.Success(RulesSectionMapper.ToDto(entity));
     }

@@ -12,12 +12,20 @@ using WebAPI.Models.Common;
 
 namespace WebAPI.Controllers.Common;
 
+/// <summary>
+/// Controller for managing MAHL info page content
+/// </summary>
 [Route("api/[controller]")]
 public class InfoPageContentController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<InfoPageContentController> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the InfoPageContentController class
+    /// </summary>
+    /// <param name="mediator">The mediator for handling commands and queries</param>
+    /// <param name="logger">The logger for this controller</param>
     public InfoPageContentController(
         IMediator mediator,
         ILogger<InfoPageContentController> logger)
@@ -26,6 +34,10 @@ public class InfoPageContentController : BaseApiController
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get all info page contents
+    /// </summary>
+    /// <returns>List of all info page contents</returns>
     [HttpGet]
     [Authorize(Roles = "SystemAdmin,ClubAdmin")]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<InfoPageContentDto>>), StatusCodes.Status200OK)]
@@ -52,6 +64,11 @@ public class InfoPageContentController : BaseApiController
                     : errorMessage));
     }
 
+    /// <summary>
+    /// Get info page content by slug
+    /// </summary>
+    /// <param name="slug">The page slug identifier</param>
+    /// <returns>Info page content details</returns>
     [HttpGet("{slug}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<InfoPageContentDto>), StatusCodes.Status200OK)]
@@ -84,6 +101,12 @@ public class InfoPageContentController : BaseApiController
                     : errorMessage));
     }
 
+    /// <summary>
+    /// Update info page content by slug
+    /// </summary>
+    /// <param name="slug">The page slug identifier</param>
+    /// <param name="request">Updated page title and content</param>
+    /// <returns>Updated info page content</returns>
     [HttpPut("{slug}")]
     [Authorize(Roles = "SystemAdmin,ClubAdmin")]
     [ProducesResponseType(typeof(ApiResponse<InfoPageContentDto>), StatusCodes.Status200OK)]

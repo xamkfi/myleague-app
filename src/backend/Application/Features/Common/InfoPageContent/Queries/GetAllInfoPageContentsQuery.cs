@@ -3,42 +3,51 @@
 
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Interfaces.Common;
+using Application.Features.Common.InfoPageContent.Mappings;
+using Domain.Repositories.Common;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Common.InfoPageContent.Queries;
 
+/// <summary>
+/// Query for retrieving all info page contents
+/// </summary>
 public record GetAllInfoPageContentsQuery() : IRequest<Result<IReadOnlyList<InfoPageContentDto>>>;
 
+/// <summary>
+/// Handler for retrieving all info page contents
+/// </summary>
 public class GetAllInfoPageContentsQueryHandler
     : IRequestHandler<GetAllInfoPageContentsQuery, Result<IReadOnlyList<InfoPageContentDto>>>
 {
-    private readonly ICommonDbContext _context;
+    private readonly IInfoPageContentRepository _repository;
 
-    public GetAllInfoPageContentsQueryHandler(ICommonDbContext context)
+    /// <summary>
+    /// Initializes a new instance of the GetAllInfoPageContentsQueryHandler class
+    /// </summary>
+    /// <param name="repository">The info page content repository</param>
+    public GetAllInfoPageContentsQueryHandler(IInfoPageContentRepository repository)
     {
-        _context = context;
+        _repository = repository;
     }
 
+    /// <summary>
+    /// Handles the GetAllInfoPageContentsQuery request
+    /// </summary>
+    /// <param name="request">The query request</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>All info page contents wrapped in a Result</returns>
     public async Task<Result<IReadOnlyList<InfoPageContentDto>>> Handle(
         GetAllInfoPageContentsQuery request,
         CancellationToken cancellationToken)
     {
-        List<InfoPageContentDto> items = await _context.InfoPageContents
-            .AsNoTracking()
-            .OrderBy(x => x.PageSlug)
-            .Select(x => new InfoPageContentDto
-            {
-                Id = x.Id,
-                PageSlug = x.PageSlug,
-                Title = x.Title,
-                ContentHtml = x.ContentHtml,
-                LastModifiedBy = x.LastModifiedBy,
-                UpdatedAt = x.UpdatedAt ?? x.CreatedAt,
-            })
-            .ToListAsync(cancellationToken);
+        IEnumerable<Domain.Entities.Common.InfoPageContent> items =
+            await _repository.GetAllAsync(cancellationToken);
 
-        return Result<IReadOnlyList<InfoPageContentDto>>.Success(items);
+        IReadOnlyList<InfoPageContentDto> dtos = items
+            .Select(InfoPageContentMapper.ToDto)
+            .ToList();
+
+        return Result<IReadOnlyList<InfoPageContentDto>>.Success(dtos);
     }
 }

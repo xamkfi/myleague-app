@@ -49,33 +49,10 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     connectionString,
                     b => b.MigrationsAssembly(typeof(CommonDbContext).Assembly.FullName)));
 
-            services.AddScoped<ICommonDbContext>(sp =>
-                sp.GetRequiredService<CommonDbContext>());
-
             services.AddDbContext<FloorballDbContext>(options =>
                 options.UseNpgsql(
                     connectionString,
                     b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
-
-            // Auto-apply migrations and seed data
-            using (ServiceProvider serviceProvider = services.BuildServiceProvider())
-            {
-                using (IServiceScope scope = serviceProvider.CreateScope())
-                {
-                    CommonDbContext commonDbContext = scope.ServiceProvider.GetRequiredService<CommonDbContext>();
-                    commonDbContext.Database.Migrate();
-
-                    FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
-                    floorballDbContext.Database.Migrate();
-
-                    // Seed default users after migrations
-                    DatabaseSeeder seeder = new();
-                    IWebHostEnvironment env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-                    seeder.SeedAsync(scope.ServiceProvider, env, configuration).GetAwaiter().GetResult();
-
-                    InfoPageContentSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
-                }
-            }
 
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
@@ -84,6 +61,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
             services.AddScoped<IInfoPageContentRepository, InfoPageContentRepository>();
+            services.AddScoped<IRulesSectionRepository, RulesSectionRepository>();
             services.AddScoped<IDivisionRepository, DivisionRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
@@ -159,6 +137,26 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
             // Add health checks
             services.AddMyLeagueHealthChecks(configuration);
+
+            // Auto-apply migrations and seed data
+            using (ServiceProvider serviceProvider = services.BuildServiceProvider())
+            {
+                using (IServiceScope scope = serviceProvider.CreateScope())
+                {
+                    CommonDbContext commonDbContext = scope.ServiceProvider.GetRequiredService<CommonDbContext>();
+                    commonDbContext.Database.Migrate();
+
+                    FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
+                    floorballDbContext.Database.Migrate();
+
+                    // Seed default users after migrations
+                    DatabaseSeeder seeder = new();
+                    IWebHostEnvironment env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+                    seeder.SeedAsync(scope.ServiceProvider, env, configuration).GetAwaiter().GetResult();
+
+                    InfoPageContentSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                }
+            }
 
             return services;
         }
