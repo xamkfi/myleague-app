@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle/LanguageToggle';
 import './Navbar.scss';
 import SearchBar from '../SearchBar';
+import { MAHL_INFO_PAGES } from '../../constants/mahlInfoPages';
 
 // Sports configuration
 const SPORTS_CONFIG = [
@@ -121,9 +122,13 @@ function Navbar() {
             </div>
             {activeDropdown === 'mahl' && (
               <ul className="dropdown-menu">
-                <li>
-                  <Link to="/mahl" onClick={() => setActiveDropdown(null)}>{t('nav.mahl')}</Link>
-                </li>
+                {MAHL_INFO_PAGES.map((page) => (
+                  <li key={page.path}>
+                    <Link to={page.path} onClick={() => setActiveDropdown(null)}>
+                      {t(page.labelKey, page.defaultLabel)}
+                    </Link>
+                  </li>
+                ))}
                 <li>
                   <Link to="/saannot" onClick={() => setActiveDropdown(null)}>{t('nav.rules')}</Link>
                 </li>
@@ -195,9 +200,13 @@ function Navbar() {
             <li className="mobile-navbar-item">
               <span className="mobile-dropdown-label">{t('nav.mahl')}</span>
               <ul className="mobile-sports-list">
-                <li>
-                  <Link to="/mahl" onClick={closeMobileMenu}>{t('nav.mahl')}</Link>
-                </li>
+                {MAHL_INFO_PAGES.map((page) => (
+                  <li key={page.path}>
+                    <Link to={page.path} onClick={closeMobileMenu}>
+                      {t(page.labelKey, page.defaultLabel)}
+                    </Link>
+                  </li>
+                ))}
                 <li>
                   <Link to="/saannot" onClick={closeMobileMenu}>{t('nav.rules')}</Link>
                 </li>

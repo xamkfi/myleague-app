@@ -302,9 +302,9 @@ public class ApiClient : IDisposable
 
     public async Task<FloorballMatchDto?> CreateMatchAsync(Guid seasonId, Guid homeTeamId, Guid awayTeamId, DateTime scheduledDateTime, string? venue)
     {
-        HttpResponseMessage resp = await _http.PostAsJsonAsync("api/floorballmatch", new
+        HttpResponseMessage resp = await _http.PostAsJsonAsync("api/floorball-matches", new
         {
-            seasonId,
+            competitionId = seasonId,
             homeTeamId,
             awayTeamId,
             scheduledDateTime = scheduledDateTime.ToString("yyyy-MM-ddTHH:mm:ss"),
@@ -315,13 +315,13 @@ public class ApiClient : IDisposable
 
     public async Task<bool> AddOfficialToMatchAsync(Guid matchId, Guid refereeId)
     {
-        HttpResponseMessage resp = await _http.PostAsJsonAsync($"api/floorballmatch/{matchId}/officials", new { refereeId });
+        HttpResponseMessage resp = await _http.PostAsJsonAsync($"api/floorball-matches/{matchId}/officials", new { refereeId });
         return resp.IsSuccessStatusCode;
     }
 
     public async Task<bool> SetGoalieAsync(Guid matchId, Guid teamId, Guid goaliePlayerId)
     {
-        HttpResponseMessage resp = await _http.PutAsync($"api/floorballmatch/{matchId}/team/{teamId}/goalie/{goaliePlayerId}", null);
+        HttpResponseMessage resp = await _http.PutAsync($"api/floorball-matches/{matchId}/teams/{teamId}/goalie/{goaliePlayerId}", null);
         if (!resp.IsSuccessStatusCode)
         {
             string body = await resp.Content.ReadAsStringAsync();
@@ -343,13 +343,13 @@ public class ApiClient : IDisposable
 
     public async Task<bool> StartPeriodAsync(Guid matchId, int periodNumber)
     {
-        HttpResponseMessage resp = await _http.PostAsync($"api/floorballmatch/{matchId}/period/{periodNumber}/start", null);
+        HttpResponseMessage resp = await _http.PostAsync($"api/floorball-matches/{matchId}/events/periods/{periodNumber}/start", null);
         return resp.IsSuccessStatusCode;
     }
 
     public async Task<bool> EndPeriodAsync(Guid matchId, int periodNumber)
     {
-        HttpResponseMessage resp = await _http.PostAsync($"api/floorballmatch/{matchId}/period/{periodNumber}/end", null);
+        HttpResponseMessage resp = await _http.PostAsync($"api/floorball-matches/{matchId}/events/periods/{periodNumber}/end", null);
         return resp.IsSuccessStatusCode;
     }
 
@@ -365,7 +365,7 @@ public class ApiClient : IDisposable
             timeInSeconds,
         };
 
-        return await PostWithRetryAsync("api/floorballmatch/record-goal", request, "RecordGoal");
+        return await PostWithRetryAsync($"api/floorball-matches/{matchId}/events/goal", request, "RecordGoal");
     }
 
     public async Task<bool> RecordPenaltyAsync(Guid matchId, Guid teamId, Guid playerId, int durationMinutes, int periodNumber, int timeInSeconds, string penaltyType = "Minor")
@@ -381,7 +381,7 @@ public class ApiClient : IDisposable
             penaltyType,
         };
 
-        return await PostWithRetryAsync("api/floorballmatch/record-penalty", request, "RecordPenalty");
+        return await PostWithRetryAsync($"api/floorball-matches/{matchId}/events/penalty", request, "RecordPenalty");
     }
 
     public async Task<bool> RecordSaveAsync(Guid matchId, Guid teamId, Guid goaliePlayerId, int periodNumber, int timeInSeconds)
@@ -397,7 +397,7 @@ public class ApiClient : IDisposable
             wasInShootout = false,
         };
 
-        return await PostWithRetryAsync("api/floorballmatch/record-save", request, "RecordSave");
+        return await PostWithRetryAsync($"api/floorball-matches/{matchId}/events/save", request, "RecordSave");
     }
 
     private async Task<bool> PostWithRetryAsync(string url, object payload, string operationName, int maxRetries = 3)
@@ -423,7 +423,7 @@ public class ApiClient : IDisposable
 
     public async Task<bool> CompleteMatchAsync(Guid matchId)
     {
-        HttpResponseMessage resp = await _http.PutAsync($"api/floorballmatch/complete-match/{matchId}", null);
+        HttpResponseMessage resp = await _http.PutAsync($"api/floorball-matches/{matchId}/complete", null);
         if (!resp.IsSuccessStatusCode)
         {
             string body = await resp.Content.ReadAsStringAsync();
