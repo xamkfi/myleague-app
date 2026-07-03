@@ -6,24 +6,20 @@
 public enum HockeyStatisticsScope
 {
     /// <summary>
-    /// None
+    /// Competition
     /// </summary>
-    None = 0,
+    Competition = 0,
     /// <summary>
     /// Division
     /// </summary>
     Division = 1,
     /// <summary>
-    /// Group
+    /// TournamentGroup
     /// </summary>
-    Group = 2,
+    TournamentGroup = 2,
     /// <summary>
-    /// Tournament
+    /// PlayoffSeries
     /// </summary>
-    Tournament = 3,
-    /// <summary>
-    /// Playoff
-    /// </summary>
-    Playoff = 4
+    PlayoffSeries = 3
 }
 
