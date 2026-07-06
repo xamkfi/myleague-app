@@ -20,10 +20,10 @@
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" Version="1.2.42" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="9.1.0" />
     <!-- AppInsights 3.x rewires AddApplicationInsightsTelemetry to require a connection
          string at DI resolve time and crashes startup when it is missing (e.g. in CI
          integration smoke tests or local Docker), which is a regression from 2.x.
