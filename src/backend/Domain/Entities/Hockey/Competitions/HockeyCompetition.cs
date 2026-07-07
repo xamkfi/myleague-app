@@ -6,7 +6,10 @@ using Domain.ValueObjects.Hockey.Rules;
 namespace Domain.Entities.Hockey.Competitions;
 
 /// <summary>
-/// Abstract base for hockey competitions (seasons, tournaments, etc.).
+/// Abstract base aggregate for hockey competitions (seasons, tournaments, etc.).
+/// Owns the competition team chain: teams join via <see cref="AddTeam"/> as
+/// <see cref="HockeyCompetitionTeam"/> records, then are placed into divisions,
+/// tournament groups or playoff series through that surrogate — never via raw team ids.
 /// </summary>
 public abstract class HockeyCompetition : BaseEntity
 {
@@ -164,20 +167,99 @@ public abstract class HockeyCompetition : BaseEntity
         return competitionTeam;
     }
 
+    /// <summary>
+    /// Soft-removes a team from the competition (<see cref="HockeyCompetitionTeam.Leave"/>).
+    /// Blocked when the team is referenced by matches, an active division, a tournament
+    /// group or a playoff series.
+    /// </summary>
     public void RemoveTeam(Guid teamId)
     {
         EnsureMutable();
         HockeyCompetitionTeam? competitionTeam = GetCompetitionTeam(teamId)
             ?? throw new InvalidOperationException("Team is not participating in this competition.");
 
-        if (_matches.Any(m => m.ReferencesCompetitionTeam(competitionTeam.Id)))
-            throw new InvalidOperationException("Cannot remove a team that is part of scheduled matches.");
+        if (HasBlockingTeamReferences(competitionTeam))
+            throw new InvalidOperationException("Cannot remove a team that is part of scheduled matches, divisions, groups, or playoff series.");
 
         competitionTeam.Leave();
     }
 
+    /// <summary>Looks up an active competition team by the underlying <c>HockeyTeam</c> id.</summary>
     public HockeyCompetitionTeam? GetCompetitionTeam(Guid teamId) =>
         _teams.FirstOrDefault(t => t.TeamId == teamId && t.IsActive);
+
+    /// <summary>Looks up a competition team by its own surrogate id (active or inactive).</summary>
+    public HockeyCompetitionTeam? GetCompetitionTeamById(Guid competitionTeamId) =>
+        _teams.FirstOrDefault(t => t.Id == competitionTeamId);
+
+    /// <summary>
+    /// Places an active competition team into a division. Validates same-competition
+    /// membership and ensures the team is not already in another active division.
+    /// </summary>
+    public HockeyCompetitionDivisionTeam AddTeamToDivision(Guid competitionDivisionId, Guid competitionTeamId, int? seed = null)
+    {
+        EnsureMutable();
+        ValidateCompetitionTeam(competitionTeamId);
+
+        if (_divisions.Any(d => d.HasActiveTeam(competitionTeamId)))
+            throw new InvalidOperationException("Competition team is already assigned to a division.");
+
+        HockeyCompetitionDivision division = _divisions.FirstOrDefault(d => d.Id == competitionDivisionId && d.IsActive)
+            ?? throw new InvalidOperationException("Division is not part of this competition.");
+
+        return division.AddTeam(competitionTeamId, seed);
+    }
+
+    /// <summary>Soft-removes a competition team from a division.</summary>
+    public void RemoveTeamFromDivision(Guid competitionDivisionId, Guid competitionTeamId)
+    {
+        EnsureMutable();
+        HockeyCompetitionDivision division = _divisions.FirstOrDefault(d => d.Id == competitionDivisionId && d.IsActive)
+            ?? throw new InvalidOperationException("Division is not part of this competition.");
+
+        division.RemoveTeam(competitionTeamId);
+    }
+
+    /// <summary>
+    /// Creates and registers a playoff series. Optionally assigns home/away teams,
+    /// validating that they are active competition members of this competition.
+    /// </summary>
+    public HockeyPlayoffSeries CreatePlayoffSeries(
+        HockeyPlayoffRound round,
+        int seriesOrder,
+        int bestOf,
+        Guid? homeCompetitionTeamId = null,
+        Guid? awayCompetitionTeamId = null)
+    {
+        EnsureMutable();
+
+        if (homeCompetitionTeamId is Guid homeId)
+            ValidateCompetitionTeam(homeId);
+        if (awayCompetitionTeamId is Guid awayId)
+            ValidateCompetitionTeam(awayId);
+        if (homeCompetitionTeamId is Guid home && awayCompetitionTeamId is Guid away && home == away)
+            throw new InvalidOperationException("Home and away teams must be different.");
+
+        HockeyPlayoffSeries series = new(Id, round, seriesOrder, bestOf, homeCompetitionTeamId, awayCompetitionTeamId);
+        AddPlayoffSeries(series);
+        return series;
+    }
+
+    /// <summary>
+    /// Assigns home and away teams to an existing playoff series.
+    /// Both must be active competition members of this competition.
+    /// </summary>
+    public void AssignPlayoffSeriesTeams(Guid seriesId, Guid homeCompetitionTeamId, Guid awayCompetitionTeamId)
+    {
+        EnsureMutable();
+        ValidateCompetitionTeam(homeCompetitionTeamId);
+        ValidateCompetitionTeam(awayCompetitionTeamId);
+
+        HockeyPlayoffSeries series = _playoffSeries.FirstOrDefault(s => s.Id == seriesId)
+            ?? throw new InvalidOperationException("Playoff series is not part of this competition.");
+
+        series.AssignTeams(homeCompetitionTeamId, awayCompetitionTeamId);
+    }
 
     public void AddMatch(HockeyMatch match)
     {
@@ -267,10 +349,46 @@ public abstract class HockeyCompetition : BaseEntity
             throw new InvalidOperationException("Away competition team must be participating in this competition.");
     }
 
+    /// <summary>
+    /// Ensures a competition team id refers to an active member of this competition.
+    /// Called before placing teams into divisions, groups or playoff series.
+    /// </summary>
+    private protected void ValidateCompetitionTeam(Guid competitionTeamId)
+    {
+        if (competitionTeamId == Guid.Empty)
+            throw new ArgumentException("Competition team id cannot be empty.", nameof(competitionTeamId));
+
+        HockeyCompetitionTeam? competitionTeam = GetCompetitionTeamById(competitionTeamId)
+            ?? throw new InvalidOperationException("Competition team must be participating in this competition.");
+
+        if (competitionTeam.CompetitionId != Id)
+            throw new InvalidOperationException("Competition team must belong to this competition.");
+
+        if (!competitionTeam.IsActive)
+            throw new InvalidOperationException("Competition team is not active.");
+    }
+
+    /// <summary>
+    /// Checks whether a competition team is referenced by matches, divisions or playoff
+    /// series and therefore cannot be removed. Overridden by <see cref="HockeyTournament"/>
+    /// to also check tournament group memberships.
+    /// </summary>
+    private protected virtual bool HasBlockingTeamReferences(HockeyCompetitionTeam competitionTeam)
+    {
+        if (_matches.Any(m => m.ReferencesCompetitionTeam(competitionTeam.Id)))
+            return true;
+        if (_divisions.Any(d => d.HasActiveTeam(competitionTeam.Id)))
+            return true;
+        if (_playoffSeries.Any(s => s.ReferencesCompetitionTeam(competitionTeam.Id)))
+            return true;
+
+        return false;
+    }
+
     private bool IsActiveCompetitionTeam(Guid competitionTeamId) =>
         _teams.Any(t => t.Id == competitionTeamId && t.IsActive);
 
-    private void EnsureMutable()
+    private protected void EnsureMutable()
     {
         if (Status is HockeyCompetitionStatus.Completed or HockeyCompetitionStatus.Cancelled)
             throw new InvalidOperationException($"Cannot modify a competition in status {Status}.");
