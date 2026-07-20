@@ -158,7 +158,7 @@ public class HockeyTournament : HockeyCompetition
     /// Extends base removal checks with active tournament group memberships.
     /// A team cannot leave the competition while still placed in a group.
     /// </summary>
-    protected override bool HasBlockingTeamReferences(HockeyCompetitionTeam competitionTeam)
+    private protected override bool HasBlockingTeamReferences(HockeyCompetitionTeam competitionTeam)
     {
         if (base.HasBlockingTeamReferences(competitionTeam))
             return true;

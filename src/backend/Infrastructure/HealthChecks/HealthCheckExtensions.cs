@@ -41,7 +41,7 @@ namespace MyLeague.Infrastructure.HealthChecks
                 .AddDbContextCheck<FloorballDbContext>(
                     name: "floorball-database",
                     tags: new[] { "database", "ef-core", "floorball" })
-                
+
                 // Custom database health check
                 .AddCheck<DatabaseHealthCheck>(
                     name: "database-operations",

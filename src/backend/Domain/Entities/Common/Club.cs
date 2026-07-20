@@ -1,10 +1,11 @@
 using Domain.Entities.Floorball;
+using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Common;
 
 namespace Domain.Entities.Common
 {
     /// <summary>
-    /// Represents a sports club that can have floorball teams.
+    /// Represents a sports club that can have floorball and hockey teams.
     /// </summary>
     public class Club : BaseEntity
     {
@@ -49,6 +50,13 @@ namespace Domain.Entities.Common
         /// Gets the list of floorball teams associated with the club.
         /// </summary>
         public IReadOnlyList<FloorballTeam> FloorballTeams => _floorballTeams;
+
+        private readonly List<HockeyTeam> _hockeyTeams = new();
+
+        /// <summary>
+        /// Gets the list of hockey teams associated with the club.
+        /// </summary>
+        public IReadOnlyList<HockeyTeam> HockeyTeams => _hockeyTeams;
 
         /// <summary>
         /// Private constructor for ORM and serialization.
@@ -188,6 +196,50 @@ namespace Domain.Entities.Common
         /// <returns>An enumerable of <see cref="FloorballTeam"/> in the specified division.</returns>
         public IEnumerable<FloorballTeam> GetFloorballTeamsByDivision(Division division) =>
             _floorballTeams.Where(t => t.Division == division);
+
+        /// <summary>
+        /// Adds a new hockey team to the club.
+        /// </summary>
+        public HockeyTeam AddHockeyTeam(
+            string name,
+            TeamCategory teamCategory,
+            Guid? divisionId = null,
+            string? homeArena = null,
+            string? primaryJerseyColor = null,
+            string? secondaryJerseyColor = null,
+            string? shortName = null,
+            Uri? logoUrl = null)
+        {
+            ValidateRequired(name, nameof(name));
+
+            HockeyTeam team = new(
+                name, this, teamCategory, divisionId, homeArena,
+                primaryJerseyColor, secondaryJerseyColor, shortName, logoUrl);
+            _hockeyTeams.Add(team);
+            return team;
+        }
+
+        /// <summary>
+        /// Removes a hockey team from the club by its identifier.
+        /// </summary>
+        public bool RemoveHockeyTeam(Guid teamId)
+        {
+            HockeyTeam? team = _hockeyTeams.FirstOrDefault(t => t.Id == teamId);
+            if (team is null)
+                return false;
+
+            if (team.HasActiveMembers)
+                throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
+
+            _hockeyTeams.Remove(team);
+            return true;
+        }
+
+        /// <summary>
+        /// Gets all hockey teams in the specified division.
+        /// </summary>
+        public IEnumerable<HockeyTeam> GetHockeyTeamsByDivision(Guid divisionId) =>
+            _hockeyTeams.Where(t => t.DivisionId == divisionId);
 
         /// <summary>
         /// Validates that a required string parameter is not null, empty, or whitespace.
