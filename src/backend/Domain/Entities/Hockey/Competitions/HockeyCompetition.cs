@@ -343,10 +343,13 @@ public abstract class HockeyCompetition : BaseEntity
 
     private void ValidateMatchTeams(HockeyMatch match)
     {
-        if (match.HomeCompetitionTeamId is Guid homeId && !IsActiveCompetitionTeam(homeId))
-            throw new InvalidOperationException("Home competition team must be participating in this competition.");
-        if (match.AwayCompetitionTeamId is Guid awayId && !IsActiveCompetitionTeam(awayId))
-            throw new InvalidOperationException("Away competition team must be participating in this competition.");
+        foreach (HockeyMatchTeam matchTeam in match.MatchTeams)
+        {
+            if (matchTeam.CompetitionTeamId is not Guid competitionTeamId)
+                throw new InvalidOperationException("Competition match sides must reference a competition team.");
+
+            ValidateCompetitionTeam(competitionTeamId);
+        }
     }
 
     /// <summary>
@@ -384,9 +387,6 @@ public abstract class HockeyCompetition : BaseEntity
 
         return false;
     }
-
-    private bool IsActiveCompetitionTeam(Guid competitionTeamId) =>
-        _teams.Any(t => t.Id == competitionTeamId && t.IsActive);
 
     private protected void EnsureMutable()
     {

@@ -32,6 +32,9 @@ public class HockeyDbContext : DbContext
     public DbSet<HockeyTournamentGroupTeam> HockeyTournamentGroupTeams => Set<HockeyTournamentGroupTeam>();
     public DbSet<HockeyPlayoffSeries> HockeyPlayoffSeries => Set<HockeyPlayoffSeries>();
     public DbSet<HockeyMatch> HockeyMatches => Set<HockeyMatch>();
+    public DbSet<HockeyMatchTeam> HockeyMatchTeams => Set<HockeyMatchTeam>();
+    public DbSet<HockeyMatchOfficial> HockeyMatchOfficials => Set<HockeyMatchOfficial>();
+    public DbSet<HockeyPeriodScore> HockeyPeriodScores => Set<HockeyPeriodScore>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -58,5 +61,8 @@ public class HockeyDbContext : DbContext
         modelBuilder.ApplyConfiguration(new HockeyTournamentGroupTeamConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyPlayoffSeriesConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyMatchConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyMatchTeamConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyMatchOfficialConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyPeriodScoreConfiguration());
     }
 }

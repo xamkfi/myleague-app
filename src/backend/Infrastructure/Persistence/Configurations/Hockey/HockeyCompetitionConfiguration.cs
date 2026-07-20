@@ -40,8 +40,9 @@ public class HockeyCompetitionConfiguration : IEntityTypeConfiguration<HockeyCom
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(c => c.Matches)
-            .WithOne()
+            .WithOne(m => m.Competition)
             .HasForeignKey(m => m.CompetitionId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(c => c.Divisions)
