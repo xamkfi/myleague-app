@@ -72,6 +72,8 @@ public class HockeyMatchTeam : BaseEntity
         Goals = goals;
     }
 
+    internal void IncrementGoals() => Goals += 1;
+
     internal void SetGoaliePulled(bool isGoaliePulled) => IsGoaliePulled = isGoaliePulled;
 
     /// <summary>

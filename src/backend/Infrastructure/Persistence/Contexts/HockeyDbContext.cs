@@ -1,5 +1,6 @@
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
+using Domain.Entities.Hockey.Matches.Events;
 using Domain.Entities.Hockey.Teams;
 using Domain.ValueObjects.Hockey.Matches;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,18 @@ public class HockeyDbContext : DbContext
     public DbSet<HockeyOnIcePlayer> HockeyOnIcePlayers => Set<HockeyOnIcePlayer>();
     public DbSet<HockeyOnIceChange> HockeyOnIceChanges => Set<HockeyOnIceChange>();
 
+    public DbSet<HockeyMatchEvent> HockeyMatchEvents => Set<HockeyMatchEvent>();
+    public DbSet<HockeyPeriodEvent> HockeyPeriodEvents => Set<HockeyPeriodEvent>();
+    public DbSet<HockeyGoal> HockeyGoals => Set<HockeyGoal>();
+    public DbSet<HockeyPenalty> HockeyPenalties => Set<HockeyPenalty>();
+    public DbSet<HockeyShot> HockeyShots => Set<HockeyShot>();
+    public DbSet<HockeyFaceoff> HockeyFaceoffs => Set<HockeyFaceoff>();
+    public DbSet<HockeyStoppage> HockeyStoppages => Set<HockeyStoppage>();
+    public DbSet<HockeyVideoReview> HockeyVideoReviews => Set<HockeyVideoReview>();
+    public DbSet<HockeyGoalieChange> HockeyGoalieChanges => Set<HockeyGoalieChange>();
+    public DbSet<HockeyTimeout> HockeyTimeouts => Set<HockeyTimeout>();
+    public DbSet<HockeyShootoutAttempt> HockeyShootoutAttempts => Set<HockeyShootoutAttempt>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -78,5 +91,16 @@ public class HockeyDbContext : DbContext
         modelBuilder.ApplyConfiguration(new HockeyOnIceStateConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyOnIcePlayerConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyOnIceChangeConfiguration());
+
+        modelBuilder.ApplyConfiguration(new HockeyMatchEventConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyPeriodEventConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyGoalConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyPenaltyConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyShotConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyFaceoffConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyStoppageConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyVideoReviewConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyGoalieChangeConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyShootoutAttemptConfiguration());
     }
 }

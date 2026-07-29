@@ -1,4 +1,5 @@
 using Domain.Entities.Hockey.Competitions;
+using Domain.Entities.Hockey.Matches.Events;
 using Domain.Enums.Hockey.Matches;
 using Domain.Enums.Hockey.Teams;
 using Domain.ValueObjects.Hockey.Rules;
@@ -53,6 +54,9 @@ public class HockeyMatch : BaseEntity
 
     public IReadOnlyCollection<HockeyPeriodScore> PeriodScores => _periodScores.AsReadOnly();
     private readonly List<HockeyPeriodScore> _periodScores = new();
+
+    public IReadOnlyCollection<HockeyMatchEvent> Events => _events.AsReadOnly();
+    private readonly List<HockeyMatchEvent> _events = new();
 
     /// <summary>Gets the home side match-team, if assigned.</summary>
     public HockeyMatchTeam? HomeMatchTeam =>
@@ -236,6 +240,49 @@ public class HockeyMatch : BaseEntity
     {
         HockeyMatchTeam matchTeam = GetRequiredMatchTeam(slot);
         matchTeam.SetGoals(goals);
+    }
+
+    public void AddEvent(HockeyMatchEvent matchEvent)
+    {
+        ArgumentNullException.ThrowIfNull(matchEvent);
+        if (matchEvent.MatchId != Id)
+            throw new InvalidOperationException("Event must belong to this match.");
+        if (matchEvent.MatchTeamId is Guid matchTeamId && !_matchTeams.Any(t => t.Id == matchTeamId))
+            throw new InvalidOperationException("Event match team must belong to this match.");
+        if (_events.Any(e => e.Id == matchEvent.Id))
+            throw new InvalidOperationException("Event is already part of this match.");
+
+        _events.Add(matchEvent);
+
+        if (matchEvent is HockeyGoal goal)
+        {
+            HockeyMatchTeam scoringTeam = _matchTeams.FirstOrDefault(t => t.Id == goal.ScoringMatchTeamId)
+                ?? throw new InvalidOperationException("Scoring match team must belong to this match.");
+            scoringTeam.IncrementGoals();
+        }
+    }
+
+    /// <summary>
+    /// Creates and records a failed coach-challenge penalty when rules require it,
+    /// and links it to the given video review.
+    /// </summary>
+    public HockeyPenalty RecordFailedCoachChallengePenalty(
+        HockeyVideoReview review,
+        HockeyCoachChallengeRules rules,
+        Guid penaltyMatchTeamId)
+    {
+        ArgumentNullException.ThrowIfNull(review);
+        ArgumentNullException.ThrowIfNull(rules);
+        if (review.MatchId != Id)
+            throw new InvalidOperationException("Video review must belong to this match.");
+        if (!_events.Any(e => e.Id == review.Id))
+            throw new InvalidOperationException("Video review must be recorded on this match before creating a penalty.");
+        if (!_matchTeams.Any(t => t.Id == penaltyMatchTeamId))
+            throw new InvalidOperationException("Penalty match team must belong to this match.");
+
+        HockeyPenalty penalty = review.CreateAndLinkFailedChallengePenalty(rules, penaltyMatchTeamId);
+        AddEvent(penalty);
+        return penalty;
     }
 
     /// <summary>
